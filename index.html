@@ -18,6 +18,11 @@
       justify-content: center;
       text-align: center;
       padding: 20px;
+      opacity: 0;
+      transition: opacity 1.5s ease-in;
+    }
+    body.loaded {
+      opacity: 1;
     }
     h1 {
       font-size: 4em;
@@ -73,5 +78,12 @@
   </form>
 
   <div class="footer">© 2025 Layerbit. All rights reserved.</div>
+
+  <script>
+    // Wait for the page to fully load, then add the 'loaded' class to body
+    window.addEventListener('load', function() {
+      document.body.classList.add('loaded');
+    });
+  </script>
 </body>
 </html>
