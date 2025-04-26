@@ -13,13 +13,13 @@
       box-sizing: border-box;
     }
 
-    /* Make sure html and body take full height of the viewport */
+    /* Ensure full height and no extra margin */
     html, body {
-      height: 100%; /* Full height */
+      height: 100%;
       display: flex;
       justify-content: center;
       align-items: center;
-      margin: 0; /* Remove margins */
+      margin: 0;
     }
 
     body {
@@ -82,6 +82,30 @@
       bottom: 10px;
       font-size: 0.8em;
       opacity: 0.6;
+    }
+
+    /* Mobile Responsiveness */
+    @media (max-width: 600px) {
+      h1 {
+        font-size: 3em;
+      }
+
+      p {
+        font-size: 1.1em;
+      }
+
+      form {
+        flex-direction: column; /* Stack form elements vertically */
+        width: 100%; /* Make sure form uses full width on small screens */
+      }
+
+      input[type="email"] {
+        width: 80%; /* Adjust the width on mobile */
+      }
+
+      button {
+        width: 80%; /* Adjust the button width as well */
+      }
     }
   </style>
 </head>
