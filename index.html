@@ -6,30 +6,20 @@
   <title>Layerbit - Coming Soon</title>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap" rel="stylesheet">
   <style>
-    /* Universal Reset */
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
-    /* Full viewport height and centering */
-    html, body {
-      height: 100%;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      margin: 0;
-    }
-
     body {
+      margin: 0;
+      height: 100vh;
       background: linear-gradient(135deg, #4facfe, #00f2fe);
       font-family: 'Poppins', sans-serif;
       color: white;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
       text-align: center;
+      padding: 20px;
       opacity: 0;
       transition: opacity 1.5s ease-in;
-      width: 100%;
     }
 
     body.loaded {
@@ -50,18 +40,19 @@
     form {
       display: flex;
       flex-direction: column;
+      justify-content: center;
       align-items: center;
+      gap: 15px; /* space between form elements */
       width: 100%;
-      max-width: 500px; /* Limit form width on larger screens */
-      gap: 15px;
+      max-width: 400px; /* limit the form width */
     }
 
     input[type="email"] {
       padding: 12px;
       border: none;
       border-radius: 30px;
-      width: 100%;
-      max-width: 400px; /* Max width for larger screens */
+      width: 80%;
+      max-width: 350px; /* max width for input */
       outline: none;
     }
 
@@ -74,8 +65,8 @@
       font-weight: bold;
       cursor: pointer;
       transition: background 0.3s;
-      width: 100%;
-      max-width: 400px; /* Max width for larger screens */
+      width: 80%;
+      max-width: 350px; /* max width for button */
     }
 
     button:hover {
@@ -92,21 +83,20 @@
     /* Mobile responsiveness */
     @media (max-width: 600px) {
       h1 {
-        font-size: 3em; /* Smaller font size for smaller screens */
+        font-size: 3em;
       }
 
       p {
-        font-size: 1.1em; /* Slightly smaller paragraph on mobile */
+        font-size: 1.1em;
       }
 
       form {
-        gap: 10px; /* Smaller gap between elements on mobile */
-        width: 80%; /* Form width adjusted to fit better on smaller screens */
+        gap: 10px;
+        width: 90%;
       }
 
       input[type="email"], button {
-        width: 100%; /* Full width for form elements on mobile */
-        max-width: 100%; /* No max-width constraint on small screens */
+        width: 100%;
       }
     }
   </style>
