@@ -29,4 +29,79 @@
       color: white;
       text-align: center;
       opacity: 0;
-      transition: opacity 1.
+      transition: opacity 1.5s ease-in;
+    }
+
+    body.loaded {
+      opacity: 1;
+    }
+
+    h1 {
+      font-size: 4em;
+      margin-bottom: 10px;
+    }
+
+    p {
+      font-size: 1.2em;
+      margin-bottom: 30px;
+      opacity: 0.85;
+    }
+
+    form {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    input[type="email"] {
+      padding: 10px;
+      border: none;
+      border-radius: 30px;
+      width: 250px;
+      max-width: 80%;
+      outline: none;
+    }
+
+    button {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 30px;
+      background-color: #fff;
+      color: #00c6ff;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    button:hover {
+      background-color: #e6e6e6;
+    }
+
+    .footer {
+      position: absolute;
+      bottom: 10px;
+      font-size: 0.8em;
+      opacity: 0.6;
+    }
+  </style>
+</head>
+<body>
+  <h1>Layerbit</h1>
+  <p>Our innovation is on its way. Stay tuned! 🚀</p>
+
+  <form>
+    <input type="email" placeholder="Your email address" required>
+    <button type="submit">Notify Me</button>
+  </form>
+
+  <div class="footer">© 2025 Layerbit. All rights reserved.</div>
+
+  <script>
+    // Wait for the page to fully load, then add the 'loaded' class to body
+    window.addEventListener('load', function() {
+      document.body.classList.add('loaded');
+    });
+  </script>
+</body>
+</html>
