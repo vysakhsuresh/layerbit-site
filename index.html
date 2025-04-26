@@ -6,53 +6,15 @@
   <title>Layerbit - Coming Soon</title>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap" rel="stylesheet">
   <style>
-    /* Ensure no margin or padding for html and body */
-    html, body {
-      height: 100%;
+    /* Reset default margin and padding */
+    * {
       margin: 0;
       padding: 0;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
+      box-sizing: border-box; /* Ensures padding and borders don't affect the layout */
+    }
+
+    html, body {
+      height: 100%; /* Make sure html and body take full height */
     }
 
     body {
-      background: linear-gradient(135deg, #4facfe, #00f2fe);
-      font-family: 'Poppins', sans-serif;
-      color: white;
-      text-align: center;
-      opacity: 0;
-      transition: opacity 1.5s ease-in;
-    }
-
-    body.loaded {
-      opacity: 1;
-    }
-
-    h1 {
-      font-size: 4em;
-      margin-bottom: 10px;
-    }
-
-    p {
-      font-size: 1.2em;
-      margin-bottom: 30px;
-      opacity: 0.85;
-    }
-
-    form {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 10px;
-    }
-
-    input[type="email"] {
-      padding: 10px;
-      border: none;
-      border-radius: 30px;
-      width: 250px;
-      max-width: 80%;
-      outline: none;
-    }
