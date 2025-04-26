@@ -13,7 +13,7 @@
       box-sizing: border-box;
     }
 
-    /* Ensure full height and no extra margin */
+    /* Full viewport height and centering */
     html, body {
       height: 100%;
       display: flex;
@@ -29,6 +29,7 @@
       text-align: center;
       opacity: 0;
       transition: opacity 1.5s ease-in;
+      width: 100%;
     }
 
     body.loaded {
@@ -48,24 +49,24 @@
 
     form {
       display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 10px;
-      width: 100%; /* Ensures the form is not too narrow */
-      max-width: 400px; /* Limit form width for large screens */
+      flex-direction: column;
+      align-items: center;
+      width: 100%;
+      max-width: 500px; /* Limit form width on larger screens */
+      gap: 15px;
     }
 
     input[type="email"] {
-      padding: 10px;
+      padding: 12px;
       border: none;
       border-radius: 30px;
-      width: 80%; /* Adjust input width to make it responsive */
-      max-width: 300px; /* Max width for larger screens */
+      width: 100%;
+      max-width: 400px; /* Max width for larger screens */
       outline: none;
     }
 
     button {
-      padding: 10px 20px;
+      padding: 12px 20px;
       border: none;
       border-radius: 30px;
       background-color: #fff;
@@ -73,8 +74,8 @@
       font-weight: bold;
       cursor: pointer;
       transition: background 0.3s;
-      width: 80%; /* Adjust button width to match input */
-      max-width: 300px; /* Max width for button */
+      width: 100%;
+      max-width: 400px; /* Max width for larger screens */
     }
 
     button:hover {
@@ -88,24 +89,24 @@
       opacity: 0.6;
     }
 
-    /* Mobile Responsiveness */
+    /* Mobile responsiveness */
     @media (max-width: 600px) {
       h1 {
-        font-size: 3em;
+        font-size: 3em; /* Smaller font size for smaller screens */
       }
 
       p {
-        font-size: 1.1em;
+        font-size: 1.1em; /* Slightly smaller paragraph on mobile */
       }
 
       form {
-        flex-direction: column; /* Stack form elements vertically */
-        width: 90%; /* Ensure the form takes up 90% of screen width */
+        gap: 10px; /* Smaller gap between elements on mobile */
+        width: 80%; /* Form width adjusted to fit better on smaller screens */
       }
 
       input[type="email"], button {
-        width: 100%; /* Make input and button take full width on small screens */
-        margin-bottom: 15px; /* Add spacing between elements */
+        width: 100%; /* Full width for form elements on mobile */
+        max-width: 100%; /* No max-width constraint on small screens */
       }
     }
   </style>
