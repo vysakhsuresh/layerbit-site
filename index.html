@@ -51,14 +51,16 @@
       flex-wrap: wrap;
       justify-content: center;
       gap: 10px;
+      width: 100%; /* Ensures the form is not too narrow */
+      max-width: 400px; /* Limit form width for large screens */
     }
 
     input[type="email"] {
       padding: 10px;
       border: none;
       border-radius: 30px;
-      width: 250px;
-      max-width: 80%;
+      width: 80%; /* Adjust input width to make it responsive */
+      max-width: 300px; /* Max width for larger screens */
       outline: none;
     }
 
@@ -71,6 +73,8 @@
       font-weight: bold;
       cursor: pointer;
       transition: background 0.3s;
+      width: 80%; /* Adjust button width to match input */
+      max-width: 300px; /* Max width for button */
     }
 
     button:hover {
@@ -96,15 +100,12 @@
 
       form {
         flex-direction: column; /* Stack form elements vertically */
-        width: 100%; /* Make sure form uses full width on small screens */
+        width: 90%; /* Ensure the form takes up 90% of screen width */
       }
 
-      input[type="email"] {
-        width: 80%; /* Adjust the width on mobile */
-      }
-
-      button {
-        width: 80%; /* Adjust the button width as well */
+      input[type="email"], button {
+        width: 100%; /* Make input and button take full width on small screens */
+        margin-bottom: 15px; /* Add spacing between elements */
       }
     }
   </style>
