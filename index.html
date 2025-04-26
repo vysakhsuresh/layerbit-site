@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Layerbit - Coming Soon</title>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <style>
     body {
       margin: 0;
@@ -37,6 +37,12 @@
       opacity: 0.85;
     }
 
+    .visitor-count {
+      font-size: 1.1em;
+      margin-bottom: 20px;
+      opacity: 0.85;
+    }
+
     form {
       display: flex;
       flex-direction: column;
@@ -49,13 +55,14 @@
       padding: 12px;
       border: none;
       border-radius: 30px;
-      width: 100%; /* Full width */
-      max-width: 600px; /* Ensures a large size */
+      width: 100%;
+      max-width: 600px;
       outline: none;
+      text-align: center;
     }
 
     button {
-      padding: 12px 20px;
+      padding: 10px 20px;
       border: none;
       border-radius: 30px;
       background-color: #fff;
@@ -64,7 +71,7 @@
       cursor: pointer;
       transition: background 0.3s;
       width: 80%;
-      max-width: 350px;
+      max-width: 250px;
     }
 
     button:hover {
@@ -104,17 +111,41 @@
   <h1>Layerbit</h1>
   <p>Our innovation is on its way. Stay tuned! 🚀</p>
 
-  <form>
-    <input type="email" placeholder="Your email address" required>
-    <button type="submit" class="btn btn-primary btn-sm">Notify Me</button>
+  <!-- Display visitor count -->
+  <div class="visitor-count" id="visitorCount">Visitors: 0</div>
+
+  <form id="notifyForm">
+    <input type="email" id="email" placeholder="Your email address" required>
+    <button type="submit">Notify Me</button>
   </form>
 
   <div class="footer">© 2025 Layerbit. All rights reserved.</div>
 
   <script>
-    // Wait for the page to fully load, then add the 'loaded' class to body
-    window.addEventListener('load', function() {
-      document.body.classList.add('loaded');
+    // Simulating a visitor count increment
+    let visitorCount = 0;
+    function incrementVisitorCount() {
+      visitorCount++;
+      document.getElementById("visitorCount").innerText = `Visitors: ${visitorCount}`;
+    }
+    // Call to increment visitors on page load
+    window.addEventListener("load", incrementVisitorCount);
+
+    // Handle form submission (simulate email sending)
+    document.getElementById("notifyForm").addEventListener("submit", function(event) {
+      event.preventDefault(); // Prevent form submission
+
+      const email = document.getElementById("email").value;
+
+      if (email) {
+        // Simulating email sending
+        alert(`Email sent to ceo@layerbit.co.in with address: ${email}`);
+
+        // Optionally reset the form after submission
+        document.getElementById("email").value = '';
+      } else {
+        alert("Please enter a valid email address.");
+      }
     });
   </script>
 </body>
