@@ -6,9 +6,14 @@
   <title>Layerbit - Coming Soon</title>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap" rel="stylesheet">
   <style>
-    body {
+    * {
       margin: 0;
-      height: 100vh;
+      padding: 0;
+      box-sizing: border-box; /* Ensure no extra padding or margin from any element */
+    }
+
+    body {
+      height: 100vh; /* Take full viewport height */
       background: linear-gradient(135deg, #4facfe, #00f2fe);
       font-family: 'Poppins', sans-serif;
       color: white;
@@ -17,73 +22,34 @@
       align-items: center;
       justify-content: center;
       text-align: center;
-      padding: 20px;
+      padding: 0 20px; /* Only horizontal padding */
       opacity: 0;
       transition: opacity 1.5s ease-in;
+      overflow: hidden; /* Hide any unwanted scrollbars */
     }
+
     body.loaded {
       opacity: 1;
     }
+
     h1 {
       font-size: 4em;
       margin-bottom: 10px;
     }
+
     p {
       font-size: 1.2em;
       margin-bottom: 30px;
       opacity: 0.85;
     }
+
     form {
       display: flex;
       flex-wrap: wrap;
       justify-content: center;
       gap: 10px;
     }
+
     input[type="email"] {
       padding: 10px;
-      border: none;
-      border-radius: 30px;
-      width: 250px;
-      max-width: 80%;
-      outline: none;
-    }
-    button {
-      padding: 10px 20px;
-      border: none;
-      border-radius: 30px;
-      background-color: #fff;
-      color: #00c6ff;
-      font-weight: bold;
-      cursor: pointer;
-      transition: background 0.3s;
-    }
-    button:hover {
-      background-color: #e6e6e6;
-    }
-    .footer {
-      position: absolute;
-      bottom: 10px;
-      font-size: 0.8em;
-      opacity: 0.6;
-    }
-  </style>
-</head>
-<body>
-  <h1>Layerbit</h1>
-  <p>Our innovation is on its way. Stay tuned! 🚀</p>
-
-  <form>
-    <input type="email" placeholder="Your email address" required>
-    <button type="submit">Notify Me</button>
-  </form>
-
-  <div class="footer">© 2025 Layerbit. All rights reserved.</div>
-
-  <script>
-    // Wait for the page to fully load, then add the 'loaded' class to body
-    window.addEventListener('load', function() {
-      document.body.classList.add('loaded');
-    });
-  </script>
-</body>
-</html>
+      border:
