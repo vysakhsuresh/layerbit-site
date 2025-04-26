@@ -33,13 +33,13 @@
 
     p {
       font-size: 1.2em;
-      margin-bottom: 30px;
+      margin-bottom: 20px;
       opacity: 0.85;
     }
 
     .visitor-count {
       font-size: 1.1em;
-      margin-bottom: 20px;
+      margin-bottom: 30px;
       opacity: 0.85;
     }
 
@@ -49,16 +49,18 @@
       align-items: center;
       justify-content: center;
       gap: 15px;
+      width: 100%;
     }
 
     input[type="email"] {
-    padding: 12px;
-    border: none;
-    border-radius: 30px;
-    width: 100%;
-    max-width: 1000px;
-    outline: none;
-    text-align: center;
+      padding: 12px;
+      border: none;
+      border-radius: 30px;
+      width: 100%;
+      max-width: 600px;
+      outline: none;
+      text-align: center; /* Center the text inside input */
+      font-size: 1em;
     }
 
     button {
@@ -72,6 +74,7 @@
       transition: background 0.3s;
       width: 80%;
       max-width: 250px;
+      font-size: 1em;
     }
 
     button:hover {
@@ -95,11 +98,6 @@
         font-size: 1.1em;
       }
 
-      form {
-        width: 100%;
-        gap: 10px;
-      }
-
       input[type="email"], button {
         width: 90%;
         max-width: none;
@@ -111,9 +109,10 @@
   <h1>Layerbit</h1>
   <p>Our innovation is on its way. Stay tuned! 🚀</p>
 
-  <!-- Display visitor count -->
+  <!-- Visitor count -->
   <div class="visitor-count" id="visitorCount">Visitors: 0</div>
 
+  <!-- Email form -->
   <form id="notifyForm">
     <input type="email" id="email" placeholder="Your email address" required>
     <button type="submit">Notify Me</button>
@@ -122,26 +121,28 @@
   <div class="footer">© 2025 Layerbit. All rights reserved.</div>
 
   <script>
-    // Simulating a visitor count increment
-    let visitorCount = 0;
+    // Fade-in effect on page load
+    window.addEventListener('load', function() {
+      document.body.classList.add('loaded');
+      incrementVisitorCount();
+    });
+
+    // Simulated visitor counter
+    let visitorCount = localStorage.getItem('visitorCount') || 0;
     function incrementVisitorCount() {
       visitorCount++;
+      localStorage.setItem('visitorCount', visitorCount);
       document.getElementById("visitorCount").innerText = `Visitors: ${visitorCount}`;
     }
-    // Call to increment visitors on page load
-    window.addEventListener("load", incrementVisitorCount);
 
-    // Handle form submission (simulate email sending)
+    // Handle form submission
     document.getElementById("notifyForm").addEventListener("submit", function(event) {
-      event.preventDefault(); // Prevent form submission
-
+      event.preventDefault();
       const email = document.getElementById("email").value;
 
       if (email) {
         // Simulating email sending
-        alert(`Email sent to ceo@layerbit.co.in with address: ${email}`);
-
-        // Optionally reset the form after submission
+        alert(`Email sent to ceo@layerbit.co.in with your address: ${email}`);
         document.getElementById("email").value = '';
       } else {
         alert("Please enter a valid email address.");
