@@ -3,36 +3,47 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Layerbit - Let's Build the Future</title>
-  
-  <!-- Beautiful Google Font -->
+  <title>Layerbit - Shaping the Future</title>
+
+  <!-- Premium Google Font -->
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
 
   <style>
-    body {
+    * {
       margin: 0;
       padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
       height: 100vh;
       display: flex;
       flex-direction: column;
+      justify-content: space-between;
       align-items: center;
-      justify-content: center;
-      font-family: 'Space Grotesk', sans-serif;
       background: linear-gradient(135deg, #4facfe, #00f2fe);
+      font-family: 'Space Grotesk', sans-serif;
       color: white;
-      transition: background 2s ease;
-      overflow: hidden;
       text-align: center;
+      overflow: hidden;
+      transition: background 2s ease;
+      padding: 20px;
+    }
+
+    .center-content {
+      flex-grow: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
     }
 
     .typing-container {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 3em;
+      font-size: 3.5em;
       font-weight: 700;
-      letter-spacing: 2px;
+      letter-spacing: 1.5px;
+      max-width: 90%;
       line-height: 1.4;
+      word-wrap: break-word;
     }
 
     #bullet {
@@ -44,22 +55,10 @@
     }
 
     #text {
+      display: inline-block;
       white-space: nowrap;
       overflow: hidden;
-      border-right: .15em solid white;
-      animation: typing 3s steps(30, end) infinite alternate;
-    }
-
-    .visitor-count {
-      margin-top: 40px;
-      font-size: 1.2em;
-      opacity: 0.8;
-      font-weight: 500;
-    }
-
-    @keyframes typing {
-      from { width: 0 }
-      to { width: 100% }
+      border-right: 2px solid white;
     }
 
     @keyframes pulse {
@@ -68,9 +67,28 @@
       100% { transform: scale(1); }
     }
 
+    footer {
+      font-size: 0.9em;
+      opacity: 0.8;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .visitor-count {
+      margin-top: 8px;
+    }
+
+    .notify-message {
+      font-size: 0.9em;
+      margin-top: 4px;
+      opacity: 0.7;
+    }
+
     @media (max-width: 600px) {
       .typing-container {
-        font-size: 2em;
+        font-size: 2.5em;
       }
       #bullet {
         font-size: 1.2em;
@@ -80,13 +98,19 @@
 </head>
 <body>
 
-  <div class="typing-container">
-    <span id="bullet">•</span><span id="text"></span>
+  <div class="center-content">
+    <div class="typing-container">
+      <span id="bullet">•</span><span id="text"></span>
+    </div>
   </div>
-  <div class="visitor-count" id="visitorCount">Visitors: 0</div>
+
+  <footer>
+    <div class="visitor-count" id="visitorCount">Visitors: 0</div>
+    <div class="notify-message">Notify updates sent to ceo@layerbit.co.in</div>
+    <div>© 2025 Layerbit. All rights reserved.</div>
+  </footer>
 
   <script>
-    // Messages to rotate
     const messages = [
       "Let's Innovate",
       "Let's Create",
@@ -97,15 +121,15 @@
     
     let currentMessage = 0;
     let currentChar = 0;
-    let textElement = document.getElementById("text");
-    
+    const textElement = document.getElementById("text");
+
     function type() {
       if (currentChar < messages[currentMessage].length) {
         textElement.textContent += messages[currentMessage].charAt(currentChar);
         currentChar++;
-        setTimeout(type, 80);
+        setTimeout(type, 100);  // Typing speed
       } else {
-        setTimeout(erase, 2000); // Pause before erasing
+        setTimeout(erase, 2500); // Wait before erasing
       }
     }
 
@@ -113,11 +137,11 @@
       if (currentChar > 0) {
         textElement.textContent = messages[currentMessage].substring(0, currentChar - 1);
         currentChar--;
-        setTimeout(erase, 40);
+        setTimeout(erase, 50); // Erase speed
       } else {
         currentMessage = (currentMessage + 1) % messages.length;
-        setTimeout(type, 500);
         changeBackground();
+        setTimeout(type, 500);
       }
     }
 
@@ -132,7 +156,7 @@
       document.body.style.background = colors[Math.floor(Math.random() * colors.length)];
     }
 
-    // Visitor count using localStorage (simulated)
+    // Visitor count
     let visitorCount = localStorage.getItem('visitorCount') || 0;
     visitorCount++;
     localStorage.setItem('visitorCount', visitorCount);
@@ -140,5 +164,6 @@
 
     window.onload = type;
   </script>
+
 </body>
 </html>
