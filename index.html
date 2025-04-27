@@ -29,6 +29,16 @@
       transition: background 2s ease;
     }
 
+    header {
+      margin-top: 20px;
+    }
+
+    .logo {
+      width: 120px;
+      height: auto;
+      background: transparent;
+    }
+
     .center-content {
       flex-grow: 1;
       display: flex;
@@ -52,19 +62,24 @@
       overflow-wrap: break-word;
     }
 
-    #bullet {
-      margin-right: 10px;
-      font-weight: bold;
-      font-size: 1.5em;
-      color: #fff;
-      animation: pulse 1s infinite;
-      flex-shrink: 0;
-    }
-
     #text {
       display: inline;
       white-space: normal;
       word-break: break-word;
+    }
+
+    #bulletText {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    #bullet {
+      font-weight: bold;
+      font-size: 1.5em;
+      animation: pulse 1s infinite;
+      flex-shrink: 0;
     }
 
     @keyframes pulse {
@@ -80,10 +95,7 @@
       flex-direction: column;
       align-items: center;
       gap: 8px;
-    }
-
-    .visitor-count {
-      margin-top: 8px;
+      margin-bottom: 10px;
     }
 
     .notify-message {
@@ -104,14 +116,19 @@
 </head>
 <body>
 
+  <header>
+    <img src="layerbit-logo.png" alt="Layerbit Logo" class="logo">
+  </header>
+
   <div class="center-content">
     <div class="typing-container">
-      <span id="bullet">•</span><span id="text"></span>
+      <span id="bulletText">
+        <span id="bullet">•</span><span id="text"></span>
+      </span>
     </div>
   </div>
 
   <footer>
-    <div class="visitor-count" id="visitorCount">Visitors: 0</div>
     <div class="notify-message">Notify updates sent to ceo@layerbit.co.in</div>
     <div>© 2025 Layerbit. All rights reserved.</div>
   </footer>
@@ -133,9 +150,9 @@
       if (currentChar < messages[currentMessage].length) {
         textElement.textContent += messages[currentMessage].charAt(currentChar);
         currentChar++;
-        setTimeout(type, 100);  // Typing speed
+        setTimeout(type, 100);
       } else {
-        setTimeout(erase, 2500); // Wait before erasing
+        setTimeout(erase, 2500);
       }
     }
 
@@ -143,7 +160,7 @@
       if (currentChar > 0) {
         textElement.textContent = messages[currentMessage].substring(0, currentChar - 1);
         currentChar--;
-        setTimeout(erase, 50); // Erase speed
+        setTimeout(erase, 50);
       } else {
         currentMessage = (currentMessage + 1) % messages.length;
         changeBackground();
@@ -161,12 +178,6 @@
       ];
       document.body.style.background = colors[Math.floor(Math.random() * colors.length)];
     }
-
-    // Visitor count
-    let visitorCount = localStorage.getItem('visitorCount') || 0;
-    visitorCount++;
-    localStorage.setItem('visitorCount', visitorCount);
-    document.getElementById("visitorCount").textContent = `Visitors: ${visitorCount}`;
 
     window.onload = type;
   </script>
