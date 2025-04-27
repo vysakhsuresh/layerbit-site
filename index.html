@@ -4,6 +4,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Layerbit - Let's Build the Future</title>
+  
+  <!-- Beautiful Google Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+
   <style>
     body {
       margin: 0;
@@ -13,35 +17,64 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      font-family: 'Poppins', sans-serif;
+      font-family: 'Space Grotesk', sans-serif;
       background: linear-gradient(135deg, #4facfe, #00f2fe);
       color: white;
-      transition: background 3s ease;
+      transition: background 2s ease;
       overflow: hidden;
       text-align: center;
     }
-    .typing-text {
-      font-size: 2em;
+
+    .typing-container {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 3em;
+      font-weight: 700;
+      letter-spacing: 2px;
+      line-height: 1.4;
+    }
+
+    #bullet {
+      margin-right: 15px;
+      font-weight: bold;
+      font-size: 1.5em;
+      color: #fff;
+      animation: pulse 1s infinite;
+    }
+
+    #text {
       white-space: nowrap;
       overflow: hidden;
       border-right: .15em solid white;
-      letter-spacing: .05em;
       animation: typing 3s steps(30, end) infinite alternate;
     }
-    #bullet {
-      margin-right: 10px;
-      font-weight: bold;
-      color: #fff;
-    }
+
     .visitor-count {
-      margin-top: 30px;
-      font-size: 1em;
-      opacity: 0.7;
+      margin-top: 40px;
+      font-size: 1.2em;
+      opacity: 0.8;
+      font-weight: 500;
     }
 
     @keyframes typing {
       from { width: 0 }
       to { width: 100% }
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.2); }
+      100% { transform: scale(1); }
+    }
+
+    @media (max-width: 600px) {
+      .typing-container {
+        font-size: 2em;
+      }
+      #bullet {
+        font-size: 1.2em;
+      }
     }
   </style>
 </head>
@@ -70,7 +103,7 @@
       if (currentChar < messages[currentMessage].length) {
         textElement.textContent += messages[currentMessage].charAt(currentChar);
         currentChar++;
-        setTimeout(type, 100);
+        setTimeout(type, 80);
       } else {
         setTimeout(erase, 2000); // Pause before erasing
       }
@@ -80,7 +113,7 @@
       if (currentChar > 0) {
         textElement.textContent = messages[currentMessage].substring(0, currentChar - 1);
         currentChar--;
-        setTimeout(erase, 50);
+        setTimeout(erase, 40);
       } else {
         currentMessage = (currentMessage + 1) % messages.length;
         setTimeout(type, 500);
