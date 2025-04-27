@@ -51,7 +51,6 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      flex-wrap: wrap;
       overflow-wrap: break-word;
     }
 
@@ -59,7 +58,7 @@
       display: inline-flex;
       align-items: center;
       gap: 10px;
-      flex-wrap: wrap;
+      white-space: nowrap; /* critical fix */
     }
 
     #bullet {
@@ -132,9 +131,9 @@
 
   <div class="center-content">
     <div class="typing-container">
-      <span id="bulletText">
+      <div id="bulletText">
         <span id="bullet">•</span><span id="text"></span>
-      </span>
+      </div>
     </div>
     <div class="coming-soon">Launching soon. Get ready.</div>
   </div>
