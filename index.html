@@ -6,6 +6,7 @@
   <title>Layerbit - Shaping the Future</title>
 
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+  <link rel="icon" href="favicon.ico" type="image/x-icon">
 
   <style>
     * {
@@ -32,10 +33,12 @@
     .center-content {
       flex-grow: 1;
       display: flex;
+      flex-direction: column;
       justify-content: center;
       align-items: center;
       width: 100%;
       padding: 20px;
+      gap: 15px;
     }
 
     .typing-container {
@@ -43,14 +46,20 @@
       font-weight: 700;
       letter-spacing: 1.5px;
       max-width: 90%;
+      word-wrap: break-word;
       line-height: 1.3;
-      display: inline-flex;
+      display: flex;
       align-items: center;
       justify-content: center;
-      flex-wrap: nowrap;
+      flex-wrap: wrap;
+      overflow-wrap: break-word;
+    }
+
+    #bulletText {
+      display: inline-flex;
+      align-items: center;
       gap: 10px;
-      text-align: center;
-      word-break: break-word;
+      flex-wrap: wrap;
     }
 
     #bullet {
@@ -66,10 +75,18 @@
       word-break: break-word;
     }
 
-    @keyframes pulse {
-      0% { transform: scale(1); }
-      50% { transform: scale(1.2); }
-      100% { transform: scale(1); }
+    .coming-soon {
+      font-size: 1em;
+      opacity: 0.7;
+      margin-top: 10px;
+    }
+
+    .logo-below {
+      width: 120px;
+      height: auto;
+      margin-bottom: 20px;
+      opacity: 0;
+      animation: fadeIn 2s ease forwards;
     }
 
     footer {
@@ -82,20 +99,26 @@
       margin-bottom: 10px;
     }
 
-    .logo {
-      width: 120px;
-      height: auto;
-      background: transparent;
-      margin-bottom: 15px;
-    }
-
     .notify-message {
       font-size: 0.9em;
       margin-top: 4px;
       opacity: 0.7;
     }
 
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.2); }
+      100% { transform: scale(1); }
+    }
+
+    @keyframes fadeIn {
+      to { opacity: 1; }
+    }
+
     @media (max-width: 600px) {
+      body {
+        padding: 10px;
+      }
       .typing-container {
         font-size: 2em;
       }
@@ -109,12 +132,16 @@
 
   <div class="center-content">
     <div class="typing-container">
-      <span id="bullet">•</span><span id="text"></span>
+      <span id="bulletText">
+        <span id="bullet">•</span><span id="text"></span>
+      </span>
     </div>
+    <div class="coming-soon">Launching soon. Get ready.</div>
   </div>
 
+  <img src="layerbit-logo.png" alt="Layerbit Logo" class="logo-below">
+
   <footer>
-    <img src="layerbit-logo.png" alt="Layerbit Logo" class="logo">
     <div class="notify-message">Notify updates sent to ceo@layerbit.co.in</div>
     <div>© 2025 Layerbit. All rights reserved.</div>
   </footer>
@@ -127,7 +154,7 @@
       "Technology Meets Creativity",
       "Empowering Dreams"
     ];
-    
+
     let currentMessage = 0;
     let currentChar = 0;
     const textElement = document.getElementById("text");
