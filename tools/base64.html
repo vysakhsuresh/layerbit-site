@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -17,38 +18,39 @@
     }
     h1 {
       font-size: 2.2em;
-      margin-bottom: 20px;
+      margin-bottom: 10px;
     }
-    textarea {
-      width: 100%;
-      height: 150px;
-      padding: 15px;
+    p {
+      font-size: 1em;
+      opacity: 0.85;
+      margin-bottom: 25px;
+    }
+    select, textarea, input[type="file"], button {
+      margin: 10px 0;
+      padding: 12px;
       border-radius: 8px;
       border: none;
       font-size: 1em;
       font-family: monospace;
+    }
+    textarea {
+      width: 100%;
+      height: 150px;
       resize: vertical;
     }
-    .btn-group {
-      display: flex;
-      justify-content: center;
-      gap: 20px;
-      margin: 20px 0;
-      flex-wrap: wrap;
-    }
     button {
-      padding: 12px 25px;
-      font-size: 1em;
       font-weight: bold;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
       background: white;
       color: #333;
+      cursor: pointer;
       transition: background 0.3s;
     }
     button:hover {
       background: #eee;
+    }
+    #outputImage {
+      margin-top: 20px;
+      max-width: 100%;
     }
     .back {
       position: fixed;
@@ -65,22 +67,38 @@
   </style>
 </head>
 <body>
-
   <a href="../index.html" class="back">← Home</a>
-
   <h1>Base64 Encode / Decode</h1>
-  <p>Paste your input below and choose whether to encode or decode it.</p>
+  <p>Text and image support. Choose mode below:</p>
 
-  <textarea id="inputText" placeholder="Enter text or base64 string here..."></textarea>
+  <select id="modeSelect" onchange="switchMode()">
+    <option value="text">Text</option>
+    <option value="image">Image</option>
+  </select>
 
-  <div class="btn-group">
+  <div id="textMode">
+    <textarea id="inputText" placeholder="Enter text or base64 here..."></textarea><br>
     <button onclick="encodeText()">Encode</button>
-    <button onclick="decodeText()">Decode</button>
+    <button onclick="decodeText()">Decode</button><br>
+    <textarea id="outputText" placeholder="Result will appear here..." readonly></textarea>
   </div>
 
-  <textarea id="outputText" placeholder="Result will appear here..." readonly></textarea>
+  <div id="imageMode" style="display:none;">
+    <input type="file" id="imageInput" accept="image/*"><br>
+    <button onclick="encodeImage()">Encode Image</button><br>
+    <textarea id="imageOutput" placeholder="Base64 result will appear here..." readonly></textarea><br>
+    <textarea id="imageInputBase64" placeholder="Paste base64 to preview image..."></textarea><br>
+    <button onclick="previewImage()">Preview Image</button><br>
+    <img id="outputImage" />
+  </div>
 
   <script>
+    function switchMode() {
+      const mode = document.getElementById("modeSelect").value;
+      document.getElementById("textMode").style.display = mode === "text" ? "block" : "none";
+      document.getElementById("imageMode").style.display = mode === "image" ? "block" : "none";
+    }
+
     function encodeText() {
       const input = document.getElementById('inputText').value;
       try {
@@ -99,6 +117,29 @@
       } catch (e) {
         document.getElementById('outputText').value = "Invalid base64 input.";
       }
+    }
+
+    function encodeImage() {
+      const file = document.getElementById('imageInput').files[0];
+      const output = document.getElementById('imageOutput');
+
+      if (!file) {
+        alert("Please select an image file.");
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const base64String = e.target.result.split(',')[1];
+        output.value = base64String;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function previewImage() {
+      const base64 = document.getElementById('imageInputBase64').value.trim();
+      if (!base64) return alert("Paste base64 to preview image.");
+      document.getElementById('outputImage').src = "data:image/png;base64," + base64;
     }
   </script>
 </body>
