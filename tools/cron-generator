@@ -145,18 +145,24 @@
   <script>
     function populateSelect(id, max) {
       const select = document.getElementById(id);
-      for (let i = 1; i <= max; i++) {
-        const val = i < 10 ? '0' + i : i;
-        if (![...select.options].some(o => o.value === i.toString())) {
-          select.add(new Option(val, i));
+      const existingValues = [...select.options].map(o => o.value);
+      for (let i = 0; i <= max; i++) {
+        const val = i.toString();
+        if (!existingValues.includes(val)) {
+          const label = i < 10 ? '0' + i : i;
+          select.add(new Option(label, val));
         }
       }
     }
 
-    window.onload = function () {
+    function initDropdowns() {
       populateSelect('min', 59);
       populateSelect('hour', 23);
       populateSelect('day', 31);
+    }
+
+    window.onload = function () {
+      initDropdowns();
     };
 
     function copyCron() {
@@ -170,16 +176,19 @@
     function setExample(cronStr) {
       const [min, hour, day, month, weekday] = cronStr.split(" ");
 
-      const minSelect = document.getElementById("min");
-      if (![...minSelect.options].some(o => o.value === min)) {
-        minSelect.add(new Option(min, min));
+      function setOrAdd(selectId, value) {
+        const select = document.getElementById(selectId);
+        if (![...select.options].some(o => o.value === value)) {
+          select.add(new Option(value, value));
+        }
+        select.value = value;
       }
-      minSelect.value = min;
 
-      document.getElementById("hour").value = hour;
-      document.getElementById("day").value = day;
-      document.getElementById("month").value = month;
-      document.getElementById("weekday").value = weekday;
+      setOrAdd("min", min);
+      setOrAdd("hour", hour);
+      setOrAdd("day", day);
+      setOrAdd("month", month);
+      setOrAdd("weekday", weekday);
 
       generateCron();
     }
