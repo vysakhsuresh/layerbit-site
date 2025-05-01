@@ -119,7 +119,25 @@
         console.log('Stream sent to viewer');
       });
     
+      
       console.log('Generated session ID:', sessionId);
+
+      peer.on('open', id => {
+        console.log("✅ PeerJS registered this session ID:", id);
+        const status = document.createElement('p');
+        status.textContent = "✅ Session ready. Viewer can now connect.";
+        status.style.color = "#8bc34a";
+        document.body.appendChild(status);
+      });
+
+      peer.on('error', err => {
+        console.error("❌ PeerJS error:", err);
+        const status = document.createElement('p');
+        status.textContent = "❌ Error connecting to PeerJS: " + err;
+        status.style.color = "#ff5252";
+        document.body.appendChild(status);
+      });
+    
     }
   </script>
 </body>
