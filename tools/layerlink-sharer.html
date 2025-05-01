@@ -1,33 +1,20 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8" />
+  <title>LayerLink Sharer</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>LayerLink - Firebase Sharer</title>
-  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet" />
   <style>
     body {
-      font-family: 'Space+Grotesk', sans-serif;
+      font-family: sans-serif;
       background: linear-gradient(135deg, #1f1c2c, #928dab);
       color: white;
       text-align: center;
-      padding: 40px 20px;
-    }
-    button {
-      background: white;
-      color: #1f1c2c;
-      font-size: 1.1em;
-      padding: 12px 25px;
-      border: none;
-      border-radius: 10px;
-      cursor: pointer;
-      font-weight: bold;
+      padding: 30px;
     }
     video {
-      margin-top: 30px;
+      margin-top: 20px;
       max-width: 100%;
       border-radius: 12px;
-      box-shadow: 0 8px 16px rgba(0,0,0,0.3);
     }
     input {
       padding: 10px;
@@ -37,16 +24,20 @@
       border: none;
       margin-top: 20px;
     }
+    button {
+      padding: 10px 20px;
+      font-size: 1em;
+      margin-top: 20px;
+      border-radius: 8px;
+      cursor: pointer;
+    }
   </style>
 </head>
 <body>
-  <h1>LayerLink (Firebase Version)</h1>
-  <p>Start screen sharing and get a link to send to a viewer.</p>
-  <button onclick="startSharing()">🔗 Start Sharing</button>
-  <br />
-  <input type="text" id="sessionLink" readonly placeholder="Your viewer link will appear here" />
-  <video id="screenVideo" autoplay playsinline></video>
-
+  <h1>LayerLink Sharer</h1>
+  <button onclick="start()">🔗 Start Screen Sharing</button><br />
+  <input id="link" readonly placeholder="Your viewer link will appear here"><br />
+  <video id="video" autoplay playsinline></video>
   
 <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
@@ -64,18 +55,40 @@
   const db = firebase.database();
 </script>
 
-
   <script>
-    async function startSharing() {
+    async function start() {
       const sessionId = Math.random().toString(36).substring(2, 8);
-      const viewerLink = location.origin + '/tools/layerlink-viewer.html?session=' + sessionId;
-      document.getElementById('sessionLink').value = viewerLink;
+      document.getElementById("link").value = location.origin + "/tools/layerlink-viewer.html?session=" + sessionId;
 
-      const stream = await navigator.mediaDevices.getDisplayMedia({ video: true });
-      document.getElementById('screenVideo').srcObject = stream;
+      const localStream = await navigator.mediaDevices.getDisplayMedia({ video: true });
+      document.getElementById("video").srcObject = localStream;
 
-      const conn = db.ref('sessions/' + sessionId);
-      conn.set({ offer: 'ready' });
+      const peer = new RTCPeerConnection();
+      localStream.getTracks().forEach(track => peer.addTrack(track, localStream));
+
+      const conn = db.ref("sessions/" + sessionId);
+
+      peer.onicecandidate = e => {
+        if (e.candidate) {
+          conn.child("offerCandidates").push(JSON.stringify(e.candidate));
+        }
+      };
+
+      const offer = await peer.createOffer();
+      await peer.setLocalDescription(offer);
+      conn.child("offer").set(JSON.stringify(offer));
+
+      conn.child("answer").on("value", async snap => {
+        if (snap.val()) {
+          const answer = JSON.parse(snap.val());
+          await peer.setRemoteDescription(answer);
+        }
+      });
+
+      conn.child("answerCandidates").on("child_added", snap => {
+        const candidate = new RTCIceCandidate(JSON.parse(snap.val()));
+        peer.addIceCandidate(candidate);
+      });
     }
   </script>
 </body>
