@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Layerbit - Tools & Services That Just Work</title>
+  <title>Layerbit — Free Tools & Dev Services</title>
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
   <link rel="icon" href="layerbit-logo.png" type="image/x-icon" />
   <style>
@@ -170,9 +170,13 @@
   <button class="toggle-theme" onclick="toggleTheme()">🌓</button>
 
   <div class="hero">
-    <div class="typing-container" style="font-size: 1.8em; font-weight: 600; line-height: 1.4;">
-  <span id="typewriter"></span>
-</div>
+  <h1 style="font-size: 2.6em; margin-bottom: 0.3em;">Tools That Work. Services That Scale.</h1>
+  <p style="font-size: 1.15em; max-width: 700px; margin: 0 auto;">
+    Layerbit is your Swiss Army knife for everyday development. Build, automate, and launch faster with free tools and expert-crafted services.
+  </p>
+  <div style="margin-top: 25px;">
+    <a href="#tools" style="background:white; color:#333; padding:12px 24px; font-weight:bold; border-radius:8px; text-decoration:none; box-shadow:0 4px 8px rgba(0,0,0,0.2);">Explore Tools</a>
+  
   </div>
   </div>
 
@@ -243,70 +247,33 @@
     </div>
   </div>
 
-  <footer>
-    <p>© 2025 Layerbit. All rights reserved.</p>
-    <p>Contact: <a href="mailto:ceo@layerbit.co.in">ceo@layerbit.co.in</a></p>
-  <footer>
+ <footer>
     <p>© 2025 Layerbit. All rights reserved.</p>
     <p>Contact: <a href="mailto:ceo@layerbit.co.in">ceo@layerbit.co.in</a></p>
   </footer>
 
   <script>
-    const gradients = [
-      'linear-gradient(135deg, #4facfe, #00f2fe)',
-      'linear-gradient(135deg, #43e97b, #38f9d7)',
-      'linear-gradient(135deg, #30cfd0, #330867)',
-      'linear-gradient(135deg, #a1c4fd, #c2e9fb)',
-      'linear-gradient(135deg, #667eea, #764ba2)'
-    ];
+  const gradients = [
+    'linear-gradient(135deg, #4facfe, #00f2fe)',
+    'linear-gradient(135deg, #43e97b, #38f9d7)',
+    'linear-gradient(135deg, #30cfd0, #330867)',
+    'linear-gradient(135deg, #a1c4fd, #c2e9fb)',
+    'linear-gradient(135deg, #667eea, #764ba2)'
+  ];
 
-    function shuffleBackground() {
-      const bg = gradients[Math.floor(Math.random() * gradients.length)];
-      document.body.style.background = bg;
-    }
+  function shuffleBackground() {
+    const bg = gradients[Math.floor(Math.random() * gradients.length)];
+    document.body.style.background = bg;
+  }
 
-    function toggleTheme() {
-      const theme = document.body.getAttribute("data-theme");
-      document.body.setAttribute("data-theme", theme === "light" ? "dark" : "light");
-      shuffleBackground();
-    }
+  function toggleTheme() {
+    const theme = document.body.getAttribute("data-theme");
+    document.body.setAttribute("data-theme", theme === "light" ? "dark" : "light");
+    shuffleBackground();
+  }
 
-    const messages = [
-  "Tools That Work. Services That Scale.",
-  "Built by developers, for developers.",
-  "Everything you need to build, automate, and launch.",
-  "Smarter Tools. Faster Solutions.",
-  "Empowering makers to create better, faster."
-];
-
-    let currentMessage = 0;
-    let charIndex = 0;
-    const typewriter = document.getElementById("typewriter");
-
-    function typeEffect() {
-      if (charIndex < messages[currentMessage].length) {
-        typewriter.textContent += messages[currentMessage].charAt(charIndex);
-        charIndex++;
-        setTimeout(typeEffect, 100);
-      } else {
-        setTimeout(eraseEffect, 2000);
-      }
-    }
-
-    function eraseEffect() {
-      if (charIndex > 0) {
-        typewriter.textContent = messages[currentMessage].substring(0, charIndex - 1);
-        charIndex--;
-        setTimeout(eraseEffect, 50);
-      } else {
-        currentMessage = (currentMessage + 1) % messages.length;
-        setTimeout(typeEffect, 400);
-      }
-    }
-
-    document.body.setAttribute("data-theme", "dark");
-    setInterval(shuffleBackground, 7000);
-    window.onload = typeEffect;
-  </script>
+  document.body.setAttribute("data-theme", "dark");
+  setInterval(shuffleBackground, 7000);
+</script>
 </body>
 </html>
