@@ -77,19 +77,33 @@
 
   <pre id="output"></pre>
 
-  <script>
-    function formatJSON() {
-      const input = document.getElementById('input').value;
-      const output = document.getElementById('output');
-      try {
-        const parsed = JSON.parse(input);
-        output.textContent = JSON.stringify(parsed, null, 2);
-        output.classList.remove('error');
-      } catch (err) {
-        output.textContent = 'Invalid JSON:\n' + err.message;
-        output.classList.add('error');
+<script>
+  function formatJSON() {
+    const input = document.getElementById('input').value;
+    const output = document.getElementById('output');
+
+    try {
+      const parsed = JSON.parse(input);
+      output.textContent = JSON.stringify(parsed, null, 2);
+      output.classList.remove('error');
+    } catch (err) {
+      const positionMatch = err.message.match(/position (\d+)/);
+      let errorMsg = 'Invalid JSON:\n' + err.message;
+
+      if (positionMatch) {
+        const pos = parseInt(positionMatch[1], 10);
+        const linesUntilError = input.slice(0, pos).split('\n');
+        const lineNumber = linesUntilError.length;
+        const column = linesUntilError[linesUntilError.length - 1].length + 1;
+
+        errorMsg += `\n➡️ Line ${lineNumber}, Column ${column}`;
       }
+
+      output.textContent = errorMsg;
+      output.classList.add('error');
     }
-  </script>
+  }
+</script>
+
 </body>
 </html>
