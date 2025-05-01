@@ -1,10 +1,12 @@
 <!DOCTYPE html>
 <html>
 <head>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
   <title>LayerLink Sharer</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
     body {
+      font-family: 'Space Grotesk', sans-serif;
       font-family: sans-serif;
       background: linear-gradient(135deg, #1f1c2c, #928dab);
       color: white;
@@ -17,6 +19,7 @@
       border-radius: 12px;
     }
     input {
+      font-family: 'Space Grotesk', sans-serif;
       padding: 10px;
       font-size: 1em;
       width: 320px;
@@ -25,6 +28,8 @@
       margin-top: 20px;
     }
     button {
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 700;
       padding: 10px 20px;
       font-size: 1em;
       margin-top: 20px;
@@ -39,7 +44,7 @@
     const isMobile = /Mobi|Android|iPhone/i.test(navigator.userAgent);
     if (isMobile) {
       document.getElementById("main").innerHTML = `
-        <h1>LayerLink</h1>
+        <h1 style="font-family: 'Space Grotesk', sans-serif; font-size: 2.3em; font-weight: 700;">LayerLink</h1>
         <p style="color:yellow; font-size:1.2em;">
         ⚠️ Screen sharing is not supported on mobile browsers.<br>
         Please use a desktop or laptop to start a session.
@@ -48,7 +53,7 @@
   });
     
   if (isMobile) {
-    document.body.innerHTML = '<h1>LayerLink</h1><p style="color:yellow; font-size:1.2em;">⚠️ Screen sharing is not supported on mobile browsers.<br>Please use a desktop or laptop to start a session.</p>';
+    document.body.innerHTML = '<h1 style="font-family: 'Space Grotesk', sans-serif; font-size: 2.3em; font-weight: 700;">LayerLink</h1><p style="color:yellow; font-size:1.2em;">⚠️ Screen sharing is not supported on mobile browsers.<br>Please use a desktop or laptop to start a session.</p>';
   }
 
   function copyLink() {
@@ -63,7 +68,7 @@
 </head>
 <body>
 <div id="main">
-  <h1>LayerLink Sharer</h1>
+  <h1 style="font-family: 'Space Grotesk', sans-serif; font-size: 2.3em; font-weight: 700;">LayerLink Sharer</h1>
   <button onclick="start()">🔗 Start Screen Sharing</button><br />
   <input id="link" readonly placeholder="Your viewer link will appear here">
     <button onclick="copyLink()" style="margin-left:10px; padding:6px 12px; border-radius:6px;">📋 Copy</button><br />
