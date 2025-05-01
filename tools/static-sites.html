@@ -27,12 +27,22 @@
       margin-bottom: 10px;
     }
 
-    .features {
-      margin-top: 20px;
+    .features, .steps {
+      margin-top: 15px;
+      list-style: none;
+      padding-left: 0;
     }
 
-    .features li {
-      margin: 10px 0;
+    .features li::before {
+      content: "";
+    }
+
+    .steps li::before {
+      content: "";
+    }
+
+    .features li, .steps li {
+      margin: 8px 0;
     }
 
     .cta-button {
@@ -56,6 +66,23 @@
       opacity: 0.8;
       margin-top: 20px;
     }
+
+    .pricing-box {
+      margin-top: 25px;
+      background-color: rgba(255,255,255,0.1);
+      padding: 20px;
+      border-radius: 12px;
+    }
+
+    .pricing-box h3 {
+      margin-top: 0;
+      font-size: 1.4em;
+    }
+
+    .pricing-box p {
+      margin: 5px 0;
+      font-size: 1em;
+    }
   </style>
 </head>
 <body>
@@ -65,20 +92,29 @@
 
   <h2>What We Offer</h2>
   <ul class="features">
-    <li>🔹 Fully responsive, mobile-friendly designs</li>
-    <li>🔹 Hosting via GitHub Pages (or custom domains)</li>
-    <li>🔹 Fast load times with zero backend</li>
-    <li>🔹 “Coming Soon” pages, product launch pages, and more</li>
-    <li>🔹 Optional email forms using Formspree or Buttondown</li>
+    <li>Fully responsive, mobile-friendly designs</li>
+    <li>Hosting via GitHub Pages (or custom domains)</li>
+    <li>Fast load times with zero backend</li>
+    <li>“Coming Soon” pages, product launch pages, and more</li>
+    <li>Optional email forms using Formspree or Buttondown</li>
   </ul>
 
   <h2>How It Works</h2>
-  <ul class="features">
-    <li>1. You tell us what kind of site you need</li>
-    <li>2. We design & build it for you</li>
-    <li>3. We host it or hand over the files</li>
-    <li>4. Optional add-ons: analytics, email capture, animations</li>
-  </ul>
+  <ol class="steps">
+    <li>You tell us what kind of site you need</li>
+    <li>We design & build it for you</li>
+    <li>We host it or hand over the files</li>
+    <li>Optional add-ons: analytics, email capture, animations</li>
+  </ol>
+
+  <h2>Pricing</h2>
+  <div class="pricing-box">
+    <h3>💻 Static Website (Basic)</h3>
+    <p><strong>INR 999 / $12</strong></p>
+    <p>✔️ 1 Page — clean, minimal, fully mobile-friendly</p>
+    <p>✔️ Hosting on GitHub Pages included</p>
+    <p>✔️ Delivered within 48 hours</p>
+  </div>
 
   <button class="cta-button" onclick="window.location.href='mailto:ceo@layerbit.co.in?subject=Static Website Request'">
     Request Your Site →
