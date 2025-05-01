@@ -25,7 +25,16 @@
       opacity: 0.85;
       margin-bottom: 25px;
     }
-    select, textarea, input[type="file"], button {
+    select, textarea, input[type="file"] {
+      font-family: 'Space Grotesk', sans-serif;
+      background-color: white;
+      color: #333;
+      padding: 10px;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    input[type="file"], button {
       margin: 10px 0;
       padding: 12px;
       border-radius: 8px;
@@ -87,6 +96,7 @@
     <input type="file" id="imageInput" accept="image/*"><br>
     <button onclick="encodeImage()">Encode Image</button><br>
     <textarea id="imageOutput" placeholder="Base64 result will appear here..." readonly></textarea><br>
+    <label for="imageInputBase64" style="display:block; margin-top:10px;">Base64 to Image Preview:</label>
     <textarea id="imageInputBase64" placeholder="Paste base64 to preview image..."></textarea><br>
     <button onclick="previewImage()">Preview Image</button><br>
     <img id="outputImage" />
