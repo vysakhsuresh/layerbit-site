@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>HTML Escape / Unescape - Layerbit</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Space Grotesk', sans-serif;
+      background: linear-gradient(135deg, #4facfe, #00f2fe);
+      color: white;
+      padding: 30px 20px;
+      max-width: 1000px;
+      margin: auto;
+    }
+
+    h1 {
+      text-align: center;
+      font-size: 2.5em;
+      margin-bottom: 20px;
+    }
+
+    .container {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    @media(min-width: 768px) {
+      .container {
+        flex-direction: row;
+      }
+    }
+
+    textarea {
+      width: 100%;
+      height: 300px;
+      border-radius: 10px;
+      font-size: 1em;
+      font-family: monospace;
+      padding: 15px;
+      color: #333;
+      border: none;
+      resize: vertical;
+    }
+
+    button {
+      font-family: 'Space Grotesk', sans-serif;
+      padding: 10px 20px;
+      font-size: 1em;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      margin-top: 20px;
+    }
+
+    .center {
+      text-align: center;
+    }
+
+    .back {
+      position: fixed;
+      bottom: 20px;
+      left: 20px;
+      background: white;
+      color: #333;
+      padding: 10px 18px;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: bold;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    }
+  </style>
+</head>
+<body>
+  <a href="../index.html" class="back">← Home</a>
+  <h1>HTML Escape / Unescape</h1>
+
+  <div class="container">
+    <textarea id="input" placeholder="Enter HTML or escaped text..."></textarea>
+    <textarea id="output" readonly placeholder="Result appears here..."></textarea>
+  </div>
+
+  <div class="center">
+    <button onclick="escapeHTML()">Escape HTML</button>
+    <button onclick="unescapeHTML()">Unescape HTML</button>
+  </div>
+
+  <script>
+    function escapeHTML() {
+      const input = document.getElementById("input").value;
+      const div = document.createElement("div");
+      div.textContent = input;
+      document.getElementById("output").value = div.innerHTML;
+    }
+
+    function unescapeHTML() {
+      const input = document.getElementById("input").value;
+      const div = document.createElement("div");
+      div.innerHTML = input;
+      document.getElementById("output").value = div.textContent;
+    }
+  </script>
+</body>
+</html>
