@@ -180,9 +180,53 @@
       .request-tool:hover {
         background: #f0f0f0;
       }
+    .hero-feature {
+      background: linear-gradient(135deg, #1f1c2c, #928dab);
+      color: white;
+      text-align: center;
+      padding: 40px 20px;
+      border-radius: 16px;
+      margin: 30px 0;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+    }
+    .hero-feature h2 {
+      font-size: 2em;
+      margin-bottom: 10px;
+    }
+    .hero-button {
+      display: inline-block;
+      margin-top: 15px;
+      background: white;
+      color: #1f1c2c;
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-weight: bold;
+      text-decoration: none;
+    }
+    .beta-tag {
+      background: #ff4081;
+      color: white;
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-size: 0.6em;
+      margin-left: 10px;
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0% { opacity: 1; }
+      50% { opacity: 0.5; }
+      100% { opacity: 1; }
+    }
+
   </style>
 </head>
 <body>
+  <section class="hero-feature">
+    <h2>🚀 Introducing LayerLink <span class="beta-tag">Beta</span></h2>
+    <p>Instant screen sharing. Browser-only. No installs.</p>
+    <a href="tools/layerlink.html" class="hero-button">Try Now</a>
+   </section>
+
   <header>
     <div class="brand">
       <img src="layerbit-logo.png" alt="Layerbit Logo">
@@ -209,6 +253,11 @@
   <div id="tools" class="section">
     <h2>🔧 Free Developer Tools</h2>
     <div class="grid">
+      <a href="tools/layerlink.html" class="tool-card featured-tool">
+        <img src="images/layerlink-icon.png" alt="LayerLink Icon">
+        <h3>LayerLink <span class="beta-tag">Beta</span></h3>
+        <p>Browser-based screen sharing for instant support.</p>
+      </a>
       <a href="tools/json-validator.html" class="tool-card">
         <img src="images/json-icon.png" alt="JSON Tool">
         <h3>JSON Validator & Formatter</h3>
