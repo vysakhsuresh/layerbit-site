@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>LayerLink - Share Your Screen</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet" />
+  <style>
+    body {
+      font-family: 'Space Grotesk', sans-serif;
+      background: linear-gradient(135deg, #1f1c2c, #928dab);
+      color: white;
+      text-align: center;
+      padding: 40px 20px;
+    }
+    h1 {
+      font-size: 2.5em;
+      margin-bottom: 10px;
+    }
+    p {
+      margin-bottom: 30px;
+    }
+    button {
+      background: white;
+      color: #1f1c2c;
+      font-size: 1.1em;
+      padding: 12px 25px;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    video {
+      margin-top: 30px;
+      max-width: 100%;
+      border-radius: 12px;
+      box-shadow: 0 8px 16px rgba(0,0,0,0.3);
+    }
+    #linkContainer {
+      margin-top: 20px;
+    }
+    input {
+      padding: 10px;
+      font-size: 1em;
+      width: 300px;
+      border-radius: 8px;
+      border: none;
+      text-align: center;
+    }
+  
+    .intro {
+      font-size: 1.1em;
+      margin-bottom: 20px;
+      opacity: 0.9;
+    }
+    .how-to-use {
+      text-align: left;
+      margin: 30px auto;
+      max-width: 600px;
+      background: rgba(255,255,255,0.05);
+      padding: 15px 20px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    }
+    .how-to-use h3 {
+      font-size: 1.2em;
+      margin-bottom: 10px;
+    }
+    .how-to-use ol {
+      padding-left: 20px;
+    }
+    </style>
+    
+<script src="https://cdn.jsdelivr.net/npm/peerjs@1.5.2/dist/peerjs.min.js"></script>
+</head>
+<body>
+  <h1>LayerLink</h1>
+  
+    <p class="intro">Click the button below to start sharing your screen. You’ll get a link to send to the viewer.</p>
+    <div class="how-to-use">
+      <h3>How it works:</h3>
+      <ol>
+        <li>Click “Start Screen Sharing & Get Link” to select your screen.</li>
+        <li>Copy the link that appears.</li>
+        <li>Send it to your viewer. They’ll see your screen live.</li>
+      </ol>
+    </div>
+    
+  <button onclick="startSharing()">🔗 Start Screen Sharing & Get Link</button>
+  <div id="linkContainer" style="display:none;">
+    <p>Share this link:</p>
+    <input type="text" id="sessionLink" readonly />
+  </div>
+  <div style="margin-top: 40px;"><video id="screenVideo" autoplay playsinline></video></div>
+
+  <script>
+    async function startSharing() {
+      const stream = await navigator.mediaDevices.getDisplayMedia({ video: true });
+      const video = document.getElementById('screenVideo');
+      video.srcObject = stream;
+
+      const sessionId = Math.random().toString(36).substring(2, 8);
+      const link = location.origin + '/tools/layerlink-viewer.html?session=' + sessionId;
+      document.getElementById('sessionLink').value = link;
+      document.getElementById('linkContainer').style.display = 'block';
+
+      
+      const peer = new Peer(sessionId);
+      peer.on('connection', conn => {
+        console.log('Viewer connected to session:', sessionId);
+      });
+
+      peer.on('call', call => {
+        call.answer(stream);
+        console.log('Stream sent to viewer');
+      });
+    
+      console.log('Generated session ID:', sessionId);
+    }
+  </script>
+</body>
+</html>
