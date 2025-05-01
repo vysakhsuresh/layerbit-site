@@ -1,0 +1,133 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>URL Encoder / Decoder - Layerbit</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg-color: linear-gradient(135deg, #1f1c2c, #928dab);
+      --text-color: white;
+      --card-bg: rgba(255, 255, 255, 0.1);
+      --button-bg: white;
+      --button-text: #333;
+    }
+    [data-theme="light"] {
+      --bg-color: linear-gradient(135deg, #f8f9fa, #e9ecef);
+      --text-color: #333;
+      --card-bg: rgba(0, 0, 0, 0.05);
+      --button-bg: #333;
+      --button-text: white;
+    }
+    body {
+      font-family: 'Space Grotesk', sans-serif;
+      background: var(--bg-color);
+      color: var(--text-color);
+      padding: 30px 20px;
+      max-width: 1000px;
+      margin: auto;
+      text-align: center;
+      transition: background 0.6s ease-in-out, color 0.6s ease-in-out;
+    }
+    h1 {
+      font-size: 2.4em;
+      margin-bottom: 15px;
+    }
+    textarea {
+      width: 100%;
+      height: 120px;
+      padding: 15px;
+      font-family: monospace;
+      font-size: 1em;
+      border-radius: 8px;
+      border: none;
+      margin-bottom: 15px;
+      resize: vertical;
+    }
+    .btn {
+      padding: 10px 20px;
+      font-size: 1em;
+      margin: 5px;
+      background: var(--button-bg);
+      color: var(--button-text);
+      border-radius: 8px;
+      font-weight: bold;
+      cursor: pointer;
+      border: none;
+    }
+    .btn:hover {
+      background: #eee;
+    }
+    .output {
+      margin-top: 15px;
+      background: var(--card-bg);
+      padding: 15px;
+      font-family: monospace;
+      border-radius: 8px;
+      word-wrap: break-word;
+      white-space: pre-wrap;
+    }
+    .back {
+      position: fixed;
+      bottom: 20px;
+      left: 20px;
+      background: white;
+      color: #333;
+      padding: 10px 18px;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: bold;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    }
+    .toggle-theme {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      padding: 12px 16px;
+      border: none;
+      background: var(--button-bg);
+      color: var(--button-text);
+      border-radius: 50px;
+      cursor: pointer;
+      font-weight: bold;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+      z-index: 1000;
+    }
+  </style>
+</head>
+<body data-theme="dark">
+  <a href="../index.html" class="back">← Home</a>
+  <button class="toggle-theme" onclick="toggleTheme()">🌓</button>
+
+  <h1>URL Encoder / Decoder</h1>
+  <p>Safely encode or decode your URLs for transmission or readability.</p>
+
+  <textarea id="urlInput" placeholder="Paste your text or URL here..."></textarea><br>
+  <button class="btn" onclick="encodeURL()">Encode</button>
+  <button class="btn" onclick="decodeURL()">Decode</button>
+  <div class="output" id="urlOutput">Encoded or decoded text will appear here.</div>
+
+  <script>
+    function encodeURL() {
+      const input = document.getElementById('urlInput').value;
+      document.getElementById('urlOutput').textContent = encodeURIComponent(input);
+    }
+
+    function decodeURL() {
+      const input = document.getElementById('urlInput').value;
+      try {
+        document.getElementById('urlOutput').textContent = decodeURIComponent(input);
+      } catch {
+        document.getElementById('urlOutput').textContent = "⚠️ Invalid encoded string.";
+      }
+    }
+
+    function toggleTheme() {
+      const theme = document.body.getAttribute("data-theme");
+      document.body.setAttribute("data-theme", theme === "light" ? "dark" : "light");
+    }
+  </script>
+</body>
+</html>
