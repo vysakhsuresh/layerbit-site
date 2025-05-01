@@ -1,0 +1,119 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Cron Generator - Layerbit</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg-color: linear-gradient(135deg, #1f1c2c, #928dab);
+      --text-color: white;
+      --card-bg: rgba(255, 255, 255, 0.1);
+      --button-bg: white;
+      --button-text: #333;
+    }
+    body {
+      font-family: 'Space Grotesk', sans-serif;
+      background: var(--bg-color);
+      color: var(--text-color);
+      padding: 30px 20px;
+      max-width: 1000px;
+      margin: auto;
+      text-align: center;
+    }
+    h1 {
+      font-size: 2.4em;
+      margin-bottom: 10px;
+    }
+    select {
+      padding: 10px;
+      border-radius: 8px;
+      font-family: 'Space Grotesk', sans-serif;
+      margin: 5px;
+      font-size: 1em;
+    }
+    .output {
+      margin-top: 20px;
+      padding: 15px;
+      border-radius: 8px;
+      background: var(--card-bg);
+      font-family: monospace;
+      white-space: pre-wrap;
+      text-align: left;
+    }
+    button {
+      background: var(--button-bg);
+      color: var(--button-text);
+      font-weight: bold;
+      border: none;
+      border-radius: 8px;
+      padding: 10px 20px;
+      margin-top: 20px;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #eee;
+    }
+    .back {
+      position: fixed;
+      bottom: 20px;
+      left: 20px;
+      background: white;
+      color: #333;
+      padding: 10px 18px;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: bold;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    }
+  </style>
+</head>
+<body>
+  <a href="../index.html" class="back">← Home</a>
+  <h1>Cron Expression Generator</h1>
+  <p>Build a cron expression and understand what it actually means.</p>
+
+  <div>
+    <label>Minute:</label>
+    <select id="min"><option value="*">Every minute</option><option value="0">00</option><option value="15">15</option><option value="30">30</option><option value="45">45</option></select>
+    <label>Hour:</label>
+    <select id="hour"><option value="*">Every hour</option><option value="0">00</option><option value="6">06</option><option value="12">12</option><option value="18">18</option></select>
+    <label>Day:</label>
+    <select id="day"><option value="*">Every day</option><option value="1">1st</option><option value="15">15th</option><option value="28">28th</option></select>
+    <label>Month:</label>
+    <select id="month"><option value="*">Every month</option><option value="1">Jan</option><option value="6">Jun</option><option value="12">Dec</option></select>
+    <label>Weekday:</label>
+    <select id="weekday"><option value="*">Every day</option><option value="0">Sunday</option><option value="1">Monday</option><option value="5">Friday</option></select>
+  </div>
+
+  <button onclick="generateCron()">Generate</button>
+
+  <div class="output" id="cronResult">Your cron expression will appear here.</div>
+  <div class="output" id="cronExplain">Explanation will appear here.</div>
+
+  <script>
+    function generateCron() {
+      const min = document.getElementById('min').value;
+      const hour = document.getElementById('hour').value;
+      const day = document.getElementById('day').value;
+      const month = document.getElementById('month').value;
+      const weekday = document.getElementById('weekday').value;
+
+      const cron = `${min} ${hour} ${day} ${month} ${weekday}`;
+      document.getElementById('cronResult').textContent = "Cron: " + cron;
+
+      let parts = [];
+      parts.push(min === "*" ? "every minute" : `at minute ${min}`);
+      parts.push(hour === "*" ? "of every hour" : `past hour ${hour}`);
+      parts.push(day === "*" ? "each day" : `on day ${day}`);
+      parts.push(month === "*" ? "of each month" : `in month ${month}`);
+      parts.push(weekday === "*" ? "" : `on ${["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][parseInt(weekday)]}`);
+
+      const explanation = parts.filter(Boolean).join(", ");
+      document.getElementById('cronExplain').textContent = "Explanation: This runs " + explanation + ".";
+    }
+  </script>
+</body>
+</html>
