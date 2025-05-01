@@ -104,7 +104,11 @@
 
   <h1>CSV to JSON Converter</h1>
   <p>Paste CSV data or upload a CSV file below.</p>
-    <input type="file" id="csvFile" accept=".csv" onchange="handleFileUpload()" style="margin: 15px auto; display: block; font-family: 'Space Grotesk', sans-serif;">
+    
+    <input type="file" id="csvFile" accept=".csv" style="display:none;" onchange="handleFileUpload()" />
+    <label for="csvFile" class="custom-file">📂 Upload CSV File</label>
+    <span id="fileNameDisplay" style="font-size: 0.9em; opacity: 0.8; display: block; margin-bottom: 10px;"></span>
+    
     
 
   <textarea id="csvInput" placeholder="name,age\nJohn,30\nJane,25"></textarea><br>
@@ -185,7 +189,20 @@
 
     applyTheme(currentTheme);
 
+    
     function handleFileUpload() {
+      const file = document.getElementById('csvFile').files[0];
+      document.getElementById("fileNameDisplay").textContent = file ? file.name : "";
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        document.getElementById('csvInput').value = e.target.result;
+        convertCSV();
+      };
+      reader.readAsText(file);
+    }
+
+    
       const file = document.getElementById('csvFile').files[0];
       if (!file) return;
       const reader = new FileReader();
