@@ -105,7 +105,11 @@
       document.getElementById('linkContainer').style.display = 'block';
 
       
-      const peer = new Peer(sessionId);
+      const peer = new Peer(sessionId, {
+      host: "peerjs.com",
+      port: 443,
+      secure: true
+    });
       peer.on('connection', conn => {
         console.log('Viewer connected to session:', sessionId);
       });

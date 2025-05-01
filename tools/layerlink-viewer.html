@@ -47,7 +47,11 @@
 
     
       if (sessionId) {
-        const peer = new Peer();
+        const peer = new Peer({
+      host: "peerjs.com",
+      port: 443,
+      secure: true
+    });
         peer.on('open', id => {
           const call = peer.call(sessionId, null);
           call.on('stream', stream => {
