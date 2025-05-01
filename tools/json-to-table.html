@@ -1,0 +1,152 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>JSON to Table Converter - Layerbit</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet" />
+  <style>
+    body {
+      font-family: 'Space Grotesk', sans-serif;
+      background: linear-gradient(135deg, #1f1c2c, #928dab);
+      color: white;
+      padding: 30px 20px;
+      max-width: 1000px;
+      margin: auto;
+      text-align: center;
+    }
+    textarea {
+      width: 100%;
+      height: 180px;
+      padding: 15px;
+      font-family: monospace;
+      font-size: 1em;
+      border-radius: 8px;
+      border: none;
+      resize: vertical;
+      margin-bottom: 15px;
+    }
+    .btn {
+      background: white;
+      color: #333;
+      font-weight: bold;
+      border: none;
+      padding: 12px 25px;
+      border-radius: 8px;
+      cursor: pointer;
+      margin-bottom: 20px;
+    }
+    .btn:hover {
+      background: #eee;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+    th, td {
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      padding: 8px 12px;
+      text-align: left;
+    }
+    th {
+      background-color: rgba(255, 255, 255, 0.1);
+    }
+    .back {
+      position: fixed;
+      bottom: 20px;
+      left: 20px;
+      background: white;
+      color: #333;
+      padding: 10px 18px;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: bold;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    }
+  </style>
+</head>
+<body>
+  <a href="../index.html" class="back">← Home</a>
+  <h1>JSON to Table Converter</h1>
+  <p>Paste an array of JSON objects and view it as a clean table.</p>
+
+  <textarea id="jsonInput" placeholder='[{"name": "Alice", "age": 25}, {"name": "Bob", "age": 30}]'></textarea>
+  <br>
+  <button class="btn" onclick="convertToTable()">Convert</button>
+  
+    <div id="headerSummary" style="margin-top: 20px; font-size: 1em; opacity: 0.85;"></div>
+    <div id="tableContainer"></div>
+    
+
+  <script>
+    
+    function convertToTable() {
+      const input = document.getElementById("jsonInput").value;
+      let rawData;
+      try {
+        rawData = JSON.parse(input);
+      } catch (e) {
+        document.getElementById("tableContainer").innerHTML = "<p style='color:red;'>Invalid JSON input</p>";
+        document.getElementById("headerSummary").innerHTML = "";
+        return;
+      }
+
+      let data = rawData;
+      let header = null;
+      if (rawData.body && Array.isArray(rawData.body)) {
+        data = rawData.body;
+        header = rawData.header || null;
+      }
+
+      if (!Array.isArray(data)) {
+        document.getElementById("tableContainer").innerHTML = "<p style='color:red;'>Expected a JSON array or a body array.</p>";
+        document.getElementById("headerSummary").innerHTML = "";
+        return;
+      }
+
+      // Show header info if available
+      if (header) {
+        const summary = Object.entries(header).map(([k, v]) => `<strong>${k}</strong>: ${v}`).join(" | ");
+        document.getElementById("headerSummary").innerHTML = `<p>${summary}</p>`;
+      } else {
+        document.getElementById("headerSummary").innerHTML = "";
+      }
+
+      let headers = new Set();
+      data.forEach(row => Object.keys(row).forEach(k => headers.add(k)));
+      headers = Array.from(headers);
+
+      let table = "<table><thead><tr>" + headers.map(h => `<th>${h}</th>`).join("") + "</tr></thead><tbody>";
+      data.forEach(row => {
+        table += "<tr>" + headers.map(h => `<td>${row[h] !== undefined ? row[h] : ""}</td>`).join("") + "</tr>";
+      });
+      table += "</tbody></table>";
+      document.getElementById("tableContainer").innerHTML = table;
+    }
+    
+      const input = document.getElementById("jsonInput").value;
+      let data;
+      try {
+        data = JSON.parse(input);
+        if (!Array.isArray(data)) throw new Error("Must be an array of objects.");
+      } catch (e) {
+        document.getElementById("tableContainer").innerHTML = "<p style='color:red;'>Invalid JSON input</p>";
+        return;
+      }
+
+      let headers = new Set();
+      data.forEach(row => Object.keys(row).forEach(k => headers.add(k)));
+      headers = Array.from(headers);
+
+      let table = "<table><thead><tr>" + headers.map(h => `<th>${h}</th>`).join("") + "</tr></thead><tbody>";
+      data.forEach(row => {
+        table += "<tr>" + headers.map(h => `<td>${row[h] !== undefined ? row[h] : ""}</td>`).join("") + "</tr>";
+      });
+      table += "</tbody></table>";
+      document.getElementById("tableContainer").innerHTML = table;
+    }
+  </script>
+</body>
+</html>
