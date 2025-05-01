@@ -1,9 +1,8 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Cron Generator - Layerbit</title>
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet" />
   <style>
@@ -73,16 +72,19 @@
 <body>
   <a href="../index.html" class="back">← Home</a>
   <h1>Cron Expression Generator</h1>
-    <p><strong>Examples:</strong>
-      <button onclick="setExample('0 0 * * *')">Every day at midnight</button>
-      <button onclick="setExample('*/5 * * * *')">Every 5 minutes</button>
-      <button onclick="setExample('30 9 * * 1')">Mondays at 9:30 AM</button>
-    </p>
+  <p><strong>Examples:</strong>
+    <button class="example-btn" data-cron="0 0 * * *">Every day at midnight</button>
+    <button class="example-btn" data-cron="*/5 * * * *">Every 5 minutes</button>
+    <button class="example-btn" data-cron="30 9 * * 1">Mondays at 9:30 AM</button>
+  </p>
   <p>Build a cron expression and understand what it actually means.</p>
 
   <div>
-    <label>Minute:</label>
-    <select id="min"><option value="*">Every minute</option><option value="0">00</option>
+    <label for="min">Minute:</label>
+    <select id="min">
+      <option value="*">Every minute</option>
+      <option value="*/5">Every 5 minutes</option>
+<option value="0">00</option>
 <option value="1">01</option>
 <option value="2">02</option>
 <option value="3">03</option>
@@ -141,9 +143,13 @@
 <option value="56">56</option>
 <option value="57">57</option>
 <option value="58">58</option>
-<option value="59">59</option></select>
-    <label>Hour:</label>
-    <select id="hour"><option value="*">Every hour</option><option value="0">00</option>
+<option value="59">59</option>
+    </select>
+
+    <label for="hour">Hour:</label>
+    <select id="hour">
+      <option value="*">Every hour</option>
+<option value="0">00</option>
 <option value="1">01</option>
 <option value="2">02</option>
 <option value="3">03</option>
@@ -166,9 +172,13 @@
 <option value="20">20</option>
 <option value="21">21</option>
 <option value="22">22</option>
-<option value="23">23</option></select>
-    <label>Day:</label>
-    <select id="day"><option value="*">Every day</option><option value="1">01</option>
+<option value="23">23</option>
+    </select>
+
+    <label for="day">Day:</label>
+    <select id="day">
+      <option value="*">Every day</option>
+<option value="1">01</option>
 <option value="2">02</option>
 <option value="3">03</option>
 <option value="4">04</option>
@@ -198,53 +208,66 @@
 <option value="28">28</option>
 <option value="29">29</option>
 <option value="30">30</option>
-<option value="31">31</option></select>
-    <label>Month:</label>
-    <select id="month"><option value="*">Every month</option><option value="1">Jan</option>
-<option value="2">Feb</option>
-<option value="3">Mar</option>
-<option value="4">Apr</option>
-<option value="5">May</option>
-<option value="6">Jun</option>
-<option value="7">Jul</option>
-<option value="8">Aug</option>
-<option value="9">Sep</option>
-<option value="10">Oct</option>
-<option value="11">Nov</option>
-<option value="12">Dec</option></select>
-    <label>Weekday:</label>
-    <select id="weekday"><option value="*">Every day</option><option value="0">Sunday</option>
-<option value="1">Monday</option>
-<option value="2">Tuesday</option>
-<option value="3">Wednesday</option>
-<option value="4">Thursday</option>
-<option value="5">Friday</option>
-<option value="6">Saturday</option></select>
+<option value="31">31</option>
+    </select>
+
+    <label for="month">Month:</label>
+    <select id="month">
+      <option value="*">Every month</option>
+      <option value="1">Jan</option>
+      <option value="2">Feb</option>
+      <option value="3">Mar</option>
+      <option value="4">Apr</option>
+      <option value="5">May</option>
+      <option value="6">Jun</option>
+      <option value="7">Jul</option>
+      <option value="8">Aug</option>
+      <option value="9">Sep</option>
+      <option value="10">Oct</option>
+      <option value="11">Nov</option>
+      <option value="12">Dec</option>
+    </select>
+
+    <label for="weekday">Weekday:</label>
+    <select id="weekday">
+      <option value="*">Every day</option>
+      <option value="0">Sunday</option>
+      <option value="1">Monday</option>
+      <option value="2">Tuesday</option>
+      <option value="3">Wednesday</option>
+      <option value="4">Thursday</option>
+      <option value="5">Friday</option>
+      <option value="6">Saturday</option>
+    </select>
   </div>
 
   <button onclick="generateCron()">Generate</button>
 
   <div class="output" id="cronResult">Your cron expression will appear here.</div>
-    <button onclick="copyCron()">📋 Copy Cron Expression</button>
+  <button onclick="copyCron()">📋 Copy Cron Expression</button>
   <div class="output" id="cronExplain">Explanation will appear here.</div>
 
   <script>
+    window.onload = function () {
+      document.querySelectorAll('.example-btn').forEach(btn => {
+        btn.addEventListener("click", function () {
+          const [min, hour, day, month, weekday] = this.dataset.cron.split(" ");
+          document.getElementById("min").value = min;
+          document.getElementById("hour").value = hour;
+          document.getElementById("day").value = day;
+          document.getElementById("month").value = month;
+          document.getElementById("weekday").value = weekday;
+          generateCron();
+        });
+      });
+    };
+
     function copyCron() {
       const cron = document.getElementById("cronResult").textContent.replace("Cron: ", "").trim();
       if (!cron || cron === "Your cron expression will appear here.") return;
       navigator.clipboard.writeText(cron).then(() => {
         alert("Cron copied to clipboard!");
       });
-    }
-    
-    function setExample(cronStr) {
-      const [min, hour, day, month, weekday] = cronStr.split(" ");
-      document.getElementById("min").value = min;
-      document.getElementById("hour").value = hour;
-      document.getElementById("day").value = day;
-      document.getElementById("month").value = month;
-      document.getElementById("weekday").value = weekday;
-      generateCron();
     }
 
     function generateCron() {
