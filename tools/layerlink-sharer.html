@@ -50,18 +50,46 @@
   if (isMobile) {
     document.body.innerHTML = '<h1>LayerLink</h1><p style="color:yellow; font-size:1.2em;">⚠️ Screen sharing is not supported on mobile browsers.<br>Please use a desktop or laptop to start a session.</p>';
   }
+
+  function copyLink() {
+    const link = document.getElementById("link");
+    navigator.clipboard.writeText(link.value).then(() => {
+      alert("Link copied to clipboard!");
+    });
+  }
 </script>
+
 
 </head>
 <body>
 <div id="main">
   <h1>LayerLink Sharer</h1>
   <button onclick="start()">🔗 Start Screen Sharing</button><br />
-  <input id="link" readonly placeholder="Your viewer link will appear here"><br />
+  <input id="link" readonly placeholder="Your viewer link will appear here">
+    <button onclick="copyLink()" style="margin-left:10px; padding:6px 12px; border-radius:6px;">📋 Copy</button><br />
+    <p id="copyInstruction" style="margin-top:10px; font-size:1em; opacity:0.9;">
+    📋 Copy this link and send it to the person you want to share your screen with.
+    </p>
   <video id="video" autoplay playsinline></video>
   
-<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js">
+  function copyLink() {
+    const link = document.getElementById("link");
+    navigator.clipboard.writeText(link.value).then(() => {
+      alert("Link copied to clipboard!");
+    });
+  }
+</script>
+
+<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js">
+  function copyLink() {
+    const link = document.getElementById("link");
+    navigator.clipboard.writeText(link.value).then(() => {
+      alert("Link copied to clipboard!");
+    });
+  }
+</script>
+
 <script>
   const firebaseConfig = {
     apiKey: "AIzaSyAR948frOLq4VZ1qSdxIMXu6BaCoehClAU",
@@ -74,7 +102,15 @@
   };
   firebase.initializeApp(firebaseConfig);
   const db = firebase.database();
+
+  function copyLink() {
+    const link = document.getElementById("link");
+    navigator.clipboard.writeText(link.value).then(() => {
+      alert("Link copied to clipboard!");
+    });
+  }
 </script>
+
 
   <script>
     async function start() {
@@ -111,7 +147,15 @@
         peer.addIceCandidate(candidate);
       });
     }
-  </script>
+  
+  function copyLink() {
+    const link = document.getElementById("link");
+    navigator.clipboard.writeText(link.value).then(() => {
+      alert("Link copied to clipboard!");
+    });
+  }
+</script>
+
 </div>
 </body>
 </html>
