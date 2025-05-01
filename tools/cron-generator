@@ -252,15 +252,21 @@
       document.querySelectorAll('.example-btn').forEach(btn => {
         btn.addEventListener("click", function () {
           const [min, hour, day, month, weekday] = this.dataset.cron.split(" ");
-          document.getElementById("min").value = min;
-          document.getElementById("hour").value = hour;
-          document.getElementById("day").value = day;
-          document.getElementById("month").value = month;
-          document.getElementById("weekday").value = weekday;
+          setValue("min", min);
+          setValue("hour", hour);
+          setValue("day", day);
+          setValue("month", month);
+          setValue("weekday", weekday);
           generateCron();
         });
       });
     };
+
+    function setValue(id, val) {
+      const el = document.getElementById(id);
+      el.value = val;
+      el.dispatchEvent(new Event("change")); // Force update
+    }
 
     function copyCron() {
       const cron = document.getElementById("cronResult").textContent.replace("Cron: ", "").trim();
