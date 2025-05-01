@@ -79,7 +79,10 @@
 
   <textarea id="jsonInput" placeholder='Paste your JSON here...'></textarea>
   <br>
-  <button class="btn" onclick="convertToTable()">Convert</button>
+  
+    <button class="btn" onclick="convertToTable()">Convert</button>
+    <button class="btn" onclick="exportToExcel()">Export to Excel</button>
+    
   <div id="headerSummary"></div>
   <div id="tableContainer"></div>
 
@@ -126,6 +129,27 @@
       table += "</tbody></table>";
       document.getElementById("tableContainer").innerHTML = table;
     }
-  </script>
+  
+    function exportToExcel() {
+      const table = document.querySelector("table");
+      if (!table) return alert("Convert your JSON to table first.");
+
+      let csv = [];
+      const rows = table.querySelectorAll("tr");
+      for (const row of rows) {
+        const cells = row.querySelectorAll("th, td");
+        const rowText = Array.from(cells).map(cell => `"${cell.textContent.replace(/"/g, '""')}"`).join(",");
+        csv.push(rowText);
+      }
+
+      const csvString = csv.join("\n");
+      const blob = new Blob([csvString], { type: "text/csv;charset=utf-8;" });
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = "json_table_export.csv";
+      link.click();
+    }
+    </script>
+    
 </body>
 </html>
