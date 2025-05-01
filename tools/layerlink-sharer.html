@@ -32,6 +32,14 @@
       cursor: pointer;
     }
   </style>
+
+<script>
+  const isMobile = /Mobi|Android|iPhone/i.test(navigator.userAgent);
+  if (isMobile) {
+    document.body.innerHTML = '<h1>LayerLink</h1><p style="color:yellow; font-size:1.2em;">⚠️ Screen sharing is not supported on mobile browsers.<br>Please use a desktop or laptop to start a session.</p>';
+  }
+</script>
+
 </head>
 <body>
   <h1>LayerLink Sharer</h1>
