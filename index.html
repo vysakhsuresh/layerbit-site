@@ -1,291 +1,207 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Layerbit - Shaping the Future</title>
-
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Layerbit - Tools & Services That Just Work</title>
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
-  <link rel="icon" href="layerbit-logo.png" type="image/x-icon">
-
+  <link rel="icon" href="layerbit-logo.png" type="image/x-icon" />
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
+    :root {
+      --bg-color: linear-gradient(135deg, #4facfe, #00f2fe);
+      --text-color: white;
+      --card-bg: rgba(255, 255, 255, 0.1);
+      --button-bg: white;
+      --button-text: #333;
     }
-
+    [data-theme="light"] {
+      --bg-color: linear-gradient(135deg, #f8f9fa, #e9ecef);
+      --text-color: #333;
+      --card-bg: rgba(0, 0, 0, 0.05);
+      --button-bg: #333;
+      --button-text: white;
+    }
     body {
-      min-height: 100vh;
+      font-family: 'Space Grotesk', sans-serif;
+      color: var(--text-color);
+      background: var(--bg-color);
+      margin: 0;
+      padding: 20px;
+      transition: all 0.5s ease-in-out;
+    }
+    header {
       display: flex;
-      flex-direction: column;
       justify-content: space-between;
       align-items: center;
-      background: linear-gradient(135deg, #4facfe, #00f2fe);
-      font-family: 'Space Grotesk', sans-serif;
-      color: white;
-      text-align: center;
-      overflow-x: hidden;
-      padding: 20px;
-      transition: background 2s ease;
+      max-width: 1100px;
+      margin: auto;
     }
-
-    .center-content {
-      flex-grow: 1;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      width: 100%;
-      padding: 20px;
-      gap: 15px;
-    }
-
-    .typing-container {
-      font-size: 3.5em;
-      font-weight: 700;
-      letter-spacing: 1.5px;
-      max-width: 90%;
-      word-wrap: break-word;
-      line-height: 1.3;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      overflow-wrap: break-word;
-    }
-
-    #bulletText {
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
-      white-space: nowrap; /* critical fix */
-    }
-
-    #bullet {
+    .brand {
+      font-size: 1.8em;
       font-weight: bold;
-      font-size: 1.5em;
-      animation: pulse 1s infinite;
-      flex-shrink: 0;
     }
-
-    #text {
-      display: inline;
-      white-space: normal;
-      word-break: break-word;
+    .toggle-theme {
+      padding: 8px 14px;
+      border: none;
+      background: var(--button-bg);
+      color: var(--button-text);
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
     }
-
-    .coming-soon {
-      font-size: 1em;
-      opacity: 0.7;
-      margin-top: 10px;
+    .hero {
+      text-align: center;
+      margin: 60px auto 20px;
     }
-
-    .logo-below {
-      width: 120px;
-      height: auto;
-      margin-bottom: 20px;
-      opacity: 0;
-      animation: fadeIn 2s ease forwards;
-    }
-
-    footer {
-      font-size: 0.9em;
-      opacity: 0.8;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 8px;
+    .hero h1 {
+      font-size: 3em;
       margin-bottom: 10px;
     }
-
-    .notify-message {
+    .hero p {
+      font-size: 1.2em;
+      opacity: 0.85;
+    }
+    .section {
+      max-width: 1100px;
+      margin: 50px auto;
+    }
+    .section h2 {
+      font-size: 2em;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+    .grid {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 30px;
+    }
+    .tool-card {
+      background: var(--card-bg);
+      border-radius: 12px;
+      padding: 20px;
+      width: 220px;
+      height: 220px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      transition: transform 0.3s ease;
+    }
+    .tool-card:hover {
+      transform: scale(1.05);
+      cursor: pointer;
+    }
+    .tool-card img {
+      width: 60px;
+      margin-bottom: 10px;
+    }
+    .tool-card h3 {
+      font-size: 1.2em;
+      margin: 0;
+    }
+    .tool-card p {
       font-size: 0.9em;
-      margin-top: 4px;
-      opacity: 0.7;
+      opacity: 0.85;
     }
-
-    @keyframes pulse {
-      0% { transform: scale(1); }
-      50% { transform: scale(1.2); }
-      100% { transform: scale(1); }
-    }
-
-    @keyframes fadeIn {
-      to { opacity: 1; }
-    }
-
-    @media (max-width: 600px) {
-      body {
-        padding: 10px;
-      }
-      .typing-container {
-        font-size: 2em;
-      }
-      #bullet {
-        font-size: 1.2em;
-      }
+    footer {
+      text-align: center;
+      font-size: 0.9em;
+      opacity: 0.8;
+      margin-top: 60px;
     }
   </style>
 </head>
 <body>
+  <header>
+    <div class="brand">Layerbit</div>
+    <button class="toggle-theme" onclick="toggleTheme()">🌓 Toggle Mode</button>
+  </header>
 
-  <div class="center-content">
-    <div class="typing-container">
-      <div id="bulletText">
-        <span id="bullet">•</span><span id="text"></span>
-      </div>
-    </div>
-    <div class="coming-soon">Launching soon. Get ready.</div>
+  <div class="hero">
+    <h1>Build Faster. Solve Smarter.</h1>
+    <p>Free developer tools and services crafted to deliver real value — instantly.</p>
   </div>
 
-
-<style>
-  .tool-card {
-    width: 220px;
-    height: 220px;
-    background: rgba(255,255,255,0.1);
-    border-radius: 12px;
-    padding: 20px;
-    backdrop-filter: blur(5px);
-    transition: transform 0.3s ease;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-    gap: 10px;
-  }
-
-  .tool-card:hover {
-    transform: scale(1.03);
-    cursor: pointer;
-  }
-
-  .tool-card img {
-    width: 64px;
-    height: auto;
-  }
-
-  .tool-card h3 {
-    font-size: 1.2em;
-    margin: 0;
-  }
-
-  .tool-card p {
-    font-size: 0.9em;
-    opacity: 0.8;
-    margin: 0;
-  }
-</style>
-
-
-<section style="width: 100%; max-width: 1000px; margin: 60px auto 40px auto; text-align: center;">
-  <h2 style="font-size: 2.2em; margin-bottom: 10px; font-weight: 700;">Built to Create</h2>
-	<p style="font-size: 1em; opacity: 0.8; margin-bottom: 30px;">
-	  Light, fast tools we actually use.
-	</p>
-
-  <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 30px;">
-    
-    <a href="tools/api-automation.html" style="text-decoration: none; color: inherit;">
-      <div class="tool-card">
-        <img src="images/api-icon.png" alt="API Automation" style="width: 64px; height: auto;">
-        <h3>API Automation</h3>
-        <p>Custom APIs & backend flows tailored to your data.</p>
-      </div>
-    </a>
-
-    <a href="tools/custom-scripts.html" style="text-decoration: none; color: inherit;">
-      <div class="tool-card">
-        <img src="images/script-icon.png" alt="Custom Scripts" style="width: 64px; height: auto;">
-        <h3>Custom Scripts</h3>
-        <p>Quick fixes for your logs, reports, and workflows.</p>
-      </div>
-    </a>
-
-    <a href="tools/json-validator.html" style="text-decoration: none; color: inherit;">
-      <div class="tool-card">
-        <img src="images/json-icon.png" alt="JSON Validator" style="width: 64px; height: auto;">
+  <div class="section">
+    <h2>🔧 Free Developer Tools</h2>
+    <div class="grid">
+      <a href="tools/json-validator.html" class="tool-card">
+        <img src="images/json-icon.png" alt="JSON Tool">
         <h3>JSON Validator & Formatter</h3>
-        <p>Paste, fix, and clean your JSON in seconds.</p>
-      </div>
-    </a>
-
-    <a href="tools/log-analyzer.html" style="text-decoration: none; color: inherit;">
-      <div class="tool-card">
-        <img src="images/log-icon.png" alt="Log Analyzer" style="width: 64px; height: auto;">
+        <p>Fix & beautify your JSON instantly.</p>
+      </a>
+      <a href="tools/qr-barcode.html" class="tool-card">
+        <img src="images/qr-barcode-icon.png" alt="QR Tool">
+        <h3>QR / Barcode Generator</h3>
+        <p>Generate QR or barcode for links/text.</p>
+      </a>
+      <a href="tools/sql-formatter.html" class="tool-card">
+        <img src="images/sql-icon.png" alt="SQL Formatter">
+        <h3>SQL Formatter</h3>
+        <p>Format your SQL for readability.</p>
+      </a>
+      <a href="tools/base64.html" class="tool-card">
+        <img src="images/base64-icon.png" alt="Base64 Tool">
+        <h3>Base64 Encode / Decode</h3>
+        <p>Convert text or file content safely.</p>
+      </a>
+      <a href="tools/csv-to-json.html" class="tool-card">
+        <img src="images/csvjson-icon.png" alt="CSV to JSON">
+        <h3>CSV to JSON Converter</h3>
+        <p>Transform CSV files into JSON.</p>
+      </a>
+      <a href="tools/cron-generator.html" class="tool-card">
+        <img src="images/cron-icon.png" alt="Cron Tool">
+        <h3>Cron Expression Generator</h3>
+        <p>Generate crons with no guesswork.</p>
+      </a>
+      <a href="tools/url-encoder.html" class="tool-card">
+        <img src="images/url-icon.png" alt="URL Tool">
+        <h3>URL Encoder / Decoder</h3>
+        <p>Convert URLs for safety or clarity.</p>
+      </a>
+      <a href="tools/log-analyzer.html" class="tool-card">
+        <img src="images/log-icon.png" alt="Log Analyzer">
         <h3>Log Analyzer</h3>
-        <p>Highlight errors, warnings, and trends in logs.</p>
-      </div>
-    </a>
-
-    <a href="tools/static-sites.html" style="text-decoration: none; color: inherit;">
-      <div class="tool-card">
-        <img src="images/website-icon.png" alt="Static Websites" style="width: 64px; height: auto;">
-        <h3>Static Websites</h3>
-        <p>Launch clean websites with GitHub Pages & email.</p>
-      </div>
-    </a>
-
+        <p>Highlight log issues and trends.</p>
+      </a>
+    </div>
   </div>
-</section>
 
-
-
-  <img src="layerbit-logo.png" alt="Layerbit Logo" class="logo-below">
+  <div class="section">
+    <h2>💼 Services We Offer</h2>
+    <div class="grid">
+      <a href="tools/api-automation.html" class="tool-card">
+        <img src="images/api-icon.png" alt="API Automation">
+        <h3>API Automation</h3>
+        <p>Automate your data with API flows.</p>
+      </a>
+      <a href="tools/custom-scripts.html" class="tool-card">
+        <img src="images/script-icon.png" alt="Custom Scripts">
+        <h3>Custom Scripts</h3>
+        <p>Scripts for logs, reports & fixes.</p>
+      </a>
+      <a href="tools/static-sites.html" class="tool-card">
+        <img src="images/website-icon.png" alt="Static Sites">
+        <h3>Static Website Setup</h3>
+        <p>Launch your site with GitHub & email.</p>
+      </a>
+    </div>
+  </div>
 
   <footer>
-    <div class="notify-message">Notify updates sent to ceo@layerbit.co.in</div>
-    <div>© 2025 Layerbit. All rights reserved.</div>
+    <p>© 2025 Layerbit. All rights reserved.</p>
+    <p>Contact: <a href="mailto:ceo@layerbit.co.in" style="color:inherit">ceo@layerbit.co.in</a></p>
   </footer>
 
   <script>
-    const messages = [
-        "Let's Create",
-        "Let's Innovate",
-        "Dream Big",
-        "Build Together",
-        "Shape Tomorrow"
-    ];
-
-    let currentMessage = 0;
-    let currentChar = 0;
-    const textElement = document.getElementById("text");
-
-    function type() {
-      if (currentChar < messages[currentMessage].length) {
-        textElement.textContent += messages[currentMessage].charAt(currentChar);
-        currentChar++;
-        setTimeout(type, 100);
-      } else {
-        setTimeout(erase, 2500);
-      }
+    function toggleTheme() {
+      const theme = document.body.getAttribute("data-theme");
+      document.body.setAttribute("data-theme", theme === "light" ? "dark" : "light");
     }
-
-    function erase() {
-      if (currentChar > 0) {
-        textElement.textContent = messages[currentMessage].substring(0, currentChar - 1);
-        currentChar--;
-        setTimeout(erase, 50);
-      } else {
-        currentMessage = (currentMessage + 1) % messages.length;
-        changeBackground();
-        setTimeout(type, 500);
-      }
-    }
-
-    function changeBackground() {
-      const colors = [
-        'linear-gradient(135deg, #4facfe, #00f2fe)',
-        'linear-gradient(135deg, #43e97b, #38f9d7)',
-        'linear-gradient(135deg, #fa709a, #fee140)',
-        'linear-gradient(135deg, #a18cd1, #fbc2eb)',
-        'linear-gradient(135deg, #30cfd0, #330867)'
-      ];
-      document.body.style.background = colors[Math.floor(Math.random() * colors.length)];
-    }
-
-    window.onload = type;
+    // Default to dark theme
+    document.body.setAttribute("data-theme", "dark");
   </script>
-
 </body>
 </html>
