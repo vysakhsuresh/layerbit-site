@@ -73,9 +73,9 @@
   <a href="../index.html" class="back">← Home</a>
   <h1>Cron Expression Generator</h1>
   <p><strong>Examples:</strong>
-    <button onclick="setExample('0 0 * * *')">Every day at midnight</button>
-    <button onclick="setExample('*/5 * * * *')">Every 5 minutes</button>
-    <button onclick="setExample('30 9 * * 1')">Mondays at 9:30 AM</button>
+    <button data-cron="0 0 * * *">Every day at midnight</button>
+    <button data-cron="*/5 * * * *">Every 5 minutes</button>
+    <button data-cron="30 9 * * 1">Mondays at 9:30 AM</button>
   </p>
   <p>Build a cron expression and understand what it actually means.</p>
 
@@ -248,6 +248,15 @@
   <div class="output" id="cronExplain">Explanation will appear here.</div>
 
   <script>
+    window.onload = function () {
+      document.querySelectorAll('button[data-cron]').forEach(btn => {
+        btn.addEventListener("click", function () {
+          const cron = this.getAttribute("data-cron");
+          setExample(cron);
+        });
+      });
+    };
+
     function copyCron() {
       const cron = document.getElementById("cronResult").textContent.replace("Cron: ", "").trim();
       if (!cron || cron === "Your cron expression will appear here.") return;
