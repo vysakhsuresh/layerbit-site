@@ -77,6 +77,33 @@
 .floating-back:hover {
   background: #eee;
 }
+.pricing {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      margin-top: 30px;
+      justify-content: center;
+    }
+
+    .pricing-box {
+      background-color: rgba(255,255,255,0.1);
+      padding: 20px;
+      border-radius: 12px;
+      width: 260px;
+      text-align: center;
+      backdrop-filter: blur(5px);
+    }
+
+    .pricing-box h3 {
+      margin: 0;
+      font-size: 1.3em;
+    }
+
+    .pricing-box p {
+      margin: 8px 0;
+      font-size: 0.95em;
+    }
+    
   </style>
 </head>
 <body>
@@ -99,6 +126,25 @@
     <p><strong>Analytics Fetcher:</strong> Pull data from a marketing API every day at 8 AM.</p>
     <p><strong>Webhook Responder:</strong> Receive event from a service and log it into Google Sheet.</p>
     <p><strong>Auto Sender:</strong> Send daily summaries to your backend with proper headers.</p>
+  </div>
+
+  <h2>Pricing</h2>
+  <div class="pricing">
+    <div class="pricing-box">
+      <h3>One-Time Call</h3>
+      <p><strong>₹999 / $12</strong></p>
+      <p>Single endpoint<br>One-time fetch and store</p>
+    </div>
+    <div class="pricing-box">
+      <h3>Scheduled Job</h3>
+      <p><strong>₹1999 / $24</strong></p>
+      <p>Hourly/daily sync<br>Retry + logging support</p>
+    </div>
+    <div class="pricing-box">
+      <h3>Full Flow</h3>
+      <p><strong>₹3999+ / $48+</strong></p>
+      <p>Multi-endpoint<br>Auth + email alerts</p>
+    </div>
   </div>
 
   <button class="cta-button" onclick="window.location.href='mailto:ceo@layerbit.co.in?subject=API Automation Request'">
