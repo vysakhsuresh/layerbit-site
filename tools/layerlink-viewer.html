@@ -46,8 +46,10 @@
 
     const peer = new RTCPeerConnection();
 
-    peer.ontrack = e => {
-      document.getElementById("video").srcObject = e.streams[0];
+    let remoteStream = new MediaStream();
+peer.ontrack = event => {
+      remoteStream.addTrack(event.track);
+  document.getElementById("video").srcObject = remoteStream;
       document.getElementById("status").textContent = "🔴 Live Stream Connected";
     };
 
