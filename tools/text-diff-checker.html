@@ -5,8 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Text Diff Checker - Layerbit</title>
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
-  <script>// Diff.js fallback: You are offline or the library failed to load.
-// Please connect to the internet or add diff.min.js locally.</script>
   <style>
     body {
       font-family: 'Space Grotesk', sans-serif;
@@ -90,41 +88,64 @@
     <textarea id="text1" placeholder="Original text..."></textarea>
     <textarea id="text2" placeholder="Modified text..."></textarea>
   </div>
-  
-    <div style="text-align:center;">
-      <label style="display:block;margin-top:10px;">
-        <input type="checkbox" id="normalize" checked style="margin-right:8px;">
-        Normalize input (trim, clean spacing)
-      </label>
-    
+  <div style="text-align:center;">
+    <label style="display:block;margin-top:10px;">
+      <input type="checkbox" id="normalize" checked style="margin-right:8px;">
+      Normalize input (trim, clean spacing)
+    </label>
     <button onclick="runDiff()">🔍 Compare</button>
   </div>
   <div class="summary" id="diffSummary"></div>
   <div class="output" id="diffOutput">Differences will appear here.</div>
+
   <script>
-    function runDiff() {
-      
-      function normalize(text) {
-        return text
-          .trim()
-          .replace(/\r\n/g, "\n")
-          .replace(/[ \t]+/g, " ")
-          .replace(/\n{2,}/g, "\n\n");
+    function diffWords(oldStr, newStr) {
+      const oldWords = oldStr.split(/\b/);
+      const newWords = newStr.split(/\b/);
+      const result = [];
+      let i = 0, j = 0;
+
+      while (i < oldWords.length && j < newWords.length) {
+        if (oldWords[i] === newWords[j]) {
+          result.push({ value: oldWords[i] });
+          i++; j++;
+        } else {
+          if (newWords.includes(oldWords[i])) {
+            result.push({ added: true, value: newWords[j++] });
+          } else if (oldWords.includes(newWords[j])) {
+            result.push({ removed: true, value: oldWords[i++] });
+          } else {
+            result.push({ removed: true, value: oldWords[i++] });
+            result.push({ added: true, value: newWords[j++] });
+          }
+        }
       }
 
+      while (i < oldWords.length) result.push({ removed: true, value: oldWords[i++] });
+      while (j < newWords.length) result.push({ added: true, value: newWords[j++] });
+
+      return result;
+    }
+
+    function normalize(text) {
+      return text
+        .trim()
+        .replace(/\r\n/g, "\n")
+        .replace(/[ \t]+/g, " ")
+        .replace(/\n{2,}/g, "\n\n");
+    }
+
+    function runDiff() {
       let text1 = document.getElementById("text1").value;
       let text2 = document.getElementById("text2").value;
       const normalizeFlag = document.getElementById("normalize").checked;
+
       if (normalizeFlag) {
         text1 = normalize(text1);
         text2 = normalize(text2);
       }
-    
-      const text2 = document.getElementById("text2").value;
-      const output = document.getElementById("diffOutput");
-      const summary = document.getElementById("diffSummary");
 
-      const diff = Diff.diffWords(text1, text2);
+      const diff = diffWords(text1, text2);
       let html = '';
       let added = 0, removed = 0;
 
@@ -141,8 +162,8 @@
         html += span.outerHTML || span.textContent;
       });
 
-      output.innerHTML = html || "No differences.";
-      summary.textContent = `Added: ${added}, Removed: ${removed}`;
+      document.getElementById("diffOutput").innerHTML = html || "No differences.";
+      document.getElementById("diffSummary").textContent = `Added: ${added}, Removed: ${removed}`;
     }
   </script>
 </body>
