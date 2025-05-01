@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>CSV to JSON Converter - Layerbit</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet" />
+  <style>
+    body {
+      font-family: 'Space Grotesk', sans-serif;
+      background: linear-gradient(135deg, #1f1c2c, #928dab);
+      color: white;
+      padding: 30px 20px;
+      max-width: 1000px;
+      margin: auto;
+      text-align: center;
+    }
+    h1 {
+      font-size: 2.2em;
+      margin-bottom: 15px;
+    }
+    textarea {
+      width: 100%;
+      height: 160px;
+      padding: 15px;
+      font-family: monospace;
+      font-size: 1em;
+      border-radius: 8px;
+      border: none;
+      resize: vertical;
+    }
+    .btn {
+      padding: 12px 25px;
+      font-size: 1em;
+      margin: 20px 0;
+      background: white;
+      color: #333;
+      border-radius: 8px;
+      font-weight: bold;
+      cursor: pointer;
+      border: none;
+    }
+    .btn:hover {
+      background: #eee;
+    }
+    .output {
+      text-align: left;
+      background: rgba(255,255,255,0.1);
+      border-radius: 8px;
+      padding: 15px;
+      font-family: monospace;
+      overflow-x: auto;
+      max-height: 400px;
+      white-space: pre-wrap;
+    }
+    .back {
+      position: fixed;
+      bottom: 20px;
+      left: 20px;
+      background: white;
+      color: #333;
+      padding: 10px 18px;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: bold;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    }
+  </style>
+</head>
+<body>
+
+  <a href="../index.html" class="back">← Home</a>
+
+  <h1>CSV to JSON Converter</h1>
+  <p>Paste your CSV below and convert it to structured JSON instantly.</p>
+
+  <textarea id="csvInput" placeholder="name,age\nJohn,30\nJane,25"></textarea><br>
+  <button class="btn" onclick="convertCSV()">Convert</button>
+  <pre class="output" id="jsonOutput"></pre>
+
+  <script>
+    function convertCSV() {
+      const input = document.getElementById('csvInput').value.trim();
+      const lines = input.split('\\n');
+      if (lines.length < 2) {
+        document.getElementById('jsonOutput').textContent = 'Invalid CSV input.';
+        return;
+      }
+      const headers = lines[0].split(',');
+      const result = lines.slice(1).map(line => {
+        const values = line.split(',');
+        let obj = {};
+        headers.forEach((header, i) => {
+          obj[header.trim()] = values[i]?.trim() ?? null;
+        });
+        return obj;
+      });
+      document.getElementById('jsonOutput').textContent = JSON.stringify(result, null, 2);
+    }
+  </script>
+
+</body>
+</html>
