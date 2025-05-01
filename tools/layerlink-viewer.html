@@ -3,65 +3,63 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>LayerLink Viewer</title>
+  <title>LayerLink Viewer - Firebase</title>
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet" />
   <style>
     body {
-      font-family: 'Space Grotesk', sans-serif;
+      font-family: 'Space+Grotesk', sans-serif;
       background: linear-gradient(135deg, #1f1c2c, #928dab);
       color: white;
       text-align: center;
       padding: 40px 20px;
     }
-    h1 {
-      font-size: 2.5em;
-      margin-bottom: 10px;
-    }
-    p {
-      margin-bottom: 20px;
+    .status {
+      margin-top: 20px;
+      font-size: 1.2em;
+      color: yellow;
     }
     video {
-      max-width: 100%;
       margin-top: 30px;
+      max-width: 100%;
       border-radius: 12px;
       box-shadow: 0 8px 16px rgba(0,0,0,0.3);
     }
-    .waiting {
-      font-size: 1.2em;
-      margin-top: 30px;
-      color: #ffeb3b;
-    }
   </style>
-<script src="https://cdn.jsdelivr.net/npm/peerjs@1.5.2/dist/peerjs.min.js"></script>
 </head>
 <body>
   <h1>LayerLink Viewer</h1>
-  <p>Waiting for screen share...</p>
-  <div class="waiting" id="waitingMessage">Session ID: <span id="sessionId"></span></div>
+  <p>Waiting for the sharer to start...</p>
+  <div class="status" id="statusMsg">Checking session...</div>
   <video id="viewerVideo" autoplay playsinline></video>
 
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
   <script>
-    const params = new URLSearchParams(window.location.search);
-    const sessionId = params.get("session");
-    document.getElementById("sessionId").textContent = sessionId || "Unknown";
+    const firebaseConfig = {
+      apiKey: "AIzaSyAR948frOLq4VZ1qSdxIMXu6BaCoehClAU",
+      authDomain: "layerlink-58948.firebaseapp.com",
+      databaseURL: "https://layerlink-58948-default-rtdb.firebaseio.com",
+      projectId: "layerlink-58948",
+      storageBucket: "layerlink-58948.appspot.com",
+      messagingSenderId: "164370572506",
+      appId: "1:164370572506:web:cbeed3bfa6cb67c902b1e3"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
 
-    
-      if (sessionId) {
-        const peer = new Peer({
-      host: "peerjs.com",
-      port: 443,
-      secure: true
-    });
-        peer.on('open', id => {
-          const call = peer.call(sessionId, null);
-          call.on('stream', stream => {
-            document.getElementById("viewerVideo").srcObject = stream;
-            document.getElementById("waitingMessage").style.display = "none";
-          });
-        });
+    const params = new URLSearchParams(location.search);
+    const sessionId = params.get("session");
+    document.getElementById("statusMsg").textContent = "Waiting for session: " + sessionId;
+
+    const conn = db.ref('sessions/' + sessionId);
+    conn.on('value', snapshot => {
+      const data = snapshot.val();
+      if (data && data.offer === 'ready') {
+        document.getElementById("statusMsg").textContent = "🔔 Session is active. (Streaming not yet wired)";
+      } else {
+        document.getElementById("statusMsg").textContent = "Waiting for sharer...";
       }
-    
-    // Right now this shows a layout waiting for a stream to be connected
+    });
   </script>
 </body>
 </html>
