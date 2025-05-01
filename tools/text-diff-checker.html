@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Text Diff Checker - Layerbit</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/diff@5.1.0/dist/diff.min.js"></script>
+  <style>
+    body {
+      font-family: 'Space Grotesk', sans-serif;
+      background: linear-gradient(135deg, #4facfe, #00f2fe);
+      color: white;
+      padding: 30px 20px;
+      max-width: 1200px;
+      margin: auto;
+    }
+    h1 {
+      text-align: center;
+      font-size: 2.5em;
+      margin-bottom: 20px;
+    }
+    .panels {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+    @media (min-width: 768px) {
+      .panels {
+        flex-direction: row;
+      }
+    }
+    textarea {
+      width: 100%;
+      height: 250px;
+      font-family: monospace;
+      padding: 15px;
+      border: none;
+      border-radius: 10px;
+      color: #333;
+    }
+    .output {
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      padding: 15px;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.2);
+    }
+    .added {
+      background-color: #d4fcbc;
+      color: #000;
+    }
+    .removed {
+      background-color: #ffe6e6;
+      color: #000;
+      text-decoration: line-through;
+    }
+    button {
+      font-family: 'Space Grotesk', sans-serif;
+      padding: 10px 20px;
+      font-size: 1em;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      margin-top: 20px;
+    }
+    .summary {
+      font-weight: bold;
+      margin-top: 10px;
+    }
+    .back {
+      position: fixed;
+      bottom: 20px;
+      left: 20px;
+      background: white;
+      color: #333;
+      padding: 10px 18px;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: bold;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    }
+  </style>
+</head>
+<body>
+  <a href="../index.html" class="back">← Home</a>
+  <h1>Text Diff Checker</h1>
+  <div class="panels">
+    <textarea id="text1" placeholder="Original text..."></textarea>
+    <textarea id="text2" placeholder="Modified text..."></textarea>
+  </div>
+  
+    <div style="text-align:center;">
+      <label style="display:block;margin-top:10px;">
+        <input type="checkbox" id="normalize" checked style="margin-right:8px;">
+        Normalize input (trim, clean spacing)
+      </label>
+    
+    <button onclick="runDiff()">🔍 Compare</button>
+  </div>
+  <div class="summary" id="diffSummary"></div>
+  <div class="output" id="diffOutput">Differences will appear here.</div>
+  <script>
+    function runDiff() {
+      
+      function normalize(text) {
+        return text
+          .trim()
+          .replace(/\r\n/g, "\n")
+          .replace(/[ \t]+/g, " ")
+          .replace(/\n{2,}/g, "\n\n");
+      }
+
+      let text1 = document.getElementById("text1").value;
+      let text2 = document.getElementById("text2").value;
+      const normalizeFlag = document.getElementById("normalize").checked;
+      if (normalizeFlag) {
+        text1 = normalize(text1);
+        text2 = normalize(text2);
+      }
+    
+      const text2 = document.getElementById("text2").value;
+      const output = document.getElementById("diffOutput");
+      const summary = document.getElementById("diffSummary");
+
+      const diff = Diff.diffWords(text1, text2);
+      let html = '';
+      let added = 0, removed = 0;
+
+      diff.forEach(part => {
+        const span = document.createElement('span');
+        if (part.added) {
+          span.className = 'added';
+          added++;
+        } else if (part.removed) {
+          span.className = 'removed';
+          removed++;
+        }
+        span.appendChild(document.createTextNode(part.value));
+        html += span.outerHTML || span.textContent;
+      });
+
+      output.innerHTML = html || "No differences.";
+      summary.textContent = `Added: ${added}, Removed: ${removed}`;
+    }
+  </script>
+</body>
+</html>
