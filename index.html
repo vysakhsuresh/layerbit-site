@@ -255,7 +255,7 @@
     <p>Contact: <a href="mailto:ceo@layerbit.co.in">ceo@layerbit.co.in</a></p>
   </footer>
 
-  <script>
+<script>
   const gradients = [
     'linear-gradient(135deg, #4facfe, #00f2fe)',
     'linear-gradient(135deg, #43e97b, #38f9d7)',
@@ -270,13 +270,13 @@
   }
 
   function toggleTheme() {
-    const theme = document.body.getAttribute("data-theme");
-    document.body.setAttribute("data-theme", theme === "light" ? "dark" : "light");
-    shuffleBackground();
+    const theme = document.documentElement.getAttribute("data-theme");
+    document.documentElement.setAttribute("data-theme", theme === "light" ? "dark" : "light");
+    shuffleBackground(); // only shuffle on toggle
   }
 
-  document.body.setAttribute("data-theme", "dark");
-  setInterval(shuffleBackground, 7000);
+  document.documentElement.setAttribute("data-theme", "dark"); // set initial theme properly
 </script>
+
 </body>
 </html>
