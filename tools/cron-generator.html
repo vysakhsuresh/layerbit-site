@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Cron Generator - Layerbit</title>
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet" />
   <style>
@@ -73,8 +73,9 @@
   <a href="../index.html" class="back">← Home</a>
   <h1>Cron Expression Generator</h1>
   <p><strong>Examples:</strong>
-    <button class="example-btn" data-cron="0 0 * * *">Every day at midnight</button>
-    <button class="example-btn" data-cron="30 9 * * 1">Mondays at 9:30 AM</button>
+    <button data-cron="0 0 * * *">Every day at midnight</button>
+    <button data-cron="*/5 * * * *">Every 5 minutes</button>
+    <button data-cron="30 9 * * 1">Mondays at 9:30 AM</button>
   </p>
   <p>Build a cron expression and understand what it actually means.</p>
 
@@ -82,6 +83,7 @@
     <label for="min">Minute:</label>
     <select id="min">
       <option value="*">Every minute</option>
+      <option value="*/5">Every 5 minutes</option>
 <option value="0">00</option>
 <option value="1">01</option>
 <option value="2">02</option>
@@ -247,15 +249,10 @@
 
   <script>
     window.onload = function () {
-      document.querySelectorAll('.example-btn').forEach(btn => {
+      document.querySelectorAll('button[data-cron]').forEach(btn => {
         btn.addEventListener("click", function () {
-          const [min, hour, day, month, weekday] = this.dataset.cron.split(" ");
-          document.getElementById("min").value = min;
-          document.getElementById("hour").value = hour;
-          document.getElementById("day").value = day;
-          document.getElementById("month").value = month;
-          document.getElementById("weekday").value = weekday;
-          generateCron();
+          const cron = this.getAttribute("data-cron");
+          setExample(cron);
         });
       });
     };
@@ -266,6 +263,16 @@
       navigator.clipboard.writeText(cron).then(() => {
         alert("Cron copied to clipboard!");
       });
+    }
+
+    function setExample(cronStr) {
+      const [min, hour, day, month, weekday] = cronStr.split(" ");
+      document.getElementById("min").value = min;
+      document.getElementById("hour").value = hour;
+      document.getElementById("day").value = day;
+      document.getElementById("month").value = month;
+      document.getElementById("weekday").value = weekday;
+      generateCron();
     }
 
     function generateCron() {
