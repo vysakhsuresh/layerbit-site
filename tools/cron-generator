@@ -13,6 +13,7 @@
       --button-bg: white;
       --button-text: #333;
     }
+
     body {
       font-family: 'Space Grotesk', sans-serif;
       background: var(--bg-color);
@@ -22,10 +23,12 @@
       margin: auto;
       text-align: center;
     }
+
     h1 {
       font-size: 2.4em;
       margin-bottom: 10px;
     }
+
     select {
       padding: 10px;
       border-radius: 8px;
@@ -33,6 +36,7 @@
       margin: 5px;
       font-size: 1em;
     }
+
     .output {
       margin-top: 20px;
       padding: 15px;
@@ -42,6 +46,7 @@
       white-space: pre-wrap;
       text-align: left;
     }
+
     button {
       background: var(--button-bg);
       color: var(--button-text);
@@ -52,9 +57,11 @@
       margin-top: 20px;
       cursor: pointer;
     }
+
     button:hover {
       background: #eee;
     }
+
     .back {
       position: fixed;
       bottom: 20px;
@@ -80,32 +87,26 @@
   <p>Build a cron expression and understand what it actually means.</p>
 
   <div>
-    <label>Minute:</label>
+    <label for="min">Minute:</label>
     <select id="min">
       <option value="*">Every minute</option>
       <option value="*/5">Every 5 minutes</option>
       <option value="0">00</option>
-      <option value="1">01</option>
-      <option value="2">02</option>
-      <!-- ... up to 59 -->
-      <option value="59">59</option>
     </select>
-    <label>Hour:</label>
+
+    <label for="hour">Hour:</label>
     <select id="hour">
       <option value="*">Every hour</option>
       <option value="0">00</option>
-      <option value="1">01</option>
-      <!-- ... up to 23 -->
-      <option value="23">23</option>
     </select>
-    <label>Day:</label>
+
+    <label for="day">Day:</label>
     <select id="day">
       <option value="*">Every day</option>
       <option value="1">01</option>
-      <!-- ... up to 31 -->
-      <option value="31">31</option>
     </select>
-    <label>Month:</label>
+
+    <label for="month">Month:</label>
     <select id="month">
       <option value="*">Every month</option>
       <option value="1">Jan</option>
@@ -121,7 +122,8 @@
       <option value="11">Nov</option>
       <option value="12">Dec</option>
     </select>
-    <label>Weekday:</label>
+
+    <label for="weekday">Weekday:</label>
     <select id="weekday">
       <option value="*">Every day</option>
       <option value="0">Sunday</option>
@@ -141,6 +143,22 @@
   <div class="output" id="cronExplain">Explanation will appear here.</div>
 
   <script>
+    function populateSelect(id, max) {
+      const select = document.getElementById(id);
+      for (let i = 1; i <= max; i++) {
+        const val = i < 10 ? '0' + i : i;
+        if (![...select.options].some(o => o.value === i.toString())) {
+          select.add(new Option(val, i));
+        }
+      }
+    }
+
+    window.onload = function () {
+      populateSelect('min', 59);
+      populateSelect('hour', 23);
+      populateSelect('day', 31);
+    };
+
     function copyCron() {
       const cron = document.getElementById("cronResult").textContent.replace("Cron: ", "").trim();
       if (!cron || cron === "Your cron expression will appear here.") return;
