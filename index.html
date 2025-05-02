@@ -362,7 +362,7 @@
 </a>
 </div>
 </div>
-<div id="visit-counter-wrapper" style="display: flex; justify-content: center; align-items: center; gap: 6px; margin: 30px auto 0; font-family: 'Space Grotesk', sans-serif; color: white; font-size: 1.1em; flex-wrap: wrap;"><span>👁️ Visitors:</span><div id="digit-container" style="display:flex; gap:4px; margin-left:6px;"><div class="digit-box" style="background: rgba(255,255,255,0.2); padding: 6px 10px; border-radius: 6px; font-weight: bold; font-size: 1em; min-width: 18px; text-align: center;">0</div><div class="digit-box" style="background: rgba(255,255,255,0.2); padding: 6px 10px; border-radius: 6px; font-weight: bold; font-size: 1em; min-width: 18px; text-align: center;">0</div><div class="digit-box" style="background: rgba(255,255,255,0.2); padding: 6px 10px; border-radius: 6px; font-weight: bold; font-size: 1em; min-width: 18px; text-align: center;">0</div><div class="digit-box" style="background: rgba(255,255,255,0.2); padding: 6px 10px; border-radius: 6px; font-weight: bold; font-size: 1em; min-width: 18px; text-align: center;">0</div><div class="digit-box" style="background: rgba(255,255,255,0.2); padding: 6px 10px; border-radius: 6px; font-weight: bold; font-size: 1em; min-width: 18px; text-align: center;">0</div><div class="digit-box" style="background: rgba(255,255,255,0.2); padding: 6px 10px; border-radius: 6px; font-weight: bold; font-size: 1em; min-width: 18px; text-align: center;">0</div></div></div><footer>
+<div id="visit-counter-wrapper" style="display: flex; justify-content: center; align-items: center; gap: 6px; margin: 30px auto 0; font-family: 'Space Grotesk', sans-serif; color: white; font-size: 1.1em; flex-wrap: wrap;"><span>👁️ Visitors:</span><div id="digit-container" style="display:flex; gap:4px; margin-left:6px;"></div></div><footer>
 <p>© 2025 Layerbit. All rights reserved.</p>
 <p>
 <a href="privacy.html">Privacy Policy</a> |
@@ -440,12 +440,25 @@ const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 const visitRef = ref(db, 'siteVisits');
 
-// Update digits
+// Update digits dynamically
 function updateDigits(count) {
-  const digits = count.toString().padStart(6, '0').split('');
-  const boxes = document.querySelectorAll('.digit-box');
-  boxes.forEach((box, i) => {
-    box.textContent = digits[i] || '0';
+  const container = document.getElementById("digit-container");
+  container.innerHTML = ''; // clear previous
+  const digits = count.toString().split('');
+  digits.forEach(d => {
+    const box = document.createElement('div');
+    box.className = 'digit-box';
+    box.textContent = d;
+    box.style = `
+      background: rgba(255,255,255,0.2);
+      padding: 6px 10px;
+      border-radius: 6px;
+      font-weight: bold;
+      font-size: 1em;
+      min-width: 18px;
+      text-align: center;
+    `;
+    container.appendChild(box);
   });
 }
 
