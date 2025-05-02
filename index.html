@@ -410,12 +410,12 @@ const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 const visitRef = ref(db, 'siteVisits');
 
-// Always increment on visit
+// Always increment the count on every page load
 runTransaction(visitRef, (current) => {
   return (current || 0) + 1;
 });
 
-// Update digits
+// Live update digits from Firebase
 function updateDigits(count) {
   const container = document.getElementById("digit-container");
   if (!container) return;
