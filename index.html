@@ -362,7 +362,7 @@
 </a>
 </div>
 </div>
-<div id="visit-counter-wrapper" style="display: flex; justify-content: center; align-items: center; gap: 6px; margin: 30px auto 0; font-family: 'Space Grotesk', sans-serif; color: white; font-size: 1.1em; flex-wrap: wrap;"><span>👁️ Visitors:</span><div id="digit-container" style="display:flex; gap:4px; margin-left:6px;"></div></div><footer>
+<div id="visit-counter-wrapper" style="display: flex; justify-content: center; align-items: center; gap: 6px; margin: 30px auto 0; font-family: 'Space Grotesk', sans-serif; color: white; font-size: 1.1em; flex-wrap: wrap;"><span>Visitors:</span><div id="digit-container" style="display:flex; gap:4px; margin-left:6px;"></div></div><footer>
 <p>© 2025 Layerbit. All rights reserved.</p>
 <p>
 <a href="privacy.html">Privacy Policy</a> |
@@ -440,17 +440,22 @@ const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 const visitRef = ref(db, 'siteVisits');
 
-// Create and show digit boxes
+// Always increment on every visit, no localStorage checks
+runTransaction(visitRef, (current) => {
+  return (current || 0) + 1;
+});
+
+// Update digits dynamically
 function updateDigits(count) {
   const container = document.getElementById("digit-container");
   if (!container) return;
-  container.innerHTML = ''; // clear existing
+  container.innerHTML = '';
   const digits = count.toString().padStart(6, '0').split('');
   digits.forEach(d => {
     const box = document.createElement('div');
     box.className = 'digit-box';
     box.textContent = d;
-    box.style = `
+    box.style = \`
       background: rgba(255,255,255,0.2);
       padding: 6px 10px;
       border-radius: 6px;
@@ -458,17 +463,11 @@ function updateDigits(count) {
       font-size: 1em;
       min-width: 18px;
       text-align: center;
-    `;
+    \`;
     container.appendChild(box);
   });
 }
 
-// Always increment on page load (no localStorage limitation)
-runTransaction(visitRef, (current) => {
-  return (current || 0) + 1;
-});
-
-// Realtime update on changes
 onValue(visitRef, (snapshot) => {
   const count = snapshot.val() || 0;
   updateDigits(count);
