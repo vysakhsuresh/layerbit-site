@@ -1,11 +1,10 @@
 <!DOCTYPE html>
-
 <html>
 <head>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&amp;display=swap" rel="stylesheet"/>
-<title>LayerLink Sharer</title>
-<meta content="width=device-width, initial-scale=1" name="viewport"/>
-<style>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&amp;display=swap" rel="stylesheet"/>
+  <title>LayerLink Sharer</title>
+  <meta content="width=device-width, initial-scale=1" name="viewport"/>
+  <style>
     body {
       font-family: 'Space Grotesk', sans-serif;
       background: linear-gradient(135deg, #1f1c2c, #928dab);
@@ -40,107 +39,26 @@
       font-family: 'Space Grotesk', sans-serif !important;
     }
   </style>
-<script>
-  
-  window.addEventListener('DOMContentLoaded', () => {
-    const isMobile = /Mobi|Android|iPhone/i.test(navigator.userAgent);
-    if (isMobile) {
-      document.getElementById("main").innerHTML = 
-        <h1 style="font-family: 'Space Grotesk', sans-serif; font-size: 2.3em; font-weight: 700;">LayerLink</h1>
-        <p style="color:yellow; font-size:1.2em;">
-        ⚠️ Screen sharing is not supported on mobile browsers.<br>
-        Please use a desktop or laptop to start a session.
-        </p>;
-    }
-  });
-    
-  if (isMobile) {
-    document.body.innerHTML = '<h1 style="font-family: 'Space Grotesk', sans-serif; font-size: 2.3em; font-weight: 700;">LayerLink</h1><p style="color:yellow; font-size:1.2em;">⚠️ Screen sharing is not supported on mobile browsers.<br>Please use a desktop or laptop to start a session.</p>';
-  }
+  <script>
+    window.addEventListener('DOMContentLoaded', () => {
+      const isMobile = /Mobi|Android|iPhone/i.test(navigator.userAgent);
+      if (isMobile) {
+        document.getElementById("main").innerHTML = `
+          <h1 style="font-family: 'Space Grotesk', sans-serif; font-size: 2.3em; font-weight: 700;">LayerLink</h1>
+          <p style="color:yellow; font-size:1.2em;">
+            ⚠️ Screen sharing is not supported on mobile browsers.<br>
+            Please use a desktop or laptop to start a session.
+          </p>`;
+      }
+    });
 
-  function copyLink() {
-    const link = document.getElementById("link");
-    navigator.clipboard.writeText(link.value).then(() => {
-      alert("Link copied to clipboard!");
-    });
-  }
-</script>
-<script>
-  window.addEventListener('DOMContentLoaded', () => {
-    const isMobile = /Mobi|Android|iPhone/i.test(navigator.userAgent);
-    if (isMobile) {
-      document.getElementById("main").innerHTML = 
-        <h1 style='font-family: "Space Grotesk", sans-serif;'>LayerLink</h1>
-        <p style="color:yellow; font-size:1.2em; font-family: 'Space Grotesk', sans-serif;">
-        ⚠️ Screen sharing is not supported on mobile browsers.<br>
-        Please use a desktop or laptop to start a session.
-        </p>;
+    function copyLink() {
+      const link = document.getElementById("link");
+      navigator.clipboard.writeText(link.value).then(() => {
+        alert("Link copied to clipboard!");
+      });
     }
-  });
-</script>
-</head>
-<body><p style="text-align:center; font-size: 0.95em; max-width: 600px; margin: 10px auto;">LayerLink: Share your screen directly from your browser. This secure tool enables instant support or collaboration with just a link. No installs, no hassle.</p>
-<a href="../index.html" style="
-    position: fixed;
-    top: 20px;
-    left: 20px;
-    background: white;
-    color: #1f1c2c;
-    padding: 8px 14px;
-    border-radius: 8px;
-    text-decoration: none;
-    font-weight: bold;
-    font-family: 'Space Grotesk', sans-serif;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-    z-index: 999;
-  ">← Home</a>
-<div id="main">
-<div id="main">
-<h1 style="font-family: 'Space Grotesk', sans-serif; font-size: 2.3em; font-weight: 700;">LayerLink Sharer</h1>
-<button onclick="start()">🔗 Start Screen Sharing</button><br/>
-<input id="link" placeholder="Your viewer link will appear here" readonly=""/>
-<button onclick="copyLink()" style="margin-left:10px; padding:6px 12px; border-radius:6px;">📋 Copy</button><br/>
-<p id="copyInstruction" style="margin-top:10px; font-size:1em; opacity:0.9;">
-    📋 Copy this link and send it to the person you want to share your screen with.
-    </p>
-<video autoplay="" id="video" playsinline=""></video>
-<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js">
-  function copyLink() {
-    const link = document.getElementById("link");
-    navigator.clipboard.writeText(link.value).then(() => {
-      alert("Link copied to clipboard!");
-    });
-  }
-</script>
-<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js">
-  function copyLink() {
-    const link = document.getElementById("link");
-    navigator.clipboard.writeText(link.value).then(() => {
-      alert("Link copied to clipboard!");
-    });
-  }
-</script>
-<script>
-  const firebaseConfig = {
-    apiKey: "AIzaSyAR948frOLq4VZ1qSdxIMXu6BaCoehClAU",
-    authDomain: "layerlink-58948.firebaseapp.com",
-    databaseURL: "https://layerlink-58948-default-rtdb.firebaseio.com",
-    projectId: "layerlink-58948",
-    storageBucket: "layerlink-58948.appspot.com",
-    messagingSenderId: "164370572506",
-    appId: "1:164370572506:web:cbeed3bfa6cb67c902b1e3"
-  };
-  firebase.initializeApp(firebaseConfig);
-  const db = firebase.database();
 
-  function copyLink() {
-    const link = document.getElementById("link");
-    navigator.clipboard.writeText(link.value).then(() => {
-      alert("Link copied to clipboard!");
-    });
-  }
-</script>
-<script>
     async function start() {
       const sessionId = Math.random().toString(36).substring(2, 8);
       document.getElementById("link").value = location.origin + "/tools/layerlink-viewer.html?session=" + sessionId;
@@ -175,15 +93,39 @@
         peer.addIceCandidate(candidate);
       });
     }
-  
-  function copyLink() {
-    const link = document.getElementById("link");
-    navigator.clipboard.writeText(link.value).then(() => {
-      alert("Link copied to clipboard!");
-    });
-  }
-</script>
-</div>
-</div>
+  </script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyAR948frOLq4VZ1qSdxIMXu6BaCoehClAU",
+      authDomain: "layerlink-58948.firebaseapp.com",
+      databaseURL: "https://layerlink-58948-default-rtdb.firebaseio.com",
+      projectId: "layerlink-58948",
+      storageBucket: "layerlink-58948.appspot.com",
+      messagingSenderId: "164370572506",
+      appId: "1:164370572506:web:cbeed3bfa6cb67c902b1e3"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+  </script>
+</head>
+<body>
+  <p style="text-align:center; font-size: 0.95em; max-width: 600px; margin: 10px auto;">
+    LayerLink: Share your screen directly from your browser. This secure tool enables instant support or collaboration with just a link. No installs, no hassle.
+  </p>
+  <a href="../index.html" style="position: fixed; top: 20px; left: 20px; background: white; color: #1f1c2c; padding: 8px 14px; border-radius: 8px; text-decoration: none; font-weight: bold; font-family: 'Space Grotesk', sans-serif; box-shadow: 0 4px 12px rgba(0,0,0,0.2); z-index: 999;">
+    ← Home
+  </a>
+  <div id="main">
+    <h1 style="font-family: 'Space Grotesk', sans-serif; font-size: 2.3em; font-weight: 700;">LayerLink Sharer</h1>
+    <button onclick="start()">🔗 Start Screen Sharing</button><br/>
+    <input id="link" placeholder="Your viewer link will appear here" readonly=""/>
+    <button onclick="copyLink()" style="margin-left:10px; padding:6px 12px; border-radius:6px;">📋 Copy</button><br/>
+    <p id="copyInstruction" style="margin-top:10px; font-size:1em; opacity:0.9;">
+      📋 Copy this link and send it to the person you want to share your screen with.
+    </p>
+    <video autoplay="" id="video" playsinline=""></video>
+  </div>
 </body>
 </html>
