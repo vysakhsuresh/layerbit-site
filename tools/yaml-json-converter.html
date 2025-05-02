@@ -1,12 +1,13 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>YAML ↔ JSON Converter - Layerbit</title>
-  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/js-yaml@4.1.0/dist/js-yaml.min.js"></script>
-  <style>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<title>YAML ↔ JSON Converter - Layerbit</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/js-yaml@4.1.0/dist/js-yaml.min.js"></script>
+<style>
     body {
       font-family: 'Space Grotesk', sans-serif;
       background: linear-gradient(135deg, #4facfe, #00f2fe);
@@ -71,27 +72,23 @@
     }
   </style>
 </head>
-<body>
-  <a href="../index.html" class="back">← Home</a>
-  <h1>YAML ↔ JSON Converter</h1>
-  
-  <div>
-    <label for="mode">Conversion Mode:</label>
-    <select id="mode">
-      <option value="yaml2json">YAML → JSON</option>
-      <option value="json2yaml">JSON → YAML</option>
-    </select>
-  </div>
-
-  <div style="margin-top: 20px;" class="converter">
-    <textarea id="input" placeholder="Enter YAML or JSON here..."></textarea>
-    <textarea id="output" readonly placeholder="Converted result will appear here..."></textarea>
-  </div>
-
-  <div style="text-align:center;"><button onclick="copyOutput()">📋 Copy Output</button></div>
-  <div class="error" id="error" style="display:none;"></div>
-
-  <script>
+<body><p style="max-width:800px;margin:20px auto;font-size:1em;text-align:center;">Convert YAML to JSON or vice versa with instant accuracy and formatting.</p>
+<a class="back" href="../index.html">← Home</a>
+<h1>YAML ↔ JSON Converter</h1>
+<div>
+<label for="mode">Conversion Mode:</label>
+<select id="mode">
+<option value="yaml2json">YAML → JSON</option>
+<option value="json2yaml">JSON → YAML</option>
+</select>
+</div>
+<div class="converter" style="margin-top: 20px;">
+<textarea id="input" placeholder="Enter YAML or JSON here..."></textarea>
+<textarea id="output" placeholder="Converted result will appear here..." readonly=""></textarea>
+</div>
+<div style="text-align:center;"><button onclick="copyOutput()">📋 Copy Output</button></div>
+<div class="error" id="error" style="display:none;"></div>
+<script>
     const input = document.getElementById("input");
     const output = document.getElementById("output");
     const mode = document.getElementById("mode");

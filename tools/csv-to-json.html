@@ -1,12 +1,13 @@
 
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>CSV to JSON Converter - Layerbit</title>
-  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet" />
-  <style>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<title>CSV to JSON Converter - Layerbit</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&amp;display=swap" rel="stylesheet"/>
+<style>
     :root {
       --bg-color: linear-gradient(135deg, #1f1c2c, #928dab);
       --text-color: white;
@@ -97,25 +98,18 @@
     }
   </style>
 </head>
-<body data-theme="dark">
-
-  <a href="../index.html" class="back">← Home</a>
-  <button class="toggle-theme" onclick="toggleTheme()">🌓</button>
-
-  <h1>CSV to JSON Converter</h1>
-  <p>Paste CSV data or upload a CSV file below.</p>
-    
-    <input type="file" id="csvFile" accept=".csv" style="display:none;" onchange="handleFileUpload()" />
-    <label for="csvFile" class="custom-file">📂 Upload CSV File</label>
-    <span id="fileNameDisplay" style="font-size: 0.9em; opacity: 0.8; display: block; margin-bottom: 10px;"></span>
-    
-    
-
-  <textarea id="csvInput" placeholder="name,age\nJohn,30\nJane,25"></textarea><br>
-  <button class="btn" onclick="convertCSV()">Convert</button>
-  <pre class="output" id="jsonOutput"></pre>
-
-  <script>
+<body data-theme="dark"><p style="max-width:800px;margin:20px auto;font-size:1em;text-align:center;">Convert CSV data into JSON format for use in APIs or JavaScript apps. Easy copy-paste input.</p>
+<a class="back" href="../index.html">← Home</a>
+<button class="toggle-theme" onclick="toggleTheme()">🌓</button>
+<h1>CSV to JSON Converter</h1>
+<p>Paste CSV data or upload a CSV file below.</p>
+<input accept=".csv" id="csvFile" onchange="handleFileUpload()" style="display:none;" type="file"/>
+<label class="custom-file" for="csvFile">📂 Upload CSV File</label>
+<span id="fileNameDisplay" style="font-size: 0.9em; opacity: 0.8; display: block; margin-bottom: 10px;"></span>
+<textarea id="csvInput" placeholder="name,age\nJohn,30\nJane,25"></textarea><br/>
+<button class="btn" onclick="convertCSV()">Convert</button>
+<pre class="output" id="jsonOutput"></pre>
+<script>
     function convertCSV() {
       const input = document.getElementById('csvInput').value.trim();
       const lines = input.split('\n');
@@ -218,6 +212,5 @@
       document.body.setAttribute("data-theme", theme === "light" ? "dark" : "light");
     }
   </script>
-
 </body>
 </html>

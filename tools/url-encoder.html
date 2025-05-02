@@ -1,12 +1,13 @@
 
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>URL Encoder / Decoder - Layerbit</title>
-  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet" />
-  <style>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<title>URL Encoder / Decoder - Layerbit</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&amp;display=swap" rel="stylesheet"/>
+<style>
     :root {
       --bg-color: linear-gradient(135deg, #1f1c2c, #928dab);
       --text-color: white;
@@ -97,19 +98,16 @@
     }
   </style>
 </head>
-<body data-theme="dark">
-  <a href="../index.html" class="back">← Home</a>
-  <button class="toggle-theme" onclick="toggleTheme()">🌓</button>
-
-  <h1>URL Encoder / Decoder</h1>
-  <p>Safely encode or decode your URLs for transmission or readability.</p>
-
-  <textarea id="urlInput" placeholder="Paste your text or URL here..."></textarea><br>
-  <button class="btn" onclick="encodeURL()">Encode</button>
-  <button class="btn" onclick="decodeURL()">Decode</button>
-  <div class="output" id="urlOutput">Encoded or decoded text will appear here.</div>
-
-  <script>
+<body data-theme="dark"><p style="max-width:800px;margin:20px auto;font-size:1em;text-align:center;">Encode or decode URLs to ensure safe transmission of web data. Essential for developers and SEO tasks.</p>
+<a class="back" href="../index.html">← Home</a>
+<button class="toggle-theme" onclick="toggleTheme()">🌓</button>
+<h1>URL Encoder / Decoder</h1>
+<p>Safely encode or decode your URLs for transmission or readability.</p>
+<textarea id="urlInput" placeholder="Paste your text or URL here..."></textarea><br/>
+<button class="btn" onclick="encodeURL()">Encode</button>
+<button class="btn" onclick="decodeURL()">Decode</button>
+<div class="output" id="urlOutput">Encoded or decoded text will appear here.</div>
+<script>
     function encodeURL() {
       const input = document.getElementById('urlInput').value;
       document.getElementById('urlOutput').textContent = encodeURIComponent(input);

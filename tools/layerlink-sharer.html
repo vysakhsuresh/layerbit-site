@@ -1,10 +1,11 @@
 <!DOCTYPE html>
+
 <html>
 <head>
-  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
-  <title>LayerLink Sharer</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <style>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&amp;display=swap" rel="stylesheet"/>
+<title>LayerLink Sharer</title>
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<style>
     body {
       font-family: 'Space Grotesk', sans-serif;
       font-family: sans-serif;
@@ -37,7 +38,6 @@
       cursor: pointer;
     }
   </style>
-
 <script>
   
   window.addEventListener('DOMContentLoaded', () => {
@@ -63,9 +63,6 @@
     });
   }
 </script>
-
-
-
 <script>
   window.addEventListener('DOMContentLoaded', () => {
     const isMobile = /Mobi|Android|iPhone/i.test(navigator.userAgent);
@@ -79,10 +76,9 @@
     }
   });
 </script>
-
 </head>
-<body>
-  <a href="../index.html" style="
+<body><p style="text-align:center; font-size: 0.95em; max-width: 600px; margin: 10px auto;">LayerLink: Share your screen directly from your browser. This secure tool enables instant support or collaboration with just a link. No installs, no hassle.</p>
+<a href="../index.html" style="
     position: fixed;
     top: 20px;
     left: 20px;
@@ -97,17 +93,15 @@
     z-index: 999;
   ">← Home</a>
 <div id="main">
-  
 <div id="main">
-  <h1 style="font-family: 'Space Grotesk', sans-serif; font-size: 2.3em; font-weight: 700;">LayerLink Sharer</h1>
-  <button onclick="start()">🔗 Start Screen Sharing</button><br />
-  <input id="link" readonly placeholder="Your viewer link will appear here">
-    <button onclick="copyLink()" style="margin-left:10px; padding:6px 12px; border-radius:6px;">📋 Copy</button><br />
-    <p id="copyInstruction" style="font-family: 'Space Grotesk', sans-serif;" style="margin-top:10px; font-size:1em; opacity:0.9;">
+<h1 style="font-family: 'Space Grotesk', sans-serif; font-size: 2.3em; font-weight: 700;">LayerLink Sharer</h1>
+<button onclick="start()">🔗 Start Screen Sharing</button><br/>
+<input id="link" placeholder="Your viewer link will appear here" readonly=""/>
+<button onclick="copyLink()" style="margin-left:10px; padding:6px 12px; border-radius:6px;">📋 Copy</button><br/>
+<p id="copyInstruction" style="margin-top:10px; font-size:1em; opacity:0.9;">
     📋 Copy this link and send it to the person you want to share your screen with.
     </p>
-  <video id="video" autoplay playsinline></video>
-  
+<video autoplay="" id="video" playsinline=""></video>
 <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js">
   function copyLink() {
     const link = document.getElementById("link");
@@ -116,7 +110,6 @@
     });
   }
 </script>
-
 <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js">
   function copyLink() {
     const link = document.getElementById("link");
@@ -125,7 +118,6 @@
     });
   }
 </script>
-
 <script>
   const firebaseConfig = {
     apiKey: "AIzaSyAR948frOLq4VZ1qSdxIMXu6BaCoehClAU",
@@ -146,9 +138,7 @@
     });
   }
 </script>
-
-
-  <script>
+<script>
     async function start() {
       const sessionId = Math.random().toString(36).substring(2, 8);
       document.getElementById("link").value = location.origin + "/tools/layerlink-viewer.html?session=" + sessionId;
@@ -191,7 +181,6 @@
     });
   }
 </script>
-
 </div>
 </div>
 </body>

@@ -1,12 +1,13 @@
 
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Base64 Encode / Decode - Layerbit</title>
-  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet" />
-  <style>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<title>Base64 Encode / Decode - Layerbit</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&amp;display=swap" rel="stylesheet"/>
+<style>
     body {
       font-family: 'Space Grotesk', sans-serif;
       background: linear-gradient(135deg, #1f1c2c, #928dab);
@@ -90,38 +91,32 @@
     }
   </style>
 </head>
-<body>
-  <a href="../index.html" class="back">← Home</a>
-  <h1>Base64 Encode / Decode</h1>
-  <p>Text and image support. Choose mode below:</p>
-
-  <select id="modeSelect" onchange="switchMode()">
-    <option value="text">Text</option>
-    <option value="image">Image</option>
-  </select>
-
-  <div id="textMode">
-    <textarea id="inputText" placeholder="Enter text or base64 here..."></textarea><br>
-    <button onclick="encodeText()">Encode</button>
-    <button onclick="decodeText()">Decode</button><br>
-    <textarea id="outputText" placeholder="Result will appear here..." readonly></textarea>
-  </div>
-
-  <div id="imageMode" style="display:none;">
-    
-    <input type="file" id="imageInput" accept="image/*" style="display:none;" onchange="showFileName()" />
-    <label for="imageInput" class="custom-file">📂 Upload Image</label>
-    <span id="fileNameDisplay" style="font-size: 0.9em; opacity: 0.8; display: block; margin-bottom: 10px;"></span>
-    
-    <button onclick="encodeImage()">Encode Image</button><br>
-    <textarea id="imageOutput" placeholder="Base64 result will appear here..." readonly></textarea><br>
-    <label for="imageInputBase64" style="display:block; margin-top:10px;">Base64 to Image Preview:</label>
-    <textarea id="imageInputBase64" placeholder="Paste base64 to preview image..."></textarea><br>
-    <button onclick="previewImage()">Preview Image</button><br>
-    <img id="outputImage" />
-  </div>
-
-  <script>
+<body><p style="max-width:800px;margin:20px auto;font-size:1em;text-align:center;">Quickly encode or decode Base64 strings. Useful for email attachments, data URLs, and more.</p>
+<a class="back" href="../index.html">← Home</a>
+<h1>Base64 Encode / Decode</h1>
+<p>Text and image support. Choose mode below:</p>
+<select id="modeSelect" onchange="switchMode()">
+<option value="text">Text</option>
+<option value="image">Image</option>
+</select>
+<div id="textMode">
+<textarea id="inputText" placeholder="Enter text or base64 here..."></textarea><br/>
+<button onclick="encodeText()">Encode</button>
+<button onclick="decodeText()">Decode</button><br/>
+<textarea id="outputText" placeholder="Result will appear here..." readonly=""></textarea>
+</div>
+<div id="imageMode" style="display:none;">
+<input accept="image/*" id="imageInput" onchange="showFileName()" style="display:none;" type="file"/>
+<label class="custom-file" for="imageInput">📂 Upload Image</label>
+<span id="fileNameDisplay" style="font-size: 0.9em; opacity: 0.8; display: block; margin-bottom: 10px;"></span>
+<button onclick="encodeImage()">Encode Image</button><br/>
+<textarea id="imageOutput" placeholder="Base64 result will appear here..." readonly=""></textarea><br/>
+<label for="imageInputBase64" style="display:block; margin-top:10px;">Base64 to Image Preview:</label>
+<textarea id="imageInputBase64" placeholder="Paste base64 to preview image..."></textarea><br/>
+<button onclick="previewImage()">Preview Image</button><br/>
+<img id="outputImage"/>
+</div>
+<script>
     function switchMode() {
       const mode = document.getElementById("modeSelect").value;
       document.getElementById("textMode").style.display = mode === "text" ? "block" : "none";
