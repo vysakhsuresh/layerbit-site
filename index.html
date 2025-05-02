@@ -7,7 +7,7 @@
 <meta content="width=device-width, initial-scale=1" name="viewport"/>
 <title>Layerbit — Free Tools &amp; Dev Services</title>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&amp;display=swap" rel="stylesheet"/>
-<link href="layerbit-logo.png" rel="icon" type="image/x-icon">
+<link href="layerbit-logo.png" rel="icon" type="image/x-icon"/>
 <style>
     html {
       scroll-behavior: smooth;
@@ -231,7 +231,7 @@
 
 
   </style>
-</link></head>
+</head>
 <body>
 <header>
 <div class="brand">
@@ -362,7 +362,7 @@
 </a>
 </div>
 </div>
-<footer>
+<div id="visit-counter-wrapper" style="display: flex; justify-content: center; align-items: center; gap: 6px; margin: 30px auto 0; font-family: 'Space Grotesk', sans-serif; color: white; font-size: 1.1em; flex-wrap: wrap;"><span>👁️ Visitors:</span><div id="digit-container" style="display:flex; gap:4px; margin-left:6px;"><div class="digit-box" style="background: rgba(255,255,255,0.2); padding: 6px 10px; border-radius: 6px; font-weight: bold; font-size: 1em; min-width: 18px; text-align: center;">0</div><div class="digit-box" style="background: rgba(255,255,255,0.2); padding: 6px 10px; border-radius: 6px; font-weight: bold; font-size: 1em; min-width: 18px; text-align: center;">0</div><div class="digit-box" style="background: rgba(255,255,255,0.2); padding: 6px 10px; border-radius: 6px; font-weight: bold; font-size: 1em; min-width: 18px; text-align: center;">0</div><div class="digit-box" style="background: rgba(255,255,255,0.2); padding: 6px 10px; border-radius: 6px; font-weight: bold; font-size: 1em; min-width: 18px; text-align: center;">0</div><div class="digit-box" style="background: rgba(255,255,255,0.2); padding: 6px 10px; border-radius: 6px; font-weight: bold; font-size: 1em; min-width: 18px; text-align: center;">0</div><div class="digit-box" style="background: rgba(255,255,255,0.2); padding: 6px 10px; border-radius: 6px; font-weight: bold; font-size: 1em; min-width: 18px; text-align: center;">0</div></div></div><footer>
 <p>© 2025 Layerbit. All rights reserved.</p>
 <p>
 <a href="privacy.html">Privacy Policy</a> |
@@ -392,7 +392,7 @@
 
   document.documentElement.setAttribute("data-theme", "dark"); // set initial theme properly
 </script>
-<div id="visit-counter" style="position: fixed; bottom: 10px; right: 10px; background: rgba(255,255,255,0.15); color: white; padding: 8px 14px; font-size: 0.85em; border-radius: 10px; font-family: 'Space Grotesk', sans-serif; box-shadow: 0 4px 12px rgba(0,0,0,0.3); backdrop-filter: blur(5px); z-index: 999;">Visits: <span id="counter-value">0</span></div><script type="module">
+<script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js";
   import { getDatabase, ref, onValue, runTransaction } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-database.js";
 
@@ -422,5 +422,44 @@
     });
     localStorage.setItem("visited_" + todayKey, "true");
   }
+</script><script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js";
+import { getDatabase, ref, onValue, runTransaction } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey: "YOUR_API_KEY",
+  authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+  databaseURL: "https://YOUR_PROJECT_ID-default-rtdb.firebaseio.com",
+  projectId: "YOUR_PROJECT_ID",
+  storageBucket: "YOUR_PROJECT_ID.appspot.com",
+  messagingSenderId: "YOUR_SENDER_ID",
+  appId: "YOUR_APP_ID"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+const visitRef = ref(db, 'siteVisits');
+
+// Update digits
+function updateDigits(count) {
+  const digits = count.toString().padStart(6, '0').split('');
+  const boxes = document.querySelectorAll('.digit-box');
+  boxes.forEach((box, i) => {
+    box.textContent = digits[i] || '0';
+  });
+}
+
+onValue(visitRef, (snapshot) => {
+  const count = snapshot.val() || 0;
+  updateDigits(count);
+});
+
+const todayKey = new Date().toISOString().slice(0, 10);
+if (!localStorage.getItem("visited_" + todayKey)) {
+  runTransaction(visitRef, (current) => {
+    return (current || 0) + 1;
+  });
+  localStorage.setItem("visited_" + todayKey, "true");
+}
 </script></body>
 </html>
