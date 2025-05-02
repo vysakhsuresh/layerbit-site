@@ -393,36 +393,6 @@
   document.documentElement.setAttribute("data-theme", "dark"); // set initial theme properly
 </script>
 <script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js";
-  import { getDatabase, ref, onValue, runTransaction } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-database.js";
-
-  const firebaseConfig = {
-    apiKey: "YOUR_API_KEY",
-    authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-    databaseURL: "https://YOUR_PROJECT_ID-default-rtdb.firebaseio.com",
-    projectId: "YOUR_PROJECT_ID",
-    storageBucket: "YOUR_PROJECT_ID.appspot.com",
-    messagingSenderId: "YOUR_SENDER_ID",
-    appId: "YOUR_APP_ID"
-  };
-
-  const app = initializeApp(firebaseConfig);
-  const db = getDatabase(app);
-  const visitRef = ref(db, 'siteVisits');
-
-  onValue(visitRef, (snapshot) => {
-    const count = snapshot.val();
-    document.getElementById("counter-value").textContent = count || 0;
-  });
-
-  const todayKey = new Date().toISOString().slice(0, 10);
-  if (!localStorage.getItem("visited_" + todayKey)) {
-    runTransaction(visitRef, (current) => {
-      return (current || 0) + 1;
-    });
-    localStorage.setItem("visited_" + todayKey, "true");
-  }
-</script><script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js";
 import { getDatabase, ref, onValue, runTransaction } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-database.js";
 
@@ -440,12 +410,12 @@ const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 const visitRef = ref(db, 'siteVisits');
 
-// Always increment on every visit, no localStorage checks
+// Always increment on visit
 runTransaction(visitRef, (current) => {
   return (current || 0) + 1;
 });
 
-// Update digits dynamically
+// Update digits
 function updateDigits(count) {
   const container = document.getElementById("digit-container");
   if (!container) return;
@@ -455,7 +425,7 @@ function updateDigits(count) {
     const box = document.createElement('div');
     box.className = 'digit-box';
     box.textContent = d;
-    box.style = \`
+    box.style = `
       background: rgba(255,255,255,0.2);
       padding: 6px 10px;
       border-radius: 6px;
@@ -463,7 +433,7 @@ function updateDigits(count) {
       font-size: 1em;
       min-width: 18px;
       text-align: center;
-    \`;
+    `;
     container.appendChild(box);
   });
 }
