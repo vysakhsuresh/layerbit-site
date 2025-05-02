@@ -440,11 +440,11 @@ const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 const visitRef = ref(db, 'siteVisits');
 
-// Update digits dynamically
+// Update digits dynamically with minimum 6 boxes
 function updateDigits(count) {
   const container = document.getElementById("digit-container");
   container.innerHTML = ''; // clear previous
-  const digits = count.toString().split('');
+  const digits = count.toString().padStart(6, '0').split('');
   digits.forEach(d => {
     const box = document.createElement('div');
     box.className = 'digit-box';
