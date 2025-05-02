@@ -440,10 +440,11 @@ const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 const visitRef = ref(db, 'siteVisits');
 
-// Update digits dynamically with minimum 6 boxes
+// Create and show digit boxes
 function updateDigits(count) {
   const container = document.getElementById("digit-container");
-  container.innerHTML = ''; // clear previous
+  if (!container) return;
+  container.innerHTML = ''; // clear existing
   const digits = count.toString().padStart(6, '0').split('');
   digits.forEach(d => {
     const box = document.createElement('div');
@@ -462,17 +463,15 @@ function updateDigits(count) {
   });
 }
 
+// Always increment on page load (no localStorage limitation)
+runTransaction(visitRef, (current) => {
+  return (current || 0) + 1;
+});
+
+// Realtime update on changes
 onValue(visitRef, (snapshot) => {
   const count = snapshot.val() || 0;
   updateDigits(count);
 });
-
-const todayKey = new Date().toISOString().slice(0, 10);
-if (!localStorage.getItem("visited_" + todayKey)) {
-  runTransaction(visitRef, (current) => {
-    return (current || 0) + 1;
-  });
-  localStorage.setItem("visited_" + todayKey, "true");
-}
 </script></body>
 </html>
