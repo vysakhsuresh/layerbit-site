@@ -397,25 +397,25 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.10/firebas
 import { getDatabase, ref, onValue, runTransaction } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-database.js";
 
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-  databaseURL: "https://YOUR_PROJECT_ID-default-rtdb.firebaseio.com",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_PROJECT_ID.appspot.com",
-  messagingSenderId: "YOUR_SENDER_ID",
-  appId: "YOUR_APP_ID"
+  apiKey: "AIzaSyAR948frOLq4VZ1qSdxIMXu6BaCoehClAU",
+  authDomain: "layerlink-58948.firebaseapp.com",
+  databaseURL: "https://layerlink-58948-default-rtdb.firebaseio.com",
+  projectId: "layerlink-58948",
+  storageBucket: "layerlink-58948.firebasestorage.app",
+  messagingSenderId: "164370572506",
+  appId: "1:164370572506:web:cbeed3bfa6cb67c902b1e3"
 };
 
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 const visitRef = ref(db, 'siteVisits');
 
-// Always increment the count on every page load
+// Always increment the count globally
 runTransaction(visitRef, (current) => {
   return (current || 0) + 1;
 });
 
-// Live update digits from Firebase
+// Live update visitor counter
 function updateDigits(count) {
   const container = document.getElementById("digit-container");
   if (!container) return;
