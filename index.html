@@ -1,60 +1,428 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>Layerbit — Free Tools & Dev Services</title>
-  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet"/>
-  <link href="layerbit-logo.png" rel="icon" type="image/x-icon"/>
-  <style>
+<meta charset="utf-8"/>
+<script async="" crossorigin="anonymous" src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6072772587431629"></script>
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<title>Layerbit — Free Tools &amp; Dev Services</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&amp;display=swap" rel="stylesheet"/>
+<link href="layerbit-logo.png" rel="icon" type="image/x-icon"/>
+<style>
+    html {
+      scroll-behavior: smooth;
+    }
+    :root {
+      --bg-color: linear-gradient(135deg, rgb(48, 207, 208), rgb(51, 8, 103));
+      --text-color: white;
+      --card-bg: rgba(255, 255, 255, 0.1);
+      --button-bg: white;
+      --button-text: #333;
+    }
+    [data-theme="light"] {
+      --bg-color: linear-gradient(135deg, #f8f9fa, #e9ecef);
+      --text-color: #333;
+      --card-bg: rgba(0, 0, 0, 0.05);
+      --button-bg: #333;
+      --button-text: white;
+    }
     body {
       font-family: 'Space Grotesk', sans-serif;
-      color: white;
-      background: linear-gradient(135deg, #30cfd0, #330867);
+      color: var(--text-color);
+      background: var(--bg-color);
       margin: 0;
       padding: 20px;
+      transition: background 2s ease-in-out;
     }
-    #visit-counter-wrapper {
+    header {
       display: flex;
-      justify-content: center;
+      justify-content: space-between;
       align-items: center;
-      gap: 6px;
-      margin: 30px auto 0;
-      font-family: 'Space Grotesk', sans-serif;
-      color: white;
-      font-size: 1.1em;
-      flex-wrap: wrap;
+      max-width: 1100px;
+      margin: auto;
     }
-    #digit-container {
-      display: flex;
-      gap: 4px;
-      margin-left: 6px;
-    }
-    .digit-box {
-      background: rgba(255,255,255,0.2);
-      padding: 6px 10px;
-      border-radius: 6px;
+    .brand {
+      font-size: 1.8em;
       font-weight: bold;
-      font-size: 1em;
-      min-width: 18px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .brand img {
+      height: 52px;
+    }
+    .toggle-theme {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      padding: 12px 16px;
+      border: none;
+      background: var(--button-bg);
+      color: var(--button-text);
+      border-radius: 50px;
+      cursor: pointer;
+      font-weight: bold;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+      z-index: 1000;
+    }
+    .hero {
+      text-align: center;
+      margin: 60px auto 20px;
+      animation: fadeIn 1.2s ease-out forwards;
+    }
+    .hero h1 {
+      font-size: 3em;
+      margin-bottom: 10px;
+    }
+    .hero p {
+      font-size: 1.2em;
+      opacity: 0.85;
+    }
+    .typing-container {
+      font-size: 1.6em;
+      font-weight: 600;
+      margin-top: 20px;
+      animation: fadeIn 1.5s ease-out forwards;
+    }
+    #typewriter {
+      display: inline;
+      border-right: 2px solid var(--text-color);
+      white-space: nowrap;
+      overflow: hidden;
+    }
+    .section {
+      max-width: 1100px;
+      margin: 50px auto;
+      animation: fadeSlide 1s ease-out forwards;
+    }
+    .section h2 {
+      font-size: 2em;
+      margin-bottom: 20px;
       text-align: center;
     }
+    .grid {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 30px;
+    }
+    .tool-card {
+      background: var(--card-bg);
+      border-radius: 12px;
+      padding: 20px;
+      width: 220px;
+      height: 200px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      transition: transform 0.3s ease, background 0.3s ease;
+      text-decoration: none;
+      color: inherit;
+      opacity: 0;
+      animation: fadeInCard 1s forwards;
+    }
+    .tool-card:hover {
+      transform: scale(1.08);
+      background: rgba(255, 255, 255, 0.15);
+    }
+    .tool-card img {
+      width: 60px;
+      margin-bottom: 10px;
+    }
+    .tool-card h3 {
+      font-size: 1.2em;
+      margin: 0;
+    }
+    .tool-card p {
+      font-size: 0.9em;
+      opacity: 0.85;
+    }
+    footer {
+      text-align: center;
+      font-size: 0.9em;
+      opacity: 0.8;
+      margin-top: 60px;
+      animation: fadeIn 2s ease-out forwards;
+    }
+    footer a {
+      color: inherit;
+      text-decoration: none;
+      font-weight: bold;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeSlide {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeInCard {
+      0% { opacity: 0; transform: scale(0.95); }
+      100% { opacity: 1; transform: scale(1); }
+    }
+    .request-tool {
+        position: fixed;
+        bottom: 80px;
+        right: 20px;
+        padding: 12px 18px;
+        border: none;
+        background: var(--button-bg);
+        color: var(--button-text);
+        font-weight: bold;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        text-decoration: none;
+        z-index: 999;
+      }
+      .request-tool:hover {
+        background: #f0f0f0;
+      }
+ .hero-feature {
+  background: linear-gradient(135deg, #1f1c2c, #928dab);
+  color: white;
+  text-align: center;
+  padding: 25px 20px;
+  border-radius: 16px;
+  margin: 20px 0;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+}
+
+.hero-feature h2 {
+  font-size: 1.8em;
+  margin-bottom: 10px;
+}
+
+.hero-button {
+  display: inline-block;
+  margin-top: 15px;
+  background: white;
+  color: #1f1c2c;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-weight: bold;
+  text-decoration: none;
+}
+
+.beta-tag {
+  background: #ff4081;
+  color: white;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-size: 0.6em;
+  margin-left: 8px;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% { opacity: 1; }
+  50% { opacity: 0.5; }
+  100% { opacity: 1; }
+}
+
+    .compact-hero {
+  padding: 25px 20px;
+  margin: 20px 0;
+}
+.compact-hero h2 {
+  font-size: 1.8em;
+}
+
+
   </style>
 </head>
 <body>
-
-<header><h1>Layerbit</h1></header>
-
-<div id="visit-counter-wrapper">
-  <span>Visitors:</span>
-  <div id="digit-container"></div>
+<header>
+<div class="brand">
+<img alt="Layerbit Logo" src="layerbit-logo.png"/>
+      Layerbit
+    </div>
+</header>
+<section class="hero-feature compact-hero">
+<h2><strong>Introducing LayerLink</strong> <span class="beta-tag">Beta</span></h2>
+<p>Browser-based screen sharing. No installs. Just a link.</p>
+<a class="hero-button" href="tools/layerlink-sharer.html">Try Now</a>
+</section>
+<button class="toggle-theme" onclick="toggleTheme()">🌓</button>
+<a class="request-tool" href="mailto:ceo@layerbit.co.in?subject=Request%20a%20Tool%20or%20Service">
+    🔧 Request Tool / Service
+  </a>
+<div class="hero">
+<h1 style="font-size: 2.6em; margin-bottom: 0.3em;">Tools That Work. Services That Scale.</h1>
+<p style="font-size: 1.15em; max-width: 700px; margin: 0 auto;">
+    Layerbit is your Swiss Army knife for everyday development. Build, automate, and launch faster with free tools and expert-crafted services.
+  </p>
+<div style="margin-top: 25px;">
+<a href="#tools" style="background:white; color:#333; padding:12px 24px; font-weight:bold; border-radius:8px; text-decoration:none; box-shadow:0 4px 8px rgba(0,0,0,0.2);">Explore Tools</a>
 </div>
-
-<footer>
-  <p>© 2025 Layerbit. All rights reserved.</p>
+</div>
+<div class="section" id="tools">
+<h2>🔧 Free Developer Tools</h2>
+<div class="grid">
+<a class="tool-card featured-tool" href="tools/layerlink-sharer.html">
+<img alt="LayerLink Icon" src="images/layerlink-icon.png"/>
+<h3>LayerLink <span class="beta-tag">Beta</span></h3>
+<p>Browser-based screen sharing for instant support.</p>
+</a>
+<a class="tool-card" href="tools/json-validator.html">
+<img alt="JSON Tool" src="images/json-icon.png"/>
+<h3>JSON Validator &amp; Formatter</h3>
+<p>Fix &amp; beautify your JSON instantly.</p>
+</a>
+<a class="tool-card" href="tools/qr-barcode.html">
+<img alt="QR Tool" src="images/qr-barcode-icon.png"/>
+<h3>QR / Barcode Generator</h3>
+<p>Generate QR or barcode for links/text.</p>
+</a>
+<a class="tool-card" href="tools/sql-formatter.html">
+<img alt="SQL Formatter" src="images/sql-icon.png"/>
+<h3>SQL Formatter</h3>
+<p>Format your SQL for readability.</p>
+</a>
+<a class="tool-card" href="tools/base64.html">
+<img alt="Base64 Tool" src="images/base64-icon.png"/>
+<h3>Base64 Encode / Decode</h3>
+<p>Convert text or file content safely.</p>
+</a>
+<a class="tool-card" href="tools/csv-to-json.html">
+<img alt="CSV to JSON" src="images/csvjson-icon.png"/>
+<h3>CSV to JSON Converter</h3>
+<p>Transform CSV files into JSON.</p>
+</a>
+<a class="tool-card" href="tools/cron-generator.html">
+<img alt="Cron Tool" src="images/cron-icon.png"/>
+<h3>Cron Expression Generator</h3>
+<p>Generate crons with no guesswork.</p>
+</a>
+<a class="tool-card" href="tools/url-encoder.html">
+<img alt="URL Tool" src="images/url-icon.png"/>
+<h3>URL Encoder / Decoder</h3>
+<p>Convert URLs for safety or clarity.</p>
+</a>
+<a class="tool-card" href="tools/log-analyzer.html">
+<img alt="Log Analyzer" src="images/log-icon.png"/>
+<h3>Log Analyzer</h3>
+<p>Highlight log issues and trends.</p>
+</a>
+<a class="tool-card" href="tools/json-to-table.html">
+<img alt="JSON Table" src="images/json-table-icon.png"/>
+<h3>JSON Table Viewer</h3>
+<p>Convert structured JSON arrays into readable tables.</p>
+</a>
+<a class="tool-card" href="tools/jwt-decoder.html">
+<img alt="JWT Decoder Icon" src="images/jwt-icon.png"/>
+<h3>JWT Decoder</h3>
+<p>Decode and view JWT headers and payloads instantly.</p>
+</a>
+<a class="tool-card" href="tools/regex-tester.html">
+<img alt="Regex Tester Icon" src="images/regex-icon.png"/>
+<h3>Regex Tester</h3>
+<p>Test and debug regular expressions with real-time match highlighting.</p>
+</a>
+<a class="tool-card" href="tools/yaml-json-converter.html">
+<img alt="YAML JSON Converter Icon" src="images/yaml-json-icon.png"/>
+<h3>YAML ↔ JSON Converter</h3>
+<p>Instantly convert between YAML and JSON formats with ease.</p>
+</a>
+<a class="tool-card" href="tools/html-escape-unescape.html">
+<img alt="HTML Escape Unescape Icon" src="images/html-escape-icon.png"/>
+<h3>HTML Escape / Unescape</h3>
+<p>Convert HTML special characters to safe entities and back.</p>
+</a>
+<a class="tool-card" href="tools/text-diff-checker.html">
+<img alt="Text Diff Checker Icon" src="images/text-diff-icon.png"/>
+<h3>Text Diff Checker</h3>
+<p>Compare two text blocks and highlight differences with optional cleanup.</p>
+</a>
+</div>
+</div>
+<!-- AD UNIT: Between Tools and Services -->
+<ins class="adsbygoogle" data-ad-client="ca-pub-6072772587431629" data-ad-format="auto" data-ad-slot="YOUR_SLOT_ID" data-full-width-responsive="true" style="display:block; text-align:center; margin: 50px auto;"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+<div class="section">
+<h2>💼 Services We Offer</h2>
+<div class="grid">
+<a class="tool-card" href="tools/api-automation.html">
+<img alt="API Automation" src="images/api-icon.png"/>
+<h3>API Automation</h3>
+<p>Automate your data with API flows.</p>
+</a>
+<a class="tool-card" href="tools/custom-scripts.html">
+<img alt="Custom Scripts" src="images/script-icon.png"/>
+<h3>Custom Scripts</h3>
+<p>Scripts for logs, reports &amp; fixes.</p>
+</a>
+<a class="tool-card" href="tools/static-sites.html">
+<img alt="Static Sites" src="images/website-icon.png"/>
+<h3>Static Website Setup</h3>
+<p>Launch your site with GitHub &amp; email.</p>
+</a>
+</div>
+</div>
+<div id="visit-counter-wrapper" style="display: flex; justify-content: center; align-items: center; gap: 6px; margin: 30px auto 0; font-family: 'Space Grotesk', sans-serif; color: white; font-size: 1.1em; flex-wrap: wrap;"><span>Visitors:</span><div id="digit-container" style="display:flex; gap:4px; margin-left:6px;"></div></div><footer>
+<p>© 2025 Layerbit. All rights reserved.</p>
+<p>
+<a href="privacy.html">Privacy Policy</a> |
+      <a href="terms.html">Terms</a> |
+      <a href="contact.html">Contact</a>
+</p>
 </footer>
+<script>
+  const gradients = [
+    'linear-gradient(135deg, #4facfe, #00f2fe)',
+    'linear-gradient(135deg, #43e97b, #38f9d7)',
+    'linear-gradient(135deg, #30cfd0, #330867)',
+    'linear-gradient(135deg, #a1c4fd, #c2e9fb)',
+    'linear-gradient(135deg, #667eea, #764ba2)'
+  ];
 
+  function shuffleBackground() {
+    const bg = gradients[Math.floor(Math.random() * gradients.length)];
+    document.body.style.background = bg;
+  }
+
+  function toggleTheme() {
+    const theme = document.documentElement.getAttribute("data-theme");
+    document.documentElement.setAttribute("data-theme", theme === "light" ? "dark" : "light");
+    shuffleBackground(); // only shuffle on toggle
+  }
+
+  document.documentElement.setAttribute("data-theme", "dark"); // set initial theme properly
+</script>
 <script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js";
+  import { getDatabase, ref, onValue, runTransaction } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-database.js";
+
+  const firebaseConfig = {
+    apiKey: "YOUR_API_KEY",
+    authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+    databaseURL: "https://YOUR_PROJECT_ID-default-rtdb.firebaseio.com",
+    projectId: "YOUR_PROJECT_ID",
+    storageBucket: "YOUR_PROJECT_ID.appspot.com",
+    messagingSenderId: "YOUR_SENDER_ID",
+    appId: "YOUR_APP_ID"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+  const visitRef = ref(db, 'siteVisits');
+
+  onValue(visitRef, (snapshot) => {
+    const count = snapshot.val();
+    document.getElementById("counter-value").textContent = count || 0;
+  });
+
+  const todayKey = new Date().toISOString().slice(0, 10);
+  if (!localStorage.getItem("visited_" + todayKey)) {
+    runTransaction(visitRef, (current) => {
+      return (current || 0) + 1;
+    });
+    localStorage.setItem("visited_" + todayKey, "true");
+  }
+</script><script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js";
 import { getDatabase, ref, onValue, runTransaction } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-database.js";
 
@@ -72,10 +440,12 @@ const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 const visitRef = ref(db, 'siteVisits');
 
+// Always increment on every visit, no localStorage checks
 runTransaction(visitRef, (current) => {
   return (current || 0) + 1;
 });
 
+// Update digits dynamically
 function updateDigits(count) {
   const container = document.getElementById("digit-container");
   if (!container) return;
@@ -85,6 +455,15 @@ function updateDigits(count) {
     const box = document.createElement('div');
     box.className = 'digit-box';
     box.textContent = d;
+    box.style = \`
+      background: rgba(255,255,255,0.2);
+      padding: 6px 10px;
+      border-radius: 6px;
+      font-weight: bold;
+      font-size: 1em;
+      min-width: 18px;
+      text-align: center;
+    \`;
     container.appendChild(box);
   });
 }
@@ -93,7 +472,5 @@ onValue(visitRef, (snapshot) => {
   const count = snapshot.val() || 0;
   updateDigits(count);
 });
-</script>
-
-</body>
+</script></body>
 </html>
