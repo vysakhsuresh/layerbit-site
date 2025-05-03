@@ -38,6 +38,34 @@
     h1, h2, p, input, button, span {
       font-family: 'Space Grotesk', sans-serif !important;
     }
+    
+    /* Buy Me a Coffee icon */
+    .buy-coffee-icon {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 1000;
+    }
+
+    .buy-coffee-icon img {
+      width: 40px;
+      height: 40px;
+    }
+
+    /* Mobile fallback text adjustment */
+    @media (max-width: 600px) {
+      #main {
+        padding-top: 40px; /* Adjust space for fallback text */
+      }
+
+      #copyInstruction {
+        margin-top: 20px;
+      }
+
+      #main p {
+        margin-top: 30px; /* Ensure text doesn't overlap */
+      }
+    }
   </style>
   <script>
     window.addEventListener('DOMContentLoaded', () => {
@@ -47,7 +75,7 @@
           <h1 style="font-family: 'Space Grotesk', sans-serif; font-size: 2.3em; font-weight: 700;">LayerLink</h1>
           <p style="color:yellow; font-size:1.2em;">
             ⚠️ Screen sharing is not supported on mobile browsers.<br>
-            Please use a desktop or laptop to start a session.
+            But viewing is supported. Please use a desktop or laptop to start a session.
           </p>`;
       }
     });
@@ -111,6 +139,13 @@
   </script>
 </head>
 <body>
+  <!-- Buy Me a Coffee Icon -->
+  <div class="buy-coffee-icon">
+    <a href="https://www.buymeacoffee.com/yourusername" target="_blank">
+      <img src="path/to/cup-icon.png" alt="Buy Me a Coffee" />
+    </a>
+  </div>
+
   <p style="text-align:center; font-size: 0.95em; max-width: 600px; margin: 10px auto;">
     LayerLink: Share your screen directly from your browser. This secure tool enables instant support or collaboration with just a link. No installs, no hassle.
   </p>
