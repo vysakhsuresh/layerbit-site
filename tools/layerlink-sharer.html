@@ -52,16 +52,20 @@
       height: 40px;
     }
 
-    /* Mobile fallback text adjustment */
+    /* Mobile adjustment for consistent spacing */
     @media (max-width: 600px) {
-      /* Push description text down on mobile devices */
-      #main p {
-        margin-top: 70px; /* Increased margin for mobile view */
+      /* Push everything down to avoid overlap */
+      #main {
+        padding-top: 60px; /* Added padding to the top */
       }
 
-      /* Ensure consistent spacing between description, heading, and button */
-      #main h1, #main p, #main button {
-        margin-bottom: 30px; /* Equal space between elements */
+      #main p, #main h1, #main button {
+        margin-bottom: 30px; /* Consistent spacing between the description, heading, and button */
+      }
+
+      /* Ensure consistent spacing and no overlap */
+      #main p {
+        margin-top: 40px; /* Space added to the fallback text */
       }
     }
   </style>
