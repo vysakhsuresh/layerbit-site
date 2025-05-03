@@ -35,6 +35,7 @@
       border-radius: 8px;
       cursor: pointer;
       width: 100%;  /* Ensure these inputs fit well */
+      box-sizing: border-box; /* Ensure padding doesn't affect the element size */
     }
 
     .custom-file {
@@ -109,9 +110,18 @@
         height: 130px;  /* Reduced height for mobile */
         font-size: 0.9em;
         padding: 8px;  /* Reduced padding */
+        margin-right: 10px;  /* Add some right margin to avoid touching the screen edge */
       }
 
-      .btn {
+      select {
+        width: 100%;  /* Ensure the select box is also responsive */
+      }
+
+      .custom-file {
+        margin-right: 10px;  /* Add margin to prevent overlap */
+      }
+
+      button {
         padding: 10px 20px;
         font-size: 0.9em;
       }
