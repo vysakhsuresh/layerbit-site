@@ -228,7 +228,21 @@
 .compact-hero h2 {
   font-size: 1.8em;
 }
+  .floating-button {
+    position: fixed;
+    top: 20px;  /* Position it at the top-right */
+    right: 20px;
+    height: 60px;
+    width: 217px;
+    z-index: 9999; /* Keep it above other elements */
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  }
 
+  /* Optional: Add a hover effect for extra attention */
+  .floating-button:hover {
+    transform: scale(1.1);
+    transition: transform 0.3s;
+  }
 
   </style>
 </head>
@@ -442,5 +456,11 @@ onValue(visitRef, (snapshot) => {
   const count = snapshot.val() || 0;
   updateDigits(count);
 });
-</script></body>
+</script>
+<!-- Floating Buy Me a Coffee Button (top-right corner) -->
+<a href="https://www.buymeacoffee.com/layerbit" target="_blank">
+  <img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me a Coffee" class="floating-button">
+</a>
+
+</body>
 </html>
