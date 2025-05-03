@@ -1,6 +1,4 @@
-
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
 <meta charset="utf-8"/>
@@ -17,15 +15,18 @@
       margin: auto;
       text-align: center;
     }
+
     h1 {
       font-size: 2.2em;
       margin-bottom: 10px;
     }
+
     p {
       font-size: 1em;
       opacity: 0.85;
       margin-bottom: 25px;
     }
+
     select, textarea, input[type="file"] {
       font-family: 'Space Grotesk', sans-serif;
       background-color: white;
@@ -33,6 +34,7 @@
       padding: 10px;
       border-radius: 8px;
       cursor: pointer;
+      width: 100%;  /* Ensure these inputs fit well */
     }
 
     .custom-file {
@@ -46,6 +48,7 @@
       font-weight: bold;
       margin-bottom: 10px;
     }
+
     .custom-file:hover {
       background: #eee;
     }
@@ -58,11 +61,14 @@
       font-size: 1em;
       font-family: monospace;
     }
+
     textarea {
-      width: 100%;
+      width: 100%;  /* Ensure full width */
       height: 150px;
       resize: vertical;
+      padding: 10px;  /* Consistent padding */
     }
+
     button {
       font-weight: bold;
       background: white;
@@ -70,13 +76,16 @@
       cursor: pointer;
       transition: background 0.3s;
     }
+
     button:hover {
       background: #eee;
     }
+
     #outputImage {
       margin-top: 20px;
       max-width: 100%;
     }
+
     .back {
       position: fixed;
       bottom: 20px;
@@ -89,9 +98,42 @@
       font-weight: bold;
       box-shadow: 0 4px 8px rgba(0,0,0,0.2);
     }
-  </style>
+
+    /* Media Queries for Responsiveness */
+    @media (max-width: 768px) {
+      h1 {
+        font-size: 1.8em;
+      }
+
+      textarea {
+        height: 130px;  /* Reduced height for mobile */
+        font-size: 0.9em;
+        padding: 8px;  /* Reduced padding */
+      }
+
+      .btn {
+        padding: 10px 20px;
+        font-size: 0.9em;
+      }
+
+      .back {
+        font-size: 0.9em;
+        padding: 8px 16px;
+      }
+
+      body {
+        padding: 20px;
+        max-width: 100%;  /* Full width for small screens */
+      }
+
+      .sql-container {
+        padding: 10px; /* Smaller padding on mobile */
+      }
+    }
+</style>
 </head>
-<body><p style="max-width:800px;margin:20px auto;font-size:1em;text-align:center;">Quickly encode or decode Base64 strings. Useful for email attachments, data URLs, and more.</p>
+<body>
+<p style="max-width:800px;margin:20px auto;font-size:1em;text-align:center;">Quickly encode or decode Base64 strings. Useful for email attachments, data URLs, and more.</p>
 <a class="back" href="../index.html">← Home</a>
 <h1>Base64 Encode / Decode</h1>
 <p>Text and image support. Choose mode below:</p>
