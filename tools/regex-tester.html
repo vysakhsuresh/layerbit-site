@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
 <meta charset="utf-8"/>
@@ -37,6 +36,7 @@
       font-family: monospace;
       margin-bottom: 20px;
       color: #333;
+      box-sizing: border-box;  /* Prevent overflow from padding */
     }
 
     .output {
@@ -66,9 +66,40 @@
       font-weight: bold;
       box-shadow: 0 4px 8px rgba(0,0,0,0.2);
     }
-  </style>
+
+    /* Media Queries for Responsiveness */
+    @media (max-width: 768px) {
+      h1 {
+        font-size: 2em;
+      }
+
+      input, textarea {
+        font-size: 0.9em; /* Reduced font size for better mobile readability */
+      }
+
+      .output {
+        font-size: 0.9em; /* Adjusted output font size */
+      }
+
+      .back {
+        font-size: 0.9em;
+        padding: 8px 16px;
+      }
+
+      body {
+        padding: 20px;
+        max-width: 100%;  /* Full width for small screens */
+      }
+
+      textarea {
+        height: 140px;  /* Reduced height for mobile */
+        padding: 10px;  /* Reduced padding */
+      }
+    }
+</style>
 </head>
-<body><p style="max-width:800px;margin:20px auto;font-size:1em;text-align:center;">Test your Regular Expressions with real-time feedback and match highlighting.</p>
+<body>
+<p style="max-width:800px;margin:20px auto;font-size:1em;text-align:center;">Test your Regular Expressions with real-time feedback and match highlighting.</p>
 <a class="back" href="../index.html">← Home</a>
 <h1>Regex Tester</h1>
 <label for="regex">Regular Expression:</label>
@@ -76,6 +107,7 @@
 <label for="text">Test Text:</label>
 <textarea id="text" placeholder="Enter text to match against..." rows="6"></textarea>
 <div class="output" id="result">Matches will appear here.</div>
+
 <script>
     function highlightMatches(text, regex) {
       return text.replace(regex, match => `<span class="match">${match}</span>`);
@@ -97,6 +129,6 @@
 
     document.getElementById('regex').addEventListener('input', updateResult);
     document.getElementById('text').addEventListener('input', updateResult);
-  </script>
+</script>
 </body>
 </html>
