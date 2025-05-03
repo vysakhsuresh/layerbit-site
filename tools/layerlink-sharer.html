@@ -54,18 +54,14 @@
 
     /* Mobile adjustment for consistent spacing */
     @media (max-width: 600px) {
-      /* Push everything down properly */
-      #main {
-        padding-top: 80px; /* Push the entire section down to avoid overlap */
+      /* Only push the description text down */
+      #description {
+        margin-top: 60px; /* Push the description text down */
       }
 
-      #main p, #main h1, #main button {
-        margin-bottom: 30px; /* Equal space between description, heading, and button */
-      }
-
-      /* Make sure fallback text is pushed down */
-      #main p {
-        margin-top: 60px; /* Ensures proper space for mobile */
+      /* Consistent spacing between description, heading, and button */
+      #main h1, #main p, #main button {
+        margin-bottom: 30px; /* Equal space between elements */
       }
     }
   </style>
@@ -148,7 +144,7 @@
     </a>
   </div>
 
-  <p style="text-align:center; font-size: 0.95em; max-width: 600px; margin: 10px auto;">
+  <p id="description" style="text-align:center; font-size: 0.95em; max-width: 600px; margin: 10px auto;">
     LayerLink: Share your screen directly from your browser. This secure tool enables instant support or collaboration with just a link. No installs, no hassle.
   </p>
   <a href="../index.html" style="position: fixed; top: 20px; left: 20px; background: white; color: #1f1c2c; padding: 8px 14px; border-radius: 8px; text-decoration: none; font-weight: bold; font-family: 'Space Grotesk', sans-serif; box-shadow: 0 4px 12px rgba(0,0,0,0.2); z-index: 999;">
