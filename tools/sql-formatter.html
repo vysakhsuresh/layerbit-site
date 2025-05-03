@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
 <meta charset="utf-8"/>
@@ -62,9 +61,41 @@
       font-weight: bold;
       box-shadow: 0 4px 8px rgba(0,0,0,0.2);
     }
-  </style>
+
+    /* Media Queries for Responsiveness */
+    @media (max-width: 768px) {
+      h1 {
+        font-size: 1.8em;
+      }
+
+      textarea {
+        height: 150px;  /* Reduced height for mobile */
+        font-size: 0.9em;
+      }
+
+      .btn {
+        padding: 10px 20px;
+        font-size: 0.9em;
+      }
+
+      .back {
+        font-size: 0.9em;
+        padding: 8px 16px;
+      }
+
+      body {
+        padding: 20px;
+        max-width: 100%; /* Full width for small screens */
+      }
+
+      .sql-container {
+        padding: 10px; /* Smaller padding on mobile */
+      }
+    }
+</style>
 </head>
-<body><p style="max-width:800px;margin:20px auto;font-size:1em;text-align:center;">Format SQL queries for better readability and maintenance. Supports standard SQL syntax.</p>
+<body>
+<p style="max-width:800px;margin:20px auto;font-size:1em;text-align:center;">Format SQL queries for better readability and maintenance. Supports standard SQL syntax.</p>
 <a class="back" href="../index.html">← Home</a>
 <h1>SQL Formatter</h1>
 <p>Paste your SQL below and click format. Your code will be cleaned up instantly.</p>
