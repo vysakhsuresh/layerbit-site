@@ -1,6 +1,4 @@
-
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
 <meta charset="utf-8"/>
@@ -46,6 +44,7 @@
       border: none;
       margin-bottom: 15px;
       resize: vertical;
+      box-sizing: border-box;  /* Prevent overflow from padding */
     }
     .btn {
       padding: 10px 20px;
@@ -96,9 +95,43 @@
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
       z-index: 1000;
     }
-  </style>
+
+    /* Media Queries for Responsiveness */
+    @media (max-width: 768px) {
+      h1 {
+        font-size: 1.8em;
+      }
+
+      textarea {
+        height: 130px;  /* Reduced height for mobile */
+        font-size: 0.9em;
+        padding: 10px;  /* Reduced padding */
+        margin-right: 10px;  /* Add some right margin to avoid touching the screen edge */
+      }
+
+      .btn {
+        padding: 10px 20px;
+        font-size: 0.9em;
+      }
+
+      .back {
+        font-size: 0.9em;
+        padding: 8px 16px;
+      }
+
+      body {
+        padding: 20px;
+        max-width: 100%;  /* Full width for small screens */
+      }
+
+      .sql-container {
+        padding: 10px; /* Smaller padding on mobile */
+      }
+    }
+</style>
 </head>
-<body data-theme="dark"><p style="max-width:800px;margin:20px auto;font-size:1em;text-align:center;">Encode or decode URLs to ensure safe transmission of web data. Essential for developers and SEO tasks.</p>
+<body data-theme="dark">
+<p style="max-width:800px;margin:20px auto;font-size:1em;text-align:center;">Encode or decode URLs to ensure safe transmission of web data. Essential for developers and SEO tasks.</p>
 <a class="back" href="../index.html">← Home</a>
 <button class="toggle-theme" onclick="toggleTheme()">🌓</button>
 <h1>URL Encoder / Decoder</h1>
@@ -107,6 +140,7 @@
 <button class="btn" onclick="encodeURL()">Encode</button>
 <button class="btn" onclick="decodeURL()">Decode</button>
 <div class="output" id="urlOutput">Encoded or decoded text will appear here.</div>
+
 <script>
     function encodeURL() {
       const input = document.getElementById('urlInput').value;
@@ -126,6 +160,6 @@
       const theme = document.body.getAttribute("data-theme");
       document.body.setAttribute("data-theme", theme === "light" ? "dark" : "light");
     }
-  </script>
+</script>
 </body>
 </html>
