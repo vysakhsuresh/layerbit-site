@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
 <meta charset="utf-8"/>
@@ -15,21 +14,25 @@
       max-width: 1200px;
       margin: auto;
     }
+
     h1 {
       text-align: center;
       font-size: 2.5em;
       margin-bottom: 20px;
     }
+
     .panels {
       display: flex;
       flex-direction: column;
       gap: 20px;
     }
+
     @media (min-width: 768px) {
       .panels {
         flex-direction: row;
       }
     }
+
     textarea {
       width: 100%;
       height: 250px;
@@ -38,7 +41,10 @@
       border: none;
       border-radius: 10px;
       color: #333;
+      resize: vertical;
+      box-sizing: border-box;
     }
+
     .output {
       white-space: pre-wrap;
       word-wrap: break-word;
@@ -46,15 +52,18 @@
       border-radius: 10px;
       background: rgba(255, 255, 255, 0.2);
     }
+
     .added {
       background-color: #d4fcbc;
       color: #000;
     }
+
     .removed {
       background-color: #ffe6e6;
       color: #000;
       text-decoration: line-through;
     }
+
     button {
       font-family: 'Space Grotesk', sans-serif;
       padding: 10px 20px;
@@ -64,10 +73,12 @@
       cursor: pointer;
       margin-top: 20px;
     }
+
     .summary {
       font-weight: bold;
       margin-top: 10px;
     }
+
     .back {
       position: fixed;
       bottom: 20px;
@@ -80,21 +91,46 @@
       font-weight: bold;
       box-shadow: 0 4px 8px rgba(0,0,0,0.2);
     }
-  </style>
+
+    /* Mobile Adjustments */
+    @media (max-width: 768px) {
+      h1 {
+        font-size: 2em;
+      }
+
+      .panels {
+        flex-direction: column;  /* Stack textareas on mobile */
+      }
+
+      textarea {
+        height: 200px;  /* Adjust textarea height for mobile */
+      }
+
+      .back {
+        font-size: 0.9em;
+        padding: 8px 16px;
+      }
+
+      button {
+        font-size: 0.9em;
+        padding: 8px 16px;
+      }
+    }
+</style>
 </head>
 <body><p style="max-width:800px;margin:20px auto;font-size:1em;text-align:center;">Compare two blocks of text and visually highlight the differences for review and debugging.</p>
 <a class="back" href="../index.html">← Home</a>
 <h1>Text Diff Checker</h1>
 <div class="panels">
-<textarea id="text1" placeholder="Original text..."></textarea>
-<textarea id="text2" placeholder="Modified text..."></textarea>
+  <textarea id="text1" placeholder="Original text..."></textarea>
+  <textarea id="text2" placeholder="Modified text..."></textarea>
 </div>
 <div style="text-align:center;">
-<label style="display:block;margin-top:10px;">
-<input checked="" id="normalize" style="margin-right:8px;" type="checkbox"/>
-      Normalize input (trim, clean spacing)
-    </label>
-<button onclick="runDiff()">🔍 Compare</button>
+  <label style="display:block;margin-top:10px;">
+    <input checked="" id="normalize" style="margin-right:8px;" type="checkbox"/>
+    Normalize input (trim, clean spacing)
+  </label>
+  <button onclick="runDiff()">🔍 Compare</button>
 </div>
 <div class="summary" id="diffSummary" style="margin: 0 60px;"></div>
 <div class="output" id="diffOutput" style="margin: 0 60px;">Differences will appear here.</div>
@@ -165,6 +201,6 @@
       document.getElementById("diffOutput").innerHTML = html || "No differences.";
       document.getElementById("diffSummary").textContent = `Added: ${added}, Removed: ${removed}`;
     }
-  </script>
+</script>
 </body>
 </html>
