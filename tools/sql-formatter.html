@@ -22,7 +22,7 @@
     }
 
     textarea {
-      width: 100%;
+      width: 100%;  /* Ensure textarea takes up full width */
       height: 200px;
       padding: 15px;
       border-radius: 8px;
@@ -30,6 +30,7 @@
       font-size: 1em;
       font-family: monospace;
       resize: vertical;
+      box-sizing: border-box;  /* Prevent overflow from padding */
     }
 
     .btn {
@@ -70,7 +71,8 @@
 
       textarea {
         height: 150px;  /* Reduced height for mobile */
-        font-size: 0.9em;
+        font-size: 0.9em;  /* Smaller font for mobile */
+        padding: 10px;  /* Less padding for mobile */
       }
 
       .btn {
@@ -85,7 +87,7 @@
 
       body {
         padding: 20px;
-        max-width: 100%; /* Full width for small screens */
+        max-width: 100%;  /* Full width for small screens */
       }
 
       .sql-container {
