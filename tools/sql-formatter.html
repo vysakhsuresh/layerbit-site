@@ -105,9 +105,30 @@
 <br/>
 <button class="btn" onclick="formatSQL()">Format SQL</button>
 <br/>
-<textarea id="sqlOutput" placeholder="Formatted SQL will appear here..." readonly=""></textarea>
+
+<div style="position: relative; display: inline-block; width: 100%;">
+  <textarea id="sqlOutput" placeholder="Formatted SQL will appear here..." readonly=""
+    style="padding-right: 40px;"></textarea>
+  <button onclick="copyFormattedSQL()" title="Copy formatted SQL"
+    style="position: absolute; top: 10px; right: 10px; background: white; color: #333; border: none; padding: 6px 10px; border-radius: 6px; font-weight: bold; cursor: pointer;">Copy</button>
+</div>
+
 <!-- sql-formatter library -->
-<script src="https://cdn.jsdelivr.net/npm/sql-formatter@4.0.2/dist/sql-formatter.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sql-formatter@4.0.2/dist/sql-formatter.min.js">
+function copyFormattedSQL() {
+  const outputArea = document.getElementById('sqlOutput');
+  if (!outputArea.value.trim()) {
+    alert("Nothing to copy.");
+    return;
+  }
+  navigator.clipboard.writeText(outputArea.value).then(() => {
+    alert("Formatted SQL copied to clipboard!");
+  }).catch(err => {
+    alert("Failed to copy: " + err);
+  });
+}
+
+</script>
 <script>
     function formatSQL() {
       const input = document.getElementById('sqlInput').value.trim();
@@ -127,6 +148,20 @@
         outputArea.value = "Error formatting SQL: " + e.message;
       }
     }
-  </script>
+  
+function copyFormattedSQL() {
+  const outputArea = document.getElementById('sqlOutput');
+  if (!outputArea.value.trim()) {
+    alert("Nothing to copy.");
+    return;
+  }
+  navigator.clipboard.writeText(outputArea.value).then(() => {
+    alert("Formatted SQL copied to clipboard!");
+  }).catch(err => {
+    alert("Failed to copy: " + err);
+  });
+}
+
+</script>
 </body>
 </html>
