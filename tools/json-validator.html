@@ -88,23 +88,32 @@
 </p>
 <a class="floating-back" href="../index.html">← Home</a>
 <h1>JSON Validator &amp; Formatter</h1>
-<textarea id="input" placeholder="Paste your JSON here..."></textarea>
-<button onclick="formatJSON()">Validate &amp; Format</button>
-<button id="copyBtn" class="copy-btn" onclick="copyToClipboard()">Copy Formatted JSON</button>
-<pre id="output"></pre>
+<textarea id="input" style="margin-bottom: 20px;" placeholder="Paste your JSON here..."></textarea>
+<button onclick="formatJSON()" style="margin-bottom: 20px;">Validate &amp; Format</button>
+
+
+<div style="position: relative; width: 100%; max-width: 700px;">
+  <pre id="output" style="padding: 15px 60px 15px 15px; margin: 0; background-color: rgba(0,0,0,0.2); border-radius: 10px; min-height: 100px;"></pre>
+  <button onclick="copyToClipboard()" title="Copy formatted JSON"
+    style="position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.6); color: white; border: none;
+    padding: 6px 12px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 6px;
+    border-radius: 6px; z-index: 100;">
+    📋 <span style="font-family: 'Space Grotesk', sans-serif;">Copy</span>
+  </button>
+</div>
+
+
 
 <script>
   function formatJSON() {
     const input = document.getElementById('input').value;
     const output = document.getElementById('output');
-    const copyBtn = document.getElementById('copyBtn');
-
+    
     try {
       const parsed = JSON.parse(input);
       output.textContent = JSON.stringify(parsed, null, 2);
       output.classList.remove('error');
-      copyBtn.style.display = 'inline-block';
-    } catch (err) {
+          } catch (err) {
       output.classList.add('error');
       output.textContent = 'Invalid JSON:\\n' + err.message;
 
@@ -117,8 +126,7 @@
         output.textContent += `\\n➡️ Line ${line}, Column ${col}`;
       }
 
-      copyBtn.style.display = 'none';
-    }
+          }
   }
 
   function copyToClipboard() {
