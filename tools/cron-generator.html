@@ -257,8 +257,40 @@
 </div>
 
 <button onclick="generateCron()">Generate</button>
-<div class="output" id="cronResult">Your cron expression will appear here.</div>
-<button onclick="copyCron()">📋 Copy Cron Expression</button>
+
+<style>
+  .output-wrapper {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--card-bg);
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin-top: 20px;
+    font-family: monospace;
+    white-space: pre-wrap;
+    text-align: left;
+  }
+  .output-wrapper button {
+    background: white;
+    color: #333;
+    border: none;
+    border-radius: 6px;
+    padding: 6px 12px;
+    font-weight: bold;
+    cursor: pointer;
+    margin-left: 10px;
+  }
+  .output-wrapper button:hover {
+    background: #ddd;
+  }
+</style>
+
+<div class="output-wrapper">
+  <div id="cronResult">Your cron expression will appear here.</div>
+  <button onclick="copyCron()">Copy</button>
+</div>
+
 <div class="output" id="cronExplain">Explanation will appear here.</div>
 <script>
     window.onload = function () {
