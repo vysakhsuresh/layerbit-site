@@ -95,10 +95,11 @@
       }
     }
 </style>
+<script src="https://cdn.jsdelivr.net/npm/sql-formatter@10.3.0/dist/sql-formatter.min.js"></script>
 </head>
 <body>
 <p style="max-width:800px;margin:20px auto;font-size:1em;text-align:center;">Format SQL queries for better readability and maintenance. Supports standard SQL syntax.</p>
-<a class="back" href="../index.html">← Home</a>
+<a class="back" href="../index.html" style="z-index: 1000; position: fixed;">← Home</a>
 <h1>SQL Formatter</h1>
 <p>Paste your SQL below and click format. Your code will be cleaned up instantly.</p>
 <textarea id="sqlInput" placeholder="Paste raw SQL here..."></textarea>
@@ -110,49 +111,39 @@
   <textarea id="sqlOutput" placeholder="Formatted SQL will appear here..." readonly=""
     style="padding-right: 40px;"></textarea>
   
-  <button onclick="copyFormattedSQL()" title="Copy formatted SQL"
-    style="position: absolute; top: 10px; right: 10px; background: transparent; color: white; border: none; padding: 6px 12px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 6px;">
-    📋 <span style="font-family: 'Space Grotesk', sans-serif;">Copy</span>
-  </button>
+  
+<button onclick="copyFormattedSQL()" title="Copy formatted SQL"
+  style="position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.6); color: white; border: none; padding: 6px 12px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 6px; border-radius: 6px; z-index: 100;">
+  📋 <span style="font-family: 'Space Grotesk', sans-serif;">Copy</span>
+</button>
+
 
 </div>
 
 <!-- sql-formatter library -->
-<script src="https://cdn.jsdelivr.net/npm/sql-formatter@4.0.2/dist/sql-formatter.min.js">
-function copyFormattedSQL() {
-  const outputArea = document.getElementById('sqlOutput');
-  if (!outputArea.value.trim()) {
-    alert("Nothing to copy.");
-    return;
-  }
-  navigator.clipboard.writeText(outputArea.value).then(() => {
-    alert("Formatted SQL copied to clipboard!");
-  }).catch(err => {
-    alert("Failed to copy: " + err);
-  });
-}
 
-</script>
+
 <script>
-    function formatSQL() {
-      const input = document.getElementById('sqlInput').value.trim();
-      const outputArea = document.getElementById('sqlOutput');
+function formatSQL() {
+  const input = document.getElementById('sqlInput').value.trim();
+  const outputArea = document.getElementById('sqlOutput');
 
-      if (!input) {
-        alert("Please enter SQL code to format.");
-        return;
-      }
+  if (!input) {
+    alert("Please enter SQL code to format.");
+    return;
+  }
 
-      try {
-        const formatted = window.sqlFormatter.format(input, {
-          language: "sql" // change to "mysql", "postgresql", etc. if needed
-        });
-        outputArea.value = formatted;
-      } catch (e) {
-        outputArea.value = "Error formatting SQL: " + e.message;
-      }
-    }
-  
+  try {
+    const formatted = sqlFormatter.format(input, {
+      language: "sql",
+      keywordCase: "upper"
+    });
+    outputArea.value = formatted;
+  } catch (e) {
+    outputArea.value = "Error formatting SQL: " + e.message;
+  }
+}
+
 function copyFormattedSQL() {
   const outputArea = document.getElementById('sqlOutput');
   if (!outputArea.value.trim()) {
@@ -165,7 +156,7 @@ function copyFormattedSQL() {
     alert("Failed to copy: " + err);
   });
 }
-
 </script>
+
 </body>
 </html>
