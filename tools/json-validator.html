@@ -51,6 +51,8 @@
     margin-top: 10px;
   }
   pre {
+    max-height: 400px;
+    overflow-y: auto;
     margin-top: 20px;
     white-space: pre-wrap;
     word-wrap: break-word;
@@ -104,39 +106,52 @@
 
 
 
+
 <script>
+  function extractAndFormatAllJSON(text) {
+    const regex = /[{\[][^{}\[\]]*[}\]]/g;
+    const matches = text.match(/({[\s\S]*?}|\[[\s\S]*?\])/g);
+    let formattedOutput = '';
+    let lastIndex = 0;
+
+    if (!matches) {
+      return '❌ No valid JSON found.';
+    }
+
+    matches.forEach(match => {
+      try {
+        const parsed = JSON.parse(match);
+        const pretty = JSON.stringify(parsed, null, 2);
+
+        const start = text.indexOf(match, lastIndex);
+        const before = text.slice(lastIndex, start);
+        formattedOutput += before + pretty;
+        lastIndex = start + match.length;
+      } catch (e) {
+        // Not valid JSON, skip it
+      }
+    });
+
+    formattedOutput += text.slice(lastIndex);
+    return formattedOutput;
+  }
+
   function formatJSON() {
     const input = document.getElementById('input').value;
     const output = document.getElementById('output');
-    
-    try {
-      const parsed = JSON.parse(input);
-      output.textContent = JSON.stringify(parsed, null, 2);
-      output.classList.remove('error');
-          } catch (err) {
-      output.classList.add('error');
-      output.textContent = 'Invalid JSON:\\n' + err.message;
+    const result = extractAndFormatAllJSON(input);
 
-      const match = err.message.match(/position (\\d+)/);
-      if (match) {
-        const pos = parseInt(match[1]);
-        const linesUntil = input.slice(0, pos).split('\\n');
-        const line = linesUntil.length;
-        const col = linesUntil[linesUntil.length - 1].length + 1;
-        output.textContent += `\\n➡️ Line ${line}, Column ${col}`;
-      }
-
-          }
+    output.textContent = result;
+    output.classList.remove('error');
   }
 
   function copyToClipboard() {
     const text = document.getElementById("output").textContent;
     navigator.clipboard.writeText(text).then(() => {
-      const btn = document.getElementById("copyBtn");
-      btn.textContent = "Copied!";
-      setTimeout(() => btn.textContent = "Copy Formatted JSON", 1500);
+      alert("Formatted text copied!");
     });
   }
 </script>
+
 </body>
 </html>
