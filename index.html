@@ -181,7 +181,7 @@
         background: #f0f0f0;
       }
  .hero-feature {
-  background: linear-gradient(135deg, #1f1c2c, #928dab);
+  background: linear-gradient(135deg, #2e2c3a, #726e95);
   color: white;
   text-align: center;
   padding: 25px 20px;
@@ -299,7 +299,7 @@
 
 
 <div class="section" id="tools">
-<h2>🔧 Free Developer Tools</h2>
+<h2>Dev Tools Suite</h2>
 <div class="grid">
 <a class="tool-card featured-tool" href="tools/layerlink-sharer.html">
 <img alt="LayerLink Icon" src="images/layerlink-icon.png"/>
@@ -378,13 +378,9 @@
 </a>
 </div>
 </div>
-<!-- AD UNIT: Between Tools and Services -->
-<ins class="adsbygoogle" data-ad-client="ca-pub-6072772587431629" data-ad-slot="5734198477" data-ad-format="auto" data-full-width-responsive="true" style="display:block; text-align:center; margin: 50px auto;"></ins>
-<script>
-  (adsbygoogle = window.adsbygoogle || []).push({});
-</script>
+
 <div class="section">
-<h2>💼 Services We Offer</h2>
+<h2>Built for You</h2>
 <div class="grid">
 <a class="tool-card" href="tools/api-automation.html">
 <img alt="API Automation" src="images/api-icon.png"/>
@@ -495,5 +491,75 @@ onValue(visitRef, (snapshot) => {
   <img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me a Coffee" class="floating-button">
 </a>
 
+
+
+
+<style>
+  #floatingSearch {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    z-index: 1000;
+  }
+
+  #floatingSearch input {
+    padding: 10px 14px;
+    border-radius: 8px;
+    border: none;
+    font-size: 0.9em;
+    width: 220px;
+    box-shadow: 0 0 8px rgba(0,0,0,0.3);
+    display: none;
+  }
+
+  #floatingSearch button {
+    background: white;
+    border: none;
+    padding: 10px;
+    border-radius: 50%;
+    font-size: 1.1em;
+    cursor: pointer;
+    box-shadow: 0 0 6px rgba(0,0,0,0.2);
+  }
+
+  @media (min-width: 600px) {
+    #floatingSearch input {
+      display: inline-block !important;
+    }
+
+    #floatingSearch button {
+      display: none;
+    }
+  }
+</style>
+
+<div id="floatingSearch">
+  <button onclick="toggleSearch()">🔍</button>
+  <input id="toolSearch" type="text" placeholder="Search tools..." oninput="filterTools()" />
+</div>
+
+<script>
+function toggleSearch() {
+  const input = document.getElementById('toolSearch');
+  input.style.display = input.style.display === 'inline-block' ? 'none' : 'inline-block';
+  if (input.style.display === 'inline-block') input.focus();
+}
+
+function filterTools() {
+  const input = document.getElementById('toolSearch').value.toLowerCase();
+  const tiles = document.querySelectorAll('.tool-tile');
+
+  tiles.forEach(tile => {
+    const title = tile.querySelector('h3')?.innerText.toLowerCase() || '';
+    const description = tile.innerText.toLowerCase();
+    const match = title.includes(input) || description.includes(input);
+    tile.style.display = match ? 'block' : 'none';
+  });
+}
+</script>
 </body>
+
+
+
+
 </html>
