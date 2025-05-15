@@ -26,12 +26,13 @@
       margin-bottom: 30px;
     }
     input, select, button {
-      padding: 12px;
-      font-size: 1em;
-      border-radius: 8px;
-      border: none;
-      width: 280px;
-    }
+  padding: 12px;
+  font-size: 1em;
+  border-radius: 8px;
+  border: none;
+  width: 280px;
+  box-sizing: border-box;
+}
     button {
       background: white;
       color: #333;
@@ -63,7 +64,51 @@
       font-weight: bold;
       box-shadow: 0 4px 8px rgba(0,0,0,0.2);
     }
-  </style>
+  
+    .code-container {
+      display: inline-block;
+      margin-top: 30px;
+      font-family: 'Space Grotesk', sans-serif;
+      text-align: right;
+      width: 100%;
+      max-width: 280px;
+    }
+    .button-row {
+      margin-bottom: 12px;
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      width: 280px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .button-row button {
+      background: white;
+      color: #333;
+      border: 1px solid #ccc;
+      padding: 6px 0;
+      font-size: 0.8em;
+      border-radius: 6px;
+      font-family: 'Space Grotesk', sans-serif;
+      text-align: center;
+      cursor: pointer;
+      transition: background 0.3s;
+      width: 135px;
+    }
+    .button-row button:hover {
+      background: #f0f0f0;
+    }
+
+
+#output {
+  text-align: center;
+}
+#output canvas,
+#output div {
+  display: inline-block;
+}
+
+</style>
 </head>
 <body><p style="max-width:800px;margin:20px auto;font-size:1em;text-align:center;">Generate high-quality QR codes and barcodes for links, text, or numbers. Download and share easily.</p>
 <a class="back" href="../index.html">← Home</a>
@@ -80,38 +125,85 @@
 <!-- Libraries -->
 <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/qrcodejs/qrcode.min.js"></script>
+
 <script>
-    function generateCode() {
-      const data = document.getElementById('dataInput').value.trim();
-      const type = document.getElementById('typeSelect').value;
-      const output = document.getElementById('output');
-      output.innerHTML = '';
+  function generateCode() {
+    const data = document.getElementById('dataInput').value.trim();
+    const type = document.getElementById('typeSelect').value;
+    const output = document.getElementById('output');
+    output.innerHTML = '';
 
-      if (!data) {
-        alert("Please enter text or URL.");
-        return;
-      }
-
-      if (type === 'qr') {
-        const qr = new QRCode(output, {
-          text: data,
-          width: 256,
-          height: 256,
-          colorDark: "#000000",
-          colorLight: "#ffffff",
-        });
-      } else if (type === 'barcode') {
-        const canvas = document.createElement('canvas');
-        JsBarcode(canvas, data, {
-          format: "CODE128",
-          lineColor: "#000",
-          width: 2,
-          height: 100,
-          displayValue: true
-        });
-        output.appendChild(canvas);
-      }
+    if (!data) {
+      alert("Please enter text or URL.");
+      return;
     }
-  </script>
+
+    const container = document.createElement('div');
+    container.className = 'code-container';
+
+    const buttonRow = document.createElement('div');
+    buttonRow.className = 'button-row';
+    buttonRow.innerHTML = `
+      <button onclick="downloadCode()" title="Download">⬇ <span>Download</span></button>
+      <button onclick="shareCode()" title="Share">📤 <span>Share</span></button>
+    `;
+    container.appendChild(buttonRow);
+
+    if (type === 'qr') {
+      const qrDiv = document.createElement('div');
+      container.appendChild(qrDiv);
+      output.appendChild(container);
+      new QRCode(qrDiv, {
+        text: data,
+        width: 256,
+        height: 256,
+        colorDark: "#000000",
+        colorLight: "#ffffff",
+      });
+    } else if (type === 'barcode') {
+      const canvas = document.createElement('canvas');
+      JsBarcode(canvas, data, {
+        format: "CODE128",
+        lineColor: "#000",
+        width: 2,
+        height: 100,
+        displayValue: true
+      });
+      container.appendChild(canvas);
+      output.appendChild(container);
+    }
+  }
+
+  function downloadCode() {
+    const output = document.getElementById('output');
+    const canvas = output.querySelector('canvas');
+    const img = output.querySelector('img');
+    let element = canvas || img;
+    if (!element) return;
+
+    const link = document.createElement('a');
+    link.download = "code.png";
+    link.href = element.toDataURL ? element.toDataURL() : element.src;
+    link.click();
+  }
+
+  function shareCode() {
+    const output = document.getElementById('output');
+    const canvas = output.querySelector('canvas');
+    const img = output.querySelector('img');
+    let element = canvas || img;
+    if (!element || !navigator.share) return;
+
+    element.toBlob(blob => {
+      const file = new File([blob], "code.png", { type: blob.type });
+      navigator.share({
+        files: [file],
+        title: 'QR/Barcode',
+        text: 'Here is your generated code.',
+      }).catch(console.error);
+    });
+  }
+</script>
+
 </body>
 </html>
