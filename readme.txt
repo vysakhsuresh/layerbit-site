@@ -4,3 +4,4 @@ Application Registrations:
 3) Google Cloud Console : https://console.cloud.google.com/
 4) VirusTotal : https://www.virustotal.com/gui/user/Layerbit/
 5) goDaddy : Website hosting
+6) Replit : https://replit.com/
