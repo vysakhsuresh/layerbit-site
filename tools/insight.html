@@ -192,7 +192,11 @@
 
 <script>
   function downloadReport() {
-    const text = document.getElementById('results').innerText;
+    
+    const geoText = document.getElementById('geoResult').innerText || "";
+    const resultText = document.getElementById('results').innerText || "";
+    const text = (geoText + "\n" + resultText).trim();
+    
     const blob = new Blob([text], { type: 'text/plain' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -203,7 +207,11 @@
   }
 
   function shareReport() {
-    const text = document.getElementById('results').innerText;
+    
+    const geoText = document.getElementById('geoResult').innerText || "";
+    const resultText = document.getElementById('results').innerText || "";
+    const text = (geoText + "\n" + resultText).trim();
+    
     if (navigator.share) {
       navigator.share({
         title: 'My Device Insight',
