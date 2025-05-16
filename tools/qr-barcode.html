@@ -162,14 +162,21 @@
       });
     } else if (type === 'barcode') {
       const canvas = document.createElement('canvas');
+      const wrapper = document.createElement('div');
+      wrapper.style.overflowX = 'auto';
+      wrapper.style.textAlign = 'center';
+      wrapper.appendChild(canvas);
       JsBarcode(canvas, data, {
+
         format: "CODE128",
         lineColor: "#000",
         width: 2,
         height: 100,
         displayValue: true
-      });
-      container.appendChild(canvas);
+      ,
+  width: window.innerWidth < 500 ? 1.5 : 2,
+});
+      container.appendChild(wrapper);
       output.appendChild(container);
     }
   }
