@@ -42,6 +42,7 @@
     button:hover {
       background: #eee;
     }
+    
     .loading {
       display: none;
       margin-top: 30px;
@@ -49,13 +50,19 @@
       background: white;
       color: #333;
       border-radius: 10px;
-      width: 100%;
+      width: calc(100% - 40px);
       max-width: 500px;
       margin-left: auto;
       margin-right: auto;
-      white-space: pre-wrap;
+      white-space: normal;
+      word-break: break-word;
+      overflow-wrap: break-word;
       font-size: 0.95rem;
+      text-align: center;
+      box-sizing: border-box;
+      border: 2px dashed red; /* For visual debugging */
     }
+
     .scan-results {
       background: white;
       color: #2d3748;
