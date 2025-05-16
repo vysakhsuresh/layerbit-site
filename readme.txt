@@ -5,3 +5,4 @@ Application Registrations:
 4) VirusTotal : https://www.virustotal.com/gui/user/Layerbit/
 5) goDaddy : Website hosting
 6) Replit : https://replit.com/
+7) Glitch : https://glitch.com
