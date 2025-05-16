@@ -1,0 +1,219 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Layerbit Device Insight</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Space Grotesk', sans-serif;
+      background: #12131a;
+      color: #f3f3f3;
+      margin: 0;
+      padding: 20px;
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    .card {
+      background: #1f2230;
+      border: 1px solid #2e3244;
+      border-radius: 12px;
+      padding: 15px 20px;
+      margin-bottom: 16px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    }
+    .card h2 {
+      margin: 0 0 8px;
+      font-size: 1.1em;
+      color: #8ecdfc;
+    }
+    .card p {
+      margin: 0;
+      font-size: 0.95em;
+    }
+    .btn {
+      font-family: 'Space Grotesk', sans-serif;
+      background: #42a5f5;
+      color: white;
+      padding: 10px 16px;
+      font-size: 0.95em;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      margin-bottom: 20px;
+      display: block;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .back {
+      position: fixed;
+      bottom: 20px;
+      left: 20px;
+      background: white;
+      color: #333;
+      padding: 10px 18px;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: bold;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+      z-index: 999;
+    }
+  </style>
+</head>
+<body>
+  <h1>📡 Your Device Insight</h1>
+  <button class="btn" onclick="getGeolocation()">📍 Get My Exact Location</button>
+  <div id="geoResult" class="card" style="display: none;"></div>
+  <div id="results">Loading system details...</div>
+  <a href="../index.html" class="back">Home</a>
+
+  <script>
+    async function getGeolocation() {
+      const geoCard = document.getElementById("geoResult");
+      if (!navigator.geolocation) {
+        alert("Geolocation is not supported by your browser.");
+        return;
+      }
+      navigator.geolocation.getCurrentPosition(
+        async position => {
+          const { latitude, longitude } = position.coords;
+          let locationText = `Latitude: ${latitude.toFixed(6)}<br>Longitude: ${longitude.toFixed(6)}`;
+
+          // Try reverse geocoding using OpenStreetMap Nominatim
+          try {
+            const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`);
+            const locData = await res.json();
+            if (locData.address) {
+              const city = locData.address.city || locData.address.town || locData.address.village || "";
+              const country = locData.address.country || "";
+              locationText += `<br>Approximate Place: ${city}, ${country}`;
+            }
+          } catch (e) {
+            locationText += "<br>Unable to determine place name.";
+          }
+
+          geoCard.innerHTML = `
+            <h2>Exact Geolocation</h2>
+            <p>${locationText}</p>
+          `;
+          geoCard.style.display = 'block';
+        },
+        error => {
+          alert("Unable to retrieve your location.");
+        }
+      );
+    }
+
+    async function runDiagnostics() {
+      const container = document.getElementById("results");
+      const data = [];
+
+      data.push(["Browser & Platform", navigator.userAgent]);
+      data.push(["Operating System", navigator.platform]);
+      data.push(["Preferred Language", navigator.language + " (" + navigator.languages.join(", ") + ")"]);
+      data.push(["Cookies Enabled", navigator.cookieEnabled ? "Yes" : "No"]);
+      data.push(["Do Not Track", navigator.doNotTrack === "1" ? "Enabled" : "Disabled"]);
+      data.push(["Screen Resolution", screen.width + " x " + screen.height]);
+      data.push(["Color Depth", screen.colorDepth + "-bit"]);
+      data.push(["Timezone", Intl.DateTimeFormat().resolvedOptions().timeZone]);
+      data.push(["Memory Estimate", navigator.deviceMemory ? navigator.deviceMemory + " GB" : "Not Available"]);
+      data.push(["CPU Threads", navigator.hardwareConcurrency ? navigator.hardwareConcurrency + " cores" : "Not Available"]);
+
+      try {
+        const canvas = document.createElement('canvas');
+        const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+        const debugInfo = gl.getExtension('WEBGL_debug_renderer_info');
+        const vendor = gl.getParameter(debugInfo.UNMASKED_VENDOR_WEBGL);
+        const renderer = gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL);
+        data.push(["Graphics Vendor", vendor]);
+        data.push(["Graphics Renderer", renderer]);
+      } catch {
+        data.push(["Graphics Info", "Unavailable"]);
+      }
+
+      try {
+        const res = await fetch("https://ipinfo.io/json?token=f38556491a0a87");
+        const ipData = await res.json();
+        if (ipData.ip) {
+          data.push(["Public IP", ipData.ip]);
+          data.push(["Approximate Location", (ipData.city || '') + ', ' + (ipData.region || '') + ', ' + (ipData.country || '')]);
+          data.push(["ISP", ipData.org || "Unknown"]);
+        } else {
+          data.push(["IP & Location", "Could not fetch location data."]);
+        }
+      } catch {
+        data.push(["IP & Location", "Could not fetch location data."]);
+      }
+
+      container.innerHTML = data.map(([title, value]) => `
+        <div class="card">
+          <h2>${title}</h2>
+          <p>${value}</p>
+        </div>
+      `).join("");
+    }
+
+    runDiagnostics();
+  </script>
+
+<style>
+  .float-btn {
+    position: fixed;
+    bottom: 20px;
+    width: 42px;
+    height: 42px;
+    border-radius: 8px;
+    background-color: white;
+    color: #333;
+    border: none;
+    font-size: 1.2em;
+    cursor: pointer;
+    z-index: 999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+  }
+  #downloadBtn {
+    right: 70px;
+  }
+  #shareBtn {
+    right: 20px;
+  }
+</style>
+
+<button class="float-btn" id="downloadBtn" onclick="downloadReport()">⬇️</button>
+<button class="float-btn" id="shareBtn" onclick="shareReport()">📤</button>
+
+<script>
+  function downloadReport() {
+    const text = document.getElementById('results').innerText;
+    const blob = new Blob([text], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'layerbit-device-insight.txt';
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  function shareReport() {
+    const text = document.getElementById('results').innerText;
+    if (navigator.share) {
+      navigator.share({
+        title: 'My Device Insight',
+        text: text,
+      }).catch(() => alert("Sharing cancelled or unsupported."));
+    } else {
+      alert("Sharing is not supported on this device.");
+    }
+  }
+</script>
+
+</body>
+</html>
