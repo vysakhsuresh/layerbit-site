@@ -161,15 +161,31 @@
         colorLight: "#ffffff",
       });
     } else if (type === 'barcode') {
-      const canvas = document.createElement('canvas');
-      JsBarcode(canvas, data, {
+      
+const wrapper = document.createElement('div');
+wrapper.style.overflowX = 'auto';
+wrapper.style.maxWidth = '100%';
+wrapper.style.textAlign = 'center';
+wrapper.style.marginTop = '20px';
+const canvas = document.createElement('canvas');
+canvas.style.maxWidth = '100%';
+canvas.style.height = 'auto';
+canvas.style.display = 'block';
+canvas.style.objectFit = 'contain';
+JsBarcode(canvas, data, {
+
         format: "CODE128",
         lineColor: "#000",
         width: 2,
         height: 100,
         displayValue: true
-      });
-      container.appendChild(canvas);
+      ,
+  width: window.innerWidth < 500 ? 1.5 : 2
+});
+wrapper.appendChild(canvas);
+container.appendChild(wrapper);
+
+      
       output.appendChild(container);
     }
   }
