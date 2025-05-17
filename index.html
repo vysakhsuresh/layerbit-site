@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
 <meta charset="utf-8"/>
 <script async="" crossorigin="anonymous" src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6072772587431629">
@@ -521,7 +521,7 @@ document.addEventListener("DOMContentLoaded", function () {
 </a>
 </div>
 </div>
-<div id="visit-counter-wrapper" style="display: flex; justify-content: center; align-items: center; gap: 6px; margin: 30px auto 0; font-family: 'Space Grotesk', sans-serif; color: white; font-size: 1.1em; flex-wrap: wrap;"><span>Visitors:</span><div id="digit-container" style="display:flex; gap:4px; margin-left:6px;"></div></div>
+<div id="visit-counter-wrapper" style="display: flex; justify-content: center; align-items: center; gap: 6px; margin: 30px auto 0; font-family: 'Space Grotesk', sans-serif; color: white; font-size: 1.1em; flex-wrap: wrap;"><span style="font-size: 20px; font-weight: bold;">Visitors:</span><div id="digit-container" style="display:flex; gap:4px; margin-left:6px;"></div></div>
 <footer>
 <p>© 2025 Layerbit. All rights reserved.</p>
 <p>
@@ -529,8 +529,70 @@ document.addEventListener("DOMContentLoaded", function () {
       <a href="terms.html">Terms</a> |
       <a href="blog.html">Blog</a> | <a href="contact.html">Contact</a>
 </p>
+<div id="visit-counter-wrapper" style="display: flex; justify-content: center; align-items: center; gap: 6px; margin: 30px auto 0; font-family: 'Space Grotesk', sans-serif; color: white; font-size: 1.1em; flex-wrap: wrap;"><span style="font-size: 20px; font-weight: bold;"></span><div id="digit-container" style="display:flex; gap:4px; margin-left:6px;"></div>
 </footer>
+<script>
+  const gradients = [
+    'linear-gradient(135deg, #4facfe, #00f2fe)',
+    'linear-gradient(135deg, #43e97b, #38f9d7)',
+    'linear-gradient(135deg, #30cfd0, #330867)',
+    'linear-gradient(135deg, #a1c4fd, #c2e9fb)',
+    'linear-gradient(135deg, #667eea, #764ba2)'
+  ];
 
+  function shuffleBackground() {
+    const bg = gradients[Math.floor(Math.random() * gradients.length)];
+    document.body.style.background = bg;
+  }
+
+  function toggleTheme() {
+    const theme = document.documentElement.getAttribute("data-theme");
+    document.documentElement.setAttribute("data-theme", theme === "light" ? "dark" : "light");
+    shuffleBackground(); // only shuffle on toggle
+  }
+
+  document.documentElement.setAttribute("data-theme", "dark"); // set initial theme properly
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  const fab = document.getElementById("searchFab");
+  const overlay = document.getElementById("searchOverlay");
+  const closeBtn = document.getElementById("closeSearch");
+  const input = document.getElementById("searchBox");
+
+  fab.addEventListener("click", () => {
+    const section = document.getElementById("tools");
+    if (section) {
+      const y = section.getBoundingClientRect().top + window.scrollY - 80;
+      window.scrollTo({ top: y, behavior: 'smooth' });
+    }
+
+    setTimeout(() => {
+      overlay.classList.add("show");
+    }, 300);
+
+    setTimeout(() => {
+      input.focus();
+    }, 600);
+  });
+
+  closeBtn.addEventListener("click", () => {
+    overlay.classList.remove("show");
+    input.value = '';
+    filterTools();
+  });
+
+  input.addEventListener("input", filterTools);
+
+  function filterTools() {
+    const query = input.value.toLowerCase();
+    document.querySelectorAll('.tool-card').forEach(card => {
+      const text = card.innerText.toLowerCase();
+      card.style.display = text.includes(query) ? 'flex' : 'none';
+    });
+  }
+});
+</script>
 
 </script>
 <script type="module">
@@ -727,7 +789,7 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 </script>
 
-
+<button class="toggle-theme" onclick="toggleTheme()">🌓</button>
 <script>
   const gradients = [
     'linear-gradient(135deg, #4facfe, #00f2fe)',
@@ -750,6 +812,56 @@ document.addEventListener("DOMContentLoaded", function () {
 
   document.documentElement.setAttribute("data-theme", "dark"); // set initial theme properly
 </script>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js";
+import { getDatabase, ref, onValue, runTransaction } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-database.js";
 
+const firebaseConfig = {
+  apiKey: "AIzaSyAR948frOLq4VZ1qSdxIMXu6BaCoehClAU",
+  authDomain: "layerlink-58948.firebaseapp.com",
+  databaseURL: "https://layerlink-58948-default-rtdb.firebaseio.com",
+  projectId: "layerlink-58948",
+  storageBucket: "layerlink-58948.firebasestorage.app",
+  messagingSenderId: "164370572506",
+  appId: "1:164370572506:web:cbeed3bfa6cb67c902b1e3"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+const visitRef = ref(db, 'siteVisits');
+
+// Always increment the count globally
+runTransaction(visitRef, (current) => {
+  return (current || 0) + 1;
+});
+
+// Live update visitor counter
+function updateDigits(count) {
+  const container = document.getElementById("digit-container");
+  if (!container) return;
+  container.innerHTML = '';
+  const digits = count.toString().padStart(6, '0').split('');
+  digits.forEach(d => {
+    const box = document.createElement('div');
+    box.className = 'digit-box';
+    box.textContent = d;
+    box.style = `
+      background: rgba(255,255,255,0.2);
+      padding: 6px 10px;
+      border-radius: 6px;
+      font-weight: bold;
+      font-size: 1em;
+      min-width: 18px;
+      text-align: center;
+    `;
+    container.appendChild(box);
+  });
+}
+
+onValue(visitRef, (snapshot) => {
+  const count = snapshot.val() || 0;
+  updateDigits(count);
+});
+</script>
 </body>
 </html>
