@@ -38,34 +38,21 @@ document.addEventListener("DOMContentLoaded", function () {
     if (!expanded) {
       expandSearch();
     } else {
-      collapseSearch();
+      if (document.activeElement !== input) {
+        collapseSearch();
+      }
     }
   });
 
   input.addEventListener("input", function () {
     const query = input.value.toLowerCase();
-    if (!query) {
-      collapseSearch();
-      return;
-    }
-
     document.querySelectorAll(".tool-card").forEach(card => {
       const text = card.innerText.toLowerCase();
       card.style.display = text.includes(query) ? "flex" : "none";
     });
-
-    // Save to local history
-    if (query.length > 1) {
-      let recent = JSON.parse(localStorage.getItem("layerbit_searches") || "[]");
-      if (!recent.includes(query)) {
-        recent.unshift(query);
-        if (recent.length > 5) recent = recent.slice(0, 5);
-        localStorage.setItem("layerbit_searches", JSON.stringify(recent));
-      }
-    }
   });
 
-  // Keyboard shortcuts: "/" or "Ctrl+K"
+  // Keyboard shortcut
   document.addEventListener("keydown", function (e) {
     if (e.key === "/" && !input.matches(":focus")) {
       e.preventDefault();
@@ -76,10 +63,10 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   });
 
-  // Auto-collapse on scroll
+  // Only auto-collapse when input is not focused
   let lastScrollY = window.scrollY;
   window.addEventListener("scroll", () => {
-    if (expanded && Math.abs(window.scrollY - lastScrollY) > 50) {
+    if (expanded && document.activeElement !== input && Math.abs(window.scrollY - lastScrollY) > 50) {
       collapseSearch();
     }
     lastScrollY = window.scrollY;
@@ -429,34 +416,21 @@ document.addEventListener("DOMContentLoaded", function () {
     if (!expanded) {
       expandSearch();
     } else {
-      collapseSearch();
+      if (document.activeElement !== input) {
+        collapseSearch();
+      }
     }
   });
 
   input.addEventListener("input", function () {
     const query = input.value.toLowerCase();
-    if (!query) {
-      collapseSearch();
-      return;
-    }
-
     document.querySelectorAll(".tool-card").forEach(card => {
       const text = card.innerText.toLowerCase();
       card.style.display = text.includes(query) ? "flex" : "none";
     });
-
-    // Save to local history
-    if (query.length > 1) {
-      let recent = JSON.parse(localStorage.getItem("layerbit_searches") || "[]");
-      if (!recent.includes(query)) {
-        recent.unshift(query);
-        if (recent.length > 5) recent = recent.slice(0, 5);
-        localStorage.setItem("layerbit_searches", JSON.stringify(recent));
-      }
-    }
   });
 
-  // Keyboard shortcuts: "/" or "Ctrl+K"
+  // Keyboard shortcut
   document.addEventListener("keydown", function (e) {
     if (e.key === "/" && !input.matches(":focus")) {
       e.preventDefault();
@@ -467,10 +441,10 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   });
 
-  // Auto-collapse on scroll
+  // Only auto-collapse when input is not focused
   let lastScrollY = window.scrollY;
   window.addEventListener("scroll", () => {
-    if (expanded && Math.abs(window.scrollY - lastScrollY) > 50) {
+    if (expanded && document.activeElement !== input && Math.abs(window.scrollY - lastScrollY) > 50) {
       collapseSearch();
     }
     lastScrollY = window.scrollY;
@@ -669,34 +643,21 @@ document.addEventListener("DOMContentLoaded", function () {
     if (!expanded) {
       expandSearch();
     } else {
-      collapseSearch();
+      if (document.activeElement !== input) {
+        collapseSearch();
+      }
     }
   });
 
   input.addEventListener("input", function () {
     const query = input.value.toLowerCase();
-    if (!query) {
-      collapseSearch();
-      return;
-    }
-
     document.querySelectorAll(".tool-card").forEach(card => {
       const text = card.innerText.toLowerCase();
       card.style.display = text.includes(query) ? "flex" : "none";
     });
-
-    // Save to local history
-    if (query.length > 1) {
-      let recent = JSON.parse(localStorage.getItem("layerbit_searches") || "[]");
-      if (!recent.includes(query)) {
-        recent.unshift(query);
-        if (recent.length > 5) recent = recent.slice(0, 5);
-        localStorage.setItem("layerbit_searches", JSON.stringify(recent));
-      }
-    }
   });
 
-  // Keyboard shortcuts: "/" or "Ctrl+K"
+  // Keyboard shortcut
   document.addEventListener("keydown", function (e) {
     if (e.key === "/" && !input.matches(":focus")) {
       e.preventDefault();
@@ -707,10 +668,10 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   });
 
-  // Auto-collapse on scroll
+  // Only auto-collapse when input is not focused
   let lastScrollY = window.scrollY;
   window.addEventListener("scroll", () => {
-    if (expanded && Math.abs(window.scrollY - lastScrollY) > 50) {
+    if (expanded && document.activeElement !== input && Math.abs(window.scrollY - lastScrollY) > 50) {
       collapseSearch();
     }
     lastScrollY = window.scrollY;
@@ -804,34 +765,21 @@ document.addEventListener("DOMContentLoaded", function () {
     if (!expanded) {
       expandSearch();
     } else {
-      collapseSearch();
+      if (document.activeElement !== input) {
+        collapseSearch();
+      }
     }
   });
 
   input.addEventListener("input", function () {
     const query = input.value.toLowerCase();
-    if (!query) {
-      collapseSearch();
-      return;
-    }
-
     document.querySelectorAll(".tool-card").forEach(card => {
       const text = card.innerText.toLowerCase();
       card.style.display = text.includes(query) ? "flex" : "none";
     });
-
-    // Save to local history
-    if (query.length > 1) {
-      let recent = JSON.parse(localStorage.getItem("layerbit_searches") || "[]");
-      if (!recent.includes(query)) {
-        recent.unshift(query);
-        if (recent.length > 5) recent = recent.slice(0, 5);
-        localStorage.setItem("layerbit_searches", JSON.stringify(recent));
-      }
-    }
   });
 
-  // Keyboard shortcuts: "/" or "Ctrl+K"
+  // Keyboard shortcut
   document.addEventListener("keydown", function (e) {
     if (e.key === "/" && !input.matches(":focus")) {
       e.preventDefault();
@@ -842,10 +790,10 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   });
 
-  // Auto-collapse on scroll
+  // Only auto-collapse when input is not focused
   let lastScrollY = window.scrollY;
   window.addEventListener("scroll", () => {
-    if (expanded && Math.abs(window.scrollY - lastScrollY) > 50) {
+    if (expanded && document.activeElement !== input && Math.abs(window.scrollY - lastScrollY) > 50) {
       collapseSearch();
     }
     lastScrollY = window.scrollY;
@@ -896,34 +844,21 @@ document.addEventListener("DOMContentLoaded", function () {
     if (!expanded) {
       expandSearch();
     } else {
-      collapseSearch();
+      if (document.activeElement !== input) {
+        collapseSearch();
+      }
     }
   });
 
   input.addEventListener("input", function () {
     const query = input.value.toLowerCase();
-    if (!query) {
-      collapseSearch();
-      return;
-    }
-
     document.querySelectorAll(".tool-card").forEach(card => {
       const text = card.innerText.toLowerCase();
       card.style.display = text.includes(query) ? "flex" : "none";
     });
-
-    // Save to local history
-    if (query.length > 1) {
-      let recent = JSON.parse(localStorage.getItem("layerbit_searches") || "[]");
-      if (!recent.includes(query)) {
-        recent.unshift(query);
-        if (recent.length > 5) recent = recent.slice(0, 5);
-        localStorage.setItem("layerbit_searches", JSON.stringify(recent));
-      }
-    }
   });
 
-  // Keyboard shortcuts: "/" or "Ctrl+K"
+  // Keyboard shortcut
   document.addEventListener("keydown", function (e) {
     if (e.key === "/" && !input.matches(":focus")) {
       e.preventDefault();
@@ -934,10 +869,10 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   });
 
-  // Auto-collapse on scroll
+  // Only auto-collapse when input is not focused
   let lastScrollY = window.scrollY;
   window.addEventListener("scroll", () => {
-    if (expanded && Math.abs(window.scrollY - lastScrollY) > 50) {
+    if (expanded && document.activeElement !== input && Math.abs(window.scrollY - lastScrollY) > 50) {
       collapseSearch();
     }
     lastScrollY = window.scrollY;
@@ -992,34 +927,21 @@ document.addEventListener("DOMContentLoaded", function () {
     if (!expanded) {
       expandSearch();
     } else {
-      collapseSearch();
+      if (document.activeElement !== input) {
+        collapseSearch();
+      }
     }
   });
 
   input.addEventListener("input", function () {
     const query = input.value.toLowerCase();
-    if (!query) {
-      collapseSearch();
-      return;
-    }
-
     document.querySelectorAll(".tool-card").forEach(card => {
       const text = card.innerText.toLowerCase();
       card.style.display = text.includes(query) ? "flex" : "none";
     });
-
-    // Save to local history
-    if (query.length > 1) {
-      let recent = JSON.parse(localStorage.getItem("layerbit_searches") || "[]");
-      if (!recent.includes(query)) {
-        recent.unshift(query);
-        if (recent.length > 5) recent = recent.slice(0, 5);
-        localStorage.setItem("layerbit_searches", JSON.stringify(recent));
-      }
-    }
   });
 
-  // Keyboard shortcuts: "/" or "Ctrl+K"
+  // Keyboard shortcut
   document.addEventListener("keydown", function (e) {
     if (e.key === "/" && !input.matches(":focus")) {
       e.preventDefault();
@@ -1030,10 +952,10 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   });
 
-  // Auto-collapse on scroll
+  // Only auto-collapse when input is not focused
   let lastScrollY = window.scrollY;
   window.addEventListener("scroll", () => {
-    if (expanded && Math.abs(window.scrollY - lastScrollY) > 50) {
+    if (expanded && document.activeElement !== input && Math.abs(window.scrollY - lastScrollY) > 50) {
       collapseSearch();
     }
     lastScrollY = window.scrollY;
