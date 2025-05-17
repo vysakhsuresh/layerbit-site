@@ -6,42 +6,84 @@
 <script async="" crossorigin="anonymous" src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6072772587431629">
 <script>
 document.addEventListener("DOMContentLoaded", function () {
-  const fab = document.getElementById("searchFab");
-  const overlay = document.getElementById("searchOverlay");
-  const closeBtn = document.getElementById("closeSearch");
-  const input = document.getElementById("searchBox");
+  const pill = document.getElementById("pillSearch");
+  const input = document.getElementById("pillInput");
+  const section = document.getElementById("tools");
+  let expanded = false;
 
-  fab.addEventListener("click", () => {
-    const section = document.getElementById("tools");
-    if (section) {
-      const y = section.getBoundingClientRect().top + window.scrollY - 80;
-      window.scrollTo({ top: y, behavior: 'smooth' });
+  function expandSearch() {
+    if (!expanded) {
+      if (section) {
+        const y = section.getBoundingClientRect().top + window.scrollY - 80;
+        window.scrollTo({ top: y, behavior: 'smooth' });
+      }
+      pill.style.width = "260px";
+      input.style.display = "block";
+      input.focus();
+      expanded = true;
+    }
+  }
+
+  function collapseSearch() {
+    pill.style.width = "48px";
+    input.style.display = "none";
+    input.value = "";
+    document.querySelectorAll(".tool-card").forEach(card => {
+      card.style.display = "flex";
+    });
+    expanded = false;
+  }
+
+  pill.addEventListener("click", function () {
+    if (!expanded) {
+      expandSearch();
+    } else {
+      collapseSearch();
+    }
+  });
+
+  input.addEventListener("input", function () {
+    const query = input.value.toLowerCase();
+    if (!query) {
+      collapseSearch();
+      return;
     }
 
-    setTimeout(() => {
-      overlay.classList.add("show");
-    }, 300);
-
-    setTimeout(() => {
-      input.focus();
-    }, 600);
-  });
-
-  closeBtn.addEventListener("click", () => {
-    overlay.classList.remove("show");
-    input.value = '';
-    filterTools();
-  });
-
-  input.addEventListener("input", filterTools);
-
-  function filterTools() {
-    const query = input.value.toLowerCase();
-    document.querySelectorAll('.tool-card').forEach(card => {
+    document.querySelectorAll(".tool-card").forEach(card => {
       const text = card.innerText.toLowerCase();
-      card.style.display = text.includes(query) ? 'flex' : 'none';
+      card.style.display = text.includes(query) ? "flex" : "none";
     });
-  }
+
+    // Save to local history
+    if (query.length > 1) {
+      let recent = JSON.parse(localStorage.getItem("layerbit_searches") || "[]");
+      if (!recent.includes(query)) {
+        recent.unshift(query);
+        if (recent.length > 5) recent = recent.slice(0, 5);
+        localStorage.setItem("layerbit_searches", JSON.stringify(recent));
+      }
+    }
+  });
+
+  // Keyboard shortcuts: "/" or "Ctrl+K"
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "/" && !input.matches(":focus")) {
+      e.preventDefault();
+      expandSearch();
+    } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") {
+      e.preventDefault();
+      expanded ? collapseSearch() : expandSearch();
+    }
+  });
+
+  // Auto-collapse on scroll
+  let lastScrollY = window.scrollY;
+  window.addEventListener("scroll", () => {
+    if (expanded && Math.abs(window.scrollY - lastScrollY) > 50) {
+      collapseSearch();
+    }
+    lastScrollY = window.scrollY;
+  });
 });
 </script>
 
@@ -355,42 +397,84 @@ document.addEventListener("DOMContentLoaded", function () {
 
 <script>
 document.addEventListener("DOMContentLoaded", function () {
-  const fab = document.getElementById("searchFab");
-  const overlay = document.getElementById("searchOverlay");
-  const closeBtn = document.getElementById("closeSearch");
-  const input = document.getElementById("searchBox");
+  const pill = document.getElementById("pillSearch");
+  const input = document.getElementById("pillInput");
+  const section = document.getElementById("tools");
+  let expanded = false;
 
-  fab.addEventListener("click", () => {
-    const section = document.getElementById("tools");
-    if (section) {
-      const y = section.getBoundingClientRect().top + window.scrollY - 80;
-      window.scrollTo({ top: y, behavior: 'smooth' });
+  function expandSearch() {
+    if (!expanded) {
+      if (section) {
+        const y = section.getBoundingClientRect().top + window.scrollY - 80;
+        window.scrollTo({ top: y, behavior: 'smooth' });
+      }
+      pill.style.width = "260px";
+      input.style.display = "block";
+      input.focus();
+      expanded = true;
+    }
+  }
+
+  function collapseSearch() {
+    pill.style.width = "48px";
+    input.style.display = "none";
+    input.value = "";
+    document.querySelectorAll(".tool-card").forEach(card => {
+      card.style.display = "flex";
+    });
+    expanded = false;
+  }
+
+  pill.addEventListener("click", function () {
+    if (!expanded) {
+      expandSearch();
+    } else {
+      collapseSearch();
+    }
+  });
+
+  input.addEventListener("input", function () {
+    const query = input.value.toLowerCase();
+    if (!query) {
+      collapseSearch();
+      return;
     }
 
-    setTimeout(() => {
-      overlay.classList.add("show");
-    }, 300);
-
-    setTimeout(() => {
-      input.focus();
-    }, 600);
-  });
-
-  closeBtn.addEventListener("click", () => {
-    overlay.classList.remove("show");
-    input.value = '';
-    filterTools();
-  });
-
-  input.addEventListener("input", filterTools);
-
-  function filterTools() {
-    const query = input.value.toLowerCase();
-    document.querySelectorAll('.tool-card').forEach(card => {
+    document.querySelectorAll(".tool-card").forEach(card => {
       const text = card.innerText.toLowerCase();
-      card.style.display = text.includes(query) ? 'flex' : 'none';
+      card.style.display = text.includes(query) ? "flex" : "none";
     });
-  }
+
+    // Save to local history
+    if (query.length > 1) {
+      let recent = JSON.parse(localStorage.getItem("layerbit_searches") || "[]");
+      if (!recent.includes(query)) {
+        recent.unshift(query);
+        if (recent.length > 5) recent = recent.slice(0, 5);
+        localStorage.setItem("layerbit_searches", JSON.stringify(recent));
+      }
+    }
+  });
+
+  // Keyboard shortcuts: "/" or "Ctrl+K"
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "/" && !input.matches(":focus")) {
+      e.preventDefault();
+      expandSearch();
+    } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") {
+      e.preventDefault();
+      expanded ? collapseSearch() : expandSearch();
+    }
+  });
+
+  // Auto-collapse on scroll
+  let lastScrollY = window.scrollY;
+  window.addEventListener("scroll", () => {
+    if (expanded && Math.abs(window.scrollY - lastScrollY) > 50) {
+      collapseSearch();
+    }
+    lastScrollY = window.scrollY;
+  });
 });
 </script>
 
@@ -409,9 +493,7 @@ document.addEventListener("DOMContentLoaded", function () {
 <a class="hero-button" href="tools/layerlink-sharer.html">Try Now</a>
 </section>
 <button class="toggle-theme" onclick="toggleTheme()">🌓</button>
-<a class="request-tool" href="mailto:ceo@layerbit.co.in?subject=Request%20a%20Tool%20or%20Service">
-    🔧 Request Tool / Service
-  </a>
+
 <div class="hero">
 <h1 style="font-size: 2.6em; margin-bottom: 0.3em;">Tools That Work. Services That Scale.</h1>
 <p style="font-size: 1.15em; max-width: 700px; margin: 0 auto;">
@@ -555,42 +637,84 @@ document.addEventListener("DOMContentLoaded", function () {
 
 <script>
 document.addEventListener("DOMContentLoaded", function () {
-  const fab = document.getElementById("searchFab");
-  const overlay = document.getElementById("searchOverlay");
-  const closeBtn = document.getElementById("closeSearch");
-  const input = document.getElementById("searchBox");
+  const pill = document.getElementById("pillSearch");
+  const input = document.getElementById("pillInput");
+  const section = document.getElementById("tools");
+  let expanded = false;
 
-  fab.addEventListener("click", () => {
-    const section = document.getElementById("tools");
-    if (section) {
-      const y = section.getBoundingClientRect().top + window.scrollY - 80;
-      window.scrollTo({ top: y, behavior: 'smooth' });
+  function expandSearch() {
+    if (!expanded) {
+      if (section) {
+        const y = section.getBoundingClientRect().top + window.scrollY - 80;
+        window.scrollTo({ top: y, behavior: 'smooth' });
+      }
+      pill.style.width = "260px";
+      input.style.display = "block";
+      input.focus();
+      expanded = true;
+    }
+  }
+
+  function collapseSearch() {
+    pill.style.width = "48px";
+    input.style.display = "none";
+    input.value = "";
+    document.querySelectorAll(".tool-card").forEach(card => {
+      card.style.display = "flex";
+    });
+    expanded = false;
+  }
+
+  pill.addEventListener("click", function () {
+    if (!expanded) {
+      expandSearch();
+    } else {
+      collapseSearch();
+    }
+  });
+
+  input.addEventListener("input", function () {
+    const query = input.value.toLowerCase();
+    if (!query) {
+      collapseSearch();
+      return;
     }
 
-    setTimeout(() => {
-      overlay.classList.add("show");
-    }, 300);
-
-    setTimeout(() => {
-      input.focus();
-    }, 600);
-  });
-
-  closeBtn.addEventListener("click", () => {
-    overlay.classList.remove("show");
-    input.value = '';
-    filterTools();
-  });
-
-  input.addEventListener("input", filterTools);
-
-  function filterTools() {
-    const query = input.value.toLowerCase();
-    document.querySelectorAll('.tool-card').forEach(card => {
+    document.querySelectorAll(".tool-card").forEach(card => {
       const text = card.innerText.toLowerCase();
-      card.style.display = text.includes(query) ? 'flex' : 'none';
+      card.style.display = text.includes(query) ? "flex" : "none";
     });
-  }
+
+    // Save to local history
+    if (query.length > 1) {
+      let recent = JSON.parse(localStorage.getItem("layerbit_searches") || "[]");
+      if (!recent.includes(query)) {
+        recent.unshift(query);
+        if (recent.length > 5) recent = recent.slice(0, 5);
+        localStorage.setItem("layerbit_searches", JSON.stringify(recent));
+      }
+    }
+  });
+
+  // Keyboard shortcuts: "/" or "Ctrl+K"
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "/" && !input.matches(":focus")) {
+      e.preventDefault();
+      expandSearch();
+    } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") {
+      e.preventDefault();
+      expanded ? collapseSearch() : expandSearch();
+    }
+  });
+
+  // Auto-collapse on scroll
+  let lastScrollY = window.scrollY;
+  window.addEventListener("scroll", () => {
+    if (expanded && Math.abs(window.scrollY - lastScrollY) > 50) {
+      collapseSearch();
+    }
+    lastScrollY = window.scrollY;
+  });
 });
 </script>
 
@@ -648,42 +772,84 @@ onValue(visitRef, (snapshot) => {
 
 <script>
 document.addEventListener("DOMContentLoaded", function () {
-  const fab = document.getElementById("searchFab");
-  const overlay = document.getElementById("searchOverlay");
-  const closeBtn = document.getElementById("closeSearch");
-  const input = document.getElementById("searchBox");
+  const pill = document.getElementById("pillSearch");
+  const input = document.getElementById("pillInput");
+  const section = document.getElementById("tools");
+  let expanded = false;
 
-  fab.addEventListener("click", () => {
-    const section = document.getElementById("tools");
-    if (section) {
-      const y = section.getBoundingClientRect().top + window.scrollY - 80;
-      window.scrollTo({ top: y, behavior: 'smooth' });
+  function expandSearch() {
+    if (!expanded) {
+      if (section) {
+        const y = section.getBoundingClientRect().top + window.scrollY - 80;
+        window.scrollTo({ top: y, behavior: 'smooth' });
+      }
+      pill.style.width = "260px";
+      input.style.display = "block";
+      input.focus();
+      expanded = true;
+    }
+  }
+
+  function collapseSearch() {
+    pill.style.width = "48px";
+    input.style.display = "none";
+    input.value = "";
+    document.querySelectorAll(".tool-card").forEach(card => {
+      card.style.display = "flex";
+    });
+    expanded = false;
+  }
+
+  pill.addEventListener("click", function () {
+    if (!expanded) {
+      expandSearch();
+    } else {
+      collapseSearch();
+    }
+  });
+
+  input.addEventListener("input", function () {
+    const query = input.value.toLowerCase();
+    if (!query) {
+      collapseSearch();
+      return;
     }
 
-    setTimeout(() => {
-      overlay.classList.add("show");
-    }, 300);
-
-    setTimeout(() => {
-      input.focus();
-    }, 600);
-  });
-
-  closeBtn.addEventListener("click", () => {
-    overlay.classList.remove("show");
-    input.value = '';
-    filterTools();
-  });
-
-  input.addEventListener("input", filterTools);
-
-  function filterTools() {
-    const query = input.value.toLowerCase();
-    document.querySelectorAll('.tool-card').forEach(card => {
+    document.querySelectorAll(".tool-card").forEach(card => {
       const text = card.innerText.toLowerCase();
-      card.style.display = text.includes(query) ? 'flex' : 'none';
+      card.style.display = text.includes(query) ? "flex" : "none";
     });
-  }
+
+    // Save to local history
+    if (query.length > 1) {
+      let recent = JSON.parse(localStorage.getItem("layerbit_searches") || "[]");
+      if (!recent.includes(query)) {
+        recent.unshift(query);
+        if (recent.length > 5) recent = recent.slice(0, 5);
+        localStorage.setItem("layerbit_searches", JSON.stringify(recent));
+      }
+    }
+  });
+
+  // Keyboard shortcuts: "/" or "Ctrl+K"
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "/" && !input.matches(":focus")) {
+      e.preventDefault();
+      expandSearch();
+    } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") {
+      e.preventDefault();
+      expanded ? collapseSearch() : expandSearch();
+    }
+  });
+
+  // Auto-collapse on scroll
+  let lastScrollY = window.scrollY;
+  window.addEventListener("scroll", () => {
+    if (expanded && Math.abs(window.scrollY - lastScrollY) > 50) {
+      collapseSearch();
+    }
+    lastScrollY = window.scrollY;
+  });
 });
 </script>
 
@@ -698,52 +864,84 @@ document.addEventListener("DOMContentLoaded", function () {
 
 <script>
 document.addEventListener("DOMContentLoaded", function () {
-  console.log("DOM loaded, binding search events...");
+  const pill = document.getElementById("pillSearch");
+  const input = document.getElementById("pillInput");
+  const section = document.getElementById("tools");
+  let expanded = false;
 
-  const fab = document.getElementById("searchFab");
-  const overlay = document.getElementById("searchOverlay");
-  const closeBtn = document.getElementById("closeSearch");
-  const input = document.getElementById("searchBox");
-
-  if (!fab || !overlay || !closeBtn || !input) {
-    console.error("Search UI elements not found.");
-    return;
+  function expandSearch() {
+    if (!expanded) {
+      if (section) {
+        const y = section.getBoundingClientRect().top + window.scrollY - 80;
+        window.scrollTo({ top: y, behavior: 'smooth' });
+      }
+      pill.style.width = "260px";
+      input.style.display = "block";
+      input.focus();
+      expanded = true;
+    }
   }
 
-  fab.addEventListener("click", () => {
-    console.log("Search button clicked.");
+  function collapseSearch() {
+    pill.style.width = "48px";
+    input.style.display = "none";
+    input.value = "";
+    document.querySelectorAll(".tool-card").forEach(card => {
+      card.style.display = "flex";
+    });
+    expanded = false;
+  }
 
-    const section = document.getElementById("tools");
-    if (section) {
-      const y = section.getBoundingClientRect().top + window.scrollY - 80;
-      window.scrollTo({ top: y, behavior: 'smooth' });
+  pill.addEventListener("click", function () {
+    if (!expanded) {
+      expandSearch();
+    } else {
+      collapseSearch();
+    }
+  });
+
+  input.addEventListener("input", function () {
+    const query = input.value.toLowerCase();
+    if (!query) {
+      collapseSearch();
+      return;
     }
 
-    setTimeout(() => {
-      overlay.classList.add("show");
-    }, 300);
-
-    setTimeout(() => {
-      input.focus();
-    }, 600);
-  });
-
-  closeBtn.addEventListener("click", () => {
-    overlay.classList.remove("show");
-    input.value = '';
-    filterTools();
-  });
-
-  input.addEventListener("input", filterTools);
-
-  function filterTools() {
-    console.log("Filtering tools...");
-    const query = input.value.toLowerCase();
-    document.querySelectorAll('.tool-card').forEach(card => {
+    document.querySelectorAll(".tool-card").forEach(card => {
       const text = card.innerText.toLowerCase();
-      card.style.display = text.includes(query) ? 'flex' : 'none';
+      card.style.display = text.includes(query) ? "flex" : "none";
     });
-  }
+
+    // Save to local history
+    if (query.length > 1) {
+      let recent = JSON.parse(localStorage.getItem("layerbit_searches") || "[]");
+      if (!recent.includes(query)) {
+        recent.unshift(query);
+        if (recent.length > 5) recent = recent.slice(0, 5);
+        localStorage.setItem("layerbit_searches", JSON.stringify(recent));
+      }
+    }
+  });
+
+  // Keyboard shortcuts: "/" or "Ctrl+K"
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "/" && !input.matches(":focus")) {
+      e.preventDefault();
+      expandSearch();
+    } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") {
+      e.preventDefault();
+      expanded ? collapseSearch() : expandSearch();
+    }
+  });
+
+  // Auto-collapse on scroll
+  let lastScrollY = window.scrollY;
+  window.addEventListener("scroll", () => {
+    if (expanded && Math.abs(window.scrollY - lastScrollY) > 50) {
+      collapseSearch();
+    }
+    lastScrollY = window.scrollY;
+  });
 });
 </script>
 
@@ -765,26 +963,80 @@ document.addEventListener("DOMContentLoaded", function () {
   const pill = document.getElementById("pillSearch");
   const input = document.getElementById("pillInput");
   const section = document.getElementById("tools");
+  let expanded = false;
+
+  function expandSearch() {
+    if (!expanded) {
+      if (section) {
+        const y = section.getBoundingClientRect().top + window.scrollY - 80;
+        window.scrollTo({ top: y, behavior: 'smooth' });
+      }
+      pill.style.width = "260px";
+      input.style.display = "block";
+      input.focus();
+      expanded = true;
+    }
+  }
+
+  function collapseSearch() {
+    pill.style.width = "48px";
+    input.style.display = "none";
+    input.value = "";
+    document.querySelectorAll(".tool-card").forEach(card => {
+      card.style.display = "flex";
+    });
+    expanded = false;
+  }
 
   pill.addEventListener("click", function () {
-    // Scroll to Dev Tools
-    if (section) {
-      const y = section.getBoundingClientRect().top + window.scrollY - 80;
-      window.scrollTo({ top: y, behavior: 'smooth' });
+    if (!expanded) {
+      expandSearch();
+    } else {
+      collapseSearch();
     }
-
-    // Expand pill and focus input
-    pill.style.width = "260px";
-    input.style.display = "block";
-    setTimeout(() => input.focus(), 200);
   });
 
   input.addEventListener("input", function () {
     const query = input.value.toLowerCase();
+    if (!query) {
+      collapseSearch();
+      return;
+    }
+
     document.querySelectorAll(".tool-card").forEach(card => {
       const text = card.innerText.toLowerCase();
       card.style.display = text.includes(query) ? "flex" : "none";
     });
+
+    // Save to local history
+    if (query.length > 1) {
+      let recent = JSON.parse(localStorage.getItem("layerbit_searches") || "[]");
+      if (!recent.includes(query)) {
+        recent.unshift(query);
+        if (recent.length > 5) recent = recent.slice(0, 5);
+        localStorage.setItem("layerbit_searches", JSON.stringify(recent));
+      }
+    }
+  });
+
+  // Keyboard shortcuts: "/" or "Ctrl+K"
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "/" && !input.matches(":focus")) {
+      e.preventDefault();
+      expandSearch();
+    } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") {
+      e.preventDefault();
+      expanded ? collapseSearch() : expandSearch();
+    }
+  });
+
+  // Auto-collapse on scroll
+  let lastScrollY = window.scrollY;
+  window.addEventListener("scroll", () => {
+    if (expanded && Math.abs(window.scrollY - lastScrollY) > 50) {
+      collapseSearch();
+    }
+    lastScrollY = window.scrollY;
   });
 });
 </script>
@@ -863,5 +1115,127 @@ onValue(visitRef, (snapshot) => {
   updateDigits(count);
 });
 </script>
+
+<style>
+  
+
+
+#chatFab {
+  position: fixed;
+  bottom: 80px;
+  right: 20px;
+  width: 48px;
+  height: 48px;
+  background: white;
+  color: #007bff;  /* Strong blue for visibility */
+  border: none;
+  border-radius: 12px;
+  font-size: 24px;
+  font-weight: bold;
+  cursor: pointer;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+}
+#chatFab:hover {
+  background: #f0f0f0;
+}
+
+#chatFab:hover {
+  background: #f0f0f0;
+}
+
+#chatFab:hover {
+  background: #f0f0f0;
+}
+
+
+  #chatModal {
+    display: none;
+    position: fixed;
+    z-index: 9999;
+    left: 0; top: 0;
+    width: 100%; height: 100%;
+    background: rgba(0,0,0,0.4);
+    font-family: 'Space Grotesk', sans-serif;
+  }
+
+  #chatModalContent {
+    background: white;
+    margin: 15% auto;
+    padding: 20px;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 360px;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+    text-align: center;
+  }
+
+  #chatModalContent h3 {
+    margin-top: 0;
+    font-size: 1.3rem;
+    color: #333;
+  }
+
+  .chat-option {
+    display: block;
+    margin: 10px auto;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 8px;
+    background: #007bff;
+    color: white;
+    font-weight: bold;
+    text-decoration: none;
+  }
+
+  .chat-option.whatsapp {
+    background: #25D366;
+  }
+
+  #closeChatModal {
+    float: right;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+    color: #888;
+  }
+
+  #closeChatModal:hover {
+    color: #000;
+  }
+</style>
+
+<button id="chatFab" title="Contact Layerbit">
+  <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="#007bff" viewBox="0 0 24 24">
+    <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H6l-4 4V6c0-1.1.9-2 2-2z"/>
+  </svg>
+</button>
+
+<div id="chatModal">
+  <div id="chatModalContent">
+    <span id="closeChatModal">&times;</span>
+    <h3>Contact Layerbit</h3>
+    <a class="chat-option" href="mailto:ceo@layerbit.co.in?subject=Request%20Support">Email</a>
+    <a class="chat-option whatsapp" href="https://wa.me/916282595823" target="_blank">WhatsApp</a>
+  </div>
+</div>
+
+<script>
+  document.getElementById("chatFab").onclick = function () {
+    document.getElementById("chatModal").style.display = "block";
+  };
+  document.getElementById("closeChatModal").onclick = function () {
+    document.getElementById("chatModal").style.display = "none";
+  };
+  window.onclick = function (event) {
+    if (event.target === document.getElementById("chatModal")) {
+      document.getElementById("chatModal").style.display = "none";
+    }
+  };
+</script>
+
 </body>
 </html>
