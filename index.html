@@ -530,68 +530,7 @@ document.addEventListener("DOMContentLoaded", function () {
       <a href="blog.html">Blog</a> | <a href="contact.html">Contact</a>
 </p>
 </footer>
-<script>
-  const gradients = [
-    'linear-gradient(135deg, #4facfe, #00f2fe)',
-    'linear-gradient(135deg, #43e97b, #38f9d7)',
-    'linear-gradient(135deg, #30cfd0, #330867)',
-    'linear-gradient(135deg, #a1c4fd, #c2e9fb)',
-    'linear-gradient(135deg, #667eea, #764ba2)'
-  ];
 
-  function shuffleBackground() {
-    const bg = gradients[Math.floor(Math.random() * gradients.length)];
-    document.body.style.background = bg;
-  }
-
-  function toggleTheme() {
-    const theme = document.documentElement.getAttribute("data-theme");
-    document.documentElement.setAttribute("data-theme", theme === "light" ? "dark" : "light");
-    shuffleBackground(); // only shuffle on toggle
-  }
-
-  document.documentElement.setAttribute("data-theme", "dark"); // set initial theme properly
-
-<script>
-document.addEventListener("DOMContentLoaded", function () {
-  const fab = document.getElementById("searchFab");
-  const overlay = document.getElementById("searchOverlay");
-  const closeBtn = document.getElementById("closeSearch");
-  const input = document.getElementById("searchBox");
-
-  fab.addEventListener("click", () => {
-    const section = document.getElementById("tools");
-    if (section) {
-      const y = section.getBoundingClientRect().top + window.scrollY - 80;
-      window.scrollTo({ top: y, behavior: 'smooth' });
-    }
-
-    setTimeout(() => {
-      overlay.classList.add("show");
-    }, 300);
-
-    setTimeout(() => {
-      input.focus();
-    }, 600);
-  });
-
-  closeBtn.addEventListener("click", () => {
-    overlay.classList.remove("show");
-    input.value = '';
-    filterTools();
-  });
-
-  input.addEventListener("input", filterTools);
-
-  function filterTools() {
-    const query = input.value.toLowerCase();
-    document.querySelectorAll('.tool-card').forEach(card => {
-      const text = card.innerText.toLowerCase();
-      card.style.display = text.includes(query) ? 'flex' : 'none';
-    });
-  }
-});
-</script>
 
 </script>
 <script type="module">
@@ -692,14 +631,7 @@ document.addEventListener("DOMContentLoaded", function () {
 <img alt="Buy Me a Coffee" class="floating-button" src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png"/>
 </a>
 
-<!-- Floating Search Button -->
-<button class="search-fab" id="searchFab">🔍</button>
 
-<!-- Search Input Overlay -->
-<div class="search-overlay" id="searchOverlay">
-  <input type="text" id="searchBox" placeholder="Search tools..." />
-  <button id="closeSearch">❌</button>
-</div>
 
 
 <script>
@@ -751,6 +683,72 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 });
+</script>
+
+
+<!-- Pill Style Floating Search -->
+<div id="pillSearchWrapper" style="position: fixed; bottom: 20px; left: 20px; z-index: 9999;">
+  <div id="pillSearch" style="width: 48px; padding: 10px 14px; display: flex; align-items: center; gap: 10px; background: white; border-radius: 40px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); cursor: pointer; transition: width 0.3s ease;">
+    <svg id="pillIcon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#333" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="11" cy="11" r="8"/>
+      <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+    </svg>
+    <input type="text" id="pillInput" placeholder="Search tools..." style="flex: 1; font-size: 1em; border: none; outline: none; background: transparent; display: none; font-family: Space Grotesk, sans-serif;" />
+  </div>
+</div>
+
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  const pill = document.getElementById("pillSearch");
+  const input = document.getElementById("pillInput");
+  const section = document.getElementById("tools");
+
+  pill.addEventListener("click", function () {
+    // Scroll to Dev Tools
+    if (section) {
+      const y = section.getBoundingClientRect().top + window.scrollY - 80;
+      window.scrollTo({ top: y, behavior: 'smooth' });
+    }
+
+    // Expand pill and focus input
+    pill.style.width = "260px";
+    input.style.display = "block";
+    setTimeout(() => input.focus(), 200);
+  });
+
+  input.addEventListener("input", function () {
+    const query = input.value.toLowerCase();
+    document.querySelectorAll(".tool-card").forEach(card => {
+      const text = card.innerText.toLowerCase();
+      card.style.display = text.includes(query) ? "flex" : "none";
+    });
+  });
+});
+</script>
+
+
+<script>
+  const gradients = [
+    'linear-gradient(135deg, #4facfe, #00f2fe)',
+    'linear-gradient(135deg, #43e97b, #38f9d7)',
+    'linear-gradient(135deg, #30cfd0, #330867)',
+    'linear-gradient(135deg, #a1c4fd, #c2e9fb)',
+    'linear-gradient(135deg, #667eea, #764ba2)'
+  ];
+
+  function shuffleBackground() {
+    const bg = gradients[Math.floor(Math.random() * gradients.length)];
+    document.body.style.background = bg;
+  }
+
+  function toggleTheme() {
+    const theme = document.documentElement.getAttribute("data-theme");
+    document.documentElement.setAttribute("data-theme", theme === "light" ? "dark" : "light");
+    shuffleBackground(); // only shuffle on toggle
+  }
+
+  document.documentElement.setAttribute("data-theme", "dark"); // set initial theme properly
 </script>
 
 </body>
