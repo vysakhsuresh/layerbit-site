@@ -6,3 +6,5 @@ Application Registrations:
 5) goDaddy : Website hosting
 6) Replit : https://replit.com/
 7) Glitch : https://glitch.com
+8) Stripe (vysakhsuresh200290@gmail.com - Google account linked login)
+9) BuyMeACoffee (vysakhsuresh200290@gmail.com - Google account linked login)
