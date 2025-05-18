@@ -578,15 +578,50 @@ document.addEventListener("DOMContentLoaded", function () {
 </div>
 </div>
 <div id="visit-counter-wrapper" style="display: flex; justify-content: center; align-items: center; gap: 6px; margin: 30px auto 0; font-family: 'Space Grotesk', sans-serif; color: white; font-size: 1.1em; flex-wrap: wrap;"><span style="font-size: 20px; font-weight: bold;">Visitors:</span><div id="digit-container" style="display:flex; gap:4px; margin-left:6px;"></div></div>
-<footer>
-<p>© 2025 Layerbit. All rights reserved.</p>
-<p>
-<a href="about.html">About</a> | <a href="privacy.html">Privacy Policy</a> |
-      <a href="terms.html">Terms</a> |
-      <a href="blog.html">Blog</a> | <a href="contact.html">Contact</a>
-</p>
-<div id="visit-counter-wrapper" style="display: flex; justify-content: center; align-items: center; gap: 6px; margin: 30px auto 0; font-family: 'Space Grotesk', sans-serif; color: white; font-size: 1.1em; flex-wrap: wrap;"><span style="font-size: 20px; font-weight: bold;"></span><div id="digit-container" style="display:flex; gap:4px; margin-left:6px;"></div>
+
+<footer class="footer">
+  <div class="footer-top">
+    <span>© 2025 <strong>Layerbit</strong>. All rights reserved.</span>
+    <div class="footer-links">
+      <a href="about.html">About</a>
+      <a href="privacy.html">Privacy Policy</a>
+      <a href="terms.html">Terms</a>
+      <a href="blog.html">Blog</a>
+      <a href="mailto:ceo@layerbit.co.in">Contact</a>
+    </div>
+  </div>
 </footer>
+<style>
+.footer {
+  padding: 30px 20px;
+  text-align: center;
+  font-size: 0.95rem;
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-color);
+  font-family: 'Space Grotesk', sans-serif;
+  margin-top: 60px;
+  border-top: 1px solid rgba(255,255,255,0.15);
+}
+.footer-top {
+  max-width: 900px;
+  margin: auto;
+}
+.footer-links {
+  margin-top: 10px;
+}
+.footer-links a {
+  margin: 0 10px;
+  text-decoration: none;
+  color: var(--text-color);
+  font-weight: 500;
+  transition: color 0.3s;
+}
+.footer-links a:hover {
+  text-decoration: underline;
+  color: #4facfe;
+}
+</style>
+
 <script>
   const gradients = [
     'linear-gradient(135deg, #4facfe, #00f2fe)',
