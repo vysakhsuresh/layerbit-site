@@ -9,3 +9,8 @@ Application Registrations:
 8) Stripe (vysakhsuresh200290@gmail.com - Google account linked login)
 9) BuyMeACoffee (vysakhsuresh200290@gmail.com - Google account linked login)
 10) render.com (vysakhsuresh200290@gmail.com - Google account linked login)
+
+
+Dependancies installed:
+1) NodeJS
+npm install -g firebase-tools
