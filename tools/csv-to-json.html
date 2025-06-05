@@ -1,13 +1,14 @@
 <!DOCTYPE html>
+
 <html lang="en">
- <head>
-  <meta charset="utf-8"/>
-  <meta content="width=device-width, initial-scale=1" name="viewport"/>
-  <title>
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<title>
    CSV to JSON Converter - Layerbit
   </title>
-  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&amp;display=swap" rel="stylesheet"/>
-  <style>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&amp;display=swap" rel="stylesheet"/>
+<style>
    :root {
       --bg-color: linear-gradient(135deg, #1f1c2c, #928dab);
       --text-color: white;
@@ -159,33 +160,33 @@
       content: "";
     }
   </style>
- </head>
- <body data-theme="dark">
-  <p style="max-width:800px;margin:20px auto;font-size:1em;text-align:center;">
+<meta content="Free browser-based tool by Layerbit. Fast, simple, and privacy-respecting." name="description"/></head>
+<body data-theme="dark">
+<p style="max-width:800px;margin:20px auto;font-size:1em;text-align:center;">
    Convert CSV data into JSON format for use in APIs or JavaScript apps. Easy copy-paste input.
   </p>
-  <button class="toggle-theme" onclick="toggleTheme()">
+<button class="toggle-theme" onclick="toggleTheme()">
    🌓
   </button>
-  <h1>
+<h1>
    CSV to JSON Converter
   </h1>
-  <p>
+<p>
    Paste CSV data or upload a CSV file below.
   </p>
-  <input accept=".csv" id="csvFile" onchange="handleFileUpload()" style="display:none;" type="file"/>
-  <label class="custom-file" for="csvFile">
+<input accept=".csv" id="csvFile" onchange="handleFileUpload()" style="display:none;" type="file"/>
+<label class="custom-file" for="csvFile">
    📂 Upload CSV File
   </label>
-  <span id="fileNameDisplay" style="font-size: 0.9em; opacity: 0.8; display: block; margin-bottom: 10px;">
-  </span>
-  <textarea id="csvInput" placeholder="name,age\nJohn,30\nJane,25"></textarea>
-  <br/>
-  <button class="btn" onclick="convertCSV()">
+<span id="fileNameDisplay" style="font-size: 0.9em; opacity: 0.8; display: block; margin-bottom: 10px;">
+</span>
+<textarea id="csvInput" placeholder="name,age\nJohn,30\nJane,25"></textarea>
+<br/>
+<button class="btn" onclick="convertCSV()">
    Convert
   </button>
-  <pre class="output" id="jsonOutput"></pre>
-  <script>
+<pre class="output" id="jsonOutput"></pre>
+<script>
    function convertCSV() {
       const input = document.getElementById('csvInput').value.trim();
       const lines = input.split('\n');
@@ -270,55 +271,55 @@
       reader.readAsText(file);
     }
   </script>
-  <a class="home-fab" href="../index.html" title="Home">
-   <svg viewbox="0 0 24 24">
-    <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z">
-    </path>
-   </svg>
-  </a>
-  <details style="max-width: 700px; margin: 60px auto 20px auto; background: rgba(255,255,255,0.1); padding: 20px; border-radius: 10px;">
-   <summary style="cursor: pointer; font-weight: bold; font-size: 1.1em;">
+<a class="home-fab" href="../index.html" title="Home">
+<svg viewbox="0 0 24 24">
+<path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z">
+</path>
+</svg>
+</a>
+<details style="max-width: 700px; margin: 60px auto 20px auto; background: rgba(255,255,255,0.1); padding: 20px; border-radius: 10px;">
+<summary style="cursor: pointer; font-weight: bold; font-size: 1.1em;">
     🔎 About this Tool (Click to Expand)
    </summary>
-   <div style="margin-top: 15px; text-align: left;">
-    <h3 style="margin-top: 10px; color: #fff;">
+<div style="margin-top: 15px; text-align: left;">
+<h3 style="margin-top: 10px; color: #fff;">
      📌 What is CSV to JSON Converter?
     </h3>
-    <p>
+<p>
      This tool converts Comma-Separated Values (CSV) data into structured JSON objects. It supports both pasted text and uploaded files.
     </p>
-    <h3 style="margin-top: 20px; color: #fff;">
+<h3 style="margin-top: 20px; color: #fff;">
      💡 Key Uses
     </h3>
-    <ul>
-     <li>
+<ul>
+<li>
       ✅ Convert spreadsheet-like data into JSON format
      </li>
-     <li>
+<li>
       ✅ Ready for APIs, web development, or app data handling
      </li>
-     <li>
+<li>
       ✅ Easy export and use in modern JavaScript applications
      </li>
-    </ul>
-    <h3 style="margin-top: 20px; color: #fff;">
+</ul>
+<h3 style="margin-top: 20px; color: #fff;">
      🚀 How to Use
     </h3>
-    <ol>
-     <li>
+<ol>
+<li>
       1️⃣ Paste or upload your CSV file
      </li>
-     <li>
+<li>
       2️⃣ Click "Convert" to see the JSON output
      </li>
-     <li>
+<li>
       3️⃣ Copy or export the JSON result
      </li>
-    </ol>
-    <p style="margin-top: 20px;">
+</ol>
+<p style="margin-top: 20px;">
      Tool runs fully on your browser. Your data stays private. Built for developers and analysts by Layerbit.
     </p>
-   </div>
-  </details>
- </body>
+</div>
+</details>
+</body>
 </html>

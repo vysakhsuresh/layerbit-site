@@ -1,13 +1,14 @@
 <!DOCTYPE html>
+
 <html lang="en">
- <head>
-  <meta charset="utf-8"/>
-  <meta content="width=device-width, initial-scale=1" name="viewport"/>
-  <title>
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<title>
    JSON Validator &amp; Formatter - Layerbit
   </title>
-  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&amp;display=swap" rel="stylesheet"/>
-  <style>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&amp;display=swap" rel="stylesheet"/>
+<style>
    ul, ol {
       list-style: none;
       padding-left: 0;
@@ -116,30 +117,30 @@
     background: #eee;
   }
   </style>
- </head>
- <body>
-  <p style="max-width:800px;margin:20px auto;font-size:1em;text-align:center;">
+<meta content="Free browser-based tool by Layerbit. Fast, simple, and privacy-respecting." name="description"/></head>
+<body>
+<p style="max-width:800px;margin:20px auto;font-size:1em;text-align:center;">
    Use this tool to validate and format your JSON data. Great for developers handling API responses or configuration files.
   </p>
-  <h1>
+<h1>
    JSON Validator &amp; Formatter
   </h1>
-  <textarea id="input" placeholder="Paste your JSON here..." style="margin-bottom: 20px;"></textarea>
-  <button onclick="formatJSON()" style="margin-bottom: 20px;">
+<textarea id="input" placeholder="Paste your JSON here..." style="margin-bottom: 20px;"></textarea>
+<button onclick="formatJSON()" style="margin-bottom: 20px;">
    Validate &amp; Format
   </button>
-  <div style="position: relative; width: 100%; max-width: 700px;">
-   <pre id="output" style="padding: 15px 60px 15px 15px; margin: 0; background-color: rgba(0,0,0,0.2); border-radius: 10px; min-height: 100px;"></pre>
-   <button onclick="copyToClipboard()" style="position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.6); color: white; border: none;
+<div style="position: relative; width: 100%; max-width: 700px;">
+<pre id="output" style="padding: 15px 60px 15px 15px; margin: 0; background-color: rgba(0,0,0,0.2); border-radius: 10px; min-height: 100px;"></pre>
+<button onclick="copyToClipboard()" style="position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.6); color: white; border: none;
     padding: 6px 12px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 6px;
     border-radius: 6px; z-index: 100;" title="Copy formatted JSON">
     📋
     <span style="font-family: 'Space Grotesk', sans-serif;">
      Copy
     </span>
-   </button>
-  </div>
-  <script>
+</button>
+</div>
+<script>
    function extractAndFormatAllJSON(text) {
     const regex = /[{\[][^{}\[\]]*[}\]]/g;
     const matches = text.match(/({[\s\S]*?}|\[[\s\S]*?\])/g);
@@ -184,62 +185,62 @@
     });
   }
   </script>
-  <details style="max-width: 700px; margin-top: 40px; background: rgba(255,255,255,0.1); padding: 20px; border-radius: 10px;">
-   <summary style="cursor: pointer; font-weight: bold; font-size: 1.1em;">
+<details style="max-width: 700px; margin-top: 40px; background: rgba(255,255,255,0.1); padding: 20px; border-radius: 10px;">
+<summary style="cursor: pointer; font-weight: bold; font-size: 1.1em;">
     🔎 About this Tool (Click to Expand)
    </summary>
-   <div style="margin-top: 15px; text-align: left;">
-    <h3 style="margin-top: 10px; color: #fff;">
+<div style="margin-top: 15px; text-align: left;">
+<h3 style="margin-top: 10px; color: #fff;">
      📌 What is JSON Validator &amp; Formatter?
     </h3>
-    <p>
+<p>
      This tool checks if your JSON input is valid and formats it for easier readability. It’s perfect for developers working with REST APIs, frontend-backend integration, or configuration files.
     </p>
-    <h3 style="margin-top: 20px; color: #fff;">
+<h3 style="margin-top: 20px; color: #fff;">
      💡 Common Use Cases
     </h3>
-    <ul>
-     <li>
+<ul>
+<li>
       ✅ Quickly debug malformed API responses
      </li>
-     <li>
+<li>
       ✅ Pretty-print JSON for reports or documentation
      </li>
-     <li>
+<li>
       ✅ Extract and format JSON blocks from messy logs
      </li>
-    </ul>
-    <h3 style="margin-top: 20px; color: #fff;">
+</ul>
+<h3 style="margin-top: 20px; color: #fff;">
      🚀 How to Use
     </h3>
-    <ol>
-     <li>
+<ol>
+<li>
       1️⃣ Paste your raw JSON (or logs containing JSON) in the input area
      </li>
-     <li>
+<li>
       2️⃣ Click
       <strong>
        Validate &amp; Format
       </strong>
-     </li>
-     <li>
+</li>
+<li>
       3️⃣ View the output below and optionally click
       <strong>
        Copy
       </strong>
       to use it elsewhere
      </li>
-    </ol>
-    <p style="margin-top: 20px;">
+</ol>
+<p style="margin-top: 20px;">
      This tool is lightweight, offline-safe, and does not store your data. Built with ❤️ by Layerbit.
     </p>
-   </div>
-  </details>
-  <a class="home-fab" href="../index.html" title="Home">
-   <svg viewbox="0 0 24 24">
-    <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z">
-    </path>
-   </svg>
-  </a>
- </body>
+</div>
+</details>
+<a class="home-fab" href="../index.html" title="Home">
+<svg viewbox="0 0 24 24">
+<path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z">
+</path>
+</svg>
+</a>
+</body>
 </html>

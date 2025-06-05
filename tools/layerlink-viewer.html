@@ -1,9 +1,10 @@
 <!DOCTYPE html>
+
 <html>
 <head>
-  <title>LayerLink Viewer</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <style>
+<title>LayerLink Viewer</title>
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<style>
     body {
       font-family: sans-serif;
       background: linear-gradient(135deg, #1f1c2c, #928dab);
@@ -17,12 +18,11 @@
       border-radius: 12px;
     }
   </style>
-</head>
+<meta content="Free browser-based tool by Layerbit. Fast, simple, and privacy-respecting." name="description"/></head>
 <body>
-  <h1>LayerLink Viewer</h1>
-  <p id="status">Connecting...</p>
-  <video id="video" muted autoplay playsinline></video>
-  
+<h1>LayerLink Viewer</h1>
+<p id="status">Connecting...</p>
+<video autoplay="" id="video" muted="" playsinline=""></video>
 <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
 <script>
@@ -38,8 +38,7 @@
   firebase.initializeApp(firebaseConfig);
   const db = firebase.database();
 </script>
-
-  <script>
+<script>
     const params = new URLSearchParams(location.search);
     const sessionId = params.get("session");
     const conn = db.ref("sessions/" + sessionId);
@@ -77,9 +76,7 @@ peer.ontrack = event => {
 
     connect();
   </script>
-
-  <button onclick="location.reload()" style="margin-top:20px;padding:10px 20px;border-radius:8px;">🔄 Reconnect</button>
-  <noscript><p style="color:yellow;">⚠️ JavaScript is required to view the stream.</p></noscript>
+<button onclick="location.reload()" style="margin-top:20px;padding:10px 20px;border-radius:8px;">🔄 Reconnect</button>
+<noscript><p style="color:yellow;">⚠️ JavaScript is required to view the stream.</p></noscript>
 </body>
-
 </html>
