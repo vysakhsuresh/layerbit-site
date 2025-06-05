@@ -1,162 +1,113 @@
+
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1" name="viewport"/>
-<title>SQL Formatter - Layerbit</title>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&amp;display=swap" rel="stylesheet"/>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Universal SQL Formatter</title>
+<script src="https://cdn.jsdelivr.net/npm/sql-formatter@15.6.2/dist/sql-formatter.min.js"></script>
 <style>
-    body {
-      font-family: 'Space Grotesk', sans-serif;
-      background: linear-gradient(135deg, #1f1c2c, #928dab);
-      color: white;
-      padding: 30px 20px;
-      max-width: 1000px;
-      margin: auto;
-      text-align: center;
-    }
-
-    h1 {
-      font-size: 2.2em;
-      margin-bottom: 20px;
-    }
-
-    textarea {
-      width: 100%;  /* Ensure textarea takes up full width */
-      height: 200px;
-      padding: 15px;
-      border-radius: 8px;
-      border: none;
-      font-size: 1em;
-      font-family: monospace;
-      resize: vertical;
-      box-sizing: border-box;  /* Prevent overflow from padding */
-    }
-
-    .btn {
-      margin: 20px 0;
-      padding: 12px 25px;
-      font-size: 1em;
-      font-weight: bold;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      background: white;
-      color: #333;
-      transition: background 0.3s;
-    }
-
-    .btn:hover {
-      background: #eee;
-    }
-
-    .back {
-      position: fixed;
-      bottom: 20px;
-      left: 20px;
-      background: white;
-      color: #333;
-      padding: 10px 18px;
-      border-radius: 8px;
-      text-decoration: none;
-      font-weight: bold;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-    }
-
-    /* Media Queries for Responsiveness */
-    @media (max-width: 768px) {
-      h1 {
-        font-size: 1.8em;
-      }
-
-      textarea {
-        height: 150px;  /* Reduced height for mobile */
-        font-size: 0.9em;  /* Smaller font for mobile */
-        padding: 10px;  /* Less padding for mobile */
-      }
-
-      .btn {
-        padding: 10px 20px;
-        font-size: 0.9em;
-      }
-
-      .back {
-        font-size: 0.9em;
-        padding: 8px 16px;
-      }
-
-      body {
-        padding: 20px;
-        max-width: 100%;  /* Full width for small screens */
-      }
-
-      .sql-container {
-        padding: 10px; /* Smaller padding on mobile */
-      }
-    }
+  body {
+    font-family: 'Space Grotesk', sans-serif;
+    background: linear-gradient(135deg, #4facfe, #00f2fe);
+    color: white;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+  }
+  h1 {
+    margin-bottom: 20px;
+    font-size: 2em;
+  }
+  textarea {
+    width: 100%;
+    max-width: 700px;
+    height: 300px;
+    padding: 15px;
+    font-size: 1em;
+    border: none;
+    border-radius: 10px;
+    background-color: rgba(255,255,255,0.1);
+    color: white;
+    resize: vertical;
+  }
+  select, button {
+    width: 100%;
+    max-width: 700px;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 8px;
+    background-color: white;
+    color: #333;
+    font-weight: bold;
+    font-family: 'Space Grotesk', sans-serif;
+    cursor: pointer;
+    transition: background 0.3s;
+    font-size: 1em;
+  }
+  button:hover {
+    background-color: #ddd;
+  }
+  pre {
+    max-height: 400px;
+    overflow-y: auto;
+    margin-top: 20px;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    background-color: rgba(0,0,0,0.2);
+    padding: 15px;
+    border-radius: 10px;
+    max-width: 700px;
+    overflow-x: auto;
+    text-align: left;
+    color: white;
+  }
 </style>
-<script src="https://cdn.jsdelivr.net/npm/sql-formatter@10.3.0/dist/sql-formatter.min.js"></script>
 </head>
 <body>
-<p style="max-width:800px;margin:20px auto;font-size:1em;text-align:center;">Format SQL queries for better readability and maintenance. Supports standard SQL syntax.</p>
-<a class="back" href="../index.html" style="z-index: 1000; position: fixed;">← Home</a>
-<h1>SQL Formatter</h1>
-<p>Paste your SQL below and click format. Your code will be cleaned up instantly.</p>
-<textarea id="sqlInput" placeholder="Paste raw SQL here..."></textarea>
-<br/>
-<button class="btn" onclick="formatSQL()">Format SQL</button>
-<br/>
-
-<div style="position: relative; display: inline-block; width: 100%;">
-  <textarea id="sqlOutput" placeholder="Formatted SQL will appear here..." readonly=""
-    style="padding-right: 40px;"></textarea>
-  
-  
-<button onclick="copyFormattedSQL()" title="Copy formatted SQL"
-  style="position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.6); color: white; border: none; padding: 6px 12px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 6px; border-radius: 6px; z-index: 100;">
-  📋 <span style="font-family: 'Space Grotesk', sans-serif;">Copy</span>
-</button>
-
-
-</div>
-
-<!-- sql-formatter library -->
-
-
+<h1>Universal SQL Formatter</h1>
+<label for="dialect" style="display: block; margin-bottom: 8px; font-size: 1rem; font-weight: 600; font-family: 'Space Grotesk', sans-serif; color: white;">Dialect:</label>
+<select id="dialect" style="margin-bottom: 20px; width: 100%; max-width: 700px; padding: 10px; border-radius: 6px;">
+<option value="sql">Standard SQL</option>
+<option value="mysql">MySQL</option>
+<option value="postgresql">PostgreSQL</option>
+<option value="tsql">T-SQL (SQL Server)</option>
+<option value="plsql">PL/SQL (Oracle)</option>
+</select>
+<label for="sqlInput" style="display: block; margin-bottom: 8px; font-size: 1rem; font-weight: 600; font-family: 'Space Grotesk', sans-serif; color: white;">Enter SQL code:</label>
+<textarea id="sqlInput" placeholder="Paste your SQL here..." style="margin-bottom: 20px; width: 100%; max-width: 700px; padding: 15px; font-size: 1em; border-radius: 10px; background-color: rgba(255,255,255,0.1); color: white; resize: vertical;"></textarea>
+<button onclick="formatSQL()">Format SQL</button>
+<h3>Formatted SQL:</h3>
+<div style="position: relative; width: 100%; max-width: 700px; margin: 20px auto;"><div style="position: relative; width: 100%; max-width: 700px; margin-top: 20px;"><pre class="output" id="sqlOutput" style="padding: 15px 60px 15px 15px; margin: 0; background-color: rgba(0,0,0,0.2); border-radius: 10px; min-height: 100px;"></pre><button onclick="copyToClipboard()" style="position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.6); color: white; border: none; padding: 4px 10px; font-weight: 500; font-size: 12px; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; border-radius: 6px; z-index: 100; max-width: fit-content;" title="Copy formatted SQL">📋 <span style="font-family: 'Space Grotesk', sans-serif;">Copy</span></button></div></div>
 <script>
-function formatSQL() {
-  const input = document.getElementById('sqlInput').value.trim();
-  const outputArea = document.getElementById('sqlOutput');
+    function formatSQL() {
+      const input = document.getElementById('sqlInput').value.trim();
+      const dialect = document.getElementById('dialect').value;
+      const output = document.getElementById('sqlOutput');
 
-  if (!input) {
-    alert("Please enter SQL code to format.");
-    return;
-  }
+      try {
+        const formatted = sqlFormatter.format(input, { language: dialect });
+        output.textContent = formatted;
+      } catch (e) {
+        output.textContent = 'Error: ' + e.message;
+      }
+    }
 
-  try {
-    const formatted = sqlFormatter.format(input, {
-      language: "sql",
-      keywordCase: "upper"
-    });
-    outputArea.value = formatted;
-  } catch (e) {
-    outputArea.value = "Error formatting SQL: " + e.message;
-  }
-}
-
-function copyFormattedSQL() {
-  const outputArea = document.getElementById('sqlOutput');
-  if (!outputArea.value.trim()) {
-    alert("Nothing to copy.");
-    return;
-  }
-  navigator.clipboard.writeText(outputArea.value).then(() => {
-    alert("Formatted SQL copied to clipboard!");
-  }).catch(err => {
-    alert("Failed to copy: " + err);
-  });
-}
-</script>
-
-</body>
+    function copyToClipboard() {
+      const text = document.getElementById('sqlOutput').textContent;
+      navigator.clipboard.writeText(text).then(() => alert("Copied!"));
+    }
+  </script>
+<script>
+    function copyToClipboard() {
+      const text = document.getElementById("sqlOutput").textContent;
+      navigator.clipboard.writeText(text).then(() => {
+        alert("Formatted text copied!");
+      });
+    }
+    </script></body>
 </html>
