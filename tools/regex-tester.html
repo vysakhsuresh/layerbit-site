@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
 <meta charset="utf-8"/>
@@ -96,18 +97,39 @@
         padding: 10px;  /* Reduced padding */
       }
     }
+
+/* Floating Home FAB */
+.home-fab {
+  position: fixed;
+  bottom: 20px;
+  left: 20px;
+  width: 44px;
+  height: 44px;
+  background-color: white;
+  border-radius: 12px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+  text-decoration: none;
+  z-index: 1000;
+}
+.home-fab svg {
+  width: 20px;
+  height: 20px;
+  fill: #333;
+}
 </style>
 </head>
 <body>
 <p style="max-width:800px;margin:20px auto;font-size:1em;text-align:center;">Test your Regular Expressions with real-time feedback and match highlighting.</p>
-<a class="back" href="../index.html">← Home</a>
+
 <h1>Regex Tester</h1>
 <label for="regex">Regular Expression:</label>
 <input id="regex" placeholder="e.g. \b\w+@\w+\.\w+\b" type="text"/>
 <label for="text">Test Text:</label>
 <textarea id="text" placeholder="Enter text to match against..." rows="6"></textarea>
 <div class="output" id="result">Matches will appear here.</div>
-
 <script>
     function highlightMatches(text, regex) {
       return text.replace(regex, match => `<span class="match">${match}</span>`);
@@ -130,5 +152,46 @@
     document.getElementById('regex').addEventListener('input', updateResult);
     document.getElementById('text').addEventListener('input', updateResult);
 </script>
+
+<div style="display: flex; justify-content: center; margin-top: 40px;">
+<details style="max-width: 700px; background: rgba(255,255,255,0.1); padding: 20px; border-radius: 10px;">
+<summary style="cursor: pointer; font-weight: bold; font-size: 1.1em;">
+    🔎 About this Tool (Click to Expand)
+  </summary>
+<div style="margin-top: 15px; text-align: left;">
+<h3 style="margin-top: 10px; color: #fff;">
+      🔍 What is a Regex Tester?
+    </h3>
+<p>
+      A Regex Tester lets you validate and preview your regular expressions in real-time. It highlights matches to help developers debug patterns quickly.
+    </p>
+<h3 style="margin-top: 20px; color: #fff;">
+      💡 Common Use Cases
+    </h3>
+<ul style="list-style: none; padding-left: 0;">
+<li>✅ Validate email or phone number formats</li>
+<li>✅ Extract patterns from log files or strings</li>
+<li>✅ Test complex match conditions on-the-fly</li>
+</ul>
+<h3 style="margin-top: 20px; color: #fff;">
+      🚀 How to Use
+    </h3>
+<ol style="list-style: none; padding-left: 0;">
+<li>1️⃣ Enter your regex pattern in the top field</li>
+<li>2️⃣ Type or paste your text below</li>
+<li>3️⃣ Matches will be highlighted as you type</li>
+</ol>
+<p style="margin-top: 20px;">
+      Built with 💙 by Layerbit. All inputs are processed in your browser.
+    </p>
+</div>
+</details>
+</div>
+
+<a class="home-fab" href="../index.html" title="Home">
+<svg viewbox="0 0 24 24">
+<path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"></path>
+</svg>
+</a>
 </body>
 </html>

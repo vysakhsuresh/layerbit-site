@@ -86,10 +86,32 @@
   background: #eee;
 }
 
-  </style>
+  
+/* Floating Home FAB */
+.home-fab {
+  position: fixed;
+  bottom: 20px;
+  left: 20px;
+  width: 44px;
+  height: 44px;
+  background-color: white;
+  border-radius: 12px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+  text-decoration: none;
+  z-index: 1000;
+}
+.home-fab svg {
+  width: 20px;
+  height: 20px;
+  fill: #333;
+}
+</style>
 </head>
 <body><p style="max-width:800px;margin:20px auto;font-size:1em;text-align:center;">Analyze logs to find errors, patterns, and useful insights. Paste your logs and get visual highlights.</p>
-<a class="floating-back" href="../index.html">← Home</a>
+
 <h1>Log Analyzer</h1>
 <textarea id="logInput" placeholder="Paste your logs here..."></textarea>
 <button onclick="analyzeLogs()">Analyze</button>
@@ -115,5 +137,46 @@
       });
     }
   </script>
+
+<div style="display: flex; justify-content: center; margin-top: 40px;">
+<details style="max-width: 700px; background: rgba(255,255,255,0.1); padding: 20px; border-radius: 10px;">
+<summary style="cursor: pointer; font-weight: bold; font-size: 1.1em;">
+    🔎 About this Tool (Click to Expand)
+  </summary>
+<div style="margin-top: 15px; text-align: left;">
+<h3 style="margin-top: 10px; color: #fff;">
+      📊 What is Log Analyzer?
+    </h3>
+<p>
+      This tool helps you quickly scan and interpret log files. It highlights errors, warnings, and info messages for faster debugging and analysis.
+    </p>
+<h3 style="margin-top: 20px; color: #fff;">
+      💡 Common Use Cases
+    </h3>
+<ul style="list-style: none; padding-left: 0;">
+<li>✅ Detect error messages in logs</li>
+<li>✅ Visually segment logs by severity</li>
+<li>✅ Help in debugging and system monitoring</li>
+</ul>
+<h3 style="margin-top: 20px; color: #fff;">
+      🚀 How to Use
+    </h3>
+<ol style="list-style: none; padding-left: 0;">
+<li>1️⃣ Paste your log content into the input box</li>
+<li>2️⃣ Click the "Analyze" button</li>
+<li>3️⃣ Scroll through highlighted results</li>
+</ol>
+<p style="margin-top: 20px;">
+      Built with 💙 by Layerbit. Logs are processed locally, ensuring privacy.
+    </p>
+</div>
+</details>
+</div>
+
+<a class="home-fab" href="../index.html" title="Home">
+<svg viewbox="0 0 24 24">
+<path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"></path>
+</svg>
+</a>
 </body>
 </html>

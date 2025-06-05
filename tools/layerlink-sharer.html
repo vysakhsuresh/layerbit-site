@@ -5,6 +5,34 @@
   <title>LayerLink Sharer</title>
   <meta content="width=device-width, initial-scale=1" name="viewport"/>
   <style>
+    ul, ol {
+      list-style: none;
+      padding-left: 0;
+    }
+    ul li::before, ol li::before {
+      content: "";
+    }
+    .home-fab {
+      position: fixed;
+      bottom: 20px;
+      left: 20px;
+      width: 44px;
+      height: 44px;
+      background-color: white;
+      border-radius: 12px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+      text-decoration: none;
+      z-index: 1000;
+    }
+    .home-fab svg {
+      width: 20px;
+      height: 20px;
+      fill: #333;
+    }
+
     body {
       font-family: 'Space Grotesk', sans-serif;
       background: linear-gradient(135deg, #1f1c2c, #928dab);
@@ -147,9 +175,7 @@
   <p id="description" style="text-align:center; font-size: 0.95em; max-width: 600px; margin: 10px auto;">
     LayerLink: Shares your screen directly from your browser. This secure tool enables instant support or collaboration with just a link. No installs, no hassle.
   </p>
-  <a href="../index.html" style="position: fixed; top: 20px; left: 20px; background: white; color: #1f1c2c; padding: 8px 14px; border-radius: 8px; text-decoration: none; font-weight: bold; font-family: 'Space Grotesk', sans-serif; box-shadow: 0 4px 12px rgba(0,0,0,0.2); z-index: 999;">
-    ← Home
-  </a>
+  
   <div id="main">
     <h1 style="font-family: 'Space Grotesk', sans-serif; font-size: 2.3em; font-weight: 700;">LayerLink Sharer</h1>
     <button onclick="start()">🔗 Start Screen Sharing</button><br/>
@@ -160,5 +186,36 @@
     </p>
     <video autoplay="" id="video" playsinline=""></video>
   </div>
+
+<a class="home-fab" href="../index.html" title="Home">
+  <svg viewBox="0 0 24 24">
+    <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
+  </svg>
+</a>
+
+<details style="max-width: 700px; margin: 60px auto 20px auto; background: rgba(255,255,255,0.1); padding: 20px; border-radius: 10px;">
+  <summary style="cursor: pointer; font-weight: bold; font-size: 1.1em;">🔎 About this Tool (Click to Expand)</summary>
+  <div style="margin-top: 15px; text-align: left;">
+    <h3 style="margin-top: 10px; color: #fff;">📌 What is LayerLink Sharer?</h3>
+    <p>LayerLink is a privacy-first screen sharing tool that works directly from your browser without requiring any installation or extension.</p>
+
+    <h3 style="margin-top: 20px; color: #fff;">💡 Key Uses</h3>
+    <ul>
+      <li>✅ Instantly share your screen with a support technician</li>
+      <li>✅ Demo something live to your client or friend with just a link</li>
+      <li>✅ Lightweight and perfect for impromptu collaborations</li>
+    </ul>
+
+    <h3 style="margin-top: 20px; color: #fff;">🚀 How to Use</h3>
+    <ol>
+      <li>1️⃣ Click <strong>Start Screen Sharing</strong></li>
+      <li>2️⃣ Copy the auto-generated viewer link</li>
+      <li>3️⃣ Share it with the person you want to show your screen to</li>
+    </ol>
+
+    <p style="margin-top: 20px;">Your screen feed never leaves your browser unless connected. Safe, simple, and smart — built with ❤️ by Layerbit.</p>
+  </div>
+</details>
+
 </body>
 </html>

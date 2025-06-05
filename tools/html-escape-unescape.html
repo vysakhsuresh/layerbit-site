@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
 <meta charset="utf-8"/>
@@ -92,19 +93,41 @@
         padding: 8px 16px;
       }
     }
+
+/* Floating Home FAB */
+.home-fab {
+  position: fixed;
+  bottom: 20px;
+  left: 20px;
+  width: 44px;
+  height: 44px;
+  background-color: white;
+  border-radius: 12px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+  text-decoration: none;
+  z-index: 1000;
+}
+.home-fab svg {
+  width: 20px;
+  height: 20px;
+  fill: #333;
+}
 </style>
 </head>
 <body>
 <p style="max-width:800px;margin:20px auto;font-size:1em;text-align:center;">Escape or unescape HTML characters for safe web display and editing.</p>
-<a class="back" href="../index.html">← Home</a>
+
 <h1>HTML Escape / Unescape</h1>
 <div class="container">
-  <textarea id="input" placeholder="Enter HTML or escaped text..."></textarea>
-  <textarea id="output" placeholder="Result appears here..." readonly=""></textarea>
+<textarea id="input" placeholder="Enter HTML or escaped text..."></textarea>
+<textarea id="output" placeholder="Result appears here..." readonly=""></textarea>
 </div>
 <div class="center">
-  <button onclick="escapeHTML()">Escape HTML</button>
-  <button onclick="unescapeHTML()">Unescape HTML</button>
+<button onclick="escapeHTML()">Escape HTML</button>
+<button onclick="unescapeHTML()">Unescape HTML</button>
 </div>
 <script>
     function escapeHTML() {
@@ -121,5 +144,46 @@
       document.getElementById("output").value = div.textContent;
     }
 </script>
+
+<div style="display: flex; justify-content: center; margin-top: 40px;">
+<details style="max-width: 700px; background: rgba(255,255,255,0.1); padding: 20px; border-radius: 10px;">
+<summary style="cursor: pointer; font-weight: bold; font-size: 1.1em;">
+    🔎 About this Tool (Click to Expand)
+  </summary>
+<div style="margin-top: 15px; text-align: left;">
+<h3 style="margin-top: 10px; color: #fff;">
+      🔄 What is HTML Escape/Unescape?
+    </h3>
+<p>
+      This tool helps convert special HTML characters like <code>&lt;</code>, <code>&gt;</code>, <code>&amp;</code>, etc. into their escaped equivalents and vice versa.
+    </p>
+<h3 style="margin-top: 20px; color: #fff;">
+      💡 Common Use Cases
+    </h3>
+<ul style="list-style: none; padding-left: 0;">
+<li>✅ Safely display code in HTML pages</li>
+<li>✅ Convert readable HTML into browser-safe format</li>
+<li>✅ Reverse escaped content to its original form</li>
+</ul>
+<h3 style="margin-top: 20px; color: #fff;">
+      🚀 How to Use
+    </h3>
+<ol style="list-style: none; padding-left: 0;">
+<li>1️⃣ Enter your HTML or escaped text in the left box</li>
+<li>2️⃣ Click “Escape” or “Unescape”</li>
+<li>3️⃣ View result on the right side</li>
+</ol>
+<p style="margin-top: 20px;">
+      Built with 💙 by Layerbit. Your data never leaves your browser.
+    </p>
+</div>
+</details>
+</div>
+
+<a class="home-fab" href="../index.html" title="Home">
+<svg viewbox="0 0 24 24">
+<path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"></path>
+</svg>
+</a>
 </body>
 </html>

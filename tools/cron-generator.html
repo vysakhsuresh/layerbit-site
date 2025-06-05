@@ -68,10 +68,32 @@
       font-weight: bold;
       box-shadow: 0 4px 8px rgba(0,0,0,0.2);
     }
-  </style>
+  
+/* Floating Home FAB */
+.home-fab {
+  position: fixed;
+  bottom: 20px;
+  left: 20px;
+  width: 44px;
+  height: 44px;
+  background-color: white;
+  border-radius: 12px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+  text-decoration: none;
+  z-index: 1000;
+}
+.home-fab svg {
+  width: 20px;
+  height: 20px;
+  fill: #333;
+}
+</style>
 </head>
 <body><p style="max-width:800px;margin:20px auto;font-size:1em;text-align:center;">Create accurate CRON expressions with this intuitive generator. Perfect for scheduled tasks and jobs.</p>
-<a class="back" href="../index.html">← Home</a>
+
 <h1>Cron Expression Generator</h1>
 <p><strong>Examples:</strong>
 <button data-cron="0 0 * * *">Every day at midnight</button>
@@ -79,7 +101,6 @@
 <button data-cron="30 9 * * 1">Mondays at 9:30 AM</button>
 </p>
 <p>Build a cron expression and understand what it actually means.</p>
-
 <style>
   .cron-builder {
     display: grid;
@@ -97,11 +118,10 @@
     font-size: 0.95em;
   }
 </style>
-
 <div class="cron-builder">
-  <div>
-    <label for="min">Minute</label>
-    <select id="min"><option value="*">Every minute</option>
+<div>
+<label for="min">Minute</label>
+<select id="min"><option value="*">Every minute</option>
 <option value="*/5">Every 5 minutes</option>
 <option value="0">00</option>
 <option value="1">01</option>
@@ -163,10 +183,10 @@
 <option value="57">57</option>
 <option value="58">58</option>
 <option value="59">59</option></select>
-  </div>
-  <div>
-    <label for="hour">Hour</label>
-    <select id="hour"><option value="*">Every hour</option>
+</div>
+<div>
+<label for="hour">Hour</label>
+<select id="hour"><option value="*">Every hour</option>
 <option value="0">00</option>
 <option value="1">01</option>
 <option value="2">02</option>
@@ -191,10 +211,10 @@
 <option value="21">21</option>
 <option value="22">22</option>
 <option value="23">23</option></select>
-  </div>
-  <div>
-    <label for="day">Day</label>
-    <select id="day"><option value="*">Every day</option>
+</div>
+<div>
+<label for="day">Day</label>
+<select id="day"><option value="*">Every day</option>
 <option value="1">01</option>
 <option value="2">02</option>
 <option value="3">03</option>
@@ -226,10 +246,10 @@
 <option value="29">29</option>
 <option value="30">30</option>
 <option value="31">31</option></select>
-  </div>
-  <div>
-    <label for="month">Month</label>
-    <select id="month"><option value="*">Every month</option>
+</div>
+<div>
+<label for="month">Month</label>
+<select id="month"><option value="*">Every month</option>
 <option value="1">Jan</option>
 <option value="2">Feb</option>
 <option value="3">Mar</option>
@@ -242,10 +262,10 @@
 <option value="10">Oct</option>
 <option value="11">Nov</option>
 <option value="12">Dec</option></select>
-  </div>
-  <div>
-    <label for="weekday">Weekday</label>
-    <select id="weekday"><option value="*">Every day</option>
+</div>
+<div>
+<label for="weekday">Weekday</label>
+<select id="weekday"><option value="*">Every day</option>
 <option value="0">Sunday</option>
 <option value="1">Monday</option>
 <option value="2">Tuesday</option>
@@ -253,11 +273,9 @@
 <option value="4">Thursday</option>
 <option value="5">Friday</option>
 <option value="6">Saturday</option></select>
-  </div>
 </div>
-
+</div>
 <button onclick="generateCron()">Generate</button>
-
 <style>
   .output-wrapper {
     display: flex;
@@ -285,12 +303,10 @@
     background: #ddd;
   }
 </style>
-
 <div class="output-wrapper">
-  <div id="cronResult">Your cron expression will appear here.</div>
-  <button onclick="copyCron()">Copy</button>
+<div id="cronResult">Your cron expression will appear here.</div>
+<button onclick="copyCron()">Copy</button>
 </div>
-
 <div class="output" id="cronExplain">Explanation will appear here.</div>
 <script>
     window.onload = function () {
@@ -341,5 +357,43 @@
       document.getElementById('cronExplain').textContent = "Explanation: This runs " + explanation + ".";
     }
   </script>
+<div style="display: flex; justify-content: center; margin-top: 40px;"><details style="max-width: 700px; margin-top: 40px; background: rgba(255,255,255,0.1); padding: 20px; border-radius: 10px;">
+<summary style="cursor: pointer; font-weight: bold; font-size: 1.1em;">
+    🔎 About this Tool (Click to Expand)
+  </summary>
+<div style="margin-top: 15px; text-align: left;">
+<h3 style="margin-top: 10px; color: #fff;">
+      📌 What is Cron Expression Generator?
+    </h3>
+<p>
+      This tool helps you generate valid CRON expressions effortlessly. Whether you're scheduling scripts or jobs, this tool eliminates syntax errors and saves time.
+    </p>
+<h3 style="margin-top: 20px; color: #fff;">
+      💡 Common Use Cases
+    </h3>
+<ul style="list-style: none; padding-left: 0;">
+<li>✅ Schedule recurring tasks in Linux or Unix environments</li>
+<li>✅ Automate backups, reports, or email sending</li>
+<li>✅ Easily understand and visualize complex CRON timings</li>
+</ul>
+<h3 style="margin-top: 20px; color: #fff;">
+      🚀 How to Use
+    </h3>
+<ol style="list-style: none; padding-left: 0;">
+<li>1️⃣ Select timing for each CRON field using dropdowns</li>
+<li>2️⃣ Copy the resulting expression</li>
+<li>3️⃣ Use it in your server, cloud platform, or task scheduler</li>
+</ol>
+<p style="margin-top: 20px;">
+      This tool is secure, free, and doesn’t store your data. Built with ❤️ by Layerbit.
+    </p>
+</div>
+</details></div>
+
+<a class="home-fab" href="../index.html" title="Home">
+<svg viewbox="0 0 24 24">
+<path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"></path>
+</svg>
+</a>
 </body>
 </html>

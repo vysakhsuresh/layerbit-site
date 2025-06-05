@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
 <meta charset="utf-8"/>
@@ -128,11 +129,33 @@
         padding: 10px; /* Smaller padding on mobile */
       }
     }
+
+/* Floating Home FAB */
+.home-fab {
+  position: fixed;
+  bottom: 20px;
+  left: 20px;
+  width: 44px;
+  height: 44px;
+  background-color: white;
+  border-radius: 12px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+  text-decoration: none;
+  z-index: 1000;
+}
+.home-fab svg {
+  width: 20px;
+  height: 20px;
+  fill: #333;
+}
 </style>
 </head>
 <body data-theme="dark">
 <p style="max-width:800px;margin:20px auto;font-size:1em;text-align:center;">Encode or decode URLs to ensure safe transmission of web data. Essential for developers and SEO tasks.</p>
-<a class="back" href="../index.html">← Home</a>
+
 <button class="toggle-theme" onclick="toggleTheme()">🌓</button>
 <h1>URL Encoder / Decoder</h1>
 <p>Safely encode or decode your URLs for transmission or readability.</p>
@@ -140,7 +163,6 @@
 <button class="btn" onclick="encodeURL()">Encode</button>
 <button class="btn" onclick="decodeURL()">Decode</button>
 <div class="output" id="urlOutput">Encoded or decoded text will appear here.</div>
-
 <script>
     function encodeURL() {
       const input = document.getElementById('urlInput').value;
@@ -161,5 +183,46 @@
       document.body.setAttribute("data-theme", theme === "light" ? "dark" : "light");
     }
 </script>
+
+<a class="home-fab" href="../index.html" title="Home">
+<svg viewbox="0 0 24 24">
+<path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"></path>
+</svg>
+</a>
+
+<div style="display: flex; justify-content: center; margin-top: 40px;">
+<details style="max-width: 700px; background: rgba(255,255,255,0.1); padding: 20px; border-radius: 10px;">
+<summary style="cursor: pointer; font-weight: bold; font-size: 1.1em;">
+    🔎 About this Tool (Click to Expand)
+  </summary>
+<div style="margin-top: 15px; text-align: left;">
+<h3 style="margin-top: 10px; color: #fff;">
+      🌐 What is URL Encoder / Decoder?
+    </h3>
+<p>
+      This tool helps you encode or decode URLs quickly and safely. It's a must-have for developers, marketers, and anyone handling web links.
+    </p>
+<h3 style="margin-top: 20px; color: #fff;">
+      💡 Common Use Cases
+    </h3>
+<ul style="list-style: none; padding-left: 0;">
+<li>✅ Encode special characters in URLs</li>
+<li>✅ Decode web-safe strings to original text</li>
+<li>✅ Improve data safety in GET/POST requests</li>
+</ul>
+<h3 style="margin-top: 20px; color: #fff;">
+      🚀 How to Use
+    </h3>
+<ol style="list-style: none; padding-left: 0;">
+<li>1️⃣ Paste your URL or text in the box above</li>
+<li>2️⃣ Click "Encode" to secure or "Decode" to restore</li>
+<li>3️⃣ Use the result wherever needed</li>
+</ol>
+<p style="margin-top: 20px;">
+      Built with 💙 by Layerbit. No data is ever stored.
+    </p>
+</div>
+</details>
+</div>
 </body>
 </html>

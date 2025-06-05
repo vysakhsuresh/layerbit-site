@@ -1,11 +1,40 @@
-
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
-  <meta charset="UTF-8" />
-  <title>Layerbit Final Aligned Diff Tool</title>
+ <head>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&amp;display=swap" rel="stylesheet"/>
+  <meta charset="utf-8"/>
+  <title>
+   Layerbit Final Aligned Diff Tool
+  </title>
   <style>
+   ul, ol {
+      list-style: none;
+      padding-left: 0;
+    }
+    ul li::before, ol li::before {
+      content: "";
+    }
+    .home-fab {
+      position: fixed;
+      bottom: 20px;
+      left: 20px;
+      width: 44px;
+      height: 44px;
+      background-color: white;
+      border-radius: 12px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+      text-decoration: none;
+      z-index: 1000;
+    }
+    .home-fab svg {
+      width: 20px;
+      height: 20px;
+      fill: #333;
+    }
+
     body {
       font-family: monospace;
       background: linear-gradient(135deg, #4facfe, #00f2fe); color: black;
@@ -67,28 +96,36 @@
       background: #f9f9f9;
       height: 1.2em;
     }
-  </style>
-</head>
-<body>
   
-    <h2 style="text-align:center; font-family:'Space Grotesk', monospace; font-size:2em; color:white; margin-bottom: 20px;">Text Diff Checker</h2>
-    <p style="text-align:center; max-width:800px; margin: 0 auto 20px auto; font-family:'Space Grotesk', monospace;">
-      Compare two blocks of text and visually highlight the differences for review and debugging.
-    </p>
-    
+    body {
+      font-family: 'Space Grotesk', monospace;
+    }
+  </style>
+ </head>
+ <body>
+  <h2 style="text-align:center; font-family:'Space Grotesk', monospace; font-size:2em; color:white; margin-bottom: 20px;">
+   Text Diff Checker
+  </h2>
+  <p style="text-align:center; max-width:800px; margin: 0 auto 20px auto; font-family:'Space Grotesk', monospace;">
+   Compare two blocks of text and visually highlight the differences for review and debugging.
+  </p>
   <div class="inputs">
-    <textarea id="text1" placeholder="Left input..."></textarea>
-    <textarea id="text2" placeholder="Right input..."></textarea>
+   <textarea id="text1" placeholder="Left input..."></textarea>
+   <textarea id="text2" placeholder="Right input..."></textarea>
   </div>
   <div style="text-align:center;">
-      <button onclick="runDiff()" style="font-family:'Space Grotesk', monospace;">🔍 Compare</button>
-    </div>
-  <div class="diff-panel">
-    <div class="column" id="leftPanel"></div>
-    <div class="column" id="rightPanel"></div>
+   <button onclick="runDiff()" style="font-family:'Space Grotesk', monospace;">
+    🔍 Compare
+   </button>
   </div>
-<script>
-function escapeHTML(str) {
+  <div class="diff-panel">
+   <div class="column" id="leftPanel">
+   </div>
+   <div class="column" id="rightPanel">
+   </div>
+  </div>
+  <script>
+   function escapeHTML(str) {
   return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
 
@@ -145,12 +182,56 @@ function runDiff() {
   document.getElementById("leftPanel").innerHTML = leftHTML;
   document.getElementById("rightPanel").innerHTML = rightHTML;
 }
-</script>
-</body>
-</html>
-
-<div style="position:fixed; bottom:20px; left:20px;">
-  <a href='/' style='background:#fff; color:#333; font-weight:bold; padding:10px 16px; border-radius:8px; text-decoration:none; font-family:"Space Grotesk", monospace; box-shadow:0 2px 5px rgba(0,0,0,0.2);'>
-    ⬅ Home
+  </script>
+  <a class="home-fab" href="../index.html" title="Home">
+   <svg viewbox="0 0 24 24">
+    <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z">
+    </path>
+   </svg>
   </a>
-</div>
+  <details style="max-width: 700px; margin: 60px auto 20px auto; background: rgba(255,255,255,0.1); padding: 20px; border-radius: 10px;">
+   <summary style="cursor: pointer; font-weight: bold; font-size: 1.1em;">
+    🔎 About this Tool (Click to Expand)
+   </summary>
+   <div style="margin-top: 15px; text-align: left;">
+    <h3 style="margin-top: 10px; color: #fff;">
+     📌 What is the Text Diff Checker?
+    </h3>
+    <p>
+     This tool compares two text inputs line-by-line and visually highlights differences using a BeyondCompare-style layout.
+    </p>
+    <h3 style="margin-top: 20px; color: #fff;">
+     💡 Key Uses
+    </h3>
+    <ul>
+     <li>
+      ✅ Spot differences between code, config files, or data
+     </li>
+     <li>
+      ✅ Great for debugging, version review, and QA tasks
+     </li>
+     <li>
+      ✅ Color-coded alignment for easy scanning
+     </li>
+    </ul>
+    <h3 style="margin-top: 20px; color: #fff;">
+     🚀 How to Use
+    </h3>
+    <ol>
+     <li>
+      1️⃣ Paste two blocks of text (left and right)
+     </li>
+     <li>
+      2️⃣ Click "Compare"
+     </li>
+     <li>
+      3️⃣ Review the colored differences below
+     </li>
+    </ol>
+    <p style="margin-top: 20px;">
+     Tool runs locally on your browser. No data is stored. Layerbit-built and user-friendly.
+    </p>
+   </div>
+  </details>
+ </body>
+</html>
