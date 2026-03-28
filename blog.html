@@ -3,9 +3,9 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Layerbit Blog & Tool Hub</title>
+<title>Layerbit Blog</title>
 
-<meta name="description" content="Explore Layerbit’s developer tools, guides, and tutorials. Learn JSON formatting, QR generation, and more with free browser-based tools."/>
+<meta name="description" content="Layerbit blog with developer guides, tutorials, and free tools like JSON formatter, QR generator, and more."/>
 
 <style>
   body {
@@ -27,15 +27,47 @@
     font-size: 2rem;
   }
 
-  .section {
-    max-width: 1100px;
+  .container {
+    max-width: 1000px;
     margin: 30px auto;
     padding: 0 20px;
   }
 
-  .grid {
+  .blog-post {
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+  }
+
+  .blog-post h2 {
+    margin-top: 0;
+    color: #007bff;
+  }
+
+  .blog-post p {
+    line-height: 1.6;
+  }
+
+  .cta-btn {
+    display: inline-block;
+    margin-top: 10px;
+    padding: 8px 14px;
+    background: #007bff;
+    color: white;
+    text-decoration: none;
+    border-radius: 5px;
+    font-size: 0.9rem;
+  }
+
+  .tools-section {
+    margin-top: 40px;
+  }
+
+  .tools-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(260px,1fr));
     gap: 1.5rem;
   }
 
@@ -44,33 +76,15 @@
     padding: 1.5rem;
     border-radius: 10px;
     box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-    transition: transform 0.2s;
-  }
-
-  .tool-card:hover {
-    transform: translateY(-5px);
   }
 
   .tool-card h3 {
     margin-top: 0;
-    font-size: 1.2rem;
     color: #007bff;
   }
 
   .tool-card p {
     font-size: 0.95rem;
-    margin-bottom: 1rem;
-    line-height: 1.5;
-  }
-
-  .use-tool-btn {
-    display: inline-block;
-    padding: 0.5rem 1rem;
-    background-color: #007bff;
-    color: white;
-    text-decoration: none;
-    border-radius: 5px;
-    font-size: 0.9rem;
   }
 
   footer {
@@ -79,6 +93,7 @@
     padding: 1rem;
     font-size: 0.85rem;
     color: #777;
+    margin-top: 40px;
   }
 </style>
 </head>
@@ -86,115 +101,77 @@
 <body>
 
 <header>
-  <h1>Layerbit Blog & Tools</h1>
-  <p>Free tools, guides, and developer resources</p>
+  <h1>Layerbit Blog</h1>
+  <p>Guides, tools, and developer insights</p>
 </header>
 
-<!-- ✅ BLOG SECTION -->
-<section class="section">
-  <h2 style="text-align:center; margin-bottom:20px;">🚀 Developer Guides</h2>
+<div class="container">
 
-  <div class="grid">
-
-    <div class="tool-card">
-      <h3>How to Format JSON Online Easily</h3>
-      <p>
-        JSON formatting is essential for developers working with APIs and structured data.
-        A formatter helps detect errors, improve readability, and ensure valid syntax.
-        Using a browser-based JSON tool makes debugging fast and efficient.
-      </p>
-      <a class="use-tool-btn" href="/tools/json-validator.html">Try Tool</a>
-    </div>
-
-    <div class="tool-card">
-      <h3>Best Free Developer Tools in 2026</h3>
-      <p>
-        Developers rely on tools to increase productivity and reduce manual effort.
-        From JSON validation to SQL formatting and QR generation,
-        using the right tools can significantly improve workflow efficiency.
-      </p>
-      <a class="use-tool-btn" href="/index.html">Explore Tools</a>
-    </div>
-
-    <div class="tool-card">
-      <h3>How to Generate QR Codes Online</h3>
-      <p>
-        QR codes allow quick sharing of links, contact details, and data.
-        Online QR generators make it easy to create and download codes instantly
-        without installing any software.
-      </p>
-      <a class="use-tool-btn" href="/tools/qr-barcode.html">Generate QR</a>
-    </div>
-
-  </div>
-</section>
-
-<!-- ✅ TOOLS SECTION -->
-<section class="section">
-  <h2 style="text-align:center; margin-bottom:20px;">🛠️ All Tools</h2>
-
-  <div class="grid">
-
-    <div class="tool-card">
-      <h3>JSON Validator</h3>
-      <p>Validate and format JSON data easily for better readability and debugging.</p>
-      <a class="use-tool-btn" href="/tools/json-validator.html">Use Tool</a>
-    </div>
-
-    <div class="tool-card">
-      <h3>QR / Barcode Generator</h3>
-      <p>Generate QR codes and barcodes instantly for links and data sharing.</p>
-      <a class="use-tool-btn" href="/tools/qr-barcode.html">Use Tool</a>
-    </div>
-
-    <div class="tool-card">
-      <h3>SQL Formatter</h3>
-      <p>Format SQL queries into clean and readable structures.</p>
-      <a class="use-tool-btn" href="/tools/sql-formatter.html">Use Tool</a>
-    </div>
-
-    <div class="tool-card">
-      <h3>Base64 Encode / Decode</h3>
-      <p>Encode or decode Base64 strings quickly and securely.</p>
-      <a class="use-tool-btn" href="/tools/base64.html">Use Tool</a>
-    </div>
-
-    <div class="tool-card">
-      <h3>CSV to JSON</h3>
-      <p>Convert CSV data into JSON format for APIs and applications.</p>
-      <a class="use-tool-btn" href="/tools/csv-to-json.html">Use Tool</a>
-    </div>
-
-    <div class="tool-card">
-      <h3>JWT Decoder</h3>
-      <p>Decode JWT tokens and inspect payload details instantly.</p>
-      <a class="use-tool-btn" href="/tools/jwt-decoder.html">Use Tool</a>
-    </div>
-
-  </div>
-</section>
-
-<!-- ✅ ABOUT SECTION (IMPORTANT FOR ADSENSE) -->
-<section class="section">
-  <h2 style="text-align:center;">About Layerbit</h2>
-
-  <div class="tool-card" style="text-align:center;">
+  <!-- ✅ BLOG CONTENT (THIS IS WHAT ADSENSE NEEDS) -->
+  <div class="blog-post">
+    <h2>How to Format JSON Online Easily</h2>
     <p>
-      Layerbit provides a growing collection of free developer tools designed to simplify everyday tasks.
-      From JSON formatting and QR code generation to SQL formatting and data conversion,
-      our tools help developers work faster and more efficiently.
+      JSON formatting is essential for developers working with APIs and structured data.
+      Proper formatting improves readability and helps detect errors quickly.
+      Using an online JSON formatter allows instant validation without installing any tools.
     </p>
-    <p>
-      All tools are browser-based, require no installation, and are completely free to use.
-    </p>
+    <a class="cta-btn" href="/tools/json-validator.html">Try JSON Tool</a>
   </div>
-</section>
+
+  <div class="blog-post">
+    <h2>Best Free Developer Tools in 2026</h2>
+    <p>
+      Developers rely on tools to boost productivity and reduce manual effort.
+      Tools like JSON validators, SQL formatters, and QR generators help streamline workflows
+      and improve development speed significantly.
+    </p>
+    <a class="cta-btn" href="/index.html">Explore Tools</a>
+  </div>
+
+  <div class="blog-post">
+    <h2>How to Generate QR Codes Online</h2>
+    <p>
+      QR codes are widely used for sharing links, contacts, and data.
+      With online generators, you can create QR codes instantly without any installation.
+      This makes sharing information fast and efficient.
+    </p>
+    <a class="cta-btn" href="/tools/qr-barcode.html">Generate QR</a>
+  </div>
+
+  <!-- ✅ TOOLS (SECONDARY, NOT PRIMARY) -->
+  <div class="tools-section">
+    <h2 style="text-align:center;">Popular Tools</h2>
+
+    <div class="tools-grid">
+
+      <div class="tool-card">
+        <h3>JSON Validator</h3>
+        <p>Validate and format JSON instantly.</p>
+        <a class="cta-btn" href="/tools/json-validator.html">Use Tool</a>
+      </div>
+
+      <div class="tool-card">
+        <h3>QR Generator</h3>
+        <p>Create QR codes quickly.</p>
+        <a class="cta-btn" href="/tools/qr-barcode.html">Use Tool</a>
+      </div>
+
+      <div class="tool-card">
+        <h3>SQL Formatter</h3>
+        <p>Clean and format SQL queries.</p>
+        <a class="cta-btn" href="/tools/sql-formatter.html">Use Tool</a>
+      </div>
+
+    </div>
+  </div>
+
+</div>
 
 <footer>
   © 2026 Layerbit. All rights reserved.
 </footer>
 
-<!-- ✅ KEEP YOUR HOME ICON EXACTLY SAME -->
+<!-- ✅ HOME ICON (UNCHANGED AS YOU SAID) -->
 <a href="index.html" style="
   position: fixed;
   bottom: 20px;
