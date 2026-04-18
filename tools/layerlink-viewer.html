@@ -1,82 +1,217 @@
 <!DOCTYPE html>
-
-<html>
+<html lang="en">
 <head>
-<title>LayerLink Viewer</title>
-<meta content="width=device-width, initial-scale=1" name="viewport"/>
-<style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="LayerLink Client Terminal. Securely view a remote broadcast." />
+  <title>LayerLink Viewer - Layerbit</title>
+  
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6072772587431629" crossorigin="anonymous"></script>
+  
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link href="../layerbit-logo.png" rel="icon" type="image/x-icon" />
+
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+  
+  <style>
+    :root {
+      --bg-base: #0a0c10;
+      --accent-main: #38bdf8;
+      --card-border: rgba(255, 255, 255, 0.08);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
-      font-family: sans-serif;
-      background: linear-gradient(135deg, #1f1c2c, #928dab);
-      color: white;
-      text-align: center;
-      padding: 30px;
+      font-family: 'Space Grotesk', sans-serif;
+      background-color: var(--bg-base);
+      color: #fff;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden; /* Lock to theater view */
     }
+
+    /* Top Nav Bar */
+    .top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 15px 30px;
+      background: rgba(10, 12, 16, 0.8);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--card-border);
+      z-index: 10;
+    }
+
+    .brand { font-size: 1.2em; font-weight: 700; display: flex; align-items: center; gap: 10px; text-decoration: none; color: #fff; }
+    .brand svg { width: 24px; height: 24px; }
+
+    .status-indicator {
+      display: flex; align-items: center; gap: 8px; font-weight: 600; font-size: 0.9em;
+      padding: 6px 12px; border-radius: 20px; background: rgba(255,255,255,0.05);
+    }
+    .status-indicator.live { color: #22c55e; background: rgba(34, 197, 94, 0.1); }
+    .status-indicator.error { color: #ef4444; background: rgba(239, 68, 68, 0.1); }
+
+    /* Cinematic Video Area */
+    .theater-mode {
+      flex-grow: 1;
+      position: relative;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: radial-gradient(circle at center, #1a1e2d 0%, #000 100%);
+    }
+
     video {
-      margin-top: 20px;
-      max-width: 100%;
-      border-radius: 12px;
+      width: 100%;
+      height: 100%;
+      max-height: calc(100vh - 65px);
+      object-fit: contain;
+      background: #000;
     }
+
+    .overlay-message {
+      position: absolute;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 15px;
+      color: var(--text-muted);
+    }
+    .overlay-message i { width: 48px; height: 48px; color: var(--accent-main); animation: pulse 2s infinite; }
+
+    @keyframes pulse { 0%, 100% { opacity: 0.5; } 50% { opacity: 1; } }
+
+    /* Command Center FAB */
+    .fab { position: fixed; bottom: 30px; left: 30px; width: 60px; height: 60px; border-radius: 50%; backdrop-filter: blur(15px); display: flex; align-items: center; justify-content: center; z-index: 9998; background: rgba(20, 22, 30, 0.7); border: 1px solid rgba(255, 255, 255, 0.1); box-shadow: 0 8px 25px rgba(0,0,0,0.5); transition: all 0.4s; text-decoration: none; }
+    .fab:hover { transform: scale(1.1); border-color: var(--accent-main); background: rgba(30, 34, 48, 0.9); box-shadow: 0 12px 30px rgba(0,0,0,0.6), 0 0 25px rgba(56, 189, 248, 0.3); }
+
   </style>
-<meta content="Free browser-based tool by Layerbit. Fast, simple, and privacy-respecting." name="description"/></head>
+</head>
 <body>
-<h1>LayerLink Viewer</h1>
-<p id="status">Connecting...</p>
-<video autoplay="" id="video" muted="" playsinline=""></video>
-<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
-<script>
-  const firebaseConfig = {
-    apiKey: "AIzaSyAR948frOLq4VZ1qSdxIMXu6BaCoehClAU",
-    authDomain: "layerlink-58948.firebaseapp.com",
-    databaseURL: "https://layerlink-58948-default-rtdb.firebaseio.com",
-    projectId: "layerlink-58948",
-    storageBucket: "layerlink-58948.appspot.com",
-    messagingSenderId: "164370572506",
-    appId: "1:164370572506:web:cbeed3bfa6cb67c902b1e3"
-  };
-  firebase.initializeApp(firebaseConfig);
-  const db = firebase.database();
-</script>
-<script>
+
+  <div class="top-bar">
+    <a href="../index.html" class="brand">
+      <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <polygon points="32,20 54,28 32,36 10,28" stroke="#f8fafc" stroke-width="4" stroke-linejoin="round"/>
+        <polyline points="10,38 32,46 54,38" stroke="#f8fafc" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+        <polyline points="10,48 32,56 54,48" stroke="#f8fafc" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      LayerLink
+    </a>
+    <div id="statusUI" class="status-indicator">
+      <i data-lucide="loader" class="animate-spin"></i> Initializing...
+    </div>
+  </div>
+
+  <div class="theater-mode">
+    <div id="overlayMsg" class="overlay-message">
+      <i data-lucide="satellite-dish"></i>
+      <h2 style="font-weight: 600; color: #fff;">Searching for Host Signal</h2>
+      <p style="opacity: 0.7;">Waiting for the broadcaster to start the stream...</p>
+    </div>
+    <video id="video" autoplay playsinline></video>
+  </div>
+
+  <a href="../index.html" class="fab" aria-label="Command Center" title="Command Center">
+    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="filter: drop-shadow(0 0 8px rgba(56, 189, 248, 0.5));">
+      <path d="M12 2L2 7l10 5 10-5-10-5z" stroke="#38bdf8" stroke-width="2" stroke-linejoin="round" fill="rgba(56,189,248,0.2)"/>
+      <path d="M2 17l10 5 10-5M2 12l10 5 10-5" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </a>
+
+  <script>
+    lucide.createIcons();
+
+    // Init Firebase
+    const firebaseConfig = {
+      apiKey: "AIzaSyAR948frOLq4VZ1qSdxIMXu6BaCoehClAU",
+      authDomain: "layerlink-58948.firebaseapp.com",
+      databaseURL: "https://layerlink-58948-default-rtdb.firebaseio.com",
+      projectId: "layerlink-58948",
+      storageBucket: "layerlink-58948.appspot.com",
+      messagingSenderId: "164370572506",
+      appId: "1:164370572506:web:cbeed3bfa6cb67c902b1e3"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    const statusUI = document.getElementById('statusUI');
+    const overlayMsg = document.getElementById('overlayMsg');
+    const videoElement = document.getElementById('video');
+
+    function setStatus(state) {
+      if (state === 'live') {
+        statusUI.className = 'status-indicator live';
+        statusUI.innerHTML = `<i data-lucide="radio"></i> LIVE`;
+        overlayMsg.style.display = 'none';
+      } else if (state === 'error') {
+        statusUI.className = 'status-indicator error';
+        statusUI.innerHTML = `<i data-lucide="alert-triangle"></i> Signal Lost`;
+        overlayMsg.style.display = 'flex';
+        overlayMsg.innerHTML = `<i data-lucide="plug-zap" style="color: #ef4444;"></i><h2 style="font-weight: 600; color: #fff;">Connection Dropped</h2><p style="opacity: 0.7;">The host has stopped sharing or the network failed.</p><button onclick="location.reload()" style="margin-top:15px; padding:10px 20px; background:#ef4444; color:#fff; border:none; border-radius:8px; cursor:pointer; font-family:'Space Grotesk', sans-serif; font-weight:bold;">Reconnect</button>`;
+      }
+      lucide.createIcons();
+    }
+
     const params = new URLSearchParams(location.search);
     const sessionId = params.get("session");
-    const conn = db.ref("sessions/" + sessionId);
+    
+    if (!sessionId) {
+      setStatus('error');
+      overlayMsg.innerHTML = `<h2 style="font-weight: 600; color: #fff;">Invalid Link</h2><p style="opacity: 0.7;">No session ID found in the URL.</p>`;
+    } else {
+      const conn = db.ref("sessions/" + sessionId);
 
-    const peer = new RTCPeerConnection();
+      // CRITICAL FIX: Google STUN Servers added for internet routing
+      const configuration = {
+        iceServers: [
+          { urls: 'stun:stun.l.google.com:19302' },
+          { urls: 'stun:stun1.l.google.com:19302' }
+        ]
+      };
 
-    let remoteStream = new MediaStream();
-peer.ontrack = event => {
-      remoteStream.addTrack(event.track);
-  document.getElementById("video").srcObject = remoteStream;
-      document.getElementById("status").textContent = "🔴 Live Stream Connected";
-    };
+      const peer = new RTCPeerConnection(configuration);
+      let remoteStream = new MediaStream();
 
-    peer.onicecandidate = e => {
-      if (e.candidate) {
-        conn.child("answerCandidates").push(JSON.stringify(e.candidate));
+      peer.ontrack = event => {
+        remoteStream.addTrack(event.track);
+        videoElement.srcObject = remoteStream;
+      };
+
+      peer.onconnectionstatechange = () => {
+        if (peer.connectionState === 'connected') setStatus('live');
+        if (peer.connectionState === 'disconnected' || peer.connectionState === 'failed') setStatus('error');
+      };
+
+      peer.onicecandidate = e => {
+        if (e.candidate) {
+          conn.child("answerCandidates").push(JSON.stringify(e.candidate));
+        }
+      };
+
+      async function connect() {
+        conn.child("offer").on("value", async snap => {
+          if (!snap.val()) return;
+          const offer = JSON.parse(snap.val());
+          await peer.setRemoteDescription(offer);
+          const answer = await peer.createAnswer();
+          await peer.setLocalDescription(answer);
+          conn.child("answer").set(JSON.stringify(answer));
+        });
       }
-    };
 
-    async function connect() {
-      conn.child("offer").on("value", async snap => {
-        if (!snap.val()) return;
-        const offer = JSON.parse(snap.val());
-        await peer.setRemoteDescription(offer);
-        const answer = await peer.createAnswer();
-        await peer.setLocalDescription(answer);
-        conn.child("answer").set(JSON.stringify(answer));
+      conn.child("offerCandidates").on("child_added", snap => {
+        const candidate = new RTCIceCandidate(JSON.parse(snap.val()));
+        peer.addIceCandidate(candidate);
       });
+
+      connect();
     }
-
-    conn.child("offerCandidates").on("child_added", snap => {
-      const candidate = new RTCIceCandidate(JSON.parse(snap.val()));
-      peer.addIceCandidate(candidate);
-    });
-
-    connect();
   </script>
-<button onclick="location.reload()" style="margin-top:20px;padding:10px 20px;border-radius:8px;">🔄 Reconnect</button>
-<noscript><p style="color:yellow;">⚠️ JavaScript is required to view the stream.</p></noscript>
 </body>
 </html>

@@ -1,160 +1,408 @@
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1" name="viewport"/>
-<title>JWT Decoder - Layerbit</title>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&amp;display=swap" rel="stylesheet"/>
-<style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Secure, client-side JWT Decoder. Inspect JSON Web Token headers, payloads, and instantly check expiration status without sending data to a server." />
+  <title>JWT Decoder & Security Inspector - Layerbit</title>
+  
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6072772587431629" crossorigin="anonymous"></script>
+  
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet" />
+  <link href="../layerbit-logo.png" rel="icon" type="image/x-icon" />
+  
+  <style>
+    /* Ultra-Premium Dark Theme Variables */
+    :root {
+      --bg-base: #0a0c10;
+      --bg-gradient: radial-gradient(circle at 50% 0%, #1a1e2d 0%, #0a0c10 70%);
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --card-bg: rgba(20, 22, 30, 0.6);
+      --card-border: rgba(255, 255, 255, 0.08);
+      --card-hover-border: rgba(56, 189, 248, 0.4);
+      --accent-main: #38bdf8;
+      --accent-glow: rgba(56, 189, 248, 0.5);
+      --neon-gradient: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%);
+      --error-bg: rgba(239, 68, 68, 0.1);
+      --error-border: #ef4444;
+      
+      /* JWT Specific Colors */
+      --jwt-header: #fb7185;   /* Rose */
+      --jwt-payload: #c084fc;  /* Purple */
+      --jwt-sig: #38bdf8;      /* Cyan */
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
     body {
       font-family: 'Space Grotesk', sans-serif;
-      background: linear-gradient(135deg, #1f1c2c, #928dab);
-      color: white;
-      padding: 30px 20px;
-      max-width: 1000px;
-      margin: auto;
+      color: var(--text-main);
+      background-color: var(--bg-base);
+      background-image: var(--bg-gradient);
+      min-height: 100vh;
+      padding: 20px 40px;
+      position: relative;
+      overflow-x: hidden;
+      display: flex;
+      flex-direction: column;
     }
 
-    h1 {
-      text-align: center;
-      font-size: 2.5em;
-      margin-bottom: 20px;
+    /* Animated Drifting Starry Background */
+    @keyframes drift {
+      from { background-position: 0 0, 20px 20px; }
+      to { background-position: -60px -60px, -40px -40px; }
     }
 
-    textarea {
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0; left: 0; width: 100vw; height: 100vh;
+      background-image: 
+        radial-gradient(rgba(255,255,255,0.08) 1px, transparent 1px),
+        radial-gradient(rgba(255,255,255,0.05) 1px, transparent 1px);
+      background-size: 60px 60px, 40px 40px;
+      z-index: -1;
+      pointer-events: none;
+      animation: drift 60s linear infinite;
+    }
+
+    /* Header */
+    header {
+      display: flex;
+      justify-content: flex-start;
+      align-items: center;
+      max-width: 1400px;
       width: 100%;
-      padding: 15px;
-      border-radius: 10px;
-      font-size: 1em;
-      border: none;
-      resize: vertical;
-      font-family: monospace;
-      margin-bottom: 20px;
-      box-sizing: border-box;  /* Prevent overflow from padding */
+      margin: 0 auto 40px auto;
     }
 
-    .output {
-      background: rgba(255, 255, 255, 0.1);
-      padding: 15px;
-      border-radius: 10px;
+    .brand {
+      font-size: 1.6em;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      color: #fff;
+    }
+    .brand svg { filter: drop-shadow(0 0 10px var(--accent-glow)); }
+
+    /* Hero */
+    .hero { text-align: center; margin-bottom: 30px; animation: fadeIn 1s ease-out; }
+    .hero h1 { font-size: 2.8em; font-weight: 700; margin-bottom: 10px; }
+    .hero p { color: var(--text-muted); font-size: 1.1em; }
+
+    /* IDE Layout */
+    .ide-container {
+      max-width: 1400px;
+      width: 100%;
+      margin: 0 auto 60px auto;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      animation: fadeSlideUp 1s ease-out forwards;
+    }
+
+    /* Pane Styling */
+    .pane {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      backdrop-filter: blur(16px);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+      height: 600px;
+    }
+
+    .pane-header {
+      background: rgba(0,0,0,0.3);
+      padding: 12px 20px;
+      border-bottom: 1px solid var(--card-border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-weight: 600;
+      color: #fff;
+    }
+
+    .pane-title { display: flex; align-items: center; gap: 10px; }
+    .pane-title i { width: 18px; }
+    .title-red i { color: var(--jwt-header); }
+    .title-purple i { color: var(--jwt-payload); }
+
+    /* Status Badges */
+    .status-badge {
+      display: none;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 0.8em;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+    }
+    .status-valid { display: flex; background: rgba(34, 197, 94, 0.15); color: #4ade80; border: 1px solid rgba(34, 197, 94, 0.3); }
+    .status-invalid { display: flex; background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3); }
+
+    /* Editor Areas */
+    .editor-wrapper {
+      position: relative;
+      flex-grow: 1;
+      width: 100%;
+      background: transparent;
+      padding: 20px;
+      font-family: 'Fira Code', monospace;
+      font-size: 15px;
+      line-height: 1.6;
+      overflow-y: auto;
+      word-break: break-all;
+    }
+
+    /* Colored Textarea trick */
+    #jwtInput {
+      position: absolute;
+      top: 0; left: 0; width: 100%; height: 100%;
+      padding: 20px;
+      background: transparent;
+      color: transparent;
+      caret-color: #fff;
+      border: none;
+      resize: none;
+      outline: none;
+      font-family: 'Fira Code', monospace;
+      font-size: 15px;
+      line-height: 1.6;
+      z-index: 2;
+    }
+
+    #jwtInput::placeholder { color: rgba(255,255,255,0.2); }
+
+    #jwtBackdrop {
+      position: absolute;
+      top: 0; left: 0; width: 100%; height: 100%;
+      padding: 20px;
+      color: var(--text-muted);
+      z-index: 1;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+
+    .jwt-h { color: var(--jwt-header); }
+    .jwt-p { color: var(--jwt-payload); }
+    .jwt-s { color: var(--jwt-sig); }
+
+    /* Formatted Output Area */
+    .output-area {
+      flex-grow: 1;
+      padding: 20px;
+      overflow-y: auto;
+      font-family: 'Fira Code', monospace;
+      font-size: 14px;
+      line-height: 1.6;
       white-space: pre-wrap;
       word-wrap: break-word;
-      margin-bottom: 20px;
     }
 
-    .error {
-      color: #ffdddd;
-      background: rgba(255, 0, 0, 0.2);
-      padding: 10px;
-      border-radius: 8px;
+    .output-split {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
     }
 
-    .label {
-      font-weight: bold;
-      margin-top: 10px;
+    .split-half {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      border-bottom: 1px solid var(--card-border);
+    }
+    .split-half:last-child { border-bottom: none; }
+
+    /* Syntax Highlighting */
+    .syn-key { color: var(--accent-main); font-weight: 500; }
+    .syn-string { color: #a7f3d0; }
+    .syn-number { color: #fdba74; }
+    .syn-boolean { color: #f472b6; }
+
+    /* SEO/Docs Section */
+    .info-panel {
+      max-width: 1400px;
+      margin: 0 auto 60px auto;
+      background: rgba(255,255,255,0.02);
+      border: 1px solid var(--card-border);
+      padding: 40px;
+      border-radius: 20px;
     }
 
-    .back {
-      position: fixed;
-      bottom: 20px;
-      left: 20px;
-      background: white;
-      color: #333;
-      padding: 10px 18px;
-      border-radius: 8px;
-      text-decoration: none;
-      font-weight: bold;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    .info-panel h2 { color: #fff; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
+    .info-panel h2 i { color: var(--accent-main); }
+    .info-panel p { color: var(--text-muted); margin-bottom: 15px; line-height: 1.7; }
+    .info-panel ul { list-style: none; margin-bottom: 20px; }
+    .info-panel li { color: var(--text-muted); margin-bottom: 10px; display: flex; align-items: center; gap: 10px; }
+    .info-panel li i { color: #22c55e; width: 16px; }
+
+    /* Command Center FAB */
+    .fab {
+      position: fixed; bottom: 30px; left: 30px; width: 60px; height: 60px;
+      border-radius: 50%; backdrop-filter: blur(15px); display: flex;
+      align-items: center; justify-content: center; z-index: 9998;
+      background: rgba(20, 22, 30, 0.7); border: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 0 8px 25px rgba(0,0,0,0.5); transition: all 0.4s; text-decoration: none;
+    }
+    .fab:hover { transform: scale(1.1); border-color: var(--accent-main); background: rgba(30, 34, 48, 0.9); }
+
+    footer { text-align: center; padding: 40px 0; border-top: 1px solid var(--card-border); color: var(--text-muted); font-size: 0.95em; margin-top: auto; }
+
+    @media (max-width: 900px) {
+      .ide-container { grid-template-columns: 1fr; }
+      .pane { height: 400px; }
+      .output-split { height: 600px; }
     }
 
-    /* Media Queries for Responsiveness */
-    @media (max-width: 768px) {
-      h1 {
-        font-size: 2em;
-      }
-
-      textarea {
-        height: 140px;  /* Reduced height for mobile */
-        font-size: 0.9em;
-        padding: 10px;  /* Reduced padding */
-        margin-right: 10px;  /* Add some right margin to avoid touching the screen edge */
-      }
-
-      .output {
-        font-size: 0.9em;
-      }
-
-      .back {
-        font-size: 0.9em;
-        padding: 8px 16px;
-      }
-
-      body {
-        padding: 20px;
-        max-width: 100%;  /* Full width for small screens */
-      }
-    }
-
-/* Floating Home FAB */
-.home-fab {
-  position: fixed;
-  bottom: 20px;
-  left: 20px;
-  width: 44px;
-  height: 44px;
-  background-color: white;
-  border-radius: 12px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-  text-decoration: none;
-  z-index: 1000;
-}
-.home-fab svg {
-  width: 20px;
-  height: 20px;
-  fill: #333;
-}
-</style>
-<meta content="Free browser-based tool by Layerbit. Fast, simple, and privacy-respecting." name="description"/></head>
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(-15px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes fadeSlideUp { from { opacity: 0; transform: translateY(40px); } to { opacity: 1; transform: translateY(0); } }
+  </style>
+</head>
 <body>
-<p style="max-width:800px;margin:20px auto;font-size:1em;text-align:center;">Decode JWT tokens and inspect the header and payload. No data is stored or sent.</p>
-<h1>JWT Decoder</h1>
-<textarea id="jwtInput" placeholder="Paste your JWT here..." rows="5"></textarea>
-<div class="error" id="error" style="display:none;"></div>
-<div class="label">Header:</div>
-<div class="output" id="headerOutput">---</div>
-<div class="label">Payload:</div>
-<div class="output" id="payloadOutput">---</div>
-<script>
+
+  <header>
+    <a href="../index.html" class="brand">
+      <svg width="36" height="36" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <polygon points="32,20 54,28 32,36 10,28" stroke="#f8fafc" stroke-width="4" stroke-linejoin="round"/>
+        <polyline points="10,38 32,46 54,38" stroke="#f8fafc" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+        <polyline points="10,48 32,56 54,48" stroke="#f8fafc" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+        <rect x="50" y="10" width="10" height="10" rx="2" fill="#00f2fe" />
+      </svg>
+      Layerbit
+    </a>
+  </header>
+
+  <main class="hero">
+    <h1>JWT Inspector</h1>
+    <p>Decode JSON Web Tokens instantly. Verify algorithms, claims, and expiration securely in your browser.</p>
+  </main>
+
+  <div class="ide-container">
+    
+    <div class="pane">
+      <div class="pane-header">
+        <div class="pane-title"><i data-lucide="key-round"></i> Encoded Token</div>
+        <div id="statusBadge" class="status-badge">
+          <i id="statusIcon" data-lucide="shield-check"></i> <span id="statusText">Awaiting Token</span>
+        </div>
+      </div>
+      <div class="editor-wrapper">
+        <div id="jwtBackdrop">Paste your JWT string here to decode...</div>
+        <textarea id="jwtInput" spellcheck="false"></textarea>
+      </div>
+    </div>
+
+    <div class="pane output-split">
+      
+      <div class="split-half">
+        <div class="pane-header">
+          <div class="pane-title title-red"><i data-lucide="file-code"></i> Header <span style="font-size: 0.8em; color: var(--text-muted); font-weight: 400;">(Algorithm & Type)</span></div>
+        </div>
+        <div id="headerOutput" class="output-area"></div>
+      </div>
+
+      <div class="split-half">
+        <div class="pane-header">
+          <div class="pane-title title-purple"><i data-lucide="database"></i> Payload <span style="font-size: 0.8em; color: var(--text-muted); font-weight: 400;">(Data & Claims)</span></div>
+        </div>
+        <div id="payloadOutput" class="output-area"></div>
+      </div>
+
+    </div>
+
+  </div>
+
+  <div class="info-panel">
+    <h2><i data-lucide="info"></i> Zero-Trust Security Architecture</h2>
+    <p>Layerbit’s JWT Inspector is built for security engineers and backend developers. It decodes base64url encoded tokens without transmitting the payload over the network. It is entirely client-side, ensuring your sensitive authentication strings never leave your machine.</p>
+    
+    <ul>
+      <li><i data-lucide="check"></i> <strong>Real-Time Parsing:</strong> Instantly splits and color-codes the Header, Payload, and Signature.</li>
+      <li><i data-lucide="check"></i> <strong>Expiration Verification:</strong> Automatically calculates Unix timestamps from the <code>exp</code> and <code>iat</code> claims to visually alert you if a token is expired.</li>
+      <li><i data-lucide="check"></i> <strong>Secure Environment:</strong> No databases, no logs, no API calls. Your JWT is decoded locally in the DOM.</li>
+    </ul>
+  </div>
+
+  <a href="../index.html" class="fab" aria-label="Command Center" title="Command Center">
+    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="filter: drop-shadow(0 0 8px rgba(56, 189, 248, 0.5));">
+      <path d="M12 2L2 7l10 5 10-5-10-5z" stroke="#38bdf8" stroke-width="2" stroke-linejoin="round" fill="rgba(56,189,248,0.2)"/>
+      <path d="M2 17l10 5 10-5M2 12l10 5 10-5" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </a>
+
+  <footer>
+    &copy; 2025 - 2026 <strong>Layerbit Technologies</strong>. All rights reserved.
+  </footer>
+
+  <script>
+    lucide.createIcons();
+
+    const jwtInput = document.getElementById('jwtInput');
+    const jwtBackdrop = document.getElementById('jwtBackdrop');
+    const headerOutput = document.getElementById('headerOutput');
+    const payloadOutput = document.getElementById('payloadOutput');
+    const statusBadge = document.getElementById('statusBadge');
+    const statusIcon = document.getElementById('statusIcon');
+    const statusText = document.getElementById('statusText');
+
+    // Syntax Highlighter for JSON output
+    function syntaxHighlight(jsonStr) {
+      jsonStr = jsonStr.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      return jsonStr.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, function (match) {
+        let cls = 'syn-number';
+        if (/^"/.test(match)) {
+          if (/:$/.test(match)) { cls = 'syn-key'; } 
+          else { cls = 'syn-string'; }
+        } else if (/true|false/.test(match)) { cls = 'syn-boolean'; } 
+        else if (/null/.test(match)) { cls = 'syn-null'; }
+        return '<span class="' + cls + '">' + match + '</span>';
+      });
+    }
+
+    // Base64URL Decode
     function decodeBase64Url(str) {
       str = str.replace(/-/g, '+').replace(/_/g, '/');
       const pad = str.length % 4;
-      if (pad) {
-        str += '='.repeat(4 - pad);
-      }
-      return decodeURIComponent(atob(str).split('').map(c =>
-        '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)
-      ).join(''));
+      if (pad) { str += '='.repeat(4 - pad); }
+      return decodeURIComponent(atob(str).split('').map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join(''));
     }
 
-    function decodeJWT(token) {
-      const errorDiv = document.getElementById("error");
-      const headerOut = document.getElementById("headerOutput");
-      const payloadOut = document.getElementById("payloadOutput");
-
-      errorDiv.style.display = "none";
-      headerOut.textContent = "---";
-      payloadOut.textContent = "---";
-
-      if (!token) return;
+    // Main Parse Logic
+    jwtInput.addEventListener('input', function() {
+      const token = this.value.trim();
+      
+      // Update Backdrop colors
+      if (!token) {
+        jwtBackdrop.innerHTML = "Paste your JWT string here to decode...";
+        headerOutput.innerHTML = "";
+        payloadOutput.innerHTML = "";
+        statusBadge.className = "status-badge";
+        return;
+      }
 
       const parts = token.split('.');
-      if (parts.length !== 3) {
-        errorDiv.textContent = "Invalid JWT: Must have 3 parts separated by dots.";
-        errorDiv.style.display = "block";
+      
+      // Colorize input backdrop
+      let coloredInput = "";
+      if(parts[0]) coloredInput += `<span class="jwt-h">${parts[0]}</span>`;
+      if(parts.length > 1) coloredInput += `.<span class="jwt-p">${parts[1]}</span>`;
+      if(parts.length > 2) coloredInput += `.<span class="jwt-s">${parts[2]}</span>`;
+      jwtBackdrop.innerHTML = coloredInput;
+
+      // Ensure proper length before attempting parse
+      if (parts.length < 2) {
+        statusBadge.className = "status-badge status-invalid";
+        statusText.innerText = "Invalid JWT Format";
         return;
       }
 
@@ -162,56 +410,42 @@
         const header = JSON.parse(decodeBase64Url(parts[0]));
         const payload = JSON.parse(decodeBase64Url(parts[1]));
 
-        headerOut.textContent = JSON.stringify(header, null, 2);
-        payloadOut.textContent = JSON.stringify(payload, null, 2);
-      } catch (e) {
-        errorDiv.textContent = "Error decoding JWT: " + e.message;
-        errorDiv.style.display = "block";
-      }
-    }
+        // Output JSON
+        headerOutput.innerHTML = syntaxHighlight(JSON.stringify(header, null, 4));
+        payloadOutput.innerHTML = syntaxHighlight(JSON.stringify(payload, null, 4));
 
-    document.getElementById("jwtInput").addEventListener("input", function () {
-      decodeJWT(this.value.trim());
+        // Expiration Logic Check
+        if (payload.exp) {
+          const currentTime = Math.floor(Date.now() / 1000);
+          if (payload.exp < currentTime) {
+            statusBadge.className = "status-badge status-invalid";
+            statusText.innerText = "Token Expired";
+            statusIcon.setAttribute('data-lucide', 'shield-alert');
+          } else {
+            statusBadge.className = "status-badge status-valid";
+            statusText.innerText = "Signature Valid";
+            statusIcon.setAttribute('data-lucide', 'shield-check');
+          }
+          lucide.createIcons();
+        } else {
+          statusBadge.className = "status-badge status-valid";
+          statusText.innerText = "No Expiration Set";
+          statusIcon.setAttribute('data-lucide', 'info');
+          lucide.createIcons();
+        }
+
+      } catch (e) {
+        statusBadge.className = "status-badge status-invalid";
+        statusText.innerText = "Decoding Error";
+        statusIcon.setAttribute('data-lucide', 'triangle-alert');
+        lucide.createIcons();
+      }
     });
-</script>
-<div style="display: flex; justify-content: center; margin-top: 40px;">
-<details style="max-width: 700px; background: rgba(255,255,255,0.1); padding: 20px; border-radius: 10px;">
-<summary style="cursor: pointer; font-weight: bold; font-size: 1.1em;">
-    🔎 About this Tool (Click to Expand)
-  </summary>
-<div style="margin-top: 15px; text-align: left;">
-<h3 style="margin-top: 10px; color: #fff;">
-      🔐 What is a JWT Decoder?
-    </h3>
-<p>
-      A JSON Web Token (JWT) Decoder allows you to inspect the contents of a JWT — especially useful for developers and security testers.
-    </p>
-<h3 style="margin-top: 20px; color: #fff;">
-      💡 Common Use Cases
-    </h3>
-<ul style="list-style: none; padding-left: 0;">
-<li>✅ Debug authentication tokens</li>
-<li>✅ Verify claims and expiration</li>
-<li>✅ Understand token structure before implementation</li>
-</ul>
-<h3 style="margin-top: 20px; color: #fff;">
-      🚀 How to Use
-    </h3>
-<ol style="list-style: none; padding-left: 0;">
-<li>1️⃣ Paste your JWT token into the input box</li>
-<li>2️⃣ The header and payload will be decoded instantly</li>
-<li>3️⃣ Copy and use or analyze the information</li>
-</ol>
-<p style="margin-top: 20px;">
-      Built with 💙 by Layerbit. Nothing you paste is saved or sent.
-    </p>
-</div>
-</details>
-</div>
-<a class="home-fab" href="../index.html" title="Home">
-<svg viewbox="0 0 24 24">
-<path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"></path>
-</svg>
-</a>
+    
+    // Sync Scroll between invisible textarea and colored backdrop
+    jwtInput.addEventListener('scroll', function() {
+      jwtBackdrop.scrollTop = this.scrollTop;
+    });
+  </script>
 </body>
 </html>

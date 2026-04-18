@@ -1,186 +1,295 @@
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1" name="viewport"/>
-<title>HTML Escape / Unescape - Layerbit</title>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&amp;display=swap" rel="stylesheet"/>
-<style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Secure, real-time HTML Entity Sanitizer. Escape and unescape HTML characters bidirectionally without risky DOM injection." />
+  <title>HTML Entity Sanitizer - Layerbit</title>
+  
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6072772587431629" crossorigin="anonymous"></script>
+  
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet" />
+  <link href="../layerbit-logo.png" rel="icon" type="image/x-icon" />
+  
+  <style>
+    /* Ultra-Premium Dark Theme Variables */
+    :root {
+      --bg-base: #0a0c10;
+      --bg-gradient: radial-gradient(circle at 50% 0%, #1a1e2d 0%, #0a0c10 70%);
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --card-bg: rgba(20, 22, 30, 0.6);
+      --card-border: rgba(255, 255, 255, 0.08);
+      --accent-main: #38bdf8;
+      --accent-glow: rgba(56, 189, 248, 0.5);
+      --neon-gradient: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%);
+      --error-color: #ef4444;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
     body {
       font-family: 'Space Grotesk', sans-serif;
-      background: linear-gradient(135deg, #4facfe, #00f2fe);
-      color: white;
-      padding: 30px 20px;
-      max-width: 1000px;
-      margin: auto;
-    }
-
-    h1 {
-      text-align: center;
-      font-size: 2.5em;
-      margin-bottom: 20px;
-    }
-
-    .container {
+      color: var(--text-main);
+      background-color: var(--bg-base);
+      background-image: var(--bg-gradient);
+      min-height: 100vh;
+      padding: 20px 40px;
+      position: relative;
+      overflow-x: hidden;
       display: flex;
       flex-direction: column;
-      gap: 20px;
     }
 
-    @media(min-width: 768px) {
-      .container {
-        flex-direction: row;
-      }
+    @keyframes drift { from { background-position: 0 0, 20px 20px; } to { background-position: -60px -60px, -40px -40px; } }
+    body::before {
+      content: ''; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+      background-image: radial-gradient(rgba(255,255,255,0.08) 1px, transparent 1px), radial-gradient(rgba(255,255,255,0.05) 1px, transparent 1px);
+      background-size: 60px 60px, 40px 40px; z-index: -1; animation: drift 60s linear infinite; pointer-events: none;
     }
 
-    textarea {
+    header { display: flex; justify-content: flex-start; align-items: center; max-width: 1400px; width: 100%; margin: 0 auto 40px auto; }
+    .brand { font-size: 1.6em; font-weight: 700; display: flex; align-items: center; gap: 12px; text-decoration: none; color: #fff; }
+    .brand svg { filter: drop-shadow(0 0 10px var(--accent-glow)); }
+
+    .hero { text-align: center; margin-bottom: 40px; animation: fadeIn 1s ease-out; }
+    .hero h1 { font-size: 2.8em; font-weight: 700; margin-bottom: 10px; }
+    .hero p { color: var(--text-muted); font-size: 1.1em; }
+
+    /* IDE Layout */
+    .ide-container {
+      max-width: 1400px;
       width: 100%;
-      height: 250px;
-      border-radius: 10px;
-      font-size: 1em;
-      font-family: monospace;
-      padding: 15px;
-      color: #333;
-      border: none;
-      resize: vertical;
-      box-sizing: border-box;
+      margin: 0 auto 40px auto;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      animation: fadeSlideUp 1s ease-out forwards;
     }
 
-    button {
-      font-family: 'Space Grotesk', sans-serif;
-      padding: 10px 20px;
-      font-size: 1em;
-      border-radius: 8px;
-      border: none;
-      cursor: pointer;
-      margin-top: 20px;
+    /* Panes */
+    .pane {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      backdrop-filter: blur(16px);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+      height: 450px;
     }
 
-    .center {
-      text-align: center;
+    .pane-header {
+      background: rgba(0,0,0,0.3);
+      padding: 12px 20px;
+      border-bottom: 1px solid var(--card-border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-weight: 600;
+      color: #fff;
     }
 
-    .back {
-      position: fixed;
-      bottom: 20px;
-      left: 20px;
-      background: white;
-      color: #333;
-      padding: 10px 18px;
-      border-radius: 8px;
-      text-decoration: none;
-      font-weight: bold;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    .pane-title { display: flex; align-items: center; gap: 10px; }
+    .pane-title i { color: var(--accent-main); width: 18px; }
+
+    .btn-group { display: flex; gap: 10px; }
+    
+    .btn {
+      background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #fff;
+      padding: 6px 14px; border-radius: 8px; font-family: 'Space Grotesk', sans-serif; font-weight: 600;
+      font-size: 0.85em; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: 0.2s;
+    }
+    .btn:hover { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.2); }
+    .btn i { width: 14px; height: 14px; }
+
+    .action-bar { display: flex; justify-content: center; gap: 15px; margin-bottom: 40px; }
+    .btn-clear { background: rgba(239, 68, 68, 0.1); border-color: rgba(239, 68, 68, 0.3); color: #f87171; padding: 12px 30px; border-radius: 12px; font-size: 1em; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: 0.3s; }
+    .btn-clear:hover { background: rgba(239, 68, 68, 0.2); transform: translateY(-2px); }
+
+    /* Input Textareas */
+    .editor {
+      width: 100%; flex-grow: 1; background: transparent; border: none; padding: 20px;
+      color: var(--text-main); font-family: 'Fira Code', monospace; font-size: 15px;
+      line-height: 1.6; resize: none; outline: none; white-space: pre-wrap; word-break: break-all;
+    }
+    .editor::placeholder { color: rgba(255,255,255,0.2); }
+
+    /* Info Panel */
+    .info-panel { max-width: 1400px; margin: 0 auto 60px auto; background: rgba(255,255,255,0.02); border: 1px solid var(--card-border); padding: 40px; border-radius: 20px; }
+    .info-panel h2 { color: #fff; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
+    .info-panel h2 i { color: var(--accent-main); }
+    .info-panel p { color: var(--text-muted); margin-bottom: 15px; line-height: 1.7; }
+    .info-panel ul { list-style: none; margin-bottom: 20px; }
+    .info-panel li { color: var(--text-muted); margin-bottom: 10px; display: flex; align-items: center; gap: 10px; }
+    .info-panel li i { color: #22c55e; width: 16px; }
+
+    /* Command Center FAB */
+    .fab { position: fixed; bottom: 30px; left: 30px; width: 60px; height: 60px; border-radius: 50%; backdrop-filter: blur(15px); display: flex; align-items: center; justify-content: center; z-index: 9998; background: rgba(20, 22, 30, 0.7); border: 1px solid rgba(255, 255, 255, 0.1); box-shadow: 0 8px 25px rgba(0,0,0,0.5); transition: all 0.4s; text-decoration: none; }
+    .fab:hover { transform: scale(1.1); border-color: var(--accent-main); background: rgba(30, 34, 48, 0.9); box-shadow: 0 12px 30px rgba(0,0,0,0.6), 0 0 25px rgba(56, 189, 248, 0.3); }
+
+    footer { text-align: center; padding: 40px 0; border-top: 1px solid var(--card-border); color: var(--text-muted); font-size: 0.95em; margin-top: auto; }
+
+    @media (max-width: 900px) {
+      .ide-container { grid-template-columns: 1fr; }
+      .pane { height: 300px; }
     }
 
-    /* Mobile Adjustments */
-    @media (max-width: 768px) {
-      h1 {
-        font-size: 2em;
-      }
-
-      .container {
-        flex-direction: column;  /* Stack textareas on mobile */
-      }
-
-      textarea {
-        height: 200px;  /* Adjust textarea height for mobile */
-      }
-
-      .back {
-        font-size: 0.9em;
-        padding: 8px 16px;
-      }
-    }
-
-/* Floating Home FAB */
-.home-fab {
-  position: fixed;
-  bottom: 20px;
-  left: 20px;
-  width: 44px;
-  height: 44px;
-  background-color: white;
-  border-radius: 12px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-  text-decoration: none;
-  z-index: 1000;
-}
-.home-fab svg {
-  width: 20px;
-  height: 20px;
-  fill: #333;
-}
-</style>
-<meta content="Free browser-based tool by Layerbit. Fast, simple, and privacy-respecting." name="description"/></head>
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(-15px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes fadeSlideUp { from { opacity: 0; transform: translateY(40px); } to { opacity: 1; transform: translateY(0); } }
+  </style>
+</head>
 <body>
-<p style="max-width:800px;margin:20px auto;font-size:1em;text-align:center;">Escape or unescape HTML characters for safe web display and editing.</p>
-<h1>HTML Escape / Unescape</h1>
-<div class="container">
-<textarea id="input" placeholder="Enter HTML or escaped text..."></textarea>
-<textarea id="output" placeholder="Result appears here..." readonly=""></textarea>
-</div>
-<div class="center">
-<button onclick="escapeHTML()">Escape HTML</button>
-<button onclick="unescapeHTML()">Unescape HTML</button>
-</div>
-<script>
-    function escapeHTML() {
-      const input = document.getElementById("input").value;
-      const div = document.createElement("div");
-      div.textContent = input;
-      document.getElementById("output").value = div.innerHTML;
+
+  <header>
+    <a href="../index.html" class="brand">
+      <svg width="36" height="36" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <polygon points="32,20 54,28 32,36 10,28" stroke="#f8fafc" stroke-width="4" stroke-linejoin="round"/>
+        <polyline points="10,38 32,46 54,38" stroke="#f8fafc" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+        <polyline points="10,48 32,56 54,48" stroke="#f8fafc" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+        <rect x="50" y="10" width="10" height="10" rx="2" fill="#00f2fe" />
+      </svg>
+      Layerbit
+    </a>
+  </header>
+
+  <main class="hero">
+    <h1>HTML Entity Sanitizer</h1>
+    <p>Securely escape and unescape HTML strings bidirectionally without DOM injection.</p>
+  </main>
+
+  <div class="ide-container">
+    
+    <div class="pane">
+      <div class="pane-header">
+        <div class="pane-title"><i data-lucide="code"></i> Raw HTML</div>
+        <div class="btn-group">
+          <button class="btn" onclick="copyContent('rawInput', this)"><i data-lucide="copy"></i> Copy</button>
+        </div>
+      </div>
+      <textarea id="rawInput" class="editor" placeholder='Type or paste raw HTML here...&#10;&#10;<div class="header">&#10;  <h1>Welcome to Layerbit</h1>&#10;</div>' spellcheck="false"></textarea>
+    </div>
+
+    <div class="pane">
+      <div class="pane-header">
+        <div class="pane-title"><i data-lucide="shield-check"></i> Escaped Entities</div>
+        <div class="btn-group">
+          <button class="btn" onclick="copyContent('escapedInput', this)"><i data-lucide="copy"></i> Copy</button>
+        </div>
+      </div>
+      <textarea id="escapedInput" class="editor" placeholder='Type or paste escaped entities here...&#10;&#10;&lt;div class=&quot;header&quot;&gt;&#10;  &lt;h1&gt;Welcome to Layerbit&lt;/h1&gt;&#10;&lt;/div&gt;' spellcheck="false"></textarea>
+    </div>
+
+  </div>
+
+  <div class="action-bar">
+    <button class="btn-clear" onclick="clearAll()"><i data-lucide="trash-2"></i> Clear Workspace</button>
+  </div>
+
+  <div class="info-panel">
+    <h2><i data-lucide="lock"></i> Zero-Trust Processing Engine</h2>
+    <p>Many online HTML escaping tools use a dangerous method known as DOM injection (<code>element.innerHTML = text</code>) to parse entities. If a malicious script is pasted, the browser might execute it. Layerbit mitigates this entirely.</p>
+    <ul>
+      <li><i data-lucide="check"></i> <strong>Regex Mapping:</strong> We utilize a strict, high-performance dictionary matrix to convert characters purely at the string level. It is mathematically impossible to trigger an XSS attack using this tool.</li>
+      <li><i data-lucide="check"></i> <strong>Bidirectional Sync:</strong> Paste raw code on the left to secure it for transport, or paste an escaped payload on the right to revert it to readable HTML instantly.</li>
+      <li><i data-lucide="check"></i> <strong>Air-Gapped Operation:</strong> No payload data is ever transmitted to external servers. All cryptographic string manipulation occurs locally.</li>
+    </ul>
+  </div>
+
+  <a href="../index.html" class="fab" aria-label="Command Center" title="Command Center">
+    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="filter: drop-shadow(0 0 8px rgba(56, 189, 248, 0.5));">
+      <path d="M12 2L2 7l10 5 10-5-10-5z" stroke="#38bdf8" stroke-width="2" stroke-linejoin="round" fill="rgba(56,189,248,0.2)"/>
+      <path d="M2 17l10 5 10-5M2 12l10 5 10-5" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </a>
+
+  <footer>
+    &copy; 2025 - 2026 <strong>Layerbit Technologies</strong>. All rights reserved.
+  </footer>
+
+  <script>
+    lucide.createIcons();
+
+    const rawInput = document.getElementById("rawInput");
+    const escapedInput = document.getElementById("escapedInput");
+
+    let isSyncing = false; // Flag to prevent infinite loop
+
+    // High-performance mapping dictionaries
+    const escapeMap = {
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#39;',
+      '/': '&#x2F;',
+      '`': '&#x60;',
+      '=': '&#x3D;'
+    };
+
+    const unescapeMap = {
+      '&amp;': '&',
+      '&lt;': '<',
+      '&gt;': '>',
+      '&quot;': '"',
+      '&#39;': "'",
+      '&#x2F;': '/',
+      '&#x60;': '`',
+      '&#x3D;': '='
+    };
+
+    function safeEscapeHTML(str) {
+      return String(str).replace(/[&<>"'`=\/]/g, function (s) {
+        return escapeMap[s];
+      });
     }
 
-    function unescapeHTML() {
-      const input = document.getElementById("input").value;
-      const div = document.createElement("div");
-      div.innerHTML = input;
-      document.getElementById("output").value = div.textContent;
+    function safeUnescapeHTML(str) {
+      return String(str).replace(/&(amp|lt|gt|quot|#39|#x2F|#x60|#x3D);/g, function (s) {
+        return unescapeMap[s];
+      });
     }
-</script>
-<div style="display: flex; justify-content: center; margin-top: 40px;">
-<details style="max-width: 700px; background: rgba(255,255,255,0.1); padding: 20px; border-radius: 10px;">
-<summary style="cursor: pointer; font-weight: bold; font-size: 1.1em;">
-    🔎 About this Tool (Click to Expand)
-  </summary>
-<div style="margin-top: 15px; text-align: left;">
-<h3 style="margin-top: 10px; color: #fff;">
-      🔄 What is HTML Escape/Unescape?
-    </h3>
-<p>
-      This tool helps convert special HTML characters like <code>&lt;</code>, <code>&gt;</code>, <code>&amp;</code>, etc. into their escaped equivalents and vice versa.
-    </p>
-<h3 style="margin-top: 20px; color: #fff;">
-      💡 Common Use Cases
-    </h3>
-<ul style="list-style: none; padding-left: 0;">
-<li>✅ Safely display code in HTML pages</li>
-<li>✅ Convert readable HTML into browser-safe format</li>
-<li>✅ Reverse escaped content to its original form</li>
-</ul>
-<h3 style="margin-top: 20px; color: #fff;">
-      🚀 How to Use
-    </h3>
-<ol style="list-style: none; padding-left: 0;">
-<li>1️⃣ Enter your HTML or escaped text in the left box</li>
-<li>2️⃣ Click “Escape” or “Unescape”</li>
-<li>3️⃣ View result on the right side</li>
-</ol>
-<p style="margin-top: 20px;">
-      Built with 💙 by Layerbit. Your data never leaves your browser.
-    </p>
-</div>
-</details>
-</div>
-<a class="home-fab" href="../index.html" title="Home">
-<svg viewbox="0 0 24 24">
-<path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"></path>
-</svg>
-</a>
+
+    // Engine: Raw -> Escaped
+    rawInput.addEventListener("input", () => {
+      if (isSyncing) return;
+      isSyncing = true;
+      escapedInput.value = safeEscapeHTML(rawInput.value);
+      isSyncing = false;
+    });
+
+    // Engine: Escaped -> Raw
+    escapedInput.addEventListener("input", () => {
+      if (isSyncing) return;
+      isSyncing = true;
+      rawInput.value = safeUnescapeHTML(escapedInput.value);
+      isSyncing = false;
+    });
+
+    // Utilities
+    function clearAll() {
+      rawInput.value = "";
+      escapedInput.value = "";
+    }
+
+    function copyContent(elementId, btnElement) {
+      const text = document.getElementById(elementId).value;
+      if (!text) return;
+      
+      navigator.clipboard.writeText(text).then(() => {
+        const originalText = btnElement.innerHTML;
+        btnElement.innerHTML = '<i data-lucide="check"></i> Copied!';
+        lucide.createIcons();
+        setTimeout(() => {
+          btnElement.innerHTML = originalText;
+          lucide.createIcons();
+        }, 2000);
+      });
+    }
+  </script>
 </body>
 </html>

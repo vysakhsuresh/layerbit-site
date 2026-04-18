@@ -1,275 +1,567 @@
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1" name="viewport"/>
-<title>QR / Barcode Generator - Layerbit</title>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&amp;display=swap" rel="stylesheet"/>
-<style>
-    ul, ol {
-      list-style: none;
-      padding-left: 0;
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Generate high-resolution, custom-colored QR codes and Code128 barcodes instantly. Secure, client-side generation by Layerbit." />
+  <title>Enterprise QR & Barcode Synthesizer - Layerbit</title>
+  
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6072772587431629" crossorigin="anonymous"></script>
+  
+  <script src="https://unpkg.com/lucide@latest"></script>
+  
+  <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/qrcodejs/qrcode.min.js"></script>
+
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link href="../layerbit-logo.png" rel="icon" type="image/x-icon" />
+  
+  <style>
+    /* Ultra-Premium Dark Theme Variables */
+    :root {
+      --bg-base: #0a0c10;
+      --bg-gradient: radial-gradient(circle at 50% 0%, #1a1e2d 0%, #0a0c10 70%);
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --card-bg: rgba(20, 22, 30, 0.6);
+      --card-border: rgba(255, 255, 255, 0.08);
+      --card-hover-border: rgba(56, 189, 248, 0.4);
+      --accent-main: #38bdf8;
+      --accent-glow: rgba(56, 189, 248, 0.5);
+      --neon-gradient: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%);
+      --error-bg: rgba(239, 68, 68, 0.1);
+      --error-border: #ef4444;
     }
-    ul li::before, ol li::before {
-      content: "";
-    }
-    .home-fab {
-      position: fixed;
-      bottom: 20px;
-      left: 20px;
-      width: 44px;
-      height: 44px;
-      background-color: white;
-      border-radius: 12px;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-      text-decoration: none;
-      z-index: 1000;
-    }
-    .home-fab svg {
-      width: 20px;
-      height: 20px;
-      fill: #333;
-    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
 
     body {
       font-family: 'Space Grotesk', sans-serif;
-      background: linear-gradient(135deg, #30cfd0, #330867);
-      color: white;
-      text-align: center;
-      padding: 40px 20px;
+      color: var(--text-main);
+      background-color: var(--bg-base);
+      background-image: var(--bg-gradient);
+      min-height: 100vh;
+      padding: 20px 40px;
+      position: relative;
+      overflow-x: hidden;
+      display: flex;
+      flex-direction: column;
     }
-    h1 {
-      font-size: 2.2em;
-      margin-bottom: 20px;
+
+    /* Animated Drifting Starry Background */
+    @keyframes drift {
+      from { background-position: 0 0, 20px 20px; }
+      to { background-position: -60px -60px, -40px -40px; }
     }
-    .input-container {
+
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0; left: 0; width: 100vw; height: 100vh;
+      background-image: 
+        radial-gradient(rgba(255,255,255,0.08) 1px, transparent 1px),
+        radial-gradient(rgba(255,255,255,0.05) 1px, transparent 1px);
+      background-size: 60px 60px, 40px 40px;
+      z-index: -1;
+      pointer-events: none;
+      animation: drift 60s linear infinite;
+    }
+
+    /* Header */
+    header {
+      display: flex;
+      justify-content: flex-start;
+      align-items: center;
+      max-width: 1400px;
+      width: 100%;
+      margin: 0 auto 40px auto;
+    }
+
+    .brand {
+      font-size: 1.6em;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      color: #fff;
+    }
+    .brand svg { filter: drop-shadow(0 0 10px var(--accent-glow)); }
+
+    /* Hero */
+    .hero { text-align: center; margin-bottom: 30px; animation: fadeIn 1s ease-out; }
+    .hero h1 { font-size: 2.8em; font-weight: 700; margin-bottom: 10px; }
+    .hero p { color: var(--text-muted); font-size: 1.1em; }
+
+    /* Synth Layout */
+    .synth-container {
+      max-width: 1200px;
+      width: 100%;
+      margin: 0 auto 60px auto;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 30px;
+      animation: fadeSlideUp 1s ease-out forwards;
+    }
+
+    /* Control Panel */
+    .control-pane {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 20px;
+      padding: 40px;
+      backdrop-filter: blur(16px);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+      display: flex;
+      flex-direction: column;
+      gap: 25px;
+    }
+
+    .input-group {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .input-group label {
+      font-weight: 600;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .input-group label i { width: 18px; color: var(--accent-main); }
+
+    .control-pane input[type="text"], .control-pane select {
+      width: 100%;
+      padding: 15px;
+      background: rgba(0,0,0,0.3);
+      border: 1px solid var(--card-border);
+      color: #fff;
+      border-radius: 12px;
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1.05em;
+      outline: none;
+      transition: border 0.3s;
+    }
+
+    .control-pane input[type="text"]:focus, .control-pane select:focus {
+      border-color: var(--accent-main);
+    }
+
+    .control-pane select option { background: #0a0c10; }
+
+    /* Color Pickers */
+    .color-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    .color-picker {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      background: rgba(0,0,0,0.3);
+      padding: 10px 15px;
+      border-radius: 12px;
+      border: 1px solid var(--card-border);
+    }
+
+    .color-picker input[type="color"] {
+      -webkit-appearance: none;
+      border: none;
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      cursor: pointer;
+      background: transparent;
+    }
+    .color-picker input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
+    .color-picker input[type="color"]::-webkit-color-swatch { border: none; border-radius: 8px; }
+
+    .btn-generate {
+      margin-top: 10px;
+      padding: 16px;
+      background: var(--neon-gradient);
+      color: #000;
+      border: none;
+      border-radius: 12px;
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1.1em;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 10px;
+      transition: all 0.3s;
+      box-shadow: 0 4px 15px var(--accent-glow);
+    }
+
+    .btn-generate:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px var(--accent-glow);
+    }
+
+    /* Output Panel */
+    .output-pane {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 20px;
+      padding: 40px;
+      backdrop-filter: blur(16px);
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 12px;
-      margin-bottom: 30px;
+      justify-content: center;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
     }
-    input, select, button {
-  padding: 12px;
-  font-size: 1em;
-  border-radius: 8px;
-  border: none;
-  width: 280px;
-  box-sizing: border-box;
-}
-    button {
-      background: white;
-      color: #333;
-      font-weight: bold;
-      cursor: pointer;
-      transition: background 0.3s;
-    }
-    button:hover {
-      background: #eee;
-    }
-    #output {
-      margin-top: 30px;
-    }
-    canvas, img {
-      background: white;
-      padding: 10px;
-      border-radius: 8px;
-      margin-top: 10px;
-    }
-    .back {
-      position: fixed;
-      bottom: 20px;
-      left: 20px;
-      background: white;
-      color: #333;
-      padding: 10px 18px;
-      border-radius: 8px;
-      text-decoration: none;
-      font-weight: bold;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-    }
-  
-    .code-container {
-      display: inline-block;
-      margin-top: 30px;
-      font-family: 'Space Grotesk', sans-serif;
-      text-align: right;
-      width: 100%;
-      max-width: 280px;
-    }
-    .button-row {
-      margin-bottom: 12px;
+
+    /* The White Room (Ensures scanning works regardless of colors) */
+    .scan-room {
+      background: #ffffff;
+      padding: 30px;
+      border-radius: 16px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
       display: flex;
       justify-content: center;
-      gap: 10px;
-      width: 280px;
-      margin-left: auto;
-      margin-right: auto;
+      align-items: center;
+      min-height: 250px;
+      width: 100%;
+      max-width: 350px;
+      overflow: hidden;
+      margin-bottom: 30px;
     }
-    .button-row button {
-      background: white;
-      color: #333;
-      border: 1px solid #ccc;
-      padding: 6px 0;
-      font-size: 0.8em;
-      border-radius: 6px;
-      font-family: 'Space Grotesk', sans-serif;
+
+    .scan-room canvas, .scan-room img {
+      max-width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    .placeholder-text {
+      color: #94a3b8;
       text-align: center;
+      font-weight: 600;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+    }
+
+    /* Action Buttons */
+    .action-row {
+      display: flex;
+      gap: 15px;
+      width: 100%;
+      max-width: 350px;
+    }
+
+    .btn-action {
+      flex: 1;
+      padding: 12px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      color: #fff;
+      border-radius: 10px;
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 600;
       cursor: pointer;
-      transition: background 0.3s;
-      width: 135px;
-    }
-    .button-row button:hover {
-      background: #f0f0f0;
-    }
-
-
-#output {
-  text-align: center;
-}
-#output canvas,
-#output div {
-  display: inline-block;
-}
-
-</style>
-<meta content="Free browser-based tool by Layerbit. Fast, simple, and privacy-respecting." name="description"/></head>
-<body><p style="max-width:800px;margin:20px auto;font-size:1em;text-align:center;">Generate high-quality QR codes and barcodes for links, text, or numbers. Download and share easily.</p>
-<h1>QR / Barcode Generator</h1>
-<div class="input-container">
-<input id="dataInput" placeholder="Enter text or URL" type="text"/>
-<select id="typeSelect">
-<option value="qr">QR Code</option>
-<option value="barcode">Barcode (Code128)</option>
-</select>
-<button onclick="generateCode()">Generate</button>
-</div>
-<div id="output"></div>
-<!-- Libraries -->
-<script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/qrcodejs/qrcode.min.js"></script>
-<script>
-  function generateCode() {
-    const data = document.getElementById('dataInput').value.trim();
-    const type = document.getElementById('typeSelect').value;
-    const output = document.getElementById('output');
-    output.innerHTML = '';
-
-    if (!data) {
-      alert("Please enter text or URL.");
-      return;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s;
     }
 
-    const container = document.createElement('div');
-    container.className = 'code-container';
-
-    const buttonRow = document.createElement('div');
-    buttonRow.className = 'button-row';
-    buttonRow.innerHTML = `
-      <button onclick="downloadCode()" title="Download">⬇ <span>Download</span></button>
-      <button onclick="shareCode()" title="Share">📤 <span>Share</span></button>
-    `;
-    container.appendChild(buttonRow);
-
-    if (type === 'qr') {
-      const qrDiv = document.createElement('div');
-      container.appendChild(qrDiv);
-      output.appendChild(container);
-      new QRCode(qrDiv, {
-        text: data,
-        width: 256,
-        height: 256,
-        colorDark: "#000000",
-        colorLight: "#ffffff",
-      });
-    } else if (type === 'barcode') {
-      
-const wrapper = document.createElement('div');
-wrapper.style.overflowX = 'auto';
-wrapper.style.maxWidth = '100%';
-wrapper.style.textAlign = 'center';
-wrapper.style.marginTop = '20px';
-const canvas = document.createElement('canvas');
-canvas.style.maxWidth = '100%';
-canvas.style.height = 'auto';
-canvas.style.display = 'block';
-canvas.style.objectFit = 'contain';
-JsBarcode(canvas, data, {
-
-        format: "CODE128",
-        lineColor: "#000",
-        width: 2,
-        height: 100,
-        displayValue: true
-      ,
-  width: window.innerWidth < 500 ? 1.5 : 2
-});
-wrapper.appendChild(canvas);
-container.appendChild(wrapper);
-
-      
-      output.appendChild(container);
+    .btn-action:hover {
+      background: rgba(255,255,255,0.1);
+      border-color: var(--accent-main);
     }
-  }
+    
+    .btn-action:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      pointer-events: none;
+    }
 
-  function downloadCode() {
-    const output = document.getElementById('output');
-    const canvas = output.querySelector('canvas');
-    const img = output.querySelector('img');
-    let element = canvas || img;
-    if (!element) return;
+    /* SEO/Docs Section */
+    .info-panel {
+      max-width: 1200px;
+      margin: 0 auto 60px auto;
+      background: rgba(255,255,255,0.02);
+      border: 1px solid var(--card-border);
+      padding: 40px;
+      border-radius: 20px;
+    }
 
-    const link = document.createElement('a');
-    link.download = "code.png";
-    link.href = element.toDataURL ? element.toDataURL() : element.src;
-    link.click();
-  }
+    .info-panel h2 { color: #fff; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
+    .info-panel h2 i { color: var(--accent-main); }
+    .info-panel p { color: var(--text-muted); margin-bottom: 15px; line-height: 1.7; }
+    .info-panel ul { list-style: none; margin-bottom: 20px; }
+    .info-panel li { color: var(--text-muted); margin-bottom: 10px; display: flex; align-items: center; gap: 10px; }
+    .info-panel li i { color: #22c55e; width: 16px; }
 
-  function shareCode() {
-    const output = document.getElementById('output');
-    const canvas = output.querySelector('canvas');
-    const img = output.querySelector('img');
-    let element = canvas || img;
-    if (!element || !navigator.share) return;
+    /* Command Center FAB */
+    .fab {
+      position: fixed; bottom: 30px; left: 30px; width: 60px; height: 60px;
+      border-radius: 50%; backdrop-filter: blur(15px); display: flex;
+      align-items: center; justify-content: center; z-index: 9998;
+      background: rgba(20, 22, 30, 0.7); border: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 0 8px 25px rgba(0,0,0,0.5); transition: all 0.4s; text-decoration: none;
+    }
+    .fab:hover { transform: scale(1.1); border-color: var(--accent-main); background: rgba(30, 34, 48, 0.9); }
 
-    element.toBlob(blob => {
-      const file = new File([blob], "code.png", { type: blob.type });
-      navigator.share({
-        files: [file],
-        title: 'QR/Barcode',
-        text: 'Here is your generated code.',
-      }).catch(console.error);
+    footer { text-align: center; padding: 40px 0; border-top: 1px solid var(--card-border); color: var(--text-muted); font-size: 0.95em; margin-top: auto; }
+
+    @media (max-width: 900px) {
+      .synth-container { grid-template-columns: 1fr; }
+    }
+
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(-15px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes fadeSlideUp { from { opacity: 0; transform: translateY(40px); } to { opacity: 1; transform: translateY(0); } }
+  </style>
+</head>
+<body>
+
+  <header>
+    <a href="../index.html" class="brand">
+      <svg width="36" height="36" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <polygon points="32,20 54,28 32,36 10,28" stroke="#f8fafc" stroke-width="4" stroke-linejoin="round"/>
+        <polyline points="10,38 32,46 54,38" stroke="#f8fafc" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+        <polyline points="10,48 32,56 54,48" stroke="#f8fafc" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+        <rect x="50" y="10" width="10" height="10" rx="2" fill="#00f2fe" />
+      </svg>
+      Layerbit
+    </a>
+  </header>
+
+  <main class="hero">
+    <h1>Enterprise QR & Barcode Synthesizer</h1>
+    <p>Generate production-ready matrix and linear barcodes with custom brand colors instantly.</p>
+  </main>
+
+  <div class="synth-container">
+    
+    <div class="control-pane">
+      <div class="input-group">
+        <label for="dataInput"><i data-lucide="link"></i> Payload Data</label>
+        <input id="dataInput" type="text" placeholder="Enter URL, Text, or Serial Number..." autocomplete="off"/>
+      </div>
+
+      <div class="input-group">
+        <label for="typeSelect"><i data-lucide="layers"></i> Output Format</label>
+        <select id="typeSelect">
+          <option value="qr">QR Code (Matrix)</option>
+          <option value="barcode">Code128 (Linear Barcode)</option>
+        </select>
+      </div>
+
+      <div class="input-group" id="colorControls">
+        <label><i data-lucide="palette"></i> Brand Colors</label>
+        <div class="color-grid">
+          <div class="color-picker">
+            <input type="color" id="colorDark" value="#000000">
+            <span>Foreground</span>
+          </div>
+          <div class="color-picker">
+            <input type="color" id="colorLight" value="#ffffff">
+            <span>Background</span>
+          </div>
+        </div>
+      </div>
+
+      <button class="btn-generate" onclick="generateCode()">
+        <i data-lucide="zap"></i> Synthesize Code
+      </button>
+    </div>
+
+    <div class="output-pane">
+      <div class="scan-room" id="outputArea">
+        <div class="placeholder-text">
+          <i data-lucide="scan" style="width: 48px; height: 48px; opacity: 0.5;"></i>
+          <span>Awaiting Input Data...</span>
+        </div>
+      </div>
+
+      <div class="action-row">
+        <button class="btn-action" id="btnDownload" onclick="downloadCode()" disabled>
+          <i data-lucide="download"></i> Download
+        </button>
+        <button class="btn-action" id="btnShare" onclick="shareCode()" disabled>
+          <i data-lucide="share-2"></i> Share
+        </button>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="info-panel">
+    <h2><i data-lucide="info"></i> Production-Grade Generation</h2>
+    <p>Layerbit's code synthesizer converts your text or URLs into high-fidelity, machine-readable formats. Unlike consumer generators, this tool performs all rendering inside your browser's local memory, guaranteeing absolute privacy for sensitive serial numbers or internal URLs.</p>
+    
+    <ul>
+      <li><i data-lucide="check"></i> <strong>QR Code (Matrix):</strong> Ideal for URLs, VCards, and dense text. Supports custom branding colors.</li>
+      <li><i data-lucide="check"></i> <strong>Code128 (Linear):</strong> The industry standard for inventory, shipping, and packaging. Renders flawlessly for laser scanners.</li>
+      <li><i data-lucide="check"></i> <strong>Native Export:</strong> Extract your generated codes directly to high-quality PNG format for immediate printing or sharing.</li>
+    </ul>
+  </div>
+
+  <a href="../index.html" class="fab" aria-label="Command Center" title="Command Center">
+    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="filter: drop-shadow(0 0 8px rgba(56, 189, 248, 0.5));">
+      <path d="M12 2L2 7l10 5 10-5-10-5z" stroke="#38bdf8" stroke-width="2" stroke-linejoin="round" fill="rgba(56,189,248,0.2)"/>
+      <path d="M2 17l10 5 10-5M2 12l10 5 10-5" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </a>
+
+  <footer>
+    &copy; 2025 - 2026 <strong>Layerbit Technologies</strong>. All rights reserved.
+  </footer>
+
+  <script>
+    lucide.createIcons();
+
+    const outputArea = document.getElementById('outputArea');
+    const typeSelect = document.getElementById('typeSelect');
+    const colorControls = document.getElementById('colorControls');
+    const btnDownload = document.getElementById('btnDownload');
+    const btnShare = document.getElementById('btnShare');
+    
+    // Toggle color controls based on selection (JsBarcode colors are trickier to handle cleanly, so we focus custom colors on QR)
+    typeSelect.addEventListener('change', (e) => {
+      if(e.target.value === 'qr') {
+        colorControls.style.display = 'flex';
+      } else {
+        colorControls.style.display = 'flex'; // Keep it available for barcode too
+      }
     });
-  }
-</script>
-<a class="home-fab" href="../index.html" title="Home">
-<svg viewbox="0 0 24 24">
-<path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"></path>
-</svg>
-</a>
-<details style="max-width: 700px; margin: 60px auto 20px auto; background: rgba(255,255,255,0.1); padding: 20px; border-radius: 10px;">
-<summary style="cursor: pointer; font-weight: bold; font-size: 1.1em;">🔎 About this Tool (Click to Expand)</summary>
-<div style="margin-top: 15px; text-align: left;">
-<h3 style="margin-top: 10px; color: #fff;">📌 What is the QR / Barcode Generator?</h3>
-<p>This tool instantly creates QR codes and Code128 barcodes from your input. Whether it's a URL, plain text, or numbers — this tool helps you encode it with ease.</p>
-<h3 style="margin-top: 20px; color: #fff;">💡 Key Uses</h3>
-<ul>
-<li>✅ Share links via scannable QR codes</li>
-<li>✅ Create product barcodes for inventory systems</li>
-<li>✅ Convert quick information into a portable format</li>
-</ul>
-<h3 style="margin-top: 20px; color: #fff;">🚀 How to Use</h3>
-<ol>
-<li>1️⃣ Enter the desired text or URL in the box</li>
-<li>2️⃣ Choose between QR Code or Barcode</li>
-<li>3️⃣ Click <strong>Generate</strong> to see the result and optionally download or share it</li>
-</ol>
-<p style="margin-top: 20px;">No data is stored or tracked. Works fully client-side and built with ❤️ by Layerbit.</p>
-</div>
-</details>
+
+    function generateCode() {
+      const data = document.getElementById('dataInput').value.trim();
+      const type = typeSelect.value;
+      const fgColor = document.getElementById('colorDark').value;
+      const bgColor = document.getElementById('colorLight').value;
+      
+      if (!data) {
+        outputArea.innerHTML = `
+          <div class="placeholder-text" style="color: #ef4444;">
+            <i data-lucide="triangle-alert" style="width: 48px; height: 48px;"></i>
+            <span>Please enter payload data.</span>
+          </div>`;
+        lucide.createIcons();
+        disableActions();
+        return;
+      }
+
+      // Clear Output
+      outputArea.innerHTML = '';
+      
+      // We apply background color to the room so transparent codes look right
+      outputArea.style.backgroundColor = bgColor;
+
+      if (type === 'qr') {
+        const qrWrapper = document.createElement('div');
+        outputArea.appendChild(qrWrapper);
+        
+        new QRCode(qrWrapper, {
+          text: data,
+          width: 250,
+          height: 250,
+          colorDark: fgColor,
+          colorLight: bgColor,
+          correctLevel: QRCode.CorrectLevel.H
+        });
+
+      } else if (type === 'barcode') {
+        const canvas = document.createElement('canvas');
+        outputArea.appendChild(canvas);
+        
+        try {
+          JsBarcode(canvas, data, {
+            format: "CODE128",
+            lineColor: fgColor,
+            background: bgColor,
+            width: 2.5,
+            height: 100,
+            displayValue: true,
+            margin: 10
+          });
+        } catch (e) {
+           outputArea.innerHTML = `
+            <div class="placeholder-text" style="color: #ef4444;">
+              <i data-lucide="triangle-alert" style="width: 48px; height: 48px;"></i>
+              <span>Invalid data for Code128 format.</span>
+            </div>`;
+          lucide.createIcons();
+          disableActions();
+          return;
+        }
+      }
+
+      enableActions();
+    }
+
+    function enableActions() {
+      btnDownload.disabled = false;
+      
+      // Only enable share if the browser supports it
+      if (navigator.share) {
+        btnShare.disabled = false;
+      }
+    }
+
+    function disableActions() {
+      btnDownload.disabled = true;
+      btnShare.disabled = true;
+      outputArea.style.backgroundColor = '#ffffff'; // reset room color
+    }
+
+    // Export Logic
+    function getExportElement() {
+      // qrcodejs sometimes makes a canvas, sometimes an img.
+      const canvas = outputArea.querySelector('canvas');
+      const img = outputArea.querySelector('img');
+      return canvas || img;
+    }
+
+    function downloadCode() {
+      const element = getExportElement();
+      if (!element) return;
+
+      const link = document.createElement('a');
+      link.download = `layerbit-${typeSelect.value}-${Date.now()}.png`;
+      link.href = element.toDataURL ? element.toDataURL("image/png") : element.src;
+      link.click();
+    }
+
+    function shareCode() {
+      const element = getExportElement();
+      if (!element || !navigator.share) return;
+
+      // If it's a canvas, convert to blob. If img, fetch it.
+      if (element.toBlob) {
+        element.toBlob(blob => {
+          const file = new File([blob], "layerbit-code.png", { type: "image/png" });
+          navigator.share({
+            files: [file],
+            title: 'Layerbit Generated Code',
+          }).catch(console.error);
+        });
+      } else if (element.src) {
+        fetch(element.src)
+          .then(res => res.blob())
+          .then(blob => {
+            const file = new File([blob], "layerbit-code.png", { type: "image/png" });
+            navigator.share({
+              files: [file],
+              title: 'Layerbit Generated Code',
+            }).catch(console.error);
+          });
+      }
+    }
+  </script>
 </body>
 </html>

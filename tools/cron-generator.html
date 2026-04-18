@@ -1,397 +1,518 @@
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1" name="viewport"/>
-<title>Cron Generator - Layerbit</title>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&amp;display=swap" rel="stylesheet"/>
-<style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Advanced Cron Expression Generator and Parser. Build, decode, and validate cron schedules in real-time." />
+  <title>Cron Expression Synthesizer - Layerbit</title>
+  
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6072772587431629" crossorigin="anonymous"></script>
+  
+  <script src="https://unpkg.com/lucide@latest"></script>
+  
+  <script src="https://cdn.jsdelivr.net/npm/cronstrue@2.47.0/dist/cronstrue.min.js"></script>
+
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Fira+Code:wght@400;500;700&display=swap" rel="stylesheet" />
+  <link href="../layerbit-logo.png" rel="icon" type="image/x-icon" />
+  
+  <style>
+    /* Ultra-Premium Dark Theme Variables */
     :root {
-      --bg-color: linear-gradient(135deg, #1f1c2c, #928dab);
-      --text-color: white;
-      --card-bg: rgba(255, 255, 255, 0.1);
-      --button-bg: white;
-      --button-text: #333;
+      --bg-base: #0a0c10;
+      --bg-gradient: radial-gradient(circle at 50% 0%, #1a1e2d 0%, #0a0c10 70%);
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --card-bg: rgba(20, 22, 30, 0.6);
+      --card-border: rgba(255, 255, 255, 0.08);
+      --accent-main: #38bdf8;
+      --accent-glow: rgba(56, 189, 248, 0.5);
+      --neon-gradient: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%);
+      --error-color: #ef4444;
+      --success-color: #22c55e;
     }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
     body {
       font-family: 'Space Grotesk', sans-serif;
-      background: var(--bg-color);
-      color: var(--text-color);
-      padding: 30px 20px;
-      max-width: 1000px;
-      margin: auto;
+      color: var(--text-main);
+      background-color: var(--bg-base);
+      background-image: var(--bg-gradient);
+      min-height: 100vh;
+      padding: 20px 40px;
+      position: relative;
+      overflow-x: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    @keyframes drift { from { background-position: 0 0, 20px 20px; } to { background-position: -60px -60px, -40px -40px; } }
+    body::before {
+      content: ''; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+      background-image: radial-gradient(rgba(255,255,255,0.08) 1px, transparent 1px), radial-gradient(rgba(255,255,255,0.05) 1px, transparent 1px);
+      background-size: 60px 60px, 40px 40px; z-index: -1; animation: drift 60s linear infinite; pointer-events: none;
+    }
+
+    header { display: flex; justify-content: flex-start; align-items: center; max-width: 1400px; width: 100%; margin: 0 auto 40px auto; }
+    .brand { font-size: 1.6em; font-weight: 700; display: flex; align-items: center; gap: 12px; text-decoration: none; color: #fff; }
+    .brand svg { filter: drop-shadow(0 0 10px var(--accent-glow)); }
+
+    .hero { text-align: center; margin-bottom: 40px; animation: fadeIn 1s ease-out; }
+    .hero h1 { font-size: 2.8em; font-weight: 700; margin-bottom: 10px; }
+    .hero p { color: var(--text-muted); font-size: 1.1em; }
+
+    /* Main App Layout */
+    .app-container {
+      max-width: 1200px;
+      width: 100%;
+      margin: 0 auto 60px auto;
+      display: flex;
+      flex-direction: column;
+      gap: 30px;
+      animation: fadeSlideUp 1s ease-out forwards;
+    }
+
+    /* Terminal Pane (Top) */
+    .terminal-pane {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 20px;
+      backdrop-filter: blur(16px);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+      padding: 40px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transition: border 0.3s, box-shadow 0.3s;
+    }
+
+    .terminal-pane.error {
+      border-color: var(--error-color);
+      box-shadow: 0 0 30px rgba(239, 68, 68, 0.2);
+    }
+
+    .terminal-input-wrapper {
+      position: relative;
+      width: 100%;
+      max-width: 600px;
+      margin-bottom: 20px;
+    }
+
+    .cron-input {
+      width: 100%;
+      background: rgba(0,0,0,0.4);
+      border: 2px solid var(--card-border);
+      border-radius: 12px;
+      padding: 20px;
+      color: var(--accent-main);
+      font-family: 'Fira Code', monospace;
+      font-size: 2.5em;
+      font-weight: 700;
+      text-align: center;
+      outline: none;
+      letter-spacing: 2px;
+      transition: all 0.3s;
+    }
+    .cron-input:focus { border-color: var(--accent-main); box-shadow: 0 0 20px var(--accent-glow); }
+    .terminal-pane.error .cron-input { color: var(--error-color); border-color: var(--error-color); }
+
+    .cron-translation {
+      font-size: 1.25em;
+      font-weight: 600;
+      color: #fff;
+      text-align: center;
+      min-height: 30px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .terminal-pane.error .cron-translation { color: var(--error-color); }
+
+    .btn-copy {
+      margin-top: 25px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      color: #fff;
+      padding: 10px 24px;
+      border-radius: 10px;
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: 0.2s;
+    }
+    .btn-copy:hover { background: rgba(255,255,255,0.1); border-color: var(--accent-main); }
+
+    /* Visual Builder Map */
+    .builder-map {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 15px;
+      width: 100%;
+      margin-bottom: 30px;
+    }
+
+    .map-segment {
+      background: rgba(0,0,0,0.2);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 15px;
       text-align: center;
     }
-    h1 {
-      font-size: 2.4em;
+
+    .map-label {
+      font-size: 0.85em;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
       margin-bottom: 10px;
+      display: block;
     }
-    select {
-      padding: 10px;
-      border-radius: 8px;
-      font-family: 'Space Grotesk', sans-serif;
-      margin: 5px;
-      font-size: 1em;
-    }
-    .output {
-      margin-top: 20px;
-      padding: 15px;
-      border-radius: 8px;
-      background: var(--card-bg);
-      font-family: monospace;
-      white-space: pre-wrap;
-      text-align: left;
-    }
-    button {
-      background: var(--button-bg);
-      color: var(--button-text);
-      font-weight: bold;
-      border: none;
-      border-radius: 8px;
-      padding: 10px 20px;
-      margin-top: 20px;
+
+    .map-select {
+      width: 100%;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      color: #fff;
+      padding: 8px;
+      border-radius: 6px;
+      font-family: 'Fira Code', monospace;
+      outline: none;
       cursor: pointer;
     }
-    button:hover {
-      background: #eee;
+    .map-select option { background: #0a0c10; color: #fff; }
+
+    /* Presets Panel */
+    .presets-pane {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 20px;
+      backdrop-filter: blur(16px);
+      padding: 30px;
     }
-    .back {
-      position: fixed;
-      bottom: 20px;
-      left: 20px;
-      background: white;
-      color: #333;
-      padding: 10px 18px;
-      border-radius: 8px;
-      text-decoration: none;
-      font-weight: bold;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+
+    .presets-pane h3 { color: #fff; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; font-size: 1.3em; }
+    .presets-pane h3 i { color: var(--accent-main); }
+
+    .preset-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 15px;
     }
-  
-/* Floating Home FAB */
-.home-fab {
-  position: fixed;
-  bottom: 20px;
-  left: 20px;
-  width: 44px;
-  height: 44px;
-  background-color: white;
-  border-radius: 12px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-  text-decoration: none;
-  z-index: 1000;
-}
-.home-fab svg {
-  width: 20px;
-  height: 20px;
-  fill: #333;
-}
-</style>
-<meta content="Free browser-based tool by Layerbit. Fast, simple, and privacy-respecting." name="description"/></head>
-<body><p style="max-width:800px;margin:20px auto;font-size:1em;text-align:center;">Create accurate CRON expressions with this intuitive generator. Perfect for scheduled tasks and jobs.</p>
-<h1>Cron Expression Generator</h1>
-<p><strong>Examples:</strong>
-<button data-cron="0 0 * * *">Every day at midnight</button>
-<button data-cron="*/5 * * * *">Every 5 minutes</button>
-<button data-cron="30 9 * * 1">Mondays at 9:30 AM</button>
-</p>
-<p>Build a cron expression and understand what it actually means.</p>
-<style>
-  .cron-builder {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-    gap: 20px;
-    background: var(--card-bg);
-    padding: 20px;
-    border-radius: 12px;
-    margin-top: 20px;
-  }
-  .cron-builder label {
-    display: block;
-    margin-bottom: 6px;
-    font-weight: bold;
-    font-size: 0.95em;
-  }
-</style>
-<div class="cron-builder">
-<div>
-<label for="min">Minute</label>
-<select id="min"><option value="*">Every minute</option>
-<option value="*/5">Every 5 minutes</option>
-<option value="0">00</option>
-<option value="1">01</option>
-<option value="2">02</option>
-<option value="3">03</option>
-<option value="4">04</option>
-<option value="5">05</option>
-<option value="6">06</option>
-<option value="7">07</option>
-<option value="8">08</option>
-<option value="9">09</option>
-<option value="10">10</option>
-<option value="11">11</option>
-<option value="12">12</option>
-<option value="13">13</option>
-<option value="14">14</option>
-<option value="15">15</option>
-<option value="16">16</option>
-<option value="17">17</option>
-<option value="18">18</option>
-<option value="19">19</option>
-<option value="20">20</option>
-<option value="21">21</option>
-<option value="22">22</option>
-<option value="23">23</option>
-<option value="24">24</option>
-<option value="25">25</option>
-<option value="26">26</option>
-<option value="27">27</option>
-<option value="28">28</option>
-<option value="29">29</option>
-<option value="30">30</option>
-<option value="31">31</option>
-<option value="32">32</option>
-<option value="33">33</option>
-<option value="34">34</option>
-<option value="35">35</option>
-<option value="36">36</option>
-<option value="37">37</option>
-<option value="38">38</option>
-<option value="39">39</option>
-<option value="40">40</option>
-<option value="41">41</option>
-<option value="42">42</option>
-<option value="43">43</option>
-<option value="44">44</option>
-<option value="45">45</option>
-<option value="46">46</option>
-<option value="47">47</option>
-<option value="48">48</option>
-<option value="49">49</option>
-<option value="50">50</option>
-<option value="51">51</option>
-<option value="52">52</option>
-<option value="53">53</option>
-<option value="54">54</option>
-<option value="55">55</option>
-<option value="56">56</option>
-<option value="57">57</option>
-<option value="58">58</option>
-<option value="59">59</option></select>
-</div>
-<div>
-<label for="hour">Hour</label>
-<select id="hour"><option value="*">Every hour</option>
-<option value="0">00</option>
-<option value="1">01</option>
-<option value="2">02</option>
-<option value="3">03</option>
-<option value="4">04</option>
-<option value="5">05</option>
-<option value="6">06</option>
-<option value="7">07</option>
-<option value="8">08</option>
-<option value="9">09</option>
-<option value="10">10</option>
-<option value="11">11</option>
-<option value="12">12</option>
-<option value="13">13</option>
-<option value="14">14</option>
-<option value="15">15</option>
-<option value="16">16</option>
-<option value="17">17</option>
-<option value="18">18</option>
-<option value="19">19</option>
-<option value="20">20</option>
-<option value="21">21</option>
-<option value="22">22</option>
-<option value="23">23</option></select>
-</div>
-<div>
-<label for="day">Day</label>
-<select id="day"><option value="*">Every day</option>
-<option value="1">01</option>
-<option value="2">02</option>
-<option value="3">03</option>
-<option value="4">04</option>
-<option value="5">05</option>
-<option value="6">06</option>
-<option value="7">07</option>
-<option value="8">08</option>
-<option value="9">09</option>
-<option value="10">10</option>
-<option value="11">11</option>
-<option value="12">12</option>
-<option value="13">13</option>
-<option value="14">14</option>
-<option value="15">15</option>
-<option value="16">16</option>
-<option value="17">17</option>
-<option value="18">18</option>
-<option value="19">19</option>
-<option value="20">20</option>
-<option value="21">21</option>
-<option value="22">22</option>
-<option value="23">23</option>
-<option value="24">24</option>
-<option value="25">25</option>
-<option value="26">26</option>
-<option value="27">27</option>
-<option value="28">28</option>
-<option value="29">29</option>
-<option value="30">30</option>
-<option value="31">31</option></select>
-</div>
-<div>
-<label for="month">Month</label>
-<select id="month"><option value="*">Every month</option>
-<option value="1">Jan</option>
-<option value="2">Feb</option>
-<option value="3">Mar</option>
-<option value="4">Apr</option>
-<option value="5">May</option>
-<option value="6">Jun</option>
-<option value="7">Jul</option>
-<option value="8">Aug</option>
-<option value="9">Sep</option>
-<option value="10">Oct</option>
-<option value="11">Nov</option>
-<option value="12">Dec</option></select>
-</div>
-<div>
-<label for="weekday">Weekday</label>
-<select id="weekday"><option value="*">Every day</option>
-<option value="0">Sunday</option>
-<option value="1">Monday</option>
-<option value="2">Tuesday</option>
-<option value="3">Wednesday</option>
-<option value="4">Thursday</option>
-<option value="5">Friday</option>
-<option value="6">Saturday</option></select>
-</div>
-</div>
-<button onclick="generateCron()">Generate</button>
-<style>
-  .output-wrapper {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background: var(--card-bg);
-    border-radius: 8px;
-    padding: 12px 16px;
-    margin-top: 20px;
-    font-family: monospace;
-    white-space: pre-wrap;
-    text-align: left;
-  }
-  .output-wrapper button {
-    background: white;
-    color: #333;
-    border: none;
-    border-radius: 6px;
-    padding: 6px 12px;
-    font-weight: bold;
-    cursor: pointer;
-    margin-left: 10px;
-  }
-  .output-wrapper button:hover {
-    background: #ddd;
-  }
-</style>
-<div class="output-wrapper">
-<div id="cronResult">Your cron expression will appear here.</div>
-<button onclick="copyCron()">Copy</button>
-</div>
-<div class="output" id="cronExplain">Explanation will appear here.</div>
-<script>
-    window.onload = function () {
-      document.querySelectorAll('button[data-cron]').forEach(btn => {
-        btn.addEventListener("click", function () {
-          const cron = this.getAttribute("data-cron");
-          setExample(cron);
-        });
-      });
+
+    .preset-btn {
+      background: rgba(0,0,0,0.3);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 15px;
+      text-align: left;
+      cursor: pointer;
+      transition: all 0.3s;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+    .preset-btn:hover { background: rgba(56, 189, 248, 0.05); border-color: var(--accent-main); transform: translateY(-2px); }
+    
+    .preset-desc { color: #fff; font-weight: 600; font-family: 'Space Grotesk', sans-serif; font-size: 1em; }
+    .preset-code { color: var(--accent-main); font-family: 'Fira Code', monospace; font-size: 0.9em; }
+
+    /* Info Panel */
+    .info-panel { max-width: 1200px; margin: 0 auto 60px auto; background: rgba(255,255,255,0.02); border: 1px solid var(--card-border); padding: 40px; border-radius: 20px; }
+    .info-panel h2 { color: #fff; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
+    .info-panel h2 i { color: var(--accent-main); }
+    .info-panel p { color: var(--text-muted); margin-bottom: 15px; line-height: 1.7; }
+    .info-panel ul { list-style: none; margin-bottom: 20px; }
+    .info-panel li { color: var(--text-muted); margin-bottom: 10px; display: flex; align-items: center; gap: 10px; }
+    .info-panel li i { color: var(--success-color); width: 16px; }
+
+    /* Command Center FAB */
+    .fab { position: fixed; bottom: 30px; left: 30px; width: 60px; height: 60px; border-radius: 50%; backdrop-filter: blur(15px); display: flex; align-items: center; justify-content: center; z-index: 9998; background: rgba(20, 22, 30, 0.7); border: 1px solid rgba(255, 255, 255, 0.1); box-shadow: 0 8px 25px rgba(0,0,0,0.5); transition: all 0.4s; text-decoration: none; }
+    .fab:hover { transform: scale(1.1); border-color: var(--accent-main); background: rgba(30, 34, 48, 0.9); box-shadow: 0 12px 30px rgba(0,0,0,0.6), 0 0 25px rgba(56, 189, 248, 0.3); }
+
+    footer { text-align: center; padding: 40px 0; border-top: 1px solid var(--card-border); color: var(--text-muted); font-size: 0.95em; margin-top: auto; }
+
+    @media (max-width: 900px) {
+      .builder-map { grid-template-columns: 1fr; }
+      .cron-input { font-size: 1.8em; }
+    }
+
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(-15px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes fadeSlideUp { from { opacity: 0; transform: translateY(40px); } to { opacity: 1; transform: translateY(0); } }
+  </style>
+</head>
+<body>
+
+  <header>
+    <a href="../index.html" class="brand">
+      <svg width="36" height="36" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <polygon points="32,20 54,28 32,36 10,28" stroke="#f8fafc" stroke-width="4" stroke-linejoin="round"/>
+        <polyline points="10,38 32,46 54,38" stroke="#f8fafc" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+        <polyline points="10,48 32,56 54,48" stroke="#f8fafc" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+        <rect x="50" y="10" width="10" height="10" rx="2" fill="#00f2fe" />
+      </svg>
+      Layerbit
+    </a>
+  </header>
+
+  <main class="hero">
+    <h1>Cron Expression Synthesizer</h1>
+    <p>Build, decode, and validate complex server schedules in real-time.</p>
+  </main>
+
+  <div class="app-container">
+    
+    <div class="terminal-pane" id="terminalPane">
+      
+      <div class="builder-map">
+        <div class="map-segment">
+          <span class="map-label">Minute</span>
+          <select class="map-select" id="selMin">
+            <option value="*">Every (*)</option>
+            <option value="*/5">Every 5m (*/5)</option>
+            <option value="*/15">Every 15m (*/15)</option>
+            <option value="0">At :00 (0)</option>
+            <option value="30">At :30 (30)</option>
+            <option value="custom">Custom...</option>
+          </select>
+        </div>
+        <div class="map-segment">
+          <span class="map-label">Hour</span>
+          <select class="map-select" id="selHour">
+            <option value="*">Every (*)</option>
+            <option value="*/2">Every 2h (*/2)</option>
+            <option value="0">Midnight (0)</option>
+            <option value="12">Noon (12)</option>
+            <option value="custom">Custom...</option>
+          </select>
+        </div>
+        <div class="map-segment">
+          <span class="map-label">Day</span>
+          <select class="map-select" id="selDay">
+            <option value="*">Every (*)</option>
+            <option value="1">1st of Month (1)</option>
+            <option value="15">15th of Month (15)</option>
+            <option value="L">Last Day (L)</option>
+            <option value="custom">Custom...</option>
+          </select>
+        </div>
+        <div class="map-segment">
+          <span class="map-label">Month</span>
+          <select class="map-select" id="selMonth">
+            <option value="*">Every (*)</option>
+            <option value="1">Jan (1)</option>
+            <option value="6">Jun (6)</option>
+            <option value="12">Dec (12)</option>
+            <option value="custom">Custom...</option>
+          </select>
+        </div>
+        <div class="map-segment">
+          <span class="map-label">Weekday</span>
+          <select class="map-select" id="selWeek">
+            <option value="*">Every (*)</option>
+            <option value="1-5">Mon-Fri (1-5)</option>
+            <option value="0,6">Weekend (0,6)</option>
+            <option value="1">Monday (1)</option>
+            <option value="custom">Custom...</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="terminal-input-wrapper">
+        <input type="text" id="cronInput" class="cron-input" value="* * * * *" autocomplete="off" spellcheck="false" />
+      </div>
+
+      <div class="cron-translation" id="cronTranslation">
+        <i data-lucide="check-circle" style="color: var(--success-color);"></i> Every minute
+      </div>
+
+      <button class="btn-copy" id="btnCopy" onclick="copyCron()">
+        <i data-lucide="copy"></i> Copy Expression
+      </button>
+
+    </div>
+
+    <div class="presets-pane">
+      <h3><i data-lucide="library"></i> DevOps Presets</h3>
+      <div class="preset-grid">
+        <button class="preset-btn" onclick="injectPreset('* * * * *')">
+          <span class="preset-desc">Every Minute</span>
+          <span class="preset-code">* * * * *</span>
+        </button>
+        <button class="preset-btn" onclick="injectPreset('*/5 * * * *')">
+          <span class="preset-desc">Every 5 Minutes</span>
+          <span class="preset-code">*/5 * * * *</span>
+        </button>
+        <button class="preset-btn" onclick="injectPreset('0 * * * *')">
+          <span class="preset-desc">Every Hour</span>
+          <span class="preset-code">0 * * * *</span>
+        </button>
+        <button class="preset-btn" onclick="injectPreset('0 0 * * *')">
+          <span class="preset-desc">Every Midnight</span>
+          <span class="preset-code">0 0 * * *</span>
+        </button>
+        <button class="preset-btn" onclick="injectPreset('0 9 * * 1-5')">
+          <span class="preset-desc">Weekdays at 9 AM</span>
+          <span class="preset-code">0 9 * * 1-5</span>
+        </button>
+        <button class="preset-btn" onclick="injectPreset('0 0 1 * *')">
+          <span class="preset-desc">1st of Every Month</span>
+          <span class="preset-code">0 0 1 * *</span>
+        </button>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="info-panel">
+    <h2><i data-lucide="terminal-square"></i> Real-Time Scheduling Forensics</h2>
+    <p>Writing cron jobs manually often leads to silent server failures. Layerbit's Synthesizer acts as an interactive compiler, translating dense server logic into plain English instantly.</p>
+    <ul>
+      <li><i data-lucide="check"></i> <strong>Bidirectional Engine:</strong> Use the dropdown helpers to build an expression, or type directly into the terminal to decode an existing schedule.</li>
+      <li><i data-lucide="check"></i> <strong>Syntax Validation:</strong> The terminal actively parses your input. If an invalid character or range is detected, it alerts you before you deploy it to production.</li>
+      <li><i data-lucide="check"></i> <strong>Universal Compatibility:</strong> Outputs standard 5-part POSIX cron syntax ready for Linux crontab, GitHub Actions, AWS, and Node.js schedulers.</li>
+    </ul>
+  </div>
+
+  <a href="../index.html" class="fab" aria-label="Command Center" title="Command Center">
+    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="filter: drop-shadow(0 0 8px rgba(56, 189, 248, 0.5));">
+      <path d="M12 2L2 7l10 5 10-5-10-5z" stroke="#38bdf8" stroke-width="2" stroke-linejoin="round" fill="rgba(56,189,248,0.2)"/>
+      <path d="M2 17l10 5 10-5M2 12l10 5 10-5" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </a>
+
+  <footer>
+    &copy; 2025 - 2026 <strong>Layerbit Technologies</strong>. All rights reserved.
+  </footer>
+
+  <script>
+    lucide.createIcons();
+
+    const cronInput = document.getElementById("cronInput");
+    const terminalPane = document.getElementById("terminalPane");
+    const cronTranslation = document.getElementById("cronTranslation");
+    const btnCopy = document.getElementById("btnCopy");
+
+    // Dropdowns
+    const selects = {
+      min: document.getElementById("selMin"),
+      hour: document.getElementById("selHour"),
+      day: document.getElementById("selDay"),
+      month: document.getElementById("selMonth"),
+      week: document.getElementById("selWeek")
     };
 
+    // Initialize cronstrue
+    function translateCron() {
+      const val = cronInput.value.trim();
+      
+      if(val.split(' ').length < 5) {
+        setInvalid("Incomplete Expression");
+        return;
+      }
+
+      try {
+        const readable = cronstrue.toString(val, { throwExceptionOnParseError: true });
+        setValid(readable);
+        syncDropdowns(val);
+      } catch (err) {
+        setInvalid(err.toString().replace("Error: ", ""));
+      }
+    }
+
+    function setValid(text) {
+      terminalPane.classList.remove("error");
+      cronTranslation.innerHTML = `<i data-lucide="check-circle" style="color: var(--success-color);"></i> ${text}`;
+      lucide.createIcons();
+    }
+
+    function setInvalid(text) {
+      terminalPane.classList.add("error");
+      cronTranslation.innerHTML = `<i data-lucide="alert-triangle"></i> Syntax Error: ${text}`;
+      lucide.createIcons();
+    }
+
+    // Sync from Terminal -> Dropdowns
+    function syncDropdowns(cronStr) {
+      const parts = cronStr.split(' ');
+      if(parts.length >= 5) {
+        setSelectValue(selects.min, parts[0]);
+        setSelectValue(selects.hour, parts[1]);
+        setSelectValue(selects.day, parts[2]);
+        setSelectValue(selects.month, parts[3]);
+        setSelectValue(selects.week, parts[4]);
+      }
+    }
+
+    function setSelectValue(selectEl, val) {
+      // Check if value exists in options
+      let exists = false;
+      for (let i = 0; i < selectEl.options.length; i++) {
+        if (selectEl.options[i].value === val) {
+          exists = true;
+          break;
+        }
+      }
+      selectEl.value = exists ? val : "custom";
+    }
+
+    // Sync from Dropdowns -> Terminal
+    function buildCronFromDropdowns() {
+      // If a dropdown is on "custom", we preserve the existing value from the input for that segment
+      const currentParts = cronInput.value.trim().split(' ');
+      
+      const getVal = (sel, index) => {
+        return sel.value === 'custom' ? (currentParts[index] || '*') : sel.value;
+      };
+
+      const newCron = [
+        getVal(selects.min, 0),
+        getVal(selects.hour, 1),
+        getVal(selects.day, 2),
+        getVal(selects.month, 3),
+        getVal(selects.week, 4)
+      ].join(' ');
+
+      cronInput.value = newCron;
+      translateCron();
+    }
+
+    // Event Listeners
+    cronInput.addEventListener('input', translateCron);
+
+    Object.values(selects).forEach(sel => {
+      sel.addEventListener('change', buildCronFromDropdowns);
+    });
+
+    // Presets Logic
+    function injectPreset(cronStr) {
+      cronInput.value = cronStr;
+      translateCron();
+      // Scroll to terminal smoothly
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // Copy Logic
     function copyCron() {
-      const cron = document.getElementById("cronResult").textContent.replace("Cron: ", "").trim();
-      if (!cron || cron === "Your cron expression will appear here.") return;
-      navigator.clipboard.writeText(cron).then(() => {
-        alert("Cron copied to clipboard!");
+      const text = cronInput.value;
+      navigator.clipboard.writeText(text).then(() => {
+        const originalText = btnCopy.innerHTML;
+        btnCopy.innerHTML = '<i data-lucide="check"></i> Copied!';
+        lucide.createIcons();
+        setTimeout(() => {
+          btnCopy.innerHTML = originalText;
+          lucide.createIcons();
+        }, 2000);
       });
     }
 
-    function setExample(cronStr) {
-      const [min, hour, day, month, weekday] = cronStr.split(" ");
-      document.getElementById("min").value = min;
-      document.getElementById("hour").value = hour;
-      document.getElementById("day").value = day;
-      document.getElementById("month").value = month;
-      document.getElementById("weekday").value = weekday;
-      generateCron();
-    }
+    // Initial Translation on Load
+    translateCron();
 
-    function generateCron() {
-      const min = document.getElementById('min').value;
-      const hour = document.getElementById('hour').value;
-      const day = document.getElementById('day').value;
-      const month = document.getElementById('month').value;
-      const weekday = document.getElementById('weekday').value;
-
-      const cron = `${min} ${hour} ${day} ${month} ${weekday}`;
-      document.getElementById('cronResult').textContent = "Cron: " + cron;
-
-      let parts = [];
-      parts.push(min === "*" ? "every minute" : `at minute ${min}`);
-      parts.push(hour === "*" ? "of every hour" : `past hour ${hour}`);
-      parts.push(day === "*" ? "each day" : `on day ${day}`);
-      parts.push(month === "*" ? "of each month" : `in month ${month}`);
-      parts.push(weekday === "*" ? "" : `on ${["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][parseInt(weekday)]}`);
-
-      const explanation = parts.filter(Boolean).join(", ");
-      document.getElementById('cronExplain').textContent = "Explanation: This runs " + explanation + ".";
-    }
   </script>
-<div style="display: flex; justify-content: center; margin-top: 40px;"><details style="max-width: 700px; margin-top: 40px; background: rgba(255,255,255,0.1); padding: 20px; border-radius: 10px;">
-<summary style="cursor: pointer; font-weight: bold; font-size: 1.1em;">
-    🔎 About this Tool (Click to Expand)
-  </summary>
-<div style="margin-top: 15px; text-align: left;">
-<h3 style="margin-top: 10px; color: #fff;">
-      📌 What is Cron Expression Generator?
-    </h3>
-<p>
-      This tool helps you generate valid CRON expressions effortlessly. Whether you're scheduling scripts or jobs, this tool eliminates syntax errors and saves time.
-    </p>
-<h3 style="margin-top: 20px; color: #fff;">
-      💡 Common Use Cases
-    </h3>
-<ul style="list-style: none; padding-left: 0;">
-<li>✅ Schedule recurring tasks in Linux or Unix environments</li>
-<li>✅ Automate backups, reports, or email sending</li>
-<li>✅ Easily understand and visualize complex CRON timings</li>
-</ul>
-<h3 style="margin-top: 20px; color: #fff;">
-      🚀 How to Use
-    </h3>
-<ol style="list-style: none; padding-left: 0;">
-<li>1️⃣ Select timing for each CRON field using dropdowns</li>
-<li>2️⃣ Copy the resulting expression</li>
-<li>3️⃣ Use it in your server, cloud platform, or task scheduler</li>
-</ol>
-<p style="margin-top: 20px;">
-      This tool is secure, free, and doesn’t store your data. Built with ❤️ by Layerbit.
-    </p>
-</div>
-</details></div>
-<a class="home-fab" href="../index.html" title="Home">
-<svg viewbox="0 0 24 24">
-<path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"></path>
-</svg>
-</a>
 </body>
 </html>

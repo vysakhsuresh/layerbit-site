@@ -1,272 +1,440 @@
-
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&amp;display=swap" rel="stylesheet"/>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Universal SQL Formatter</title>
-<script src="https://cdn.jsdelivr.net/npm/sql-formatter@15.6.2/dist/sql-formatter.min.js"></script>
-<style>
-    ul, ol {
-      list-style: none;
-      padding-left: 0;
-    }
-    ul li::before, ol li::before {
-      content: "";
-    }
-    .home-fab {
-      position: fixed;
-      bottom: 20px;
-      left: 20px;
-      width: 44px;
-      height: 44px;
-      background-color: white;
-      border-radius: 12px;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-      text-decoration: none;
-      z-index: 1000;
-    }
-    .home-fab svg {
-      width: 20px;
-      height: 20px;
-      fill: #333;
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Universal SQL Formatter by Layerbit. Format, beautify, and debug queries across MySQL, PostgreSQL, and T-SQL instantly." />
+  <title>Universal SQL Formatter - Layerbit</title>
+  
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6072772587431629" crossorigin="anonymous"></script>
+  
+  <script src="https://unpkg.com/lucide@latest"></script>
+  
+  <script src="https://cdn.jsdelivr.net/npm/sql-formatter@15.6.2/dist/sql-formatter.min.js"></script>
+
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet" />
+  <link href="../layerbit-logo.png" rel="icon" type="image/x-icon" />
+  
+  <style>
+    /* Ultra-Premium Dark Theme Variables */
+    :root {
+      --bg-base: #0a0c10;
+      --bg-gradient: radial-gradient(circle at 50% 0%, #1a1e2d 0%, #0a0c10 70%);
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --card-bg: rgba(20, 22, 30, 0.6);
+      --card-border: rgba(255, 255, 255, 0.08);
+      --card-hover-border: rgba(56, 189, 248, 0.4);
+      --accent-main: #38bdf8;
+      --accent-glow: rgba(56, 189, 248, 0.5);
+      --neon-gradient: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%);
+      --error-bg: rgba(239, 68, 68, 0.1);
+      --error-border: #ef4444;
+      
+      /* SQL Syntax Highlighting */
+      --sql-keyword: #38bdf8; /* Cyan */
+      --sql-string: #a7f3d0;  /* Mint */
+      --sql-number: #fdba74;  /* Orange */
+      --sql-func: #f472b6;    /* Pink */
     }
 
-  body {
-    font-family: 'Space Grotesk', sans-serif;
-    background: linear-gradient(135deg, #4facfe, #00f2fe);
-    color: white;
-    padding: 20px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    min-height: 100vh;
-  }
-  h1 {
-    margin-bottom: 20px;
-    font-size: 2em;
-  }
-  textarea {
-    width: 100%;
-    max-width: 700px;
-    height: 300px;
-    padding: 15px;
-    font-size: 1em;
-    border: none;
-    border-radius: 10px;
-    background-color: rgba(255,255,255,0.1);
-    color: white;
-    resize: vertical;
-  }
-  select, button {
-    width: 100%;
-    max-width: 700px;
-    padding: 10px 20px;
-    border: none;
-    border-radius: 8px;
-    background-color: white;
-    color: #333;
-    font-weight: bold;
-    font-family: 'Space Grotesk', sans-serif;
-    cursor: pointer;
-    transition: background 0.3s;
-    font-size: 1em;
-  }
-  button:hover {
-    background-color: #ddd;
-  }
-  pre {
-    max-height: 400px;
-    overflow-y: auto;
-    margin-top: 20px;
-    white-space: pre-wrap;
-    word-wrap: break-word;
-    background-color: rgba(0,0,0,0.2);
-    padding: 15px;
-    border-radius: 10px;
-    max-width: 700px;
-    overflow-x: auto;
-    text-align: left;
-    color: white;
-  }
-</style>
-<style>
-    ul, ol {
-      list-style: none;
-      padding-left: 0;
-    }
-    ul li::before, ol li::before {
-      content: "";
-    }
-    .home-fab {
-      position: fixed;
-      bottom: 20px;
-      left: 20px;
-      width: 44px;
-      height: 44px;
-      background-color: white;
-      border-radius: 12px;
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Space Grotesk', sans-serif;
+      color: var(--text-main);
+      background-color: var(--bg-base);
+      background-image: var(--bg-gradient);
+      min-height: 100vh;
+      padding: 20px 40px;
+      position: relative;
+      overflow-x: hidden;
       display: flex;
-      justify-content: center;
-      align-items: center;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-      text-decoration: none;
-      z-index: 1000;
-    }
-    .home-fab svg {
-      width: 20px;
-      height: 20px;
-      fill: #333;
+      flex-direction: column;
     }
 
-  body {
-    font-family: 'Space Grotesk', sans-serif;
-    background: linear-gradient(135deg, #4facfe, #00f2fe);
-    color: white;
-    padding: 20px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    min-height: 100vh;
-  }
-  h1 {
-    margin-bottom: 20px;
-    font-size: 2em;
-  }
-  textarea {
-    width: 100%;
-    max-width: 700px;
-    height: 300px;
-    padding: 15px;
-    font-size: 1em;
-    border: none;
-    border-radius: 10px;
-    background-color: rgba(255,255,255,0.1);
-    color: white;
-    resize: vertical;
-  }
-  button {
-    margin-top: 15px;
-    padding: 10px 20px;
-    border: none;
-    border-radius: 8px;
-    background-color: white;
-    color: #333;
-    font-weight: bold;
-    cursor: pointer;
-    transition: background 0.3s;
-  }
-  button:hover {
-    background-color: #ddd;
-  }
-  .copy-btn {
-    display: none;
-    margin-top: 10px;
-  }
-  pre {
-    max-height: 400px;
-    overflow-y: auto;
-    margin-top: 20px;
-    white-space: pre-wrap;
-    word-wrap: break-word;
-    background-color: rgba(0,0,0,0.2);
-    padding: 15px;
-    border-radius: 10px;
-    max-width: 700px;
-    overflow-x: auto;
-  }
-  .error {
-    color: #ffdddd;
-  }
-  .floating-back {
-    position: fixed;
-    bottom: 20px;
-    left: 20px;
-    background: white;
-    color: #333;
-    padding: 10px 18px;
-    border-radius: 8px;
-    text-decoration: none;
-    font-weight: bold;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-    transition: background 0.3s;
-    z-index: 1000;
-  }
-  .floating-back:hover {
-    background: #eee;
-  }
-</style><meta content="Free browser-based tool by Layerbit. Fast, simple, and privacy-respecting." name="description"/></head>
+    /* Animated Drifting Starry Background */
+    @keyframes drift {
+      from { background-position: 0 0, 20px 20px; }
+      to { background-position: -60px -60px, -40px -40px; }
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0; left: 0; width: 100vw; height: 100vh;
+      background-image: 
+        radial-gradient(rgba(255,255,255,0.08) 1px, transparent 1px),
+        radial-gradient(rgba(255,255,255,0.05) 1px, transparent 1px);
+      background-size: 60px 60px, 40px 40px;
+      z-index: -1;
+      pointer-events: none;
+      animation: drift 60s linear infinite;
+    }
+
+    /* Header */
+    header {
+      display: flex;
+      justify-content: flex-start;
+      align-items: center;
+      max-width: 1400px;
+      width: 100%;
+      margin: 0 auto 40px auto;
+    }
+
+    .brand {
+      font-size: 1.6em;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      color: #fff;
+    }
+    .brand svg { filter: drop-shadow(0 0 10px var(--accent-glow)); }
+
+    /* Hero */
+    .hero { text-align: center; margin-bottom: 30px; animation: fadeIn 1s ease-out; }
+    .hero h1 { font-size: 2.8em; font-weight: 700; margin-bottom: 10px; }
+    .hero p { color: var(--text-muted); font-size: 1.1em; }
+
+    /* IDE Layout */
+    .ide-container {
+      max-width: 1400px;
+      width: 100%;
+      margin: 0 auto 60px auto;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      animation: fadeSlideUp 1s ease-out forwards;
+    }
+
+    /* Pane Styling */
+    .pane {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      backdrop-filter: blur(16px);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+      height: 600px;
+    }
+
+    .pane-header {
+      background: rgba(0,0,0,0.3);
+      padding: 12px 20px;
+      border-bottom: 1px solid var(--card-border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-weight: 600;
+      color: #fff;
+    }
+
+    .pane-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .pane-title i { color: var(--accent-main); width: 18px; }
+
+    /* Custom Select for SQL Dialect */
+    select.dialect-select {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: #fff;
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 600;
+      outline: none;
+      cursor: pointer;
+    }
+    
+    select.dialect-select option {
+      background: #0a0c10;
+      color: #fff;
+    }
+
+    /* Action Buttons */
+    .btn-group { display: flex; gap: 10px; }
+    
+    .btn {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      color: #fff;
+      padding: 6px 14px;
+      border-radius: 8px;
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 600;
+      font-size: 0.85em;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s;
+    }
+
+    .btn:hover { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.2); }
+    
+    .btn-primary { background: var(--neon-gradient); color: #000; border: none; box-shadow: 0 0 10px var(--accent-glow); }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 4px 15px var(--accent-glow); background: var(--neon-gradient); }
+
+    .btn i { width: 14px; height: 14px; }
+
+    /* Editor Areas */
+    .editor {
+      flex-grow: 1;
+      width: 100%;
+      background: transparent;
+      border: none;
+      padding: 20px;
+      color: var(--text-main);
+      font-family: 'Fira Code', monospace;
+      font-size: 14px;
+      line-height: 1.6;
+      resize: none;
+      outline: none;
+    }
+
+    .editor::placeholder { color: rgba(255,255,255,0.2); }
+
+    /* Formatted Output Area */
+    .output-area {
+      flex-grow: 1;
+      padding: 20px;
+      overflow-y: auto;
+      font-family: 'Fira Code', monospace;
+      font-size: 14px;
+      line-height: 1.6;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+    }
+
+    /* Error Alert */
+    .error-banner {
+      display: none;
+      background: var(--error-bg);
+      border-left: 4px solid var(--error-border);
+      color: #fff;
+      padding: 12px 20px;
+      font-size: 0.9em;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .error-banner.active { display: flex; }
+    .error-banner i { color: var(--error-border); width: 18px; }
+
+    /* Syntax Highlighting Classes */
+    .sql-keyword { color: var(--sql-keyword); font-weight: bold; }
+    .sql-string { color: var(--sql-string); }
+    .sql-number { color: var(--sql-number); }
+    .sql-func { color: var(--sql-func); }
+
+    /* SEO/Docs Section */
+    .info-panel {
+      max-width: 1400px;
+      margin: 0 auto 60px auto;
+      background: rgba(255,255,255,0.02);
+      border: 1px solid var(--card-border);
+      padding: 40px;
+      border-radius: 20px;
+    }
+
+    .info-panel h2 { color: #fff; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
+    .info-panel h2 i { color: var(--accent-main); }
+    .info-panel p { color: var(--text-muted); margin-bottom: 15px; line-height: 1.7; }
+    .info-panel ul { list-style: none; margin-bottom: 20px; }
+    .info-panel li { color: var(--text-muted); margin-bottom: 10px; display: flex; align-items: center; gap: 10px; }
+    .info-panel li i { color: #22c55e; width: 16px; }
+
+    /* Command Center FAB */
+    .fab {
+      position: fixed; bottom: 30px; left: 30px; width: 60px; height: 60px;
+      border-radius: 50%; backdrop-filter: blur(15px); display: flex;
+      align-items: center; justify-content: center; z-index: 9998;
+      background: rgba(20, 22, 30, 0.7); border: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 0 8px 25px rgba(0,0,0,0.5); transition: all 0.4s; text-decoration: none;
+    }
+    .fab:hover { transform: scale(1.1); border-color: var(--accent-main); background: rgba(30, 34, 48, 0.9); }
+
+    footer { text-align: center; padding: 40px 0; border-top: 1px solid var(--card-border); color: var(--text-muted); font-size: 0.95em; margin-top: auto; }
+
+    @media (max-width: 900px) {
+      .ide-container { grid-template-columns: 1fr; }
+      .pane { height: 400px; }
+    }
+
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(-15px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes fadeSlideUp { from { opacity: 0; transform: translateY(40px); } to { opacity: 1; transform: translateY(0); } }
+  </style>
+</head>
 <body>
-<h1>Universal SQL Formatter</h1>
-<label for="dialect" style="display: block; margin-bottom: 8px; font-size: 1rem; font-weight: 600; font-family: 'Space Grotesk', sans-serif; color: white;">Dialect:</label>
-<select id="dialect" style="margin-bottom: 20px; width: 100%; max-width: 700px; padding: 10px; border-radius: 6px;">
-<option value="sql">Standard SQL</option>
-<option value="mysql">MySQL</option>
-<option value="postgresql">PostgreSQL</option>
-<option value="tsql">T-SQL (SQL Server)</option>
-<option value="plsql">PL/SQL (Oracle)</option>
-</select>
-<label for="sqlInput" style="display: block; margin-bottom: 8px; font-size: 1rem; font-weight: 600; font-family: 'Space Grotesk', sans-serif; color: white;">Enter SQL code:</label>
-<textarea id="sqlInput" placeholder="Paste your SQL here..." style="margin-bottom: 20px; width: 100%; max-width: 700px; padding: 15px; font-size: 1em; border-radius: 10px; background-color: rgba(255,255,255,0.1); color: white; resize: vertical;"></textarea>
-<button onclick="formatSQL()">Format SQL</button>
-<h3>Formatted SQL:</h3>
-<div style="position: relative; width: 100%; max-width: 700px; margin: 20px auto;"><div style="position: relative; width: 100%; max-width: 700px; margin-top: 20px;"><pre class="output" id="sqlOutput" style="padding: 15px 60px 15px 15px; margin: 0; background-color: rgba(0,0,0,0.2); border-radius: 10px; min-height: 100px;"></pre><button onclick="copyToClipboard()" style="position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.6); color: white; border: none; padding: 4px 10px; font-weight: 500; font-size: 12px; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; border-radius: 6px; z-index: 100; max-width: fit-content;" title="Copy formatted SQL">📋 <span style="font-family: 'Space Grotesk', sans-serif;">Copy</span></button></div></div>
-<script>
-    function formatSQL() {
-      const input = document.getElementById('sqlInput').value.trim();
-      const dialect = document.getElementById('dialect').value;
-      const output = document.getElementById('sqlOutput');
+
+  <header>
+    <a href="../index.html" class="brand">
+      <svg width="36" height="36" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <polygon points="32,20 54,28 32,36 10,28" stroke="#f8fafc" stroke-width="4" stroke-linejoin="round"/>
+        <polyline points="10,38 32,46 54,38" stroke="#f8fafc" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+        <polyline points="10,48 32,56 54,48" stroke="#f8fafc" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+        <rect x="50" y="10" width="10" height="10" rx="2" fill="#00f2fe" />
+      </svg>
+      Layerbit
+    </a>
+  </header>
+
+  <main class="hero">
+    <h1>Universal SQL Formatter</h1>
+    <p>Beautify, debug, and standardize database queries across multiple dialects instantly.</p>
+  </main>
+
+  <div class="ide-container">
+    
+    <div class="pane">
+      <div class="pane-header">
+        <div class="pane-title"><i data-lucide="database"></i> Raw Query</div>
+        <div class="btn-group">
+          <select id="dialectSelect" class="dialect-select">
+            <option value="sql">Standard SQL</option>
+            <option value="mysql">MySQL</option>
+            <option value="postgresql">PostgreSQL</option>
+            <option value="tsql">T-SQL (SQL Server)</option>
+            <option value="plsql">PL/SQL (Oracle)</option>
+          </select>
+          <button class="btn" id="btnClear" title="Clear Input"><i data-lucide="trash-2"></i></button>
+          <button class="btn btn-primary" id="btnFormat"><i data-lucide="sparkles"></i> Format</button>
+        </div>
+      </div>
+      <div class="error-banner" id="errorBanner">
+        <i data-lucide="triangle-alert"></i>
+        <span id="errorText">SQL Syntax Error.</span>
+      </div>
+      <textarea id="sqlInput" class="editor" placeholder="SELECT * FROM users WHERE active=1;" spellcheck="false"></textarea>
+    </div>
+
+    <div class="pane">
+      <div class="pane-header">
+        <div class="pane-title"><i data-lucide="check-circle"></i> Optimized SQL</div>
+        <div class="btn-group">
+          <button class="btn" id="btnCopy"><i data-lucide="copy"></i> Copy Query</button>
+        </div>
+      </div>
+      <div id="sqlOutput" class="output-area"></div>
+    </div>
+
+  </div>
+
+  <div class="info-panel">
+    <h2><i data-lucide="info"></i> Database Engineering Standard</h2>
+    <p>Layerbit's SQL Formatter is an essential utility for Database Administrators and Backend Engineers. It takes minified, poorly structured, or deeply nested queries and converts them into readable, standardized architecture.</p>
+    
+    <ul>
+      <li><i data-lucide="check"></i> <strong>Multi-Dialect Support:</strong> Native formatting for MySQL, PostgreSQL, Oracle PL/SQL, and SQL Server.</li>
+      <li><i data-lucide="check"></i> <strong>Syntax Colorization:</strong> Intelligent visual parsing separates commands, strings, and parameters.</li>
+      <li><i data-lucide="check"></i> <strong>Client-Side Processing:</strong> Your database structure and query logic never leave your browser. Zero tracking.</li>
+    </ul>
+  </div>
+
+  <a href="../index.html" class="fab" aria-label="Command Center" title="Command Center">
+    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="filter: drop-shadow(0 0 8px rgba(56, 189, 248, 0.5));">
+      <path d="M12 2L2 7l10 5 10-5-10-5z" stroke="#38bdf8" stroke-width="2" stroke-linejoin="round" fill="rgba(56,189,248,0.2)"/>
+      <path d="M2 17l10 5 10-5M2 12l10 5 10-5" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </a>
+
+  <footer>
+    &copy; 2025 - 2026 <strong>Layerbit Technologies</strong>. All rights reserved.
+  </footer>
+
+  <script>
+    lucide.createIcons();
+
+    const sqlInput = document.getElementById('sqlInput');
+    const sqlOutput = document.getElementById('sqlOutput');
+    const dialectSelect = document.getElementById('dialectSelect');
+    const errorBanner = document.getElementById('errorBanner');
+    const errorText = document.getElementById('errorText');
+    const btnFormat = document.getElementById('btnFormat');
+    const btnClear = document.getElementById('btnClear');
+    const btnCopy = document.getElementById('btnCopy');
+
+    // Custom SQL Syntax Highlighter
+    function highlightSQL(sql) {
+      let html = sql.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      
+      // Match Strings ('...' or "...")
+      html = html.replace(/('.*?'|".*?")/g, '<span class="sql-string">$1</span>');
+      
+      // Match Numbers
+      html = html.replace(/\b(\d+)\b/g, '<span class="sql-number">$1</span>');
+      
+      // Match SQL Keywords (Common uppercase output from formatter)
+      const keywords = [
+        'SELECT', 'FROM', 'WHERE', 'AND', 'OR', 'NOT', 'INSERT', 'INTO', 'VALUES', 
+        'UPDATE', 'SET', 'DELETE', 'CREATE', 'TABLE', 'DROP', 'ALTER', 'INDEX', 
+        'VIEW', 'JOIN', 'INNER', 'LEFT', 'RIGHT', 'OUTER', 'ON', 'GROUP BY', 
+        'ORDER BY', 'HAVING', 'LIMIT', 'OFFSET', 'ASC', 'DESC', 'AS', 'IS', 'NULL', 
+        'CASE', 'WHEN', 'THEN', 'ELSE', 'END', 'BETWEEN', 'IN', 'LIKE'
+      ];
+      const regex = new RegExp('\\b(' + keywords.join('|') + ')\\b', 'g');
+      html = html.replace(regex, '<span class="sql-keyword">$1</span>');
+
+      return html;
+    }
+
+    function processSQL() {
+      const raw = sqlInput.value.trim();
+      const dialect = dialectSelect.value;
+      
+      errorBanner.classList.remove('active');
+      sqlOutput.innerHTML = '';
+      
+      if (!raw) return;
 
       try {
-        const formatted = sqlFormatter.format(input, { language: dialect });
-        output.textContent = formatted;
-      } catch (e) {
-        output.textContent = 'Error: ' + e.message;
+        // Use sql-formatter library
+        const formatted = sqlFormatter.format(raw, { 
+          language: dialect,
+          keywordCase: 'upper' // Ensures our highlighter catches them easily
+        });
+        
+        // Apply Syntax Highlighting
+        sqlOutput.innerHTML = highlightSQL(formatted);
+        
+      } catch (err) {
+        errorText.textContent = `Parse Error: ${err.message}`;
+        errorBanner.classList.add('active');
       }
     }
 
-    function copyToClipboard() {
-      const text = document.getElementById('sqlOutput').textContent;
-      navigator.clipboard.writeText(text).then(() => alert("Copied!"));
-    }
-  </script>
-<script>
-    function copyToClipboard() {
-      const text = document.getElementById("sqlOutput").textContent;
+    btnFormat.addEventListener('click', processSQL);
+    
+    btnClear.addEventListener('click', () => {
+      sqlInput.value = '';
+      sqlOutput.innerHTML = '';
+      errorBanner.classList.remove('active');
+    });
+
+    btnCopy.addEventListener('click', () => {
+      const text = sqlOutput.innerText;
+      if(!text) return;
+      
       navigator.clipboard.writeText(text).then(() => {
-        alert("Formatted text copied!");
+        const originalText = btnCopy.innerHTML;
+        btnCopy.innerHTML = '<i data-lucide="check"></i> Copied!';
+        lucide.createIcons();
+        setTimeout(() => {
+          btnCopy.innerHTML = '<i data-lucide="copy"></i> Copy Query';
+          lucide.createIcons();
+        }, 2000);
       });
-    }
-    </script>
-<a class="home-fab" href="../index.html" title="Home">
-<svg viewbox="0 0 24 24">
-<path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"></path>
-</svg>
-</a>
-<details style="max-width: 700px; margin: 60px auto 20px auto; background: rgba(255,255,255,0.1); padding: 20px; border-radius: 10px;">
-<summary style="cursor: pointer; font-weight: bold; font-size: 1.1em;">🔎 About this Tool (Click to Expand)</summary>
-<div style="margin-top: 15px; text-align: left;">
-<h3 style="margin-top: 10px; color: #fff;">📌 What is the SQL Formatter?</h3>
-<p>This tool helps format your messy SQL queries into clean, indented, and human-readable format using multiple dialects like MySQL, PostgreSQL, T-SQL, PL/SQL, and more.</p>
-<h3 style="margin-top: 20px; color: #fff;">💡 Key Uses</h3>
-<ul>
-<li>✅ Improve SQL readability and debugging</li>
-<li>✅ Choose from multiple dialects based on your DB</li>
-<li>✅ Great for developers and DBAs working across platforms</li>
-</ul>
-<h3 style="margin-top: 20px; color: #fff;">🚀 How to Use</h3>
-<ol>
-<li>1️⃣ Select the SQL dialect</li>
-<li>2️⃣ Paste your SQL in the textbox</li>
-<li>3️⃣ Click “Format SQL” and use the copy button</li>
-</ol>
-<p style="margin-top: 20px;">Works entirely client-side. Nothing is stored or shared. Crafted by Layerbit with ❤️.</p>
-</div>
-</details>
+    });
+
+  </script>
 </body>
 </html>

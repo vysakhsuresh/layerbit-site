@@ -1,250 +1,333 @@
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1" name="viewport"/>
-<title>
-   YAML ↔ JSON Converter - Layerbit
-  </title>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&amp;display=swap" rel="stylesheet"/>
-<script src="https://cdn.jsdelivr.net/npm/js-yaml@4.1.0/dist/js-yaml.min.js">
-</script>
-<style>
-   body {
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Real-time YAML to JSON and JSON to YAML bidirectional converter. Secure, client-side data serialization by Layerbit." />
+  <title>YAML ↔ JSON Synchronizer - Layerbit</title>
+  
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6072772587431629" crossorigin="anonymous"></script>
+  
+  <script src="https://unpkg.com/lucide@latest"></script>
+  
+  <script src="https://cdn.jsdelivr.net/npm/js-yaml@4.1.0/dist/js-yaml.min.js"></script>
+
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet" />
+  <link href="../layerbit-logo.png" rel="icon" type="image/x-icon" />
+  
+  <style>
+    /* Ultra-Premium Dark Theme Variables */
+    :root {
+      --bg-base: #0a0c10;
+      --bg-gradient: radial-gradient(circle at 50% 0%, #1a1e2d 0%, #0a0c10 70%);
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --card-bg: rgba(20, 22, 30, 0.6);
+      --card-border: rgba(255, 255, 255, 0.08);
+      --accent-main: #38bdf8;
+      --accent-glow: rgba(56, 189, 248, 0.5);
+      --neon-gradient: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%);
+      
+      /* Format Colors */
+      --yaml-color: #f472b6; /* Pink */
+      --json-color: #a7f3d0; /* Mint */
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
+    body {
       font-family: 'Space Grotesk', sans-serif;
-      background: linear-gradient(135deg, #4facfe, #00f2fe);
-      color: white;
-      padding: 30px 20px;
-      max-width: 1000px;
-      margin: auto;
-    }
-
-    h1 {
-      text-align: center;
-      font-size: 2.5em;
-      margin-bottom: 20px;
-    }
-
-    .container {
+      color: var(--text-main);
+      background-color: var(--bg-base);
+      background-image: var(--bg-gradient);
+      min-height: 100vh;
+      padding: 20px 40px;
+      position: relative;
+      overflow-x: hidden;
       display: flex;
       flex-direction: column;
-      gap: 20px;
     }
 
-    @media(min-width: 768px) {
-      .container {
-        flex-direction: row;
-      }
+    @keyframes drift { from { background-position: 0 0, 20px 20px; } to { background-position: -60px -60px, -40px -40px; } }
+    body::before {
+      content: ''; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+      background-image: radial-gradient(rgba(255,255,255,0.08) 1px, transparent 1px), radial-gradient(rgba(255,255,255,0.05) 1px, transparent 1px);
+      background-size: 60px 60px, 40px 40px; z-index: -1; animation: drift 60s linear infinite; pointer-events: none;
     }
 
-    textarea {
+    header { display: flex; justify-content: flex-start; align-items: center; max-width: 1400px; width: 100%; margin: 0 auto 40px auto; }
+    .brand { font-size: 1.6em; font-weight: 700; display: flex; align-items: center; gap: 12px; text-decoration: none; color: #fff; }
+    .brand svg { filter: drop-shadow(0 0 10px var(--accent-glow)); }
+
+    .hero { text-align: center; margin-bottom: 30px; animation: fadeIn 1s ease-out; }
+    .hero h1 { font-size: 2.8em; font-weight: 700; margin-bottom: 10px; }
+    .hero p { color: var(--text-muted); font-size: 1.1em; }
+
+    /* IDE Layout */
+    .ide-container {
+      max-width: 1400px;
       width: 100%;
-      max-width: 100%;
-      height: 250px;
-      border-radius: 10px;
-      font-size: 1em;
-      font-family: monospace;
-      padding: 15px;
-      color: #333;
-      border: none;
-      resize: vertical;
-      box-sizing: border-box;
+      margin: 0 auto 40px auto;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      animation: fadeSlideUp 1s ease-out forwards;
     }
 
-    select, button {
-      font-family: 'Space Grotesk', sans-serif;
-      padding: 10px 15px;
-      font-size: 1em;
-      margin-top: 10px;
-      border-radius: 8px;
-      border: none;
-      cursor: pointer;
-    }
-
-    .error {
-      background: rgba(255, 0, 0, 0.3);
-      color: white;
-      padding: 10px;
-      border-radius: 8px;
-      margin-top: 10px;
-    }
-
-    .back {
-      position: fixed;
-      bottom: 20px;
-      left: 20px;
-      background: white;
-      color: #333;
-      padding: 10px 18px;
-      border-radius: 8px;
-      text-decoration: none;
-      font-weight: bold;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-    }
-
-    /* Mobile Adjustments */
-    @media (max-width: 768px) {
-      h1 {
-        font-size: 2em;
-      }
-
-      .container {
-        flex-direction: column;
-      }
-
-      textarea {
-        height: 200px;  /* Adjust textarea height for mobile */
-      }
-
-      .back {
-        font-size: 0.9em;
-        padding: 8px 16px;
-      }
-    }
-
-    .home-fab {
-      position: fixed;
-      bottom: 20px;
-      left: 20px;
-      width: 44px;
-      height: 44px;
-      background-color: white;
-      border-radius: 12px;
+    /* Panes */
+    .pane {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
       display: flex;
-      justify-content: center;
-      align-items: center;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-      text-decoration: none;
-      z-index: 1000;
+      flex-direction: column;
+      overflow: hidden;
+      backdrop-filter: blur(16px);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+      height: 600px;
     }
-    .home-fab svg {
-      width: 20px;
-      height: 20px;
-      fill: #333;
-    }
-    ul, ol {
-      list-style: none;
-      padding-left: 0;
-    }
-    ul li::before, ol li::before {
-      content: "";
-    }
-  </style>
-<meta content="Free browser-based tool by Layerbit. Fast, simple, and privacy-respecting." name="description"/></head>
-<body>
-<p style="max-width:800px;margin:20px auto;font-size:1em;text-align:center;">
-   Convert YAML to JSON or vice versa with instant accuracy and formatting.
-  </p>
-<h1>
-   YAML ↔ JSON Converter
-  </h1>
-<div>
-<label for="mode">
-    Conversion Mode:
-   </label>
-<select id="mode">
-<option value="yaml2json">
-     YAML → JSON
-    </option>
-<option value="json2yaml">
-     JSON → YAML
-    </option>
-</select>
-</div>
-<div class="container" style="margin-top: 20px;">
-<textarea id="input" placeholder="Enter YAML or JSON here..."></textarea>
-<textarea id="output" placeholder="Converted result will appear here..." readonly=""></textarea>
-</div>
-<div style="text-align:center;">
-<button onclick="copyOutput()">
-    📋 Copy Output
-   </button>
-</div>
-<div class="error" id="error" style="display:none;">
-</div>
-<script>
-   const input = document.getElementById("input");
-    const output = document.getElementById("output");
-    const mode = document.getElementById("mode");
-    const errorDiv = document.getElementById("error");
 
-    function convert() {
-      errorDiv.style.display = "none";
-      output.value = "";
+    .pane-header {
+      background: rgba(0,0,0,0.3);
+      padding: 12px 20px;
+      border-bottom: 1px solid var(--card-border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-weight: 600;
+      color: #fff;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .pane-title { display: flex; align-items: center; gap: 10px; }
+    .pane-title i { width: 18px; }
+    .title-yaml i { color: var(--yaml-color); }
+    .title-json i { color: var(--json-color); }
+
+    .btn-group { display: flex; gap: 10px; }
+    
+    .btn {
+      background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #fff;
+      padding: 8px 16px; border-radius: 8px; font-family: 'Space Grotesk', sans-serif; font-weight: 600;
+      font-size: 0.85em; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: 0.2s;
+    }
+    .btn:hover { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.2); }
+    .btn i { width: 14px; height: 14px; }
+
+    .action-bar { display: flex; justify-content: center; gap: 15px; margin-bottom: 40px; }
+    .btn-clear { background: rgba(239, 68, 68, 0.1); border-color: rgba(239, 68, 68, 0.3); color: #f87171; padding: 12px 30px; border-radius: 12px; font-size: 1em; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: 0.3s; }
+    .btn-clear:hover { background: rgba(239, 68, 68, 0.2); transform: translateY(-2px); }
+
+    /* Input Textareas */
+    .editor {
+      width: 100%; flex-grow: 1; background: transparent; border: none; padding: 20px;
+      color: var(--text-main); font-family: 'Fira Code', monospace; font-size: 14px;
+      line-height: 1.6; resize: none; outline: none;
+    }
+    .editor::placeholder { color: rgba(255,255,255,0.2); }
+
+    /* Error Text */
+    .error-text { color: #ef4444; font-size: 0.85em; font-weight: 500; display: none; align-items: center; gap: 5px; }
+    .error-text.active { display: flex; }
+
+    /* Info Panel */
+    .info-panel { max-width: 1400px; margin: 0 auto 60px auto; background: rgba(255,255,255,0.02); border: 1px solid var(--card-border); padding: 40px; border-radius: 20px; }
+    .info-panel h2 { color: #fff; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
+    .info-panel h2 i { color: var(--accent-main); }
+    .info-panel p { color: var(--text-muted); margin-bottom: 15px; line-height: 1.7; }
+    .info-panel ul { list-style: none; margin-bottom: 20px; }
+    .info-panel li { color: var(--text-muted); margin-bottom: 10px; display: flex; align-items: center; gap: 10px; }
+    .info-panel li i { color: #22c55e; width: 16px; }
+
+    /* Command Center FAB */
+    .fab { position: fixed; bottom: 30px; left: 30px; width: 60px; height: 60px; border-radius: 50%; backdrop-filter: blur(15px); display: flex; align-items: center; justify-content: center; z-index: 9998; background: rgba(20, 22, 30, 0.7); border: 1px solid rgba(255, 255, 255, 0.1); box-shadow: 0 8px 25px rgba(0,0,0,0.5); transition: all 0.4s; text-decoration: none; }
+    .fab:hover { transform: scale(1.1); border-color: var(--accent-main); background: rgba(30, 34, 48, 0.9); }
+
+    footer { text-align: center; padding: 40px 0; border-top: 1px solid var(--card-border); color: var(--text-muted); font-size: 0.95em; margin-top: auto; }
+
+    @media (max-width: 900px) {
+      .ide-container { grid-template-columns: 1fr; }
+      .pane { height: 400px; }
+    }
+
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(-15px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes fadeSlideUp { from { opacity: 0; transform: translateY(40px); } to { opacity: 1; transform: translateY(0); } }
+  </style>
+</head>
+<body>
+
+  <header>
+    <a href="../index.html" class="brand">
+      <svg width="36" height="36" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <polygon points="32,20 54,28 32,36 10,28" stroke="#f8fafc" stroke-width="4" stroke-linejoin="round"/>
+        <polyline points="10,38 32,46 54,38" stroke="#f8fafc" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+        <polyline points="10,48 32,56 54,48" stroke="#f8fafc" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+        <rect x="50" y="10" width="10" height="10" rx="2" fill="#00f2fe" />
+      </svg>
+      Layerbit
+    </a>
+  </header>
+
+  <main class="hero">
+    <h1>YAML ↔ JSON Synchronizer</h1>
+    <p>Real-time bidirectional serialization between YAML markup and JSON data structures.</p>
+  </main>
+
+  <div class="ide-container">
+    
+    <div class="pane">
+      <div class="pane-header">
+        <div class="pane-title title-yaml"><i data-lucide="file-code-2"></i> YAML Config</div>
+        <div class="btn-group">
+          <span id="yamlError" class="error-text"><i data-lucide="alert-circle"></i> Invalid Syntax</span>
+          <button class="btn" onclick="copyContent('yamlInput', this)"><i data-lucide="copy"></i> Copy</button>
+          <button class="btn" onclick="downloadFile('yamlInput', 'yaml')"><i data-lucide="download"></i> Save</button>
+        </div>
+      </div>
+      <textarea id="yamlInput" class="editor" placeholder="Paste or type YAML here...&#10;&#10;server:&#10;  port: 8080&#10;  host: localhost&#10;features:&#10;  - logging&#10;  - metrics" spellcheck="false"></textarea>
+    </div>
+
+    <div class="pane">
+      <div class="pane-header">
+        <div class="pane-title title-json"><i data-lucide="braces"></i> JSON Payload</div>
+        <div class="btn-group">
+          <span id="jsonError" class="error-text"><i data-lucide="alert-circle"></i> Invalid Syntax</span>
+          <button class="btn" onclick="copyContent('jsonInput', this)"><i data-lucide="copy"></i> Copy</button>
+          <button class="btn" onclick="downloadFile('jsonInput', 'json')"><i data-lucide="download"></i> Save</button>
+        </div>
+      </div>
+      <textarea id="jsonInput" class="editor" placeholder='Paste or type JSON here...&#10;&#10;{&#10;  "server": {&#10;    "port": 8080,&#10;    "host": "localhost"&#10;  },&#10;  "features": [&#10;    "logging",&#10;    "metrics"&#10;  ]&#10;}' spellcheck="false"></textarea>
+    </div>
+
+  </div>
+
+  <div class="action-bar">
+    <button class="btn-clear" onclick="clearAll()"><i data-lucide="trash-2"></i> Clear Workspace</button>
+  </div>
+
+  <div class="info-panel">
+    <h2><i data-lucide="workflow"></i> Bidirectional Architecture</h2>
+    <p>The Layerbit Serializer eliminates the need for manual conversion triggers. Engineered for DevOps and Backend engineers handling config files (Kubernetes, Docker, CI/CD) and API payloads.</p>
+    <ul>
+      <li><i data-lucide="check"></i> <strong>Live Synchronization:</strong> Type in either the YAML or JSON pane, and the engine automatically parses and translates your data to the opposing format in real-time.</li>
+      <li><i data-lucide="check"></i> <strong>Non-Destructive Parsing:</strong> Syntax errors in one pane will not erase data in the other; a localized warning simply alerts you until the syntax is corrected.</li>
+      <li><i data-lucide="check"></i> <strong>Zero-Trust Processing:</strong> JS-YAML execution happens entirely within your local browser DOM. No sensitive configurations are sent to external servers.</li>
+    </ul>
+  </div>
+
+  <a href="../index.html" class="fab" aria-label="Command Center" title="Command Center">
+    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="filter: drop-shadow(0 0 8px rgba(56, 189, 248, 0.5));">
+      <path d="M12 2L2 7l10 5 10-5-10-5z" stroke="#38bdf8" stroke-width="2" stroke-linejoin="round" fill="rgba(56,189,248,0.2)"/>
+      <path d="M2 17l10 5 10-5M2 12l10 5 10-5" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </a>
+
+  <footer>
+    &copy; 2025 - 2026 <strong>Layerbit Technologies</strong>. All rights reserved.
+  </footer>
+
+  <script>
+    lucide.createIcons();
+
+    const yamlInput = document.getElementById("yamlInput");
+    const jsonInput = document.getElementById("jsonInput");
+    const yamlError = document.getElementById("yamlError");
+    const jsonError = document.getElementById("jsonError");
+
+    let isSyncing = false; // Prevents infinite echo loops
+
+    // YAML to JSON
+    yamlInput.addEventListener("input", () => {
+      if (isSyncing) return;
+      
+      const val = yamlInput.value.trim();
+      if (!val) {
+        isSyncing = true;
+        jsonInput.value = "";
+        yamlError.classList.remove("active");
+        jsonError.classList.remove("active");
+        isSyncing = false;
+        return;
+      }
 
       try {
-        if (mode.value === "yaml2json") {
-          const obj = jsyaml.load(input.value);
-          output.value = JSON.stringify(obj, null, 2);
-        } else {
-          const obj = JSON.parse(input.value);
-          output.value = jsyaml.dump(obj);
-        }
+        const obj = jsyaml.load(val);
+        // If parsed object is just a string/number, ignore unless it's a real object
+        if (typeof obj !== 'object' || obj === null) throw new Error("Not a valid object");
+        
+        isSyncing = true;
+        jsonInput.value = JSON.stringify(obj, null, 4);
+        yamlError.classList.remove("active");
+        jsonError.classList.remove("active");
       } catch (err) {
-        errorDiv.textContent = "Error: " + err.message;
-        errorDiv.style.display = "block";
+        yamlError.classList.add("active");
+      } finally {
+        isSyncing = false;
       }
+    });
+
+    // JSON to YAML
+    jsonInput.addEventListener("input", () => {
+      if (isSyncing) return;
+
+      const val = jsonInput.value.trim();
+      if (!val) {
+        isSyncing = true;
+        yamlInput.value = "";
+        yamlError.classList.remove("active");
+        jsonError.classList.remove("active");
+        isSyncing = false;
+        return;
+      }
+
+      try {
+        const obj = JSON.parse(val);
+        isSyncing = true;
+        yamlInput.value = jsyaml.dump(obj, { indent: 2, lineWidth: -1 });
+        jsonError.classList.remove("active");
+        yamlError.classList.remove("active");
+      } catch (err) {
+        jsonError.classList.add("active");
+      } finally {
+        isSyncing = false;
+      }
+    });
+
+    // Utilities
+    function clearAll() {
+      yamlInput.value = "";
+      jsonInput.value = "";
+      yamlError.classList.remove("active");
+      jsonError.classList.remove("active");
     }
 
-    input.addEventListener("input", convert);
-    mode.addEventListener("change", convert);
-
-    function copyOutput() {
-      navigator.clipboard.writeText(output.value).then(() => {
-        alert("Output copied to clipboard!");
+    function copyContent(elementId, btnElement) {
+      const text = document.getElementById(elementId).value;
+      if (!text) return;
+      
+      navigator.clipboard.writeText(text).then(() => {
+        const originalText = btnElement.innerHTML;
+        btnElement.innerHTML = '<i data-lucide="check"></i> Copied!';
+        lucide.createIcons();
+        setTimeout(() => {
+          btnElement.innerHTML = originalText;
+          lucide.createIcons();
+        }, 2000);
       });
     }
+
+    function downloadFile(elementId, ext) {
+      const text = document.getElementById(elementId).value;
+      if (!text) return;
+
+      const blob = new Blob([text], { type: "text/plain;charset=utf-8;" });
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = `layerbit-config-${Date.now()}.${ext}`;
+      link.click();
+    }
   </script>
-<a class="home-fab" href="../index.html" title="Home">
-<svg viewbox="0 0 24 24">
-<path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z">
-</path>
-</svg>
-</a>
-<details style="max-width: 700px; margin: 60px auto 20px auto; background: rgba(255,255,255,0.1); padding: 20px; border-radius: 10px;">
-<summary style="cursor: pointer; font-weight: bold; font-size: 1.1em;">
-    🔎 About this Tool (Click to Expand)
-   </summary>
-<div style="margin-top: 15px; text-align: left;">
-<h3 style="margin-top: 10px; color: #fff;">
-     📌 What is YAML ↔ JSON Converter?
-    </h3>
-<p>
-     This tool converts YAML markup to JSON structure or vice versa with real-time conversion accuracy.
-    </p>
-<h3 style="margin-top: 20px; color: #fff;">
-     💡 Key Uses
-    </h3>
-<ul>
-<li>
-      ✅ Quick switch between YAML and JSON formats
-     </li>
-<li>
-      ✅ Ideal for developers working on configs or APIs
-     </li>
-<li>
-      ✅ Supports clipboard copying and immediate viewing
-     </li>
-</ul>
-<h3 style="margin-top: 20px; color: #fff;">
-     🚀 How to Use
-    </h3>
-<ol>
-<li>
-      1️⃣ Select conversion direction (YAML → JSON or JSON → YAML)
-     </li>
-<li>
-      2️⃣ Paste your data in the input area
-     </li>
-<li>
-      3️⃣ Converted result appears instantly — copy it with one click
-     </li>
-</ol>
-<p style="margin-top: 20px;">
-     No external requests are made. It works completely in your browser — built with privacy in mind by Layerbit.
-    </p>
-</div>
-</details>
 </body>
 </html>

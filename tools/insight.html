@@ -1,312 +1,485 @@
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>
-   Layerbit Device Insight
-  </title>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500&amp;display=swap" rel="stylesheet"/>
-<style>
-   body {
-      font-family: 'Space Grotesk', sans-serif;
-      background: #12131a;
-      color: #f3f3f3;
-      margin: 0;
-      padding: 20px;
-    }
-    h1 {
-      text-align: center;
-      margin-bottom: 30px;
-    }
-    .card {
-      background: #1f2230;
-      border: 1px solid #2e3244;
-      border-radius: 12px;
-      padding: 15px 20px;
-      margin-bottom: 16px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-    }
-    .card h2 {
-      margin: 0 0 8px;
-      font-size: 1.1em;
-      color: #8ecdfc;
-    }
-    .card p {
-      margin: 0;
-      font-size: 0.95em;
-    }
-    .btn {
-      font-family: 'Space Grotesk', sans-serif;
-      background: #42a5f5;
-      color: white;
-      padding: 10px 16px;
-      font-size: 0.95em;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      margin-bottom: 20px;
-      display: block;
-      margin-left: auto;
-      margin-right: auto;
-    }
-    .back {
-      position: fixed;
-      bottom: 20px;
-      left: 20px;
-      background: white;
-      color: #333;
-      padding: 10px 18px;
-      border-radius: 8px;
-      text-decoration: none;
-      font-weight: bold;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-      z-index: 999;
-    }
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Advanced Device Insight & Fingerprinting. Instantly scan your IP, network, hardware architecture, and browser configuration securely." />
+  <title>Device Telemetry Dashboard - Layerbit</title>
   
-    .home-fab {
-      position: fixed;
-      bottom: 20px;
-      left: 20px;
-      width: 44px;
-      height: 44px;
-      background-color: white;
-      border-radius: 12px;
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6072772587431629" crossorigin="anonymous"></script>
+  
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Fira+Code:wght@400;500;700&display=swap" rel="stylesheet" />
+  <link href="../layerbit-logo.png" rel="icon" type="image/x-icon" />
+  
+  <style>
+    /* Ultra-Premium Dark Theme Variables */
+    :root {
+      --bg-base: #0a0c10;
+      --bg-gradient: radial-gradient(circle at 50% 0%, #1a1e2d 0%, #0a0c10 70%);
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --card-bg: rgba(20, 22, 30, 0.6);
+      --card-border: rgba(255, 255, 255, 0.08);
+      --card-hover-border: rgba(56, 189, 248, 0.4);
+      --accent-main: #38bdf8;
+      --accent-glow: rgba(56, 189, 248, 0.5);
+      --neon-gradient: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%);
+      --success-color: #22c55e;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Space Grotesk', sans-serif;
+      color: var(--text-main);
+      background-color: var(--bg-base);
+      background-image: var(--bg-gradient);
+      min-height: 100vh;
+      padding: 20px 40px;
+      position: relative;
+      overflow-x: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    @keyframes drift { from { background-position: 0 0, 20px 20px; } to { background-position: -60px -60px, -40px -40px; } }
+    body::before {
+      content: ''; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+      background-image: radial-gradient(rgba(255,255,255,0.08) 1px, transparent 1px), radial-gradient(rgba(255,255,255,0.05) 1px, transparent 1px);
+      background-size: 60px 60px, 40px 40px; z-index: -1; animation: drift 60s linear infinite; pointer-events: none;
+    }
+
+    header { display: flex; justify-content: flex-start; align-items: center; max-width: 1400px; width: 100%; margin: 0 auto 40px auto; }
+    .brand { font-size: 1.6em; font-weight: 700; display: flex; align-items: center; gap: 12px; text-decoration: none; color: #fff; }
+    .brand svg { filter: drop-shadow(0 0 10px var(--accent-glow)); }
+
+    .hero { text-align: center; margin-bottom: 40px; animation: fadeIn 1s ease-out; }
+    .hero h1 { font-size: 2.8em; font-weight: 700; margin-bottom: 10px; }
+    .hero p { color: var(--text-muted); font-size: 1.1em; }
+
+    /* Action Command Bar */
+    .command-bar {
+      max-width: 1200px;
+      width: 100%;
+      margin: 0 auto 30px auto;
       display: flex;
       justify-content: center;
+      gap: 15px;
+      flex-wrap: wrap;
+      animation: fadeSlideUp 0.5s ease-out forwards;
+    }
+
+    .btn {
+      background: rgba(255,255,255,0.05); border: 1px solid var(--card-border); color: #fff;
+      padding: 12px 24px; border-radius: 12px; font-family: 'Space Grotesk', sans-serif; font-weight: 600;
+      font-size: 1em; cursor: pointer; display: flex; align-items: center; gap: 10px; transition: 0.3s;
+    }
+    .btn:hover { background: rgba(255,255,255,0.1); border-color: var(--accent-main); transform: translateY(-2px); }
+    .btn-primary { background: var(--neon-gradient); color: #000; border: none; box-shadow: 0 4px 15px var(--accent-glow); }
+    .btn-primary:hover { box-shadow: 0 8px 25px var(--accent-glow); border-color: transparent; }
+
+    /* Telemetry Grid Layout */
+    .telemetry-container {
+      max-width: 1200px;
+      width: 100%;
+      margin: 0 auto 60px auto;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+      gap: 25px;
+    }
+
+    /* Telemetry Modules */
+    .module-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      backdrop-filter: blur(16px);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+      overflow: hidden;
+      animation: fadeSlideUp 0.8s ease-out forwards;
+      opacity: 0;
+    }
+
+    /* Staggered Animation */
+    .module-card:nth-child(1) { animation-delay: 0.1s; }
+    .module-card:nth-child(2) { animation-delay: 0.2s; }
+    .module-card:nth-child(3) { animation-delay: 0.3s; }
+    .module-card:nth-child(4) { animation-delay: 0.4s; }
+
+    .module-header {
+      background: rgba(0,0,0,0.4);
+      padding: 15px 20px;
+      border-bottom: 1px solid var(--card-border);
+      display: flex;
       align-items: center;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-      text-decoration: none;
-      z-index: 1000;
+      gap: 12px;
+      font-size: 1.1em;
+      font-weight: 700;
+      color: #fff;
     }
-    .home-fab svg {
-      width: 20px;
-      height: 20px;
-      fill: #333;
+    .module-header i { color: var(--accent-main); width: 20px; }
+
+    .module-body { padding: 20px; display: flex; flex-direction: column; gap: 12px; }
+
+    /* Data Rows */
+    .data-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px;
+      background: rgba(255,255,255,0.02);
+      border: 1px solid transparent;
+      border-radius: 8px;
+      transition: 0.2s;
     }
-    ul, ol {
-      list-style: none;
-      padding-left: 0;
+    .data-row:hover { background: rgba(56, 189, 248, 0.05); border-color: rgba(56, 189, 248, 0.2); }
+
+    .data-label {
+      display: flex; align-items: center; gap: 10px;
+      font-size: 0.9em; font-weight: 600; color: var(--text-muted);
     }
-    ul li::before, ol li::before {
-      content: "";
+    .data-label i { width: 16px; opacity: 0.7; }
+
+    .data-value {
+      font-family: 'Fira Code', monospace;
+      font-size: 0.9em;
+      color: #fff;
+      font-weight: 500;
+      text-align: right;
+      max-width: 60%;
+      word-break: break-word;
     }
+    .val-highlight { color: var(--accent-main); font-weight: 700; }
+    .val-pending { color: var(--text-muted); font-style: italic; }
+
+    /* Info Panel */
+    .info-panel { max-width: 1200px; margin: 0 auto 60px auto; background: rgba(255,255,255,0.02); border: 1px solid var(--card-border); padding: 40px; border-radius: 20px; }
+    .info-panel h2 { color: #fff; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
+    .info-panel h2 i { color: var(--accent-main); }
+    .info-panel p { color: var(--text-muted); margin-bottom: 15px; line-height: 1.7; }
+    .info-panel ul { list-style: none; margin-bottom: 20px; }
+    .info-panel li { color: var(--text-muted); margin-bottom: 10px; display: flex; align-items: center; gap: 10px; }
+    .info-panel li i { color: var(--success-color); width: 16px; }
+
+    /* Command Center FAB */
+    .fab { position: fixed; bottom: 30px; left: 30px; width: 60px; height: 60px; border-radius: 50%; backdrop-filter: blur(15px); display: flex; align-items: center; justify-content: center; z-index: 9998; background: rgba(20, 22, 30, 0.7); border: 1px solid rgba(255, 255, 255, 0.1); box-shadow: 0 8px 25px rgba(0,0,0,0.5); transition: all 0.4s; text-decoration: none; }
+    .fab:hover { transform: scale(1.1); border-color: var(--accent-main); background: rgba(30, 34, 48, 0.9); box-shadow: 0 12px 30px rgba(0,0,0,0.6), 0 0 25px rgba(56, 189, 248, 0.3); }
+
+    footer { text-align: center; padding: 40px 0; border-top: 1px solid var(--card-border); color: var(--text-muted); font-size: 0.95em; margin-top: auto; }
+
+    @media (max-width: 768px) {
+      .telemetry-container { grid-template-columns: 1fr; }
+      .data-row { flex-direction: column; align-items: flex-start; gap: 8px; }
+      .data-value { text-align: left; max-width: 100%; }
+    }
+
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(-15px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes fadeSlideUp { from { opacity: 0; transform: translateY(40px); } to { opacity: 1; transform: translateY(0); } }
   </style>
-<meta content="Free browser-based tool by Layerbit. Fast, simple, and privacy-respecting." name="description"/></head>
+</head>
 <body>
-<h1>
-   📡 Your Device Insight
-  </h1>
-<button class="btn" onclick="getGeolocation()">
-   📍 Get My Exact Location
-  </button>
-<div class="card" id="geoResult" style="display: none;">
-</div>
-<div id="results">
-   Loading system details...
+
+  <header>
+    <a href="../index.html" class="brand">
+      <svg width="36" height="36" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <polygon points="32,20 54,28 32,36 10,28" stroke="#f8fafc" stroke-width="4" stroke-linejoin="round"/>
+        <polyline points="10,38 32,46 54,38" stroke="#f8fafc" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+        <polyline points="10,48 32,56 54,48" stroke="#f8fafc" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+        <rect x="50" y="10" width="10" height="10" rx="2" fill="#00f2fe" />
+      </svg>
+      Layerbit
+    </a>
+  </header>
+
+  <main class="hero">
+    <h1>Hardware & Network Telemetry</h1>
+    <p>Perform an instant diagnostic scan of your local device profile, browser engine, and network footprint.</p>
+  </main>
+
+  <div class="command-bar">
+    <button class="btn btn-primary" onclick="getExactGeolocation()" id="btnGeo">
+      <i data-lucide="crosshair"></i> Acquire GPS Target
+    </button>
+    <button class="btn" onclick="exportTelemetry()">
+      <i data-lucide="download"></i> Export Telemetry
+    </button>
+    <button class="btn" onclick="shareTelemetry()">
+      <i data-lucide="share-2"></i> Secure Share
+    </button>
   </div>
-<script>
-   async function getGeolocation() {
-      const geoCard = document.getElementById("geoResult");
-      if (!navigator.geolocation) {
-        alert("Geolocation is not supported by your browser.");
-        return;
-      }
-      navigator.geolocation.getCurrentPosition(
-        async position => {
-          const { latitude, longitude } = position.coords;
-          let locationText = `Latitude: ${latitude.toFixed(6)}<br>Longitude: ${longitude.toFixed(6)}`;
 
-          // Try reverse geocoding using OpenStreetMap Nominatim
-          try {
-            const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`);
-            const locData = await res.json();
-            if (locData.address) {
-              const city = locData.address.city || locData.address.town || locData.address.village || "";
-              const country = locData.address.country || "";
-              locationText += `<br>Approximate Place: ${city}, ${country}`;
-            }
-          } catch (e) {
-            locationText += "<br>Unable to determine place name.";
-          }
+  <div class="telemetry-container" id="telemetryGrid">
+    
+    <div class="module-card">
+      <div class="module-header"><i data-lucide="network"></i> Network Intelligence</div>
+      <div class="module-body">
+        <div class="data-row"><div class="data-label"><i data-lucide="globe"></i> Public IP Address</div><div class="data-value val-highlight" id="val-ip"><span class="val-pending">Scanning...</span></div></div>
+        <div class="data-row"><div class="data-label"><i data-lucide="server"></i> ISP / Organization</div><div class="data-value" id="val-isp"><span class="val-pending">Scanning...</span></div></div>
+        <div class="data-row"><div class="data-label"><i data-lucide="map"></i> IP Location Node</div><div class="data-value" id="val-iploc"><span class="val-pending">Scanning...</span></div></div>
+        <div class="data-row"><div class="data-label"><i data-lucide="wifi"></i> Connection Profile</div><div class="data-value" id="val-conn"><span class="val-pending">Analyzing...</span></div></div>
+      </div>
+    </div>
 
-          geoCard.innerHTML = `
-            <h2>Exact Geolocation</h2>
-            <p>${locationText}</p>
-          `;
-          geoCard.style.display = 'block';
-        },
-        error => {
-          alert("Unable to retrieve your location.");
-        }
-      );
+    <div class="module-card">
+      <div class="module-header"><i data-lucide="cpu"></i> Hardware Architecture</div>
+      <div class="module-body">
+        <div class="data-row"><div class="data-label"><i data-lucide="microchip"></i> Logical Processors</div><div class="data-value" id="val-cpu"><span class="val-pending">Analyzing...</span></div></div>
+        <div class="data-row"><div class="data-label"><i data-lucide="memory-stick"></i> Device Memory</div><div class="data-value" id="val-ram"><span class="val-pending">Analyzing...</span></div></div>
+        <div class="data-row"><div class="data-label"><i data-lucide="monitor"></i> Display Resolution</div><div class="data-value" id="val-screen"><span class="val-pending">Analyzing...</span></div></div>
+        <div class="data-row"><div class="data-label"><i data-lucide="battery-charging"></i> Power Status</div><div class="data-value" id="val-bat"><span class="val-pending">Analyzing...</span></div></div>
+      </div>
+    </div>
+
+    <div class="module-card">
+      <div class="module-header"><i data-lucide="chrome"></i> Browser Engine</div>
+      <div class="module-body">
+        <div class="data-row"><div class="data-label"><i data-lucide="terminal"></i> User Agent</div><div class="data-value" id="val-ua"><span class="val-pending">Analyzing...</span></div></div>
+        <div class="data-row"><div class="data-label"><i data-lucide="layers"></i> OS Platform</div><div class="data-value" id="val-os"><span class="val-pending">Analyzing...</span></div></div>
+        <div class="data-row"><div class="data-label"><i data-lucide="palette"></i> WebGL Renderer</div><div class="data-value" id="val-gpu"><span class="val-pending">Analyzing...</span></div></div>
+        <div class="data-row"><div class="data-label"><i data-lucide="shield"></i> Privacy Tracking (DNT)</div><div class="data-value" id="val-dnt"><span class="val-pending">Analyzing...</span></div></div>
+      </div>
+    </div>
+
+    <div class="module-card">
+      <div class="module-header"><i data-lucide="compass"></i> Precision Geospatial Data</div>
+      <div class="module-body">
+        <div class="data-row"><div class="data-label"><i data-lucide="satellite"></i> Latitude</div><div class="data-value" id="val-lat">Awaiting authorization</div></div>
+        <div class="data-row"><div class="data-label"><i data-lucide="satellite"></i> Longitude</div><div class="data-value" id="val-lon">Awaiting authorization</div></div>
+        <div class="data-row"><div class="data-label"><i data-lucide="map-pin"></i> Reverse Geocode</div><div class="data-value" id="val-place">Awaiting authorization</div></div>
+        <div class="data-row"><div class="data-label"><i data-lucide="clock"></i> Local Timezone</div><div class="data-value" id="val-tz"><span class="val-pending">Analyzing...</span></div></div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="info-panel">
+    <h2><i data-lucide="fingerprint"></i> Device Fingerprinting Mechanics</h2>
+    <p>Layerbit Device Insight utilizes native HTML5 APIs, WebGL rendering contexts, and IP routing databases to generate a comprehensive profile of your machine's footprint on the web. This data is what major platforms use to track, identify, or block you.</p>
+    <ul>
+      <li><i data-lucide="check"></i> <strong>WebGL Extraction:</strong> Bypasses standard browser spoofing to query your physical GPU hardware directly.</li>
+      <li><i data-lucide="check"></i> <strong>Network Analysis:</strong> Estimates your connection type (e.g., 4G, Wifi) and downlink speed alongside your routing ISP.</li>
+      <li><i data-lucide="check"></i> <strong>Absolute Privacy:</strong> We do not log or store this telemetry. The data is pulled directly to your DOM for diagnostic awareness.</li>
+    </ul>
+  </div>
+
+  <a href="../index.html" class="fab" aria-label="Command Center" title="Command Center">
+    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="filter: drop-shadow(0 0 8px rgba(56, 189, 248, 0.5));">
+      <path d="M12 2L2 7l10 5 10-5-10-5z" stroke="#38bdf8" stroke-width="2" stroke-linejoin="round" fill="rgba(56,189,248,0.2)"/>
+      <path d="M2 17l10 5 10-5M2 12l10 5 10-5" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </a>
+
+  <footer>
+    &copy; 2025 - 2026 <strong>Layerbit Technologies</strong>. All rights reserved.
+  </footer>
+
+  <script>
+    lucide.createIcons();
+
+    // Utility to set values safely
+    function setVal(id, text) {
+      document.getElementById(id).innerHTML = text;
     }
+
+    // Global Telemetry Object for Export
+    const telemetryData = {};
 
     async function runDiagnostics() {
-      const container = document.getElementById("results");
-      const data = [];
+      
+      // 1. Hardware Architecture
+      const cpu = navigator.hardwareConcurrency ? `${navigator.hardwareConcurrency} Cores` : "Restricted";
+      const ram = navigator.deviceMemory ? `${navigator.deviceMemory} GB+` : "Restricted";
+      const screenRes = `${screen.width}x${screen.height} (${screen.colorDepth}-bit)`;
+      
+      setVal('val-cpu', cpu);
+      setVal('val-ram', ram);
+      setVal('val-screen', screenRes);
 
-      data.push(["Browser & Platform", navigator.userAgent]);
-      data.push(["Operating System", navigator.platform]);
-      data.push(["Preferred Language", navigator.language + " (" + navigator.languages.join(", ") + ")"]);
-      data.push(["Cookies Enabled", navigator.cookieEnabled ? "Yes" : "No"]);
-      data.push(["Do Not Track", navigator.doNotTrack === "1" ? "Enabled" : "Disabled"]);
-      data.push(["Screen Resolution", screen.width + " x " + screen.height]);
-      data.push(["Color Depth", screen.colorDepth + "-bit"]);
-      data.push(["Timezone", Intl.DateTimeFormat().resolvedOptions().timeZone]);
-      data.push(["Memory Estimate", navigator.deviceMemory ? navigator.deviceMemory + " GB" : "Not Available"]);
-      data.push(["CPU Threads", navigator.hardwareConcurrency ? navigator.hardwareConcurrency + " cores" : "Not Available"]);
+      telemetryData["CPU Cores"] = cpu;
+      telemetryData["Memory"] = ram;
+      telemetryData["Screen"] = screenRes;
 
+      // Battery API (Chrome/Edge)
+      if ('getBattery' in navigator) {
+        try {
+          const battery = await navigator.getBattery();
+          const level = Math.round(battery.level * 100) + "%";
+          const status = battery.charging ? "Charging ⚡" : "Discharging";
+          setVal('val-bat', `${level} (${status})`);
+          telemetryData["Battery"] = `${level} (${status})`;
+        } catch(e) { setVal('val-bat', "Restricted by Browser"); }
+      } else {
+        setVal('val-bat', "API Unsupported");
+      }
+
+      // 2. Browser Engine
+      setVal('val-ua', navigator.userAgent);
+      setVal('val-os', navigator.platform || "Unknown");
+      const dnt = navigator.doNotTrack === "1" ? "Enabled" : "Disabled";
+      setVal('val-dnt', dnt);
+
+      telemetryData["User Agent"] = navigator.userAgent;
+      telemetryData["OS Platform"] = navigator.platform;
+      telemetryData["Do Not Track"] = dnt;
+
+      // WebGL
       try {
         const canvas = document.createElement('canvas');
         const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
         const debugInfo = gl.getExtension('WEBGL_debug_renderer_info');
-        const vendor = gl.getParameter(debugInfo.UNMASKED_VENDOR_WEBGL);
         const renderer = gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL);
-        data.push(["Graphics Vendor", vendor]);
-        data.push(["Graphics Renderer", renderer]);
+        setVal('val-gpu', renderer || "Masked");
+        telemetryData["GPU Renderer"] = renderer || "Masked";
       } catch {
-        data.push(["Graphics Info", "Unavailable"]);
+        setVal('val-gpu', "Blocked / Unavailable");
+        telemetryData["GPU Renderer"] = "Blocked";
       }
 
+      // 3. Network Intelligence
+      // Connection API (Chrome/Edge)
+      if (navigator.connection) {
+        const conn = navigator.connection;
+        const type = conn.effectiveType ? conn.effectiveType.toUpperCase() : "Unknown";
+        const down = conn.downlink ? `${conn.downlink} Mbps` : "";
+        setVal('val-conn', `${type} ${down}`);
+        telemetryData["Connection"] = `${type} ${down}`;
+      } else {
+        setVal('val-conn', "API Unsupported");
+      }
+
+      // IP Info Fetch
       try {
         const res = await fetch("https://ipinfo.io/json?token=f38556491a0a87");
         const ipData = await res.json();
-        if (ipData.ip) {
-          data.push(["Public IP", ipData.ip]);
-          data.push(["Approximate Location", (ipData.city || '') + ', ' + (ipData.region || '') + ', ' + (ipData.country || '')]);
-          data.push(["ISP", ipData.org || "Unknown"]);
-        } else {
-          data.push(["IP & Location", "Could not fetch location data."]);
-        }
+        
+        setVal('val-ip', ipData.ip || "Unknown");
+        setVal('val-isp', ipData.org || "Unknown");
+        const locStr = `${ipData.city || ''}, ${ipData.region || ''}, ${ipData.country || ''}`.replace(/^, | , | ,$/g, '');
+        setVal('val-iploc', locStr || "Unknown");
+
+        telemetryData["Public IP"] = ipData.ip;
+        telemetryData["ISP"] = ipData.org;
+        telemetryData["IP Location"] = locStr;
+
       } catch {
-        data.push(["IP & Location", "Could not fetch location data."]);
+        setVal('val-ip', "Fetch Failed");
+        setVal('val-isp', "Fetch Failed");
+        setVal('val-iploc', "Fetch Failed");
       }
 
-      container.innerHTML = data.map(([title, value]) => `
-        <div class="card">
-          <h2>${title}</h2>
-          <p>${value}</p>
-        </div>
-      `).join("");
+      // 4. Geospatial (Timezone)
+      const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      setVal('val-tz', tz);
+      telemetryData["Timezone"] = tz;
     }
 
-    runDiagnostics();
-  </script>
-<style>
-   .float-btn {
-    position: fixed;
-    bottom: 20px;
-    width: 42px;
-    height: 42px;
-    border-radius: 8px;
-    background-color: white;
-    color: #333;
-    border: none;
-    font-size: 1.2em;
-    cursor: pointer;
-    z-index: 999;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: bold;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-  }
-  #downloadBtn {
-    right: 70px;
-  }
-  #shareBtn {
-    right: 20px;
-  }
-  </style>
-<button class="float-btn" id="downloadBtn" onclick="downloadReport()">
-   ⬇️
-  </button>
-<button class="float-btn" id="shareBtn" onclick="shareReport()">
-   📤
-  </button>
-<script>
-   function downloadReport() {
-    
-    const geoText = document.getElementById('geoResult').innerText || "";
-    const resultText = document.getElementById('results').innerText || "";
-    const text = (geoText + "\n" + resultText).trim();
-    
-    const blob = new Blob([text], { type: 'text/plain' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'layerbit-device-insight.txt';
-    a.click();
-    URL.revokeObjectURL(url);
-  }
+    // GPS Location Function
+    async function getExactGeolocation() {
+      const btnGeo = document.getElementById('btnGeo');
+      btnGeo.innerHTML = `<i data-lucide="loader" class="animate-spin"></i> Acquiring Signal...`;
+      lucide.createIcons();
+      btnGeo.disabled = true;
 
-  function shareReport() {
-    
-    const geoText = document.getElementById('geoResult').innerText || "";
-    const resultText = document.getElementById('results').innerText || "";
-    const text = (geoText + "\n" + resultText).trim();
-    
-    if (navigator.share) {
-      navigator.share({
-        title: 'My Device Insight',
-        text: text,
-      }).catch(() => alert("Sharing cancelled or unsupported."));
-    } else {
-      alert("Sharing is not supported on this device.");
+      if (!navigator.geolocation) {
+        alert("Geolocation is not supported by your browser.");
+        resetGeoBtn(btnGeo);
+        return;
+      }
+
+      navigator.geolocation.getCurrentPosition(
+        async position => {
+          const lat = position.coords.latitude.toFixed(6);
+          const lon = position.coords.longitude.toFixed(6);
+          
+          setVal('val-lat', `<span class="val-highlight">${lat}</span>`);
+          setVal('val-lon', `<span class="val-highlight">${lon}</span>`);
+          
+          telemetryData["GPS Latitude"] = lat;
+          telemetryData["GPS Longitude"] = lon;
+
+          // Reverse Geocoding
+          setVal('val-place', '<span class="val-pending">Resolving coordinates...</span>');
+          try {
+            const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`);
+            const locData = await res.json();
+            if (locData.address) {
+              const city = locData.address.city || locData.address.town || locData.address.village || locData.address.county || "";
+              const country = locData.address.country || "";
+              const placeStr = `${city}, ${country}`.replace(/^, | , | ,$/g, '');
+              setVal('val-place', placeStr);
+              telemetryData["GPS Place"] = placeStr;
+            } else {
+              setVal('val-place', "Resolution Failed");
+            }
+          } catch (e) {
+            setVal('val-place', "Resolution Failed");
+          }
+          resetGeoBtn(btnGeo, true);
+        },
+        error => {
+          alert("GPS Authorization denied or unavailable.");
+          resetGeoBtn(btnGeo);
+          setVal('val-lat', "Authorization Denied");
+          setVal('val-lon', "Authorization Denied");
+          setVal('val-place', "Authorization Denied");
+        },
+        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+      );
     }
-  }
+
+    function resetGeoBtn(btn, success = false) {
+      if(success) {
+        btn.innerHTML = `<i data-lucide="check-circle"></i> Target Acquired`;
+        btn.classList.add("btn-primary");
+      } else {
+        btn.innerHTML = `<i data-lucide="crosshair"></i> Acquire GPS Target`;
+        btn.disabled = false;
+      }
+      lucide.createIcons();
+    }
+
+    // Export & Share
+    function buildReportString() {
+      let report = "LAYERBIT DEVICE TELEMETRY REPORT\n";
+      report += "Generated: " + new Date().toISOString() + "\n";
+      report += "----------------------------------------\n\n";
+      for (const [key, value] of Object.entries(telemetryData)) {
+        report += `${key}: ${value}\n`;
+      }
+      return report;
+    }
+
+    function exportTelemetry() {
+      const report = buildReportString();
+      const blob = new Blob([report], { type: 'text/plain;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `layerbit-telemetry-${Date.now()}.txt`;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function shareTelemetry() {
+      const report = buildReportString();
+      if (navigator.share) {
+        navigator.share({
+          title: 'Layerbit Device Telemetry',
+          text: report,
+        }).catch(() => console.log("Share cancelled"));
+      } else {
+        navigator.clipboard.writeText(report).then(() => {
+          alert("Telemetry copied to clipboard! (Native sharing unavailable)");
+        });
+      }
+    }
+
+    // Initialize
+    window.addEventListener('DOMContentLoaded', runDiagnostics);
+
   </script>
-<a class="home-fab" href="../index.html" title="Home">
-<svg viewbox="0 0 24 24">
-<path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z">
-</path>
-</svg>
-</a>
-<details style="max-width: 720px; margin: 60px auto 30px auto; background: rgba(255,255,255,0.1); padding: 20px; border-radius: 10px;">
-<summary style="cursor: pointer; font-weight: bold; font-size: 1.1em;">
-    🔎 About this Tool (Click to Expand)
-   </summary>
-<div style="margin-top: 15px; text-align: left;">
-<h3 style="margin-top: 10px; color: #fff;">
-     📌 What is Device Insight?
-    </h3>
-<p>
-     This tool gives you real-time visibility into your device, browser, and IP-level data, ensuring awareness before accessing sensitive platforms or testing systems.
-    </p>
-<h3 style="margin-top: 20px; color: #fff;">
-     💡 Key Uses
-    </h3>
-<ul>
-<li>
-      ✅ Check your IP, device specs, and browser details
-     </li>
-<li>
-      ✅ Get approximate location and ISP
-     </li>
-<li>
-      ✅ Export or share your device insight easily
-     </li>
-</ul>
-<h3 style="margin-top: 20px; color: #fff;">
-     🚀 How to Use
-    </h3>
-<ol>
-<li>
-      1️⃣ Open the page — auto-detection starts instantly
-     </li>
-<li>
-      2️⃣ Use “📍 Get My Exact Location” for GPS-level accuracy
-     </li>
-<li>
-      3️⃣ Download or share your insight using the floating buttons
-     </li>
-</ol>
-<p style="margin-top: 20px;">
-     No data leaves your browser unless you choose to share or download. Privacy-first by Layerbit.
-    </p>
-</div>
-</details>
 </body>
 </html>

@@ -1,194 +1,518 @@
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1" name="viewport"/>
-<title>Regex Tester - Layerbit</title>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&amp;display=swap" rel="stylesheet"/>
-<style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Advanced Regular Expression Tester. Debug patterns, highlight matches, and extract capture groups instantly in your browser." />
+  <title>Regex Debugging Terminal - Layerbit</title>
+  
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6072772587431629" crossorigin="anonymous"></script>
+  
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Fira+Code:wght@400;500;700&display=swap" rel="stylesheet" />
+  <link href="../layerbit-logo.png" rel="icon" type="image/x-icon" />
+  
+  <style>
+    /* Ultra-Premium Dark Theme Variables */
+    :root {
+      --bg-base: #0a0c10;
+      --bg-gradient: radial-gradient(circle at 50% 0%, #1a1e2d 0%, #0a0c10 70%);
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --card-bg: rgba(20, 22, 30, 0.6);
+      --card-border: rgba(255, 255, 255, 0.08);
+      --accent-main: #38bdf8;
+      --accent-glow: rgba(56, 189, 248, 0.5);
+      --neon-gradient: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%);
+      --error-color: #ef4444;
+      --success-color: #22c55e;
+      --match-bg: rgba(56, 189, 248, 0.2);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
     body {
       font-family: 'Space Grotesk', sans-serif;
-      background: linear-gradient(135deg, #4facfe, #00f2fe);
-      color: white;
-      padding: 30px 20px;
+      color: var(--text-main);
+      background-color: var(--bg-base);
+      background-image: var(--bg-gradient);
+      min-height: 100vh;
+      padding: 20px 40px;
+      position: relative;
+      overflow-x: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    @keyframes drift { from { background-position: 0 0, 20px 20px; } to { background-position: -60px -60px, -40px -40px; } }
+    body::before {
+      content: ''; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+      background-image: radial-gradient(rgba(255,255,255,0.08) 1px, transparent 1px), radial-gradient(rgba(255,255,255,0.05) 1px, transparent 1px);
+      background-size: 60px 60px, 40px 40px; z-index: -1; animation: drift 60s linear infinite; pointer-events: none;
+    }
+
+    header { display: flex; justify-content: flex-start; align-items: center; max-width: 1400px; width: 100%; margin: 0 auto 40px auto; }
+    .brand { font-size: 1.6em; font-weight: 700; display: flex; align-items: center; gap: 12px; text-decoration: none; color: #fff; }
+    .brand svg { filter: drop-shadow(0 0 10px var(--accent-glow)); }
+
+    .hero { text-align: center; margin-bottom: 40px; animation: fadeIn 1s ease-out; }
+    .hero h1 { font-size: 2.8em; font-weight: 700; margin-bottom: 10px; }
+    .hero p { color: var(--text-muted); font-size: 1.1em; }
+
+    /* Main Terminal */
+    .app-container {
       max-width: 1000px;
-      margin: auto;
-    }
-
-    h1 {
-      text-align: center;
-      font-size: 2.5em;
-      margin-bottom: 20px;
-    }
-
-    label {
-      font-weight: bold;
-      margin-top: 10px;
-      display: block;
-    }
-
-    input, textarea {
       width: 100%;
-      padding: 15px;
-      border-radius: 10px;
-      font-size: 1em;
-      border: none;
-      font-family: monospace;
-      margin-bottom: 20px;
-      color: #333;
-      box-sizing: border-box;  /* Prevent overflow from padding */
+      margin: 0 auto 60px auto;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      animation: fadeSlideUp 1s ease-out forwards;
     }
 
-    .output {
-      background: rgba(255, 255, 255, 0.2);
-      padding: 15px;
-      border-radius: 10px;
-      white-space: pre-wrap;
-      word-wrap: break-word;
+    .pane {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      backdrop-filter: blur(16px);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+      transition: border 0.3s;
+    }
+    .pane.error { border-color: var(--error-color); }
+
+    .pane-header {
+      background: rgba(0,0,0,0.3);
+      padding: 12px 20px;
+      border-bottom: 1px solid var(--card-border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-weight: 600;
       color: #fff;
     }
 
-    .match {
-      background: yellow;
-      color: black;
-      font-weight: bold;
+    .pane-title { display: flex; align-items: center; gap: 10px; }
+    .pane-title i { color: var(--accent-main); width: 18px; }
+    .pane.error .pane-title i { color: var(--error-color); }
+
+    /* Regex Input Area */
+    .regex-control {
+      display: flex;
+      align-items: stretch;
+      padding: 20px;
+      gap: 15px;
     }
 
-    .back {
-      position: fixed;
-      bottom: 20px;
-      left: 20px;
-      background: white;
-      color: #333;
-      padding: 10px 18px;
+    .regex-wrapper {
+      flex-grow: 1;
+      display: flex;
+      align-items: stretch;
+      background: rgba(0,0,0,0.4);
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+      overflow: hidden;
+      font-family: 'Fira Code', monospace;
+      transition: 0.3s;
+    }
+    .regex-wrapper:focus-within { border-color: var(--accent-main); }
+    .pane.error .regex-wrapper { border-color: var(--error-color); }
+
+    .regex-delimiter {
+      background: rgba(255,255,255,0.05);
+      color: var(--text-muted);
+      padding: 15px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 1.2em;
+    }
+
+    .regex-input {
+      flex-grow: 1;
+      background: transparent;
+      border: none;
+      color: var(--accent-main);
+      padding: 15px;
+      font-size: 1.2em;
+      font-family: 'Fira Code', monospace;
+      outline: none;
+    }
+    .pane.error .regex-input { color: var(--error-color); }
+
+    /* Flag Toggles */
+    .flags-container {
+      display: flex;
+      gap: 5px;
+    }
+
+    .flag-btn {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--card-border);
+      color: var(--text-muted);
+      border-radius: 10px;
+      padding: 0 15px;
+      font-family: 'Fira Code', monospace;
+      font-weight: 700;
+      font-size: 1.1em;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+    .flag-btn:hover { background: rgba(255,255,255,0.1); }
+    .flag-btn.active {
+      background: rgba(56, 189, 248, 0.1);
+      border-color: var(--accent-main);
+      color: var(--accent-main);
+    }
+
+    /* Error Text */
+    .error-text {
+      color: var(--error-color);
+      font-size: 0.9em;
+      padding: 0 20px 15px 20px;
+      display: none;
+      align-items: center;
+      gap: 5px;
+    }
+    .error-text.active { display: flex; }
+
+    /* Telemetry Area */
+    .telemetry-bar {
+      display: flex;
+      justify-content: space-between;
+      padding: 10px 20px;
+      background: rgba(10, 12, 16, 0.6);
+      border-bottom: 1px solid var(--card-border);
+      font-size: 0.9em;
+      font-weight: 600;
+    }
+    .match-count { color: var(--success-color); display: flex; align-items: center; gap: 5px; }
+
+    /* Test String Area (Highlighter) */
+    .editor-wrapper {
+      position: relative;
+      height: 250px;
+      width: 100%;
+    }
+
+    .test-backdrop, .test-input {
+      position: absolute;
+      top: 0; left: 0; width: 100%; height: 100%;
+      padding: 20px;
+      font-family: 'Fira Code', monospace;
+      font-size: 15px;
+      line-height: 1.6;
+      white-space: pre-wrap;
+      word-break: break-all;
+      overflow-y: auto;
+    }
+
+    .test-backdrop {
+      color: var(--text-muted);
+      z-index: 1;
+    }
+
+    .test-input {
+      background: transparent;
+      color: transparent;
+      caret-color: #fff;
+      border: none;
+      resize: none;
+      outline: none;
+      z-index: 2;
+    }
+
+    /* The Savage Highlight */
+    .hl-match {
+      background: var(--match-bg);
+      color: #fff;
+      border-bottom: 2px solid var(--accent-main);
+      border-radius: 2px;
+    }
+
+    /* Matches Grid Forensics */
+    .breakdown-pane {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      backdrop-filter: blur(16px);
+      padding: 20px;
+      display: none; /* Hidden by default */
+    }
+    .breakdown-pane.active { display: block; }
+
+    .breakdown-title {
+      font-weight: 600; color: #fff; margin-bottom: 15px;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .breakdown-title i { color: var(--success-color); width: 18px; }
+
+    .matches-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+
+    .match-item {
+      background: rgba(0,0,0,0.4);
+      border: 1px solid var(--card-border);
       border-radius: 8px;
-      text-decoration: none;
-      font-weight: bold;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+      padding: 10px 15px;
+      font-family: 'Fira Code', monospace;
+      font-size: 0.9em;
     }
 
-    /* Media Queries for Responsiveness */
+    .match-val { color: var(--accent-main); font-weight: bold; font-size: 1.1em; margin-bottom: 5px; }
+    .match-meta { color: var(--text-muted); font-size: 0.85em; }
+
+    /* Info Panel */
+    .info-panel { max-width: 1000px; margin: 40px auto 60px auto; background: rgba(255,255,255,0.02); border: 1px solid var(--card-border); padding: 40px; border-radius: 20px; }
+    .info-panel h2 { color: #fff; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
+    .info-panel h2 i { color: var(--accent-main); }
+    .info-panel p { color: var(--text-muted); margin-bottom: 15px; line-height: 1.7; }
+    .info-panel ul { list-style: none; margin-bottom: 20px; }
+    .info-panel li { color: var(--text-muted); margin-bottom: 10px; display: flex; align-items: center; gap: 10px; }
+    .info-panel li i { color: #22c55e; width: 16px; }
+
+    /* Command Center FAB */
+    .fab { position: fixed; bottom: 30px; left: 30px; width: 60px; height: 60px; border-radius: 50%; backdrop-filter: blur(15px); display: flex; align-items: center; justify-content: center; z-index: 9998; background: rgba(20, 22, 30, 0.7); border: 1px solid rgba(255, 255, 255, 0.1); box-shadow: 0 8px 25px rgba(0,0,0,0.5); transition: all 0.4s; text-decoration: none; }
+    .fab:hover { transform: scale(1.1); border-color: var(--accent-main); background: rgba(30, 34, 48, 0.9); box-shadow: 0 12px 30px rgba(0,0,0,0.6), 0 0 25px rgba(56, 189, 248, 0.3); }
+
+    footer { text-align: center; padding: 40px 0; border-top: 1px solid var(--card-border); color: var(--text-muted); font-size: 0.95em; margin-top: auto; }
+
     @media (max-width: 768px) {
-      h1 {
-        font-size: 2em;
-      }
-
-      input, textarea {
-        font-size: 0.9em; /* Reduced font size for better mobile readability */
-      }
-
-      .output {
-        font-size: 0.9em; /* Adjusted output font size */
-      }
-
-      .back {
-        font-size: 0.9em;
-        padding: 8px 16px;
-      }
-
-      body {
-        padding: 20px;
-        max-width: 100%;  /* Full width for small screens */
-      }
-
-      textarea {
-        height: 140px;  /* Reduced height for mobile */
-        padding: 10px;  /* Reduced padding */
-      }
+      .regex-control { flex-direction: column; }
     }
 
-/* Floating Home FAB */
-.home-fab {
-  position: fixed;
-  bottom: 20px;
-  left: 20px;
-  width: 44px;
-  height: 44px;
-  background-color: white;
-  border-radius: 12px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-  text-decoration: none;
-  z-index: 1000;
-}
-.home-fab svg {
-  width: 20px;
-  height: 20px;
-  fill: #333;
-}
-</style>
-<meta content="Free browser-based tool by Layerbit. Fast, simple, and privacy-respecting." name="description"/></head>
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(-15px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes fadeSlideUp { from { opacity: 0; transform: translateY(40px); } to { opacity: 1; transform: translateY(0); } }
+  </style>
+</head>
 <body>
-<p style="max-width:800px;margin:20px auto;font-size:1em;text-align:center;">Test your Regular Expressions with real-time feedback and match highlighting.</p>
-<h1>Regex Tester</h1>
-<label for="regex">Regular Expression:</label>
-<input id="regex" placeholder="e.g. \b\w+@\w+\.\w+\b" type="text"/>
-<label for="text">Test Text:</label>
-<textarea id="text" placeholder="Enter text to match against..." rows="6"></textarea>
-<div class="output" id="result">Matches will appear here.</div>
-<script>
-    function highlightMatches(text, regex) {
-      return text.replace(regex, match => `<span class="match">${match}</span>`);
+
+  <header>
+    <a href="../index.html" class="brand">
+      <svg width="36" height="36" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <polygon points="32,20 54,28 32,36 10,28" stroke="#f8fafc" stroke-width="4" stroke-linejoin="round"/>
+        <polyline points="10,38 32,46 54,38" stroke="#f8fafc" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+        <polyline points="10,48 32,56 54,48" stroke="#f8fafc" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+        <rect x="50" y="10" width="10" height="10" rx="2" fill="#00f2fe" />
+      </svg>
+      Layerbit
+    </a>
+  </header>
+
+  <main class="hero">
+    <h1>Regex Debugging Terminal</h1>
+    <p>Test patterns, extract groups, and validate expressions with real-time telemetry.</p>
+  </main>
+
+  <div class="app-container">
+    
+    <div class="pane" id="mainPane">
+      <div class="pane-header">
+        <div class="pane-title"><i data-lucide="regex"></i> Expression Editor</div>
+      </div>
+
+      <div class="regex-control">
+        <div class="regex-wrapper">
+          <div class="regex-delimiter">/</div>
+          <input type="text" id="regexInput" class="regex-input" placeholder="\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b" autocomplete="off" spellcheck="false" />
+          <div class="regex-delimiter">/</div>
+        </div>
+        <div class="flags-container">
+          <button class="flag-btn active" data-flag="g" title="Global (Match all occurrences)">g</button>
+          <button class="flag-btn" data-flag="i" title="Case Insensitive">i</button>
+          <button class="flag-btn" data-flag="m" title="Multiline">m</button>
+        </div>
+      </div>
+
+      <div id="errorText" class="error-text"><i data-lucide="triangle-alert"></i> <span id="errorMsg">Invalid regular expression</span></div>
+
+      <div class="telemetry-bar">
+        <span>Test String</span>
+        <span class="match-count" id="matchCount"><i data-lucide="check-circle" style="width:14px;"></i> 0 Matches</span>
+      </div>
+
+      <div class="editor-wrapper">
+        <div id="testBackdrop" class="test-backdrop">Paste your test data here to see match highlights...</div>
+        <textarea id="testInput" class="test-input" spellcheck="false"></textarea>
+      </div>
+    </div>
+
+    <div class="breakdown-pane" id="breakdownPane">
+      <div class="breakdown-title"><i data-lucide="crosshair"></i> Forensics Extraction</div>
+      <div class="matches-grid" id="matchesGrid">
+        </div>
+    </div>
+
+  </div>
+
+  <div class="info-panel">
+    <h2><i data-lucide="terminal-square"></i> Regex Engine Specifications</h2>
+    <p>Layerbit's Debugging Terminal runs a high-performance JavaScript RegExp engine locally in your DOM. It provides instant visual feedback without sending sensitive log data or proprietary algorithms over a network.</p>
+    <ul>
+      <li><i data-lucide="check"></i> <strong>Real-Time Highlighting:</strong> The dual-layer editor safely colorizes matches as you type without breaking textarea functionality.</li>
+      <li><i data-lucide="check"></i> <strong>Forensics Extraction:</strong> Captures and isolates exact match data, including index positioning, allowing you to debug complex payloads instantly.</li>
+      <li><i data-lucide="check"></i> <strong>Hardware Toggles:</strong> Enable Global (<code>g</code>), Case Insensitive (<code>i</code>), and Multiline (<code>m</code>) flags with physical UI buttons rather than manual string injection.</li>
+    </ul>
+  </div>
+
+  <a href="../index.html" class="fab" aria-label="Command Center" title="Command Center">
+    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="filter: drop-shadow(0 0 8px rgba(56, 189, 248, 0.5));">
+      <path d="M12 2L2 7l10 5 10-5-10-5z" stroke="#38bdf8" stroke-width="2" stroke-linejoin="round" fill="rgba(56,189,248,0.2)"/>
+      <path d="M2 17l10 5 10-5M2 12l10 5 10-5" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </a>
+
+  <footer>
+    &copy; 2025 - 2026 <strong>Layerbit Technologies</strong>. All rights reserved.
+  </footer>
+
+  <script>
+    lucide.createIcons();
+
+    const regexInput = document.getElementById("regexInput");
+    const testInput = document.getElementById("testInput");
+    const testBackdrop = document.getElementById("testBackdrop");
+    const mainPane = document.getElementById("mainPane");
+    const errorText = document.getElementById("errorText");
+    const errorMsg = document.getElementById("errorMsg");
+    const matchCount = document.getElementById("matchCount");
+    const breakdownPane = document.getElementById("breakdownPane");
+    const matchesGrid = document.getElementById("matchesGrid");
+
+    let currentFlags = ['g'];
+
+    // Flag Toggle Logic
+    document.querySelectorAll('.flag-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const flag = e.target.getAttribute('data-flag');
+        if (currentFlags.includes(flag)) {
+          currentFlags = currentFlags.filter(f => f !== flag);
+          e.target.classList.remove('active');
+        } else {
+          currentFlags.push(flag);
+          e.target.classList.add('active');
+        }
+        processRegex();
+      });
+    });
+
+    // Escape HTML to prevent injection in the highlighter
+    function escapeHTML(str) {
+      return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
     }
 
-    function updateResult() {
-      const regexInput = document.getElementById('regex').value;
-      const testText = document.getElementById('text').value;
-      const result = document.getElementById('result');
+    function processRegex() {
+      const pattern = regexInput.value;
+      const text = testInput.value;
+
+      // Reset state
+      mainPane.classList.remove("error");
+      errorText.classList.remove("active");
+      
+      if (!text) {
+        testBackdrop.innerHTML = "Paste your test data here to see match highlights...";
+        matchCount.innerHTML = `<i data-lucide="check-circle" style="width:14px;"></i> 0 Matches`;
+        breakdownPane.classList.remove("active");
+        lucide.createIcons();
+        return;
+      }
+
+      if (!pattern) {
+        testBackdrop.innerHTML = escapeHTML(text);
+        matchCount.innerHTML = `<i data-lucide="check-circle" style="width:14px;"></i> 0 Matches`;
+        breakdownPane.classList.remove("active");
+        lucide.createIcons();
+        return;
+      }
 
       try {
-        const regex = new RegExp(regexInput, 'g');
-        const highlighted = highlightMatches(testText, regex);
-        result.innerHTML = highlighted || 'No matches.';
-      } catch (e) {
-        result.textContent = "Invalid regex: " + e.message;
+        const flagsStr = currentFlags.join('');
+        const regex = new RegExp(pattern, flagsStr);
+        
+        let match;
+        let count = 0;
+        let breakdownHTML = '';
+        
+        // Ensure global flag is present if we are doing matchAll replacement trick
+        // If 'g' is off, we only highlight the first match.
+        const isGlobal = currentFlags.includes('g');
+        
+        // Highlight logic
+        let highlightedText = escapeHTML(text);
+        
+        if(isGlobal) {
+            highlightedText = text.replace(regex, (m) => `<span class="hl-match">${escapeHTML(m)}</span>`);
+        } else {
+            // Re-apply RegExp without global to find first match
+            const singleMatch = text.match(regex);
+            if(singleMatch) {
+               const idx = singleMatch.index;
+               const len = singleMatch[0].length;
+               const before = escapeHTML(text.substring(0, idx));
+               const theMatch = `<span class="hl-match">${escapeHTML(singleMatch[0])}</span>`;
+               const after = escapeHTML(text.substring(idx + len));
+               highlightedText = before + theMatch + after;
+            } else {
+               highlightedText = escapeHTML(text);
+            }
+        }
+        
+        // Render Backdrop
+        testBackdrop.innerHTML = highlightedText;
+
+        // Forensics Logic
+        const tempRegex = new RegExp(pattern, isGlobal ? flagsStr : flagsStr + 'g');
+        while ((match = tempRegex.exec(text)) !== null) {
+          count++;
+          breakdownHTML += `
+            <div class="match-item">
+              <div class="match-val">${escapeHTML(match[0])}</div>
+              <div class="match-meta">Match ${count} — Index Position: [${match.index} - ${match.index + match[0].length}]</div>
+            </div>
+          `;
+          if (!isGlobal) break; // If not global, only extract first match
+        }
+
+        // Update UI
+        matchCount.innerHTML = `<i data-lucide="check-circle" style="width:14px;"></i> ${count} Matches`;
+        
+        if (count > 0) {
+          matchesGrid.innerHTML = breakdownHTML;
+          breakdownPane.classList.add("active");
+        } else {
+          breakdownPane.classList.remove("active");
+        }
+
+        lucide.createIcons();
+
+      } catch (err) {
+        // Syntax Error
+        mainPane.classList.add("error");
+        errorMsg.innerText = err.message;
+        errorText.classList.add("active");
+        testBackdrop.innerHTML = escapeHTML(text); // Remove highlights
+        matchCount.innerHTML = `<i data-lucide="x-circle" style="width:14px; color:var(--error-color);"></i> Error`;
+        breakdownPane.classList.remove("active");
+        lucide.createIcons();
       }
     }
 
-    document.getElementById('regex').addEventListener('input', updateResult);
-    document.getElementById('text').addEventListener('input', updateResult);
-</script>
-<div style="display: flex; justify-content: center; margin-top: 40px;">
-<details style="max-width: 700px; background: rgba(255,255,255,0.1); padding: 20px; border-radius: 10px;">
-<summary style="cursor: pointer; font-weight: bold; font-size: 1.1em;">
-    🔎 About this Tool (Click to Expand)
-  </summary>
-<div style="margin-top: 15px; text-align: left;">
-<h3 style="margin-top: 10px; color: #fff;">
-      🔍 What is a Regex Tester?
-    </h3>
-<p>
-      A Regex Tester lets you validate and preview your regular expressions in real-time. It highlights matches to help developers debug patterns quickly.
-    </p>
-<h3 style="margin-top: 20px; color: #fff;">
-      💡 Common Use Cases
-    </h3>
-<ul style="list-style: none; padding-left: 0;">
-<li>✅ Validate email or phone number formats</li>
-<li>✅ Extract patterns from log files or strings</li>
-<li>✅ Test complex match conditions on-the-fly</li>
-</ul>
-<h3 style="margin-top: 20px; color: #fff;">
-      🚀 How to Use
-    </h3>
-<ol style="list-style: none; padding-left: 0;">
-<li>1️⃣ Enter your regex pattern in the top field</li>
-<li>2️⃣ Type or paste your text below</li>
-<li>3️⃣ Matches will be highlighted as you type</li>
-</ol>
-<p style="margin-top: 20px;">
-      Built with 💙 by Layerbit. All inputs are processed in your browser.
-    </p>
-</div>
-</details>
-</div>
-<a class="home-fab" href="../index.html" title="Home">
-<svg viewbox="0 0 24 24">
-<path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"></path>
-</svg>
-</a>
+    // Sync scroll
+    testInput.addEventListener('scroll', function() {
+      testBackdrop.scrollTop = this.scrollTop;
+    });
+
+    // Listeners
+    regexInput.addEventListener('input', processRegex);
+    testInput.addEventListener('input', processRegex);
+
+  </script>
 </body>
 </html>

@@ -1,257 +1,509 @@
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1" name="viewport"/>
-<title>JSON Table Viewer - Layerbit</title>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&amp;display=swap" rel="stylesheet"/>
-<style>
-    ul, ol {
-      list-style: none;
-      padding-left: 0;
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Advanced JSON to Table Viewer by Layerbit. Flatten nested JSON arrays, filter data in real-time, and export directly to CSV." />
+  <title>JSON Data Grid Viewer - Layerbit</title>
+  
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6072772587431629" crossorigin="anonymous"></script>
+  
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet" />
+  <link href="../layerbit-logo.png" rel="icon" type="image/x-icon" />
+  
+  <style>
+    /* Ultra-Premium Dark Theme Variables */
+    :root {
+      --bg-base: #0a0c10;
+      --bg-gradient: radial-gradient(circle at 50% 0%, #1a1e2d 0%, #0a0c10 70%);
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --card-bg: rgba(20, 22, 30, 0.6);
+      --card-border: rgba(255, 255, 255, 0.08);
+      --card-hover-border: rgba(56, 189, 248, 0.4);
+      --accent-main: #38bdf8;
+      --accent-glow: rgba(56, 189, 248, 0.5);
+      --neon-gradient: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%);
+      --error-bg: rgba(239, 68, 68, 0.1);
+      --error-border: #ef4444;
     }
-    ul li::before, ol li::before {
-      content: "";
-    }
-    .home-fab {
-      position: fixed;
-      bottom: 20px;
-      left: 20px;
-      width: 44px;
-      height: 44px;
-      background-color: white;
-      border-radius: 12px;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-      text-decoration: none;
-      z-index: 1000;
-    }
-    .home-fab svg {
-      width: 20px;
-      height: 20px;
-      fill: #333;
-    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
 
     body {
       font-family: 'Space Grotesk', sans-serif;
-      background: linear-gradient(135deg, #1f1c2c, #928dab);
-      color: white;
-      padding: 30px 20px;
-      max-width: 1000px;
-      margin: auto;
-      text-align: center;
+      color: var(--text-main);
+      background-color: var(--bg-base);
+      background-image: var(--bg-gradient);
+      min-height: 100vh;
+      padding: 20px 40px;
+      position: relative;
+      overflow-x: hidden;
+      display: flex;
+      flex-direction: column;
     }
 
-    h1 {
-      font-size: 2.4em;
-      margin-bottom: 15px;
+    /* Animated Starry Background */
+    @keyframes drift {
+      from { background-position: 0 0, 20px 20px; }
+      to { background-position: -60px -60px, -40px -40px; }
+    }
+    body::before {
+      content: ''; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+      background-image: radial-gradient(rgba(255,255,255,0.08) 1px, transparent 1px), radial-gradient(rgba(255,255,255,0.05) 1px, transparent 1px);
+      background-size: 60px 60px, 40px 40px; z-index: -1; animation: drift 60s linear infinite; pointer-events: none;
     }
 
-    textarea {
+    header { display: flex; justify-content: flex-start; align-items: center; max-width: 1400px; width: 100%; margin: 0 auto 40px auto; }
+    .brand { font-size: 1.6em; font-weight: 700; display: flex; align-items: center; gap: 12px; text-decoration: none; color: #fff; }
+    .brand svg { filter: drop-shadow(0 0 10px var(--accent-glow)); }
+
+    .hero { text-align: center; margin-bottom: 40px; animation: fadeIn 1s ease-out; }
+    .hero h1 { font-size: 2.8em; font-weight: 700; margin-bottom: 10px; }
+    .hero p { color: var(--text-muted); font-size: 1.1em; }
+
+    /* Main Container */
+    .app-container {
+      max-width: 1400px;
       width: 100%;
-      height: 180px;
-      padding: 15px;
-      font-family: monospace;
-      font-size: 1em;
-      border-radius: 8px;
-      border: none;
-      resize: vertical;
-      margin-bottom: 15px;
-      box-sizing: border-box;  /* Prevent overflow from padding */
+      margin: 0 auto 60px auto;
+      display: flex;
+      flex-direction: column;
+      gap: 30px;
+      animation: fadeSlideUp 1s ease-out forwards;
     }
 
+    /* Input Pane */
+    .pane {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      backdrop-filter: blur(16px);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    }
+
+    .pane-header {
+      background: rgba(0,0,0,0.3);
+      padding: 12px 20px;
+      border-bottom: 1px solid var(--card-border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-weight: 600;
+      color: #fff;
+    }
+
+    .pane-title { display: flex; align-items: center; gap: 10px; }
+    .pane-title i { color: var(--accent-main); width: 18px; }
+
+    .btn-group { display: flex; gap: 10px; }
+    
     .btn {
-      background: white;
-      color: #333;
-      font-weight: bold;
-      border: none;
-      padding: 12px 25px;
-      border-radius: 8px;
-      cursor: pointer;
-      margin-bottom: 20px;
+      background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #fff;
+      padding: 8px 16px; border-radius: 8px; font-family: 'Space Grotesk', sans-serif; font-weight: 600;
+      font-size: 0.9em; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: 0.2s;
+    }
+    .btn:hover { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.2); }
+    
+    .btn-primary { background: var(--neon-gradient); color: #000; border: none; box-shadow: 0 0 10px var(--accent-glow); }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 20px var(--accent-glow); background: var(--neon-gradient); }
+
+    .editor {
+      width: 100%; height: 200px; background: transparent; border: none; padding: 20px;
+      color: var(--text-main); font-family: 'Fira Code', monospace; font-size: 14px;
+      line-height: 1.6; resize: vertical; outline: none;
+    }
+    .editor::placeholder { color: rgba(255,255,255,0.2); }
+
+    /* Header Summary */
+    .header-summary {
+      display: none;
+      background: rgba(56, 189, 248, 0.05);
+      border-bottom: 1px solid var(--card-border);
+      padding: 12px 20px;
+      font-size: 0.9em;
+      color: var(--text-muted);
+    }
+    .header-summary strong { color: var(--accent-main); }
+
+    /* Error Text */
+    .error-banner {
+      display: none; background: var(--error-bg); border-bottom: 1px solid var(--error-border);
+      color: #fff; padding: 12px 20px; font-size: 0.9em; align-items: center; gap: 10px;
+    }
+    .error-banner.active { display: flex; }
+    .error-banner i { color: var(--error-border); width: 18px; }
+
+    /* Data Grid (Table Pane) */
+    .grid-toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 15px 20px;
+      background: rgba(0,0,0,0.2);
+      border-bottom: 1px solid var(--card-border);
+      gap: 15px;
     }
 
-    .btn:hover {
-      background: #eee;
+    .search-wrapper {
+      position: relative;
+      flex-grow: 1;
+      max-width: 400px;
+    }
+    .search-wrapper i {
+      position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
+      color: var(--text-muted); width: 16px;
+    }
+    .search-input {
+      width: 100%; background: rgba(0,0,0,0.4); border: 1px solid var(--card-border);
+      color: #fff; padding: 8px 12px 8px 36px; border-radius: 8px;
+      font-family: 'Space Grotesk', sans-serif; outline: none; transition: 0.3s;
+    }
+    .search-input:focus { border-color: var(--accent-main); }
+
+    .grid-meta { color: var(--text-muted); font-size: 0.9em; font-weight: 500; }
+
+    .table-container {
+      overflow: auto;
+      max-height: 500px;
+      width: 100%;
     }
 
     table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 20px;
-      overflow-x: auto;  /* Ensure the table doesn't overflow horizontally */
-      display: block;  /* Make the table scrollable horizontally on small screens */
-    }
-
-    th, td {
-      border: 1px solid rgba(255, 255, 255, 0.3);
-      padding: 8px 12px;
-      text-align: left;
+      width: 100%; border-collapse: collapse; text-align: left;
+      font-family: 'Fira Code', monospace; font-size: 13px;
     }
 
     th {
-      background-color: rgba(255, 255, 255, 0.1);
+      background: rgba(10, 12, 16, 0.95); backdrop-filter: blur(5px);
+      color: var(--accent-main); padding: 12px 15px; font-weight: 600;
+      position: sticky; top: 0; z-index: 10;
+      border-bottom: 2px solid var(--card-border);
+      white-space: nowrap;
     }
 
-    .back {
-      position: fixed;
-      bottom: 20px;
-      left: 20px;
-      background: white;
-      color: #333;
-      padding: 10px 18px;
-      border-radius: 8px;
-      text-decoration: none;
-      font-weight: bold;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    td {
+      padding: 10px 15px; border-bottom: 1px solid rgba(255,255,255,0.05);
+      color: var(--text-main); word-break: break-word; max-width: 300px;
     }
 
-    #headerSummary {
-      font-size: 1em;
-      opacity: 0.85;
-      margin-bottom: 20px;
+    tbody tr { transition: background 0.2s; }
+    tbody tr:hover { background: rgba(255,255,255,0.03); }
+
+    .empty-state {
+      padding: 60px 20px; text-align: center; color: var(--text-muted);
+      display: flex; flex-direction: column; align-items: center; gap: 15px;
     }
+    .empty-state i { width: 48px; height: 48px; opacity: 0.5; }
 
-    /* Media Queries for Responsiveness */
-    @media (max-width: 768px) {
-      h1 {
-        font-size: 1.8em;
-      }
+    /* Info Panel */
+    .info-panel { max-width: 1400px; margin: 0 auto 60px auto; background: rgba(255,255,255,0.02); border: 1px solid var(--card-border); padding: 40px; border-radius: 20px; }
+    .info-panel h2 { color: #fff; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
+    .info-panel h2 i { color: var(--accent-main); }
+    .info-panel p { color: var(--text-muted); margin-bottom: 15px; line-height: 1.7; }
+    .info-panel ul { list-style: none; margin-bottom: 20px; }
+    .info-panel li { color: var(--text-muted); margin-bottom: 10px; display: flex; align-items: center; gap: 10px; }
+    .info-panel li i { color: #22c55e; width: 16px; }
 
-      textarea {
-        height: 130px;  /* Reduced height for mobile */
-        font-size: 0.9em;
-        padding: 10px;  /* Reduced padding */
-        margin-right: 10px;  /* Add some right margin to avoid touching the screen edge */
-      }
+    /* Command Center FAB */
+    .fab { position: fixed; bottom: 30px; left: 30px; width: 60px; height: 60px; border-radius: 50%; backdrop-filter: blur(15px); display: flex; align-items: center; justify-content: center; z-index: 9998; background: rgba(20, 22, 30, 0.7); border: 1px solid rgba(255, 255, 255, 0.1); box-shadow: 0 8px 25px rgba(0,0,0,0.5); transition: all 0.4s; text-decoration: none; }
+    .fab:hover { transform: scale(1.1); border-color: var(--accent-main); background: rgba(30, 34, 48, 0.9); box-shadow: 0 12px 30px rgba(0,0,0,0.6), 0 0 25px rgba(56, 189, 248, 0.3); }
 
-      .btn {
-        padding: 10px 20px;
-        font-size: 0.9em;
-      }
+    footer { text-align: center; padding: 40px 0; border-top: 1px solid var(--card-border); color: var(--text-muted); font-size: 0.95em; margin-top: auto; }
 
-      .back {
-        font-size: 0.9em;
-        padding: 8px 16px;
-      }
-
-      body {
-        padding: 20px;
-        max-width: 100%;  /* Full width for small screens */
-      }
-
-      .sql-container {
-        padding: 10px; /* Smaller padding on mobile */
-      }
-
-      table {
-        display: block;  /* Ensure the table is scrollable horizontally */
-        overflow-x: auto; /* Add horizontal scrolling on small screens */
-      }
-    }
-</style>
-<meta content="Free browser-based tool by Layerbit. Fast, simple, and privacy-respecting." name="description"/></head>
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(-15px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes fadeSlideUp { from { opacity: 0; transform: translateY(40px); } to { opacity: 1; transform: translateY(0); } }
+  </style>
+</head>
 <body>
-<p style="max-width:800px;margin:20px auto;font-size:1em;text-align:center;">Transform JSON arrays into readable tables for better understanding and presentation.</p>
-<h1>JSON Table Viewer</h1>
-<p>Paste a JSON array or a JSON object with a "body" array and optional "header".</p>
-<textarea id="jsonInput" placeholder="Paste your JSON here..."></textarea>
-<br/>
-<button class="btn" onclick="convertToTable()">Convert</button>
-<button class="btn" onclick="exportToExcel()">Export to Excel</button>
-<div id="headerSummary"></div>
-<div id="tableContainer"></div>
-<script>
-    function convertToTable() {
-      const input = document.getElementById("jsonInput").value;
-      let parsed;
-      let body = [];
-      let header = null;
 
-      try {
-        parsed = JSON.parse(input);
+  <header>
+    <a href="../index.html" class="brand">
+      <svg width="36" height="36" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <polygon points="32,20 54,28 32,36 10,28" stroke="#f8fafc" stroke-width="4" stroke-linejoin="round"/>
+        <polyline points="10,38 32,46 54,38" stroke="#f8fafc" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+        <polyline points="10,48 32,56 54,48" stroke="#f8fafc" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+        <rect x="50" y="10" width="10" height="10" rx="2" fill="#00f2fe" />
+      </svg>
+      Layerbit
+    </a>
+  </header>
 
-        if (Array.isArray(parsed)) {
-          body = parsed;
-        } else if (parsed.body && Array.isArray(parsed.body)) {
-          body = parsed.body;
-          header = parsed.header || null;
+  <main class="hero">
+    <h1>JSON Data Grid Viewer</h1>
+    <p>Convert complex JSON arrays into interactive, searchable, and exportable data tables.</p>
+  </main>
+
+  <div class="app-container">
+    
+    <div class="pane">
+      <div class="pane-header">
+        <div class="pane-title"><i data-lucide="braces"></i> JSON Payload Input</div>
+        <div class="btn-group">
+          <button class="btn" onclick="clearInput()"><i data-lucide="trash-2"></i> Clear</button>
+          <button class="btn btn-primary" onclick="processJSON()"><i data-lucide="table"></i> Render Grid</button>
+        </div>
+      </div>
+      <div class="error-banner" id="errorBanner">
+        <i data-lucide="triangle-alert"></i>
+        <span id="errorText">Invalid JSON format. Please ensure it is an Array or contains a 'body' array.</span>
+      </div>
+      <div class="header-summary" id="headerSummary"></div>
+      <textarea id="jsonInput" class="editor" placeholder='Paste a JSON Array here...&#10;[&#10;  { "id": 1, "name": "Alice", "role": "Admin" },&#10;  { "id": 2, "name": "Bob", "role": "User" }&#10;]' spellcheck="false"></textarea>
+    </div>
+
+    <div class="pane">
+      <div class="grid-toolbar">
+        <div class="search-wrapper">
+          <i data-lucide="search"></i>
+          <input type="text" id="searchInput" class="search-input" placeholder="Filter rows in real-time..." onkeyup="filterTable()" disabled>
+        </div>
+        <div style="display: flex; align-items: center; gap: 15px;">
+          <span class="grid-meta" id="rowCount">0 Rows</span>
+          <button class="btn" id="btnExport" onclick="exportCSV()" disabled><i data-lucide="download"></i> Export CSV</button>
+        </div>
+      </div>
+      
+      <div class="table-container">
+        <table id="dataTable">
+          <thead id="tableHead"></thead>
+          <tbody id="tableBody"></tbody>
+        </table>
+        <div id="emptyState" class="empty-state">
+          <i data-lucide="table-properties"></i>
+          <p>Your rendered data grid will appear here.</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="info-panel">
+    <h2><i data-lucide="cpu"></i> Smart Data Architecture</h2>
+    <p>Standard JSON converters fail when encountering nested objects. Layerbit's Grid Engine automatically flattens multi-level objects (e.g., <code>user.address.city</code>) and securely stringifies internal arrays, ensuring zero data loss during conversion.</p>
+    <ul>
+      <li><i data-lucide="check"></i> <strong>Intelligent Parsing:</strong> Accepts direct JSON Arrays or structured objects containing a <code>body</code> array and an optional <code>header</code>.</li>
+      <li><i data-lucide="check"></i> <strong>Client-Side Filtering:</strong> Search through thousands of rows instantly without any server latency or database queries.</li>
+      <li><i data-lucide="check"></i> <strong>Pristine Export:</strong> Generates cleanly escaped CSV files ready for direct import into Excel, Google Sheets, or BI tools.</li>
+    </ul>
+  </div>
+
+  <a href="../index.html" class="fab" aria-label="Command Center" title="Command Center">
+    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="filter: drop-shadow(0 0 8px rgba(56, 189, 248, 0.5));">
+      <path d="M12 2L2 7l10 5 10-5-10-5z" stroke="#38bdf8" stroke-width="2" stroke-linejoin="round" fill="rgba(56,189,248,0.2)"/>
+      <path d="M2 17l10 5 10-5M2 12l10 5 10-5" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </a>
+
+  <footer>
+    &copy; 2025 - 2026 <strong>Layerbit Technologies</strong>. All rights reserved.
+  </footer>
+
+  <script>
+    lucide.createIcons();
+
+    const jsonInput = document.getElementById("jsonInput");
+    const errorBanner = document.getElementById("errorBanner");
+    const errorText = document.getElementById("errorText");
+    const headerSummary = document.getElementById("headerSummary");
+    const tableHead = document.getElementById("tableHead");
+    const tableBody = document.getElementById("tableBody");
+    const emptyState = document.getElementById("emptyState");
+    const searchInput = document.getElementById("searchInput");
+    const btnExport = document.getElementById("btnExport");
+    const rowCountMeta = document.getElementById("rowCount");
+
+    let currentData = [];
+    let currentHeaders = [];
+
+    function clearInput() {
+      jsonInput.value = "";
+      errorBanner.classList.remove("active");
+      headerSummary.style.display = "none";
+      tableHead.innerHTML = "";
+      tableBody.innerHTML = "";
+      emptyState.style.display = "flex";
+      searchInput.value = "";
+      searchInput.disabled = true;
+      btnExport.disabled = true;
+      rowCountMeta.innerText = "0 Rows";
+      currentData = [];
+    }
+
+    // Helper: Flatten nested JSON objects
+    function flattenObject(ob) {
+      let toReturn = {};
+      for (let i in ob) {
+        if (!ob.hasOwnProperty(i)) continue;
+
+        if (typeof ob[i] === 'object' && ob[i] !== null && !Array.isArray(ob[i])) {
+          let flatObject = flattenObject(ob[i]);
+          for (let x in flatObject) {
+            if (!flatObject.hasOwnProperty(x)) continue;
+            toReturn[i + '.' + x] = flatObject[x];
+          }
+        } else if (Array.isArray(ob[i])) {
+          toReturn[i] = JSON.stringify(ob[i]); // Stringify arrays for clean rendering
         } else {
-          throw new Error("Invalid format: must be a JSON array or an object with a 'body' array.");
+          toReturn[i] = ob[i];
         }
-      } catch (e) {
-        document.getElementById("tableContainer").innerHTML = "<p style='color:red;'>Invalid JSON input.</p>";
-        document.getElementById("headerSummary").innerHTML = "";
+      }
+      return toReturn;
+    }
+
+    function processJSON() {
+      const inputVal = jsonInput.value.trim();
+      errorBanner.classList.remove("active");
+      headerSummary.style.display = "none";
+      tableHead.innerHTML = "";
+      tableBody.innerHTML = "";
+      currentData = [];
+
+      if (!inputVal) {
+        showError("Please paste JSON data to render.");
         return;
       }
 
-      // Display header info
-      if (header && typeof header === "object") {
-        const summary = Object.entries(header).map(([k, v]) => `<strong>${k}</strong>: ${v}`).join(" &nbsp;|&nbsp; ");
-        document.getElementById("headerSummary").innerHTML = `<p>${summary}</p>`;
-      } else {
-        document.getElementById("headerSummary").innerHTML = "";
+      let parsed;
+      let bodyData = [];
+      let headerData = null;
+
+      try {
+        parsed = JSON.parse(inputVal);
+
+        if (Array.isArray(parsed)) {
+          bodyData = parsed;
+        } else if (parsed.body && Array.isArray(parsed.body)) {
+          bodyData = parsed.body;
+          headerData = parsed.header || null;
+        } else {
+          throw new Error("Invalid format. Must be a JSON array or an object with a 'body' array.");
+        }
+      } catch (e) {
+        showError(e.message);
+        return;
       }
 
-      // Create table
-      const headers = Array.from(new Set(body.flatMap(row => Object.keys(row))));
-      let table = "<table><thead><tr>" + headers.map(h => `<th>${h}</th>`).join("") + "</tr></thead><tbody>";
+      if (bodyData.length === 0) {
+        showError("The JSON array is empty.");
+        return;
+      }
 
-      body.forEach(row => {
-        table += "<tr>" + headers.map(h => `<td>${row[h] !== undefined ? row[h] : ""}</td>`).join("") + "</tr>";
+      // Render Header Summary if exists
+      if (headerData && typeof headerData === "object") {
+        const summary = Object.entries(headerData)
+          .map(([k, v]) => `<strong>${escapeHTML(String(k))}</strong>: ${escapeHTML(String(v))}`)
+          .join(" &nbsp;|&nbsp; ");
+        headerSummary.innerHTML = summary;
+        headerSummary.style.display = "block";
+      }
+
+      // Flatten objects and determine all unique headers
+      const headersSet = new Set();
+      bodyData.forEach(row => {
+        const flatRow = flattenObject(row);
+        currentData.push(flatRow);
+        Object.keys(flatRow).forEach(k => headersSet.add(k));
       });
 
-      table += "</tbody></table>";
-      document.getElementById("tableContainer").innerHTML = table;
+      currentHeaders = Array.from(headersSet);
+      renderTable(currentHeaders, currentData);
     }
-  
-    function exportToExcel() {
-      const table = document.querySelector("table");
-      if (!table) return alert("Convert your JSON to table first.");
 
-      let csv = [];
-      const rows = table.querySelectorAll("tr");
-      for (const row of rows) {
-        const cells = row.querySelectorAll("th, td");
-        const rowText = Array.from(cells).map(cell => `"${cell.textContent.replace(/"/g, '""')}"`).join(",");
-        csv.push(rowText);
+    function renderTable(headers, data) {
+      emptyState.style.display = "none";
+      searchInput.disabled = false;
+      btnExport.disabled = false;
+      searchInput.value = ""; // Reset search on new render
+
+      // Build Thead
+      let theadHTML = "<tr>";
+      headers.forEach(h => {
+        theadHTML += `<th>${escapeHTML(h)}</th>`;
+      });
+      theadHTML += "</tr>";
+      tableHead.innerHTML = theadHTML;
+
+      // Build Tbody
+      renderRows(data);
+    }
+
+    function renderRows(dataSubset) {
+      let tbodyHTML = "";
+      dataSubset.forEach(row => {
+        tbodyHTML += "<tr>";
+        currentHeaders.forEach(h => {
+          let cellValue = row[h];
+          if (cellValue === null || cellValue === undefined) cellValue = "";
+          tbodyHTML += `<td>${escapeHTML(String(cellValue))}</td>`;
+        });
+        tbodyHTML += "</tr>";
+      });
+      tableBody.innerHTML = tbodyHTML;
+      rowCountMeta.innerText = `${dataSubset.length} Rows`;
+    }
+
+    function filterTable() {
+      const query = searchInput.value.toLowerCase();
+      if (!query) {
+        renderRows(currentData);
+        return;
       }
 
-      const csvString = csv.join("\n");
-      const blob = new Blob([csvString], { type: "text/csv;charset=utf-8;" });
+      const filtered = currentData.filter(row => {
+        return Object.values(row).some(val => 
+          String(val).toLowerCase().includes(query)
+        );
+      });
+      renderRows(filtered);
+    }
+
+    function exportCSV() {
+      if (currentData.length === 0) return;
+
+      let csvContent = "";
+      
+      // Headers
+      const headerRow = currentHeaders.map(h => `"${String(h).replace(/"/g, '""')}"`).join(",");
+      csvContent += headerRow + "\n";
+
+      // Currently visible rows (respects filter)
+      const visibleRows = Array.from(tableBody.querySelectorAll("tr"));
+      
+      visibleRows.forEach(row => {
+        const cells = Array.from(row.querySelectorAll("td"));
+        const rowText = cells.map(cell => {
+          let text = cell.innerText;
+          // Escape quotes and wrap in quotes for CSV safety
+          return `"${text.replace(/"/g, '""')}"`;
+        }).join(",");
+        csvContent += rowText + "\n";
+      });
+
+      const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
       const link = document.createElement("a");
       link.href = URL.createObjectURL(blob);
-      link.download = "json_table_export.csv";
+      link.download = `layerbit_data_export_${Date.now()}.csv`;
       link.click();
     }
-</script>
-<a class="home-fab" href="../index.html" title="Home">
-<svg viewbox="0 0 24 24">
-<path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"></path>
-</svg>
-</a>
-<details style="max-width: 700px; margin: 60px auto 20px auto; background: rgba(255,255,255,0.1); padding: 20px; border-radius: 10px;">
-<summary style="cursor: pointer; font-weight: bold; font-size: 1.1em;">🔎 About this Tool (Click to Expand)</summary>
-<div style="margin-top: 15px; text-align: left;">
-<h3 style="margin-top: 10px; color: #fff;">📌 What is JSON Table Viewer?</h3>
-<p>This tool converts JSON arrays or JSON objects (with a <code>body</code> and optional <code>header</code>) into readable and exportable HTML tables.</p>
-<h3 style="margin-top: 20px; color: #fff;">💡 Key Uses</h3>
-<ul>
-<li>✅ Visualize JSON array data in table format</li>
-<li>✅ Quickly export tables to CSV/Excel</li>
-<li>✅ Suitable for data review, reports, and sharing</li>
-</ul>
-<h3 style="margin-top: 20px; color: #fff;">🚀 How to Use</h3>
-<ol>
-<li>1️⃣ Paste your JSON array or object with a <code>body</code> array</li>
-<li>2️⃣ Click “Convert” to render the table</li>
-<li>3️⃣ Use “Export to Excel” for download</li>
-</ol>
-<p style="margin-top: 20px;">This tool runs entirely on your browser. No data is sent or saved externally. Built for privacy and performance by Layerbit.</p>
-</div>
-</details>
+
+    function showError(msg) {
+      errorText.innerText = msg;
+      errorBanner.classList.add("active");
+      emptyState.style.display = "flex";
+      searchInput.disabled = true;
+      btnExport.disabled = true;
+    }
+
+    function escapeHTML(str) {
+      return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    }
+  </script>
 </body>
 </html>

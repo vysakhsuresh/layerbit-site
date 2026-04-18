@@ -1,281 +1,488 @@
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1" name="viewport"/>
-<title>Base64 Encode / Decode - Layerbit</title>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&amp;display=swap" rel="stylesheet"/>
-<style>
-    ul, ol {
-      list-style: none;
-      padding-left: 0;
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Real-time Base64 Encoder and Decoder for text and images. Secure, client-side data conversion by Layerbit." />
+  <title>Base64 Cipher Engine - Layerbit</title>
+  
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6072772587431629" crossorigin="anonymous"></script>
+  
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet" />
+  <link href="../layerbit-logo.png" rel="icon" type="image/x-icon" />
+  
+  <style>
+    /* Ultra-Premium Dark Theme Variables */
+    :root {
+      --bg-base: #0a0c10;
+      --bg-gradient: radial-gradient(circle at 50% 0%, #1a1e2d 0%, #0a0c10 70%);
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --card-bg: rgba(20, 22, 30, 0.6);
+      --card-border: rgba(255, 255, 255, 0.08);
+      --card-hover-border: rgba(56, 189, 248, 0.4);
+      --accent-main: #38bdf8;
+      --accent-glow: rgba(56, 189, 248, 0.5);
+      --neon-gradient: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%);
+      --error-bg: rgba(239, 68, 68, 0.1);
+      --error-border: #ef4444;
     }
-    ul li::before, ol li::before {
-      content: "";
-    }
-    .home-fab {
-      position: fixed;
-      bottom: 20px;
-      left: 20px;
-      width: 44px;
-      height: 44px;
-      background-color: white;
-      border-radius: 12px;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-      text-decoration: none;
-      z-index: 1000;
-    }
-    .home-fab svg {
-      width: 20px;
-      height: 20px;
-      fill: #333;
-    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
 
     body {
       font-family: 'Space Grotesk', sans-serif;
-      background: linear-gradient(135deg, #1f1c2c, #928dab);
-      color: white;
-      padding: 30px 20px;
-      max-width: 1000px;
-      margin: auto;
-      text-align: center;
+      color: var(--text-main);
+      background-color: var(--bg-base);
+      background-image: var(--bg-gradient);
+      min-height: 100vh;
+      padding: 20px 40px;
+      position: relative;
+      overflow-x: hidden;
+      display: flex;
+      flex-direction: column;
     }
 
-    h1 {
-      font-size: 2.2em;
-      margin-bottom: 10px;
+    /* Animated Starry Background */
+    @keyframes drift {
+      from { background-position: 0 0, 20px 20px; }
+      to { background-position: -60px -60px, -40px -40px; }
     }
-
-    p {
-      font-size: 1em;
-      opacity: 0.85;
-      margin-bottom: 25px;
-    }
-
-    select, textarea, input[type="file"] {
-      font-family: 'Space Grotesk', sans-serif;
-      background-color: white;
-      color: #333;
-      padding: 10px;
-      border-radius: 8px;
-      cursor: pointer;
-      width: 100%;  /* Ensure these inputs fit well */
-      box-sizing: border-box; /* Ensure padding doesn't affect the element size */
-    }
-
-    .custom-file {
-  display: inline-block;
-  background: transparent;
-  color: white;
-  font-family: 'Space Grotesk', sans-serif;
-  padding: 10px 20px;
-  border-radius: 8px;
-  cursor: pointer;
-  font-weight: bold;
-  margin-bottom: 10px;
-  transition: background 0.3s, color 0.3s;
-}
-
-.custom-file:hover {
-  background: rgba(255, 255, 255, 0.1);
-}
-
-    input[type="file"], button {
-      margin: 10px 0;
-      padding: 12px;
-      border-radius: 8px;
-      border: none;
-      font-size: 1em;
-      font-family: monospace;
-    }
-
-    textarea {
-      width: 100%;  /* Ensure full width */
-      height: 150px;
-      resize: vertical;
-      padding: 10px;  /* Consistent padding */
-    }
-
-    button {
-      font-weight: bold;
-      background: white;
-      color: #333;
-      cursor: pointer;
-      transition: background 0.3s;
-    }
-
-    button:hover {
-      background: #eee;
-    }
-
-    #outputImage {
-      margin-top: 20px;
-      max-width: 100%;
-    }
-
-    .back {
+    body::before {
+      content: '';
       position: fixed;
-      bottom: 20px;
-      left: 20px;
-      background: white;
-      color: #333;
-      padding: 10px 18px;
+      top: 0; left: 0; width: 100vw; height: 100vh;
+      background-image: 
+        radial-gradient(rgba(255,255,255,0.08) 1px, transparent 1px),
+        radial-gradient(rgba(255,255,255,0.05) 1px, transparent 1px);
+      background-size: 60px 60px, 40px 40px;
+      z-index: -1;
+      animation: drift 60s linear infinite;
+    }
+
+    header { display: flex; justify-content: flex-start; align-items: center; max-width: 1400px; width: 100%; margin: 0 auto 40px auto; }
+    .brand { font-size: 1.6em; font-weight: 700; display: flex; align-items: center; gap: 12px; text-decoration: none; color: #fff; }
+    .brand svg { filter: drop-shadow(0 0 10px var(--accent-glow)); }
+
+    .hero { text-align: center; margin-bottom: 40px; animation: fadeIn 1s ease-out; }
+    .hero h1 { font-size: 2.8em; font-weight: 700; margin-bottom: 10px; }
+    .hero p { color: var(--text-muted); font-size: 1.1em; }
+
+    /* Custom Tabs */
+    .tab-container {
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+      margin-bottom: 40px;
+      animation: fadeIn 1s ease-out;
+    }
+
+    .tab-btn {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--card-border);
+      color: var(--text-muted);
+      padding: 12px 30px;
+      border-radius: 12px;
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1.1em;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      transition: all 0.3s;
+    }
+
+    .tab-btn i { width: 18px; }
+    .tab-btn:hover { background: rgba(255,255,255,0.1); color: #fff; }
+    .tab-btn.active {
+      background: rgba(56, 189, 248, 0.1);
+      border-color: var(--accent-main);
+      color: #fff;
+      box-shadow: 0 0 20px rgba(56, 189, 248, 0.2);
+    }
+
+    /* Tab Content Areas */
+    .tab-content { display: none; animation: fadeSlideUp 0.5s ease-out forwards; }
+    .tab-content.active { display: block; }
+
+    /* IDE Layout */
+    .ide-container {
+      max-width: 1400px;
+      width: 100%;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    /* Pane Styling */
+    .pane {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      backdrop-filter: blur(16px);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+      height: 500px;
+    }
+
+    .pane-header {
+      background: rgba(0,0,0,0.3);
+      padding: 12px 20px;
+      border-bottom: 1px solid var(--card-border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-weight: 600;
+      color: #fff;
+    }
+
+    .pane-title { display: flex; align-items: center; gap: 10px; }
+    .pane-title i { color: var(--accent-main); width: 18px; }
+
+    .btn-action {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      color: #fff;
+      padding: 6px 14px;
       border-radius: 8px;
-      text-decoration: none;
-      font-weight: bold;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 0.85em;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: 0.2s;
+    }
+    .btn-action:hover { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.2); }
+
+    /* Editor Areas */
+    .editor {
+      flex-grow: 1;
+      width: 100%;
+      background: transparent;
+      border: none;
+      padding: 20px;
+      color: var(--text-main);
+      font-family: 'Fira Code', monospace;
+      font-size: 14px;
+      line-height: 1.6;
+      resize: none;
+      outline: none;
+    }
+    .editor::placeholder { color: rgba(255,255,255,0.2); }
+
+    /* Error Text */
+    .error-text { color: #ef4444; font-size: 0.85em; font-weight: 500; display: none; }
+    .error-text.active { display: inline-block; }
+
+    /* Image Dropzone */
+    .dropzone {
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 40px;
+      text-align: center;
+      border: 2px dashed rgba(255,255,255,0.2);
+      margin: 20px;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    .dropzone:hover, .dropzone.dragover {
+      border-color: var(--accent-main);
+      background: rgba(56, 189, 248, 0.05);
+    }
+    .dropzone i { width: 48px; height: 48px; color: var(--accent-main); margin-bottom: 15px; }
+    .dropzone p { color: var(--text-muted); }
+    .dropzone span { color: #fff; font-weight: 600; text-decoration: underline; }
+
+    /* Image Preview */
+    .image-preview-container {
+      flex-grow: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      background: rgba(0,0,0,0.2);
+      overflow: hidden;
+    }
+    .image-preview-container img {
+      max-width: 100%;
+      max-height: 100%;
+      border-radius: 8px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+      display: none;
     }
 
-    /* Media Queries for Responsiveness */
-    @media (max-width: 768px) {
-      h1 {
-        font-size: 1.8em;
-      }
-
-      textarea {
-        height: 130px;  /* Reduced height for mobile */
-        font-size: 0.9em;
-        padding: 8px;  /* Reduced padding */
-        margin-right: 10px;  /* Add some right margin to avoid touching the screen edge */
-      }
-
-      select {
-        width: 100%;  /* Ensure the select box is also responsive */
-      }
-
-      .custom-file {
-        margin-right: 10px;  /* Add margin to prevent overlap */
-      }
-
-      button {
-        padding: 10px 20px;
-        font-size: 0.9em;
-      }
-
-      .back {
-        font-size: 0.9em;
-        padding: 8px 16px;
-      }
-
-      body {
-        padding: 20px;
-        max-width: 100%;  /* Full width for small screens */
-      }
-
-      .sql-container {
-        padding: 10px; /* Smaller padding on mobile */
-      }
+    /* Info Panel */
+    .info-panel {
+      max-width: 1400px;
+      margin: 60px auto;
+      background: rgba(255,255,255,0.02);
+      border: 1px solid var(--card-border);
+      padding: 40px;
+      border-radius: 20px;
     }
-</style>
-<meta content="Free browser-based tool by Layerbit. Fast, simple, and privacy-respecting." name="description"/></head>
+    .info-panel h2 { color: #fff; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
+    .info-panel h2 i { color: var(--accent-main); }
+    .info-panel p { color: var(--text-muted); margin-bottom: 15px; line-height: 1.7; }
+    .info-panel ul { list-style: none; margin-bottom: 20px; }
+    .info-panel li { color: var(--text-muted); margin-bottom: 10px; display: flex; align-items: center; gap: 10px; }
+    .info-panel li i { color: #22c55e; width: 16px; }
+
+    /* Command Center FAB */
+    .fab { position: fixed; bottom: 30px; left: 30px; width: 60px; height: 60px; border-radius: 50%; backdrop-filter: blur(15px); display: flex; align-items: center; justify-content: center; z-index: 9998; background: rgba(20, 22, 30, 0.7); border: 1px solid rgba(255, 255, 255, 0.1); box-shadow: 0 8px 25px rgba(0,0,0,0.5); transition: all 0.4s; text-decoration: none; }
+    .fab:hover { transform: scale(1.1); border-color: var(--accent-main); background: rgba(30, 34, 48, 0.9); box-shadow: 0 12px 30px rgba(0,0,0,0.6), 0 0 25px rgba(56, 189, 248, 0.3); }
+
+    footer { text-align: center; padding: 40px 0; border-top: 1px solid var(--card-border); color: var(--text-muted); font-size: 0.95em; margin-top: auto; }
+
+    @media (max-width: 900px) {
+      .ide-container { grid-template-columns: 1fr; }
+      .pane { height: 400px; }
+    }
+
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(-15px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes fadeSlideUp { from { opacity: 0; transform: translateY(40px); } to { opacity: 1; transform: translateY(0); } }
+  </style>
+</head>
 <body>
-<p style="max-width:800px;margin:20px auto;font-size:1em;text-align:center;">Quickly encode or decode Base64 strings. Useful for email attachments, data URLs, and more.</p>
-<h1>Base64 Encode / Decode</h1>
-<p>Text and image support. Choose mode below:</p>
-<select id="modeSelect" onchange="switchMode()">
-<option value="text">Text</option>
-<option value="image">Image</option>
-</select>
-<div id="textMode">
-<textarea id="inputText" placeholder="Enter text or base64 here..."></textarea><br/>
-<button onclick="encodeText()">Encode</button>
-<button onclick="decodeText()">Decode</button><br/>
-<textarea id="outputText" placeholder="Result will appear here..." readonly=""></textarea>
-</div>
-<div id="imageMode" style="display:none;">
-<input accept="image/*" id="imageInput" onchange="showFileName()" style="display:none;" type="file"/>
-<label class="custom-file" for="imageInput">📂 Upload Image</label>
-<span id="fileNameDisplay" style="font-size: 0.9em; opacity: 0.8; display: block; margin-bottom: 10px;"></span>
-<button onclick="encodeImage()">Encode Image</button><br/>
-<textarea id="imageOutput" placeholder="Base64 result will appear here..." readonly=""></textarea><br/>
-<label for="imageInputBase64" style="display:block; margin-top:10px;">Base64 to Image Preview:</label>
-<textarea id="imageInputBase64" placeholder="Paste base64 to preview image..."></textarea><br/>
-<button onclick="previewImage()">Preview Image</button><br/>
-<img id="outputImage"/>
-</div>
-<script>
-    function switchMode() {
-      const mode = document.getElementById("modeSelect").value;
-      document.getElementById("textMode").style.display = mode === "text" ? "block" : "none";
-      document.getElementById("imageMode").style.display = mode === "image" ? "block" : "none";
+
+  <header>
+    <a href="../index.html" class="brand">
+      <svg width="36" height="36" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <polygon points="32,20 54,28 32,36 10,28" stroke="#f8fafc" stroke-width="4" stroke-linejoin="round"/>
+        <polyline points="10,38 32,46 54,38" stroke="#f8fafc" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+        <polyline points="10,48 32,56 54,48" stroke="#f8fafc" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+        <rect x="50" y="10" width="10" height="10" rx="2" fill="#00f2fe" />
+      </svg>
+      Layerbit
+    </a>
+  </header>
+
+  <main class="hero">
+    <h1>Base64 Cipher Engine</h1>
+    <p>Real-time bidirectional encoding and decoding for strings and digital assets.</p>
+  </main>
+
+  <div class="tab-container">
+    <button class="tab-btn active" onclick="switchTab('text')"><i data-lucide="file-type-2"></i> String Cryptography</button>
+    <button class="tab-btn" onclick="switchTab('image')"><i data-lucide="image"></i> Asset Encoding</button>
+  </div>
+
+  <div id="tab-text" class="tab-content active">
+    <div class="ide-container">
+      <div class="pane">
+        <div class="pane-header">
+          <div class="pane-title"><i data-lucide="align-left"></i> Plain Text</div>
+          <div style="display: flex; align-items: center; gap: 15px;">
+            <span id="decodeError" class="error-text"><i data-lucide="alert-circle" style="width: 14px; display: inline; vertical-align: middle;"></i> Invalid Base64 String</span>
+            <button class="btn-action" onclick="copyContent('plainText', this)"><i data-lucide="copy"></i> Copy</button>
+          </div>
+        </div>
+        <textarea id="plainText" class="editor" placeholder="Type or paste human-readable text here...&#10;It will automatically encode to Base64 in real-time." spellcheck="false"></textarea>
+      </div>
+
+      <div class="pane">
+        <div class="pane-header">
+          <div class="pane-title"><i data-lucide="binary"></i> Base64 Encoded</div>
+          <button class="btn-action" onclick="copyContent('base64Text', this)"><i data-lucide="copy"></i> Copy</button>
+        </div>
+        <textarea id="base64Text" class="editor" placeholder="Type or paste a Base64 string here...&#10;It will automatically decode to Plain Text in real-time." spellcheck="false"></textarea>
+      </div>
+    </div>
+  </div>
+
+  <div id="tab-image" class="tab-content">
+    <div class="ide-container">
+      
+      <div class="pane">
+        <div class="pane-header">
+          <div class="pane-title"><i data-lucide="upload-cloud"></i> Image Encoder</div>
+          <button class="btn-action" onclick="copyContent('imageOutputText', this)"><i data-lucide="copy"></i> Copy Base64</button>
+        </div>
+        <input type="file" id="fileInput" accept="image/*" style="display: none;" />
+        <label for="fileInput" class="dropzone" id="dropzone">
+          <i data-lucide="image-plus"></i>
+          <p>Drag & Drop an image here or <span>browse files</span></p>
+          <p style="font-size: 0.8em; margin-top: 10px;">Synthesizes file to raw Base64 string</p>
+        </label>
+        <textarea id="imageOutputText" class="editor" style="display:none;" placeholder="Base64 string will appear here..." readonly></textarea>
+      </div>
+
+      <div class="pane">
+        <div class="pane-header">
+          <div class="pane-title"><i data-lucide="monitor-play"></i> Visual Decoder</div>
+          <span id="imgDecodeError" class="error-text"><i data-lucide="alert-circle" style="width: 14px; display: inline; vertical-align: middle;"></i> Invalid Image Data</span>
+        </div>
+        <textarea id="imageDecodeInput" class="editor" style="height: 40%; border-bottom: 1px solid rgba(255,255,255,0.1);" placeholder="Paste a Base64 image string here to render the preview..."></textarea>
+        <div class="image-preview-container">
+          <img id="imagePreview" alt="Rendered Preview" />
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="info-panel">
+    <h2><i data-lucide="shield"></i> Secure Data Conversion</h2>
+    <p>Layerbit provides a robust, zero-latency Base64 processor. Whether you are encoding API payloads, embedding small images into CSS/HTML files, or decoding secure webhooks, this tool operates entirely within the DOM.</p>
+    <ul>
+      <li><i data-lucide="check"></i> <strong>Bidirectional Sync:</strong> Type in either text pane and watch the conversion happen instantly. No buttons required.</li>
+      <li><i data-lucide="check"></i> <strong>Asset Extraction:</strong> Uploading an image converts it into a raw Data URI ready for frontend implementation.</li>
+      <li><i data-lucide="check"></i> <strong>Zero Data Retention:</strong> File processing and string manipulation happen locally on your hardware.</li>
+    </ul>
+  </div>
+
+  <a href="../index.html" class="fab" aria-label="Command Center" title="Command Center">
+    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="filter: drop-shadow(0 0 8px rgba(56, 189, 248, 0.5));">
+      <path d="M12 2L2 7l10 5 10-5-10-5z" stroke="#38bdf8" stroke-width="2" stroke-linejoin="round" fill="rgba(56,189,248,0.2)"/>
+      <path d="M2 17l10 5 10-5M2 12l10 5 10-5" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </a>
+
+  <footer>
+    &copy; 2025 - 2026 <strong>Layerbit Technologies</strong>. All rights reserved.
+  </footer>
+
+  <script>
+    lucide.createIcons();
+
+    // Tab Switching Logic
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+      
+      event.currentTarget.classList.add('active');
+      document.getElementById('tab-' + tabId).classList.add('active');
     }
 
-    function encodeText() {
-      const input = document.getElementById('inputText').value;
+    // Copy Function
+    function copyContent(elementId, btnElement) {
+      const text = document.getElementById(elementId).value;
+      if (!text) return;
+      
+      navigator.clipboard.writeText(text).then(() => {
+        const originalText = btnElement.innerHTML;
+        btnElement.innerHTML = '<i data-lucide="check"></i> Copied!';
+        lucide.createIcons();
+        setTimeout(() => {
+          btnElement.innerHTML = originalText;
+          lucide.createIcons();
+        }, 2000);
+      });
+    }
+
+    /* ------------------------------
+       TAB 1: TEXT BIDIRECTIONAL LOGIC 
+       ------------------------------ */
+    const plainText = document.getElementById('plainText');
+    const base64Text = document.getElementById('base64Text');
+    const decodeError = document.getElementById('decodeError');
+
+    plainText.addEventListener('input', () => {
       try {
-        const encoded = btoa(unescape(encodeURIComponent(input)));
-        document.getElementById('outputText').value = encoded;
-      } catch (e) {
-        document.getElementById('outputText').value = "Error encoding text.";
+        base64Text.value = btoa(unescape(encodeURIComponent(plainText.value)));
+        decodeError.classList.remove('active');
+      } catch(e) {
+        console.error("Encoding error", e);
       }
-    }
+    });
 
-    function decodeText() {
-      const input = document.getElementById('inputText').value;
-      try {
-        const decoded = decodeURIComponent(escape(atob(input)));
-        document.getElementById('outputText').value = decoded;
-      } catch (e) {
-        document.getElementById('outputText').value = "Invalid base64 input.";
-      }
-    }
-
-    function encodeImage() {
-      const file = document.getElementById('imageInput').files[0];
-      const output = document.getElementById('imageOutput');
-
-      if (!file) {
-        alert("Please select an image file.");
+    base64Text.addEventListener('input', () => {
+      if(!base64Text.value.trim()) {
+        plainText.value = '';
+        decodeError.classList.remove('active');
         return;
       }
+      try {
+        plainText.value = decodeURIComponent(escape(atob(base64Text.value)));
+        decodeError.classList.remove('active');
+      } catch (e) {
+        decodeError.classList.add('active');
+      }
+    });
 
+    /* ------------------------------
+       TAB 2: IMAGE ENCODER/DECODER 
+       ------------------------------ */
+    const fileInput = document.getElementById('fileInput');
+    const dropzone = document.getElementById('dropzone');
+    const imageOutputText = document.getElementById('imageOutputText');
+    const imageDecodeInput = document.getElementById('imageDecodeInput');
+    const imagePreview = document.getElementById('imagePreview');
+    const imgDecodeError = document.getElementById('imgDecodeError');
+
+    // Handle File Selection
+    fileInput.addEventListener('change', handleFile);
+
+    // Drag and Drop events
+    dropzone.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      dropzone.classList.add('dragover');
+    });
+    dropzone.addEventListener('dragleave', () => {
+      dropzone.classList.remove('dragover');
+    });
+    dropzone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      dropzone.classList.remove('dragover');
+      if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+        fileInput.files = e.dataTransfer.files;
+        handleFile({ target: fileInput });
+      }
+    });
+
+    function handleFile(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      
       const reader = new FileReader();
-      reader.onload = function(e) {
-        const base64String = e.target.result.split(',')[1];
-        output.value = base64String;
+      reader.onload = function(event) {
+        dropzone.style.display = 'none';
+        imageOutputText.style.display = 'block';
+        imageOutputText.value = event.target.result;
       };
       reader.readAsDataURL(file);
     }
 
-    function showFileName() {
-      const file = document.getElementById("imageInput").files[0];
-      document.getElementById("fileNameDisplay").textContent = file ? file.name : '';
-    }
+    // Handle Image Decoding
+    imageDecodeInput.addEventListener('input', () => {
+      let val = imageDecodeInput.value.trim();
+      imgDecodeError.classList.remove('active');
 
-    function previewImage() {
-      const base64 = document.getElementById('imageInputBase64').value.trim();
-      if (!base64) return alert("Paste base64 to preview image.");
-      document.getElementById('outputImage').src = "data:image/png;base64," + base64;
-    }
+      if(!val) {
+        imagePreview.style.display = 'none';
+        imagePreview.src = '';
+        return;
+      }
+
+      // Smart prefix handler
+      if (!val.startsWith('data:image')) {
+        // Default to png if header is missing
+        val = 'data:image/png;base64,' + val;
+      }
+
+      imagePreview.src = val;
+      imagePreview.style.display = 'block';
+    });
+
+    // Handle broken image links
+    imagePreview.addEventListener('error', () => {
+      imagePreview.style.display = 'none';
+      if(imageDecodeInput.value.trim() !== '') {
+         imgDecodeError.classList.add('active');
+      }
+    });
+
   </script>
-<a class="home-fab" href="../index.html" title="Home">
-<svg viewbox="0 0 24 24">
-<path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"></path>
-</svg>
-</a>
-<details style="max-width: 700px; margin: 60px auto 20px auto; background: rgba(255,255,255,0.1); padding: 20px; border-radius: 10px;">
-<summary style="cursor: pointer; font-weight: bold; font-size: 1.1em;">🔎 About this Tool (Click to Expand)</summary>
-<div style="margin-top: 15px; text-align: left;">
-<h3 style="margin-top: 10px; color: #fff;">📌 What is Base64 Encode / Decode?</h3>
-<p>This tool allows you to convert text and images to and from Base64 — a binary-to-text encoding scheme widely used in email attachments, image previews, and secure data transmission.</p>
-<h3 style="margin-top: 20px; color: #fff;">💡 Key Uses</h3>
-<ul>
-<li>✅ Encode sensitive data for storage or transfer</li>
-<li>✅ Decode Base64 back to original format</li>
-<li>✅ Convert and preview images directly from base64</li>
-</ul>
-<h3 style="margin-top: 20px; color: #fff;">🚀 How to Use</h3>
-<ol>
-<li>1️⃣ Select "Text" or "Image" mode</li>
-<li>2️⃣ Paste content or upload an image</li>
-<li>3️⃣ Encode, Decode, or Preview — all in one place</li>
-</ol>
-<p style="margin-top: 20px;">Client-side tool with zero data logging. Fast, private, and efficient — powered by Layerbit.</p>
-</div>
-</details>
 </body>
 </html>

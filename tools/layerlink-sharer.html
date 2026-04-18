@@ -1,157 +1,219 @@
 <!DOCTYPE html>
-
-<html>
+<html lang="en">
 <head>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&amp;display=swap" rel="stylesheet"/>
-<title>LayerLink Sharer</title>
-<meta content="width=device-width, initial-scale=1" name="viewport"/>
-<style>
-    ul, ol {
-      list-style: none;
-      padding-left: 0;
-    }
-    ul li::before, ol li::before {
-      content: "";
-    }
-    .home-fab {
-      position: fixed;
-      bottom: 20px;
-      left: 20px;
-      width: 44px;
-      height: 44px;
-      background-color: white;
-      border-radius: 12px;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-      text-decoration: none;
-      z-index: 1000;
-    }
-    .home-fab svg {
-      width: 20px;
-      height: 20px;
-      fill: #333;
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="LayerLink Host Terminal. Secure, client-to-client screen broadcasting." />
+  <title>LayerLink Sharer - Layerbit</title>
+  
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6072772587431629" crossorigin="anonymous"></script>
+  
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet" />
+  <link href="../layerbit-logo.png" rel="icon" type="image/x-icon" />
+
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+  
+  <style>
+    /* Ultra-Premium Dark Theme Variables */
+    :root {
+      --bg-base: #0a0c10;
+      --bg-gradient: radial-gradient(circle at 50% 0%, #1a1e2d 0%, #0a0c10 70%);
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --card-bg: rgba(20, 22, 30, 0.6);
+      --card-border: rgba(255, 255, 255, 0.08);
+      --accent-main: #38bdf8;
+      --accent-glow: rgba(56, 189, 248, 0.5);
+      --neon-gradient: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%);
+      --success: #22c55e;
+      --warning: #eab308;
+      --danger: #ef4444;
     }
 
+    * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
       font-family: 'Space Grotesk', sans-serif;
-      background: linear-gradient(135deg, #1f1c2c, #928dab);
-      color: white;
-      text-align: center;
+      color: var(--text-main);
+      background-color: var(--bg-base);
+      background-image: var(--bg-gradient);
+      min-height: 100vh;
+      padding: 20px 40px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    @keyframes drift { from { background-position: 0 0, 20px 20px; } to { background-position: -60px -60px, -40px -40px; } }
+    body::before {
+      content: ''; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+      background-image: radial-gradient(rgba(255,255,255,0.08) 1px, transparent 1px), radial-gradient(rgba(255,255,255,0.05) 1px, transparent 1px);
+      background-size: 60px 60px, 40px 40px; z-index: -1; animation: drift 60s linear infinite; pointer-events: none;
+    }
+
+    header { display: flex; justify-content: flex-start; align-items: center; max-width: 1400px; width: 100%; margin: 0 auto 40px auto; }
+    .brand { font-size: 1.6em; font-weight: 700; display: flex; align-items: center; gap: 12px; text-decoration: none; color: #fff; }
+    .brand svg { filter: drop-shadow(0 0 10px var(--accent-glow)); }
+
+    .hero { text-align: center; margin-bottom: 30px; animation: fadeIn 1s ease-out; }
+    .hero h1 { font-size: 2.8em; font-weight: 700; margin-bottom: 10px; }
+    .hero p { color: var(--text-muted); font-size: 1.1em; }
+
+    /* Layout */
+    .dashboard {
+      max-width: 1400px;
+      width: 100%;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1fr 2fr;
+      gap: 30px;
+      animation: fadeSlideUp 1s ease-out forwards;
+    }
+
+    .pane {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      backdrop-filter: blur(16px);
       padding: 30px;
-    }
-    video {
-      margin-top: 20px;
-      max-width: 100%;
-      border-radius: 12px;
-    }
-    input {
-      font-family: 'Space Grotesk', sans-serif;
-      padding: 10px;
-      font-size: 1em;
-      width: 320px;
-      border-radius: 8px;
-      border: none;
-      margin-top: 20px;
-    }
-    button {
-      font-family: 'Space Grotesk', sans-serif;
-      font-weight: 700;
-      padding: 10px 20px;
-      font-size: 1em;
-      margin-top: 20px;
-      border-radius: 8px;
-      cursor: pointer;
-    }
-    h1, h2, p, input, button, span {
-      font-family: 'Space Grotesk', sans-serif !important;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
     }
 
-    /* Buy Me a Coffee icon */
-    .buy-coffee-icon {
-      position: fixed;
-      top: 20px;
-      right: 20px;
-      z-index: 1000;
+    /* Control Pane */
+    .status-badge {
+      display: inline-flex; align-items: center; gap: 8px; padding: 8px 16px;
+      border-radius: 20px; font-weight: 700; font-size: 0.9em; border: 1px solid transparent;
+      width: fit-content;
     }
+    .status-idle { background: rgba(255,255,255,0.05); color: var(--text-muted); border-color: rgba(255,255,255,0.1); }
+    .status-waiting { background: rgba(234, 179, 8, 0.15); color: var(--warning); border-color: rgba(234,179,8,0.3); }
+    .status-live { background: rgba(34, 197, 94, 0.15); color: var(--success); border-color: rgba(34,197,94,0.3); animation: pulse 2s infinite; }
 
-    .buy-coffee-icon img {
-      width: 40px;
-      height: 40px;
+    @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(34, 197, 94, 0); } 100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); } }
+
+    .btn-start {
+      background: var(--neon-gradient); color: #000; border: none; padding: 16px;
+      border-radius: 12px; font-family: 'Space Grotesk', sans-serif; font-size: 1.1em;
+      font-weight: 700; cursor: pointer; display: flex; justify-content: center; align-items: center;
+      gap: 10px; box-shadow: 0 4px 15px var(--accent-glow); transition: 0.3s;
     }
-
-    /* Mobile adjustment for consistent spacing */
-    @media (max-width: 600px) {
-      /* Push only the description text down on mobile */
-      #description {
-        margin-top: 60px; /* Push the description down */
-      }
-
-      /* Consistent spacing between description, heading, and button */
-      #main h1, #main p, #main button {
-        margin-bottom: 20px; /* Equal space between description, heading, and button */
-      }
+    .btn-start:hover { transform: translateY(-2px); box-shadow: 0 8px 25px var(--accent-glow); }
+    
+    .link-container { display: none; flex-direction: column; gap: 10px; margin-top: 20px; }
+    .link-container.active { display: flex; }
+    
+    .link-input-group {
+      display: flex; background: rgba(0,0,0,0.4); border: 1px solid var(--card-border);
+      border-radius: 8px; overflow: hidden;
     }
+    .link-input-group input {
+      flex-grow: 1; background: transparent; border: none; color: var(--accent-main);
+      padding: 12px; font-family: 'Fira Code', monospace; outline: none;
+    }
+    .btn-copy {
+      background: rgba(255,255,255,0.05); color: #fff; border: none; border-left: 1px solid var(--card-border);
+      padding: 0 15px; cursor: pointer; display: flex; align-items: center; transition: 0.2s;
+    }
+    .btn-copy:hover { background: rgba(255,255,255,0.1); color: var(--accent-main); }
+
+    /* Video Pane */
+    .video-wrapper {
+      width: 100%; height: 100%; min-height: 400px;
+      background: #000; border-radius: 12px; overflow: hidden;
+      display: flex; align-items: center; justify-content: center;
+      border: 1px solid var(--card-border); position: relative;
+    }
+    video { width: 100%; height: 100%; object-fit: contain; }
+    .video-overlay {
+      position: absolute; inset: 0; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; gap: 15px; color: var(--text-muted);
+    }
+    .video-overlay i { width: 48px; height: 48px; opacity: 0.5; }
+
+    /* Mobile Error */
+    .mobile-error { display: none; background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239,68,68,0.3); color: var(--danger); padding: 20px; border-radius: 12px; text-align: center; font-weight: 600; margin-bottom: 20px; }
+
+    /* Command Center FAB */
+    .fab { position: fixed; bottom: 30px; left: 30px; width: 60px; height: 60px; border-radius: 50%; backdrop-filter: blur(15px); display: flex; align-items: center; justify-content: center; z-index: 9998; background: rgba(20, 22, 30, 0.7); border: 1px solid rgba(255, 255, 255, 0.1); box-shadow: 0 8px 25px rgba(0,0,0,0.5); transition: all 0.4s; text-decoration: none; }
+    .fab:hover { transform: scale(1.1); border-color: var(--accent-main); background: rgba(30, 34, 48, 0.9); box-shadow: 0 12px 30px rgba(0,0,0,0.6), 0 0 25px rgba(56, 189, 248, 0.3); }
+
+    @media (max-width: 900px) { .dashboard { grid-template-columns: 1fr; } }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(-15px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes fadeSlideUp { from { opacity: 0; transform: translateY(40px); } to { opacity: 1; transform: translateY(0); } }
   </style>
-<script>
-    window.addEventListener('DOMContentLoaded', () => {
-      const isMobile = /Mobi|Android|iPhone/i.test(navigator.userAgent);
-      if (isMobile) {
-        document.getElementById("main").innerHTML = `
-          <h1 style="font-family: 'Space Grotesk', sans-serif; font-size: 2.3em; font-weight: 700;">LayerLink</h1>
-          <p style="color:yellow; font-size:1.2em;">
-            ⚠️ Screen sharing is not supported on mobile browsers.<br>
-            But viewing is supported. Please use a desktop or laptop to start a session.
-          </p>`;
-      }
-    });
+</head>
+<body>
 
-    function copyLink() {
-      const link = document.getElementById("link");
-      navigator.clipboard.writeText(link.value).then(() => {
-        alert("Link copied to clipboard!");
-      });
-    }
+  <header>
+    <a href="../index.html" class="brand">
+      <svg width="36" height="36" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <polygon points="32,20 54,28 32,36 10,28" stroke="#f8fafc" stroke-width="4" stroke-linejoin="round"/>
+        <polyline points="10,38 32,46 54,38" stroke="#f8fafc" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+        <polyline points="10,48 32,56 54,48" stroke="#f8fafc" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+        <rect x="50" y="10" width="10" height="10" rx="2" fill="#00f2fe" />
+      </svg>
+      Layerbit
+    </a>
+  </header>
 
-    async function start() {
-      const sessionId = Math.random().toString(36).substring(2, 8);
-      document.getElementById("link").value = location.origin + "/tools/layerlink-viewer.html?session=" + sessionId;
+  <main class="hero">
+    <h1>LayerLink Host Terminal</h1>
+    <p>Secure, browser-to-browser screen broadcasting.</p>
+  </main>
 
-      const localStream = await navigator.mediaDevices.getDisplayMedia({ video: true });
-      document.getElementById("video").srcObject = localStream;
+  <div class="mobile-error" id="mobileError">
+    <i data-lucide="smartphone"></i> Host capabilities require a desktop/laptop browser.
+  </div>
 
-      const peer = new RTCPeerConnection();
-      localStream.getTracks().forEach(track => peer.addTrack(track, localStream));
+  <div class="dashboard" id="mainDashboard">
+    
+    <div class="pane">
+      <h2 style="font-size:1.2em; display:flex; align-items:center; gap:10px;"><i data-lucide="radio"></i> Transmission Control</h2>
+      
+      <div id="statusBadge" class="status-badge status-idle">
+        <i data-lucide="sleep"></i> System Idle
+      </div>
 
-      const conn = db.ref("sessions/" + sessionId);
+      <button class="btn-start" id="btnStart" onclick="start()">
+        <i data-lucide="cast"></i> Initialize Broadcast
+      </button>
 
-      peer.onicecandidate = e => {
-        if (e.candidate) {
-          conn.child("offerCandidates").push(JSON.stringify(e.candidate));
-        }
-      };
+      <div class="link-container" id="linkContainer">
+        <p style="font-size:0.9em; color:var(--text-muted);">Share this secure link with your viewer:</p>
+        <div class="link-input-group">
+          <input type="text" id="shareLink" readonly />
+          <button class="btn-copy" id="btnCopy" onclick="copyLink()"><i data-lucide="copy"></i></button>
+        </div>
+      </div>
+    </div>
 
-      const offer = await peer.createOffer();
-      await peer.setLocalDescription(offer);
-      conn.child("offer").set(JSON.stringify(offer));
+    <div class="pane" style="padding: 15px;">
+      <div class="video-wrapper">
+        <div class="video-overlay" id="videoOverlay">
+          <i data-lucide="monitor-off"></i>
+          <span>Stream Offline</span>
+        </div>
+        <video id="video" autoplay playsinline muted></video>
+      </div>
+    </div>
 
-      conn.child("answer").on("value", async snap => {
-        if (snap.val()) {
-          const answer = JSON.parse(snap.val());
-          await peer.setRemoteDescription(answer);
-        }
-      });
+  </div>
 
-      conn.child("answerCandidates").on("child_added", snap => {
-        const candidate = new RTCIceCandidate(JSON.parse(snap.val()));
-        peer.addIceCandidate(candidate);
-      });
-    }
-  </script>
-<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
-<script>
+  <a href="../index.html" class="fab" aria-label="Command Center" title="Command Center">
+    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="filter: drop-shadow(0 0 8px rgba(56, 189, 248, 0.5));">
+      <path d="M12 2L2 7l10 5 10-5-10-5z" stroke="#38bdf8" stroke-width="2" stroke-linejoin="round" fill="rgba(56,189,248,0.2)"/>
+      <path d="M2 17l10 5 10-5M2 12l10 5 10-5" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </a>
+
+  <script>
+    lucide.createIcons();
+
+    // Init Firebase
     const firebaseConfig = {
       apiKey: "AIzaSyAR948frOLq4VZ1qSdxIMXu6BaCoehClAU",
       authDomain: "layerlink-58948.firebaseapp.com",
@@ -163,53 +225,117 @@
     };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
+
+    // DOM Elements
+    const mobileError = document.getElementById('mobileError');
+    const mainDashboard = document.getElementById('mainDashboard');
+    const btnStart = document.getElementById('btnStart');
+    const linkContainer = document.getElementById('linkContainer');
+    const shareLink = document.getElementById('shareLink');
+    const btnCopy = document.getElementById('btnCopy');
+    const statusBadge = document.getElementById('statusBadge');
+    const videoOverlay = document.getElementById('videoOverlay');
+    const videoElement = document.getElementById('video');
+
+    // Mobile Check
+    window.addEventListener('DOMContentLoaded', () => {
+      if (/Mobi|Android|iPhone/i.test(navigator.userAgent)) {
+        mobileError.style.display = 'block';
+        mainDashboard.style.opacity = '0.3';
+        mainDashboard.style.pointerEvents = 'none';
+      }
+    });
+
+    function setStatus(state) {
+      if (state === 'waiting') {
+        statusBadge.className = 'status-badge status-waiting';
+        statusBadge.innerHTML = `<i data-lucide="loader" class="animate-spin"></i> Awaiting Viewer...`;
+      } else if (state === 'live') {
+        statusBadge.className = 'status-badge status-live';
+        statusBadge.innerHTML = `<i data-lucide="radio"></i> Connection Live`;
+      } else if (state === 'closed') {
+        statusBadge.className = 'status-badge status-idle';
+        statusBadge.innerHTML = `<i data-lucide="alert-circle"></i> Viewer Disconnected`;
+      }
+      lucide.createIcons();
+    }
+
+    function copyLink() {
+      navigator.clipboard.writeText(shareLink.value).then(() => {
+        btnCopy.innerHTML = '<i data-lucide="check"></i>';
+        lucide.createIcons();
+        setTimeout(() => {
+          btnCopy.innerHTML = '<i data-lucide="copy"></i>';
+          lucide.createIcons();
+        }, 2000);
+      });
+    }
+
+    async function start() {
+      try {
+        const localStream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: false });
+        
+        videoElement.srcObject = localStream;
+        videoOverlay.style.display = 'none';
+        btnStart.style.display = 'none';
+        
+        const sessionId = Math.random().toString(36).substring(2, 8);
+        const viewerUrl = location.origin + "/tools/layerlink-viewer.html?session=" + sessionId;
+        shareLink.value = viewerUrl;
+        linkContainer.classList.add('active');
+        setStatus('waiting');
+
+        // CRITICAL FIX: Google STUN Servers added for internet routing
+        const configuration = {
+          iceServers: [
+            { urls: 'stun:stun.l.google.com:19302' },
+            { urls: 'stun:stun1.l.google.com:19302' }
+          ]
+        };
+
+        const peer = new RTCPeerConnection(configuration);
+        localStream.getTracks().forEach(track => peer.addTrack(track, localStream));
+
+        // Telemetry monitoring
+        peer.onconnectionstatechange = () => {
+          if (peer.connectionState === 'connected') setStatus('live');
+          if (peer.connectionState === 'disconnected' || peer.connectionState === 'failed') setStatus('closed');
+        };
+
+        // Handle Stream Stop from Browser UI
+        localStream.getVideoTracks()[0].onended = () => {
+          peer.close();
+          window.location.reload();
+        };
+
+        const conn = db.ref("sessions/" + sessionId);
+
+        peer.onicecandidate = e => {
+          if (e.candidate) {
+            conn.child("offerCandidates").push(JSON.stringify(e.candidate));
+          }
+        };
+
+        const offer = await peer.createOffer();
+        await peer.setLocalDescription(offer);
+        conn.child("offer").set(JSON.stringify(offer));
+
+        conn.child("answer").on("value", async snap => {
+          if (snap.val()) {
+            const answer = JSON.parse(snap.val());
+            await peer.setRemoteDescription(answer);
+          }
+        });
+
+        conn.child("answerCandidates").on("child_added", snap => {
+          const candidate = new RTCIceCandidate(JSON.parse(snap.val()));
+          peer.addIceCandidate(candidate);
+        });
+
+      } catch (err) {
+        console.error("Screen sharing cancelled or failed.", err);
+      }
+    }
   </script>
-<meta content="Free browser-based tool by Layerbit. Fast, simple, and privacy-respecting." name="description"/></head>
-<body>
-<!-- Buy Me a Coffee Icon 
-  <div class="buy-coffee-icon">
-    <a href="https://www.buymeacoffee.com/layerbit" target="_blank">
-      <img src="../images/cup-icon.png" alt="Buy Me a Coffee" />
-    </a>
-  </div>-->
-<br/>
-<p id="description" style="text-align:center; font-size: 0.95em; max-width: 600px; margin: 10px auto;">
-    LayerLink: Shares your screen directly from your browser. This secure tool enables instant support or collaboration with just a link. No installs, no hassle.
-  </p>
-<div id="main">
-<h1 style="font-family: 'Space Grotesk', sans-serif; font-size: 2.3em; font-weight: 700;">LayerLink Sharer</h1>
-<button onclick="start()">🔗 Start Screen Sharing</button><br>
-<input id="link" placeholder="Your viewer link will appear here" readonly=""/>
-<button onclick="copyLink()" style="margin-left:10px; padding:6px 12px; border-radius:6px;">📋 Copy</button><br/>
-<p id="copyInstruction" style="margin-top:10px; font-size:1em; opacity:0.9;">
-      📋 Copy this link and send it to the person you want to share your screen with.
-    </p>
-<video autoplay="" id="video" playsinline=""></video>
-</br></div>
-<a class="home-fab" href="../index.html" title="Home">
-<svg viewbox="0 0 24 24">
-<path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"></path>
-</svg>
-</a>
-<details style="max-width: 700px; margin: 60px auto 20px auto; background: rgba(255,255,255,0.1); padding: 20px; border-radius: 10px;">
-<summary style="cursor: pointer; font-weight: bold; font-size: 1.1em;">🔎 About this Tool (Click to Expand)</summary>
-<div style="margin-top: 15px; text-align: left;">
-<h3 style="margin-top: 10px; color: #fff;">📌 What is LayerLink Sharer?</h3>
-<p>LayerLink is a privacy-first screen sharing tool that works directly from your browser without requiring any installation or extension.</p>
-<h3 style="margin-top: 20px; color: #fff;">💡 Key Uses</h3>
-<ul>
-<li>✅ Instantly share your screen with a support technician</li>
-<li>✅ Demo something live to your client or friend with just a link</li>
-<li>✅ Lightweight and perfect for impromptu collaborations</li>
-</ul>
-<h3 style="margin-top: 20px; color: #fff;">🚀 How to Use</h3>
-<ol>
-<li>1️⃣ Click <strong>Start Screen Sharing</strong></li>
-<li>2️⃣ Copy the auto-generated viewer link</li>
-<li>3️⃣ Share it with the person you want to show your screen to</li>
-</ol>
-<p style="margin-top: 20px;">Your screen feed never leaves your browser unless connected. Safe, simple, and smart — built with ❤️ by Layerbit.</p>
-</div>
-</details>
 </body>
 </html>

@@ -1,325 +1,411 @@
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1" name="viewport"/>
-<title>
-   CSV to JSON Converter - Layerbit
-  </title>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&amp;display=swap" rel="stylesheet"/>
-<style>
-   :root {
-      --bg-color: linear-gradient(135deg, #1f1c2c, #928dab);
-      --text-color: white;
-      --card-bg: rgba(255, 255, 255, 0.1);
-      --button-bg: white;
-      --button-text: #333;
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Advanced CSV to JSON Converter. Securely parse, format, and export spreadsheet data to JSON arrays locally in your browser." />
+  <title>CSV to JSON Converter - Layerbit</title>
+  
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6072772587431629" crossorigin="anonymous"></script>
+  
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet" />
+  <link href="../layerbit-logo.png" rel="icon" type="image/x-icon" />
+  
+  <style>
+    /* Ultra-Premium Dark Theme Variables */
+    :root {
+      --bg-base: #0a0c10;
+      --bg-gradient: radial-gradient(circle at 50% 0%, #1a1e2d 0%, #0a0c10 70%);
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --card-bg: rgba(20, 22, 30, 0.6);
+      --card-border: rgba(255, 255, 255, 0.08);
+      --card-hover-border: rgba(56, 189, 248, 0.4);
+      --accent-main: #38bdf8;
+      --accent-glow: rgba(56, 189, 248, 0.5);
+      --neon-gradient: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%);
+      --error-bg: rgba(239, 68, 68, 0.1);
+      --error-border: #ef4444;
+      
+      /* Syntax Highlighting Colors */
+      --syn-key: #38bdf8;
+      --syn-string: #a7f3d0;
+      --syn-number: #fdba74;
+      --syn-boolean: #f472b6;
+      --syn-null: #94a3b8;
     }
-    [data-theme="light"] {
-      --bg-color: linear-gradient(135deg, #f8f9fa, #e9ecef);
-      --text-color: #333;
-      --card-bg: rgba(0, 0, 0, 0.05);
-      --button-bg: #333;
-      --button-text: white;
-    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
     body {
       font-family: 'Space Grotesk', sans-serif;
-      background: var(--bg-color);
-      color: var(--text-color);
-      padding: 30px 20px;
-      max-width: 1000px;
-      margin: auto;
-      text-align: center;
-      transition: background 0.6s ease-in-out, color 0.6s ease-in-out;
-    }
-    h1 {
-      font-size: 2.2em;
-      margin-bottom: 15px;
-    }
-    textarea {
-      width: 100%;
-      height: 160px;
-      padding: 15px;
-      font-family: monospace;
-      font-size: 1em;
-      border-radius: 8px;
-      border: none;
-      resize: vertical;
-      box-sizing: border-box;  /* Prevent overflow from padding */
-    }
-    .btn {
-      padding: 12px 25px;
-      font-size: 1em;
-      margin: 20px 0;
-      background: var(--button-bg);
-      color: var(--button-text);
-      border-radius: 8px;
-      font-weight: bold;
-      cursor: pointer;
-      border: none;
-    }
-    .btn:hover {
-      background: #eee;
-    }
-    .output {
-      text-align: left;
-      background: var(--card-bg);
-      border-radius: 8px;
-      padding: 15px;
-      font-family: monospace;
-      overflow-x: auto;
-      max-height: 400px;
-      white-space: pre-wrap;
-    }
-    .back {
-      position: fixed;
-      bottom: 20px;
-      left: 20px;
-      background: white;
-      color: #333;
-      padding: 10px 18px;
-      border-radius: 8px;
-      text-decoration: none;
-      font-weight: bold;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-    }
-    .toggle-theme {
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      padding: 12px 16px;
-      border: none;
-      background: var(--button-bg);
-      color: var(--button-text);
-      border-radius: 50px;
-      cursor: pointer;
-      font-weight: bold;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-      z-index: 1000;
-    }
-
-    /* Media Queries for Responsiveness */
-    @media (max-width: 768px) {
-      h1 {
-        font-size: 1.8em;
-      }
-
-      textarea {
-        height: 130px;  /* Reduced height for mobile */
-        font-size: 0.9em;
-        padding: 10px;  /* Reduced padding */
-        margin-right: 10px;  /* Add some right margin to avoid touching the screen edge */
-      }
-
-      .btn {
-        padding: 10px 20px;
-        font-size: 0.9em;
-      }
-
-      .back {
-        font-size: 0.9em;
-        padding: 8px 16px;
-      }
-
-      body {
-        padding: 20px;
-        max-width: 100%;  /* Full width for small screens */
-      }
-
-      .sql-container {
-        padding: 10px; /* Smaller padding on mobile */
-      }
-    }
-
-    .home-fab {
-      position: fixed;
-      bottom: 20px;
-      left: 20px;
-      width: 44px;
-      height: 44px;
-      background-color: white;
-      border-radius: 12px;
+      color: var(--text-main);
+      background-color: var(--bg-base);
+      background-image: var(--bg-gradient);
+      min-height: 100vh;
+      padding: 20px 40px;
+      position: relative;
+      overflow-x: hidden;
       display: flex;
-      justify-content: center;
+      flex-direction: column;
+    }
+
+    /* Animated Starry Background */
+    @keyframes drift { from { background-position: 0 0, 20px 20px; } to { background-position: -60px -60px, -40px -40px; } }
+    body::before {
+      content: ''; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+      background-image: radial-gradient(rgba(255,255,255,0.08) 1px, transparent 1px), radial-gradient(rgba(255,255,255,0.05) 1px, transparent 1px);
+      background-size: 60px 60px, 40px 40px; z-index: -1; animation: drift 60s linear infinite; pointer-events: none;
+    }
+
+    header { display: flex; justify-content: flex-start; align-items: center; max-width: 1400px; width: 100%; margin: 0 auto 40px auto; }
+    .brand { font-size: 1.6em; font-weight: 700; display: flex; align-items: center; gap: 12px; text-decoration: none; color: #fff; }
+    .brand svg { filter: drop-shadow(0 0 10px var(--accent-glow)); }
+
+    .hero { text-align: center; margin-bottom: 40px; animation: fadeIn 1s ease-out; }
+    .hero h1 { font-size: 2.8em; font-weight: 700; margin-bottom: 10px; }
+    .hero p { color: var(--text-muted); font-size: 1.1em; }
+
+    /* IDE Layout */
+    .ide-container {
+      max-width: 1400px;
+      width: 100%;
+      margin: 0 auto 60px auto;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      animation: fadeSlideUp 1s ease-out forwards;
+    }
+
+    .pane {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      backdrop-filter: blur(16px);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+      height: 600px;
+      transition: border 0.3s ease;
+    }
+    
+    .pane.dragover { border-color: var(--accent-main); background: rgba(56, 189, 248, 0.05); }
+
+    .pane-header {
+      background: rgba(0,0,0,0.3);
+      padding: 12px 20px;
+      border-bottom: 1px solid var(--card-border);
+      display: flex;
+      justify-content: space-between;
       align-items: center;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-      text-decoration: none;
-      z-index: 1000;
+      font-weight: 600;
+      color: #fff;
+      flex-wrap: wrap;
+      gap: 10px;
     }
-    .home-fab svg {
-      width: 20px;
-      height: 20px;
-      fill: #333;
+
+    .pane-title { display: flex; align-items: center; gap: 10px; }
+    .pane-title i { color: var(--accent-main); width: 18px; }
+
+    .btn-group { display: flex; align-items: center; gap: 10px; }
+    
+    .btn {
+      background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #fff;
+      padding: 8px 16px; border-radius: 8px; font-family: 'Space Grotesk', sans-serif; font-weight: 600;
+      font-size: 0.85em; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: 0.2s;
     }
-    ul, ol {
-      list-style: none;
-      padding-left: 0;
+    .btn:hover { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.2); }
+    
+    .btn-primary { background: var(--neon-gradient); color: #000; border: none; box-shadow: 0 0 10px var(--accent-glow); }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 4px 15px var(--accent-glow); background: var(--neon-gradient); }
+
+    .btn i { width: 14px; height: 14px; }
+
+    /* Custom Checkbox Toggle */
+    .toggle-wrapper { display: flex; align-items: center; gap: 8px; font-size: 0.85em; color: var(--text-muted); cursor: pointer; }
+    .toggle-wrapper input { cursor: pointer; accent-color: var(--accent-main); }
+
+    /* Error Alert */
+    .error-banner {
+      display: none; background: var(--error-bg); border-bottom: 1px solid var(--error-border);
+      color: #fff; padding: 12px 20px; font-size: 0.9em; align-items: center; gap: 10px;
     }
-    ul li::before, ol li::before {
-      content: "";
+    .error-banner.active { display: flex; }
+
+    /* Editors */
+    .editor {
+      flex-grow: 1; width: 100%; background: transparent; border: none; padding: 20px;
+      color: var(--text-main); font-family: 'Fira Code', monospace; font-size: 14px;
+      line-height: 1.6; resize: none; outline: none; white-space: pre; overflow: auto;
     }
+    .editor::placeholder { color: rgba(255,255,255,0.2); }
+    
+    .output-area {
+      flex-grow: 1; padding: 20px; overflow: auto; font-family: 'Fira Code', monospace;
+      font-size: 14px; line-height: 1.6; white-space: pre-wrap; word-wrap: break-word;
+    }
+
+    /* Syntax Highlighting Classes */
+    .syn-key { color: var(--syn-key); font-weight: 500; }
+    .syn-string { color: var(--syn-string); }
+    .syn-number { color: var(--syn-number); }
+    .syn-boolean { color: var(--syn-boolean); }
+    .syn-null { color: var(--syn-null); font-style: italic; }
+
+    /* Info Panel */
+    .info-panel { max-width: 1400px; margin: 0 auto 60px auto; background: rgba(255,255,255,0.02); border: 1px solid var(--card-border); padding: 40px; border-radius: 20px; }
+    .info-panel h2 { color: #fff; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
+    .info-panel h2 i { color: var(--accent-main); }
+    .info-panel p { color: var(--text-muted); margin-bottom: 15px; line-height: 1.7; }
+    .info-panel ul { list-style: none; margin-bottom: 20px; }
+    .info-panel li { color: var(--text-muted); margin-bottom: 10px; display: flex; align-items: center; gap: 10px; }
+    .info-panel li i { color: #22c55e; width: 16px; }
+
+    /* Command Center FAB */
+    .fab { position: fixed; bottom: 30px; left: 30px; width: 60px; height: 60px; border-radius: 50%; backdrop-filter: blur(15px); display: flex; align-items: center; justify-content: center; z-index: 9998; background: rgba(20, 22, 30, 0.7); border: 1px solid rgba(255, 255, 255, 0.1); box-shadow: 0 8px 25px rgba(0,0,0,0.5); transition: all 0.4s; text-decoration: none; }
+    .fab:hover { transform: scale(1.1); border-color: var(--accent-main); background: rgba(30, 34, 48, 0.9); }
+
+    footer { text-align: center; padding: 40px 0; border-top: 1px solid var(--card-border); color: var(--text-muted); font-size: 0.95em; margin-top: auto; }
+
+    @media (max-width: 900px) { .ide-container { grid-template-columns: 1fr; } .pane { height: 400px; } }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(-15px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes fadeSlideUp { from { opacity: 0; transform: translateY(40px); } to { opacity: 1; transform: translateY(0); } }
   </style>
-<meta content="Free browser-based tool by Layerbit. Fast, simple, and privacy-respecting." name="description"/></head>
-<body data-theme="dark">
-<p style="max-width:800px;margin:20px auto;font-size:1em;text-align:center;">
-   Convert CSV data into JSON format for use in APIs or JavaScript apps. Easy copy-paste input.
-  </p>
-<button class="toggle-theme" onclick="toggleTheme()">
-   🌓
-  </button>
-<h1>
-   CSV to JSON Converter
-  </h1>
-<p>
-   Paste CSV data or upload a CSV file below.
-  </p>
-<input accept=".csv" id="csvFile" onchange="handleFileUpload()" style="display:none;" type="file"/>
-<label class="custom-file" for="csvFile">
-   📂 Upload CSV File
-  </label>
-<span id="fileNameDisplay" style="font-size: 0.9em; opacity: 0.8; display: block; margin-bottom: 10px;">
-</span>
-<textarea id="csvInput" placeholder="name,age\nJohn,30\nJane,25"></textarea>
-<br/>
-<button class="btn" onclick="convertCSV()">
-   Convert
-  </button>
-<pre class="output" id="jsonOutput"></pre>
-<script>
-   function convertCSV() {
-      const input = document.getElementById('csvInput').value.trim();
-      const lines = input.split('\n');
-      if (lines.length < 2) {
-        document.getElementById('jsonOutput').textContent = 'Invalid CSV input.';
+</head>
+<body>
+
+  <header>
+    <a href="../index.html" class="brand">
+      <svg width="36" height="36" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <polygon points="32,20 54,28 32,36 10,28" stroke="#f8fafc" stroke-width="4" stroke-linejoin="round"/>
+        <polyline points="10,38 32,46 54,38" stroke="#f8fafc" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+        <polyline points="10,48 32,56 54,48" stroke="#f8fafc" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+        <rect x="50" y="10" width="10" height="10" rx="2" fill="#00f2fe" />
+      </svg>
+      Layerbit
+    </a>
+  </header>
+
+  <main class="hero">
+    <h1>CSV to JSON Pipeline</h1>
+    <p>Convert raw comma-separated data into structured JSON objects instantly.</p>
+  </main>
+
+  <div class="ide-container">
+    
+    <div class="pane" id="inputPane">
+      <div class="pane-header">
+        <div class="pane-title"><i data-lucide="sheet"></i> Raw CSV Data</div>
+        <div class="btn-group">
+          <label class="toggle-wrapper" title="Automatically convert '123' to numbers and 'true' to booleans">
+            <input type="checkbox" id="inferTypes" checked> Smart Types
+          </label>
+          <input type="file" id="csvFile" accept=".csv" style="display: none;">
+          <button class="btn" onclick="document.getElementById('csvFile').click()"><i data-lucide="upload"></i> Upload</button>
+          <button class="btn btn-primary" onclick="processCSV()"><i data-lucide="arrow-right-left"></i> Convert</button>
+        </div>
+      </div>
+      <div class="error-banner" id="errorBanner">
+        <i data-lucide="triangle-alert"></i>
+        <span id="errorText">Invalid CSV format.</span>
+      </div>
+      <textarea id="csvInput" class="editor" placeholder='Paste CSV data or drag & drop a .csv file here...&#10;&#10;id,name,role,active&#10;1,John Doe,Admin,true&#10;2,"Smith, Jane",User,false' spellcheck="false"></textarea>
+    </div>
+
+    <div class="pane">
+      <div class="pane-header">
+        <div class="pane-title"><i data-lucide="braces"></i> JSON Array</div>
+        <div class="btn-group">
+          <button class="btn" id="btnCopy" onclick="copyJSON()" disabled><i data-lucide="copy"></i> Copy</button>
+          <button class="btn" id="btnDownload" onclick="downloadJSON()" disabled><i data-lucide="download"></i> Save .json</button>
+        </div>
+      </div>
+      <div id="jsonOutput" class="output-area"></div>
+    </div>
+
+  </div>
+
+  <div class="info-panel">
+    <h2><i data-lucide="database"></i> Enterprise Data Extraction</h2>
+    <p>Layerbit's CSV pipeline utilizes a custom lexical parser to guarantee data integrity. Unlike standard converters, it accurately maps complex fields containing internal commas and line breaks wrapped in quotes.</p>
+    <ul>
+      <li><i data-lucide="check"></i> <strong>Smart Type Inference:</strong> Optionally detect and convert numerical and boolean values natively rather than wrapping everything in strings.</li>
+      <li><i data-lucide="check"></i> <strong>Drag & Drop Parsing:</strong> Drop massive CSV files directly into the editor for instant browser-side processing.</li>
+      <li><i data-lucide="check"></i> <strong>Air-Gapped Privacy:</strong> Processing strictly executes locally via JavaScript. Your corporate data is never transmitted.</li>
+    </ul>
+  </div>
+
+  <a href="../index.html" class="fab" aria-label="Command Center" title="Command Center">
+    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="filter: drop-shadow(0 0 8px rgba(56, 189, 248, 0.5));">
+      <path d="M12 2L2 7l10 5 10-5-10-5z" stroke="#38bdf8" stroke-width="2" stroke-linejoin="round" fill="rgba(56,189,248,0.2)"/>
+      <path d="M2 17l10 5 10-5M2 12l10 5 10-5" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </a>
+
+  <footer>
+    &copy; 2025 - 2026 <strong>Layerbit Technologies</strong>. All rights reserved.
+  </footer>
+
+  <script>
+    lucide.createIcons();
+
+    const csvInput = document.getElementById("csvInput");
+    const jsonOutput = document.getElementById("jsonOutput");
+    const csvFile = document.getElementById("csvFile");
+    const inputPane = document.getElementById("inputPane");
+    const errorBanner = document.getElementById("errorBanner");
+    const errorText = document.getElementById("errorText");
+    const inferTypes = document.getElementById("inferTypes");
+    const btnCopy = document.getElementById("btnCopy");
+    const btnDownload = document.getElementById("btnDownload");
+
+    let finalJSONString = "";
+
+    // Syntax Highlighter
+    function syntaxHighlight(jsonStr) {
+      jsonStr = jsonStr.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      return jsonStr.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, function (match) {
+        let cls = 'syn-number';
+        if (/^"/.test(match)) {
+          if (/:$/.test(match)) { cls = 'syn-key'; } 
+          else { cls = 'syn-string'; }
+        } else if (/true|false/.test(match)) { cls = 'syn-boolean'; } 
+        else if (/null/.test(match)) { cls = 'syn-null'; }
+        return '<span class="' + cls + '">' + match + '</span>';
+      });
+    }
+
+    // Robust CSV Parser (Handles quoted commas and newlines)
+    function parseCSVToArray(text) {
+      let p = '', row = [''], ret = [row], i = 0, r = 0, s = !0, l;
+      for (l of text) {
+        if ('"' === l) {
+          if (s && l === p) row[i] += l;
+          s = !s;
+        } else if (',' === l && s) l = row[++i] = '';
+        else if ('\n' === l && s) {
+          if ('\r' === p) row[i] = row[i].slice(0, -1);
+          row = ret[++r] = [l = '']; i = 0;
+        } else row[i] += l;
+        p = l;
+      }
+      return ret[0].length && !ret[ret.length-1][0] ? ret.slice(0, -1) : ret;
+    }
+
+    // Type Inference Engine
+    function parseValue(val) {
+      if (!inferTypes.checked) return val;
+      const lower = val.toLowerCase();
+      if (lower === "true") return true;
+      if (lower === "false") return false;
+      if (lower === "null" || lower === "") return null;
+      if (!isNaN(val) && val.trim() !== "") return Number(val);
+      return val;
+    }
+
+    function processCSV() {
+      const input = csvInput.value.trim();
+      errorBanner.classList.remove("active");
+      jsonOutput.innerHTML = "";
+      finalJSONString = "";
+      btnCopy.disabled = true;
+      btnDownload.disabled = true;
+
+      if (!input) {
+        showError("Please provide CSV data.");
         return;
       }
-      const headers = lines[0].split(',');
-      const result = lines.slice(1).map(line => {
-        const values = line.split(',');
-        let obj = {};
-        headers.forEach((header, i) => {
-          obj[header.trim()] = values[i]?.trim() ?? null;
-        });
-        return obj;
-      });
-      document.getElementById('jsonOutput').textContent = JSON.stringify(result, null, 2);
-    }
 
-    const themes = [
-      {
-        bg: 'linear-gradient(135deg, #1f1c2c, #928dab)',
-        text: 'white',
-        card: 'rgba(255, 255, 255, 0.1)',
-        btnBg: 'white',
-        btnText: '#333'
-      },
-      {
-        bg: 'linear-gradient(135deg, #f8f9fa, #e9ecef)',
-        text: '#333',
-        card: 'rgba(0, 0, 0, 0.05)',
-        btnBg: '#333',
-        btnText: 'white'
-      },
-      {
-        bg: 'linear-gradient(135deg, #ffecd2, #fcb69f)',
-        text: '#333',
-        card: 'rgba(0, 0, 0, 0.05)',
-        btnBg: '#ff6f61',
-        btnText: 'white'
-      },
-      {
-        bg: 'linear-gradient(135deg, #a1c4fd, #c2e9fb)',
-        text: '#222',
-        card: 'rgba(0, 0, 0, 0.05)',
-        btnBg: '#4682b4',
-        btnText: 'white'
+      try {
+        const rows = parseCSVToArray(input);
+        if (rows.length < 2) throw new Error("CSV requires at least a header row and one data row.");
+
+        const headers = rows[0].map(h => h.trim());
+        const jsonArray = [];
+
+        for (let i = 1; i < rows.length; i++) {
+          let obj = {};
+          const currentRow = rows[i];
+          // Skip empty trailing rows
+          if (currentRow.length === 1 && currentRow[0].trim() === "") continue;
+
+          headers.forEach((header, index) => {
+            let val = currentRow[index] !== undefined ? currentRow[index].trim() : "";
+            obj[header] = parseValue(val);
+          });
+          jsonArray.push(obj);
+        }
+
+        finalJSONString = JSON.stringify(jsonArray, null, 4);
+        jsonOutput.innerHTML = syntaxHighlight(finalJSONString);
+        
+        btnCopy.disabled = false;
+        btnDownload.disabled = false;
+
+      } catch (err) {
+        showError(err.message);
       }
-    ];
-    let currentTheme = 0;
-
-    function applyTheme(index) {
-      document.body.style.background = themes[index].bg;
-      document.body.style.color = themes[index].text;
-      document.querySelectorAll('.btn').forEach(btn => {
-        btn.style.background = themes[index].btnBg;
-        btn.style.color = themes[index].btnText;
-      });
-      document.querySelectorAll('.output').forEach(out => {
-        out.style.background = themes[index].card;
-      });
-      document.querySelector('.toggle-theme').style.background = themes[index].btnBg;
-      document.querySelector('.toggle-theme').style.color = themes[index].btnText;
     }
 
-    function toggleTheme() {
-      currentTheme = (currentTheme + 1) % themes.length;
-      applyTheme(currentTheme);
+    function showError(msg) {
+      errorText.innerText = msg;
+      errorBanner.classList.add("active");
     }
 
-    applyTheme(currentTheme);
+    // Export Logic
+    function copyJSON() {
+      if (!finalJSONString) return;
+      navigator.clipboard.writeText(finalJSONString).then(() => {
+        const original = btnCopy.innerHTML;
+        btnCopy.innerHTML = '<i data-lucide="check"></i> Copied!';
+        lucide.createIcons();
+        setTimeout(() => {
+          btnCopy.innerHTML = original;
+          lucide.createIcons();
+        }, 2000);
+      });
+    }
 
-    function handleFileUpload() {
-      const file = document.getElementById('csvFile').files[0];
-      document.getElementById("fileNameDisplay").textContent = file ? file.name : "";
+    function downloadJSON() {
+      if (!finalJSONString) return;
+      const blob = new Blob([finalJSONString], { type: "application/json" });
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = `layerbit_data_${Date.now()}.json`;
+      link.click();
+    }
+
+    // Drag & Drop / File Upload Logic
+    csvFile.addEventListener('change', function(e) { handleFile(e.target.files[0]); });
+    
+    inputPane.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      inputPane.classList.add('dragover');
+    });
+    inputPane.addEventListener('dragleave', () => {
+      inputPane.classList.remove('dragover');
+    });
+    inputPane.addEventListener('drop', (e) => {
+      e.preventDefault();
+      inputPane.classList.remove('dragover');
+      if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+        handleFile(e.dataTransfer.files[0]);
+      }
+    });
+
+    function handleFile(file) {
       if (!file) return;
       const reader = new FileReader();
       reader.onload = function(e) {
-        document.getElementById('csvInput').value = e.target.result;
-        convertCSV();
+        csvInput.value = e.target.result;
+        processCSV();
       };
       reader.readAsText(file);
     }
   </script>
-<a class="home-fab" href="../index.html" title="Home">
-<svg viewbox="0 0 24 24">
-<path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z">
-</path>
-</svg>
-</a>
-<details style="max-width: 700px; margin: 60px auto 20px auto; background: rgba(255,255,255,0.1); padding: 20px; border-radius: 10px;">
-<summary style="cursor: pointer; font-weight: bold; font-size: 1.1em;">
-    🔎 About this Tool (Click to Expand)
-   </summary>
-<div style="margin-top: 15px; text-align: left;">
-<h3 style="margin-top: 10px; color: #fff;">
-     📌 What is CSV to JSON Converter?
-    </h3>
-<p>
-     This tool converts Comma-Separated Values (CSV) data into structured JSON objects. It supports both pasted text and uploaded files.
-    </p>
-<h3 style="margin-top: 20px; color: #fff;">
-     💡 Key Uses
-    </h3>
-<ul>
-<li>
-      ✅ Convert spreadsheet-like data into JSON format
-     </li>
-<li>
-      ✅ Ready for APIs, web development, or app data handling
-     </li>
-<li>
-      ✅ Easy export and use in modern JavaScript applications
-     </li>
-</ul>
-<h3 style="margin-top: 20px; color: #fff;">
-     🚀 How to Use
-    </h3>
-<ol>
-<li>
-      1️⃣ Paste or upload your CSV file
-     </li>
-<li>
-      2️⃣ Click "Convert" to see the JSON output
-     </li>
-<li>
-      3️⃣ Copy or export the JSON result
-     </li>
-</ol>
-<p style="margin-top: 20px;">
-     Tool runs fully on your browser. Your data stays private. Built for developers and analysts by Layerbit.
-    </p>
-</div>
-</details>
 </body>
 </html>

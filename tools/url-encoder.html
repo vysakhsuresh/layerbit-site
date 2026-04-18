@@ -1,225 +1,449 @@
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1" name="viewport"/>
-<title>URL Encoder / Decoder - Layerbit</title>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&amp;display=swap" rel="stylesheet"/>
-<style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Advanced URL Encoder & Decoder. Smartly encode query parameters or raw strings in real-time. Secure client-side processing by Layerbit." />
+  <title>URL Encoder & Decoder - Layerbit</title>
+  
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6072772587431629" crossorigin="anonymous"></script>
+  
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet" />
+  <link href="../layerbit-logo.png" rel="icon" type="image/x-icon" />
+  
+  <style>
+    /* Ultra-Premium Dark Theme Variables */
     :root {
-      --bg-color: linear-gradient(135deg, #1f1c2c, #928dab);
-      --text-color: white;
-      --card-bg: rgba(255, 255, 255, 0.1);
-      --button-bg: white;
-      --button-text: #333;
+      --bg-base: #0a0c10;
+      --bg-gradient: radial-gradient(circle at 50% 0%, #1a1e2d 0%, #0a0c10 70%);
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --card-bg: rgba(20, 22, 30, 0.6);
+      --card-border: rgba(255, 255, 255, 0.08);
+      --card-hover-border: rgba(56, 189, 248, 0.4);
+      --accent-main: #38bdf8;
+      --accent-glow: rgba(56, 189, 248, 0.5);
+      --neon-gradient: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%);
+      --error-color: #ef4444;
+      --success-color: #22c55e;
     }
-    [data-theme="light"] {
-      --bg-color: linear-gradient(135deg, #f8f9fa, #e9ecef);
-      --text-color: #333;
-      --card-bg: rgba(0, 0, 0, 0.05);
-      --button-bg: #333;
-      --button-text: white;
-    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
     body {
       font-family: 'Space Grotesk', sans-serif;
-      background: var(--bg-color);
-      color: var(--text-color);
-      padding: 30px 20px;
-      max-width: 1000px;
-      margin: auto;
-      text-align: center;
-      transition: background 0.6s ease-in-out, color 0.6s ease-in-out;
+      color: var(--text-main);
+      background-color: var(--bg-base);
+      background-image: var(--bg-gradient);
+      min-height: 100vh;
+      padding: 20px 40px;
+      position: relative;
+      overflow-x: hidden;
+      display: flex;
+      flex-direction: column;
     }
-    h1 {
-      font-size: 2.4em;
-      margin-bottom: 15px;
+
+    @keyframes drift { from { background-position: 0 0, 20px 20px; } to { background-position: -60px -60px, -40px -40px; } }
+    body::before {
+      content: ''; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+      background-image: radial-gradient(rgba(255,255,255,0.08) 1px, transparent 1px), radial-gradient(rgba(255,255,255,0.05) 1px, transparent 1px);
+      background-size: 60px 60px, 40px 40px; z-index: -1; animation: drift 60s linear infinite; pointer-events: none;
     }
-    textarea {
+
+    header { display: flex; justify-content: flex-start; align-items: center; max-width: 1400px; width: 100%; margin: 0 auto 40px auto; }
+    .brand { font-size: 1.6em; font-weight: 700; display: flex; align-items: center; gap: 12px; text-decoration: none; color: #fff; }
+    .brand svg { filter: drop-shadow(0 0 10px var(--accent-glow)); }
+
+    .hero { text-align: center; margin-bottom: 40px; animation: fadeIn 1s ease-out; }
+    .hero h1 { font-size: 2.8em; font-weight: 700; margin-bottom: 10px; }
+    .hero p { color: var(--text-muted); font-size: 1.1em; }
+
+    /* Mode Selector */
+    .mode-selector {
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+      margin-bottom: 30px;
+      animation: fadeIn 1s ease-out;
+    }
+
+    .mode-btn {
+      background: rgba(255,255,255,0.05); border: 1px solid var(--card-border); color: var(--text-muted);
+      padding: 12px 24px; border-radius: 12px; font-family: 'Space Grotesk', sans-serif; font-size: 1.05em;
+      font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 10px; transition: all 0.3s;
+    }
+    .mode-btn:hover { background: rgba(255,255,255,0.1); color: #fff; }
+    .mode-btn.active {
+      background: rgba(56, 189, 248, 0.1); border-color: var(--accent-main);
+      color: #fff; box-shadow: 0 0 20px rgba(56, 189, 248, 0.2);
+    }
+
+    /* IDE Layout */
+    .ide-container {
+      max-width: 1400px;
       width: 100%;
-      height: 120px;
-      padding: 15px;
-      font-family: monospace;
-      font-size: 1em;
-      border-radius: 8px;
-      border: none;
-      margin-bottom: 15px;
-      resize: vertical;
-      box-sizing: border-box;  /* Prevent overflow from padding */
+      margin: 0 auto 20px auto;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      animation: fadeSlideUp 1s ease-out forwards;
     }
-    .btn {
-      padding: 10px 20px;
-      font-size: 1em;
-      margin: 5px;
-      background: var(--button-bg);
-      color: var(--button-text);
-      border-radius: 8px;
-      font-weight: bold;
-      cursor: pointer;
-      border: none;
-    }
-    .btn:hover {
-      background: #eee;
-    }
-    .output {
-      margin-top: 15px;
+
+    /* Panes */
+    .pane {
       background: var(--card-bg);
-      padding: 15px;
-      font-family: monospace;
-      border-radius: 8px;
-      word-wrap: break-word;
-      white-space: pre-wrap;
-    }
-    .back {
-      position: fixed;
-      bottom: 20px;
-      left: 20px;
-      background: white;
-      color: #333;
-      padding: 10px 18px;
-      border-radius: 8px;
-      text-decoration: none;
-      font-weight: bold;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-    }
-    .toggle-theme {
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      padding: 12px 16px;
-      border: none;
-      background: var(--button-bg);
-      color: var(--button-text);
-      border-radius: 50px;
-      cursor: pointer;
-      font-weight: bold;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-      z-index: 1000;
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      backdrop-filter: blur(16px);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+      height: 350px;
     }
 
-    /* Media Queries for Responsiveness */
-    @media (max-width: 768px) {
-      h1 {
-        font-size: 1.8em;
-      }
-
-      textarea {
-        height: 130px;  /* Reduced height for mobile */
-        font-size: 0.9em;
-        padding: 10px;  /* Reduced padding */
-        margin-right: 10px;  /* Add some right margin to avoid touching the screen edge */
-      }
-
-      .btn {
-        padding: 10px 20px;
-        font-size: 0.9em;
-      }
-
-      .back {
-        font-size: 0.9em;
-        padding: 8px 16px;
-      }
-
-      body {
-        padding: 20px;
-        max-width: 100%;  /* Full width for small screens */
-      }
-
-      .sql-container {
-        padding: 10px; /* Smaller padding on mobile */
-      }
+    .pane-header {
+      background: rgba(0,0,0,0.3);
+      padding: 12px 20px;
+      border-bottom: 1px solid var(--card-border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-weight: 600;
+      color: #fff;
+      flex-wrap: wrap;
+      gap: 10px;
     }
 
-/* Floating Home FAB */
-.home-fab {
-  position: fixed;
-  bottom: 20px;
-  left: 20px;
-  width: 44px;
-  height: 44px;
-  background-color: white;
-  border-radius: 12px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-  text-decoration: none;
-  z-index: 1000;
-}
-.home-fab svg {
-  width: 20px;
-  height: 20px;
-  fill: #333;
-}
-</style>
-<meta content="Free browser-based tool by Layerbit. Fast, simple, and privacy-respecting." name="description"/></head>
-<body data-theme="dark">
-<p style="max-width:800px;margin:20px auto;font-size:1em;text-align:center;">Encode or decode URLs to ensure safe transmission of web data. Essential for developers and SEO tasks.</p>
-<button class="toggle-theme" onclick="toggleTheme()">🌓</button>
-<h1>URL Encoder / Decoder</h1>
-<p>Safely encode or decode your URLs for transmission or readability.</p>
-<textarea id="urlInput" placeholder="Paste your text or URL here..."></textarea><br/>
-<button class="btn" onclick="encodeURL()">Encode</button>
-<button class="btn" onclick="decodeURL()">Decode</button>
-<div class="output" id="urlOutput">Encoded or decoded text will appear here.</div>
-<script>
-    function encodeURL() {
-      const input = document.getElementById('urlInput').value;
-      document.getElementById('urlOutput').textContent = encodeURIComponent(input);
+    .pane-title { display: flex; align-items: center; gap: 10px; }
+    .pane-title i { color: var(--accent-main); width: 18px; }
+
+    .btn-group { display: flex; gap: 10px; }
+    
+    .btn {
+      background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #fff;
+      padding: 6px 14px; border-radius: 8px; font-family: 'Space Grotesk', sans-serif; font-weight: 600;
+      font-size: 0.85em; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: 0.2s;
+    }
+    .btn:hover { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.2); }
+    .btn i { width: 14px; height: 14px; }
+
+    /* Input Textareas */
+    .editor {
+      width: 100%; flex-grow: 1; background: transparent; border: none; padding: 20px;
+      color: var(--text-main); font-family: 'Fira Code', monospace; font-size: 15px;
+      line-height: 1.6; resize: none; outline: none; word-break: break-all;
+    }
+    .editor::placeholder { color: rgba(255,255,255,0.2); }
+
+    /* Error Text */
+    .error-text { color: var(--error-color); font-size: 0.85em; font-weight: 500; display: none; align-items: center; gap: 5px; }
+    .error-text.active { display: flex; }
+
+    /* Parameter Analysis Pane */
+    .analysis-container {
+      max-width: 1400px;
+      width: 100%;
+      margin: 0 auto 60px auto;
+      display: none; /* Hidden until valid URL is found */
+      animation: fadeSlideUp 0.5s ease-out forwards;
+    }
+    
+    .analysis-container.active { display: block; }
+
+    .analysis-pane {
+      background: rgba(56, 189, 248, 0.05);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      border-radius: 16px;
+      padding: 20px;
+      backdrop-filter: blur(16px);
     }
 
-    function decodeURL() {
-      const input = document.getElementById('urlInput').value;
+    .analysis-header {
+      font-size: 1.1em; font-weight: 600; color: #fff; margin-bottom: 15px;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .analysis-header i { color: var(--accent-main); }
+
+    .param-grid {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 10px 20px;
+      font-family: 'Fira Code', monospace;
+      font-size: 0.95em;
+    }
+    .param-key { color: var(--accent-main); font-weight: 600; text-align: right; }
+    .param-val { color: var(--text-main); word-break: break-all; }
+
+    /* Info Panel */
+    .info-panel { max-width: 1400px; margin: 0 auto 60px auto; background: rgba(255,255,255,0.02); border: 1px solid var(--card-border); padding: 40px; border-radius: 20px; }
+    .info-panel h2 { color: #fff; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
+    .info-panel h2 i { color: var(--accent-main); }
+    .info-panel p { color: var(--text-muted); margin-bottom: 15px; line-height: 1.7; }
+    .info-panel ul { list-style: none; margin-bottom: 20px; }
+    .info-panel li { color: var(--text-muted); margin-bottom: 10px; display: flex; align-items: center; gap: 10px; }
+    .info-panel li i { color: var(--success-color); width: 16px; }
+
+    /* Command Center FAB */
+    .fab { position: fixed; bottom: 30px; left: 30px; width: 60px; height: 60px; border-radius: 50%; backdrop-filter: blur(15px); display: flex; align-items: center; justify-content: center; z-index: 9998; background: rgba(20, 22, 30, 0.7); border: 1px solid rgba(255, 255, 255, 0.1); box-shadow: 0 8px 25px rgba(0,0,0,0.5); transition: all 0.4s; text-decoration: none; }
+    .fab:hover { transform: scale(1.1); border-color: var(--accent-main); background: rgba(30, 34, 48, 0.9); box-shadow: 0 12px 30px rgba(0,0,0,0.6), 0 0 25px rgba(56, 189, 248, 0.3); }
+
+    footer { text-align: center; padding: 40px 0; border-top: 1px solid var(--card-border); color: var(--text-muted); font-size: 0.95em; margin-top: auto; }
+
+    @media (max-width: 900px) {
+      .ide-container { grid-template-columns: 1fr; }
+      .pane { height: 250px; }
+      .param-grid { grid-template-columns: 1fr; gap: 5px; }
+      .param-key { text-align: left; }
+    }
+
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(-15px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes fadeSlideUp { from { opacity: 0; transform: translateY(40px); } to { opacity: 1; transform: translateY(0); } }
+  </style>
+</head>
+<body>
+
+  <header>
+    <a href="../index.html" class="brand">
+      <svg width="36" height="36" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <polygon points="32,20 54,28 32,36 10,28" stroke="#f8fafc" stroke-width="4" stroke-linejoin="round"/>
+        <polyline points="10,38 32,46 54,38" stroke="#f8fafc" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+        <polyline points="10,48 32,56 54,48" stroke="#f8fafc" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+        <rect x="50" y="10" width="10" height="10" rx="2" fill="#00f2fe" />
+      </svg>
+      Layerbit
+    </a>
+  </header>
+
+  <main class="hero">
+    <h1>URL Encoder / Decoder</h1>
+    <p>Instantly encode payloads or decode URL parameters in real-time.</p>
+  </main>
+
+  <div class="mode-selector">
+    <button class="mode-btn active" id="btnModeSmart" onclick="setMode('smart')"><i data-lucide="link"></i> Smart URL Mode</button>
+    <button class="mode-btn" id="btnModeRaw" onclick="setMode('raw')"><i data-lucide="file-text"></i> Raw String Mode</button>
+  </div>
+
+  <div class="ide-container">
+    
+    <div class="pane">
+      <div class="pane-header">
+        <div class="pane-title"><i data-lucide="unlock"></i> Plain / Decoded</div>
+        <div class="btn-group">
+          <span id="decodeError" class="error-text"><i data-lucide="alert-circle"></i> Invalid URI</span>
+          <button class="btn" onclick="clearAll()"><i data-lucide="trash-2"></i> Clear</button>
+          <button class="btn" onclick="copyContent('plainText', this)"><i data-lucide="copy"></i> Copy</button>
+        </div>
+      </div>
+      <textarea id="plainText" class="editor" placeholder="Paste readable text or an unencoded URL here...&#10;e.g. https://api.layerbit.co.in/search?q=hello world" spellcheck="false"></textarea>
+    </div>
+
+    <div class="pane">
+      <div class="pane-header">
+        <div class="pane-title"><i data-lucide="lock"></i> Encoded Payload</div>
+        <div class="btn-group">
+          <button class="btn" onclick="copyContent('encodedText', this)"><i data-lucide="copy"></i> Copy</button>
+        </div>
+      </div>
+      <textarea id="encodedText" class="editor" placeholder="Paste encoded strings here...&#10;e.g. https://api.layerbit.co.in/search?q=hello%20world" spellcheck="false"></textarea>
+    </div>
+
+  </div>
+
+  <div class="analysis-container" id="analysisContainer">
+    <div class="analysis-pane">
+      <div class="analysis-header"><i data-lucide="list-tree"></i> Detected URL Parameters</div>
+      <div class="param-grid" id="paramGrid">
+        </div>
+    </div>
+  </div>
+
+  <div class="info-panel">
+    <h2><i data-lucide="cpu"></i> Processing Architecture</h2>
+    <p>Layerbit's URL Synthesizer features a dual-engine architecture designed specifically for developers handling API endpoints and webhook payloads.</p>
+    <ul>
+      <li><i data-lucide="check"></i> <strong>Smart URL Mode (Default):</strong> When a full URL is detected, the engine preserves the protocol and domain (e.g., <code>https://domain.com/path</code>) and strictly encodes the query parameters. This prevents broken, unclickable URLs.</li>
+      <li><i data-lucide="check"></i> <strong>Raw String Mode:</strong> Forces strict RFC 3986 encoding across the entire input block, converting every unsafe character (including slashes and colons).</li>
+      <li><i data-lucide="check"></i> <strong>Parameter Forensics:</strong> Automatically detects query strings (<code>?key=value</code>) and generates a visual breakdown of payload data.</li>
+    </ul>
+  </div>
+
+  <a href="../index.html" class="fab" aria-label="Command Center" title="Command Center">
+    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="filter: drop-shadow(0 0 8px rgba(56, 189, 248, 0.5));">
+      <path d="M12 2L2 7l10 5 10-5-10-5z" stroke="#38bdf8" stroke-width="2" stroke-linejoin="round" fill="rgba(56,189,248,0.2)"/>
+      <path d="M2 17l10 5 10-5M2 12l10 5 10-5" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </a>
+
+  <footer>
+    &copy; 2025 - 2026 <strong>Layerbit Technologies</strong>. All rights reserved.
+  </footer>
+
+  <script>
+    lucide.createIcons();
+
+    let currentMode = 'smart'; // 'smart' or 'raw'
+    let isSyncing = false;
+
+    const plainText = document.getElementById("plainText");
+    const encodedText = document.getElementById("encodedText");
+    const decodeError = document.getElementById("decodeError");
+    const analysisContainer = document.getElementById("analysisContainer");
+    const paramGrid = document.getElementById("paramGrid");
+    
+    const btnModeSmart = document.getElementById("btnModeSmart");
+    const btnModeRaw = document.getElementById("btnModeRaw");
+
+    function setMode(mode) {
+      currentMode = mode;
+      if(mode === 'smart') {
+        btnModeSmart.classList.add('active');
+        btnModeRaw.classList.remove('active');
+      } else {
+        btnModeRaw.classList.add('active');
+        btnModeSmart.classList.remove('active');
+      }
+      // Retrigger encoding based on current plain text
+      triggerEncode();
+    }
+
+    function clearAll() {
+      plainText.value = "";
+      encodedText.value = "";
+      decodeError.classList.remove("active");
+      analysisContainer.classList.remove("active");
+    }
+
+    function copyContent(elementId, btnElement) {
+      const text = document.getElementById(elementId).value;
+      if (!text) return;
+      
+      navigator.clipboard.writeText(text).then(() => {
+        const originalText = btnElement.innerHTML;
+        btnElement.innerHTML = '<i data-lucide="check"></i> Copied!';
+        lucide.createIcons();
+        setTimeout(() => {
+          btnElement.innerHTML = originalText;
+          lucide.createIcons();
+        }, 2000);
+      });
+    }
+
+    // Escape HTML to prevent injection in the param grid
+    function escapeHTML(str) {
+      return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    }
+
+    // Analyzes a string to see if it's a URL with parameters
+    function analyzeParameters(str) {
       try {
-        document.getElementById('urlOutput').textContent = decodeURIComponent(input);
-      } catch {
-        document.getElementById('urlOutput').textContent = "⚠️ Invalid encoded string.";
+        // Attempt to parse as URL
+        const url = new URL(str);
+        const params = new URLSearchParams(url.search);
+        
+        let gridHTML = '';
+        let hasParams = false;
+
+        for (const [key, value] of params.entries()) {
+          hasParams = true;
+          gridHTML += `
+            <div class="param-key">${escapeHTML(key)} :</div>
+            <div class="param-val">${escapeHTML(value)}</div>
+          `;
+        }
+
+        if (hasParams) {
+          paramGrid.innerHTML = gridHTML;
+          analysisContainer.classList.add("active");
+        } else {
+          analysisContainer.classList.remove("active");
+        }
+      } catch (e) {
+        // Not a valid URL, hide analysis
+        analysisContainer.classList.remove("active");
       }
     }
 
-    function toggleTheme() {
-      const theme = document.body.getAttribute("data-theme");
-      document.body.setAttribute("data-theme", theme === "light" ? "dark" : "light");
+    // Engine: Encode Plain -> Encoded
+    function triggerEncode() {
+      if (isSyncing) return;
+      const val = plainText.value.trim();
+      
+      if (!val) {
+        isSyncing = true;
+        encodedText.value = "";
+        decodeError.classList.remove("active");
+        analysisContainer.classList.remove("active");
+        isSyncing = false;
+        return;
+      }
+
+      isSyncing = true;
+      decodeError.classList.remove("active");
+
+      if (currentMode === 'smart') {
+        try {
+          // Attempt to parse as URL. If successful, encode only the search params.
+          const url = new URL(val);
+          
+          // Rebuild search params ensuring they are encoded
+          const params = new URLSearchParams(url.search);
+          let newSearch = params.toString(); // URLSearchParams automatically encodes
+          
+          // Reconstruct URL
+          url.search = newSearch ? `?${newSearch}` : '';
+          encodedText.value = url.toString();
+          
+        } catch(e) {
+          // If it fails URL parsing, fallback to raw encodeURI (preserves some characters unlike encodeURIComponent)
+          encodedText.value = encodeURI(val);
+        }
+      } else {
+        // Raw Mode: encode everything strictly
+        encodedText.value = encodeURIComponent(val);
+      }
+
+      analyzeParameters(val);
+      isSyncing = false;
     }
-</script>
-<a class="home-fab" href="../index.html" title="Home">
-<svg viewbox="0 0 24 24">
-<path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"></path>
-</svg>
-</a>
-<div style="display: flex; justify-content: center; margin-top: 40px;">
-<details style="max-width: 700px; background: rgba(255,255,255,0.1); padding: 20px; border-radius: 10px;">
-<summary style="cursor: pointer; font-weight: bold; font-size: 1.1em;">
-    🔎 About this Tool (Click to Expand)
-  </summary>
-<div style="margin-top: 15px; text-align: left;">
-<h3 style="margin-top: 10px; color: #fff;">
-      🌐 What is URL Encoder / Decoder?
-    </h3>
-<p>
-      This tool helps you encode or decode URLs quickly and safely. It's a must-have for developers, marketers, and anyone handling web links.
-    </p>
-<h3 style="margin-top: 20px; color: #fff;">
-      💡 Common Use Cases
-    </h3>
-<ul style="list-style: none; padding-left: 0;">
-<li>✅ Encode special characters in URLs</li>
-<li>✅ Decode web-safe strings to original text</li>
-<li>✅ Improve data safety in GET/POST requests</li>
-</ul>
-<h3 style="margin-top: 20px; color: #fff;">
-      🚀 How to Use
-    </h3>
-<ol style="list-style: none; padding-left: 0;">
-<li>1️⃣ Paste your URL or text in the box above</li>
-<li>2️⃣ Click "Encode" to secure or "Decode" to restore</li>
-<li>3️⃣ Use the result wherever needed</li>
-</ol>
-<p style="margin-top: 20px;">
-      Built with 💙 by Layerbit. No data is ever stored.
-    </p>
-</div>
-</details>
-</div>
+
+    // Engine: Decode Encoded -> Plain
+    function triggerDecode() {
+      if (isSyncing) return;
+      const val = encodedText.value.trim();
+
+      if (!val) {
+        isSyncing = true;
+        plainText.value = "";
+        decodeError.classList.remove("active");
+        analysisContainer.classList.remove("active");
+        isSyncing = false;
+        return;
+      }
+
+      isSyncing = true;
+      try {
+        // Try decoding the whole string
+        const decoded = decodeURIComponent(val);
+        plainText.value = decoded;
+        decodeError.classList.remove("active");
+        analyzeParameters(decoded);
+      } catch (e) {
+        // Handle malformed URI components
+        decodeError.classList.add("active");
+        analysisContainer.classList.remove("active");
+      }
+      isSyncing = false;
+    }
+
+    // Listeners
+    plainText.addEventListener('input', triggerEncode);
+    encodedText.addEventListener('input', triggerDecode);
+
+  </script>
 </body>
 </html>
