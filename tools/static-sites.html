@@ -1,168 +1,242 @@
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1" name="viewport"/>
-<title>Static Website Creation - Layerbit</title>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&amp;display=swap" rel="stylesheet"/>
-<style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Professional Static Website Development by Layerbit. High-performance, secure, and SEO-optimized sites hosted on global edge networks." />
+  <title>Static Website Creation - Layerbit</title>
+  
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6072772587431629" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link href="../layerbit-logo.png" rel="icon" type="image/x-icon" />
+  
+  <style>
+    :root {
+      --bg-base: #0a0c10;
+      --bg-gradient: radial-gradient(circle at 50% 0%, #1a1e2d 0%, #0a0c10 70%);
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --card-bg: rgba(20, 22, 30, 0.4);
+      --card-border: rgba(255, 255, 255, 0.04);
+      --card-hover-bg: rgba(30, 34, 48, 0.6);
+      --card-hover-border: rgba(56, 189, 248, 0.4);
+      --accent-main: #38bdf8;
+      --accent-glow: rgba(56, 189, 248, 0.5);
+      --neon-gradient: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
       font-family: 'Space Grotesk', sans-serif;
-      background: linear-gradient(135deg, #4facfe, #00f2fe);
-      color: white;
-      padding: 30px 20px;
-      max-width: 900px;
-      margin: auto;
-      line-height: 1.6;
+      color: var(--text-main);
+      background-color: var(--bg-base);
+      background-image: var(--bg-gradient);
+      min-height: 100vh;
+      padding: 20px 40px;
+      position: relative;
+      overflow-x: hidden;
+      display: flex;
+      flex-direction: column;
     }
 
-    h1 {
-      font-size: 2.5em;
-      margin-bottom: 10px;
+    @keyframes drift { from { background-position: 0 0; } to { background-position: -60px -60px; } }
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0; left: 0; width: 100vw; height: 100vh;
+      background-image: radial-gradient(rgba(255,255,255,0.05) 1px, transparent 1px);
+      background-size: 50px 50px;
+      z-index: -1;
+      animation: drift 100s linear infinite;
     }
 
-    h2 {
-      font-size: 1.8em;
-      margin-top: 30px;
-      margin-bottom: 10px;
-    }
+    header { display: flex; justify-content: flex-start; max-width: 1200px; width: 100%; margin: 0 auto 60px auto; }
+    .brand { font-size: 1.6em; font-weight: 700; display: flex; align-items: center; gap: 12px; text-decoration: none; color: #fff; }
+    .brand svg { filter: drop-shadow(0 0 10px var(--accent-glow)); }
 
-    .features, .steps {
-      margin-top: 15px;
-      list-style: none;
-      padding-left: 0;
+    .hero { text-align: center; max-width: 900px; margin: 0 auto 60px auto; animation: fadeIn 1.2s ease-out; }
+    .hero h1 {
+      font-size: 3.5em;
+      margin-bottom: 20px;
+      background: linear-gradient(270deg, #ffffff, #38bdf8, #ffffff);
+      background-size: 200% 200%;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      animation: gradientText 5s ease infinite;
     }
+    @keyframes gradientText { 0%{background-position:0% 50%} 50%{background-position:100% 50%} 100%{background-position:0% 50%} }
+    .hero p { font-size: 1.2em; color: var(--text-muted); line-height: 1.7; }
 
-    .features li::before {
-      content: "";
+    .section-container { max-width: 1100px; margin: 0 auto 80px auto; width: 100%; }
+
+    /* Features Grid */
+    .doc-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 25px; margin-bottom: 80px; }
+    .tool-box {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      padding: 35px;
+      border-radius: 20px;
+      backdrop-filter: blur(16px);
+      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     }
-
-    .steps li::before {
-      content: "";
+    .tool-box:hover {
+      transform: translateY(-8px);
+      background: var(--card-hover-bg);
+      border-color: var(--accent-main);
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
     }
+    .tool-box i { color: var(--accent-main); width: 32px; height: 32px; margin-bottom: 20px; }
+    .tool-box h3 { color: #fff; margin-bottom: 12px; }
+    .tool-box p { color: var(--text-muted); font-size: 0.95em; line-height: 1.6; }
 
-    .features li, .steps li {
-      margin: 8px 0;
-    }
-
-    .cta-button {
-      margin-top: 30px;
-      background: white;
-      color: #333;
-      padding: 12px 25px;
-      font-weight: bold;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: background 0.3s;
-    }
-
-    .cta-button:hover {
-      background: #eee;
-    }
-
-    .note {
-      font-size: 0.9em;
-      opacity: 0.8;
-      margin-top: 20px;
-    }
-
+    /* Pricing Section */
+    .pricing-header { text-align: center; margin-bottom: 40px; color: #fff; }
+    .pricing-center { display: flex; justify-content: center; }
+    
     .pricing-box {
-      margin-top: 25px;
-      background-color: rgba(255,255,255,0.1);
-      padding: 20px;
+      background: rgba(56, 189, 248, 0.03);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      padding: 50px;
+      border-radius: 24px;
+      text-align: center;
+      max-width: 500px;
+      width: 100%;
+      position: relative;
+      transition: 0.4s;
+    }
+
+    .pricing-box::after {
+      content: 'BEST VALUE';
+      position: absolute;
+      top: -12px; left: 50%;
+      transform: translateX(-50%);
+      background: var(--neon-gradient);
+      color: #000;
+      font-size: 0.7em;
+      font-weight: 800;
+      padding: 4px 12px;
+      border-radius: 20px;
+      letter-spacing: 1px;
+    }
+
+    .price-tag { font-size: 2.5em; font-weight: 700; color: #fff; margin: 20px 0 10px; display: block; }
+    .price-tag span { color: var(--accent-main); }
+    
+    .pricing-list { list-style: none; margin: 30px 0; text-align: left; }
+    .pricing-list li { margin-bottom: 15px; display: flex; align-items: center; gap: 12px; color: var(--text-muted); }
+    .pricing-list li i { color: #22c55e; width: 18px; }
+
+    .btn-main {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 16px 40px;
+      background: var(--neon-gradient);
+      color: #000;
       border-radius: 12px;
+      font-weight: 700;
+      text-decoration: none;
+      transition: 0.3s;
+      box-shadow: 0 8px 20px var(--accent-glow);
     }
+    .btn-main:hover { transform: scale(1.05); box-shadow: 0 12px 30px var(--accent-glow); }
 
-    .pricing-box h3 {
-      margin-top: 0;
-      font-size: 1.4em;
+    .fab {
+      position: fixed; bottom: 30px; left: 30px; width: 60px; height: 60px;
+      border-radius: 50%; backdrop-filter: blur(15px); display: flex;
+      align-items: center; justify-content: center; z-index: 9998;
+      background: rgba(20, 22, 30, 0.7); border: 1px solid rgba(255, 255, 255, 0.1);
+      transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); text-decoration: none;
     }
+    .fab:hover { transform: scale(1.1); border-color: var(--accent-main); background: rgba(30, 34, 48, 0.9); }
 
-    .pricing-box p {
-      margin: 5px 0;
-      font-size: 1em;
-    }
-    .floating-back {
-  position: fixed;
-  bottom: 20px;
-  left: 20px;
-  background: white;
-  color: #333;
-  padding: 10px 18px;
-  border-radius: 8px;
-  text-decoration: none;
-  font-weight: bold;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-  transition: background 0.3s;
-  z-index: 1000;
-}
+    footer { text-align: center; padding: 50px 0; border-top: 1px solid var(--card-border); color: var(--text-muted); font-size: 0.95em; margin-top: auto; }
+    footer a { color: var(--text-muted); text-decoration: none; margin: 0 12px; transition: 0.2s; }
+    footer a:hover { color: var(--accent-main); }
 
-.floating-back:hover {
-  background: #eee;
-}
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(-15px); } to { opacity: 1; transform: translateY(0); } }
+  </style>
+</head>
+<body>
 
-  
-/* Floating Home FAB */
-.home-fab {
-  position: fixed;
-  bottom: 20px;
-  left: 20px;
-  width: 44px;
-  height: 44px;
-  background-color: white;
-  border-radius: 12px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-  text-decoration: none;
-  z-index: 1000;
-}
-.home-fab svg {
-  width: 20px;
-  height: 20px;
-  fill: #333;
-}
-</style>
-<meta content="Free browser-based tool by Layerbit. Fast, simple, and privacy-respecting." name="description"/></head>
-<body><p style="max-width:800px;margin:20px auto;font-size:1em;text-align:center;">Launch fast, secure static websites using GitHub Pages. Includes email setup and basic SEO.</p>
-<h1>Static Website Creation</h1>
-<p>Clean, fast, and fully hosted static websites – built by Layerbit. Perfect for portfolios, landing pages, product announcements, and more.</p>
-<h2>What We Offer</h2>
-<ul class="features">
-<li> 🔹 Fully responsive, mobile-friendly designs</li>
-<li> 🔹 Hosting via GitHub Pages (or custom domains)</li>
-<li> 🔹 Fast load times with zero backend</li>
-<li> 🔹 “Coming Soon” pages, product launch pages, and more</li>
-<li> 🔹 Optional email forms using Formspree or Buttondown</li>
-</ul>
-<h2>How It Works</h2>
-<ol class="steps">
-<li> 1. You tell us what kind of site you need</li>
-<li> 2. We design &amp; build it for you</li>
-<li> 3. We host it or hand over the files</li>
-<li> 4. Optional add-ons: analytics, email capture, animations</li>
-</ol>
-<h2>Pricing</h2>
-<div class="pricing-box">
-<h3>💻 Static Website (Basic)</h3>
-<p><strong>INR 999 / $12</strong></p>
-<p>✔️ 1 Page — clean, minimal, fully mobile-friendly</p>
-<p>✔️ Hosting on GitHub Pages included</p>
-<p>✔️ Delivered within 48 hours</p>
-</div>
-<button class="cta-button" onclick="window.location.href='mailto:ceo@layerbit.co.in?subject=Static Website Request'">
-    Request Your Site →
-  </button>
-<div class="note">
-    Need it urgent? Just mail us directly at <strong>ceo@layerbit.co.in</strong> or WhatsApp your idea.
+  <header>
+    <a href="../index.html" class="brand">
+      <svg width="36" height="36" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <polygon points="32,20 54,28 32,36 10,28" stroke="#f8fafc" stroke-width="4" stroke-linejoin="round"/>
+        <polyline points="10,38 32,46 54,38" stroke="#f8fafc" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+        <polyline points="10,48 32,56 54,48" stroke="#f8fafc" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+        <rect x="50" y="10" width="10" height="10" rx="2" fill="#00f2fe" />
+      </svg>
+      Layerbit
+    </a>
+  </header>
+
+  <main class="hero">
+    <h1>Static Website Engineering</h1>
+    <p>We deploy lightning-fast, highly secure static sites optimized for conversion. Perfect for portfolios, SaaS landing pages, and product launches.</p>
+  </main>
+
+  <div class="section-container">
+    <div class="doc-grid">
+      <div class="tool-box">
+        <i data-lucide="zap"></i>
+        <h3>Edge Performance</h3>
+        <p>Built for speed. We host your site on global CDN edge networks for near-instant load times worldwide.</p>
+      </div>
+      <div class="tool-box">
+        <i data-lucide="shield"></i>
+        <h3>Ironclad Security</h3>
+        <p>No database means no SQL injection. Our static architecture is inherently immune to most common web vulnerabilities.</p>
+      </div>
+      <div class="tool-box">
+        <i data-lucide="search"></i>
+        <h3>SEO Optimized</h3>
+        <p>Semantic HTML5 and optimized metadata structures ensure your project ranks high on search engines right out of the box.</p>
+      </div>
+    </div>
+
+    <h2 class="pricing-header">Development Package</h2>
+    <div class="pricing-center">
+      <div class="pricing-box">
+        <h3>Professional Deployment</h3>
+        <span class="price-tag">₹999 / <span>$12</span></span>
+        <ul class="pricing-list">
+          <li><i data-lucide="check-circle"></i> Fully Responsive (Mobile + Desktop)</li>
+          <li><i data-lucide="check-circle"></i> GitHub Pages Global Hosting</li>
+          <li><i data-lucide="check-circle"></i> Custom Domain Integration</li>
+          <li><i data-lucide="check-circle"></i> Email Lead Form (Formspree/Buttondown)</li>
+          <li><i data-lucide="check-circle"></i> 48-Hour Rapid Delivery</li>
+        </ul>
+        <a href="mailto:ceo@layerbit.co.in?subject=Static Website Request" class="btn-main">
+          <i data-lucide="globe"></i> Launch My Site
+        </a>
+      </div>
+    </div>
+
+    <p style="text-align: center; margin-top: 40px; color: var(--text-muted); font-size: 0.9em; font-style: italic;">
+      Need a multi-page site or custom animations? Contact us for a bespoke quote.
+    </p>
   </div>
-<a class="home-fab" href="../index.html" title="Home">
-<svg viewbox="0 0 24 24">
-<path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"></path>
-</svg>
-</a>
+
+  <a href="../index.html" class="fab" aria-label="Command Center">
+    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="filter: drop-shadow(0 0 8px rgba(56, 189, 248, 0.5));">
+      <path d="M12 2L2 7l10 5 10-5-10-5z" stroke="#38bdf8" stroke-width="2" stroke-linejoin="round" fill="rgba(56,189,248,0.2)"/>
+      <path d="M2 17l10 5 10-5M2 12l10 5 10-5" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </a>
+
+  <footer>
+    <div>&copy; 2025 - 2026 <strong>Layerbit Technologies</strong>. All rights reserved.</div>
+    <div style="margin-top: 15px;">
+      <a href="../about.html">About</a>
+      <a href="../privacy.html">Privacy</a>
+      <a href="../terms.html">Terms</a>
+      <a href="mailto:ceo@layerbit.co.in">Contact</a>
+    </div>
+  </footer>
+
+  <script>lucide.createIcons();</script>
 </body>
 </html>

@@ -1,176 +1,261 @@
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1" name="viewport"/>
-<title>API Automation - Layerbit</title>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&amp;display=swap" rel="stylesheet"/>
-<style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Enterprise-grade API Automation & Integration services by Layerbit. Custom middleware, scheduled data pipelines, and secure webhook architecture." />
+  <title>API Automation | Enterprise Integration - Layerbit</title>
+  
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6072772587431629" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link href="../layerbit-logo.png" rel="icon" type="image/x-icon" />
+  
+  <style>
+    :root {
+      --bg-base: #0a0c10;
+      --bg-gradient: radial-gradient(circle at 50% 0%, #1a1e2d 0%, #0a0c10 70%);
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --card-bg: rgba(20, 22, 30, 0.4);
+      --card-border: rgba(255, 255, 255, 0.04);
+      --card-hover-bg: rgba(30, 34, 48, 0.6);
+      --card-hover-border: rgba(56, 189, 248, 0.4);
+      --accent-main: #38bdf8;
+      --accent-glow: rgba(56, 189, 248, 0.5);
+      --neon-gradient: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
       font-family: 'Space Grotesk', sans-serif;
-      background: linear-gradient(135deg, #4facfe, #00f2fe);
-      color: white;
-      padding: 30px 20px;
-      max-width: 900px;
-      margin: auto;
-      line-height: 1.6;
-    }
-
-    h1, h2 {
-      font-size: 2em;
-      margin-bottom: 10px;
-    }
-
-    ul {
-      list-style: none;
-      padding-left: 0;
-    }
-
-    li {
-      margin: 10px 0;
-    }
-
-    .cta-button {
-      margin-top: 30px;
-      background: white;
-      color: #333;
-      padding: 12px 25px;
-      font-weight: bold;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: background 0.3s;
-    }
-
-    .cta-button:hover {
-      background: #eee;
-    }
-
-    .note {
-      font-size: 0.9em;
-      opacity: 0.8;
-      margin-top: 20px;
-    }
-
-    .examples {
-      margin-top: 15px;
-      opacity: 0.9;
-    }
-      .floating-back {
-  position: fixed;
-  bottom: 20px;
-  left: 20px;
-  background: white;
-  color: #333;
-  padding: 10px 18px;
-  border-radius: 8px;
-  text-decoration: none;
-  font-weight: bold;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-  transition: background 0.3s;
-  z-index: 1000;
-}
-
-.floating-back:hover {
-  background: #eee;
-}
-.pricing {
+      color: var(--text-main);
+      background-color: var(--bg-base);
+      background-image: var(--bg-gradient);
+      min-height: 100vh;
+      padding: 20px 40px;
+      position: relative;
+      overflow-x: hidden;
       display: flex;
-      flex-wrap: wrap;
-      gap: 20px;
-      margin-top: 30px;
-      justify-content: center;
+      flex-direction: column;
     }
 
+    /* Animated Star Background */
+    @keyframes drift { from { background-position: 0 0; } to { background-position: -60px -60px; } }
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0; left: 0; width: 100vw; height: 100vh;
+      background-image: radial-gradient(rgba(255,255,255,0.05) 1px, transparent 1px);
+      background-size: 50px 50px;
+      z-index: -1;
+      animation: drift 100s linear infinite;
+    }
+
+    header { display: flex; justify-content: flex-start; max-width: 1200px; width: 100%; margin: 0 auto 60px auto; }
+    .brand { font-size: 1.6em; font-weight: 700; display: flex; align-items: center; gap: 12px; text-decoration: none; color: #fff; }
+    .brand svg { filter: drop-shadow(0 0 10px var(--accent-glow)); }
+
+    .hero { text-align: center; max-width: 900px; margin: 0 auto 60px auto; animation: fadeIn 1.2s ease-out; }
+    .hero h1 {
+      font-size: 3.5em;
+      margin-bottom: 20px;
+      background: linear-gradient(270deg, #ffffff, #38bdf8, #ffffff);
+      background-size: 200% 200%;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      animation: gradientText 5s ease infinite;
+    }
+    @keyframes gradientText { 0%{background-position:0% 50%} 50%{background-position:100% 50%} 100%{background-position:0% 50%} }
+    .hero p { font-size: 1.2em; color: var(--text-muted); line-height: 1.7; }
+
+    .section-container { max-width: 1100px; margin: 0 auto 80px auto; width: 100%; }
+
+    /* Capabilities Cards */
+    .doc-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 25px; margin-bottom: 80px; }
+    .tool-box {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      padding: 35px;
+      border-radius: 20px;
+      backdrop-filter: blur(16px);
+      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    .tool-box:hover {
+      transform: translateY(-8px);
+      background: var(--card-hover-bg);
+      border-color: var(--accent-main);
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+    }
+    .tool-box i { color: var(--accent-main); width: 32px; height: 32px; margin-bottom: 20px; }
+    .tool-box h3 { color: #fff; margin-bottom: 12px; }
+    .tool-box p { color: var(--text-muted); font-size: 0.95em; line-height: 1.6; }
+
+    /* FIXED PRICING SECTION */
+    .pricing-header { text-align: center; margin-bottom: 40px; color: #fff; }
+    .pricing-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 30px; }
+    
     .pricing-box {
-      background-color: rgba(255,255,255,0.1);
-      padding: 20px;
-      border-radius: 12px;
-      width: 260px;
+      background: rgba(255,255,255,0.02);
+      border: 1px solid var(--card-border);
+      padding: 50px 30px;
+      border-radius: 24px;
       text-align: center;
-      backdrop-filter: blur(5px);
+      transition: 0.4s;
     }
 
-    .pricing-box h3 {
-      margin: 0;
-      font-size: 1.3em;
-    }
-
-    .pricing-box p {
-      margin: 8px 0;
-      font-size: 0.95em;
+    /* Fixed the "Always Hovered" look here */
+    .pricing-box.featured {
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      background: rgba(56, 189, 248, 0.03);
+      position: relative;
+      transform: scale(1.05);
     }
     
-  
-/* Floating Home FAB */
-.home-fab {
-  position: fixed;
-  bottom: 20px;
-  left: 20px;
-  width: 44px;
-  height: 44px;
-  background-color: white;
-  border-radius: 12px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-  text-decoration: none;
-  z-index: 1000;
-}
-.home-fab svg {
-  width: 20px;
-  height: 20px;
-  fill: #333;
-}
-</style>
-<meta content="Free browser-based tool by Layerbit. Fast, simple, and privacy-respecting." name="description"/></head>
-<body><p style="max-width:800px;margin:20px auto;font-size:1em;text-align:center;">Automate your processes with API workflows. Streamline data transfers and integrations.</p>
-<h1>API Automation</h1>
-<p>Need to pull data from an API or send updates to one? We automate your API workflows — securely and reliably — so you never have to do it manually again.</p>
-<h2>What We Can Build</h2>
-<ul>
-<li>✔️ Daily/Hourly API data pull &amp; save as Excel/JSON</li>
-<li>✔️ Auto-push alerts, logs, or status updates to APIs</li>
-<li>✔️ Scheduled sync between systems (cron-ready)</li>
-<li>✔️ Retry failed API calls or batch uploads</li>
-<li>✔️ Custom auth handling (Token, Header, OAuth)</li>
-</ul>
-<h2>Examples</h2>
-<div class="examples">
-<p><strong>Analytics Fetcher:</strong> Pull data from a marketing API every day at 8 AM.</p>
-<p><strong>Webhook Responder:</strong> Receive event from a service and log it into Google Sheet.</p>
-<p><strong>Auto Sender:</strong> Send daily summaries to your backend with proper headers.</p>
-</div>
-<h2>Pricing</h2>
-<div class="pricing">
-<div class="pricing-box">
-<h3>One-Time Call</h3>
-<p><strong>₹999 / $12</strong></p>
-<p>Single endpoint<br/>One-time fetch and store</p>
-</div>
-<div class="pricing-box">
-<h3>Scheduled Job</h3>
-<p><strong>₹1999 / $24</strong></p>
-<p>Hourly/daily sync<br/>Retry + logging support</p>
-</div>
-<div class="pricing-box">
-<h3>Full Flow</h3>
-<p><strong>₹3999+ / $48+</strong></p>
-<p>Multi-endpoint<br/>Auth + email alerts</p>
-</div>
-</div>
-<button class="cta-button" onclick="window.location.href='mailto:ceo@layerbit.co.in?subject=API Automation Request'">
-    Automate My API →
-  </button>
-<div class="note">
-    Share your API doc, sample payload, or use case — we’ll build and test it for you.
+    .pricing-box.featured::after {
+      content: 'MOST POPULAR';
+      position: absolute;
+      top: -12px; left: 50%;
+      transform: translateX(-50%);
+      background: var(--neon-gradient);
+      color: #000;
+      font-size: 0.7em;
+      font-weight: 800;
+      padding: 4px 12px;
+      border-radius: 20px;
+      letter-spacing: 1px;
+    }
+
+    .pricing-box:hover {
+      border-color: var(--accent-main);
+      background: var(--card-hover-bg);
+      transform: translateY(-5px);
+    }
+    /* Hovering over featured should still feel distinct */
+    .pricing-box.featured:hover {
+        transform: scale(1.05) translateY(-5px);
+        box-shadow: 0 0 30px rgba(56, 189, 248, 0.15);
+    }
+
+    .price-tag { font-size: 2.2em; font-weight: 700; color: #fff; margin: 20px 0 10px; display: block; }
+    .price-tag span { color: var(--accent-main); }
+    .price-sub { color: var(--text-muted); font-size: 0.9em; margin-bottom: 30px; min-height: 45px; }
+
+    .btn-main {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 16px 40px;
+      background: var(--neon-gradient);
+      color: #000;
+      border-radius: 12px;
+      font-weight: 700;
+      text-decoration: none;
+      transition: 0.3s;
+      box-shadow: 0 8px 20px var(--accent-glow);
+      margin-top: 50px;
+    }
+    .btn-main:hover { transform: scale(1.05); box-shadow: 0 12px 30px var(--accent-glow); }
+
+    /* Home FAB */
+    .fab {
+      position: fixed; bottom: 30px; left: 30px; width: 60px; height: 60px;
+      border-radius: 50%; backdrop-filter: blur(15px); display: flex;
+      align-items: center; justify-content: center; z-index: 9998;
+      background: rgba(20, 22, 30, 0.7); border: 1px solid rgba(255, 255, 255, 0.1);
+      transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); text-decoration: none;
+    }
+    .fab:hover { transform: scale(1.1); border-color: var(--accent-main); background: rgba(30, 34, 48, 0.9); }
+
+    footer { text-align: center; padding: 50px 0; border-top: 1px solid var(--card-border); color: var(--text-muted); font-size: 0.95em; margin-top: auto; }
+    footer a { color: var(--text-muted); text-decoration: none; margin: 0 12px; transition: 0.2s; }
+    footer a:hover { color: var(--accent-main); }
+
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(-15px); } to { opacity: 1; transform: translateY(0); } }
+  </style>
+</head>
+<body>
+
+  <header>
+    <a href="../index.html" class="brand">
+      <svg width="36" height="36" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <polygon points="32,20 54,28 32,36 10,28" stroke="#f8fafc" stroke-width="4" stroke-linejoin="round"/>
+        <polyline points="10,38 32,46 54,38" stroke="#f8fafc" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+        <polyline points="10,48 32,56 54,48" stroke="#f8fafc" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+        <rect x="50" y="10" width="10" height="10" rx="2" fill="#00f2fe" />
+      </svg>
+      Layerbit
+    </a>
+  </header>
+
+  <main class="hero">
+    <h1>API Automation & Integration</h1>
+    <p>We build industrial-grade middleware and data pipelines that connect your favorite platforms. Zero manual work, 100% precision.</p>
+  </main>
+
+  <div class="section-container">
+    <div class="doc-grid">
+      <div class="tool-box">
+        <i data-lucide="unplug"></i>
+        <h3>Custom Connectors</h3>
+        <p>Bridge the gap between incompatible legacy systems and modern SaaS APIs with bespoke translation layers.</p>
+      </div>
+      <div class="tool-box">
+        <i data-lucide="database-zap"></i>
+        <h3>Data Pipelines</h3>
+        <p>High-frequency data extraction, transformation, and loading (ETL) between your production databases and analytics tools.</p>
+      </div>
+      <div class="tool-box">
+        <i data-lucide="shield-check"></i>
+        <h3>Secure Webhooks</h3>
+        <p>Event-driven architecture that listens for triggers from Stripe, Shopify, or GitHub to execute immediate business logic.</p>
+      </div>
+    </div>
+
+    <h2 class="pricing-header">Engineering Plans</h2>
+    <div class="pricing-grid">
+      <div class="pricing-box">
+        <h3>Single Logic</h3>
+        <span class="price-tag">₹999 / <span>$12</span></span>
+        <p class="price-sub">Deployment of a single endpoint fetch or basic data post script.</p>
+      </div>
+      <div class="pricing-box featured">
+        <h3>Automated Pipeline</h3>
+        <span class="price-tag">₹1999 / <span>$24</span></span>
+        <p class="price-sub">Recurring synchronization with advanced logging, error handling, and auto-retries.</p>
+      </div>
+      <div class="pricing-box">
+        <h3>Full Integration</h3>
+        <span class="price-tag">₹3999+ / <span>$48+</span></span>
+        <p class="price-sub">Multi-platform ecosystem with OAuth2 flow, filtering logic, and custom alerts.</p>
+      </div>
+    </div>
+
+    <div style="text-align: center;">
+      <a href="mailto:ceo@layerbit.co.in?subject=API Automation Inquiry" class="btn-main">
+        <i data-lucide="rocket"></i> Start Engineering
+      </a>
+    </div>
   </div>
-<a class="home-fab" href="../index.html" title="Home">
-<svg viewbox="0 0 24 24">
-<path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"></path>
-</svg>
-</a>
+
+  <a href="../index.html" class="fab" aria-label="Command Center">
+    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="filter: drop-shadow(0 0 8px rgba(56, 189, 248, 0.5));">
+      <path d="M12 2L2 7l10 5 10-5-10-5z" stroke="#38bdf8" stroke-width="2" stroke-linejoin="round" fill="rgba(56,189,248,0.2)"/>
+      <path d="M2 17l10 5 10-5M2 12l10 5 10-5" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </a>
+
+  <footer>
+    <div>&copy; 2025 - 2026 <strong>Layerbit Technologies</strong>. All rights reserved.</div>
+    <div style="margin-top: 15px;">
+      <a href="../about.html">About</a>
+      <a href="../privacy.html">Privacy</a>
+      <a href="../terms.html">Terms</a>
+      <a href="mailto:ceo@layerbit.co.in">Contact</a>
+    </div>
+  </footer>
+
+  <script>lucide.createIcons();</script>
 </body>
 </html>
