@@ -1,1369 +1,1083 @@
 <!DOCTYPE html>
-
-<html data-theme="light" lang="en">
+<html lang="en">
 <head>
-<meta charset="utf-8"/>
-<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6072772587431629"
-     crossorigin="anonymous"></script>
-   <script>
-document.addEventListener("DOMContentLoaded", function () {
-  const pill = document.getElementById("pillSearch");
-  const input = document.getElementById("pillInput");
-  const section = document.getElementById("tools");
-  let expanded = false;
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="Free Dev Tools & Remote Access. No Installs. Just Build. Layerbit offers developer utilities, screen sharing, automation, and more — all browser-based and free." />
+  <title>Layerbit — Free Dev Tools & Remote Access</title>
+  
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6072772587431629" crossorigin="anonymous"></script>
+  
+  <script src="https://unpkg.com/lucide@latest"></script>
 
-  function expandSearch() {
-    if (!expanded) {
-      if (section) {
-        const y = section.getBoundingClientRect().top + window.scrollY - 80;
-        window.scrollTo({ top: y, behavior: 'smooth' });
-      }
-      pill.style.width = "260px";
-      input.style.display = "block";
-      input.focus();
-      expanded = true;
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link href="layerbit-logo.png" rel="icon" type="image/x-icon" />
+  
+  <style>
+    /* Ultra-Premium Dark Theme Variables */
+    :root {
+      --bg-base: #0a0c10;
+      --bg-gradient: radial-gradient(circle at 50% 0%, #1a1e2d 0%, #0a0c10 70%);
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --card-bg: rgba(20, 22, 30, 0.4);
+      --card-border: rgba(255, 255, 255, 0.04);
+      --card-hover-bg: rgba(30, 34, 48, 0.6);
+      --card-hover-border: rgba(56, 189, 248, 0.4);
+      --accent-main: #38bdf8;
+      --accent-glow: rgba(56, 189, 248, 0.5);
+      --neon-gradient: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%);
     }
-  }
 
-  function collapseSearch() {
-    pill.style.width = "48px";
-    input.style.display = "none";
-    input.value = "";
-    document.querySelectorAll(".tool-card").forEach(card => {
-      card.style.display = "flex";
-    });
-    expanded = false;
-  }
-
-  pill.addEventListener("click", function () {
-    if (!expanded) {
-      expandSearch();
-    } else {
-      if (document.activeElement !== input) {
-        collapseSearch();
-      }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
     }
-  });
 
-  input.addEventListener("input", function () {
-    const query = input.value.toLowerCase();
-    document.querySelectorAll(".tool-card").forEach(card => {
-      const text = card.innerText.toLowerCase();
-      card.style.display = text.includes(query) ? "flex" : "none";
-    });
-  });
-
-  // Keyboard shortcut
-  document.addEventListener("keydown", function (e) {
-    if (e.key === "/" && !input.matches(":focus")) {
-      e.preventDefault();
-      expandSearch();
-    } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") {
-      e.preventDefault();
-      expanded ? collapseSearch() : expandSearch();
-    }
-  });
-
-  // Only auto-collapse when input is not focused
-  let lastScrollY = window.scrollY;
-  window.addEventListener("scroll", () => {
-    if (expanded && document.activeElement !== input && Math.abs(window.scrollY - lastScrollY) > 50) {
-      collapseSearch();
-    }
-    lastScrollY = window.scrollY;
-  });
-});
-  </script>
-<meta content="width=device-width, initial-scale=1" name="viewport"/>
-<meta content="Free Dev Tools &amp; Remote Access. No Installs. Just Build. Layerbit offers developer utilities, screen sharing, automation, and more — all browser-based and free." name="description"/>
-<title>
-   Layerbit — Free Dev Tools &amp; Remote Access
-  </title>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&amp;display=swap" rel="stylesheet"/>
-<link href="layerbit-logo.png" rel="icon" type="image/x-icon"/>
-<style>
-   html {
+    html {
       scroll-behavior: smooth;
     }
-    :root {
-      --bg-color: linear-gradient(135deg, rgb(48, 207, 208), rgb(51, 8, 103));
-      --text-color: white;
-      --card-bg: rgba(255, 255, 255, 0.1);
-      --button-bg: white;
-      --button-text: #333;
-    }
-    [data-theme="light"] {
-      --bg-color: linear-gradient(135deg, #f8f9fa, #e9ecef);
-      --text-color: #333;
-      --card-bg: rgba(0, 0, 0, 0.05);
-      --button-bg: #333;
-      --button-text: white;
-    }
+
     body {
       font-family: 'Space Grotesk', sans-serif;
-      color: var(--text-color);
-      background: var(--bg-color);
-      margin: 0;
-      padding: 20px;
-      transition: background 2s ease-in-out;
+      color: var(--text-main);
+      background-color: var(--bg-base);
+      background-image: var(--bg-gradient);
+      min-height: 100vh;
+      padding: 20px 40px;
+      position: relative;
+      overflow-x: hidden;
     }
+
+    /* Animated Drifting Starry Background */
+    @keyframes drift {
+      from { background-position: 0 0, 20px 20px; }
+      to { background-position: -60px -60px, -40px -40px; }
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0; left: 0; width: 100vw; height: 100vh;
+      background-image: 
+        radial-gradient(rgba(255,255,255,0.08) 1px, transparent 1px),
+        radial-gradient(rgba(255,255,255,0.05) 1px, transparent 1px);
+      background-size: 60px 60px, 40px 40px;
+      background-position: 0 0, 20px 20px;
+      z-index: -1;
+      pointer-events: none;
+      animation: drift 60s linear infinite;
+    }
+
+    /* Header */
     header {
       display: flex;
-      justify-content: space-between;
+      justify-content: flex-start;
       align-items: center;
-      max-width: 1100px;
-      margin: auto;
+      max-width: 1200px;
+      margin: 0 auto 60px auto;
     }
+
     .brand {
-      font-size: 1.8em;
-      font-weight: bold;
+      font-size: 1.6em;
+      font-weight: 700;
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 12px;
+      letter-spacing: -0.5px;
     }
+
     .brand img {
-      height: 52px;
+      height: 36px;
+      filter: drop-shadow(0 0 10px var(--accent-glow));
     }
-    .toggle-theme {
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      padding: 12px 16px;
-      border: none;
-      background: var(--button-bg);
-      color: var(--button-text);
-      border-radius: 50px;
-      cursor: pointer;
-      font-weight: bold;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-      z-index: 1000;
-    }
+
+    /* Hero Section */
     .hero {
       text-align: center;
-      margin: 60px auto 20px;
+      max-width: 850px;
+      margin: 0 auto 80px auto;
       animation: fadeIn 1.2s ease-out forwards;
     }
+
+    @keyframes gradientText { 
+      0%{background-position:0% 50%} 
+      50%{background-position:100% 50%} 
+      100%{background-position:0% 50%} 
+    }
+
     .hero h1 {
-      font-size: 3em;
-      margin-bottom: 10px;
+      font-size: 4em;
+      font-weight: 700;
+      margin-bottom: 18px;
+      letter-spacing: -1.5px;
+      line-height: 1.1;
+      background: linear-gradient(270deg, #ffffff, #e2e8f0, #38bdf8, #ffffff);
+      background-size: 300% 300%;
+      animation: gradientText 8s ease infinite;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
     }
+
     .hero p {
-      font-size: 1.2em;
-      opacity: 0.85;
+      font-size: 1.15em;
+      color: var(--text-muted);
+      line-height: 1.7;
+      max-width: 650px;
+      margin: 0 auto;
+      font-weight: 400;
     }
-    .typing-container {
-      font-size: 1.6em;
-      font-weight: 600;
-      margin-top: 20px;
-      animation: fadeIn 1.5s ease-out forwards;
+
+    .beta-tag {
+      background: var(--neon-gradient);
+      color: #000;
+      padding: 2px 8px;
+      border-radius: 6px;
+      font-size: 0.55em;
+      margin-left: 10px;
+      vertical-align: middle;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      box-shadow: 0 0 10px var(--accent-glow);
     }
-    #typewriter {
-      display: inline;
-      border-right: 2px solid var(--text-color);
-      white-space: nowrap;
-      overflow: hidden;
-    }
+
+    /* Sections & Grid Layout */
     .section {
-      max-width: 1100px;
-      margin: 50px auto;
-      animation: fadeSlide 1s ease-out forwards;
+      max-width: 1200px;
+      margin: 0 auto 80px auto;
+      animation: fadeSlideUp 1s ease-out forwards;
     }
+
     .section h2 {
-      font-size: 2em;
-      margin-bottom: 20px;
+      font-size: 2.2em;
+      margin-bottom: 40px;
       text-align: center;
+      color: #fff;
+      font-weight: 600;
+      letter-spacing: -0.5px;
     }
+
     .grid {
-      display: flex;
-      flex-wrap: wrap;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 24px;
       justify-content: center;
-      gap: 30px;
     }
+
+    /* Refined Glassmorphic Cards */
     .tool-card {
       background: var(--card-bg);
-      border-radius: 12px;
-      padding: 20px;
-      width: 220px;
-      height: 200px;
+      border: 1px solid var(--card-border);
+      border-radius: 20px;
+      padding: 35px 25px;
       display: flex;
       flex-direction: column;
       align-items: center;
       text-align: center;
-      transition: transform 0.3s ease, background 0.3s ease;
       text-decoration: none;
       color: inherit;
-      opacity: 0;
-      animation: fadeInCard 1s forwards;
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.2);
     }
+
+    .tool-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: -100%; width: 50%; height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.05), transparent);
+      transform: skewX(-20deg);
+      transition: 0.7s;
+    }
+
+    .tool-card:hover::before {
+      left: 150%;
+    }
+
     .tool-card:hover {
-      transform: scale(1.08);
-      background: rgba(255, 255, 255, 0.15);
+      transform: translateY(-8px);
+      background: var(--card-hover-bg);
+      border-color: var(--card-hover-border);
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4), 0 0 25px rgba(56, 189, 248, 0.15);
     }
-    .tool-card img {
-      width: 60px;
-      margin-bottom: 10px;
+
+    /* Vector Icon Styling */
+    .icon-wrapper {
+      width: 64px;
+      height: 64px;
+      border-radius: 16px;
+      background: rgba(56, 189, 248, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 24px;
+      transition: transform 0.4s ease, background 0.4s ease;
+      border: 1px solid rgba(56, 189, 248, 0.2);
     }
+
+    .tool-card:hover .icon-wrapper {
+      transform: scale(1.1) rotate(5deg);
+      background: rgba(56, 189, 248, 0.2);
+      border-color: rgba(56, 189, 248, 0.5);
+      box-shadow: 0 0 20px var(--accent-glow);
+    }
+
+    .lucide {
+      width: 32px;
+      height: 32px;
+      color: var(--accent-main);
+      stroke-width: 1.5px;
+    }
+
     .tool-card h3 {
-      font-size: 1.2em;
-      margin: 0;
+      font-size: 1.25em;
+      font-weight: 600;
+      margin-bottom: 12px;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      letter-spacing: -0.3px;
     }
+
     .tool-card p {
-      font-size: 0.9em;
-      opacity: 0.85;
+      font-size: 0.95em;
+      color: var(--text-muted);
+      line-height: 1.6;
     }
+
+    /* AdSense SEO Text Panels */
+    .seo-panel {
+      max-width: 1000px;
+      margin: 0 auto 40px auto;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      padding: 40px;
+      border-radius: 20px;
+      backdrop-filter: blur(16px);
+      color: var(--text-muted);
+      text-align: left;
+      line-height: 1.8;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+    }
+    
+    .seo-panel h3 {
+      color: #fff;
+      font-size: 1.4em;
+      margin-bottom: 15px;
+      margin-top: 25px;
+      font-weight: 600;
+    }
+
+    .seo-panel h3:first-child { margin-top: 0; }
+    .seo-panel p { margin-bottom: 15px; font-size: 1.05em; }
+    .seo-panel ul { margin-left: 20px; margin-bottom: 20px; }
+    .seo-panel li { margin-bottom: 8px; }
+
+    /* Premium Buy Me A Coffee Button */
+    .premium-bmc-btn {
+      position: fixed;
+      top: 25px;
+      right: 30px;
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: rgba(20, 22, 30, 0.5);
+      border: 1px solid rgba(255, 193, 7, 0.3);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      padding: 10px 18px;
+      border-radius: 30px;
+      color: #f8fafc;
+      text-decoration: none;
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 600;
+      font-size: 0.9em;
+      box-shadow: 0 8px 25px rgba(0,0,0,0.5);
+      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .premium-bmc-btn i {
+      width: 18px;
+      height: 18px;
+      color: #ffc107;
+    }
+
+    .premium-bmc-btn:hover {
+      transform: translateY(-3px);
+      background: rgba(30, 34, 48, 0.8);
+      border-color: #ffc107;
+      box-shadow: 0 12px 30px rgba(255, 193, 7, 0.2);
+      color: #fff;
+    }
+
+/* Expanding Pill Search (Restored and Upgraded) */
+    .search-pill-wrapper {
+      position: fixed;
+      bottom: 30px;
+      left: 30px;
+      z-index: 9998;
+    }
+
+    .search-pill {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: rgba(20, 22, 30, 0.7);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(15px);
+      border-radius: 30px;
+      height: 60px;
+      width: 60px; /* Collapsed state */
+      padding: 0 16px; /* Adjusted to perfectly center the 28px icon */
+      cursor: pointer;
+      box-shadow: 0 8px 25px rgba(0,0,0,0.5);
+      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      overflow: hidden;
+    }
+
+    .search-pill:hover {
+      background: rgba(30, 34, 48, 0.9);
+      border-color: rgba(255,255,255,0.3);
+      transform: scale(1.05);
+    }
+
+    .search-pill.expanded {
+      width: 320px;
+      cursor: text;
+      border-color: var(--accent-main);
+      background: rgba(30, 34, 48, 0.95);
+      transform: scale(1);
+    }
+
+    /* FIXED: Removed the 'i' so it targets the SVG properly */
+    .search-pill .search-icon {
+      width: 28px;
+      height: 28px;
+      color: var(--text-muted);
+      flex-shrink: 0;
+      transition: color 0.3s;
+    }
+
+    .search-pill.expanded .search-icon {
+      color: var(--accent-main);
+    }
+
+    .search-pill input {
+      background: transparent;
+      border: none;
+      color: white;
+      font-size: 1.1em;
+      width: 100%;
+      outline: none;
+      font-family: 'Space Grotesk', sans-serif;
+      display: none;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .search-pill.expanded input {
+      display: block;
+      opacity: 1;
+    }
+
+    .search-pill input::placeholder {
+      color: var(--text-muted);
+    }
+
+    /* FIXED: Removed the 'i' so it targets the SVG properly */
+    .search-pill .clear-icon {
+      width: 24px;
+      height: 24px;
+      color: #ef4444;
+      cursor: pointer;
+      display: none;
+      flex-shrink: 0;
+    }
+
+    .search-pill.expanded .clear-icon {
+      display: block;
+    }
+
+    /* Floating Chat Orb */
+    .chat-fab-premium {
+      position: fixed;
+      bottom: 30px;
+      right: 30px;
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      z-index: 9998;
+      background: rgba(20, 22, 30, 0.7);
+      border: 1px solid rgba(56, 189, 248, 0.5);
+      backdrop-filter: blur(15px);
+      box-shadow: 0 8px 25px rgba(0,0,0,0.5), inset 0 0 15px rgba(56, 189, 248, 0.2);
+      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .chat-fab-premium i {
+      width: 26px;
+      height: 26px;
+      color: var(--accent-main);
+      transition: all 0.3s ease;
+    }
+
+    .chat-fab-premium:hover {
+      transform: scale(1.1) rotate(-5deg);
+      background: rgba(30, 34, 48, 0.9);
+      border-color: #38bdf8;
+      box-shadow: 0 12px 30px rgba(0,0,0,0.6), 0 0 25px rgba(56, 189, 248, 0.4);
+    }
+
+/* The Quantum Portal Interaction */
+.chat-fab-premium:hover {
+  transform: scale(1.15) translateY(-5px);
+  background: rgba(20, 22, 30, 0.95);
+  border-color: #00f2fe;
+  /* Multi-layered glow for depth */
+  box-shadow: 
+    0 15px 40px rgba(0,0,0,0.8), 
+    0 0 20px rgba(56, 189, 248, 0.4),
+    inset 0 0 15px rgba(0, 242, 254, 0.2);
+}
+
+.chat-fab-premium:hover svg .portal-ring {
+  animation-duration: 3s; /* Speeds up the "system check" */
+  stroke: #38bdf8;
+  opacity: 1;
+}
+
+.chat-fab-premium:hover svg .data-stream {
+  stroke: #fff;
+  stroke-width: 1.5;
+  animation-duration: 1s; /* Data transfer speeds up */
+}
+
+
+/* The Sonic Support Floater */
+.chat-fab-premium {
+  /* ... existing position/z-index ... */
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+/* This constant pulse ensures they don't miss the button */
+@keyframes fab-bloom {
+  0% { box-shadow: 0 8px 25px rgba(0,0,0,0.5), 0 0 0px rgba(56, 189, 248, 0); }
+  50% { box-shadow: 0 8px 25px rgba(0,0,0,0.5), 0 0 20px rgba(56, 189, 248, 0.3); }
+  100% { box-shadow: 0 8px 25px rgba(0,0,0,0.5), 0 0 0px rgba(56, 189, 248, 0); }
+}
+
+.chat-fab-premium {
+  animation: fab-bloom 3s infinite ease-in-out;
+}
+
+.chat-fab-premium:hover {
+  transform: scale(1.15) translateY(-5px);
+  background: rgba(30, 34, 48, 0.95);
+  border-color: #38bdf8;
+  /* Aggressive glow on hover to confirm target acquisition */
+  box-shadow: 0 20px 40px rgba(0,0,0,0.7), 0 0 30px rgba(56, 189, 248, 0.6);
+}
+
+/* Make the Wavelength violent on hover */
+.chat-fab-premium:hover svg .wave-bar {
+  animation-duration: 0.4s;
+  fill: #fff;
+}
+
+
+/* The Label that Explains the Button */
+.fab-label {
+  position: absolute;
+  right: 70px; /* Sits to the left of the button */
+  background: rgba(10, 12, 16, 0.8);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--accent-main);
+  color: var(--accent-main);
+  padding: 6px 15px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  opacity: 0;
+  transform: translateX(20px);
+  transition: all 0.4s ease;
+  pointer-events: none;
+  box-shadow: 0 0 15px rgba(56, 189, 248, 0.2);
+}
+
+.chat-fab-premium:hover .fab-label {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+
+.chat-fab-premium svg {
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Add a subtle rotation on the actual CLICK to make it feel like a physical lock turning */
+.chat-fab-premium:active {
+  transform: scale(0.95) rotate(-10deg);
+  transition: transform 0.1s;
+}
+
+
+
+/* Hover State for the Icon itself */
+.chat-fab-premium:hover {
+  transform: scale(1.1) translateY(-5px);
+  background: rgba(30, 34, 48, 0.95);
+  border-color: #38bdf8;
+  box-shadow: 0 15px 40px rgba(0,0,0,0.6), 0 0 20px rgba(56, 189, 248, 0.3);
+}
+
+.chat-fab-premium:hover svg .portal-frame {
+  animation-duration: 4s; /* System "wakes up" */
+  stroke: #fff;
+  opacity: 1;
+}
+	
+	/* Custom Image Styling for Chat Orb */
+    .chat-fab-premium .chat-custom-img {
+      width: 28px;
+      height: 28px;
+      object-fit: contain;
+      transition: all 0.3s ease;
+      border-radius: 50%; /* Keeps the image perfectly round */
+    }
+
+    .chat-fab-premium:hover .chat-custom-img {
+      transform: scale(1.15); /* Slightly enlarges the image on hover */
+      filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.4)); /* Adds a subtle glow */
+    }
+	
+	
+
+    /* Chat Modal */
+    #chatModal {
+      display: none;
+      position: fixed;
+      z-index: 10000;
+      left: 0; top: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.7);
+      backdrop-filter: blur(8px);
+    }
+    #chatModalContent {
+      background: #14161e;
+      border: 1px solid var(--card-hover-border);
+      margin: 15% auto;
+      padding: 35px;
+      border-radius: 24px;
+      width: 90%;
+      max-width: 360px;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.6), 0 0 30px rgba(56, 189, 248, 0.1);
+      text-align: center;
+      position: relative;
+    }
+    #chatModalContent h3 { margin-top: 0; font-size: 1.4rem; color: #fff; margin-bottom: 25px; }
+
+    .chat-option {
+      display: block;
+      margin: 12px auto;
+      padding: 15px 20px;
+      border: none;
+      border-radius: 12px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      color: white;
+      font-weight: 600;
+      text-decoration: none;
+      transition: all 0.3s;
+    }
+    .chat-option:hover { background: #007bff; border-color: #007bff; }
+    .chat-option.whatsapp:hover { background: #25D366; border-color: #25D366; }
+
+    #closeChatModal {
+      position: absolute;
+      top: 20px;
+      right: 25px;
+      font-size: 28px;
+      cursor: pointer;
+      color: #64748b;
+      transition: color 0.2s;
+    }
+    #closeChatModal:hover { color: #fff; }
+
+    /* Footer & Visitor Counter */
+    .visitor-counter {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 12px;
+      margin: 40px auto 0;
+      color: var(--text-muted);
+      font-size: 1.1em;
+      font-weight: 500;
+    }
+    .digit-box {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.1);
+      padding: 8px 14px;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 1.3em;
+      color: var(--accent-main);
+      text-align: center;
+      box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);
+    }
+
     footer {
       text-align: center;
-      font-size: 0.9em;
-      opacity: 0.8;
+      padding: 50px 0;
+      border-top: 1px solid var(--card-border);
+      color: var(--text-muted);
+      font-size: 0.95em;
       margin-top: 60px;
-      animation: fadeIn 2s ease-out forwards;
     }
-    footer a {
-      color: inherit;
-      text-decoration: none;
-      font-weight: bold;
-    }
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-    @keyframes fadeSlide {
-      from { opacity: 0; transform: translateY(20px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-    @keyframes fadeInCard {
-      0% { opacity: 0; transform: scale(0.95); }
-      100% { opacity: 1; transform: scale(1); }
-    }
-    .request-tool {
-        position: fixed;
-        bottom: 80px;
-        right: 20px;
-        padding: 12px 18px;
-        border: none;
-        background: var(--button-bg);
-        color: var(--button-text);
-        font-weight: bold;
-        border-radius: 8px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-        text-decoration: none;
-        z-index: 999;
-      }
-      .request-tool:hover {
-        background: #f0f0f0;
-      }
- .hero-feature {
-  background: linear-gradient(135deg, #1f1c2c, #928dab);
-  color: white;
-  text-align: center;
-  padding: 25px 20px;
-  border-radius: 16px;
-  margin: 20px 0;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
-}
+    footer a { color: var(--text-muted); text-decoration: none; margin: 0 12px; transition: color 0.2s; }
+    footer a:hover { color: var(--accent-main); }
 
-.hero-feature h2 {
-  font-size: 1.8em;
-  margin-bottom: 10px;
-}
-
-.hero-button {
-  display: inline-block;
-  margin-top: 15px;
-  background: white;
-  color: #1f1c2c;
-  padding: 10px 20px;
-  border-radius: 8px;
-  font-weight: bold;
-  text-decoration: none;
-}
-
-.beta-tag {
-  background: #ff4081;
-  color: white;
-  padding: 3px 8px;
-  border-radius: 6px;
-  font-size: 0.6em;
-  margin-left: 8px;
-  animation: pulse 2s infinite;
-}
-
-@keyframes pulse {
-  0% { opacity: 1; }
-  50% { opacity: 0.5; }
-  100% { opacity: 1; }
-}
-
-    .compact-hero {
-  padding: 25px 20px;
-  margin: 20px 0;
-}
-.compact-hero h2 {
-  font-size: 1.8em;
-}
-  .floating-button {
-    position: fixed;
-    top: 20px;  /* Keep the button at the top-right */
-    right: 20px;
-    height: 40px;  /* Reduced size */
-    width: 140px;  /* Reduced width */
-    z-index: 9999; /* Keep it above other elements */
-    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-  }
-
-  /* Optional: Add a hover effect for extra attention */
-  .floating-button:hover {
-    transform: scale(1.1);
-    transition: transform 0.3s;
-  }
-
-  
-.search-fab {
-  position: fixed;
-  bottom: 100px;
-  left: 20px;
-  height: 48px;
-  width: 48px;
-  border-radius: 50%;
-  font-size: 1.5em;
-  background: white;
-  color: #333;
-  border: none;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-  z-index: 9999;
-  cursor: pointer;
-}
-
-.search-overlay {
-  display: none;
-  flex-direction: row;
-  align-items: center;
-  justify-content: space-between;
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  padding: 12px;
-  background: white;
-  z-index: 10000;
-  box-shadow: 0 -4px 10px rgba(0,0,0,0.2);
-  gap: 8px;
-}
-.search-overlay.show {
-  display: flex;
-}
-.search-overlay input {
-  flex: 1;
-  padding: 10px;
-  font-size: 1em;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-}
-.search-overlay button {
-  background: none;
-  border: none;
-  font-size: 1.4em;
-  cursor: pointer;
-}
+    /* Animations */
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(-15px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes fadeSlideUp { from { opacity: 0; transform: translateY(40px); } to { opacity: 1; transform: translateY(0); } }
   </style>
-<script type="application/ld+json">
-   {
-  "@context": "https://schema.org",
-  "@type": "WebSite",
-  "name": "Layerbit",
-  "url": "https://layerbit.co.in",
-  "description": "Layerbit offers free tools and services for developers, including JSON formatting, QR code generation, cron job creation, and screen sharing via LayerLink.",
-  "publisher": {
-    "@type": "Organization",
-    "name": "Layerbit",
-    "logo": {
-      "@type": "ImageObject",
-      "url": "https://layerbit.co.in/layerbit-logo.png"
-    }
-  }
-}
-</script>
-<script>
-document.addEventListener("DOMContentLoaded", function () {
-  const pill = document.getElementById("pillSearch");
-  const input = document.getElementById("pillInput");
-  const section = document.getElementById("tools");
-  let expanded = false;
-
-  function expandSearch() {
-    if (!expanded) {
-      if (section) {
-        const y = section.getBoundingClientRect().top + window.scrollY - 80;
-        window.scrollTo({ top: y, behavior: 'smooth' });
-      }
-      pill.style.width = "260px";
-      input.style.display = "block";
-      input.focus();
-      expanded = true;
-    }
-  }
-
-  function collapseSearch() {
-    pill.style.width = "48px";
-    input.style.display = "none";
-    input.value = "";
-    document.querySelectorAll(".tool-card").forEach(card => {
-      card.style.display = "flex";
-    });
-    expanded = false;
-  }
-
-  pill.addEventListener("click", function () {
-    if (!expanded) {
-      expandSearch();
-    } else {
-      if (document.activeElement !== input) {
-        collapseSearch();
-      }
-    }
-  });
-
-  input.addEventListener("input", function () {
-    const query = input.value.toLowerCase();
-    document.querySelectorAll(".tool-card").forEach(card => {
-      const text = card.innerText.toLowerCase();
-      card.style.display = text.includes(query) ? "flex" : "none";
-    });
-  });
-
-  // Keyboard shortcut
-  document.addEventListener("keydown", function (e) {
-    if (e.key === "/" && !input.matches(":focus")) {
-      e.preventDefault();
-      expandSearch();
-    } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") {
-      e.preventDefault();
-      expanded ? collapseSearch() : expandSearch();
-    }
-  });
-
-  // Only auto-collapse when input is not focused
-  let lastScrollY = window.scrollY;
-  window.addEventListener("scroll", () => {
-    if (expanded && document.activeElement !== input && Math.abs(window.scrollY - lastScrollY) > 50) {
-      collapseSearch();
-    }
-    lastScrollY = window.scrollY;
-  });
-});
-  </script>
 </head>
 <body>
-<header>
-<div class="brand">
-<img alt="Layerbit Logo" src="layerbit-logo.png"/>
-    Layerbit
-   </div>
-</header>
-<section class="hero-feature compact-hero">
-<h2>
-<strong>
-     Introducing LayerLink
-    </strong>
-<span class="beta-tag">
-     Beta
-    </span>
-</h2>
-<p>
-    Browser-based screen sharing. No installs. Just a link.
-   </p>
-<a class="hero-button" href="tools/layerlink-sharer.html">
-    Try Now
-   </a>
-</section>
-<button class="toggle-theme" onclick="toggleTheme()">
-   🌓
-  </button>
-<div class="hero">
-<h1 style="font-size: 2.6em; margin-bottom: 0.3em;">
-    Tools That Work. Services That Scale.
-   </h1>
-<p style="font-size: 1.15em; max-width: 700px; margin: 0 auto;">
-    Layerbit is your Swiss Army knife for everyday development. Build, automate, and launch faster with free tools and expert-crafted services.
-   </p>
-<div style="margin-top: 25px;">
-<a href="#tools" style="background:white; color:#333; padding:12px 24px; font-weight:bold; border-radius:8px; text-decoration:none; box-shadow:0 4px 8px rgba(0,0,0,0.2);">
-     Explore Tools
-    </a>
-</div>
-</div>
-<div class="section" id="tools">
-<h2>
-    Dev Tools Suite
-   </h2>
-<div class="grid">
-<a class="tool-card featured-tool" href="tools/layerlink-sharer.html">
-<img alt="LayerLink Icon" src="images/layerlink-icon.png"/>
-<h3>
-      LayerLink
-      <span class="beta-tag">
-       Beta
-      </span>
-</h3>
-<p>
-      Browser-based screen sharing for instant support.
-     </p>
-</a>
-<a class="tool-card" href="tools/json-validator.html">
-<img alt="JSON Tool" src="images/json-icon.png"/>
-<h3>
-      JSON Validator &amp; Formatter
-     </h3>
-<p>
-      Fix &amp; beautify your JSON instantly.
-     </p>
-</a>
-<a class="tool-card" href="tools/qr-barcode.html">
-<img alt="QR Tool" src="images/qr-barcode-icon.png"/>
-<h3>
-      QR / Barcode Generator
-     </h3>
-<p>
-      Generate QR or barcode for links/text.
-     </p>
-</a>
-<a class="tool-card" href="tools/sql-formatter.html">
-<img alt="SQL Formatter" src="images/sql-icon.png"/>
-<h3>
-      Universal SQL Formatter
-     </h3>
-<p>
-      Format your SQL for readability.
-     </p>
-</a>
-<a class="tool-card" href="tools/base64.html">
-<img alt="Base64 Tool" src="images/base64-icon.png"/>
-<h3>
-      Base64 Encode / Decode
-     </h3>
-<p>
-      Convert text or file content safely.
-     </p>
-</a>
-<a class="tool-card" href="tools/json-to-table.html">
-<img alt="JSON Table" src="images/json-table-icon.png"/>
-<h3>
-      JSON Table Viewer
-     </h3>
-<p>
-      Convert structured JSON arrays into readable tables.
-     </p>
-</a>
-<a class="tool-card" href="tools/text-diff-checker.html">
-<img alt="Text Diff Checker Icon" src="images/text-diff-icon.png"/>
-<h3>
-      Text Diff Checker
-     </h3>
-<p>
-      Compare two text blocks and highlight differences with optional cleanup.
-     </p>
-</a>
-<a class="tool-card" href="tools/csv-to-json.html">
-<img alt="CSV to JSON" src="images/csvjson-icon.png"/>
-<h3>
-      CSV to JSON Converter
-     </h3>
-<p>
-      Transform CSV files into JSON.
-     </p>
-</a>
-<a class="tool-card" href="tools/yaml-json-converter.html">
-<img alt="YAML JSON Converter Icon" src="images/yaml-json-icon.png"/>
-<h3>
-      YAML ↔ JSON Converter
-     </h3>
-<p>
-      Instantly convert between YAML and JSON formats with ease.
-     </p>
-</a>
-<a class="tool-card" href="tools/insight.html">
-<img alt="Insight Icon" src="images/insight-icon.png"/>
-<h3>
-      Insight
-     </h3>
-<p>
-      Understand your system, browser &amp; network at a glance.
-     </p>
-</a>
-<a class="tool-card" href="tools/malicious-url-checker-dns-only.html">
-<img alt="Malicious URL Icon" src="images/malicious-icon.png"/>
-<h3>
-      Malicious URL Scanner
-     </h3>
-<p>
-      Real-time check for phishing, malware, and unsafe links.
-     </p>
-</a>
-<a class="tool-card" href="tools/breachalert.html">
-<img alt="BreachAlert Icon" src="images/breachalert-icon.png"/>
-<h3>
-      BreachAlert
-     </h3>
-<p>
-      Check if your email or phone was exposed in a data breach.
-     </p>
-</a>
-<a class="tool-card" href="tools/cron-generator.html">
-<img alt="Cron Tool" src="images/cron-icon.png"/>
-<h3>
-      Cron Expression Generator
-     </h3>
-<p>
-      Generate crons with no guesswork.
-     </p>
-</a>
-<a class="tool-card" href="tools/url-encoder.html">
-<img alt="URL Tool" src="images/url-icon.png"/>
-<h3>
-      URL Encoder / Decoder
-     </h3>
-<p>
-      Convert URLs for safety or clarity.
-     </p>
-</a>
-<a class="tool-card" href="tools/log-analyzer.html">
-<img alt="Log Analyzer" src="images/log-icon.png"/>
-<h3>
-      Log Analyzer
-     </h3>
-<p>
-      Highlight log issues and trends.
-     </p>
-</a>
-<a class="tool-card" href="tools/jwt-decoder.html">
-<img alt="JWT Decoder Icon" src="images/jwt-icon.png"/>
-<h3>
-      JWT Decoder
-     </h3>
-<p>
-      Decode and view JWT headers and payloads instantly.
-     </p>
-</a>
-<a class="tool-card" href="tools/regex-tester.html">
-<img alt="Regex Tester Icon" src="images/regex-icon.png"/>
-<h3>
-      Regex Tester
-     </h3>
-<p>
-      Test and debug regular expressions with real-time match highlighting.
-     </p>
-</a>
-<a class="tool-card" href="tools/html-escape-unescape.html">
-<img alt="HTML Escape Unescape Icon" src="images/html-escape-icon.png"/>
-<h3>
-      HTML Escape / Unescape
-     </h3>
-<p>
-      Convert HTML special characters to safe entities and back.
-     </p>
-</a>
-</div>
-</div>
 
+  <a href="https://www.buymeacoffee.com/layerbit" target="_blank" class="premium-bmc-btn">
+    <i data-lucide="coffee"></i>
+    <span>Support Layerbit</span>
+  </a>
 
-
-     
-
-<section class="section">
-  <h2>About Layerbit Tools</h2>
-
-  <div style="
-    max-width: 800px;
-    margin: 0 auto;
-    background: var(--card-bg);
-    padding: 25px;
-    border-radius: 12px;
-    text-align: center;
-    line-height: 1.6;
-  ">
-    <p>
-      Layerbit provides a collection of free developer tools designed to simplify everyday tasks.
-      From JSON formatting and QR code generation to SQL formatting and data conversion,
-      our tools are built to help developers work faster and more efficiently.
-    </p>
-
-    <p>
-      All tools are browser-based, require no installation, and are completely free to use.
-    </p>
-  </div>
-</section>
-
-
-
-
-     
-<div class="section">
-<h2>
-    Built for You
-   </h2>
-<div class="grid">
-<a class="tool-card" href="tools/api-automation.html">
-<img alt="API Automation" src="images/api-icon.png"/>
-<h3>
-      API Automation
-     </h3>
-<p>
-      Automate your data with API flows.
-     </p>
-</a>
-<a class="tool-card" href="tools/custom-scripts.html">
-<img alt="Custom Scripts" src="images/script-icon.png"/>
-<h3>
-      Custom Scripts
-     </h3>
-<p>
-      Scripts for logs, reports &amp; fixes.
-     </p>
-</a>
-<a class="tool-card" href="tools/static-sites.html">
-<img alt="Static Sites" src="images/website-icon.png"/>
-<h3>
-      Static Website Setup
-     </h3>
-<p>
-      Launch your site with GitHub &amp; email.
-     </p>
-</a>
-</div>
-</div>
-<div id="visit-counter-wrapper" style="display: flex; justify-content: center; align-items: center; gap: 6px; margin: 30px auto 0; font-family: 'Space Grotesk', sans-serif; color: white; font-size: 1.1em; flex-wrap: wrap;">
-<span style="font-size: 20px; font-weight: bold;">
-    Visitors:
-   </span>
-<div id="digit-container" style="display:flex; gap:4px; margin-left:6px;">
-</div>
-</div>
-<footer class="footer">
-<div class="footer-top">
-<span>
-     © 2025 - 2026
-     <strong>
+  <header>
+    <div class="brand">
+      <svg width="36" height="36" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" style="filter: drop-shadow(0 0 10px rgba(56, 189, 248, 0.4));">
+        <polygon points="32,20 54,28 32,36 10,28" stroke="#f8fafc" stroke-width="4" stroke-linejoin="round"/>
+        <polyline points="10,38 32,46 54,38" stroke="#f8fafc" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+        <polyline points="10,48 32,56 54,48" stroke="#f8fafc" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+        <rect x="50" y="10" width="10" height="10" rx="2" fill="#00f2fe" />
+      </svg>
       Layerbit
-     </strong>
-     . All rights reserved.
-    </span>
-<div class="footer-links">
-<a href="about.html">
-      About
-     </a>
-<a href="privacy.html">
-      Privacy Policy
-     </a>
-<a href="terms.html">
-      Terms
-     </a>
-<a href="blog.html">
-      Blog
-     </a>
-<a href="javascript:void(0)" id="footerContact">
-      Contact
-     </a>
-</div>
-</div>
-</footer>
-<style>
-   .footer {
-  padding: 30px 20px;
-  text-align: center;
-  font-size: 0.95rem;
-  background: rgba(255, 255, 255, 0.05);
-  color: var(--text-color);
-  font-family: 'Space Grotesk', sans-serif;
-  margin-top: 60px;
-  border-top: 1px solid rgba(255,255,255,0.15);
-}
-.footer-top {
-  max-width: 900px;
-  margin: auto;
-}
-.footer-links {
-  margin-top: 10px;
-}
-.footer-links a {
-  margin: 0 10px;
-  text-decoration: none;
-  color: var(--text-color);
-  font-weight: 500;
-  transition: color 0.3s;
-}
-.footer-links a:hover {
-  text-decoration: underline;
-  color: #4facfe;
-}
-  </style>
-<script>
-   const gradients = [
-    'linear-gradient(135deg, #4facfe, #00f2fe)',
-    'linear-gradient(135deg, #43e97b, #38f9d7)',
-    'linear-gradient(135deg, #30cfd0, #330867)',
-    'linear-gradient(135deg, #a1c4fd, #c2e9fb)',
-    'linear-gradient(135deg, #667eea, #764ba2)'
-  ];
+    </div>
+  </header>
 
-  function shuffleBackground() {
-    const bg = gradients[Math.floor(Math.random() * gradients.length)];
-    document.body.style.background = bg;
-  }
+  <main class="hero">
+    <h1>Powering Developer Workflows</h1>
+    <p>Access a premium suite of browser-based utilities. No installations, no tracking, just pure productivity crafted for modern engineering teams.</p>
+  </main>
 
-  function toggleTheme() {
-    const theme = document.documentElement.getAttribute("data-theme");
-    document.documentElement.setAttribute("data-theme", theme === "light" ? "dark" : "light");
-    shuffleBackground(); // only shuffle on toggle
-  }
+  <section class="section" id="tools">
+    <h2>Dev Tools Suite</h2>
+    <div class="grid">
+      
+<a class="tool-card" href="tools/layerlink-sharer.html">
+        <div class="icon-wrapper">
+          <svg width="42" height="42" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="6" y="10" width="52" height="34" rx="4" fill="rgba(30, 40, 60, 0.8)" stroke="#38bdf8" stroke-width="2"/>
+            <path d="M24 44L20 54H44L40 44" fill="rgba(30, 40, 60, 0.8)" stroke="#38bdf8" stroke-width="2" stroke-linejoin="round"/>
+            <line x1="16" y1="54" x2="48" y2="54" stroke="#38bdf8" stroke-width="2" stroke-linecap="round"/>
+            <rect x="10" y="14" width="44" height="26" rx="2" fill="#0a0c10"/>
+            <path d="M22 29 C22 18, 38 18, 42 26" stroke="#38bdf8" stroke-width="3" stroke-linecap="round" fill="none"/>
+            <polygon points="42,21 45,28 37,27" fill="#38bdf8" />
+            <path d="M42 25 C42 36, 26 36, 22 28" stroke="#ff4081" stroke-width="3" stroke-linecap="round" fill="none"/>
+            <polygon points="22,33 19,26 27,27" fill="#ff4081" />
+          </svg>
+        </div>
+        <h3>LayerLink <span class="beta-tag">Beta</span></h3>
+        <p>Browser-based screen sharing for instant collaboration and support.</p>
+      </a>
 
-  document.documentElement.setAttribute("data-theme", "dark"); // set initial theme properly
-</script>
-<script>
-document.addEventListener("DOMContentLoaded", function () {
-  const pill = document.getElementById("pillSearch");
-  const input = document.getElementById("pillInput");
-  const section = document.getElementById("tools");
-  let expanded = false;
+      <a class="tool-card" href="tools/json-validator.html">
+        <div class="icon-wrapper"><i data-lucide="braces"></i></div>
+        <h3>JSON Validator &amp; Formatter</h3>
+        <p>Clean, validate, and beautify complex JSON payloads instantly.</p>
+      </a>
 
-  function expandSearch() {
-    if (!expanded) {
-      if (section) {
-        const y = section.getBoundingClientRect().top + window.scrollY - 80;
-        window.scrollTo({ top: y, behavior: 'smooth' });
-      }
-      pill.style.width = "260px";
-      input.style.display = "block";
-      input.focus();
-      expanded = true;
-    }
-  }
+      <a class="tool-card" href="tools/sql-formatter.html">
+        <div class="icon-wrapper"><i data-lucide="database"></i></div>
+        <h3>Universal SQL Formatter</h3>
+        <p>Optimize and format SQL queries across multiple database dialects.</p>
+      </a>
 
-  function collapseSearch() {
-    pill.style.width = "48px";
-    input.style.display = "none";
-    input.value = "";
-    document.querySelectorAll(".tool-card").forEach(card => {
-      card.style.display = "flex";
-    });
-    expanded = false;
-  }
+      <a class="tool-card" href="tools/jwt-decoder.html">
+        <div class="icon-wrapper"><i data-lucide="key-round"></i></div>
+        <h3>JWT Decoder</h3>
+        <p>Securely inspect and decode JWT headers and payloads on the fly.</p>
+      </a>
 
-  pill.addEventListener("click", function () {
-    if (!expanded) {
-      expandSearch();
-    } else {
-      if (document.activeElement !== input) {
-        collapseSearch();
-      }
-    }
-  });
+      <a class="tool-card" href="tools/qr-barcode.html">
+        <div class="icon-wrapper"><i data-lucide="qr-code"></i></div>
+        <h3>QR / Barcode Generator</h3>
+        <p>Generate high-resolution QR codes or barcodes for links and text.</p>
+      </a>
 
-  input.addEventListener("input", function () {
-    const query = input.value.toLowerCase();
-    document.querySelectorAll(".tool-card").forEach(card => {
-      const text = card.innerText.toLowerCase();
-      card.style.display = text.includes(query) ? "flex" : "none";
-    });
-  });
+      <a class="tool-card" href="tools/base64.html">
+        <div class="icon-wrapper"><i data-lucide="binary"></i></div>
+        <h3>Base64 Encode / Decode</h3>
+        <p>Convert text or file content safely with standard base64 algorithms.</p>
+      </a>
 
-  // Keyboard shortcut
-  document.addEventListener("keydown", function (e) {
-    if (e.key === "/" && !input.matches(":focus")) {
-      e.preventDefault();
-      expandSearch();
-    } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") {
-      e.preventDefault();
-      expanded ? collapseSearch() : expandSearch();
-    }
-  });
+      <a class="tool-card" href="tools/json-to-table.html">
+        <div class="icon-wrapper"><i data-lucide="table-properties"></i></div>
+        <h3>JSON Table Viewer</h3>
+        <p>Transform structured JSON arrays into highly readable data tables.</p>
+      </a>
 
-  // Only auto-collapse when input is not focused
-  let lastScrollY = window.scrollY;
-  window.addEventListener("scroll", () => {
-    if (expanded && document.activeElement !== input && Math.abs(window.scrollY - lastScrollY) > 50) {
-      collapseSearch();
-    }
-    lastScrollY = window.scrollY;
-  });
-});
-  </script>
-<script type="module">
-   import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js";
-import { getDatabase, ref, onValue, runTransaction } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-database.js";
+      <a class="tool-card" href="tools/text-diff-checker.html">
+        <div class="icon-wrapper"><i data-lucide="file-diff"></i></div>
+        <h3>Text Diff Checker</h3>
+        <p>Compare text blocks side-by-side and highlight syntax differences.</p>
+      </a>
 
-const firebaseConfig = {
-  apiKey: "AIzaSyAR948frOLq4VZ1qSdxIMXu6BaCoehClAU",
-  authDomain: "layerlink-58948.firebaseapp.com",
-  databaseURL: "https://layerlink-58948-default-rtdb.firebaseio.com",
-  projectId: "layerlink-58948",
-  storageBucket: "layerlink-58948.firebasestorage.app",
-  messagingSenderId: "164370572506",
-  appId: "1:164370572506:web:cbeed3bfa6cb67c902b1e3"
-};
+      <a class="tool-card" href="tools/csv-to-json.html">
+        <div class="icon-wrapper"><i data-lucide="file-json-2"></i></div>
+        <h3>CSV to JSON Converter</h3>
+        <p>Instantly transform flat CSV spreadsheet files into structured JSON.</p>
+      </a>
 
-const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
-const visitRef = ref(db, 'siteVisits');
+      <a class="tool-card" href="tools/yaml-json-converter.html">
+        <div class="icon-wrapper"><i data-lucide="refresh-ccw"></i></div>
+        <h3>YAML ↔ JSON Converter</h3>
+        <p>Convert configuration files seamlessly between YAML and JSON formats.</p>
+      </a>
 
-// Always increment the count globally
-runTransaction(visitRef, (current) => {
-  return (current || 0) + 1;
-});
+      <a class="tool-card" href="tools/insight.html">
+        <div class="icon-wrapper"><i data-lucide="activity"></i></div>
+        <h3>Insight</h3>
+        <p>Understand your system architecture, browser environment &amp; network.</p>
+      </a>
 
-// Live update visitor counter
-function updateDigits(count) {
-  const container = document.getElementById("digit-container");
-  if (!container) return;
-  container.innerHTML = '';
-  const digits = count.toString().padStart(6, '0').split('');
-  digits.forEach(d => {
-    const box = document.createElement('div');
-    box.className = 'digit-box';
-    box.textContent = d;
-    box.style = `
-      background: rgba(255,255,255,0.2);
-      padding: 6px 10px;
-      border-radius: 6px;
-      font-weight: bold;
-      font-size: 1em;
-      min-width: 18px;
-      text-align: center;
-    `;
-    container.appendChild(box);
-  });
-}
+      <a class="tool-card" href="tools/malicious-url-checker-dns-only.html">
+        <div class="icon-wrapper"><i data-lucide="shield-alert"></i></div>
+        <h3>Malicious URL Scanner</h3>
+        <p>Real-time DNS check for phishing, malware, and unsafe external links.</p>
+      </a>
 
-onValue(visitRef, (snapshot) => {
-  const count = snapshot.val() || 0;
-  updateDigits(count);
-});
+      <a class="tool-card" href="tools/breachalert.html">
+        <div class="icon-wrapper"><i data-lucide="siren"></i></div>
+        <h3>BreachAlert</h3>
+        <p>Check if your credentials were exposed in any known data breaches.</p>
+      </a>
 
-<script>
-document.addEventListener("DOMContentLoaded", function () {
-  const pill = document.getElementById("pillSearch");
-  const input = document.getElementById("pillInput");
-  const section = document.getElementById("tools");
-  let expanded = false;
+      <a class="tool-card" href="tools/cron-generator.html">
+        <div class="icon-wrapper"><i data-lucide="clock-4"></i></div>
+        <h3>Cron Expression Generator</h3>
+        <p>Visually build and test server cron job schedules with no guesswork.</p>
+      </a>
 
-  function expandSearch() {
-    if (!expanded) {
-      if (section) {
-        const y = section.getBoundingClientRect().top + window.scrollY - 80;
-        window.scrollTo({ top: y, behavior: 'smooth' });
-      }
-      pill.style.width = "260px";
-      input.style.display = "block";
-      input.focus();
-      expanded = true;
-    }
-  }
+      <a class="tool-card" href="tools/url-encoder.html">
+        <div class="icon-wrapper"><i data-lucide="link"></i></div>
+        <h3>URL Encoder / Decoder</h3>
+        <p>Safely encode or decode URL parameters for API requests.</p>
+      </a>
 
-  function collapseSearch() {
-    pill.style.width = "48px";
-    input.style.display = "none";
-    input.value = "";
-    document.querySelectorAll(".tool-card").forEach(card => {
-      card.style.display = "flex";
-    });
-    expanded = false;
-  }
+      <a class="tool-card" href="tools/log-analyzer.html">
+        <div class="icon-wrapper"><i data-lucide="scroll-text"></i></div>
+        <h3>Log Analyzer</h3>
+        <p>Highlight critical errors, warnings, and trends in server log files.</p>
+      </a>
 
-  pill.addEventListener("click", function () {
-    if (!expanded) {
-      expandSearch();
-    } else {
-      if (document.activeElement !== input) {
-        collapseSearch();
-      }
-    }
-  });
+      <a class="tool-card" href="tools/regex-tester.html">
+        <div class="icon-wrapper"><i data-lucide="regex"></i></div>
+        <h3>Regex Tester</h3>
+        <p>Test and debug regular expressions with real-time match highlighting.</p>
+      </a>
 
-  input.addEventListener("input", function () {
-    const query = input.value.toLowerCase();
-    document.querySelectorAll(".tool-card").forEach(card => {
-      const text = card.innerText.toLowerCase();
-      card.style.display = text.includes(query) ? "flex" : "none";
-    });
-  });
+      <a class="tool-card" href="tools/html-escape-unescape.html">
+        <div class="icon-wrapper"><i data-lucide="code"></i></div>
+        <h3>HTML Escape / Unescape</h3>
+        <p>Convert HTML special characters to secure entities and back again.</p>
+      </a>
 
-  // Keyboard shortcut
-  document.addEventListener("keydown", function (e) {
-    if (e.key === "/" && !input.matches(":focus")) {
-      e.preventDefault();
-      expandSearch();
-    } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") {
-      e.preventDefault();
-      expanded ? collapseSearch() : expandSearch();
-    }
-  });
+    </div>
+  </section>
 
-  // Only auto-collapse when input is not focused
-  let lastScrollY = window.scrollY;
-  window.addEventListener("scroll", () => {
-    if (expanded && document.activeElement !== input && Math.abs(window.scrollY - lastScrollY) > 50) {
-      collapseSearch();
-    }
-    lastScrollY = window.scrollY;
-  });
-});
-  </script>
-<!-- Floating Buy Me a Coffee Button (top-right corner) -->
-<a href="https://www.buymeacoffee.com/layerbit" target="_blank">
-<img alt="Buy Me a Coffee" class="floating-button" src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png"/>
-</a>
-<script>
-   document.addEventListener("DOMContentLoaded", function () {
-  const pill = document.getElementById("pillSearch");
-  const input = document.getElementById("pillInput");
-  const section = document.getElementById("tools");
-  let expanded = false;
+  <section class="section">
+    <h2>Built for You</h2>
+    <div class="grid">
+      <a class="tool-card" href="tools/api-automation.html">
+        <div class="icon-wrapper"><i data-lucide="workflow"></i></div>
+        <h3>API Automation</h3>
+        <p>Automate your external data pipelines with seamless API flows.</p>
+      </a>
+      <a class="tool-card" href="tools/custom-scripts.html">
+        <div class="icon-wrapper"><i data-lucide="terminal-square"></i></div>
+        <h3>Custom Scripts</h3>
+        <p>Deploy custom script utilities for logs, reports, and fast fixes.</p>
+      </a>
+      <a class="tool-card" href="tools/static-sites.html">
+        <div class="icon-wrapper"><i data-lucide="globe"></i></div>
+        <h3>Static Website Setup</h3>
+        <p>Launch your optimized static sites connected with GitHub &amp; email.</p>
+      </a>
+    </div>
+  </section>
 
-  function expandSearch() {
-    if (!expanded) {
-      if (section) {
-        const y = section.getBoundingClientRect().top + window.scrollY - 80;
-        window.scrollTo({ top: y, behavior: 'smooth' });
-      }
-      pill.style.width = "260px";
-      input.style.display = "block";
-      input.focus();
-      expanded = true;
-    }
-  }
+  <section class="section">
+    <h2>Why Developers Choose Layerbit</h2>
+    <div class="seo-panel">
+      <h3>The Ultimate Browser-Based Developer Toolkit</h3>
+      <p>Layerbit is engineered to streamline modern development workflows by providing a comprehensive suite of secure, browser-based utilities. Whether you need to rapidly format complex SQL queries, validate nested JSON structures, or decode JSON Web Tokens (JWT) on the fly, our platform delivers instant results without the overhead of desktop installations.</p>
+      
+      <h3>Privacy First, Always Free</h3>
+      <p>We understand that developers handle sensitive data. That is why tools like our Base64 Encoder, Regex Tester, and URL Encoder run locally in your browser. We do not track your input strings, store your code snippets, or monitor your workflow. Layerbit offers pure productivity, completely free of charge.</p>
+      
+      <h3>Collaborate with LayerLink</h3>
+      <p>Beyond standard text utilities, Layerbit features <strong>LayerLink</strong>, an innovative browser-based screen sharing tool designed for remote IT support and pair programming. No software downloads are required—simply generate a secure link and start collaborating with your team or clients instantly.</p>
 
-  function collapseSearch() {
-    pill.style.width = "48px";
-    input.style.display = "none";
-    input.value = "";
-    document.querySelectorAll(".tool-card").forEach(card => {
-      card.style.display = "flex";
-    });
-    expanded = false;
-  }
+      <h3>Frequently Asked Questions</h3>
+      <ul>
+        <li><strong>Do I need to create an account?</strong> No. All Layerbit tools are accessible instantly without registration.</li>
+        <li><strong>Is my data stored on your servers?</strong> For formatting and parsing tools, data processing happens entirely within your local browser instance.</li>
+        <li><strong>Are these tools suitable for enterprise use?</strong> Yes, our utilities are designed to handle complex, large-scale data structures safely and efficiently.</li>
+      </ul>
+    </div>
+  </section>
 
-  pill.addEventListener("click", function () {
-    if (!expanded) {
-      expandSearch();
-    } else {
-      if (document.activeElement !== input) {
-        collapseSearch();
-      }
-    }
-  });
+  <div class="visitor-counter">
+    <span>Live Sessions:</span>
+    <div id="digit-container" style="display:flex; gap:8px;"></div>
+  </div>
 
-  input.addEventListener("input", function () {
-    const query = input.value.toLowerCase();
-    document.querySelectorAll(".tool-card").forEach(card => {
-      const text = card.innerText.toLowerCase();
-      card.style.display = text.includes(query) ? "flex" : "none";
-    });
-  });
+  <div class="search-pill-wrapper">
+    <div class="search-pill" id="pillSearch">
+      <i data-lucide="search" class="search-icon"></i>
+      <input type="text" id="pillInput" placeholder="Search developer tools..." autocomplete="off" />
+      <i data-lucide="x" class="clear-icon" id="clearSearchBtn"></i>
+    </div>
+  </div>
 
-  // Keyboard shortcut
-  document.addEventListener("keydown", function (e) {
-    if (e.key === "/" && !input.matches(":focus")) {
-      e.preventDefault();
-      expandSearch();
-    } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") {
-      e.preventDefault();
-      expanded ? collapseSearch() : expandSearch();
-    }
-  });
+<button class="chat-fab-premium" id="chatFab" aria-label="Contact Support">
+  <div class="fab-label">GET HELP</div>
+  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <style>
+      @keyframes orbit-slow { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+      @keyframes wave-pulse { 0%, 100% { transform: scaleY(1); opacity: 0.5; } 50% { transform: scaleY(1.5); opacity: 1; } }
+      .ring-kinetic { animation: orbit-slow 8s linear infinite; transform-origin: center; }
+      .wave-bar { transform-origin: center; animation: wave-pulse 1.2s ease-in-out infinite; }
+      .bar-delay-1 { animation-delay: 0.2s; }
+      .bar-delay-2 { animation-delay: 0.4s; }
+    </style>
 
-  // Only auto-collapse when input is not focused
-  let lastScrollY = window.scrollY;
-  window.addEventListener("scroll", () => {
-    if (expanded && document.activeElement !== input && Math.abs(window.scrollY - lastScrollY) > 50) {
-      collapseSearch();
-    }
-    lastScrollY = window.scrollY;
-  });
-});
-  </script>
-<!-- Pill Style Floating Search -->
-<div id="pillSearchWrapper" style="position: fixed; bottom: 20px; left: 20px; z-index: 9999;">
-<div id="pillSearch" style="width: 48px; padding: 10px 14px; display: flex; align-items: center; gap: 10px; background: white; border-radius: 40px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); cursor: pointer; transition: width 0.3s ease;">
-<svg fill="none" height="20" id="pillIcon" stroke="#333" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="20">
-<circle cx="11" cy="11" r="8">
-</circle>
-<line x1="21" x2="16.65" y1="21" y2="16.65">
-</line>
-</svg>
-<input id="pillInput" placeholder="Search tools..." style="flex: 1; font-size: 1em; border: none; outline: none; background: transparent; display: none; font-family: Space Grotesk, sans-serif;" type="text"/>
-</div>
-</div>
-<script>
-   document.addEventListener("DOMContentLoaded", function () {
-  const pill = document.getElementById("pillSearch");
-  const input = document.getElementById("pillInput");
-  const section = document.getElementById("tools");
-  let expanded = false;
+    <circle class="ring-kinetic" cx="12" cy="12" r="10" stroke="#94a3b8" stroke-width="0.5" stroke-dasharray="3 6" opacity="0.4" />
+    
+    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" 
+          fill="rgba(56, 189, 248, 0.1)" stroke="#38bdf8" stroke-width="2" stroke-linejoin="round" />
 
-  function expandSearch() {
-    if (!expanded) {
-      if (section) {
-        const y = section.getBoundingClientRect().top + window.scrollY - 80;
-        window.scrollTo({ top: y, behavior: 'smooth' });
-      }
-      pill.style.width = "260px";
-      input.style.display = "block";
-      input.focus();
-      expanded = true;
-    }
-  }
-
-  function collapseSearch() {
-    pill.style.width = "48px";
-    input.style.display = "none";
-    input.value = "";
-    document.querySelectorAll(".tool-card").forEach(card => {
-      card.style.display = "flex";
-    });
-    expanded = false;
-  }
-
-  pill.addEventListener("click", function () {
-    if (!expanded) {
-      expandSearch();
-    } else {
-      if (document.activeElement !== input) {
-        collapseSearch();
-      }
-    }
-  });
-
-  input.addEventListener("input", function () {
-    const query = input.value.toLowerCase();
-    document.querySelectorAll(".tool-card").forEach(card => {
-      const text = card.innerText.toLowerCase();
-      card.style.display = text.includes(query) ? "flex" : "none";
-    });
-  });
-
-  // Keyboard shortcut
-  document.addEventListener("keydown", function (e) {
-    if (e.key === "/" && !input.matches(":focus")) {
-      e.preventDefault();
-      expandSearch();
-    } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") {
-      e.preventDefault();
-      expanded ? collapseSearch() : expandSearch();
-    }
-  });
-
-  // Only auto-collapse when input is not focused
-  let lastScrollY = window.scrollY;
-  window.addEventListener("scroll", () => {
-    if (expanded && document.activeElement !== input && Math.abs(window.scrollY - lastScrollY) > 50) {
-      collapseSearch();
-    }
-    lastScrollY = window.scrollY;
-  });
-});
-  </script>
-<button class="toggle-theme" onclick="toggleTheme()">
-   🌓
-  </button>
-<script>
-   const gradients = [
-    'linear-gradient(135deg, #4facfe, #00f2fe)',
-    'linear-gradient(135deg, #43e97b, #38f9d7)',
-    'linear-gradient(135deg, #30cfd0, #330867)',
-    'linear-gradient(135deg, #a1c4fd, #c2e9fb)',
-    'linear-gradient(135deg, #667eea, #764ba2)'
-  ];
-
-  function shuffleBackground() {
-    const bg = gradients[Math.floor(Math.random() * gradients.length)];
-    document.body.style.background = bg;
-  }
-
-  function toggleTheme() {
-    const theme = document.documentElement.getAttribute("data-theme");
-    document.documentElement.setAttribute("data-theme", theme === "light" ? "dark" : "light");
-    shuffleBackground(); // only shuffle on toggle
-  }
-
-  document.documentElement.setAttribute("data-theme", "dark"); // set initial theme properly
-  </script>
-<script type="module">
-   import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js";
-import { getDatabase, ref, onValue, runTransaction } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-database.js";
-
-const firebaseConfig = {
-  apiKey: "AIzaSyAR948frOLq4VZ1qSdxIMXu6BaCoehClAU",
-  authDomain: "layerlink-58948.firebaseapp.com",
-  databaseURL: "https://layerlink-58948-default-rtdb.firebaseio.com",
-  projectId: "layerlink-58948",
-  storageBucket: "layerlink-58948.firebasestorage.app",
-  messagingSenderId: "164370572506",
-  appId: "1:164370572506:web:cbeed3bfa6cb67c902b1e3"
-};
-
-const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
-const visitRef = ref(db, 'siteVisits');
-
-// Always increment the count globally
-runTransaction(visitRef, (current) => {
-  return (current || 0) + 1;
-});
-
-// Live update visitor counter
-function updateDigits(count) {
-  const container = document.getElementById("digit-container");
-  if (!container) return;
-  container.innerHTML = '';
-  const digits = count.toString().padStart(6, '0').split('');
-  digits.forEach(d => {
-    const box = document.createElement('div');
-    box.className = 'digit-box';
-    box.textContent = d;
-    box.style = `
-      background: rgba(255,255,255,0.2);
-      padding: 6px 10px;
-      border-radius: 6px;
-      font-weight: bold;
-      font-size: 1em;
-      min-width: 18px;
-      text-align: center;
-    `;
-    container.appendChild(box);
-  });
-}
-
-onValue(visitRef, (snapshot) => {
-  const count = snapshot.val() || 0;
-  updateDigits(count);
-});
-  </script>
-<style>
-   #chatFab {
-  position: fixed;
-  bottom: 80px;
-  right: 20px;
-  width: 48px;
-  height: 48px;
-  background: white;
-  color: #007bff;  /* Strong blue for visibility */
-  border: none;
-  border-radius: 12px;
-  font-size: 24px;
-  font-weight: bold;
-  cursor: pointer;
-  z-index: 9999;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 3px 10px rgba(0,0,0,0.2);
-}
-#chatFab:hover {
-  background: #f0f0f0;
-}
-
-#chatFab:hover {
-  background: #f0f0f0;
-}
-
-#chatFab:hover {
-  background: #f0f0f0;
-}
-
-
-  #chatModal {
-    display: none;
-    position: fixed;
-    z-index: 9999;
-    left: 0; top: 0;
-    width: 100%; height: 100%;
-    background: rgba(0,0,0,0.4);
-    font-family: 'Space Grotesk', sans-serif;
-  }
-
-  #chatModalContent {
-    background: white;
-    margin: 15% auto;
-    padding: 20px;
-    border-radius: 12px;
-    width: 90%;
-    max-width: 360px;
-    box-shadow: 0 6px 20px rgba(0,0,0,0.3);
-    text-align: center;
-  }
-
-  #chatModalContent h3 {
-    margin-top: 0;
-    font-size: 1.3rem;
-    color: #333;
-  }
-
-  .chat-option {
-    display: block;
-    margin: 10px auto;
-    padding: 12px 20px;
-    border: none;
-    border-radius: 8px;
-    background: #007bff;
-    color: white;
-    font-weight: bold;
-    text-decoration: none;
-  }
-
-  .chat-option.whatsapp {
-    background: #25D366;
-  }
-
-  #closeChatModal {
-    float: right;
-    font-size: 18px;
-    font-weight: bold;
-    cursor: pointer;
-    color: #888;
-  }
-
-  #closeChatModal:hover {
-    color: #000;
-  }
-  </style>
-<button id="chatFab" title="Contact Layerbit">
-<svg fill="#007bff" height="22" viewbox="0 0 24 24" width="22" xmlns="http://www.w3.org/2000/svg">
-<path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H6l-4 4V6c0-1.1.9-2 2-2z">
-</path>
-</svg>
+    <rect class="wave-bar" x="8" y="9" width="1.5" height="6" rx="0.75" fill="#00f2fe" />
+    <rect class="wave-bar bar-delay-1" x="11.25" y="7" width="1.5" height="10" rx="0.75" fill="#38bdf8" />
+    <rect class="wave-bar bar-delay-2" x="14.5" y="9" width="1.5" height="6" rx="0.75" fill="#00f2fe" />
+    
+    <circle cx="19" cy="5" r="2" fill="#22c55e" />
+  </svg>
 </button>
-<div id="chatModal">
-<div id="chatModalContent">
-<span id="closeChatModal">
-     ×
-    </span>
-<h3>
-     Contact Layerbit
-    </h3>
-<a class="chat-option" href="mailto:ceo@layerbit.co.in?subject=Request%20Support">
-     Email
-    </a>
-<a class="chat-option whatsapp" href="https://wa.me/916282595823" target="_blank">
-     WhatsApp
-    </a>
-</div>
-</div>
-<script>
-   document.getElementById("chatFab").onclick = function () {
-    document.getElementById("chatModal").style.display = "block";
-  };
-  document.getElementById("closeChatModal").onclick = function () {
-    document.getElementById("chatModal").style.display = "none";
-  };
-  window.onclick = function (event) {
-    if (event.target === document.getElementById("chatModal")) {
-      document.getElementById("chatModal").style.display = "none";
-    }
-  };
+
+  <div id="chatModal">
+    <div id="chatModalContent">
+      <span id="closeChatModal">&times;</span>
+      <h3>Contact Layerbit Support</h3>
+      <a class="chat-option" href="mailto:ceo@layerbit.co.in?subject=Request%20Support">Send us an Email</a>
+      <a class="chat-option whatsapp" href="https://wa.me/916282595823" target="_blank">Chat on WhatsApp</a>
+    </div>
+  </div>
+
+  <footer>
+    <div style="margin-bottom: 15px;">
+      &copy; 2025 - 2026 <strong>Layerbit Technologies</strong>. All rights reserved.
+    </div>
+    <div>
+      <a href="about.html">About</a>
+      <a href="privacy.html">Privacy Policy</a>
+      <a href="terms.html">Terms of Service</a>
+      <a href="blog.html">Developer Blog</a>
+      <a href="#" id="footerContact">Contact</a>
+    </div>
+  </footer>
+
+  <script>
+    // Initialize icons immediately
+    lucide.createIcons();
+
+    document.addEventListener("DOMContentLoaded", () => {
+      
+      // --- 1. EXPANDING PILL SEARCH LOGIC ---
+      const pillSearch = document.getElementById('pillSearch');
+      const pillInput = document.getElementById('pillInput');
+      const clearSearchBtn = document.getElementById('clearSearchBtn');
+      const toolCards = document.querySelectorAll('.tool-card');
+      let isSearchExpanded = false;
+
+      function expandSearch() {
+        if (!isSearchExpanded) {
+          pillSearch.classList.add('expanded');
+          
+          // Slight delay to allow CSS width animation before showing text input
+          setTimeout(() => {
+            pillInput.focus();
+          }, 200);
+          
+          isSearchExpanded = true;
+          
+          // Scroll to tools grid smoothly
+          const section = document.getElementById("tools");
+          if (section) {
+             const y = section.getBoundingClientRect().top + window.scrollY - 80;
+             window.scrollTo({ top: y, behavior: 'smooth' });
+          }
+        }
+      }
+
+      function collapseSearch() {
+        pillSearch.classList.remove('expanded');
+        pillInput.value = '';
+        filterTools('');
+        isSearchExpanded = false;
+        pillInput.blur();
+      }
+
+      function filterTools(query) {
+        const lowerQuery = query.toLowerCase();
+        toolCards.forEach(card => {
+          const text = card.innerText.toLowerCase();
+          card.style.display = text.includes(lowerQuery) ? "flex" : "none";
+        });
+      }
+
+      // Click pill to expand
+      if(pillSearch) {
+        pillSearch.addEventListener('click', (e) => {
+          // Don't expand if they clicked the clear button
+          if (e.target.closest('#clearSearchBtn')) return;
+          if (!isSearchExpanded) expandSearch();
+        });
+      }
+
+      // Click X to clear/close
+      if(clearSearchBtn) {
+        clearSearchBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          collapseSearch();
+        });
+      }
+
+      // Live filter on type
+      if(pillInput) {
+        pillInput.addEventListener('input', (e) => filterTools(e.target.value));
+      }
+
+      // Collapse search if user clicks outside of the pill
+      document.addEventListener('click', (e) => {
+        if (isSearchExpanded && !pillSearch.contains(e.target)) {
+          collapseSearch();
+        }
+      });
+
+      // Keyboard shortcuts
+      document.addEventListener('keydown', (e) => {
+        if (e.key === '/' && document.activeElement !== pillInput) {
+          e.preventDefault();
+          expandSearch();
+        } else if (e.key === 'Escape' && isSearchExpanded) {
+          collapseSearch();
+        }
+      });
+
+      // Collapse search when scrolling down heavily (matches your old logic)
+      let lastScrollY = window.scrollY;
+      window.addEventListener("scroll", () => {
+        if (isSearchExpanded && document.activeElement !== pillInput && Math.abs(window.scrollY - lastScrollY) > 50) {
+          collapseSearch();
+        }
+        lastScrollY = window.scrollY;
+      });
+
+
+      // --- 2. CHAT MODAL LOGIC ---
+      const chatModal = document.getElementById("chatModal");
+      const chatFab = document.getElementById("chatFab");
+      const footerContact = document.getElementById("footerContact");
+      const closeChatModal = document.getElementById("closeChatModal");
+
+      function openChat(e) {
+        if (e) e.preventDefault();
+        chatModal.style.display = "block";
+      }
+
+      function closeChat() {
+        chatModal.style.display = "none";
+      }
+
+      if(chatFab) {
+        chatFab.addEventListener('click', openChat);
+      }
+      
+      if(footerContact) {
+        footerContact.addEventListener('click', openChat);
+      }
+      
+      if(closeChatModal) {
+        closeChatModal.addEventListener('click', closeChat);
+      }
+
+      window.addEventListener('click', (e) => {
+        if (e.target === chatModal) closeChat();
+      });
+
+    });
   </script>
-<script>
-document.getElementById("footerContact").onclick = function (e) {
-  e.preventDefault();
-  document.getElementById("chatModal").style.display = "block";
-};
-</script></body>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js";
+    import { getDatabase, ref, onValue, runTransaction } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyAR948frOLq4VZ1qSdxIMXu6BaCoehClAU",
+      authDomain: "layerlink-58948.firebaseapp.com",
+      databaseURL: "https://layerlink-58948-default-rtdb.firebaseio.com",
+      projectId: "layerlink-58948",
+      storageBucket: "layerlink-58948.firebasestorage.app",
+      messagingSenderId: "164370572506",
+      appId: "1:164370572506:web:cbeed3bfa6cb67c902b1e3"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    const visitRef = ref(db, 'siteVisits');
+
+    runTransaction(visitRef, (current) => {
+      return (current || 0) + 1;
+    });
+
+    function updateDigits(count) {
+      const container = document.getElementById("digit-container");
+      if (!container) return;
+      container.innerHTML = '';
+      const digits = count.toString().padStart(6, '0').split('');
+      digits.forEach(d => {
+        const box = document.createElement('div');
+        box.className = 'digit-box';
+        box.textContent = d;
+        container.appendChild(box);
+      });
+    }
+
+    onValue(visitRef, (snapshot) => {
+      const count = snapshot.val() || 0;
+      updateDigits(count);
+    });
+  </script>
+
+</body>
 </html>

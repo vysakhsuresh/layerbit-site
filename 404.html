@@ -1,31 +1,334 @@
-
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
-<meta charset="utf-8"/>
-<title>Page Not Found - Layerbit</title>
-<meta content="width=device-width, initial-scale=1" name="viewport"/>
-<style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Page not found. The requested Layerbit utility or directory does not exist." />
+  <title>404 Not Found - Layerbit Utilities</title>
+  
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6072772587431629" crossorigin="anonymous"></script>
+  
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link href="layerbit-logo.png" rel="icon" type="image/x-icon" />
+  
+  <style>
+    /* Ultra-Premium Dark Theme Variables (Matched to Index) */
+    :root {
+      --bg-base: #0a0c10;
+      --bg-gradient: radial-gradient(circle at 50% 0%, #1a1e2d 0%, #0a0c10 70%);
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --card-bg: rgba(20, 22, 30, 0.4);
+      --card-border: rgba(255, 255, 255, 0.04);
+      --card-hover-bg: rgba(30, 34, 48, 0.6);
+      --card-hover-border: rgba(56, 189, 248, 0.4);
+      --accent-main: #38bdf8;
+      --accent-glow: rgba(56, 189, 248, 0.5);
+      --neon-gradient: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
     body {
-      background: linear-gradient(135deg, #4facfe, #00f2fe);
-      color: white;
       font-family: 'Space Grotesk', sans-serif;
+      color: var(--text-main);
+      background-color: var(--bg-base);
+      background-image: var(--bg-gradient);
+      min-height: 100vh;
+      padding: 20px 40px;
+      position: relative;
+      overflow-x: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Animated Drifting Starry Background */
+    @keyframes drift {
+      from { background-position: 0 0, 20px 20px; }
+      to { background-position: -60px -60px, -40px -40px; }
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0; left: 0; width: 100vw; height: 100vh;
+      background-image: 
+        radial-gradient(rgba(255,255,255,0.08) 1px, transparent 1px),
+        radial-gradient(rgba(255,255,255,0.05) 1px, transparent 1px);
+      background-size: 60px 60px, 40px 40px;
+      background-position: 0 0, 20px 20px;
+      z-index: -1;
+      pointer-events: none;
+      animation: drift 60s linear infinite;
+    }
+
+    /* Header */
+    header {
+      display: flex;
+      justify-content: flex-start;
+      align-items: center;
+      max-width: 1200px;
+      width: 100%;
+      margin: 0 auto;
+    }
+
+    .brand {
+      font-size: 1.6em;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      letter-spacing: -0.5px;
+      text-decoration: none;
+      color: #fff;
+    }
+
+    .brand svg {
+      filter: drop-shadow(0 0 10px var(--accent-glow));
+    }
+
+    /* 404 Specific Layout */
+    .error-container {
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
       text-align: center;
+      padding: 40px 0;
+      animation: fadeIn 1s ease-out forwards;
+    }
+
+    .error-panel {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
       padding: 50px;
+      border-radius: 24px;
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      box-shadow: 0 20px 50px rgba(0,0,0,0.4), 0 0 30px rgba(56, 189, 248, 0.05);
+      max-width: 600px;
+      width: 100%;
+      position: relative;
+      overflow: hidden;
     }
-    h1 {
-      font-size: 3em;
+
+    .error-panel::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; width: 100%; height: 4px;
+      background: var(--neon-gradient);
+      opacity: 0.8;
     }
-    a {
-      color: white;
-      text-decoration: underline;
+
+    .error-icon {
+      color: #ef4444;
+      width: 64px;
+      height: 64px;
+      margin-bottom: 20px;
+      filter: drop-shadow(0 0 15px rgba(239, 68, 68, 0.3));
     }
+
+    @keyframes gradientText { 
+      0%{background-position:0% 50%} 
+      50%{background-position:100% 50%} 
+      100%{background-position:0% 50%} 
+    }
+
+    .error-code {
+      font-size: 6em;
+      font-weight: 700;
+      margin: 0;
+      line-height: 1;
+      letter-spacing: -2px;
+      background: linear-gradient(270deg, #ffffff, #e2e8f0, #38bdf8, #ffffff);
+      background-size: 300% 300%;
+      animation: gradientText 8s ease infinite;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .error-title {
+      font-size: 1.5em;
+      color: #fff;
+      margin-top: 10px;
+      margin-bottom: 20px;
+      font-weight: 600;
+    }
+
+    .error-msg {
+      font-size: 1.1em;
+      color: var(--text-muted);
+      line-height: 1.7;
+      margin-bottom: 40px;
+    }
+
+    /* Action Buttons */
+    .btn-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px;
+      justify-content: center;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 12px 24px;
+      border-radius: 12px;
+      font-weight: 600;
+      text-decoration: none;
+      transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      font-size: 1em;
+      font-family: 'Space Grotesk', sans-serif;
+      border: none;
+      cursor: pointer;
+    }
+
+    .btn i {
+      width: 18px;
+      height: 18px;
+    }
+
+    .btn-primary {
+      background: var(--neon-gradient);
+      color: #000;
+      box-shadow: 0 4px 15px var(--accent-glow);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 25px var(--accent-glow);
+    }
+
+    .btn-secondary {
+      background: rgba(255,255,255,0.05);
+      color: #fff;
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .btn-secondary:hover {
+      background: rgba(255,255,255,0.1);
+      border-color: rgba(255,255,255,0.2);
+      transform: translateY(-3px);
+      box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    }
+
+    /* Floating Command Center Orb (Locked Choice) */
+    .fab {
+      position: fixed;
+      bottom: 30px;
+      left: 30px;
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      backdrop-filter: blur(15px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      z-index: 9998;
+      box-shadow: 0 8px 25px rgba(0,0,0,0.5);
+      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      text-decoration: none;
+      background: rgba(20, 22, 30, 0.7);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .fab:hover {
+      transform: scale(1.1);
+      border-color: rgba(56, 189, 248, 0.5);
+      background: rgba(30, 34, 48, 0.9);
+      box-shadow: 0 12px 30px rgba(0,0,0,0.6), 0 0 25px rgba(56, 189, 248, 0.3);
+    }
+
+    /* Footer */
+    footer {
+      text-align: center;
+      padding: 40px 0 20px 0;
+      border-top: 1px solid var(--card-border);
+      color: var(--text-muted);
+      font-size: 0.95em;
+      width: 100%;
+    }
+    
+    footer a { color: var(--text-muted); text-decoration: none; margin: 0 12px; transition: color 0.2s; }
+    footer a:hover { color: var(--accent-main); }
+
+    /* Animations */
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(-15px); } to { opacity: 1; transform: translateY(0); } }
   </style>
-<meta content="Oops! The page you’re looking for isn’t available on Layerbit. Return to our homepage and explore useful tools." name="description"/></head>
+</head>
 <body>
-<h1>404 - Page Not Found</h1>
-<p>The page you're looking for doesn't exist or has been moved.</p>
-<p><a href="index.html">← Go back to Layerbit</a></p>
+
+  <header>
+    <a href="index.html" class="brand">
+      <svg width="36" height="36" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <polygon points="32,20 54,28 32,36 10,28" stroke="#f8fafc" stroke-width="4" stroke-linejoin="round"/>
+        <polyline points="10,38 32,46 54,38" stroke="#f8fafc" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+        <polyline points="10,48 32,56 54,48" stroke="#f8fafc" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+        <rect x="50" y="10" width="10" height="10" rx="2" fill="#00f2fe" />
+      </svg>
+      Layerbit
+    </a>
+  </header>
+
+  <main class="error-container">
+    <div class="error-panel">
+      <i data-lucide="triangle-alert" class="error-icon"></i>
+      <h1 class="error-code">404</h1>
+      <div class="error-title">System Error: Directory Not Found</div>
+      <p class="error-msg">The utility or endpoint you are looking for does not exist, has been restricted, or was moved to a new path in the system architecture.</p>
+      
+      <div class="btn-group">
+        <a href="index.html" class="btn btn-primary">
+          <i data-lucide="layout-dashboard"></i> Main Dashboard
+        </a>
+        <a href="guide.html" class="btn btn-secondary">
+          <i data-lucide="book-open"></i> Technical Guides
+        </a>
+        <a href="about.html" class="btn btn-secondary">
+          <i data-lucide="rocket"></i> Our Mission
+        </a>
+      </div>
+    </div>
+  </main>
+
+  <a href="index.html" class="fab home-fab-premium" aria-label="Command Center" title="Command Center">
+    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="filter: drop-shadow(0 0 8px rgba(56, 189, 248, 0.5));">
+      <path d="M12 2L2 7l10 5 10-5-10-5z" stroke="#38bdf8" stroke-width="2" stroke-linejoin="round" fill="rgba(56,189,248,0.2)"/>
+      <path d="M2 17l10 5 10-5M2 12l10 5 10-5" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </a>
+
+  <footer>
+    <div style="margin-bottom: 15px;">
+      &copy; 2025 - 2026 <strong>Layerbit Technologies</strong>. All rights reserved.
+    </div>
+    <div>
+      <a href="about.html">About</a>
+      <a href="privacy.html">Privacy Policy</a>
+      <a href="terms.html">Terms of Service</a>
+      <a href="guide.html">Technical Guide</a>
+      <a href="contact.html">Contact</a>
+    </div>
+  </footer>
+
+  <script>
+    lucide.createIcons();
+  </script>
+
 </body>
 </html>

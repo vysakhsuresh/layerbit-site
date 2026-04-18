@@ -1,16 +1,20 @@
-Application Registrations:
-1) Firebase: https://console.firebase.google.com/
-2) IPInfo : https://ipinfo.io/
-3) Google Cloud Console : https://console.cloud.google.com/
-4) VirusTotal : https://www.virustotal.com/gui/user/Layerbit/
-5) goDaddy : Website hosting
-6) Replit : https://replit.com/ >> din't work
-7) Glitch : https://glitch.com >> didn't work
-8) Stripe (vysakhsuresh200290@gmail.com - Google account linked login)
-9) BuyMeACoffee (vysakhsuresh200290@gmail.com - Google account linked login)
-10) render.com (vysakhsuresh200290@gmail.com - Google account linked login)
+# 🚀 Layerbit — Technical Infrastructure
 
+**Platform:** Professional Developer Utilities & Remote Access  
+**Author:** Vysakh Suresh  
+**Website:** [https://layerbit.co.in](https://layerbit.co.in)  
 
-Dependancies installed:
-1) NodeJS
-npm install -g firebase-tools
+---
+
+## ⚙️ Core Technologies
+* **Frontend:** HTML5, CSS3 (Custom Glassmorphic UI), JavaScript (ES6+)
+* **Iconography & Typography:** Lucide Vector Icons, Space Grotesk (Google Fonts)
+* **Backend Logic:** 100% Client-side browser processing (Privacy-First Architecture)
+* **Cloud Services:** Firebase Real-time Database (Live counters), IPInfo API
+* **Security Integrations:** VirusTotal API, Google Cloud Console
+
+## 🛡️ Compliance & Standards
+* **AdSense Optimized:** Yes (Fully compliant semantic HTML & routing)
+* **Robots Inclusion:** Allowed (Configured for `Googlebot` & `Mediapartners-Google`)
+* **SSL Encryption:** Enabled (GoDaddy Managed)
+* **Data Privacy:** Zero-tracking for local payload execution and string formatting

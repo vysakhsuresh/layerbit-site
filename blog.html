@@ -1,224 +1,456 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Layerbit Blog - Developer Tools Guide</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="The master documentation for Layerbit's developer suite. Detailed guides for security, data transformation, and workflow automation tools." />
+  <title>Layerbit Technical Guide - Complete Developer Utilities</title>
+  
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6072772587431629" crossorigin="anonymous"></script>
+  
+  <script src="https://unpkg.com/lucide@latest"></script>
 
-<meta name="description" content="Explore all Layerbit developer tools with detailed explanations and use cases."/>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link href="layerbit-logo.png" rel="icon" type="image/x-icon" />
+  
+  <style>
+    /* Ultra-Premium Dark Theme Variables (Matched to Index) */
+    :root {
+      --bg-base: #0a0c10;
+      --bg-gradient: radial-gradient(circle at 50% 0%, #1a1e2d 0%, #0a0c10 70%);
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --card-bg: rgba(20, 22, 30, 0.4);
+      --card-border: rgba(255, 255, 255, 0.04);
+      --card-hover-bg: rgba(30, 34, 48, 0.6);
+      --card-hover-border: rgba(56, 189, 248, 0.4);
+      --accent-main: #38bdf8;
+      --accent-glow: rgba(56, 189, 248, 0.5);
+      --neon-gradient: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%);
+    }
 
-<style>
-  body {
-    margin: 0;
-    font-family: Arial, sans-serif;
-    background: #f9fafa;
-    color: #333;
-    padding: 20px;
-  }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
 
-  .container {
-    max-width: 900px;
-    margin: auto;
-  }
+    html {
+      scroll-behavior: smooth;
+    }
 
-  h1 {
-    text-align: center;
-  }
+    body {
+      font-family: 'Space Grotesk', sans-serif;
+      color: var(--text-main);
+      background-color: var(--bg-base);
+      background-image: var(--bg-gradient);
+      min-height: 100vh;
+      padding: 20px 40px;
+      position: relative;
+      overflow-x: hidden;
+      display: flex;
+      flex-direction: column;
+    }
 
-  h2 {
-    color: #007bff;
-    margin-top: 30px;
-  }
+    /* Animated Drifting Starry Background */
+    @keyframes drift {
+      from { background-position: 0 0, 20px 20px; }
+      to { background-position: -60px -60px, -40px -40px; }
+    }
 
-  p {
-    line-height: 1.6;
-  }
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0; left: 0; width: 100vw; height: 100vh;
+      background-image: 
+        radial-gradient(rgba(255,255,255,0.08) 1px, transparent 1px),
+        radial-gradient(rgba(255,255,255,0.05) 1px, transparent 1px);
+      background-size: 60px 60px, 40px 40px;
+      background-position: 0 0, 20px 20px;
+      z-index: -1;
+      pointer-events: none;
+      animation: drift 60s linear infinite;
+    }
 
-  a {
-    color: #007bff;
-    text-decoration: none;
-    font-weight: bold;
-  }
-</style>
+    /* Header */
+    header {
+      display: flex;
+      justify-content: flex-start;
+      align-items: center;
+      max-width: 1200px;
+      width: 100%;
+      margin: 0 auto 60px auto;
+    }
+
+    .brand {
+      font-size: 1.6em;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      letter-spacing: -0.5px;
+      text-decoration: none;
+      color: #fff;
+    }
+
+    .brand svg {
+      filter: drop-shadow(0 0 10px var(--accent-glow));
+    }
+
+    /* Hero Section */
+    .hero {
+      text-align: center;
+      max-width: 900px;
+      margin: 0 auto 40px auto;
+      animation: fadeIn 1.2s ease-out forwards;
+    }
+
+    @keyframes gradientText { 
+      0%{background-position:0% 50%} 
+      50%{background-position:100% 50%} 
+      100%{background-position:0% 50%} 
+    }
+
+    .hero h1 {
+      font-size: 3.5em;
+      font-weight: 700;
+      margin-bottom: 18px;
+      letter-spacing: -1.5px;
+      line-height: 1.1;
+      background: linear-gradient(270deg, #ffffff, #e2e8f0, #38bdf8, #ffffff);
+      background-size: 300% 300%;
+      animation: gradientText 8s ease infinite;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .hero p {
+      font-size: 1.15em;
+      color: var(--text-muted);
+      line-height: 1.7;
+      max-width: 750px;
+      margin: 0 auto;
+    }
+
+    /* Documentation Container */
+    .doc-container {
+      max-width: 1100px;
+      margin: 0 auto 80px auto;
+      width: 100%;
+      animation: fadeSlideUp 1s ease-out forwards;
+      flex-grow: 1;
+    }
+
+    /* Section Headers */
+    .doc-container h2 {
+      font-size: 2em;
+      color: #fff;
+      margin-top: 60px;
+      margin-bottom: 30px;
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+      padding-bottom: 15px;
+    }
+
+    .doc-container h2 i {
+      color: var(--accent-main);
+      width: 32px;
+      height: 32px;
+      filter: drop-shadow(0 0 10px var(--accent-glow));
+    }
+
+    /* Glassmorphic Tool Grid */
+    .doc-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+      gap: 25px;
+    }
+
+    .tool-box {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 30px;
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .tool-box::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; width: 4px; height: 100%;
+      background: var(--neon-gradient);
+      opacity: 0.5;
+      transition: opacity 0.3s;
+    }
+
+    .tool-box:hover {
+      transform: translateY(-5px);
+      background: var(--card-hover-bg);
+      border-color: var(--card-hover-border);
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4), 0 0 25px rgba(56, 189, 248, 0.1);
+    }
+
+    .tool-box:hover::before {
+      opacity: 1;
+    }
+
+    .tool-box h3 {
+      font-size: 1.3em;
+      color: #fff;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 600;
+    }
+
+    .tool-box h3 i {
+      color: var(--accent-main);
+      width: 24px;
+      height: 24px;
+    }
+
+    .tool-box p {
+      font-size: 1em;
+      color: var(--text-muted);
+      line-height: 1.6;
+    }
+
+    /* Footer Note inside Doc */
+    .footer-note {
+      text-align: center;
+      margin-top: 80px;
+      padding: 30px;
+      background: rgba(56, 189, 248, 0.05);
+      border: 1px solid rgba(56, 189, 248, 0.2);
+      border-radius: 16px;
+    }
+
+    .footer-note p {
+      font-size: 1.1em;
+      color: var(--text-muted);
+    }
+
+    .footer-note a {
+      color: var(--accent-main);
+      text-decoration: none;
+      font-weight: bold;
+      transition: all 0.3s;
+    }
+
+    .footer-note a:hover {
+      color: #fff;
+      text-shadow: 0 0 10px var(--accent-glow);
+    }
+
+    /* Floating Command Center Orb (Locked Choice) */
+    .fab {
+      position: fixed;
+      bottom: 30px;
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      backdrop-filter: blur(15px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      z-index: 9998;
+      box-shadow: 0 8px 25px rgba(0,0,0,0.5);
+      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      text-decoration: none;
+    }
+
+    .home-fab-premium {
+      left: 30px;
+      background: rgba(20, 22, 30, 0.7);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .home-fab-premium:hover {
+      transform: scale(1.1);
+      border-color: rgba(56, 189, 248, 0.5);
+      background: rgba(30, 34, 48, 0.9);
+      box-shadow: 0 12px 30px rgba(0,0,0,0.6), 0 0 25px rgba(56, 189, 248, 0.3);
+    }
+
+    /* Standardized Footer */
+    footer {
+      text-align: center;
+      padding: 40px 0;
+      border-top: 1px solid var(--card-border);
+      color: var(--text-muted);
+      font-size: 0.95em;
+      margin-top: auto;
+      width: 100%;
+    }
+    
+    footer a { color: var(--text-muted); text-decoration: none; margin: 0 12px; transition: color 0.2s; }
+    footer a:hover { color: var(--accent-main); }
+
+    /* Responsive Grid Adjustments */
+    @media (max-width: 768px) {
+      .doc-grid { grid-template-columns: 1fr; }
+    }
+
+    /* Animations */
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(-15px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes fadeSlideUp { from { opacity: 0; transform: translateY(40px); } to { opacity: 1; transform: translateY(0); } }
+  </style>
 </head>
-
 <body>
 
-<div class="container">
+  <header>
+    <a href="index.html" class="brand">
+      <svg width="36" height="36" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <polygon points="32,20 54,28 32,36 10,28" stroke="#f8fafc" stroke-width="4" stroke-linejoin="round"/>
+        <polyline points="10,38 32,46 54,38" stroke="#f8fafc" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+        <polyline points="10,48 32,56 54,48" stroke="#f8fafc" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+        <rect x="50" y="10" width="10" height="10" rx="2" fill="#00f2fe" />
+      </svg>
+      Layerbit
+    </a>
+  </header>
 
-<h1>Layerbit Developer Tools Guide</h1>
+  <main class="hero">
+    <h1>Layerbit Technical Guide</h1>
+    <p>A comprehensive documentation hub for Layerbit’s browser-based developer utilities. Our suite is engineered to simplify complex coding tasks and enhance security workflows without the need for external installations.</p>
+  </main>
 
-<p>
-Layerbit provides a collection of powerful browser-based developer tools designed to simplify everyday technical tasks.
-Below is a complete guide to all available tools and how they help improve productivity.
-</p>
+  <div class="doc-container">
+    
+    <h2><i data-lucide="shield-alert"></i> 1. Security & System Auditing</h2>
+    <div class="doc-grid">
+      <div class="tool-box">
+        <h3><i data-lucide="siren"></i> BreachAlert</h3>
+        <p>Check if your email or phone number has been exposed in known data breaches. This tool scans against public breach databases to help you identify compromised credentials and take preventive action.</p>
+      </div>
+      <div class="tool-box">
+        <h3><i data-lucide="shield-x"></i> Malicious URL Checker</h3>
+        <p>Ensure safe browsing by checking URLs against threat intelligence sources to detect phishing, malware, and unsafe links before you access them.</p>
+      </div>
+      <div class="tool-box">
+        <h3><i data-lucide="key-round"></i> JWT Decoder</h3>
+        <p>Securely inspect JWT headers and payloads. This allows developers to verify token structure and claims for authentication debugging without sending sensitive data to external servers.</p>
+      </div>
+      <div class="tool-box">
+        <h3><i data-lucide="activity"></i> Log Insight Analyzer</h3>
+        <p>Understand your system, browser, and network environment at a glance. It provides critical environment details like IP address and browser data for diagnostics.</p>
+      </div>
+    </div>
 
-<h2>API Automation</h2>
-<p>
-Automate workflows and integrate systems efficiently using API-based automation tools.
-This tool helps developers connect different services, trigger actions automatically, and reduce manual work.
-It is especially useful for backend processing, integrations, and repetitive task execution.
-</p>
+    <h2><i data-lucide="file-output"></i> 2. Data Conversion & Encoding</h2>
+    <div class="doc-grid">
+      <div class="tool-box">
+        <h3><i data-lucide="binary"></i> Base64 Encode / Decode</h3>
+        <p>Easily transform data into text format for safe transmission over APIs and email systems. Ideal for binary data conversion without external libraries.</p>
+      </div>
+      <div class="tool-box">
+        <h3><i data-lucide="file-json-2"></i> CSV to JSON Converter</h3>
+        <p>Quickly transform structured CSV files into JSON format. This is a vital utility for developers working with modern web APIs and data processing pipelines.</p>
+      </div>
+      <div class="tool-box">
+        <h3><i data-lucide="refresh-ccw"></i> YAML ↔ JSON Converter</h3>
+        <p>Switch between YAML and JSON formats with high accuracy. This tool is specifically built for DevOps and backend configuration management.</p>
+      </div>
+      <div class="tool-box">
+        <h3><i data-lucide="link"></i> URL Encoder / Decoder</h3>
+        <p>Ensure web request safety by converting special characters into URL-safe formats, essential for handling query parameters and web requests correctly.</p>
+      </div>
+      <div class="tool-box">
+        <h3><i data-lucide="code"></i> HTML Escape / Unescape</h3>
+        <p>Convert HTML characters into safe entities to prevent broken rendering or security vulnerabilities like XSS when displaying user-generated content.</p>
+      </div>
+    </div>
 
-<h2>Base64 Encode / Decode</h2>
-<p>
-Encode and decode Base64 strings easily for secure data handling and transmission.
-This is commonly used in APIs, email systems, and data transfer scenarios where binary data needs to be converted into text format.
-It helps developers quickly transform data without using external libraries.
-</p>
+    <h2><i data-lucide="code-2"></i> 3. Code Formatting & Visualization</h2>
+    <div class="doc-grid">
+      <div class="tool-box">
+        <h3><i data-lucide="database"></i> SQL Formatter</h3>
+        <p>Optimize SQL queries into clean, readable structures. Supports multiple dialects to ensure consistent code quality and easier debugging.</p>
+      </div>
+      <div class="tool-box">
+        <h3><i data-lucide="braces"></i> JSON Validator & Formatter</h3>
+        <p>Detect syntax errors and beautify JSON data instantly. This ensures your configuration files and API responses are both valid and easy to read.</p>
+      </div>
+      <div class="tool-box">
+        <h3><i data-lucide="table-properties"></i> JSON to Table Viewer</h3>
+        <p>Visualize complex JSON arrays as structured tables. This tool helps developers analyze large datasets and API responses with much greater clarity.</p>
+      </div>
+      <div class="tool-box">
+        <h3><i data-lucide="file-diff"></i> Text Diff Checker</h3>
+        <p>Identify changes between two blocks of text or code versions instantly. Perfect for debugging, content review, and identifying minor technical variations.</p>
+      </div>
+      <div class="tool-box">
+        <h3><i data-lucide="regex"></i> Regex Tester</h3>
+        <p>Build and debug regular expression patterns with real-time matching and highlighting. An essential tool for text processing and data extraction tasks.</p>
+      </div>
+    </div>
 
-<h2>BreachAlert</h2>
-<p>
-Check if your email or phone number has been exposed in known data breaches.
-This tool scans against public breach databases and helps users understand if their credentials have been compromised.
-It is useful for improving security awareness and taking preventive actions.
-</p>
+    <h2><i data-lucide="zap"></i> 4. Workflow Automation</h2>
+    <div class="doc-grid">
+      <div class="tool-box">
+        <h3><i data-lucide="workflow"></i> API Automation</h3>
+        <p>Streamline your data with API flows. This tool helps you automate repetitive backend tasks and integrate multiple services into a single efficient workflow.</p>
+      </div>
+      <div class="tool-box">
+        <h3><i data-lucide="clock-4"></i> Cron Expression Generator</h3>
+        <p>Simplify CRON syntax. Use our visual generator to schedule backend jobs and system maintenance tasks without the guesswork of manual CRON strings.</p>
+      </div>
+      <div class="tool-box">
+        <h3><i data-lucide="monitor-up"></i> LayerLink Sharer</h3>
+        <p>Collaborate in real-time with browser-based screen sharing. No software installation is required, making it ideal for remote support and instant demos.</p>
+      </div>
+      <div class="tool-box">
+        <h3><i data-lucide="terminal-square"></i> Custom Script Generator</h3>
+        <p>Generate tailored scripts for log processing and fixes. Reduce manual coding time by automating repetitive system-level tasks with ease.</p>
+      </div>
+      <div class="tool-box">
+        <h3><i data-lucide="scroll-text"></i> Log Analyzer</h3>
+        <p>Detect system patterns and highlight errors within application logs. It improves monitoring and speeds up the troubleshooting process.</p>
+      </div>
+      <div class="tool-box">
+        <h3><i data-lucide="qr-code"></i> QR / Barcode Generator</h3>
+        <p>Instantly create downloadable codes for links and text sharing. A versatile tool for marketing, quick access links, and data distribution.</p>
+      </div>
+    </div>
 
-<h2>Cron Expression Generator</h2>
-<p>
-Create accurate CRON expressions for scheduling jobs and automated tasks.
-This tool simplifies complex CRON syntax and helps developers define schedules visually.
-It is useful for backend jobs, system maintenance tasks, and periodic automation.
-</p>
+    <div class="footer-note">
+      <p>Ready to deploy? Access all utilities from the <a href="index.html">Main Tools Dashboard</a>.</p>
+    </div>
+  </div>
 
-<h2>CSV to JSON</h2>
-<p>
-Convert CSV data into JSON format for APIs and modern applications.
-This tool helps transform structured data into a format widely used in web development.
-It is especially useful when working with APIs, frontend apps, and data processing pipelines.
-</p>
+  <a href="index.html" class="fab home-fab-premium" aria-label="Command Center" title="Command Center">
+    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="filter: drop-shadow(0 0 8px rgba(56, 189, 248, 0.5));">
+      <path d="M12 2L2 7l10 5 10-5-10-5z" stroke="#38bdf8" stroke-width="2" stroke-linejoin="round" fill="rgba(56,189,248,0.2)"/>
+      <path d="M2 17l10 5 10-5M2 12l10 5 10-5" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </a>
 
-<h2>Custom Scripts</h2>
-<p>
-Generate custom scripts to automate repetitive system or data-related tasks.
-This tool helps developers quickly create scripts tailored to specific needs such as log processing or automation.
-It improves productivity by reducing manual coding effort.
-</p>
+  <footer>
+    <div style="margin-bottom: 15px;">
+      &copy; 2025 - 2026 <strong>Layerbit Technologies</strong>. All rights reserved.
+    </div>
+    <div>
+      <a href="about.html">About</a>
+      <a href="privacy.html">Privacy Policy</a>
+      <a href="terms.html">Terms of Service</a>
+      <a href="guide.html">Technical Guide</a>
+      <a href="mailto:ceo@layerbit.co.in">Contact</a>
+    </div>
+  </footer>
 
-<h2>HTML Escape / Unescape</h2>
-<p>
-Convert HTML characters safely for display or decode them back to original format.
-This tool prevents issues like broken HTML rendering or security vulnerabilities.
-It is useful when handling user input or displaying code snippets on web pages.
-</p>
-
-<h2>Log Insight Analyzer</h2>
-<p>
-Analyze device and browser-level information for debugging and diagnostics.
-This tool provides insights into environment details such as IP, browser, and system data.
-It is useful for troubleshooting issues and understanding user environments.
-</p>
-
-<h2>JSON to Table</h2>
-<p>
-Convert JSON arrays into structured tables for easier visualization.
-This tool helps developers quickly understand complex JSON data by presenting it in tabular format.
-It is useful for debugging APIs and analyzing data responses.
-</p>
-
-<h2>JSON Validator</h2>
-<p>
-Validate and format JSON data to ensure correctness and readability.
-This tool detects syntax errors and beautifies JSON for better understanding.
-It is essential for developers working with APIs and configuration files.
-</p>
-
-<h2>JWT Decoder</h2>
-<p>
-Decode JWT tokens and inspect their payload securely without sending data externally.
-This tool allows developers to understand token structure and verify claims.
-It is useful for authentication debugging and API security analysis.
-</p>
-
-<h2>LayerLink Sharer</h2>
-<p>
-Share your screen instantly through the browser for collaboration and support.
-This tool enables quick screen sharing without installing additional software.
-It is ideal for remote assistance, demos, and real time communication.
-</p>
-
-<h2>Log Analyzer</h2>
-<p>
-Analyze logs to detect patterns, errors, and important system insights.
-This tool helps identify issues quickly by highlighting key information in logs.
-It is useful for debugging applications and monitoring system behavior.
-</p>
-
-<h2>Malicious URL Checker</h2>
-<p>
-Check URLs against threat intelligence sources to detect potential risks.
-This tool helps identify phishing or malicious websites before accessing them.
-It is useful for security checks and safe browsing practices.
-</p>
-
-<h2>QR / Barcode Generator</h2>
-<p>
-Create QR codes and barcodes instantly for links, text, or data sharing.
-This tool allows quick generation and download of codes for various use cases.
-It is useful for sharing information, marketing, and quick access links.
-</p>
-
-<h2>Regex Tester</h2>
-<p>
-Test regular expressions with live matching and highlighting.
-This tool helps developers build and debug regex patterns efficiently.
-It is useful for text processing, validation, and data extraction tasks.
-</p>
-
-<h2>SQL Formatter</h2>
-<p>
-Format SQL queries into clean, readable structures across multiple dialects.
-This tool improves query readability and helps maintain consistent formatting.
-It is useful for debugging queries and improving code quality.
-</p>
-
-<h2>Text Diff Checker</h2>
-<p>
-Compare two text blocks and highlight differences for debugging or review.
-This tool makes it easy to identify changes between versions of text or code.
-It is useful for developers, testers, and content comparison tasks.
-</p>
-
-<h2>URL Encoder / Decoder</h2>
-<p>
-Encode and decode URLs to ensure safe transmission over the web.
-This tool converts special characters into a format suitable for URLs.
-It is useful when working with query parameters and web requests.
-</p>
-
-<h2>YAML ↔ JSON Converter</h2>
-<p>
-Convert YAML to JSON and vice versa with accurate formatting.
-This tool helps developers switch between formats used in configuration files and APIs.
-It is useful for DevOps, backend development, and data transformation.
-</p>
-
-<p>
-Explore all tools directly from the <a href="index.html">main tools page</a>.
-</p>
-
-</div>
-
-<!-- KEEP HOME ICON EXACTLY SAME -->
-<a href="index.html" style="
-  position: fixed;
-  bottom: 20px;
-  left: 20px;
-  width: 44px;
-  height: 44px;
-  border-radius: 12px;
-  background-color: #007bff;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-  z-index: 999;
-  text-decoration: none;
-">
-<svg fill="white" height="20" viewBox="0 0 24 24" width="20">
-<path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"></path>
-</svg>
-</a>
+  <script>
+    lucide.createIcons();
+  </script>
 
 </body>
 </html>
