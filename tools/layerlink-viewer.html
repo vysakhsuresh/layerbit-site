@@ -31,7 +31,7 @@
       min-height: 100vh;
       display: flex;
       flex-direction: column;
-      overflow: hidden; /* Lock to theater view */
+      overflow: hidden; 
     }
 
     /* Top Nav Bar */
@@ -81,6 +81,7 @@
       align-items: center;
       gap: 15px;
       color: var(--text-muted);
+      text-align: center;
     }
     .overlay-message i { width: 48px; height: 48px; color: var(--accent-main); animation: pulse 2s infinite; }
 
@@ -127,7 +128,6 @@
   <script>
     lucide.createIcons();
 
-    // Init Firebase
     const firebaseConfig = {
       apiKey: "AIzaSyAR948frOLq4VZ1qSdxIMXu6BaCoehClAU",
       authDomain: "layerlink-58948.firebaseapp.com",
@@ -153,7 +153,7 @@
         statusUI.className = 'status-indicator error';
         statusUI.innerHTML = `<i data-lucide="alert-triangle"></i> Signal Lost`;
         overlayMsg.style.display = 'flex';
-        overlayMsg.innerHTML = `<i data-lucide="plug-zap" style="color: #ef4444;"></i><h2 style="font-weight: 600; color: #fff;">Connection Dropped</h2><p style="opacity: 0.7;">The host has stopped sharing or the network failed.</p><button onclick="location.reload()" style="margin-top:15px; padding:10px 20px; background:#ef4444; color:#fff; border:none; border-radius:8px; cursor:pointer; font-family:'Space Grotesk', sans-serif; font-weight:bold;">Reconnect</button>`;
+        overlayMsg.innerHTML = `<i data-lucide="plug-zap" style="color: #ef4444; width: 48px; height: 48px; animation: none;"></i><h2 style="font-weight: 600; color: #fff;">Connection Dropped</h2><p style="opacity: 0.7;">The host has stopped sharing or the network failed.</p><button onclick="location.reload()" style="margin-top:15px; padding:10px 20px; background:#ef4444; color:#fff; border:none; border-radius:8px; cursor:pointer; font-family:'Space Grotesk', sans-serif; font-weight:bold;">Reconnect</button>`;
       }
       lucide.createIcons();
     }
@@ -167,7 +167,6 @@
     } else {
       const conn = db.ref("sessions/" + sessionId);
 
-      // CRITICAL FIX: Google STUN Servers added for internet routing
       const configuration = {
         iceServers: [
           { urls: 'stun:stun.l.google.com:19302' },
@@ -194,11 +193,21 @@
         }
       };
 
+      // THE FIX: Queue local ICE candidates until the remote description is set
+      let hasRemoteDesc = false;
+      let candidateQueue = [];
+
       async function connect() {
         conn.child("offer").on("value", async snap => {
           if (!snap.val()) return;
           const offer = JSON.parse(snap.val());
+          
           await peer.setRemoteDescription(offer);
+          hasRemoteDesc = true;
+          
+          candidateQueue.forEach(c => peer.addIceCandidate(c));
+          candidateQueue = [];
+
           const answer = await peer.createAnswer();
           await peer.setLocalDescription(answer);
           conn.child("answer").set(JSON.stringify(answer));
@@ -207,7 +216,11 @@
 
       conn.child("offerCandidates").on("child_added", snap => {
         const candidate = new RTCIceCandidate(JSON.parse(snap.val()));
-        peer.addIceCandidate(candidate);
+        if (hasRemoteDesc) {
+          peer.addIceCandidate(candidate);
+        } else {
+          candidateQueue.push(candidate);
+        }
       });
 
       connect();

@@ -213,7 +213,6 @@
   <script>
     lucide.createIcons();
 
-    // Init Firebase
     const firebaseConfig = {
       apiKey: "AIzaSyAR948frOLq4VZ1qSdxIMXu6BaCoehClAU",
       authDomain: "layerlink-58948.firebaseapp.com",
@@ -226,7 +225,6 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    // DOM Elements
     const mobileError = document.getElementById('mobileError');
     const mainDashboard = document.getElementById('mainDashboard');
     const btnStart = document.getElementById('btnStart');
@@ -237,7 +235,6 @@
     const videoOverlay = document.getElementById('videoOverlay');
     const videoElement = document.getElementById('video');
 
-    // Mobile Check
     window.addEventListener('DOMContentLoaded', () => {
       if (/Mobi|Android|iPhone/i.test(navigator.userAgent)) {
         mobileError.style.display = 'block';
@@ -280,12 +277,15 @@
         btnStart.style.display = 'none';
         
         const sessionId = Math.random().toString(36).substring(2, 8);
-        const viewerUrl = location.origin + "/tools/layerlink-viewer.html?session=" + sessionId;
+        let baseDomain = window.location.origin;
+        if (baseDomain === "file://" || baseDomain === "null") {
+          baseDomain = "https://layerbit.co.in";
+        }
+        const viewerUrl = baseDomain + "/tools/layerlink-viewer.html?session=" + sessionId;
         shareLink.value = viewerUrl;
         linkContainer.classList.add('active');
         setStatus('waiting');
 
-        // CRITICAL FIX: Google STUN Servers added for internet routing
         const configuration = {
           iceServers: [
             { urls: 'stun:stun.l.google.com:19302' },
@@ -296,13 +296,11 @@
         const peer = new RTCPeerConnection(configuration);
         localStream.getTracks().forEach(track => peer.addTrack(track, localStream));
 
-        // Telemetry monitoring
         peer.onconnectionstatechange = () => {
           if (peer.connectionState === 'connected') setStatus('live');
           if (peer.connectionState === 'disconnected' || peer.connectionState === 'failed') setStatus('closed');
         };
 
-        // Handle Stream Stop from Browser UI
         localStream.getVideoTracks()[0].onended = () => {
           peer.close();
           window.location.reload();
@@ -320,16 +318,28 @@
         await peer.setLocalDescription(offer);
         conn.child("offer").set(JSON.stringify(offer));
 
+        // THE FIX: Queue remote ICE candidates until the remote description is fully set
+        let hasRemoteAnswer = false;
+        let answerCandidateQueue = [];
+
         conn.child("answer").on("value", async snap => {
           if (snap.val()) {
             const answer = JSON.parse(snap.val());
             await peer.setRemoteDescription(answer);
+            hasRemoteAnswer = true;
+            
+            answerCandidateQueue.forEach(c => peer.addIceCandidate(c));
+            answerCandidateQueue = [];
           }
         });
 
         conn.child("answerCandidates").on("child_added", snap => {
           const candidate = new RTCIceCandidate(JSON.parse(snap.val()));
-          peer.addIceCandidate(candidate);
+          if (hasRemoteAnswer) {
+            peer.addIceCandidate(candidate);
+          } else {
+            answerCandidateQueue.push(candidate);
+          }
         });
 
       } catch (err) {
