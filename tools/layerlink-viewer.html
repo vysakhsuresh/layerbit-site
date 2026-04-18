@@ -183,6 +183,7 @@
         videoElement.srcObject = remoteStream;// Force the browser to play the video feed
         videoElement.play().catch(err => {
             console.warn("Browser autoplay policy blocked the video. User interaction required.", err);
+			});
       };
 
       peer.onconnectionstatechange = () => {
