@@ -5,14 +5,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="description" content="Learn about Layerbit’s mission to simplify development with fast, free tools built for productivity and real-world tasks." />
   <title>About Layerbit - Our Mission & Expertise</title>
-  
+
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6072772587431629" crossorigin="anonymous"></script>
-  
+
   <script src="https://unpkg.com/lucide@latest"></script>
 
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <link href="layerbit-logo.png" rel="icon" type="image/x-icon" />
-  
+
   <style>
     /* Ultra-Premium Dark Theme Variables (Matched to Index) */
     :root {
@@ -43,10 +43,10 @@
       color: var(--text-main);
       background-color: var(--bg-base);
       background-image: var(--bg-gradient);
-      min-height: 100vh;
+      min-height: 100dvh; /* Safely accounts for mobile browser UI */
       padding: 20px 40px;
       position: relative;
-      overflow-x: hidden;
+      overflow-x: clip; /* Fixes mobile fixed elements disappearing bug */
       display: flex;
       flex-direction: column;
     }
@@ -197,6 +197,7 @@
       height: 60px;
       border-radius: 50%;
       backdrop-filter: blur(15px);
+      -webkit-backdrop-filter: blur(15px);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -205,6 +206,9 @@
       box-shadow: 0 8px 25px rgba(0,0,0,0.5);
       transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
       text-decoration: none;
+      -webkit-transform: translateZ(0); 
+      transform: translateZ(0); 
+      will-change: transform;
     }
 
     .home-fab-premium {
@@ -221,9 +225,10 @@
     }
 
     .home-fab-premium:hover {
-      transform: scale(1.1);
+      transform: scale(1.1) translateZ(0);
       border-color: rgba(255, 255, 255, 0.3);
       background: rgba(30, 34, 48, 0.9);
+      box-shadow: 0 12px 30px rgba(0,0,0,0.6), 0 0 25px rgba(56, 189, 248, 0.3);
     }
 
     .home-fab-premium:hover i {
@@ -239,13 +244,63 @@
       font-size: 0.95em;
       margin-top: auto;
     }
-    
+
     footer a { color: var(--text-muted); text-decoration: none; margin: 0 12px; transition: color 0.2s; }
     footer a:hover { color: var(--accent-main); }
 
     /* Animations */
     @keyframes fadeIn { from { opacity: 0; transform: translateY(-15px); } to { opacity: 1; transform: translateY(0); } }
     @keyframes fadeSlideUp { from { opacity: 0; transform: translateY(40px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* =========================================
+       ULTRA-RESPONSIVE (Mobile Phones - Master Patch)
+       ========================================= */
+    @media (max-width: 600px) {
+      /* 1. Reclaim Screen Real Estate */
+      body { padding: 15px 20px; }
+      header { margin-bottom: 25px; }
+
+      /* 2. Scale Down Giant Typography */
+      .hero h1 { 
+        font-size: 2.2em; 
+        line-height: 1.2;
+        margin-bottom: 15px;
+      }
+      .hero p { font-size: 1em; }
+
+      /* 3. Adjust Box Paddings to prevent overflow */
+      .content-panel {
+        padding: 30px 20px;
+        min-width: 0;
+        width: 100%;
+        max-width: 100%;
+        word-break: break-word;
+        overflow-wrap: break-word;
+      }
+
+      .content-panel h2 {
+        font-size: 1.4em;
+        align-items: flex-start;
+      }
+      
+      .content-panel p {
+        font-size: 1em;
+      }
+
+      /* 4. Fix the Disappearing FAB Bug */
+      .fab {
+        bottom: 20px; 
+        left: 20px; 
+        width: 50px; 
+        height: 50px;
+        background: rgba(20, 22, 30, 0.98); /* Solid dark color so iOS Safari doesn't bug out */
+        -webkit-backdrop-filter: none;
+        backdrop-filter: none;
+        -webkit-transform: none;
+        transform: none;
+        will-change: auto;
+      }
+    }
   </style>
 </head>
 <body>
@@ -268,13 +323,13 @@
 
   <div class="content-panel">
     <p><strong>Layerbit</strong> is a developer-first platform dedicated to offering a curated suite of tools and services that make everyday tasks simpler, faster, and more efficient. We specialize in browser-based utilities that require zero installation, ensuring that high-quality tools are accessible to coders, freelancers, and tech enthusiasts instantly.</p>
-    
+
     <h2><i data-lucide="shield-check"></i> Security-First Philosophy</h2>
     <p>At Layerbit, we believe that your data should remain yours. Most of our tools operate entirely on the client-side, meaning sensitive information—such as JWT payloads, SQL queries, or JSON logs—is processed locally in your browser and never sent to our servers. This decentralized approach provides an ironclad layer of privacy and security that traditional cloud-based tools simply cannot match.</p>
 
     <h2><i data-lucide="rocket"></i> Our Mission</h2>
     <p>Our mission is to empower the global developer community with smart digital solutions that are easy to use, beautifully designed, and built for real-world engineering challenges. We are constantly expanding our ecosystem based on user feedback to include the exact utilities that matter most to your daily workflow.</p>
-    
+
     <div class="contact-box">
       <p style="margin: 0; font-size: 1em;">Questions, enterprise support, or feature requests? Contact our lead at <br><a href="mailto:ceo@layerbit.co.in">ceo@layerbit.co.in</a></p>
     </div>
