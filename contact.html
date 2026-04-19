@@ -5,14 +5,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="description" content="Get in touch with Layerbit for developer support, tool feedback, or collaboration inquiries. We respond to all technical requests within 24 hours." />
   <title>Contact Layerbit - Developer Support & Feedback</title>
-  
+
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6072772587431629" crossorigin="anonymous"></script>
-  
+
   <script src="https://unpkg.com/lucide@latest"></script>
 
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <link href="layerbit-logo.png" rel="icon" type="image/x-icon" />
-  
+
   <style>
     /* Ultra-Premium Dark Theme Variables (Matched to Index) */
     :root {
@@ -44,10 +44,10 @@
       color: var(--text-main);
       background-color: var(--bg-base);
       background-image: var(--bg-gradient);
-      min-height: 100vh;
+      min-height: 100dvh; /* Upgraded for mobile UI */
       padding: 20px 40px;
       position: relative;
-      overflow-x: hidden;
+      overflow-x: clip; /* Safely clips without breaking fixed elements */
       display: flex;
       flex-direction: column;
     }
@@ -263,6 +263,7 @@
       height: 60px;
       border-radius: 50%;
       backdrop-filter: blur(15px);
+      -webkit-backdrop-filter: blur(15px);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -273,10 +274,13 @@
       text-decoration: none;
       background: rgba(20, 22, 30, 0.7);
       border: 1px solid rgba(255, 255, 255, 0.1);
+      -webkit-transform: translateZ(0); 
+      transform: translateZ(0); 
+      will-change: transform;
     }
 
     .fab:hover {
-      transform: scale(1.1);
+      transform: scale(1.1) translateZ(0);
       border-color: rgba(56, 189, 248, 0.5);
       background: rgba(30, 34, 48, 0.9);
       box-shadow: 0 12px 30px rgba(0,0,0,0.6), 0 0 25px rgba(56, 189, 248, 0.3);
@@ -292,13 +296,78 @@
       margin-top: auto;
       width: 100%;
     }
-    
+
     footer a { color: var(--text-muted); text-decoration: none; margin: 0 12px; transition: color 0.2s; }
     footer a:hover { color: var(--accent-main); }
 
     /* Animations */
     @keyframes fadeIn { from { opacity: 0; transform: translateY(-15px); } to { opacity: 1; transform: translateY(0); } }
     @keyframes fadeSlideUp { from { opacity: 0; transform: translateY(40px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* =========================================
+       ULTRA-RESPONSIVE (Mobile Phones - Master Patch)
+       ========================================= */
+    @media (max-width: 600px) {
+      /* 1. Reclaim Screen Real Estate */
+      body { padding: 15px 20px; }
+      header { margin-bottom: 25px; }
+
+      /* 2. Scale Down Giant Typography */
+      .hero h1 { 
+        font-size: 2.2em; 
+        line-height: 1.2;
+        margin-bottom: 15px;
+      }
+      .hero p { font-size: 1em; }
+
+      /* 3. Adjust Grid and Box Paddings */
+      .content-panel {
+        padding: 30px 20px;
+        min-width: 0;
+        width: 100%;
+        max-width: 100%;
+      }
+
+      .contact-grid {
+        grid-template-columns: 1fr; /* Stack the contact cards */
+        gap: 20px;
+      }
+
+      .contact-card {
+        padding: 30px 20px;
+      }
+
+      .contact-card h2 {
+        font-size: 1.3em;
+      }
+
+      /* 4. Fix Button Widths */
+      .btn-contact {
+        width: 100%;
+        justify-content: center;
+      }
+
+      /* Make response time wrap correctly */
+      .response-time {
+        flex-direction: column;
+        text-align: center;
+        gap: 15px;
+      }
+
+      /* 5. Fix the Disappearing FAB Bug */
+      .fab {
+        bottom: 20px; 
+        left: 20px; 
+        width: 50px; 
+        height: 50px;
+        background: rgba(20, 22, 30, 0.98); /* Solid dark color so iOS Safari doesn't bug out */
+        -webkit-backdrop-filter: none;
+        backdrop-filter: none;
+        -webkit-transform: none;
+        transform: none;
+        will-change: auto;
+      }
+    }
   </style>
 </head>
 <body>
@@ -322,7 +391,7 @@
 
   <div class="content-panel">
     <div class="contact-grid">
-      
+
       <div class="contact-card">
         <i data-lucide="mail"></i>
         <h2>Direct Email</h2>
