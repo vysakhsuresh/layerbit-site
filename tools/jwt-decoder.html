@@ -302,9 +302,18 @@
         margin-top: 5px;
       }
 
-      /* 4. Shrink Massive Container Paddings */
+      /* 4. Shrink Massive Container Paddings & Fix Info Panel Width */
       .info-panel {
         padding: 20px;
+        /* Ensure it doesn't break out of the flex container */
+        width: 100%;
+        box-sizing: border-box;
+      }
+
+      /* Ensure the list items inside wrap properly */
+      .info-panel li {
+        align-items: flex-start;
+        word-break: break-word;
       }
 
       /* 5. Shrink the Command Center FAB */

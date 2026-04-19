@@ -266,7 +266,8 @@
       font-size: 0.9em;
     }
 
-    .match-val { color: var(--accent-main); font-weight: bold; font-size: 1.1em; margin-bottom: 5px; }
+    /* FIX: Added word-break so extremely long matches don't blow out the container */
+    .match-val { color: var(--accent-main); font-weight: bold; font-size: 1.1em; margin-bottom: 5px; word-break: break-all; }
     .match-meta { color: var(--text-muted); font-size: 0.85em; }
 
     /* Info Panel */
@@ -320,11 +321,10 @@
 
     /* =========================================
        ULTRA-RESPONSIVE (Mobile Phones - Master Patch)
-       Applies to all Layerbit Tools
        ========================================= */
     @media (max-width: 600px) {
       /* 1. Reclaim Screen Real Estate */
-      body { padding: 15px 20px; }
+      body { padding: 15px; } /* Tighter padding */
       header { margin-bottom: 25px; }
 
       /* 2. Scale Down Giant Typography */
@@ -335,8 +335,32 @@
       }
       .hero p { font-size: 1em; }
 
-      /* 3. Stack Toolbars & Pane Headers */
-      .pane-header, .grid-toolbar, .telemetry-toolbar {
+      /* 3. FIX: Stop containers from stretching beyond screen width */
+      .app-container, .pane, .info-panel, .regex-wrapper, .regex-input {
+        min-width: 0; /* Allows Flex/Grid children to shrink safely */
+        width: 100%;
+        max-width: 100%;
+      }
+
+      /* 4. FIX: Force long text and bullet points to wrap politely */
+      .info-panel {
+        padding: 25px 15px;
+        word-break: break-word;
+        overflow-wrap: break-word;
+      }
+      
+      .info-panel h2 {
+        font-size: 1.4em;
+        align-items: flex-start;
+      }
+
+      .info-panel code {
+        white-space: pre-wrap;
+        word-break: break-all;
+      }
+
+      /* 5. Stack Toolbars & Pane Headers */
+      .pane-header, .telemetry-bar {
         flex-direction: column;
         align-items: flex-start;
         gap: 12px;
@@ -344,36 +368,36 @@
         height: auto;
       }
 
-      /* 4. Make Buttons Fluid & Tappable */
-      .btn-group, .flags-container, .mode-selector, .action-row { 
+      /* 6. Make Buttons Fluid & Tappable */
+      .btn-group, .flags-container { 
         width: 100%; 
         flex-wrap: wrap; 
         justify-content: stretch;
       }
-      .btn, .flag-btn, .mode-btn, .btn-action { 
+      .btn, .flag-btn { 
         flex-grow: 1; 
         justify-content: center; 
         text-align: center;
       }
 
-      /* 5. Shrink Massive Container Paddings */
-      .module-card, .control-pane, .output-pane, .info-panel, .scan-room, .regex-control {
-        padding: 20px;
+      /* 7. Shrink Container Paddings */
+      .regex-control {
+        padding: 15px;
       }
 
-      /* 6. Shrink the Command Center FAB */
+      /* 8. FIX: Prevent the FAB from disappearing by replacing blur with a solid color */
       .fab {
-        bottom: 20px; 
-        left: 20px; 
+        bottom: 25px; 
+        left: 15px; 
         width: 50px; 
         height: 50px;
+        background: rgba(20, 22, 30, 0.98); /* Solid dark color so iOS Safari doesn't bug out */
+        -webkit-backdrop-filter: none;
+        backdrop-filter: none;
+        -webkit-transform: none;
+        transform: none;
+        will-change: auto;
       }
-
-      /* --- PAGE-SPECIFIC FIXES --- */
-      .telemetry-stats { flex-wrap: wrap; width: 100%; }
-      .stat-badge { flex-grow: 1; justify-content: center; }
-      .color-grid { grid-template-columns: 1fr; }
-      .search-wrapper { max-width: 100%; }
     }
   </style>
 </head>

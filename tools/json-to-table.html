@@ -41,7 +41,7 @@
       min-height: 100dvh; /* Safely accounts for mobile browser UI */
       padding: 20px 40px;
       position: relative;
-      overflow-x: clip; /* Fixes mobile FAB disappearing bug */
+      overflow-x: clip; 
       display: flex;
       flex-direction: column;
     }
@@ -218,7 +218,7 @@
     .info-panel li { color: var(--text-muted); margin-bottom: 10px; display: flex; align-items: center; gap: 10px; }
     .info-panel li i { color: #22c55e; width: 16px; }
 
-    /* Command Center FAB */
+    /* Command Center FAB (Desktop styling) */
     .fab { 
       position: fixed; 
       bottom: 30px; 
@@ -255,11 +255,10 @@
 
     /* =========================================
        ULTRA-RESPONSIVE (Mobile Phones - Master Patch)
-       Applies to all Layerbit Tools
        ========================================= */
     @media (max-width: 600px) {
       /* 1. Reclaim Screen Real Estate */
-      body { padding: 15px 20px; }
+      body { padding: 15px; } /* Tighter padding for mobile */
       header { margin-bottom: 25px; }
 
       /* 2. Scale Down Giant Typography */
@@ -270,7 +269,25 @@
       }
       .hero p { font-size: 1em; }
 
-      /* 3. Stack Toolbars & Pane Headers */
+      /* 3. FIX: Stop the containers from stretching beyond the screen width */
+      .app-container, .pane, .info-panel {
+        min-width: 0; /* Allows Flex/Grid children to shrink safely */
+        width: 100%;
+        max-width: 100%;
+      }
+
+      /* 4. FIX: Force long text and code tags to wrap politely */
+      .info-panel {
+        padding: 25px 15px;
+        word-break: break-word;
+        overflow-wrap: break-word;
+      }
+      .info-panel code {
+        white-space: pre-wrap;
+        word-break: break-all;
+      }
+
+      /* 5. Stack Toolbars & Pane Headers */
       .pane-header, .grid-toolbar {
         flex-direction: column;
         align-items: flex-start;
@@ -279,7 +296,7 @@
         height: auto;
       }
 
-      /* 4. Make Buttons Fluid & Tappable */
+      /* 6. Make Buttons Fluid & Tappable */
       .btn-group, .action-row { 
         width: 100%; 
         flex-wrap: wrap; 
@@ -291,20 +308,21 @@
         text-align: center;
       }
 
-      /* 5. Shrink Massive Container Paddings */
-      .info-panel {
-        padding: 20px;
-      }
-
-      /* 6. Shrink the Command Center FAB */
+      /* 7. FIX: Prevent the FAB from disappearing by replacing blur with a solid color */
       .fab {
-        bottom: 20px; 
-        left: 20px; 
+        bottom: 25px; 
+        left: 15px; 
         width: 50px; 
         height: 50px;
+        background: rgba(20, 22, 30, 0.98); /* Solid dark color so iOS Safari doesn't bug out */
+        -webkit-backdrop-filter: none;
+        backdrop-filter: none;
+        -webkit-transform: none;
+        transform: none;
+        will-change: auto;
       }
 
-      /* --- PAGE-SPECIFIC FIXES --- */
+      /* 8. Specific Fix for Search Input */
       .search-wrapper { max-width: 100%; width: 100%; }
     }
   </style>

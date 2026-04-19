@@ -263,11 +263,10 @@
     
     /* =========================================
        ULTRA-RESPONSIVE (Mobile Phones - Master Patch)
-       Applies to all Layerbit Tools
        ========================================= */
     @media (max-width: 600px) {
       /* 1. Reclaim Screen Real Estate */
-      body { padding: 15px 20px; }
+      body { padding: 15px; } /* Tighter padding */
       header { margin-bottom: 25px; }
 
       /* 2. Scale Down Giant Typography */
@@ -278,51 +277,55 @@
       }
       .hero p { font-size: 1em; }
 
-      /* 3. Stack Toolbars & Pane Headers */
-      .pane-header, .grid-toolbar, .telemetry-toolbar {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 12px;
-        padding: 15px;
-        height: auto;
+      /* 3. FIX: Stop containers from stretching beyond screen width */
+      .dashboard-container, .module-card, .info-panel {
+        min-width: 0; /* Allows Flex/Grid children to shrink safely */
+        width: 100%;
+        max-width: 100%;
       }
 
-      /* 4. Make Buttons Fluid & Tappable */
-      .btn-group, .mode-selector, .action-row { 
+      /* 4. FIX: Force long text and bullet points to wrap politely */
+      .info-panel {
+        padding: 25px 15px;
+        word-break: break-word;
+        overflow-wrap: break-word;
+      }
+      
+      .info-panel h2 {
+        font-size: 1.4em;
+        align-items: flex-start;
+      }
+
+      /* 5. Make Buttons Fluid & Tappable */
+      .btn-group, .input-wrapper, .portal-link { 
         width: 100%; 
         flex-wrap: wrap; 
         justify-content: stretch;
       }
-      .btn, .mode-btn, .btn-action { 
+      .btn, .btn-scan { 
         flex-grow: 1; 
         justify-content: center; 
         text-align: center;
       }
 
-      /* 5. Shrink Massive Container Paddings */
-      .module-card, .control-pane, .output-pane, .info-panel, .scan-room {
+      /* 6. Shrink Massive Container Paddings */
+      .module-card {
         padding: 20px;
       }
 
-      /* 6. Shrink the Command Center FAB */
+      /* 7. FIX: Prevent the FAB from disappearing by replacing blur with a solid color */
       .fab {
-        bottom: 20px; 
-        left: 20px; 
+        bottom: 25px; 
+        left: 15px; 
         width: 50px; 
         height: 50px;
+        background: rgba(20, 22, 30, 0.98); /* Solid dark color so iOS Safari doesn't bug out */
+        -webkit-backdrop-filter: none;
+        backdrop-filter: none;
+        -webkit-transform: none;
+        transform: none;
+        will-change: auto;
       }
-
-      /* --- PAGE-SPECIFIC FIXES (Safe to include everywhere) --- */
-      
-      /* Log Analyzer: Let the stat badges wrap on tiny screens */
-      .telemetry-stats { flex-wrap: wrap; width: 100%; }
-      .stat-badge { flex-grow: 1; justify-content: center; }
-
-      /* QR Synthesizer: Stack the color pickers */
-      .color-grid { grid-template-columns: 1fr; }
-
-      /* JSON to Table Viewer: Ensure search bar doesn't overflow */
-      .search-wrapper { max-width: 100%; }
     }
   </style>
 </head>
