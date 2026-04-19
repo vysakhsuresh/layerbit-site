@@ -44,10 +44,10 @@
       color: var(--text-main);
       background-color: var(--bg-base);
       background-image: var(--bg-gradient);
-      min-height: 100vh;
+      min-height: 100dvh; /* Safely accounts for mobile browser UI */
       padding: 20px 40px;
       position: relative;
-      overflow-x: hidden;
+      overflow-x: clip; /* Fixes mobile fixed elements disappearing bug */
     }
 
     /* Animated Drifting Starry Background */
@@ -260,6 +260,7 @@
       padding: 40px;
       border-radius: 20px;
       backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
       color: var(--text-muted);
       text-align: left;
       line-height: 1.8;
@@ -301,6 +302,9 @@
       font-size: 0.9em;
       box-shadow: 0 8px 25px rgba(0,0,0,0.5);
       transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      -webkit-transform: translateZ(0); 
+      transform: translateZ(0); 
+      will-change: transform;
     }
 
     .premium-bmc-btn i {
@@ -310,19 +314,22 @@
     }
 
     .premium-bmc-btn:hover {
-      transform: translateY(-3px);
+      transform: translateY(-3px) translateZ(0);
       background: rgba(30, 34, 48, 0.8);
       border-color: #ffc107;
       box-shadow: 0 12px 30px rgba(255, 193, 7, 0.2);
       color: #fff;
     }
 
-/* Expanding Pill Search (Restored and Upgraded) */
+    /* Expanding Pill Search (Restored and Upgraded) */
     .search-pill-wrapper {
       position: fixed;
       bottom: 30px;
       left: 30px;
       z-index: 9998;
+      -webkit-transform: translateZ(0); 
+      transform: translateZ(0); 
+      will-change: transform;
     }
 
     .search-pill {
@@ -332,6 +339,7 @@
       background: rgba(20, 22, 30, 0.7);
       border: 1px solid rgba(255, 255, 255, 0.1);
       backdrop-filter: blur(15px);
+      -webkit-backdrop-filter: blur(15px);
       border-radius: 30px;
       height: 60px;
       width: 60px; /* Collapsed state */
@@ -356,7 +364,6 @@
       transform: scale(1);
     }
 
-    /* FIXED: Removed the 'i' so it targets the SVG properly */
     .search-pill .search-icon {
       width: 28px;
       height: 28px;
@@ -391,7 +398,6 @@
       color: var(--text-muted);
     }
 
-    /* FIXED: Removed the 'i' so it targets the SVG properly */
     .search-pill .clear-icon {
       width: 24px;
       height: 24px;
@@ -421,8 +427,13 @@
       background: rgba(20, 22, 30, 0.7);
       border: 1px solid rgba(56, 189, 248, 0.5);
       backdrop-filter: blur(15px);
+      -webkit-backdrop-filter: blur(15px);
       box-shadow: 0 8px 25px rgba(0,0,0,0.5), inset 0 0 15px rgba(56, 189, 248, 0.2);
       transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      -webkit-transform: translateZ(0); 
+      transform: translateZ(0); 
+      will-change: transform;
+      animation: fab-bloom 3s infinite ease-in-out;
     }
 
     .chat-fab-premium i {
@@ -432,138 +443,96 @@
       transition: all 0.3s ease;
     }
 
+    /* The Quantum Portal Interaction */
     .chat-fab-premium:hover {
-      transform: scale(1.1) rotate(-5deg);
-      background: rgba(30, 34, 48, 0.9);
-      border-color: #38bdf8;
-      box-shadow: 0 12px 30px rgba(0,0,0,0.6), 0 0 25px rgba(56, 189, 248, 0.4);
+      transform: scale(1.15) translateY(-5px) translateZ(0);
+      background: rgba(20, 22, 30, 0.95);
+      border-color: #00f2fe;
+      box-shadow: 
+        0 15px 40px rgba(0,0,0,0.8), 
+        0 0 20px rgba(56, 189, 248, 0.4),
+        inset 0 0 15px rgba(0, 242, 254, 0.2);
     }
 
-/* The Quantum Portal Interaction */
-.chat-fab-premium:hover {
-  transform: scale(1.15) translateY(-5px);
-  background: rgba(20, 22, 30, 0.95);
-  border-color: #00f2fe;
-  /* Multi-layered glow for depth */
-  box-shadow: 
-    0 15px 40px rgba(0,0,0,0.8), 
-    0 0 20px rgba(56, 189, 248, 0.4),
-    inset 0 0 15px rgba(0, 242, 254, 0.2);
-}
+    .chat-fab-premium:hover svg .portal-ring {
+      animation-duration: 3s; 
+      stroke: #38bdf8;
+      opacity: 1;
+    }
 
-.chat-fab-premium:hover svg .portal-ring {
-  animation-duration: 3s; /* Speeds up the "system check" */
-  stroke: #38bdf8;
-  opacity: 1;
-}
+    .chat-fab-premium:hover svg .data-stream {
+      stroke: #fff;
+      stroke-width: 1.5;
+      animation-duration: 1s; 
+    }
 
-.chat-fab-premium:hover svg .data-stream {
-  stroke: #fff;
-  stroke-width: 1.5;
-  animation-duration: 1s; /* Data transfer speeds up */
-}
+    @keyframes fab-bloom {
+      0% { box-shadow: 0 8px 25px rgba(0,0,0,0.5), 0 0 0px rgba(56, 189, 248, 0); }
+      50% { box-shadow: 0 8px 25px rgba(0,0,0,0.5), 0 0 20px rgba(56, 189, 248, 0.3); }
+      100% { box-shadow: 0 8px 25px rgba(0,0,0,0.5), 0 0 0px rgba(56, 189, 248, 0); }
+    }
 
+    /* Make the Wavelength violent on hover */
+    .chat-fab-premium:hover svg .wave-bar {
+      animation-duration: 0.4s;
+      fill: #fff;
+    }
 
-/* The Sonic Support Floater */
-.chat-fab-premium {
-  /* ... existing position/z-index ... */
-  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-}
+    /* The Label that Explains the Button */
+    .fab-label {
+      position: absolute;
+      right: 70px;
+      background: rgba(10, 12, 16, 0.8);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border: 1px solid var(--accent-main);
+      color: var(--accent-main);
+      padding: 6px 15px;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      opacity: 0;
+      transform: translateX(20px);
+      transition: all 0.4s ease;
+      pointer-events: none;
+      box-shadow: 0 0 15px rgba(56, 189, 248, 0.2);
+    }
 
-/* This constant pulse ensures they don't miss the button */
-@keyframes fab-bloom {
-  0% { box-shadow: 0 8px 25px rgba(0,0,0,0.5), 0 0 0px rgba(56, 189, 248, 0); }
-  50% { box-shadow: 0 8px 25px rgba(0,0,0,0.5), 0 0 20px rgba(56, 189, 248, 0.3); }
-  100% { box-shadow: 0 8px 25px rgba(0,0,0,0.5), 0 0 0px rgba(56, 189, 248, 0); }
-}
+    .chat-fab-premium:hover .fab-label {
+      opacity: 1;
+      transform: translateX(0);
+    }
 
-.chat-fab-premium {
-  animation: fab-bloom 3s infinite ease-in-out;
-}
+    .chat-fab-premium svg {
+      transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    }
 
-.chat-fab-premium:hover {
-  transform: scale(1.15) translateY(-5px);
-  background: rgba(30, 34, 48, 0.95);
-  border-color: #38bdf8;
-  /* Aggressive glow on hover to confirm target acquisition */
-  box-shadow: 0 20px 40px rgba(0,0,0,0.7), 0 0 30px rgba(56, 189, 248, 0.6);
-}
+    .chat-fab-premium:active {
+      transform: scale(0.95) rotate(-10deg) translateZ(0);
+      transition: transform 0.1s;
+    }
 
-/* Make the Wavelength violent on hover */
-.chat-fab-premium:hover svg .wave-bar {
-  animation-duration: 0.4s;
-  fill: #fff;
-}
-
-
-/* The Label that Explains the Button */
-.fab-label {
-  position: absolute;
-  right: 70px; /* Sits to the left of the button */
-  background: rgba(10, 12, 16, 0.8);
-  backdrop-filter: blur(10px);
-  border: 1px solid var(--accent-main);
-  color: var(--accent-main);
-  padding: 6px 15px;
-  border-radius: 20px;
-  font-size: 0.75rem;
-  font-weight: 700;
-  letter-spacing: 1.5px;
-  opacity: 0;
-  transform: translateX(20px);
-  transition: all 0.4s ease;
-  pointer-events: none;
-  box-shadow: 0 0 15px rgba(56, 189, 248, 0.2);
-}
-
-.chat-fab-premium:hover .fab-label {
-  opacity: 1;
-  transform: translateX(0);
-}
-
-
-.chat-fab-premium svg {
-  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-/* Add a subtle rotation on the actual CLICK to make it feel like a physical lock turning */
-.chat-fab-premium:active {
-  transform: scale(0.95) rotate(-10deg);
-  transition: transform 0.1s;
-}
-
-
-
-/* Hover State for the Icon itself */
-.chat-fab-premium:hover {
-  transform: scale(1.1) translateY(-5px);
-  background: rgba(30, 34, 48, 0.95);
-  border-color: #38bdf8;
-  box-shadow: 0 15px 40px rgba(0,0,0,0.6), 0 0 20px rgba(56, 189, 248, 0.3);
-}
-
-.chat-fab-premium:hover svg .portal-frame {
-  animation-duration: 4s; /* System "wakes up" */
-  stroke: #fff;
-  opacity: 1;
-}
-	
-	/* Custom Image Styling for Chat Orb */
+    .chat-fab-premium:hover svg .portal-frame {
+      animation-duration: 4s;
+      stroke: #fff;
+      opacity: 1;
+    }
+    
+    /* Custom Image Styling for Chat Orb */
     .chat-fab-premium .chat-custom-img {
       width: 28px;
       height: 28px;
       object-fit: contain;
       transition: all 0.3s ease;
-      border-radius: 50%; /* Keeps the image perfectly round */
+      border-radius: 50%;
     }
 
     .chat-fab-premium:hover .chat-custom-img {
-      transform: scale(1.15); /* Slightly enlarges the image on hover */
-      filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.4)); /* Adds a subtle glow */
+      transform: scale(1.15);
+      filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.4));
     }
-	
-	
-
+    
     /* Chat Modal */
     #chatModal {
       display: none;
@@ -573,6 +542,7 @@
       width: 100%; height: 100%;
       background: rgba(0,0,0,0.7);
       backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
     }
     #chatModalContent {
       background: #14161e;
@@ -652,6 +622,54 @@
     /* Animations */
     @keyframes fadeIn { from { opacity: 0; transform: translateY(-15px); } to { opacity: 1; transform: translateY(0); } }
     @keyframes fadeSlideUp { from { opacity: 0; transform: translateY(40px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* =========================================
+       ULTRA-RESPONSIVE (Mobile Phones)
+       ========================================= */
+    @media (max-width: 600px) {
+      /* Reclaim Screen Space */
+      body { padding: 15px 20px; }
+      
+      /* Scale Down Giant Typography */
+      .hero h1 { font-size: 2.4em; }
+      .hero p { font-size: 1em; }
+      
+      /* Adjust Grid for smaller phones */
+      .grid { grid-template-columns: 1fr; }
+      
+      /* Shrink Paddings */
+      .tool-card { padding: 25px 20px; }
+      .seo-panel { padding: 20px; }
+      
+      /* Adjust Floating Elements for Mobile */
+      .premium-bmc-btn {
+        top: 15px;
+        right: 15px;
+        padding: 8px 12px;
+        font-size: 0.8em;
+      }
+      
+      .search-pill-wrapper {
+        bottom: 20px;
+        left: 20px;
+      }
+      
+      .chat-fab-premium {
+        bottom: 20px;
+        right: 20px;
+        width: 50px;
+        height: 50px;
+      }
+      
+      .chat-fab-premium i { width: 22px; height: 22px; }
+      
+      .fab-label { display: none; } /* Hide the text label on mobile to save space */
+      
+      /* Ensure expanded search pill doesn't overflow screen width */
+      .search-pill.expanded {
+        width: calc(100vw - 100px); /* Leave room for chat fab */
+      }
+    }
   </style>
 </head>
 <body>
@@ -682,7 +700,7 @@
     <h2>Dev Tools Suite</h2>
     <div class="grid">
       
-<a class="tool-card" href="tools/layerlink-sharer.html">
+      <a class="tool-card" href="tools/layerlink-sharer.html">
         <div class="icon-wrapper">
           <svg width="42" height="42" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
             <rect x="6" y="10" width="52" height="34" rx="4" fill="rgba(30, 40, 60, 0.8)" stroke="#38bdf8" stroke-width="2"/>
