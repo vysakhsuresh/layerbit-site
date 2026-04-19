@@ -45,10 +45,10 @@
       color: var(--text-main);
       background-color: var(--bg-base);
       background-image: var(--bg-gradient);
-      min-height: 100vh;
+      min-height: 100dvh; /* Safely accounts for mobile browser UI */
       padding: 20px 40px;
       position: relative;
-      overflow-x: hidden;
+      overflow-x: clip; /* Fixes mobile FAB disappearing bug */
       display: flex;
       flex-direction: column;
     }
@@ -88,6 +88,7 @@
       flex-direction: column;
       overflow: hidden;
       backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
       box-shadow: 0 10px 30px rgba(0,0,0,0.3);
       height: 600px;
       transition: border 0.3s ease;
@@ -166,14 +167,97 @@
     .info-panel li i { color: #22c55e; width: 16px; }
 
     /* Command Center FAB */
-    .fab { position: fixed; bottom: 30px; left: 30px; width: 60px; height: 60px; border-radius: 50%; backdrop-filter: blur(15px); display: flex; align-items: center; justify-content: center; z-index: 9998; background: rgba(20, 22, 30, 0.7); border: 1px solid rgba(255, 255, 255, 0.1); box-shadow: 0 8px 25px rgba(0,0,0,0.5); transition: all 0.4s; text-decoration: none; }
-    .fab:hover { transform: scale(1.1); border-color: var(--accent-main); background: rgba(30, 34, 48, 0.9); }
+    .fab { 
+      position: fixed; 
+      bottom: 30px; 
+      left: 30px; 
+      width: 60px; 
+      height: 60px; 
+      border-radius: 50%; 
+      -webkit-backdrop-filter: blur(15px);
+      backdrop-filter: blur(15px); 
+      display: flex; 
+      align-items: center; 
+      justify-content: center; 
+      z-index: 9999; 
+      background: rgba(20, 22, 30, 0.7); 
+      border: 1px solid rgba(255, 255, 255, 0.1); 
+      box-shadow: 0 8px 25px rgba(0,0,0,0.5); 
+      transition: all 0.4s; 
+      text-decoration: none; 
+      -webkit-transform: translateZ(0); 
+      transform: translateZ(0); 
+      will-change: transform;
+    }
+    .fab:hover { 
+      transform: scale(1.1) translateZ(0); 
+      border-color: var(--accent-main); 
+      background: rgba(30, 34, 48, 0.9); 
+      box-shadow: 0 12px 30px rgba(0,0,0,0.6), 0 0 25px rgba(56, 189, 248, 0.3);
+    }
 
     footer { text-align: center; padding: 40px 0; border-top: 1px solid var(--card-border); color: var(--text-muted); font-size: 0.95em; margin-top: auto; }
 
     @media (max-width: 900px) { .ide-container { grid-template-columns: 1fr; } .pane { height: 400px; } }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(-15px); } to { opacity: 1; transform: translateY(0); } }
     @keyframes fadeSlideUp { from { opacity: 0; transform: translateY(40px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* =========================================
+       ULTRA-RESPONSIVE (Mobile Phones - Master Patch)
+       Applies to all Layerbit Tools
+       ========================================= */
+    @media (max-width: 600px) {
+      /* 1. Reclaim Screen Real Estate */
+      body { padding: 15px 20px; }
+      header { margin-bottom: 25px; }
+
+      /* 2. Scale Down Giant Typography */
+      .hero h1 { 
+        font-size: 2em; 
+        flex-direction: column; 
+        gap: 10px; 
+      }
+      .hero p { font-size: 1em; }
+
+      /* 3. Stack Toolbars & Pane Headers */
+      .pane-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+        padding: 15px;
+        height: auto;
+      }
+
+      /* 4. Make Buttons Fluid & Tappable */
+      .btn-group { 
+        width: 100%; 
+        flex-wrap: wrap; 
+        justify-content: stretch;
+      }
+      .btn { 
+        flex-grow: 1; 
+        justify-content: center; 
+        text-align: center;
+      }
+      
+      .toggle-wrapper {
+        width: 100%;
+        margin-bottom: 5px;
+      }
+
+      /* 5. Shrink Massive Container Paddings */
+      .info-panel {
+        padding: 20px;
+      }
+
+      /* 6. Shrink the Command Center FAB */
+      .fab {
+        bottom: 20px; 
+        left: 20px; 
+        width: 50px; 
+        height: 50px;
+      }
+    }
   </style>
 </head>
 <body>

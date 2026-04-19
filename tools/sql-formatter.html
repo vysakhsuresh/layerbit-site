@@ -265,9 +265,76 @@
 
     footer { text-align: center; padding: 40px 0; border-top: 1px solid var(--card-border); color: var(--text-muted); font-size: 0.95em; margin-top: auto; }
 
+/* =========================================
+       RESPONSIVE DESIGN (Tablets & Small Desktop)
+       ========================================= */
     @media (max-width: 900px) {
-      .ide-container { grid-template-columns: 1fr; }
-      .pane { height: 400px; }
+      .ide-container { 
+        grid-template-columns: 1fr; 
+      }
+      .pane { 
+        height: 500px; /* Giving a bit more room since they stack */
+      }
+    }
+
+    /* =========================================
+       ULTRA-RESPONSIVE (Mobile Phones)
+       ========================================= */
+    @media (max-width: 600px) {
+      /* Reclaim screen space by reducing padding */
+      body {
+        padding: 15px 20px;
+      }
+
+      header {
+        margin-bottom: 25px;
+      }
+
+      /* Scale down typography */
+      .hero h1 { 
+        font-size: 2em; 
+      }
+      .hero p { 
+        font-size: 1em; 
+      }
+
+      /* Stack the pane headers so tools don't overflow off-screen */
+      .pane-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+        padding: 15px;
+      }
+
+      /* Make the button groups fluid */
+      .btn-group { 
+        width: 100%; 
+        flex-wrap: wrap; 
+      }
+
+      /* Allow the select dropdown and buttons to share space effectively */
+      select.dialect-select {
+        flex-grow: 1;
+        width: 100%;
+      }
+      .btn {
+        flex-grow: 1;
+        justify-content: center;
+      }
+
+      /* Shrink the info panel padding */
+      .info-panel {
+        padding: 25px;
+        border-radius: 12px;
+      }
+
+      /* Tuck the FAB slightly more into the corner and scale it down */
+      .fab {
+        bottom: 20px; 
+        left: 20px; 
+        width: 50px; 
+        height: 50px;
+      }
     }
 
     @keyframes fadeIn { from { opacity: 0; transform: translateY(-15px); } to { opacity: 1; transform: translateY(0); } }
