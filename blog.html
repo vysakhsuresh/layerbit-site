@@ -5,14 +5,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="description" content="The master documentation for Layerbit's developer suite. Detailed guides for security, data transformation, and workflow automation tools." />
   <title>Layerbit Technical Guide - Complete Developer Utilities</title>
-  
+
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6072772587431629" crossorigin="anonymous"></script>
-  
+
   <script src="https://unpkg.com/lucide@latest"></script>
 
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <link href="layerbit-logo.png" rel="icon" type="image/x-icon" />
-  
+
   <style>
     /* Ultra-Premium Dark Theme Variables (Matched to Index) */
     :root {
@@ -44,10 +44,10 @@
       color: var(--text-main);
       background-color: var(--bg-base);
       background-image: var(--bg-gradient);
-      min-height: 100vh;
+      min-height: 100dvh; /* Upgraded for mobile UI */
       padding: 20px 40px;
       position: relative;
-      overflow-x: hidden;
+      overflow-x: clip; /* Safely clips without breaking fixed elements */
       display: flex;
       flex-direction: column;
     }
@@ -251,7 +251,7 @@
       text-shadow: 0 0 10px var(--accent-glow);
     }
 
-    /* Floating Command Center Orb (Locked Choice) */
+    /* Floating Command Center Orb */
     .fab {
       position: fixed;
       bottom: 30px;
@@ -259,6 +259,7 @@
       height: 60px;
       border-radius: 50%;
       backdrop-filter: blur(15px);
+      -webkit-backdrop-filter: blur(15px);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -267,6 +268,9 @@
       box-shadow: 0 8px 25px rgba(0,0,0,0.5);
       transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
       text-decoration: none;
+      -webkit-transform: translateZ(0); 
+      transform: translateZ(0); 
+      will-change: transform;
     }
 
     .home-fab-premium {
@@ -276,7 +280,7 @@
     }
 
     .home-fab-premium:hover {
-      transform: scale(1.1);
+      transform: scale(1.1) translateZ(0);
       border-color: rgba(56, 189, 248, 0.5);
       background: rgba(30, 34, 48, 0.9);
       box-shadow: 0 12px 30px rgba(0,0,0,0.6), 0 0 25px rgba(56, 189, 248, 0.3);
@@ -292,7 +296,7 @@
       margin-top: auto;
       width: 100%;
     }
-    
+
     footer a { color: var(--text-muted); text-decoration: none; margin: 0 12px; transition: color 0.2s; }
     footer a:hover { color: var(--accent-main); }
 
@@ -304,6 +308,70 @@
     /* Animations */
     @keyframes fadeIn { from { opacity: 0; transform: translateY(-15px); } to { opacity: 1; transform: translateY(0); } }
     @keyframes fadeSlideUp { from { opacity: 0; transform: translateY(40px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* =========================================
+       ULTRA-RESPONSIVE (Mobile Phones - Master Patch)
+       ========================================= */
+    @media (max-width: 600px) {
+      /* 1. Reclaim Screen Real Estate */
+      body { padding: 15px 20px; }
+      header { margin-bottom: 25px; }
+
+      /* 2. Scale Down Giant Typography */
+      .hero h1 { 
+        font-size: 2.2em; 
+        line-height: 1.2;
+        margin-bottom: 15px;
+      }
+      .hero p { font-size: 1em; }
+
+      /* 3. Adjust Headers */
+      .doc-container h2 {
+        font-size: 1.5em;
+        margin-top: 40px;
+        flex-wrap: wrap; /* Allows icon and text to wrap if very long */
+      }
+      
+      .doc-container h2 i {
+        width: 24px;
+        height: 24px;
+      }
+
+      /* 4. Fix Grid and Box Paddings to prevent overflow */
+      .doc-container, .tool-box, .footer-note {
+        min-width: 0;
+        width: 100%;
+        max-width: 100%;
+      }
+
+      .doc-grid {
+        grid-template-columns: 1fr; /* Force single column */
+        gap: 20px;
+      }
+
+      .tool-box {
+        padding: 25px 20px;
+      }
+
+      .footer-note {
+        padding: 25px 20px;
+        margin-top: 40px;
+      }
+
+      /* 5. Fix the Disappearing FAB Bug */
+      .fab {
+        bottom: 20px; 
+        left: 20px; 
+        width: 50px; 
+        height: 50px;
+        background: rgba(20, 22, 30, 0.98); /* Solid dark color so iOS Safari doesn't bug out */
+        -webkit-backdrop-filter: none;
+        backdrop-filter: none;
+        -webkit-transform: none;
+        transform: none;
+        will-change: auto;
+      }
+    }
   </style>
 </head>
 <body>
@@ -326,7 +394,7 @@
   </main>
 
   <div class="doc-container">
-    
+
     <h2><i data-lucide="shield-alert"></i> 1. Security & System Auditing</h2>
     <div class="doc-grid">
       <div class="tool-box">
