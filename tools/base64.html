@@ -286,7 +286,7 @@
           <div class="pane-title"><i data-lucide="align-left"></i> Plain Text</div>
           <div style="display: flex; align-items: center; gap: 15px;">
             <span id="decodeError" class="error-text"><i data-lucide="alert-circle" style="width: 14px; display: inline; vertical-align: middle;"></i> Invalid Base64 String</span>
-            <button class="btn-action" onclick="copyContent('plainText', this)"><i data-lucide="copy"></i> Copy</button>
+            <button class="btn-action" onclick="copyContent('plainText', this)"><i data-lucide="copy"></i> <span>Copy</span></button>
           </div>
         </div>
         <textarea id="plainText" class="editor" placeholder="Type or paste human-readable text here...&#10;It will automatically encode to Base64 in real-time." spellcheck="false"></textarea>
@@ -295,7 +295,7 @@
       <div class="pane">
         <div class="pane-header">
           <div class="pane-title"><i data-lucide="binary"></i> Base64 Encoded</div>
-          <button class="btn-action" onclick="copyContent('base64Text', this)"><i data-lucide="copy"></i> Copy</button>
+          <button class="btn-action" onclick="copyContent('base64Text', this)"><i data-lucide="copy"></i> <span>Copy</span></button>
         </div>
         <textarea id="base64Text" class="editor" placeholder="Type or paste a Base64 string here...&#10;It will automatically decode to Plain Text in real-time." spellcheck="false"></textarea>
       </div>
@@ -308,7 +308,7 @@
       <div class="pane">
         <div class="pane-header">
           <div class="pane-title"><i data-lucide="upload-cloud"></i> Image Encoder</div>
-          <button class="btn-action" onclick="copyContent('imageOutputText', this)"><i data-lucide="copy"></i> Copy Base64</button>
+          <button class="btn-action" onclick="copyContent('imageOutputText', this)"><i data-lucide="copy"></i> <span>Copy Base64</span></button>
         </div>
         <input type="file" id="fileInput" accept="image/*" style="display: none;" />
         <label for="fileInput" class="dropzone" id="dropzone">
@@ -366,17 +366,25 @@
       document.getElementById('tab-' + tabId).classList.add('active');
     }
 
-    // Copy Function
+    // Fixed Copy Function
     function copyContent(elementId, btnElement) {
-      const text = document.getElementById(elementId).value;
+      const textarea = document.getElementById(elementId);
+      const text = textarea.value;
       if (!text) return;
 
       navigator.clipboard.writeText(text).then(() => {
-        const originalText = btnElement.innerHTML;
-        btnElement.innerHTML = '<i data-lucide="check"></i> Copied!';
+        const label = btnElement.querySelector('span');
+        const icon = btnElement.querySelector('i');
+        const originalText = label.innerText;
+        const originalIcon = icon.getAttribute('data-lucide');
+
+        label.innerText = 'Copied!';
+        icon.setAttribute('data-lucide', 'check');
         lucide.createIcons();
+
         setTimeout(() => {
-          btnElement.innerHTML = originalText;
+          label.innerText = originalText;
+          icon.setAttribute('data-lucide', originalIcon);
           lucide.createIcons();
         }, 2000);
       });
@@ -406,7 +414,6 @@
         return;
       }
       try {
-        // IMPROVED: Logic to handle standard Base64 more robustly
         const decoded = atob(val);
         try {
           plainText.value = decodeURIComponent(escape(decoded));
@@ -429,10 +436,8 @@
     const imagePreview = document.getElementById('imagePreview');
     const imgDecodeError = document.getElementById('imgDecodeError');
 
-    // Handle File Selection
     fileInput.addEventListener('change', handleFile);
 
-    // Drag and Drop events
     dropzone.addEventListener('dragover', (e) => {
       e.preventDefault();
       dropzone.classList.add('dragover');
@@ -462,7 +467,6 @@
       reader.readAsDataURL(file);
     }
 
-    // Handle Image Decoding
     imageDecodeInput.addEventListener('input', () => {
       let val = imageDecodeInput.value.trim();
       imgDecodeError.classList.remove('active');
@@ -473,9 +477,8 @@
         return;
       }
 
-      // IMPROVED: Smart prefix handler to prevent "data:image/png;base64,data:image/jpeg;base64,"
+      // Fix for double-header or missing header
       if (!val.startsWith('data:image')) {
-        // Default to png if header is missing
         val = 'data:image/png;base64,' + val;
       }
 
@@ -483,7 +486,6 @@
       imagePreview.style.display = 'block';
     });
 
-    // Handle broken image links
     imagePreview.addEventListener('error', () => {
       imagePreview.style.display = 'none';
       if(imageDecodeInput.value.trim() !== '') {
