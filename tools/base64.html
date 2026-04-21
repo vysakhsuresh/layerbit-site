@@ -5,14 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="description" content="Real-time Base64 Encoder and Decoder for text and images. Secure, client-side data conversion by Layerbit." />
   <title>Base64 Cipher Engine - Layerbit</title>
-  
+
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6072772587431629" crossorigin="anonymous"></script>
-  
   <script src="https://unpkg.com/lucide@latest"></script>
 
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet" />
   <link href="../layerbit-logo.png" rel="icon" type="image/x-icon" />
-  
+
   <style>
     /* Ultra-Premium Dark Theme Variables */
     :root {
@@ -22,11 +21,8 @@
       --text-muted: #94a3b8;
       --card-bg: rgba(20, 22, 30, 0.6);
       --card-border: rgba(255, 255, 255, 0.08);
-      --card-hover-border: rgba(56, 189, 248, 0.4);
       --accent-main: #38bdf8;
       --accent-glow: rgba(56, 189, 248, 0.5);
-      --neon-gradient: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%);
-      --error-bg: rgba(239, 68, 68, 0.1);
       --error-border: #ef4444;
     }
 
@@ -39,219 +35,55 @@
       background-color: var(--bg-base);
       background-image: var(--bg-gradient);
       min-height: 100vh;
-      padding: 20px 40px;
-      position: relative;
-      overflow-x: hidden;
+      padding: 20px;
       display: flex;
       flex-direction: column;
     }
 
-    /* Animated Starry Background */
-    @keyframes drift {
-      from { background-position: 0 0, 20px 20px; }
-      to { background-position: -60px -60px, -40px -40px; }
-    }
-    body::before {
-      content: '';
-      position: fixed;
-      top: 0; left: 0; width: 100vw; height: 100vh;
-      background-image: 
-        radial-gradient(rgba(255,255,255,0.08) 1px, transparent 1px),
-        radial-gradient(rgba(255,255,255,0.05) 1px, transparent 1px);
-      background-size: 60px 60px, 40px 40px;
-      z-index: -1;
-      animation: drift 60s linear infinite;
-    }
-
-    header { display: flex; justify-content: flex-start; align-items: center; max-width: 1400px; width: 100%; margin: 0 auto 40px auto; }
+    header { max-width: 1400px; width: 100%; margin: 0 auto 40px auto; }
     .brand { font-size: 1.6em; font-weight: 700; display: flex; align-items: center; gap: 12px; text-decoration: none; color: #fff; }
-    .brand svg { filter: drop-shadow(0 0 10px var(--accent-glow)); }
 
-    .hero { text-align: center; margin-bottom: 40px; animation: fadeIn 1s ease-out; }
-    .hero h1 { font-size: 2.8em; font-weight: 700; margin-bottom: 10px; }
-    .hero p { color: var(--text-muted); font-size: 1.1em; }
+    .hero { text-align: center; margin-bottom: 40px; }
+    .hero h1 { font-size: 2.8em; margin-bottom: 10px; }
+    .hero p { color: var(--text-muted); }
 
-    /* Custom Tabs */
-    .tab-container {
-      display: flex;
-      justify-content: center;
-      gap: 15px;
-      margin-bottom: 40px;
-      animation: fadeIn 1s ease-out;
-    }
-
+    .tab-container { display: flex; justify-content: center; gap: 15px; margin-bottom: 40px; }
     .tab-btn {
       background: rgba(255,255,255,0.05);
       border: 1px solid var(--card-border);
       color: var(--text-muted);
       padding: 12px 30px;
       border-radius: 12px;
-      font-family: 'Space Grotesk', sans-serif;
-      font-size: 1.1em;
-      font-weight: 600;
       cursor: pointer;
+      font-weight: 600;
       display: flex;
       align-items: center;
       gap: 10px;
-      transition: all 0.3s;
+      transition: 0.3s;
     }
+    .tab-btn.active { background: rgba(56, 189, 248, 0.1); border-color: var(--accent-main); color: #fff; }
 
-    .tab-btn i { width: 18px; }
-    .tab-btn:hover { background: rgba(255,255,255,0.1); color: #fff; }
-    .tab-btn.active {
-      background: rgba(56, 189, 248, 0.1);
-      border-color: var(--accent-main);
-      color: #fff;
-      box-shadow: 0 0 20px rgba(56, 189, 248, 0.2);
-    }
-
-    /* Tab Content Areas */
-    .tab-content { display: none; animation: fadeSlideUp 0.5s ease-out forwards; }
+    .tab-content { display: none; }
     .tab-content.active { display: block; }
 
-    /* IDE Layout */
-    .ide-container {
-      max-width: 1400px;
-      width: 100%;
-      margin: 0 auto;
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 20px;
-    }
+    .ide-container { max-width: 1400px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    .pane { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 16px; height: 500px; display: flex; flex-direction: column; overflow: hidden; }
+    .pane-header { background: rgba(0,0,0,0.3); padding: 12px 20px; border-bottom: 1px solid var(--card-border); display: flex; justify-content: space-between; align-items: center; }
 
-    /* Pane Styling */
-    .pane {
-      background: var(--card-bg);
-      border: 1px solid var(--card-border);
-      border-radius: 16px;
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-      backdrop-filter: blur(16px);
-      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-      height: 500px;
-    }
+    .btn-action { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 6px 14px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 6px; }
 
-    .pane-header {
-      background: rgba(0,0,0,0.3);
-      padding: 12px 20px;
-      border-bottom: 1px solid var(--card-border);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      font-weight: 600;
-      color: #fff;
-    }
-
-    .pane-title { display: flex; align-items: center; gap: 10px; }
-    .pane-title i { color: var(--accent-main); width: 18px; }
-
-    .btn-action {
-      background: rgba(255,255,255,0.05);
-      border: 1px solid rgba(255,255,255,0.1);
-      color: #fff;
-      padding: 6px 14px;
-      border-radius: 8px;
-      font-family: 'Space Grotesk', sans-serif;
-      font-size: 0.85em;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      transition: 0.2s;
-    }
-    .btn-action:hover { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.2); }
-
-    /* Editor Areas */
-    .editor {
-      flex-grow: 1;
-      width: 100%;
-      background: transparent;
-      border: none;
-      padding: 20px;
-      color: var(--text-main);
-      font-family: 'Fira Code', monospace;
-      font-size: 14px;
-      line-height: 1.6;
-      resize: none;
-      outline: none;
-    }
-    .editor::placeholder { color: rgba(255,255,255,0.2); }
-
-    /* Error Text */
-    .error-text { color: #ef4444; font-size: 0.85em; font-weight: 500; display: none; }
+    .editor { flex-grow: 1; padding: 20px; color: var(--text-main); font-family: 'Fira Code', monospace; font-size: 14px; background: transparent; border: none; resize: none; outline: none; }
+    .error-text { color: #ef4444; font-size: 0.85em; display: none; }
     .error-text.active { display: inline-block; }
 
-    /* Image Dropzone */
-    .dropzone {
-      flex-grow: 1;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 40px;
-      text-align: center;
-      border: 2px dashed rgba(255,255,255,0.2);
-      margin: 20px;
-      border-radius: 12px;
-      cursor: pointer;
-      transition: all 0.3s;
-    }
-    .dropzone:hover, .dropzone.dragover {
-      border-color: var(--accent-main);
-      background: rgba(56, 189, 248, 0.05);
-    }
-    .dropzone i { width: 48px; height: 48px; color: var(--accent-main); margin-bottom: 15px; }
-    .dropzone p { color: var(--text-muted); }
-    .dropzone span { color: #fff; font-weight: 600; text-decoration: underline; }
+    .dropzone { flex-grow: 1; border: 2px dashed rgba(255,255,255,0.2); margin: 20px; border-radius: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; }
+    .image-preview-container { flex-grow: 1; display: flex; align-items: center; justify-content: center; padding: 20px; background: rgba(0,0,0,0.2); overflow: hidden; }
+    .image-preview-container img { max-width: 100%; max-height: 100%; border-radius: 8px; display: none; }
 
-    /* Image Preview */
-    .image-preview-container {
-      flex-grow: 1;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
-      background: rgba(0,0,0,0.2);
-      overflow: hidden;
-    }
-    .image-preview-container img {
-      max-width: 100%;
-      max-height: 100%;
-      border-radius: 8px;
-      box-shadow: 0 5px 15px rgba(0,0,0,0.5);
-      display: none;
-    }
+    .info-panel { max-width: 1400px; margin: 60px auto; background: rgba(255,255,255,0.02); border: 1px solid var(--card-border); padding: 40px; border-radius: 20px; }
+    footer { text-align: center; padding: 40px 0; color: var(--text-muted); border-top: 1px solid var(--card-border); margin-top: auto; }
 
-    /* Info Panel */
-    .info-panel {
-      max-width: 1400px;
-      margin: 60px auto;
-      background: rgba(255,255,255,0.02);
-      border: 1px solid var(--card-border);
-      padding: 40px;
-      border-radius: 20px;
-    }
-    .info-panel h2 { color: #fff; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
-    .info-panel h2 i { color: var(--accent-main); }
-    .info-panel p { color: var(--text-muted); margin-bottom: 15px; line-height: 1.7; }
-    .info-panel ul { list-style: none; margin-bottom: 20px; }
-    .info-panel li { color: var(--text-muted); margin-bottom: 10px; display: flex; align-items: center; gap: 10px; }
-    .info-panel li i { color: #22c55e; width: 16px; }
-
-    /* Command Center FAB */
-    .fab { position: fixed; bottom: 30px; left: 30px; width: 60px; height: 60px; border-radius: 50%; backdrop-filter: blur(15px); display: flex; align-items: center; justify-content: center; z-index: 9998; background: rgba(20, 22, 30, 0.7); border: 1px solid rgba(255, 255, 255, 0.1); box-shadow: 0 8px 25px rgba(0,0,0,0.5); transition: all 0.4s; text-decoration: none; }
-    .fab:hover { transform: scale(1.1); border-color: var(--accent-main); background: rgba(30, 34, 48, 0.9); box-shadow: 0 12px 30px rgba(0,0,0,0.6), 0 0 25px rgba(56, 189, 248, 0.3); }
-
-    footer { text-align: center; padding: 40px 0; border-top: 1px solid var(--card-border); color: var(--text-muted); font-size: 0.95em; margin-top: auto; }
-
-    @media (max-width: 900px) {
-      .ide-container { grid-template-columns: 1fr; }
-      .pane { height: 400px; }
-    }
-
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(-15px); } to { opacity: 1; transform: translateY(0); } }
-    @keyframes fadeSlideUp { from { opacity: 0; transform: translateY(40px); } to { opacity: 1; transform: translateY(0); } }
+    @media (max-width: 900px) { .ide-container { grid-template-columns: 1fr; } }
   </style>
 </head>
 <body>
@@ -282,108 +114,75 @@
     <div class="ide-container">
       <div class="pane">
         <div class="pane-header">
-          <div class="pane-title"><i data-lucide="align-left"></i> Plain Text</div>
+          <div class="pane-title">Plain Text</div>
           <div style="display: flex; align-items: center; gap: 15px;">
-            <span id="decodeError" class="error-text"><i data-lucide="alert-circle" style="width: 14px; display: inline; vertical-align: middle;"></i> Invalid Base64 String</span>
-            <button class="btn-action" onclick="copyContent('plainText', this)"><i data-lucide="copy"></i> Copy</button>
+            <span id="decodeError" class="error-text">Invalid Base64</span>
+            <button class="btn-action" onclick="copyContent('plainText', this)">Copy</button>
           </div>
         </div>
-        <textarea id="plainText" class="editor" placeholder="Type or paste human-readable text here...&#10;It will automatically encode to Base64 in real-time." spellcheck="false"></textarea>
+        <textarea id="plainText" class="editor" placeholder="Type here to encode..."></textarea>
       </div>
-
       <div class="pane">
         <div class="pane-header">
-          <div class="pane-title"><i data-lucide="binary"></i> Base64 Encoded</div>
-          <button class="btn-action" onclick="copyContent('base64Text', this)"><i data-lucide="copy"></i> Copy</button>
+          <div class="pane-title">Base64 Encoded</div>
+          <button class="btn-action" onclick="copyContent('base64Text', this)">Copy</button>
         </div>
-        <textarea id="base64Text" class="editor" placeholder="Type or paste a Base64 string here...&#10;It will automatically decode to Plain Text in real-time." spellcheck="false"></textarea>
+        <textarea id="base64Text" class="editor" placeholder="Paste Base64 here to decode..."></textarea>
       </div>
     </div>
   </div>
 
   <div id="tab-image" class="tab-content">
     <div class="ide-container">
-      
       <div class="pane">
         <div class="pane-header">
-          <div class="pane-title"><i data-lucide="upload-cloud"></i> Image Encoder</div>
-          <button class="btn-action" onclick="copyContent('imageOutputText', this)"><i data-lucide="copy"></i> Copy Base64</button>
+          <div class="pane-title">Image Encoder</div>
+          <button class="btn-action" onclick="copyContent('imageOutputText', this)">Copy Base64</button>
         </div>
         <input type="file" id="fileInput" accept="image/*" style="display: none;" />
         <label for="fileInput" class="dropzone" id="dropzone">
           <i data-lucide="image-plus"></i>
-          <p>Drag & Drop an image here or <span>browse files</span></p>
-          <p style="font-size: 0.8em; margin-top: 10px;">Synthesizes file to raw Base64 string</p>
+          <p>Click or Drop Image</p>
         </label>
-        <textarea id="imageOutputText" class="editor" style="display:none;" placeholder="Base64 string will appear here..." readonly></textarea>
+        <textarea id="imageOutputText" class="editor" style="display:none;" readonly></textarea>
       </div>
-
       <div class="pane">
         <div class="pane-header">
-          <div class="pane-title"><i data-lucide="monitor-play"></i> Visual Decoder</div>
-          <span id="imgDecodeError" class="error-text"><i data-lucide="alert-circle" style="width: 14px; display: inline; vertical-align: middle;"></i> Invalid Image Data</span>
+          <div class="pane-title">Visual Decoder</div>
+          <span id="imgDecodeError" class="error-text">Invalid Image Data</span>
         </div>
-        <textarea id="imageDecodeInput" class="editor" style="height: 40%; border-bottom: 1px solid rgba(255,255,255,0.1);" placeholder="Paste a Base64 image string here to render the preview..."></textarea>
+        <textarea id="imageDecodeInput" class="editor" style="height: 30%; border-bottom: 1px solid rgba(255,255,255,0.1);" placeholder="Paste image Base64 here..."></textarea>
         <div class="image-preview-container">
-          <img id="imagePreview" alt="Rendered Preview" />
+          <img id="imagePreview" alt="Preview" />
         </div>
       </div>
-
     </div>
   </div>
 
-  <div class="info-panel">
-    <h2><i data-lucide="shield"></i> Secure Data Conversion</h2>
-    <p>Layerbit provides a robust, zero-latency Base64 processor. Whether you are encoding API payloads, embedding small images into CSS/HTML files, or decoding secure webhooks, this tool operates entirely within the DOM.</p>
-    <ul>
-      <li><i data-lucide="check"></i> <strong>Bidirectional Sync:</strong> Type in either text pane and watch the conversion happen instantly. No buttons required.</li>
-      <li><i data-lucide="check"></i> <strong>Asset Extraction:</strong> Uploading an image converts it into a raw Data URI ready for frontend implementation.</li>
-      <li><i data-lucide="check"></i> <strong>Zero Data Retention:</strong> File processing and string manipulation happen locally on your hardware.</li>
-    </ul>
-  </div>
-
-  <a href="../index.html" id="smartBackBtn" class="fab" aria-label="Command Center" title="Command Center">
-    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="filter: drop-shadow(0 0 8px rgba(56, 189, 248, 0.5));">
-      <path d="M12 2L2 7l10 5 10-5-10-5z" stroke="#38bdf8" stroke-width="2" stroke-linejoin="round" fill="rgba(56,189,248,0.2)"/>
-      <path d="M2 17l10 5 10-5M2 12l10 5 10-5" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-    </svg>
-  </a>
-
   <footer>
-    &copy; 2025 - 2026 <strong>Layerbit Technologies</strong>. All rights reserved.
+    &copy; 2026 <strong>Layerbit Technologies</strong>
   </footer>
 
   <script>
     lucide.createIcons();
 
-    // Tab Switching Logic
     function switchTab(tabId) {
       document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
       document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
-      
       event.currentTarget.classList.add('active');
       document.getElementById('tab-' + tabId).classList.add('active');
     }
 
-    // Copy Function
     function copyContent(elementId, btnElement) {
       const text = document.getElementById(elementId).value;
       if (!text) return;
-      
       navigator.clipboard.writeText(text).then(() => {
-        const originalText = btnElement.innerHTML;
-        btnElement.innerHTML = '<i data-lucide="check"></i> Copied!';
-        lucide.createIcons();
-        setTimeout(() => {
-          btnElement.innerHTML = originalText;
-          lucide.createIcons();
-        }, 2000);
+        btnElement.innerText = 'Copied!';
+        setTimeout(() => { btnElement.innerText = 'Copy'; }, 2000);
       });
     }
 
-    /* ------------------------------
-       TAB 1: TEXT BIDIRECTIONAL LOGIC 
-       ------------------------------ */
+    // TEXT LOGIC
     const plainText = document.getElementById('plainText');
     const base64Text = document.getElementById('base64Text');
     const decodeError = document.getElementById('decodeError');
@@ -392,97 +191,61 @@
       try {
         base64Text.value = btoa(unescape(encodeURIComponent(plainText.value)));
         decodeError.classList.remove('active');
-      } catch(e) {
-        console.error("Encoding error", e);
-      }
+      } catch(e) {}
     });
 
     base64Text.addEventListener('input', () => {
-      if(!base64Text.value.trim()) {
-        plainText.value = '';
-        decodeError.classList.remove('active');
-        return;
-      }
+      const val = base64Text.value.trim();
+      if(!val) { plainText.value = ''; decodeError.classList.remove('active'); return; }
       try {
-        plainText.value = decodeURIComponent(escape(atob(base64Text.value)));
+        const decoded = atob(val);
+        try {
+          plainText.value = decodeURIComponent(escape(decoded));
+        } catch(e) {
+          plainText.value = decoded;
+        }
         decodeError.classList.remove('active');
       } catch (e) {
         decodeError.classList.add('active');
       }
     });
 
-    /* ------------------------------
-       TAB 2: IMAGE ENCODER/DECODER 
-       ------------------------------ */
+    // IMAGE LOGIC
     const fileInput = document.getElementById('fileInput');
-    const dropzone = document.getElementById('dropzone');
     const imageOutputText = document.getElementById('imageOutputText');
     const imageDecodeInput = document.getElementById('imageDecodeInput');
     const imagePreview = document.getElementById('imagePreview');
     const imgDecodeError = document.getElementById('imgDecodeError');
 
-    // Handle File Selection
-    fileInput.addEventListener('change', handleFile);
-
-    // Drag and Drop events
-    dropzone.addEventListener('dragover', (e) => {
-      e.preventDefault();
-      dropzone.classList.add('dragover');
-    });
-    dropzone.addEventListener('dragleave', () => {
-      dropzone.classList.remove('dragover');
-    });
-    dropzone.addEventListener('drop', (e) => {
-      e.preventDefault();
-      dropzone.classList.remove('dragover');
-      if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-        fileInput.files = e.dataTransfer.files;
-        handleFile({ target: fileInput });
-      }
-    });
-
-    function handleFile(e) {
+    fileInput.addEventListener('change', (e) => {
       const file = e.target.files[0];
       if (!file) return;
-      
       const reader = new FileReader();
-      reader.onload = function(event) {
-        dropzone.style.display = 'none';
+      reader.onload = (event) => {
+        document.getElementById('dropzone').style.display = 'none';
         imageOutputText.style.display = 'block';
         imageOutputText.value = event.target.result;
       };
       reader.readAsDataURL(file);
-    }
+    });
 
-    // Handle Image Decoding
     imageDecodeInput.addEventListener('input', () => {
       let val = imageDecodeInput.value.trim();
       imgDecodeError.classList.remove('active');
+      if(!val) { imagePreview.style.display = 'none'; return; }
 
-      if(!val) {
-        imagePreview.style.display = 'none';
-        imagePreview.src = '';
-        return;
-      }
-
-      // Smart prefix handler
+      // Core Fix: Check for existing data prefix
       if (!val.startsWith('data:image')) {
-        // Default to png if header is missing
         val = 'data:image/png;base64,' + val;
       }
-
       imagePreview.src = val;
       imagePreview.style.display = 'block';
     });
 
-    // Handle broken image links
     imagePreview.addEventListener('error', () => {
       imagePreview.style.display = 'none';
-      if(imageDecodeInput.value.trim() !== '') {
-         imgDecodeError.classList.add('active');
-      }
+      if(imageDecodeInput.value.trim() !== '') imgDecodeError.classList.add('active');
     });
-
   </script>
-<script src="../main.js"></script> </BODY>
+</body>
 </html>
