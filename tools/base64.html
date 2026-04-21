@@ -477,8 +477,8 @@
         return;
       }
 
-      // Fix for double-header or missing header
-      if (!val.startsWith('data:image')) {
+      // FIX: .toLowerCase() added to correctly detect capital "Data:"
+      if (!val.toLowerCase().startsWith('data:image')) {
         val = 'data:image/png;base64,' + val;
       }
 
