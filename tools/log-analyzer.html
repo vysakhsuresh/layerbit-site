@@ -335,6 +335,9 @@
       <div class="pane-header">
         <div class="pane-title"><i data-lucide="file-text"></i> Raw Server Dump</div>
         <div class="btn-group">
+          <input type="file" id="logFileInput" style="display: none;" accept=".txt,.log,.csv" />
+          <button class="btn" onclick="document.getElementById('logFileInput').click()"><i data-lucide="upload"></i> Upload File</button>
+          
           <button class="btn" onclick="clearLogs()"><i data-lucide="trash-2"></i> Clear</button>
           <button class="btn btn-primary" onclick="analyzeLogs()"><i data-lucide="activity"></i> Parse Logs</button>
         </div>
@@ -405,6 +408,21 @@
     const countErr = document.getElementById('countErr');
     const countWarn = document.getElementById('countWarn');
     const countInfo = document.getElementById('countInfo');
+
+    // UPLOAD LOGIC ADDED HERE
+    const logFileInput = document.getElementById('logFileInput');
+    logFileInput.addEventListener('change', function(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        logInput.value = e.target.result;
+        analyzeLogs(); // Auto-parse after upload for better UX
+      };
+      reader.readAsText(file);
+      this.value = ''; // Reset so the same file can be uploaded again if needed
+    });
 
     // Regex Patterns
     const rxError = /\b(ERROR|ERR|FATAL|EXCEPTION|CRITICAL)\b/i;
