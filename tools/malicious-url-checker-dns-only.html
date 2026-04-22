@@ -224,13 +224,35 @@
     .info-panel li i { color: var(--threat-clean); width: 16px; }
 
     /* Command Center FAB */
-    .fab { position: fixed; bottom: 30px; left: 30px; width: 60px; height: 60px; border-radius: 50%; backdrop-filter: blur(15px); display: flex; align-items: center; justify-content: center; z-index: 9998; background: rgba(20, 22, 30, 0.7); border: 1px solid rgba(255, 255, 255, 0.1); box-shadow: 0 8px 25px rgba(0,0,0,0.5); transition: all 0.4s; text-decoration: none; }
+    .fab { position: fixed; bottom: 30px; left: 30px; width: 60px; height: 60px; border-radius: 50%; backdrop-filter: blur(15px); display: flex !important; opacity: 1 !important; visibility: visible !important; align-items: center; justify-content: center; z-index: 9998; background: rgba(20, 22, 30, 0.7); border: 1px solid rgba(255, 255, 255, 0.1); box-shadow: 0 8px 25px rgba(0,0,0,0.5); transition: all 0.4s; text-decoration: none; }
     .fab:hover { transform: scale(1.1); border-color: var(--accent-main); background: rgba(30, 34, 48, 0.9); box-shadow: 0 12px 30px rgba(0,0,0,0.6), 0 0 25px rgba(56, 189, 248, 0.3); }
 
     footer { text-align: center; padding: 40px 0; border-top: 1px solid var(--card-border); color: var(--text-muted); font-size: 0.95em; margin-top: auto; }
 
     @keyframes fadeIn { from { opacity: 0; transform: translateY(-15px); } to { opacity: 1; transform: translateY(0); } }
     @keyframes fadeSlideUp { from { opacity: 0; transform: translateY(40px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* Responsive Design Adjustments */
+    @media (max-width: 768px) {
+      body { padding: 15px 20px; }
+      .hero h1 { font-size: 2em; }
+      .hero p { font-size: 1em; }
+      .pane { padding: 20px; }
+      .url-input { font-size: 1em; padding: 15px 15px 15px 40px; }
+      .btn-scan { font-size: 1.1em; padding: 14px; }
+      .info-panel { padding: 25px; }
+      .result-row { flex-direction: column; align-items: flex-start; gap: 12px; }
+      .fab { bottom: 20px; left: 20px; width: 50px; height: 50px; }
+      .brand { font-size: 1.4em; }
+    }
+
+    @media (max-width: 480px) {
+      body { padding: 15px 15px; }
+      .hero h1 { font-size: 1.6em; }
+      .parse-grid { grid-template-columns: 1fr; }
+      .fab { bottom: 15px; left: 15px; }
+      .info-panel { padding: 20px; }
+    }
   </style>
 </head>
 <body>
