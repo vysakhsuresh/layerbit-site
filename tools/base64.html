@@ -75,6 +75,7 @@
     .tab-container {
       display: flex;
       justify-content: center;
+      flex-wrap: wrap;
       gap: 15px;
       margin-bottom: 40px;
       animation: fadeIn 1s ease-out;
@@ -105,10 +106,6 @@
       box-shadow: 0 0 20px rgba(56, 189, 248, 0.2);
     }
 
-    /* Tab Content Areas */
-    .tab-content { display: none; animation: fadeSlideUp 0.5s ease-out forwards; }
-    .tab-content.active { display: block; }
-
     /* IDE Layout */
     .ide-container {
       max-width: 1400px;
@@ -118,6 +115,10 @@
       grid-template-columns: 1fr 1fr;
       gap: 20px;
     }
+
+    /* Tab Content Areas */
+    .tab-content { display: none; animation: fadeSlideUp 0.5s ease-out forwards; }
+    .tab-content.active { display: block; }
 
     /* Pane Styling */
     .pane {
@@ -141,6 +142,13 @@
       align-items: center;
       font-weight: 600;
       color: #fff;
+    }
+    
+    .header-actions {
+      display: flex; 
+      align-items: center; 
+      gap: 10px;
+      flex-wrap: wrap;
     }
 
     .pane-title { display: flex; align-items: center; gap: 10px; }
@@ -249,15 +257,45 @@
     .info-panel li i { color: #22c55e; width: 16px; }
 
     /* Command Center FAB */
-    .fab { position: fixed; bottom: 30px; left: 30px; width: 60px; height: 60px; border-radius: 50%; backdrop-filter: blur(15px); display: flex; align-items: center; justify-content: center; z-index: 9998; background: rgba(20, 22, 30, 0.7); border: 1px solid rgba(255, 255, 255, 0.1); box-shadow: 0 8px 25px rgba(0,0,0,0.5); transition: all 0.4s; text-decoration: none; }
+    .fab { 
+      position: fixed; 
+      bottom: 30px; 
+      left: 30px; 
+      width: 60px; 
+      height: 60px; 
+      border-radius: 50%; 
+      backdrop-filter: blur(15px); 
+      display: flex !important; 
+      visibility: visible !important;
+      opacity: 1 !important;
+      align-items: center; 
+      justify-content: center; 
+      z-index: 9998; 
+      background: rgba(20, 22, 30, 0.7); 
+      border: 1px solid rgba(255, 255, 255, 0.1); 
+      box-shadow: 0 8px 25px rgba(0,0,0,0.5); 
+      transition: all 0.4s; 
+      text-decoration: none; 
+    }
     .fab:hover { transform: scale(1.1); border-color: var(--accent-main); background: rgba(30, 34, 48, 0.9); box-shadow: 0 12px 30px rgba(0,0,0,0.6), 0 0 25px rgba(56, 189, 248, 0.3); }
 
     footer { text-align: center; padding: 40px 0; border-top: 1px solid var(--card-border); color: var(--text-muted); font-size: 0.95em; margin-top: auto; }
 
+    /* Responsiveness Improvements */
     @media (max-width: 900px) {
       .ide-container { grid-template-columns: 1fr; }
       .pane { height: 400px; }
       body { padding: 20px; }
+    }
+    
+    @media (max-width: 600px) {
+      .hero h1 { font-size: 2em; }
+      body { padding: 15px; }
+      .pane-header { flex-direction: column; align-items: flex-start; gap: 15px; }
+      .header-actions { width: 100%; justify-content: flex-start; }
+      .tab-btn { font-size: 0.95em; padding: 10px 20px; width: 100%; justify-content: center; }
+      .info-panel { padding: 25px; }
+      .fab { bottom: 20px; left: 20px; width: 50px; height: 50px; }
     }
 
     @keyframes fadeIn { from { opacity: 0; transform: translateY(-15px); } to { opacity: 1; transform: translateY(0); } }
@@ -293,8 +331,9 @@
       <div class="pane">
         <div class="pane-header">
           <div class="pane-title"><i data-lucide="align-left"></i> Plain Text</div>
-          <div style="display: flex; align-items: center; gap: 15px;">
+          <div class="header-actions">
             <span id="decodeError" class="error-text"><i data-lucide="alert-circle" style="width: 14px; display: inline; vertical-align: middle;"></i> Invalid Base64 String</span>
+            <button class="btn-action" onclick="clearContent('plainText', 'base64Text')"><i data-lucide="trash-2"></i> <span>Clear</span></button>
             <button class="btn-action" onclick="copyContent('plainText', this)"><i data-lucide="copy"></i> <span>Copy</span></button>
           </div>
         </div>
@@ -304,7 +343,10 @@
       <div class="pane">
         <div class="pane-header">
           <div class="pane-title"><i data-lucide="binary"></i> Base64 Encoded</div>
-          <button class="btn-action" onclick="copyContent('base64Text', this)"><i data-lucide="copy"></i> <span>Copy</span></button>
+          <div class="header-actions">
+            <button class="btn-action" onclick="clearContent('base64Text', 'plainText')"><i data-lucide="trash-2"></i> <span>Clear</span></button>
+            <button class="btn-action" onclick="copyContent('base64Text', this)"><i data-lucide="copy"></i> <span>Copy</span></button>
+          </div>
         </div>
         <textarea id="base64Text" class="editor" placeholder="Type or paste a Base64 string here...&#10;It will automatically decode to Plain Text in real-time." spellcheck="false"></textarea>
       </div>
@@ -317,7 +359,10 @@
       <div class="pane">
         <div class="pane-header">
           <div class="pane-title"><i data-lucide="upload-cloud"></i> Asset Encoder</div>
-          <button class="btn-action" onclick="copyContent('imageOutputText', this)"><i data-lucide="copy"></i> <span>Copy Base64</span></button>
+          <div class="header-actions">
+            <button class="btn-action" onclick="clearDropzone()"><i data-lucide="trash-2"></i> <span>Clear</span></button>
+            <button class="btn-action" onclick="copyContent('imageOutputText', this)"><i data-lucide="copy"></i> <span>Copy Base64</span></button>
+          </div>
         </div>
         <input type="file" id="fileInput" accept="image/*, application/pdf" style="display: none;" />
         <label for="fileInput" class="dropzone" id="dropzone">
@@ -331,7 +376,11 @@
       <div class="pane">
         <div class="pane-header">
           <div class="pane-title"><i data-lucide="monitor-play"></i> Visual Decoder</div>
-          <span id="imgDecodeError" class="error-text"><i data-lucide="alert-circle" style="width: 14px; display: inline; vertical-align: middle;"></i> Invalid Asset Data</span>
+          <div class="header-actions">
+            <span id="imgDecodeError" class="error-text"><i data-lucide="alert-circle" style="width: 14px; display: inline; vertical-align: middle;"></i> Invalid Asset Data</span>
+            <button class="btn-action" onclick="clearVisualDecoder()"><i data-lucide="trash-2"></i> <span>Clear</span></button>
+            <button class="btn-action" onclick="downloadAsset()"><i data-lucide="download"></i> <span>Download</span></button>
+          </div>
         </div>
         <textarea id="imageDecodeInput" class="editor" style="height: 40%; border-bottom: 1px solid rgba(255,255,255,0.1);" placeholder="Paste a Base64 image or PDF string here to render the preview..."></textarea>
         <div class="asset-preview-container">
@@ -376,13 +425,36 @@
       document.getElementById('tab-' + tabId).classList.add('active');
     }
 
-    // Fixed Copy Function
-    function copyContent(elementId, btnElement) {
+    // Clearing Functions
+    function clearContent(targetId, syncId) {
+      document.getElementById(targetId).value = '';
+      if(syncId) document.getElementById(syncId).value = '';
+      document.getElementById('decodeError').classList.remove('active');
+    }
+
+    function clearDropzone() {
+      document.getElementById('imageOutputText').value = '';
+      document.getElementById('imageOutputText').style.display = 'none';
+      document.getElementById('dropzone').style.display = 'flex';
+      document.getElementById('fileInput').value = '';
+    }
+
+    function clearVisualDecoder() {
+      document.getElementById('imageDecodeInput').value = '';
+      document.getElementById('imagePreview').style.display = 'none';
+      document.getElementById('pdfPreview').style.display = 'none';
+      document.getElementById('imagePreview').removeAttribute('src');
+      document.getElementById('pdfPreview').removeAttribute('src');
+      document.getElementById('imgDecodeError').classList.remove('active');
+    }
+
+    // Robust Copy Function (Fix for large Base64s on mobile)
+    async function copyContent(elementId, btnElement) {
       const textarea = document.getElementById(elementId);
       const text = textarea.value;
       if (!text) return;
 
-      navigator.clipboard.writeText(text).then(() => {
+      const triggerSuccessVisual = () => {
         const label = btnElement.querySelector('span');
         const icon = btnElement.querySelector('i');
         const originalText = label.innerText;
@@ -397,7 +469,72 @@
           icon.setAttribute('data-lucide', originalIcon);
           lucide.createIcons();
         }, 2000);
-      });
+      };
+
+      try {
+        // Attempt modern clipboard API first
+        if (navigator.clipboard && window.isSecureContext) {
+          await navigator.clipboard.writeText(text);
+          triggerSuccessVisual();
+        } else {
+          throw new Error('Clipboard API unavailable');
+        }
+      } catch (err) {
+        // Fallback for huge payloads or mobile restrictions
+        textarea.select();
+        textarea.setSelectionRange(0, 9999999); // For mobile
+        try {
+          document.execCommand('copy');
+          triggerSuccessVisual();
+        } catch (fallbackErr) {
+          alert("Failed to copy automatically. The data might be too large for this browser. Please select all inside the box and copy manually.");
+        }
+        window.getSelection().removeAllRanges(); // Deselect
+      }
+    }
+
+    // Asset Downloader
+    function downloadAsset() {
+        const val = document.getElementById('imageDecodeInput').value.trim();
+        if(!val) return;
+        
+        try {
+            const match = val.match(/^data:(.*?);base64,(.*)$/);
+            if(!match) {
+                alert("Please ensure the format is a valid Data URI (data:[mime type];base64,...).");
+                return;
+            }
+            const mime = match[1];
+            const b64Data = match[2];
+            
+            // Convert to Blob for safer large file downloads
+            const byteCharacters = atob(b64Data);
+            const byteArrays = [];
+            for (let offset = 0; offset < byteCharacters.length; offset += 512) {
+                const slice = byteCharacters.slice(offset, offset + 512);
+                const byteNumbers = new Array(slice.length);
+                for (let i = 0; i < slice.length; i++) {
+                    byteNumbers[i] = slice.charCodeAt(i);
+                }
+                const byteArray = new Uint8Array(byteNumbers);
+                byteArrays.push(byteArray);
+            }
+            const blob = new Blob(byteArrays, {type: mime});
+            
+            // Trigger auto-download
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            const ext = mime.split('/')[1]?.split(';')[0] || 'bin'; // grab extension safely
+            a.download = `layerbit_decoded_asset.${ext}`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        } catch(e) {
+            alert("Error preparing download. The Base64 string might be invalid or too large.");
+            console.error(e);
+        }
     }
 
     /* ------------------------------
@@ -482,11 +619,11 @@
       let val = imageDecodeInput.value.trim();
       imgDecodeError.classList.remove('active');
       
-      // Hide previews initially
+      // Hide previews initially & use removeAttribute to prevent "Invalid Image" throwing errors
       imagePreview.style.display = 'none';
       pdfPreview.style.display = 'none';
-      imagePreview.src = '';
-      pdfPreview.src = '';
+      imagePreview.removeAttribute('src'); 
+      pdfPreview.removeAttribute('src');
 
       if(!val) return;
 
@@ -515,5 +652,6 @@
     });
 
   </script>
-<script src="../main.js"></script> </BODY>
+<script src="../main.js"></script> 
+</body>
 </html>
