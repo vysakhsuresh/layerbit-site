@@ -403,26 +403,51 @@
     }
 
     // Fixed Copy Function
+  // Bulletproof Copy Function
     function copyContent(elementId, btnElement) {
       const textarea = document.getElementById(elementId);
       const text = textarea.value;
       if (!text) return;
 
-      navigator.clipboard.writeText(text).then(() => {
-        const label = btnElement.querySelector('span');
-        const icon = btnElement.querySelector('i');
-        const originalText = label.innerText;
-        const originalIcon = icon.getAttribute('data-lucide');
+      // 1. Fallback engine for non-HTTPS or local file:// testing
+      const executeCopy = (textToCopy) => {
+        if (navigator.clipboard && window.isSecureContext) {
+          return navigator.clipboard.writeText(textToCopy);
+        } else {
+          // Creates a hidden text area to force a manual copy
+          let textArea = document.createElement("textarea");
+          textArea.value = textToCopy;
+          textArea.style.position = "fixed";
+          textArea.style.left = "-999999px";
+          textArea.style.top = "-999999px";
+          document.body.appendChild(textArea);
+          textArea.focus();
+          textArea.select();
+          return new Promise((res, rej) => {
+            document.execCommand('copy') ? res() : rej();
+            textArea.remove();
+          });
+        }
+      };
 
-        label.innerText = 'Copied!';
-        icon.setAttribute('data-lucide', 'check');
+      // 2. Execute and safely update the UI
+      executeCopy(text).then(() => {
+        const label = btnElement.querySelector('span');
+        const originalText = label ? label.innerText : 'Copy';
+        
+        // Completely swap the HTML to avoid the Lucide <svg> bug
+        btnElement.innerHTML = `<i data-lucide="check" style="color: #22c55e;"></i> <span style="color: #22c55e;">Copied!</span>`;
         lucide.createIcons();
 
+        // Revert after 2 seconds
         setTimeout(() => {
-          label.innerText = originalText;
-          icon.setAttribute('data-lucide', originalIcon);
+          btnElement.innerHTML = `<i data-lucide="copy"></i> <span>${originalText}</span>`;
           lucide.createIcons();
         }, 2000);
+
+      }).catch(err => {
+        console.error("Copy operation failed: ", err);
+        alert("Clipboard access blocked by browser. Please copy manually.");
       });
     }
 
