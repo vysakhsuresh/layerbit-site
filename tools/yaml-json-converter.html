@@ -141,19 +141,38 @@
     .info-panel li { color: var(--text-muted); margin-bottom: 10px; display: flex; align-items: center; gap: 10px; }
     .info-panel li i { color: #22c55e; width: 16px; }
 
-    /* Command Center FAB */
-    .fab { position: fixed; bottom: 30px; left: 30px; width: 60px; height: 60px; border-radius: 50%; backdrop-filter: blur(15px); display: flex; align-items: center; justify-content: center; z-index: 9998; background: rgba(20, 22, 30, 0.7); border: 1px solid rgba(255, 255, 255, 0.1); box-shadow: 0 8px 25px rgba(0,0,0,0.5); transition: all 0.4s; text-decoration: none; }
-    .fab:hover { transform: scale(1.1); border-color: var(--accent-main); background: rgba(30, 34, 48, 0.9); }
+    /* Command Center FAB - Forced visibility on page load to bypass external scripts */
+    .fab { position: fixed; bottom: 30px; left: 30px; width: 60px; height: 60px; border-radius: 50%; backdrop-filter: blur(15px); display: flex !important; align-items: center; justify-content: center; z-index: 9998; background: rgba(20, 22, 30, 0.7); border: 1px solid rgba(255, 255, 255, 0.1); box-shadow: 0 8px 25px rgba(0,0,0,0.5); transition: all 0.4s; text-decoration: none; opacity: 1 !important; visibility: visible !important; transform: none !important; }
+    .fab:hover { transform: scale(1.1) !important; border-color: var(--accent-main); background: rgba(30, 34, 48, 0.9); }
 
     footer { text-align: center; padding: 40px 0; border-top: 1px solid var(--card-border); color: var(--text-muted); font-size: 0.95em; margin-top: auto; }
 
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(-15px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes fadeSlideUp { from { opacity: 0; transform: translateY(40px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* Tablet Responsiveness */
     @media (max-width: 900px) {
       .ide-container { grid-template-columns: 1fr; }
       .pane { height: 400px; }
     }
 
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(-15px); } to { opacity: 1; transform: translateY(0); } }
-    @keyframes fadeSlideUp { from { opacity: 0; transform: translateY(40px); } to { opacity: 1; transform: translateY(0); } }
+    /* Mobile Responsiveness */
+    @media (max-width: 600px) {
+      body { padding: 15px 15px 80px 15px; } /* Extra bottom padding so FAB doesn't overlay footer content */
+      header { margin-bottom: 30px; }
+      .hero h1 { font-size: 2em; }
+      .hero p { font-size: 1em; }
+      
+      .pane-header { flex-direction: column; align-items: flex-start; gap: 15px; }
+      .btn-group { width: 100%; flex-wrap: wrap; }
+      .btn { flex: 1; justify-content: center; }
+      
+      .info-panel { padding: 25px 20px; }
+      
+      /* Scale down FAB for mobile and keep it visible */
+      .fab { bottom: 20px; left: 20px; width: 50px; height: 50px; }
+      .fab svg { width: 22px; height: 22px; }
+    }
   </style>
 </head>
 <body>
@@ -329,5 +348,6 @@
       link.click();
     }
   </script>
-<script src="../main.js"></script> </BODY>
+<script src="../main.js"></script> 
+</body>
 </html>
