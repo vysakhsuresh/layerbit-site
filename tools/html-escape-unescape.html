@@ -129,14 +129,24 @@
     .info-panel li i { color: #22c55e; width: 16px; }
 
     /* Command Center FAB */
-    .fab { position: fixed; bottom: 30px; left: 30px; width: 60px; height: 60px; border-radius: 50%; backdrop-filter: blur(15px); display: flex; align-items: center; justify-content: center; z-index: 9998; background: rgba(20, 22, 30, 0.7); border: 1px solid rgba(255, 255, 255, 0.1); box-shadow: 0 8px 25px rgba(0,0,0,0.5); transition: all 0.4s; text-decoration: none; }
+    .fab { position: fixed; bottom: 30px; left: 30px; width: 60px; height: 60px; border-radius: 50%; backdrop-filter: blur(15px); display: flex; align-items: center; justify-content: center; z-index: 9998; background: rgba(20, 22, 30, 0.7); border: 1px solid rgba(255, 255, 255, 0.1); box-shadow: 0 8px 25px rgba(0,0,0,0.5); transition: all 0.4s; text-decoration: none; opacity: 1 !important; visibility: visible !important; }
     .fab:hover { transform: scale(1.1); border-color: var(--accent-main); background: rgba(30, 34, 48, 0.9); box-shadow: 0 12px 30px rgba(0,0,0,0.6), 0 0 25px rgba(56, 189, 248, 0.3); }
 
     footer { text-align: center; padding: 40px 0; border-top: 1px solid var(--card-border); color: var(--text-muted); font-size: 0.95em; margin-top: auto; }
 
+    /* Responsiveness Rules */
     @media (max-width: 900px) {
       .ide-container { grid-template-columns: 1fr; }
       .pane { height: 300px; }
+    }
+
+    @media (max-width: 600px) {
+      body { padding: 15px 20px; }
+      .hero h1 { font-size: 2em; }
+      .hero p { font-size: 1em; }
+      .info-panel { padding: 25px; }
+      .action-bar .btn-clear { padding: 10px 20px; font-size: 0.9em; }
+      .fab { bottom: 20px; left: 20px; width: 50px; height: 50px; }
     }
 
     @keyframes fadeIn { from { opacity: 0; transform: translateY(-15px); } to { opacity: 1; transform: translateY(0); } }
@@ -200,7 +210,7 @@
     </ul>
   </div>
 
-  <a href="../index.html" id="smartBackBtn" class="fab" aria-label="Command Center" title="Command Center">
+  <a href="../index.html" id="homeBackBtn" class="fab" aria-label="Command Center" title="Command Center">
     <svg width="26" height="26" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="filter: drop-shadow(0 0 8px rgba(56, 189, 248, 0.5));">
       <path d="M12 2L2 7l10 5 10-5-10-5z" stroke="#38bdf8" stroke-width="2" stroke-linejoin="round" fill="rgba(56,189,248,0.2)"/>
       <path d="M2 17l10 5 10-5M2 12l10 5 10-5" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -291,5 +301,6 @@
       });
     }
   </script>
-<script src="../main.js"></script> </BODY>
+<script src="../main.js"></script> 
+</body>
 </html>
