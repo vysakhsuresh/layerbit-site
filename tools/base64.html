@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="Real-time Base64 Encoder and Decoder for text and images. Secure, client-side data conversion by Layerbit." />
+  <meta name="description" content="Real-time Base64 Encoder and Decoder for text, images, and PDFs. Secure, client-side data conversion by Layerbit." />
   <title>Base64 Cipher Engine - Layerbit</title>
 
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6072772587431629" crossorigin="anonymous"></script>
@@ -205,8 +205,8 @@
     .dropzone p { color: var(--text-muted); }
     .dropzone span { color: #fff; font-weight: 600; text-decoration: underline; }
 
-    /* Image Preview */
-    .image-preview-container {
+    /* Asset Preview */
+    .asset-preview-container {
       flex-grow: 1;
       display: flex;
       align-items: center;
@@ -214,12 +214,21 @@
       padding: 20px;
       background: rgba(0,0,0,0.2);
       overflow: hidden;
+      position: relative;
     }
-    .image-preview-container img {
+    .asset-preview-container img {
       max-width: 100%;
       max-height: 100%;
       border-radius: 8px;
       box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+      display: none;
+    }
+    .asset-preview-container iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+      border-radius: 8px;
+      background: #fff; /* PDFs render best on white backgrounds */
       display: none;
     }
 
@@ -239,52 +248,16 @@
     .info-panel li { color: var(--text-muted); margin-bottom: 10px; display: flex; align-items: center; gap: 10px; }
     .info-panel li i { color: #22c55e; width: 16px; }
 
-    /* Command Center FAB (Fixed Logic) */
-    .home-fab-premium {
-      position: fixed;
-      bottom: 30px;
-      left: 30px;
-      width: 60px;
-      height: 60px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 9999;
-      background: rgba(20, 22, 30, 0.7);
-      border: 1px solid rgba(56, 189, 248, 0.5);
-      backdrop-filter: blur(15px);
-      box-shadow: 0 8px 25px rgba(0,0,0,0.5);
-      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-      text-decoration: none;
-      opacity: 1 !important;
-      visibility: visible !important;
-    }
-
-    .home-fab-premium:hover {
-      transform: scale(1.15) translateY(-5px);
-      background: rgba(30, 34, 48, 0.95);
-      border-color: #38bdf8;
-      box-shadow: 0 20px 40px rgba(0,0,0,0.7), 0 0 30px rgba(56, 189, 248, 0.6);
-    }
+    /* Command Center FAB */
+    .fab { position: fixed; bottom: 30px; left: 30px; width: 60px; height: 60px; border-radius: 50%; backdrop-filter: blur(15px); display: flex; align-items: center; justify-content: center; z-index: 9998; background: rgba(20, 22, 30, 0.7); border: 1px solid rgba(255, 255, 255, 0.1); box-shadow: 0 8px 25px rgba(0,0,0,0.5); transition: all 0.4s; text-decoration: none; }
+    .fab:hover { transform: scale(1.1); border-color: var(--accent-main); background: rgba(30, 34, 48, 0.9); box-shadow: 0 12px 30px rgba(0,0,0,0.6), 0 0 25px rgba(56, 189, 248, 0.3); }
 
     footer { text-align: center; padding: 40px 0; border-top: 1px solid var(--card-border); color: var(--text-muted); font-size: 0.95em; margin-top: auto; }
 
-    /* Responsive Adjustments */
     @media (max-width: 900px) {
       .ide-container { grid-template-columns: 1fr; }
-      .pane { height: auto; min-height: 400px; }
+      .pane { height: 400px; }
       body { padding: 20px; }
-      .hero h1 { font-size: 2.2em; }
-      .tab-container { flex-direction: column; align-items: center; gap: 10px; }
-      .tab-btn { width: 100%; justify-content: center; }
-    }
-
-    @media (max-width: 480px) {
-      .hero h1 { font-size: 1.8em; }
-      .pane-header { flex-direction: column; gap: 10px; align-items: flex-start; }
-      .btn-action { width: 100%; justify-content: center; }
-      .pane { min-height: 350px; }
     }
 
     @keyframes fadeIn { from { opacity: 0; transform: translateY(-15px); } to { opacity: 1; transform: translateY(0); } }
@@ -343,13 +316,13 @@
 
       <div class="pane">
         <div class="pane-header">
-          <div class="pane-title"><i data-lucide="upload-cloud"></i> Image Encoder</div>
+          <div class="pane-title"><i data-lucide="upload-cloud"></i> Asset Encoder</div>
           <button class="btn-action" onclick="copyContent('imageOutputText', this)"><i data-lucide="copy"></i> <span>Copy Base64</span></button>
         </div>
-        <input type="file" id="fileInput" accept="image/*" style="display: none;" />
+        <input type="file" id="fileInput" accept="image/*, application/pdf" style="display: none;" />
         <label for="fileInput" class="dropzone" id="dropzone">
-          <i data-lucide="image-plus"></i>
-          <p>Drag & Drop an image here or <span>browse files</span></p>
+          <i data-lucide="file-plus"></i>
+          <p>Drag & Drop an image or PDF here or <span>browse files</span></p>
           <p style="font-size: 0.8em; margin-top: 10px;">Synthesizes file to raw Base64 string</p>
         </label>
         <textarea id="imageOutputText" class="editor" style="display:none;" placeholder="Base64 string will appear here..." readonly></textarea>
@@ -358,11 +331,12 @@
       <div class="pane">
         <div class="pane-header">
           <div class="pane-title"><i data-lucide="monitor-play"></i> Visual Decoder</div>
-          <span id="imgDecodeError" class="error-text"><i data-lucide="alert-circle" style="width: 14px; display: inline; vertical-align: middle;"></i> Invalid Image Data</span>
+          <span id="imgDecodeError" class="error-text"><i data-lucide="alert-circle" style="width: 14px; display: inline; vertical-align: middle;"></i> Invalid Asset Data</span>
         </div>
-        <textarea id="imageDecodeInput" class="editor" style="height: 40%; border-bottom: 1px solid rgba(255,255,255,0.1);" placeholder="Paste a Base64 image string here to render the preview..."></textarea>
-        <div class="image-preview-container">
+        <textarea id="imageDecodeInput" class="editor" style="height: 40%; border-bottom: 1px solid rgba(255,255,255,0.1);" placeholder="Paste a Base64 image or PDF string here to render the preview..."></textarea>
+        <div class="asset-preview-container">
           <img id="imagePreview" alt="Rendered Preview" />
+          <iframe id="pdfPreview" title="PDF Preview"></iframe>
         </div>
       </div>
 
@@ -374,12 +348,12 @@
     <p>Layerbit provides a robust, zero-latency Base64 processor. Whether you are encoding API payloads, embedding small images into CSS/HTML files, or decoding secure webhooks, this tool operates entirely within the DOM.</p>
     <ul>
       <li><i data-lucide="check"></i> <strong>Bidirectional Sync:</strong> Type in either text pane and watch the conversion happen instantly. No buttons required.</li>
-      <li><i data-lucide="check"></i> <strong>Asset Extraction:</strong> Uploading an image converts it into a raw Data URI ready for frontend implementation.</li>
+      <li><i data-lucide="check"></i> <strong>Asset Extraction:</strong> Uploading an image or PDF converts it into a raw Data URI ready for frontend implementation.</li>
       <li><i data-lucide="check"></i> <strong>Zero Data Retention:</strong> File processing and string manipulation happen locally on your hardware.</li>
     </ul>
   </div>
 
-  <a href="../index.html" class="home-fab-premium" aria-label="Command Center" title="Command Center">
+  <a href="../index.html" id="smartBackBtn" class="fab" aria-label="Command Center" title="Command Center">
     <svg width="26" height="26" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="filter: drop-shadow(0 0 8px rgba(56, 189, 248, 0.5));">
       <path d="M12 2L2 7l10 5 10-5-10-5z" stroke="#38bdf8" stroke-width="2" stroke-linejoin="round" fill="rgba(56,189,248,0.2)"/>
       <path d="M2 17l10 5 10-5M2 12l10 5 10-5" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -403,64 +377,27 @@
     }
 
     // Fixed Copy Function
-// Synchronous Brute-Force Copy Function
     function copyContent(elementId, btnElement) {
       const textarea = document.getElementById(elementId);
       const text = textarea.value;
       if (!text) return;
 
-      // Helper function to update the UI securely
-      const triggerSuccessUI = () => {
+      navigator.clipboard.writeText(text).then(() => {
         const label = btnElement.querySelector('span');
-        const originalText = label ? label.innerText : 'Copy';
-        
-        btnElement.innerHTML = `<i data-lucide="check" style="color: #22c55e;"></i> <span style="color: #22c55e;">Copied!</span>`;
-        if (window.lucide) lucide.createIcons();
+        const icon = btnElement.querySelector('i');
+        const originalText = label.innerText;
+        const originalIcon = icon.getAttribute('data-lucide');
+
+        label.innerText = 'Copied!';
+        icon.setAttribute('data-lucide', 'check');
+        lucide.createIcons();
 
         setTimeout(() => {
-          btnElement.innerHTML = `<i data-lucide="copy"></i> <span>${originalText}</span>`;
-          if (window.lucide) lucide.createIcons();
+          label.innerText = originalText;
+          icon.setAttribute('data-lucide', originalIcon);
+          lucide.createIcons();
         }, 2000);
-      };
-
-      // Helper function for the Legacy/Local Fallback
-      const fallbackCopy = () => {
-        let textArea = document.createElement("textarea");
-        textArea.value = text;
-        
-        // Prevent scrolling to the bottom of the page
-        textArea.style.top = "0";
-        textArea.style.left = "0";
-        textArea.style.position = "fixed";
-        
-        document.body.appendChild(textArea);
-        textArea.focus();
-        textArea.select();
-
-        try {
-          // EXECUTED SYNCHRONOUSLY - No Promises allowed here
-          let successful = document.execCommand('copy');
-          if (successful) {
-            triggerSuccessUI();
-          } else {
-            alert("Clipboard blocked. Please copy manually.");
-          }
-        } catch (err) {
-          console.error('Fallback copy failed', err);
-          alert("Clipboard blocked. Please copy manually.");
-        }
-        document.body.removeChild(textArea);
-      };
-
-      // 1. Try Modern API if secure
-      if (navigator.clipboard && window.isSecureContext) {
-        navigator.clipboard.writeText(text)
-          .then(() => triggerSuccessUI())
-          .catch(() => fallbackCopy()); // If modern API blocks it, trigger fallback
-      } else {
-        // 2. If testing locally (file://), jump straight to fallback
-        fallbackCopy();
-      }
+      });
     }
 
     /* ------------------------------
@@ -500,13 +437,14 @@
     });
 
     /* ------------------------------
-       TAB 2: IMAGE ENCODER/DECODER 
+       TAB 2: ASSET ENCODER/DECODER 
        ------------------------------ */
     const fileInput = document.getElementById('fileInput');
     const dropzone = document.getElementById('dropzone');
     const imageOutputText = document.getElementById('imageOutputText');
     const imageDecodeInput = document.getElementById('imageDecodeInput');
     const imagePreview = document.getElementById('imagePreview');
+    const pdfPreview = document.getElementById('pdfPreview');
     const imgDecodeError = document.getElementById('imgDecodeError');
 
     fileInput.addEventListener('change', handleFile);
@@ -543,20 +481,30 @@
     imageDecodeInput.addEventListener('input', () => {
       let val = imageDecodeInput.value.trim();
       imgDecodeError.classList.remove('active');
+      
+      // Hide previews initially
+      imagePreview.style.display = 'none';
+      pdfPreview.style.display = 'none';
+      imagePreview.src = '';
+      pdfPreview.src = '';
 
-      if(!val) {
-        imagePreview.style.display = 'none';
-        imagePreview.src = '';
-        return;
+      if(!val) return;
+
+      const lowerVal = val.toLowerCase();
+
+      // Check if it's a PDF
+      if (lowerVal.startsWith('data:application/pdf')) {
+        pdfPreview.src = val;
+        pdfPreview.style.display = 'block';
+      } 
+      // Otherwise handle as Image
+      else {
+        if (!lowerVal.startsWith('data:image')) {
+          val = 'data:image/png;base64,' + val;
+        }
+        imagePreview.src = val;
+        imagePreview.style.display = 'block';
       }
-
-      // FIX: .toLowerCase() added to correctly detect capital "Data:"
-      if (!val.toLowerCase().startsWith('data:image')) {
-        val = 'data:image/png;base64,' + val;
-      }
-
-      imagePreview.src = val;
-      imagePreview.style.display = 'block';
     });
 
     imagePreview.addEventListener('error', () => {
@@ -567,6 +515,5 @@
     });
 
   </script>
-  <script src="../main.js"></script> 
-</body>
+<script src="../main.js"></script> </BODY>
 </html>
