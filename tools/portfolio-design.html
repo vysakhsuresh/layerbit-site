@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Cinematic, high-converting digital portfolio design by Layerbit. Premium web aesthetics with deep 3D effects and spectacular easing." />
+  <title>Portfolio Design | Premium Web Aesthetics - Layerbit</title>
+  
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6072772587431629" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link href="../layerbit-logo.png" rel="icon" type="image/x-icon" />
+  
+  <style>
+    :root {
+      --bg-base: #0a0c10;
+      --bg-gradient: radial-gradient(circle at 50% 0%, #1a1e2d 0%, #0a0c10 70%);
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --card-bg: rgba(20, 22, 30, 0.4);
+      --card-border: rgba(255, 255, 255, 0.04);
+      --card-hover-bg: rgba(30, 34, 48, 0.6);
+      --card-hover-border: rgba(56, 189, 248, 0.4);
+      --accent-main: #38bdf8;
+      --accent-glow: rgba(56, 189, 248, 0.5);
+      --neon-gradient: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Space Grotesk', sans-serif;
+      color: var(--text-main);
+      background-color: var(--bg-base);
+      background-image: var(--bg-gradient);
+      min-height: 100dvh; 
+      padding: 20px 40px;
+      position: relative;
+      overflow-x: clip; 
+      display: flex;
+      flex-direction: column;
+    }
+
+    @keyframes drift { from { background-position: 0 0; } to { background-position: -60px -60px; } }
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0; left: 0; width: 100vw; height: 100vh;
+      background-image: radial-gradient(rgba(255,255,255,0.05) 1px, transparent 1px);
+      background-size: 50px 50px;
+      z-index: -1;
+      animation: drift 100s linear infinite;
+    }
+
+    header { display: flex; justify-content: flex-start; max-width: 1200px; width: 100%; margin: 0 auto 60px auto; }
+    .brand { font-size: 1.6em; font-weight: 700; display: flex; align-items: center; gap: 12px; text-decoration: none; color: #fff; }
+    .brand svg { filter: drop-shadow(0 0 10px var(--accent-glow)); }
+
+    .hero { text-align: center; max-width: 900px; margin: 0 auto 60px auto; animation: fadeIn 1.2s ease-out; }
+    .hero h1 {
+      font-size: 3.5em;
+      margin-bottom: 20px;
+      background: linear-gradient(270deg, #ffffff, #38bdf8, #ffffff);
+      background-size: 200% 200%;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      animation: gradientText 5s ease infinite;
+    }
+    @keyframes gradientText { 0%{background-position:0% 50%} 50%{background-position:100% 50%} 100%{background-position:0% 50%} }
+    .hero p { font-size: 1.2em; color: var(--text-muted); line-height: 1.7; }
+
+    .section-container { max-width: 1100px; margin: 0 auto 80px auto; width: 100%; }
+
+    .doc-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 25px; margin-bottom: 80px; }
+    .tool-box {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      padding: 35px;
+      border-radius: 20px;
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    .tool-box:hover {
+      transform: translateY(-8px);
+      background: var(--card-hover-bg);
+      border-color: var(--accent-main);
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+    }
+    .tool-box i { color: var(--accent-main); width: 32px; height: 32px; margin-bottom: 20px; }
+    .tool-box h3 { color: #fff; margin-bottom: 12px; }
+    .tool-box p { color: var(--text-muted); font-size: 0.95em; line-height: 1.6; }
+
+    .pricing-header { text-align: center; margin-bottom: 40px; color: #fff; }
+    .pricing-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 30px; }
+    
+    .pricing-box {
+      background: rgba(255,255,255,0.02);
+      border: 1px solid var(--card-border);
+      padding: 50px 30px;
+      border-radius: 24px;
+      text-align: center;
+      transition: 0.4s;
+    }
+
+    .pricing-box.featured {
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      background: rgba(56, 189, 248, 0.03);
+      position: relative;
+      transform: scale(1.05);
+    }
+    
+    .pricing-box.featured::after {
+      content: 'MOST POPULAR';
+      position: absolute;
+      top: -12px; left: 50%;
+      transform: translateX(-50%);
+      background: var(--neon-gradient);
+      color: #000;
+      font-size: 0.7em;
+      font-weight: 800;
+      padding: 4px 12px;
+      border-radius: 20px;
+      letter-spacing: 1px;
+    }
+
+    .pricing-box:hover {
+      border-color: var(--accent-main);
+      background: var(--card-hover-bg);
+      transform: translateY(-5px);
+    }
+    .pricing-box.featured:hover {
+        transform: scale(1.05) translateY(-5px);
+        box-shadow: 0 0 30px rgba(56, 189, 248, 0.15);
+    }
+
+    .price-tag { font-size: 2.2em; font-weight: 700; color: #fff; margin: 20px 0 10px; display: block; }
+    .price-tag span { color: var(--accent-main); }
+    .price-sub { color: var(--text-muted); font-size: 0.9em; margin-bottom: 30px; min-height: 45px; }
+
+    .btn-main {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 16px 40px;
+      background: var(--neon-gradient);
+      color: #000;
+      border-radius: 12px;
+      font-weight: 700;
+      text-decoration: none;
+      transition: 0.3s;
+      box-shadow: 0 8px 20px var(--accent-glow);
+      margin-top: 50px;
+    }
+    .btn-main:hover { transform: scale(1.05); box-shadow: 0 12px 30px var(--accent-glow); }
+
+    .fab {
+      position: fixed; bottom: 30px; left: 30px; width: 60px; height: 60px;
+      border-radius: 50%; backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); display: flex;
+      align-items: center; justify-content: center; z-index: 9998;
+      background: rgba(20, 22, 30, 0.7); border: 1px solid rgba(255, 255, 255, 0.1);
+      transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); text-decoration: none;
+      -webkit-transform: translateZ(0); transform: translateZ(0); will-change: transform;
+    }
+    .fab:hover { transform: scale(1.1) translateZ(0); border-color: var(--accent-main); background: rgba(30, 34, 48, 0.9); }
+
+    footer { text-align: center; padding: 50px 0; border-top: 1px solid var(--card-border); color: var(--text-muted); font-size: 0.95em; margin-top: auto; }
+    footer a { color: var(--text-muted); text-decoration: none; margin: 0 12px; transition: 0.2s; }
+    footer a:hover { color: var(--accent-main); }
+
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(-15px); } to { opacity: 1; transform: translateY(0); } }
+
+    @media (max-width: 600px) {
+      body { padding: 15px 20px; }
+      header { margin-bottom: 25px; }
+      .hero h1 { font-size: 2.2em; }
+      .hero p { font-size: 1em; }
+      .section-container, .tool-box, .pricing-box { min-width: 0; width: 100%; max-width: 100%; }
+      .tool-box { padding: 25px 20px; }
+      .pricing-grid { gap: 20px; }
+      .pricing-box { padding: 35px 20px; }
+      .pricing-box.featured { transform: scale(1); border-color: var(--accent-main); }
+      .pricing-box.featured:hover { transform: translateY(-5px); }
+      .price-tag { font-size: 2em; }
+      .btn-main { width: 100%; justify-content: center; margin-top: 20px; }
+      .fab { bottom: 20px; left: 20px; width: 50px; height: 50px; background: rgba(20, 22, 30, 0.98); -webkit-backdrop-filter: none; backdrop-filter: none; -webkit-transform: none; transform: none; will-change: auto; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <a href="../index.html" class="brand">
+      <svg width="36" height="36" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <polygon points="32,20 54,28 32,36 10,28" stroke="#f8fafc" stroke-width="4" stroke-linejoin="round"/>
+        <polyline points="10,38 32,46 54,38" stroke="#f8fafc" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+        <polyline points="10,48 32,56 54,48" stroke="#f8fafc" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+        <rect x="50" y="10" width="10" height="10" rx="2" fill="#00f2fe" />
+      </svg>
+      Layerbit
+    </a>
+  </header>
+
+  <main class="hero">
+    <h1>Cinematic Portfolio Design</h1>
+    <p>Upgrade your digital presence with high-end commercial styling. We build visual spectaculars with deep 3D aesthetics and buttery-smooth easing.</p>
+  </main>
+
+  <div class="section-container">
+    <div class="doc-grid">
+      <div class="tool-box">
+        <i data-lucide="monitor-play"></i>
+        <h3>Spectacular Animations</h3>
+        <p>Zero-gravity scroll effects, seamless page transitions, and kinetic typography that turns visitors into clients.</p>
+      </div>
+      <div class="tool-box">
+        <i data-lucide="sparkles"></i>
+        <h3>Premium 3D Aesthetics</h3>
+        <p>Implementation of WebGL and glassmorphic layers to create depth, shadow, and an ultra-modern dark theme environment.</p>
+      </div>
+      <div class="tool-box">
+        <i data-lucide="layout-template"></i>
+        <h3>SEO & Performance</h3>
+        <p>Beautiful doesn't mean slow. We optimize assets and strictly structure HTML to ensure perfect Lighthouse scores and search rankings.</p>
+      </div>
+    </div>
+
+    <h2 class="pricing-header">Engineering Plans</h2>
+    <div class="pricing-grid">
+      <div class="pricing-box">
+        <h3>Essential Profile</h3>
+        <span class="price-tag">₹4,999 / <span>$60</span></span>
+        <p class="price-sub">A sleek, single-page professional profile with contact links and standard animations.</p>
+      </div>
+      <div class="pricing-box featured">
+        <h3>Cinematic Experience</h3>
+        <span class="price-tag">₹9,999 / <span>$120</span></span>
+        <p class="price-sub">Multi-page portfolio featuring premium dark themes, project galleries, and custom scroll triggers.</p>
+      </div>
+      <div class="pricing-box">
+        <h3>Interactive 3D</h3>
+        <span class="price-tag">₹19,999+ / <span>$240+</span></span>
+        <p class="price-sub">The absolute peak of web design. Includes custom 3D model rendering and highly complex user interactions.</p>
+      </div>
+    </div>
+
+    <div style="text-align: center;">
+      <a href="mailto:ceo@layerbit.co.in?subject=Portfolio Design Inquiry" class="btn-main">
+        <i data-lucide="palette"></i> Start Engineering
+      </a>
+    </div>
+  </div>
+
+  <a href="../index.html" id="smartBackBtn" class="fab" aria-label="Command Center">
+    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="filter: drop-shadow(0 0 8px rgba(56, 189, 248, 0.5));">
+      <path d="M12 2L2 7l10 5 10-5-10-5z" stroke="#38bdf8" stroke-width="2" stroke-linejoin="round" fill="rgba(56,189,248,0.2)"/>
+      <path d="M2 17l10 5 10-5M2 12l10 5 10-5" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </a>
+
+  <footer>
+    <div>&copy; 2025 - 2026 <strong>Layerbit Technologies</strong>. All rights reserved.</div>
+    <div style="margin-top: 15px;">
+      <a href="../about.html">About</a>
+      <a href="../privacy.html">Privacy</a>
+      <a href="../terms.html">Terms</a>
+      <a href="mailto:ceo@layerbit.co.in">Contact</a>
+    </div>
+  </footer>
+
+  <script>lucide.createIcons();</script>
+  <script src="../main.js"></script>
+</body>
+</html>
