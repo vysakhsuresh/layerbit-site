@@ -403,52 +403,64 @@
     }
 
     // Fixed Copy Function
-  // Bulletproof Copy Function
+// Synchronous Brute-Force Copy Function
     function copyContent(elementId, btnElement) {
       const textarea = document.getElementById(elementId);
       const text = textarea.value;
       if (!text) return;
 
-      // 1. Fallback engine for non-HTTPS or local file:// testing
-      const executeCopy = (textToCopy) => {
-        if (navigator.clipboard && window.isSecureContext) {
-          return navigator.clipboard.writeText(textToCopy);
-        } else {
-          // Creates a hidden text area to force a manual copy
-          let textArea = document.createElement("textarea");
-          textArea.value = textToCopy;
-          textArea.style.position = "fixed";
-          textArea.style.left = "-999999px";
-          textArea.style.top = "-999999px";
-          document.body.appendChild(textArea);
-          textArea.focus();
-          textArea.select();
-          return new Promise((res, rej) => {
-            document.execCommand('copy') ? res() : rej();
-            textArea.remove();
-          });
-        }
-      };
-
-      // 2. Execute and safely update the UI
-      executeCopy(text).then(() => {
+      // Helper function to update the UI securely
+      const triggerSuccessUI = () => {
         const label = btnElement.querySelector('span');
         const originalText = label ? label.innerText : 'Copy';
         
-        // Completely swap the HTML to avoid the Lucide <svg> bug
         btnElement.innerHTML = `<i data-lucide="check" style="color: #22c55e;"></i> <span style="color: #22c55e;">Copied!</span>`;
-        lucide.createIcons();
+        if (window.lucide) lucide.createIcons();
 
-        // Revert after 2 seconds
         setTimeout(() => {
           btnElement.innerHTML = `<i data-lucide="copy"></i> <span>${originalText}</span>`;
-          lucide.createIcons();
+          if (window.lucide) lucide.createIcons();
         }, 2000);
+      };
 
-      }).catch(err => {
-        console.error("Copy operation failed: ", err);
-        alert("Clipboard access blocked by browser. Please copy manually.");
-      });
+      // Helper function for the Legacy/Local Fallback
+      const fallbackCopy = () => {
+        let textArea = document.createElement("textarea");
+        textArea.value = text;
+        
+        // Prevent scrolling to the bottom of the page
+        textArea.style.top = "0";
+        textArea.style.left = "0";
+        textArea.style.position = "fixed";
+        
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+
+        try {
+          // EXECUTED SYNCHRONOUSLY - No Promises allowed here
+          let successful = document.execCommand('copy');
+          if (successful) {
+            triggerSuccessUI();
+          } else {
+            alert("Clipboard blocked. Please copy manually.");
+          }
+        } catch (err) {
+          console.error('Fallback copy failed', err);
+          alert("Clipboard blocked. Please copy manually.");
+        }
+        document.body.removeChild(textArea);
+      };
+
+      // 1. Try Modern API if secure
+      if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(text)
+          .then(() => triggerSuccessUI())
+          .catch(() => fallbackCopy()); // If modern API blocks it, trigger fallback
+      } else {
+        // 2. If testing locally (file://), jump straight to fallback
+        fallbackCopy();
+      }
     }
 
     /* ------------------------------
