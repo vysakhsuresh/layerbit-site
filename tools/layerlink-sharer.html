@@ -112,7 +112,7 @@
     }
     .link-input-group input {
       flex-grow: 1; background: transparent; border: none; color: var(--accent-main);
-      padding: 12px; font-family: 'Fira Code', monospace; outline: none;
+      padding: 12px; font-family: 'Fira Code', monospace; outline: none; min-width: 0; /* Prevents overflow on small screens */
     }
     .btn-copy {
       background: rgba(255,255,255,0.05); color: #fff; border: none; border-left: 1px solid var(--card-border);
@@ -137,11 +137,26 @@
     /* Mobile Error */
     .mobile-error { display: none; background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239,68,68,0.3); color: var(--danger); padding: 20px; border-radius: 12px; text-align: center; font-weight: 600; margin-bottom: 20px; }
 
-    /* Command Center FAB */
-    .fab { position: fixed; bottom: 30px; left: 30px; width: 60px; height: 60px; border-radius: 50%; backdrop-filter: blur(15px); display: flex; align-items: center; justify-content: center; z-index: 9998; background: rgba(20, 22, 30, 0.7); border: 1px solid rgba(255, 255, 255, 0.1); box-shadow: 0 8px 25px rgba(0,0,0,0.5); transition: all 0.4s; text-decoration: none; }
-    .fab:hover { transform: scale(1.1); border-color: var(--accent-main); background: rgba(30, 34, 48, 0.9); box-shadow: 0 12px 30px rgba(0,0,0,0.6), 0 0 25px rgba(56, 189, 248, 0.3); }
+    /* Command Center FAB - Added !important tags to prevent main.js from hiding it on load */
+    .fab { position: fixed; bottom: 30px; left: 30px; width: 60px; height: 60px; border-radius: 50%; backdrop-filter: blur(15px); display: flex !important; opacity: 1 !important; visibility: visible !important; transform: none !important; align-items: center; justify-content: center; z-index: 9998; background: rgba(20, 22, 30, 0.7); border: 1px solid rgba(255, 255, 255, 0.1); box-shadow: 0 8px 25px rgba(0,0,0,0.5); transition: all 0.4s; text-decoration: none; }
+    .fab:hover { transform: scale(1.1) !important; border-color: var(--accent-main); background: rgba(30, 34, 48, 0.9); box-shadow: 0 12px 30px rgba(0,0,0,0.6), 0 0 25px rgba(56, 189, 248, 0.3); }
 
-    @media (max-width: 900px) { .dashboard { grid-template-columns: 1fr; } }
+    /* Enhanced Responsiveness */
+    @media (max-width: 900px) { 
+      .dashboard { grid-template-columns: 1fr; } 
+    }
+    @media (max-width: 600px) {
+      body { padding: 15px 20px; }
+      header { margin-bottom: 25px; }
+      .hero h1 { font-size: 2em; }
+      .hero p { font-size: 1em; }
+      .pane { padding: 20px; }
+      .video-wrapper { min-height: 250px; }
+      .fab { bottom: 20px; left: 20px; width: 50px; height: 50px; }
+      .link-input-group { flex-direction: column; }
+      .btn-copy { border-left: none; border-top: 1px solid var(--card-border); padding: 12px; justify-content: center; }
+    }
+
     @keyframes fadeIn { from { opacity: 0; transform: translateY(-15px); } to { opacity: 1; transform: translateY(0); } }
     @keyframes fadeSlideUp { from { opacity: 0; transform: translateY(40px); } to { opacity: 1; transform: translateY(0); } }
   </style>
@@ -347,5 +362,6 @@
       }
     }
   </script>
-<script src="../main.js"></script> </BODY>
+<script src="../main.js"></script> 
+</body>
 </html>
