@@ -87,7 +87,7 @@
       width: 100%;
       margin: 0 auto 60px auto;
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 500px), 1fr));
       gap: 25px;
     }
 
@@ -164,16 +164,25 @@
     .info-panel li { color: var(--text-muted); margin-bottom: 10px; display: flex; align-items: center; gap: 10px; }
     .info-panel li i { color: var(--success-color); width: 16px; }
 
-    /* Command Center FAB */
-    .fab { position: fixed; bottom: 30px; left: 30px; width: 60px; height: 60px; border-radius: 50%; backdrop-filter: blur(15px); display: flex; align-items: center; justify-content: center; z-index: 9998; background: rgba(20, 22, 30, 0.7); border: 1px solid rgba(255, 255, 255, 0.1); box-shadow: 0 8px 25px rgba(0,0,0,0.5); transition: all 0.4s; text-decoration: none; }
+    /* Command Center FAB - Forced visibility on load to override main.js */
+    .fab { position: fixed; bottom: 30px; left: 30px; width: 60px; height: 60px; border-radius: 50%; backdrop-filter: blur(15px); display: flex !important; align-items: center; justify-content: center; z-index: 9998; background: rgba(20, 22, 30, 0.7); border: 1px solid rgba(255, 255, 255, 0.1); box-shadow: 0 8px 25px rgba(0,0,0,0.5); transition: all 0.4s; text-decoration: none; opacity: 1 !important; visibility: visible !important; }
     .fab:hover { transform: scale(1.1); border-color: var(--accent-main); background: rgba(30, 34, 48, 0.9); box-shadow: 0 12px 30px rgba(0,0,0,0.6), 0 0 25px rgba(56, 189, 248, 0.3); }
 
     footer { text-align: center; padding: 40px 0; border-top: 1px solid var(--card-border); color: var(--text-muted); font-size: 0.95em; margin-top: auto; }
 
+    /* Responsive Device Adaptations */
     @media (max-width: 768px) {
-      .telemetry-container { grid-template-columns: 1fr; }
+      body { padding: 15px; }
+      header { margin-bottom: 25px; }
+      .hero h1 { font-size: 2em; }
+      .hero p { font-size: 1em; }
+      .telemetry-container { grid-template-columns: 1fr; gap: 15px; }
       .data-row { flex-direction: column; align-items: flex-start; gap: 8px; }
       .data-value { text-align: left; max-width: 100%; }
+      .info-panel { padding: 25px; }
+      .fab { bottom: 20px; left: 20px; width: 50px; height: 50px; }
+      .command-bar { flex-direction: column; padding: 0 10px; }
+      .btn { justify-content: center; width: 100%; }
     }
 
     @keyframes fadeIn { from { opacity: 0; transform: translateY(-15px); } to { opacity: 1; transform: translateY(0); } }
@@ -481,5 +490,5 @@
     window.addEventListener('DOMContentLoaded', runDiagnostics);
 
   </script>
-<script src="../main.js"></script> </BODY>
+<script src="../main.js"></script> </body>
 </html>
