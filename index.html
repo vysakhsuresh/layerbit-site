@@ -206,43 +206,67 @@
       box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4), 0 0 25px rgba(56, 189, 248, 0.15);
     }
 
-    /* Tool Privacy Badges */
+    /* Morphing Glassmorphic Smart Pills */
     .tool-badge {
       position: absolute;
       top: 18px;
       right: 18px;
-      font-size: 0.65em;
-      font-weight: 700;
-      padding: 4px 10px;
-      border-radius: 20px;
+      height: 28px;
+      max-width: 28px; /* Starts as a perfect 28x28 dot */
+      border-radius: 14px;
       display: flex;
       align-items: center;
-      gap: 6px;
+      overflow: hidden;
+      font-size: 0.65em;
+      font-weight: 700;
       letter-spacing: 0.5px;
       text-transform: uppercase;
-      z-index: 2; /* Keeps it above the hover effect */
+      z-index: 2;
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      transition: max-width 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275), padding 0.5s ease;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
     }
-    
+
+    .tool-card:hover .tool-badge {
+      max-width: 120px; /* Expands smoothly to reveal text */
+      padding-right: 14px;
+    }
+
     .tool-badge i {
-      width: 12px;
-      height: 12px;
+      width: 14px;
+      height: 14px;
       stroke-width: 2.5px;
+      flex-shrink: 0;
+      margin: 0 7px; /* Centers the 14px icon perfectly inside the 28px circle */
+    }
+
+    .tool-badge span {
+      white-space: nowrap;
+      opacity: 0;
+      transform: translateX(-5px);
+      transition: all 0.3s ease;
+      display: inline-block;
+    }
+
+    .tool-card:hover .tool-badge span {
+      opacity: 1;
+      transform: translateX(0);
+      transition-delay: 0.1s; /* Delays text fade-in until expansion starts */
     }
 
     /* Green for completely local, air-gapped tools */
     .badge-local {
-      background: rgba(34, 197, 94, 0.1);
+      background: rgba(34, 197, 94, 0.15);
       color: #4ade80;
-      border: 1px solid rgba(34, 197, 94, 0.2);
-      box-shadow: 0 0 10px rgba(34, 197, 94, 0.1);
+      border: 1px solid rgba(34, 197, 94, 0.3);
     }
 
     /* Purple for tools that require an API or server ping */
     .badge-api {
-      background: rgba(168, 85, 247, 0.1);
+      background: rgba(168, 85, 247, 0.15);
       color: #c084fc;
-      border: 1px solid rgba(168, 85, 247, 0.2);
-      box-shadow: 0 0 10px rgba(168, 85, 247, 0.1);
+      border: 1px solid rgba(168, 85, 247, 0.3);
     }
 
     /* Vector Icon Styling */
@@ -740,7 +764,7 @@
     <div class="grid">
       
       <a class="tool-card" href="tools/layerlink-sharer.html">
-        <div class="tool-badge badge-api"><i data-lucide="cloud-cog"></i> Cloud API</div>
+        <div class="tool-badge badge-api"><i data-lucide="cloud-cog"></i> <span>Cloud API</span></div>
         <div class="icon-wrapper">
           <svg width="42" height="42" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
             <rect x="6" y="10" width="52" height="34" rx="4" fill="rgba(30, 40, 60, 0.8)" stroke="#38bdf8" stroke-width="2"/>
@@ -758,119 +782,119 @@
       </a>
 
       <a class="tool-card" href="tools/json-validator.html">
-        <div class="tool-badge badge-local"><i data-lucide="shield-check"></i> Local</div>
+        <div class="tool-badge badge-local"><i data-lucide="shield-check"></i> <span>Local</span></div>
         <div class="icon-wrapper"><i data-lucide="braces"></i></div>
         <h3>JSON Validator &amp; Formatter</h3>
         <p>Clean, validate, and beautify complex JSON payloads instantly.</p>
       </a>
 
       <a class="tool-card" href="tools/sql-formatter.html">
-        <div class="tool-badge badge-local"><i data-lucide="shield-check"></i> Local</div>
+        <div class="tool-badge badge-local"><i data-lucide="shield-check"></i> <span>Local</span></div>
         <div class="icon-wrapper"><i data-lucide="database"></i></div>
         <h3>Universal SQL Formatter</h3>
         <p>Optimize and format SQL queries across multiple database dialects.</p>
       </a>
 
       <a class="tool-card" href="tools/jwt-decoder.html">
-        <div class="tool-badge badge-local"><i data-lucide="shield-check"></i> Local</div>
+        <div class="tool-badge badge-local"><i data-lucide="shield-check"></i> <span>Local</span></div>
         <div class="icon-wrapper"><i data-lucide="key-round"></i></div>
         <h3>JWT Decoder</h3>
         <p>Securely inspect and decode JWT headers and payloads on the fly.</p>
       </a>
 
       <a class="tool-card" href="tools/qr-barcode.html">
-        <div class="tool-badge badge-local"><i data-lucide="shield-check"></i> Local</div>
+        <div class="tool-badge badge-local"><i data-lucide="shield-check"></i> <span>Local</span></div>
         <div class="icon-wrapper"><i data-lucide="qr-code"></i></div>
         <h3>QR / Barcode Generator</h3>
         <p>Generate high-resolution QR codes or barcodes for links and text.</p>
       </a>
 
       <a class="tool-card" href="tools/base64.html">
-        <div class="tool-badge badge-local"><i data-lucide="shield-check"></i> Local</div>
+        <div class="tool-badge badge-local"><i data-lucide="shield-check"></i> <span>Local</span></div>
         <div class="icon-wrapper"><i data-lucide="binary"></i></div>
         <h3>Base64 Encode / Decode</h3>
         <p>Convert text or file content safely with standard base64 algorithms.</p>
       </a>
 
       <a class="tool-card" href="tools/json-to-table.html">
-        <div class="tool-badge badge-local"><i data-lucide="shield-check"></i> Local</div>
+        <div class="tool-badge badge-local"><i data-lucide="shield-check"></i> <span>Local</span></div>
         <div class="icon-wrapper"><i data-lucide="table-properties"></i></div>
         <h3>JSON Table Viewer</h3>
         <p>Transform structured JSON arrays into highly readable data tables.</p>
       </a>
 
       <a class="tool-card" href="tools/text-diff-checker.html">
-        <div class="tool-badge badge-local"><i data-lucide="shield-check"></i> Local</div>
+        <div class="tool-badge badge-local"><i data-lucide="shield-check"></i> <span>Local</span></div>
         <div class="icon-wrapper"><i data-lucide="file-diff"></i></div>
         <h3>Text Diff Checker</h3>
         <p>Compare text blocks side-by-side and highlight syntax differences.</p>
       </a>
 
       <a class="tool-card" href="tools/csv-to-json.html">
-        <div class="tool-badge badge-local"><i data-lucide="shield-check"></i> Local</div>
+        <div class="tool-badge badge-local"><i data-lucide="shield-check"></i> <span>Local</span></div>
         <div class="icon-wrapper"><i data-lucide="file-json-2"></i></div>
         <h3>CSV to JSON Converter</h3>
         <p>Instantly transform flat CSV spreadsheet files into structured JSON.</p>
       </a>
 
       <a class="tool-card" href="tools/yaml-json-converter.html">
-        <div class="tool-badge badge-local"><i data-lucide="shield-check"></i> Local</div>
+        <div class="tool-badge badge-local"><i data-lucide="shield-check"></i> <span>Local</span></div>
         <div class="icon-wrapper"><i data-lucide="refresh-ccw"></i></div>
         <h3>YAML ↔ JSON Converter</h3>
         <p>Convert configuration files seamlessly between YAML and JSON formats.</p>
       </a>
 
       <a class="tool-card" href="tools/insight.html">
-        <div class="tool-badge badge-api"><i data-lucide="cloud-cog"></i> Cloud API</div>
+        <div class="tool-badge badge-api"><i data-lucide="cloud-cog"></i> <span>Cloud API</span></div>
         <div class="icon-wrapper"><i data-lucide="activity"></i></div>
         <h3>Insight</h3>
         <p>Understand your system architecture, browser environment &amp; network.</p>
       </a>
 
       <a class="tool-card" href="tools/malicious-url-checker-dns-only.html">
-        <div class="tool-badge badge-api"><i data-lucide="cloud-cog"></i> Cloud API</div>
+        <div class="tool-badge badge-api"><i data-lucide="cloud-cog"></i> <span>Cloud API</span></div>
         <div class="icon-wrapper"><i data-lucide="shield-alert"></i></div>
         <h3>Malicious URL Scanner</h3>
         <p>Real-time DNS check for phishing, malware, and unsafe external links.</p>
       </a>
 
       <a class="tool-card" href="tools/breachalert.html">
-        <div class="tool-badge badge-api"><i data-lucide="cloud-cog"></i> Cloud API</div>
+        <div class="tool-badge badge-api"><i data-lucide="cloud-cog"></i> <span>Cloud API</span></div>
         <div class="icon-wrapper"><i data-lucide="siren"></i></div>
         <h3>BreachAlert</h3>
         <p>Check if your credentials were exposed in any known data breaches.</p>
       </a>
 
       <a class="tool-card" href="tools/cron-generator.html">
-        <div class="tool-badge badge-local"><i data-lucide="shield-check"></i> Local</div>
+        <div class="tool-badge badge-local"><i data-lucide="shield-check"></i> <span>Local</span></div>
         <div class="icon-wrapper"><i data-lucide="clock-4"></i></div>
         <h3>Cron Expression Generator</h3>
         <p>Visually build and test server cron job schedules with no guesswork.</p>
       </a>
 
       <a class="tool-card" href="tools/url-encoder.html">
-        <div class="tool-badge badge-local"><i data-lucide="shield-check"></i> Local</div>
+        <div class="tool-badge badge-local"><i data-lucide="shield-check"></i> <span>Local</span></div>
         <div class="icon-wrapper"><i data-lucide="link"></i></div>
         <h3>URL Encoder / Decoder</h3>
         <p>Safely encode or decode URL parameters for API requests.</p>
       </a>
 
       <a class="tool-card" href="tools/log-analyzer.html">
-        <div class="tool-badge badge-local"><i data-lucide="shield-check"></i> Local</div>
+        <div class="tool-badge badge-local"><i data-lucide="shield-check"></i> <span>Local</span></div>
         <div class="icon-wrapper"><i data-lucide="scroll-text"></i></div>
         <h3>Log Analyzer</h3>
         <p>Highlight critical errors, warnings, and trends in server log files.</p>
       </a>
 
       <a class="tool-card" href="tools/regex-tester.html">
-        <div class="tool-badge badge-local"><i data-lucide="shield-check"></i> Local</div>
+        <div class="tool-badge badge-local"><i data-lucide="shield-check"></i> <span>Local</span></div>
         <div class="icon-wrapper"><i data-lucide="regex"></i></div>
         <h3>Regex Tester</h3>
         <p>Test and debug regular expressions with real-time match highlighting.</p>
       </a>
 
       <a class="tool-card" href="tools/html-escape-unescape.html">
-        <div class="tool-badge badge-local"><i data-lucide="shield-check"></i> Local</div>
+        <div class="tool-badge badge-local"><i data-lucide="shield-check"></i> <span>Local</span></div>
         <div class="icon-wrapper"><i data-lucide="code"></i></div>
         <h3>HTML Escape / Unescape</h3>
         <p>Convert HTML special characters to secure entities and back again.</p>
