@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="LayerLink Client Terminal. Securely view a remote broadcast." />
+  <meta name="description" content="LayerLink Client Terminal. Securely view a remote broadcast and real-time screen shares via WebRTC." />
   <title>LayerLink Viewer - Layerbit</title>
   
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6072772587431629" crossorigin="anonymous"></script>
@@ -16,6 +16,22 @@
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
   
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "LayerLink Viewer",
+    "operatingSystem": "Any",
+    "applicationCategory": "UtilitiesApplication",
+    "description": "A secure, real-time WebRTC broadcasting client terminal by Layerbit.",
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "USD"
+    }
+  }
+  </script>
+
   <style>
     :root {
       --bg-base: #0a0c10;
@@ -31,7 +47,7 @@
       min-height: 100vh;
       display: flex;
       flex-direction: column;
-      overflow: hidden; 
+      overflow-x: hidden; 
     }
 
     /* Top Nav Bar */
@@ -55,6 +71,7 @@
     }
     .status-indicator.live { color: #22c55e; background: rgba(34, 197, 94, 0.1); }
     .status-indicator.error { color: #ef4444; background: rgba(239, 68, 68, 0.1); }
+    .status-indicator.ready { color: var(--accent-main); background: rgba(56, 189, 248, 0.1); }
 
     /* Cinematic Video Area */
     .theater-mode {
@@ -64,26 +81,44 @@
       justify-content: center;
       align-items: center;
       background: radial-gradient(circle at center, #1a1e2d 0%, #000 100%);
+      padding: 20px;
     }
 
     video {
+      position: absolute;
       width: 100%;
       height: 100%;
       max-height: calc(100vh - 65px);
       object-fit: contain;
       background: #000;
+      z-index: 1;
+      display: none; /* Hidden by default until stream starts */
     }
 
     .overlay-message {
-      position: absolute;
+      position: relative;
+      z-index: 2;
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 15px;
-      color: var(--text-muted);
+      color: #fff;
       text-align: center;
+      max-width: 600px;
     }
-    .overlay-message i { width: 48px; height: 48px; color: var(--accent-main); animation: pulse 2s infinite; }
+
+    .seo-content-block {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--card-border);
+      padding: 30px;
+      border-radius: 16px;
+      text-align: left;
+      backdrop-filter: blur(10px);
+    }
+
+    .seo-content-block h1 { font-size: 2em; margin-bottom: 10px; color: #fff; }
+    .seo-content-block h2 { font-size: 1.2em; color: var(--accent-main); margin-top: 20px; margin-bottom: 10px; }
+    .seo-content-block p, .seo-content-block li { opacity: 0.8; line-height: 1.6; margin-bottom: 10px; }
+    .seo-content-block ul { margin-left: 20px; margin-bottom: 15px; }
 
     @keyframes pulse { 0%, 100% { opacity: 0.5; } 50% { opacity: 1; } }
 
@@ -104,19 +139,31 @@
       </svg>
       LayerLink
     </a>
-    <div id="statusUI" class="status-indicator">
-      <i data-lucide="loader" class="animate-spin"></i> Initializing...
+    <div id="statusUI" class="status-indicator ready">
+      <i data-lucide="info"></i> Ready
     </div>
   </div>
 
   <div class="theater-mode">
     <div id="overlayMsg" class="overlay-message">
-      <i data-lucide="satellite-dish"></i>
-      <h2 style="font-weight: 600; color: #fff;">Searching for Host Signal</h2>
-      <p style="opacity: 0.7;">Waiting for the broadcaster to start the stream...</p>
+      <div class="seo-content-block">
+        <h1>LayerLink Viewer Terminal</h1>
+        <p>Welcome to the LayerLink Client Terminal. This secure web utility allows users to view remote broadcasts, presentations, and screen shares in real-time using peer-to-peer WebRTC technology.</p>
+        
+        <h2>How to Connect to a Stream</h2>
+        <ul>
+          <li>Obtain a secure session URL from the host broadcaster.</li>
+          <li>Paste the complete URL into your browser's address bar.</li>
+          <li>The system will automatically authenticate and establish a secure connection.</li>
+        </ul>
+        
+        <p style="font-size: 0.9em; opacity: 0.6; margin-top: 20px;">
+          * Note: This page serves as the viewer client. Without a valid session ID, no video data will be transmitted or displayed.
+        </p>
+      </div>
     </div>
-    <!--<video id="video" autoplay playsinline></video>-->
-	<video id="video" autoplay playsinline muted></video>
+    
+    <video id="video" autoplay playsinline muted></video>
   </div>
 
   <a href="../index.html" id="smartBackBtn" class="fab" aria-label="Command Center" title="Command Center">
@@ -146,15 +193,32 @@
     const videoElement = document.getElementById('video');
 
     function setStatus(state) {
-      if (state === 'live') {
+      if (state === 'searching') {
+        statusUI.className = 'status-indicator';
+        statusUI.innerHTML = `<i data-lucide="loader" class="animate-spin"></i> Initializing...`;
+        overlayMsg.innerHTML = `
+          <i data-lucide="satellite-dish" style="width: 48px; height: 48px; color: var(--accent-main); animation: pulse 2s infinite;"></i>
+          <h2 style="font-weight: 600; font-size: 1.5em; margin-top: 15px;">Searching for Host Signal</h2>
+          <p style="opacity: 0.7; margin-top: 10px;">Waiting for the broadcaster to start the stream...</p>
+        `;
+      } else if (state === 'live') {
         statusUI.className = 'status-indicator live';
         statusUI.innerHTML = `<i data-lucide="radio"></i> LIVE`;
         overlayMsg.style.display = 'none';
+        videoElement.style.display = 'block';
       } else if (state === 'error') {
         statusUI.className = 'status-indicator error';
         statusUI.innerHTML = `<i data-lucide="alert-triangle"></i> Signal Lost`;
         overlayMsg.style.display = 'flex';
-        overlayMsg.innerHTML = `<i data-lucide="plug-zap" style="color: #ef4444; width: 48px; height: 48px; animation: none;"></i><h2 style="font-weight: 600; color: #fff;">Connection Dropped</h2><p style="opacity: 0.7;">The host has stopped sharing or the network failed.</p><button onclick="location.reload()" style="margin-top:15px; padding:10px 20px; background:#ef4444; color:#fff; border:none; border-radius:8px; cursor:pointer; font-family:'Space Grotesk', sans-serif; font-weight:bold;">Reconnect</button>`;
+        videoElement.style.display = 'none';
+        overlayMsg.innerHTML = `
+          <div class="seo-content-block" style="text-align: center;">
+            <i data-lucide="plug-zap" style="color: #ef4444; width: 48px; height: 48px; margin-bottom: 15px;"></i>
+            <h2 style="font-weight: 600; color: #fff; margin: 0 0 10px 0;">Connection Dropped</h2>
+            <p style="opacity: 0.7;">The host has stopped sharing, the session is invalid, or the network failed.</p>
+            <button onclick="location.reload()" style="margin-top:20px; padding:12px 24px; background:#ef4444; color:#fff; border:none; border-radius:8px; cursor:pointer; font-family:'Space Grotesk', sans-serif; font-weight:bold; transition: 0.3s;">Reconnect</button>
+          </div>
+        `;
       }
       lucide.createIcons();
     }
@@ -162,10 +226,9 @@
     const params = new URLSearchParams(location.search);
     const sessionId = params.get("session");
     
-    if (!sessionId) {
-      setStatus('error');
-      overlayMsg.innerHTML = `<h2 style="font-weight: 600; color: #fff;">Invalid Link</h2><p style="opacity: 0.7;">No session ID found in the URL.</p>`;
-    } else {
+    if (sessionId) {
+      // Valid session ID found, initialize WebRTC
+      setStatus('searching');
       const conn = db.ref("sessions/" + sessionId);
 
       const configuration = {
@@ -180,10 +243,10 @@
 
       peer.ontrack = event => {
         remoteStream.addTrack(event.track);
-        videoElement.srcObject = remoteStream;// Force the browser to play the video feed
+        videoElement.srcObject = remoteStream;
         videoElement.play().catch(err => {
             console.warn("Browser autoplay policy blocked the video. User interaction required.", err);
-			});
+        });
       };
 
       peer.onconnectionstatechange = () => {
@@ -197,7 +260,6 @@
         }
       };
 
-      // THE FIX: Queue local ICE candidates until the remote description is set
       let hasRemoteDesc = false;
       let candidateQueue = [];
 
@@ -230,5 +292,6 @@
       connect();
     }
   </script>
-<script src="../main.js"></script> </BODY>
+  <script src="../main.js"></script> 
+</body>
 </html>
