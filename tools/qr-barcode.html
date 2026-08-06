@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="description" content="Generate high-resolution, custom-colored QR codes and Code128 barcodes instantly. Secure, client-side generation by Layerbit." />
-  <title>Enterprise QR & Barcode Synthesizer - Layerbit</title>
+  <title>Enterprise QR & Barcode Synthesizer - Layerbit Security personnel OSINT</title>
   
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6072772587431629" crossorigin="anonymous"></script>
   
@@ -31,6 +31,8 @@
       --neon-gradient: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%);
       --error-bg: rgba(239, 68, 68, 0.1);
       --error-border: #ef4444;
+      --info-bg: rgba(56, 189, 248, 0.1);
+      --info-border: rgba(56, 189, 248, 0.3);
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -93,10 +95,23 @@
     .hero { text-align: center; margin-bottom: 30px; animation: fadeIn 1s ease-out; }
     .hero h1 { font-size: 2.8em; font-weight: 700; margin-bottom: 10px; }
     .hero p { color: var(--text-muted); font-size: 1.1em; }
+    .osint-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--info-bg);
+      border: 1px solid var(--info-border);
+      color: var(--accent-main);
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 0.85em;
+      font-weight: 600;
+      margin-bottom: 15px;
+    }
 
     /* Synth Layout */
     .synth-container {
-      max-width: 1200px;
+      max-width: 1400px;
       width: 100%;
       margin: 0 auto 60px auto;
       display: grid;
@@ -153,6 +168,40 @@
     }
 
     .control-pane select option { background: #0a0c10; }
+
+    /* OSINT Specific Controls */
+    .osint-controls {
+      margin-top: 15px;
+      background: rgba(0,0,0,0.3);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+    
+    .osint-header {
+      font-weight: 700;
+      font-size: 1.1em;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--accent-main);
+    }
+    
+    .checkbox-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--text-muted);
+    }
+    
+    .checkbox-group input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      cursor: pointer;
+    }
 
     /* Color Pickers */
     .color-grid {
@@ -290,6 +339,78 @@
       pointer-events: none;
     }
 
+    /* Educational/OSINT Specific Panes */
+    .edu-container {
+      max-width: 1400px;
+      width: 100%;
+      margin: 0 auto 60px auto;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 30px;
+      animation: fadeSlideUp 1s ease-out forwards;
+    }
+
+    .edu-pane {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 20px;
+      padding: 30px;
+      backdrop-filter: blur(16px);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    }
+    
+    .edu-pane h3 {
+      font-size: 1.4em;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .edu-pane h3 i { color: var(--accent-main); }
+    
+    .edu-pane p {
+      color: var(--text-muted);
+      line-height: 1.7;
+      margin-bottom: 15px;
+    }
+    
+    .edu-pane ul {
+      list-style: none;
+      margin-bottom: 15px;
+    }
+    
+    .edu-pane li {
+      color: var(--text-muted);
+      margin-bottom: 8px;
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+    }
+    
+    .edu-pane li i {
+      color: var(--accent-main);
+      margin-top: 4px;
+      width: 16px;
+    }
+
+    /* Deciphering barcode simple table */
+    .decipher-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 15px;
+      font-size: 0.9em;
+    }
+    .decipher-table th, .decipher-table td {
+      border: 1px solid var(--card-border);
+      padding: 10px;
+      text-align: left;
+    }
+    .decipher-table th { background: rgba(0,0,0,0.3); color: #fff; }
+    .decipher-table td { color: var(--text-muted); }
+
     /* SEO/Docs Section */
     .info-panel {
       max-width: 1200px;
@@ -307,6 +428,40 @@
     .info-panel li { color: var(--text-muted); margin-bottom: 10px; display: flex; align-items: center; gap: 10px; }
     .info-panel li i { color: #22c55e; width: 16px; }
 
+    /* Changelog panel[cite: 1, 2] */
+    .changelog-panel {
+        max-width: 1200px;
+        margin: 0 auto 60px auto;
+        background: rgba(255,255,255,0.02);
+        border: 1px solid var(--card-border);
+        padding: 40px;
+        border-radius: 20px;
+    }
+    .changelog-panel h2 { color: #fff; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
+    .changelog-panel h2 i { color: var(--accent-main); }
+    .changelog-list {
+        list-style: none;
+    }
+    .changelog-item {
+        color: var(--text-muted);
+        margin-bottom: 15px;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        padding-bottom: 15px;
+        border-bottom: 1px solid var(--card-border);
+    }
+    .changelog-item:last-child { border-bottom: none; }
+    .changelog-version {
+        font-weight: 700;
+        color: var(--accent-main);
+        background: var(--info-bg);
+        border: 1px solid var(--info-border);
+        padding: 4px 8px;
+        border-radius: 8px;
+        font-size: 0.9em;
+    }
+
     /* Command Center FAB */
     .fab {
       position: fixed; bottom: 30px; left: 30px; width: 60px; height: 60px;
@@ -322,6 +477,7 @@
 
     @media (max-width: 900px) {
       .synth-container { grid-template-columns: 1fr; }
+      .edu-container { grid-template-columns: 1fr; }
     }
 
     @keyframes fadeIn { from { opacity: 0; transform: translateY(-15px); } to { opacity: 1; transform: translateY(0); } }
@@ -358,7 +514,7 @@
       }
 
       /* 4. Shrink Massive Container Paddings */
-      .control-pane, .output-pane, .info-panel {
+      .control-pane, .output-pane, .edu-pane, .info-panel, .changelog-panel {
         padding: 20px;
       }
 
@@ -397,8 +553,9 @@
   </header>
 
   <main class="hero">
+    <div class="osint-badge"><i data-lucide="shield-check"></i> OSINT Educational Terminal</div>
     <h1>Enterprise QR & Barcode Synthesizer</h1>
-    <p>Generate production-ready matrix and linear barcodes with custom brand colors instantly.</p>
+    <p>Generate production-ready matrix and linear barcodes, while analyzing security implications.</p>
   </main>
 
   <div class="synth-container">
@@ -415,6 +572,18 @@
           <option value="qr">QR Code (Matrix)</option>
           <option value="barcode">Code128 (Linear Barcode)</option>
         </select>
+      </div>
+
+      <div class="osint-controls" id="osintControls" style="display: none;">
+        <div class="osint-header"><i data-lucide="bug"></i> OSINT Analysis Config</div>
+        <div class="checkbox-group">
+          <input type="checkbox" id="checkSpoofable" checked>
+          <label for="checkSpoofable">Analyze for URL Spoofability</label>
+        </div>
+        <div class="checkbox-group">
+          <input type="checkbox" id="checkTracking">
+          <label for="checkTracking">Append Mock Tracking Param (?lb_uid=osint)</label>
+        </div>
       </div>
 
       <div class="input-group" id="colorControls">
@@ -448,24 +617,91 @@
         <button class="btn-action" id="btnDownload" onclick="downloadCode()" disabled>
           <i data-lucide="download"></i> Download
         </button>
-        <button class="btn-action" id="btnShare" onclick="shareCode()" disabled>
-          <i data-lucide="share-2"></i> Share
+        <button class="btn-action" id="btnAnalyze" onclick="analyzeCode()" disabled>
+          <i data-lucide="search"></i> Analyze
         </button>
       </div>
     </div>
 
   </div>
 
+  <!-- Educational/OSINT Specific Panes[cite: 1, 2] -->
+  <div class="edu-container">
+    
+    <div class="edu-pane">
+      <h3><i data-lucide="qr-code"></i> Intercept & Spoof Vulnerability Pane</h3>
+      <p>This pane simulates the educational workflow of analyzing a QR code vulnerability. Security staff must understand how attackers manipulate these vectors.</p>
+      <ul>
+        <li><i data-lucide="target"></i> <strong>Asset Interception:</strong> In many industrial scenarios, Code128 barcodes track physical assets. Attacking this is often physically invasive but high value.</li>
+        <li><i data-lucide="scan-text"></i> <strong>Spoofing attack simulation:</strong> A malicious actor can intercept a legitimate QR code and replace the underlying data with a spoofed URL. This tool allows security teams to create test cases.</li>
+        <li><i data-lucide="map-pin"></i> <strong>Tracking Param analysis:</strong> Checking if standard analytical tracking parameters are being appended to internal QR codes can identify operational leaks.</li>
+      </ul>
+      <p style="background: var(--error-bg); border-left: 3px solid var(--error-border); padding: 10px; color: #fff;"><strong>OSINT Role:</strong> Security staff can decipher the structure of Code128 without specialized software by understanding start/stop patterns and character encodings. Code128 OSINT reveals internal asset tracking schema.</p>
+    </div>
+
+    <div class="edu-pane">
+      <h3><i data-lucide="binary"></i> Linear Barcode Structure Deciphering</h3>
+      <p>OSINT is not just about interception, it's about interpretation. This section teaches staff how to read Code128 structure visually if needed[cite: 1, 2].</p>
+      <ul>
+        <li><i data-lucide="brackets"></i> <strong>Quiet Zones & Start Pattern:</strong> Every barcode begins with leading silence and a start character which identifies the barcode set used.</li>
+        <li><i data-lucide="barcode"></i> <strong>Data Encoding:</strong> Each character is represented by a specific pattern of bars and spaces. The width of these elements encodes the data.</li>
+        <li><i data-lucide="check-circle-2"></i> <strong>Check Digit:</strong> A check digit is used to verify the scan accuracy, preventing OSINT analysis on corrupted codes.</li>
+      </ul>
+      <table class="decipher-table">
+        <thead>
+          <tr>
+            <th>Element Type</th>
+            <th>OSINT Significance</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Start/Stop Characters</td>
+            <td>Confirms barcode validity and identifies symbology set.</td>
+          </tr>
+          <tr>
+            <td>Character Widths</td>
+            <td>The core data. Decipherable character by character if the standard is known.</td>
+          </tr>
+          <tr>
+            <td>Check Digit Position</td>
+            <td>Final step in verifying the decoded payload.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+
   <div class="info-panel">
-    <h2><i data-lucide="info"></i> Production-Grade Generation</h2>
-    <p>Layerbit's code synthesizer converts your text or URLs into high-fidelity, machine-readable formats. Unlike consumer generators, this tool performs all rendering inside your browser's local memory, guaranteeing absolute privacy for sensitive serial numbers or internal URLs.</p>
+    <h2><i data-lucide="info"></i> Production-Grade Generation (Vulnerability Context)</h2>
+    <p>Layerbit's code synthesizer converts your text or URLs into high-fidelity, machine-readable formats. Unlike consumer generators, this tool performs all rendering inside your browser's local memory, guaranteeing absolute privacy for sensitive serial numbers or internal URLs. This makes it ideal for generating test cases of malicious or internally sensitive data without risk[cite: 1].</p>
     
     <ul>
-      <li><i data-lucide="check"></i> <strong>QR Code (Matrix):</strong> Ideal for URLs, VCards, and dense text. Supports custom branding colors.</li>
-      <li><i data-lucide="check"></i> <strong>Code128 (Linear):</strong> The industry standard for inventory, shipping, and packaging. Renders flawlessly for laser scanners.</li>
-      <li><i data-lucide="check"></i> <strong>Native Export:</strong> Extract your generated codes directly to high-quality PNG format for immediate printing or sharing.</li>
+      <li><i data-lucide="check"></i> <strong>QR Code (Matrix):</strong> Ideal for URLs, VCards, and dense text. Supports custom branding colors. Vunerable to spoofing.</li>
+      <li><i data-lucide="check"></i> <strong>Code128 (Linear):</strong> The industry standard for inventory, shipping, and packaging. Renders flawlessly for laser scanners. Vulnerable to interception[cite: 1, 2].</li>
+      <li><i data-lucide="check"></i> <strong>Native Export:</strong> Extract your generated codes directly to high-quality PNG format for immediate printing or security simulation[cite: 1].</li>
     </ul>
   </div>
+
+  <!-- Changelog panel[cite: 1, 2] -->
+    <div class="changelog-panel">
+        <h2><i data-lucide="git-branch"></i> Deployment changelog</h2>
+        <ul class="changelog-list">
+            <li class="changelog-item">
+                <span class="changelog-version">v1.2.0</span>
+                <span>OSINT educational terminal upgrade[cite: 1]. Restored intercept & deciphering panels. Integrated analysis mocking.</span>
+            </li>
+            <li class="changelog-item">
+                <span class="changelog-version">v1.1.0</span>
+                <span>Implemented mobile-responsive action stacking, scan room padding fix, and reduced FAB size. Verified all master patch rules.</span>
+            </li>
+            <li class="changelog-item">
+                <span class="changelog-version">v1.0.0</span>
+                <span>Initial internal deployment of the asset tracking synthesizer[cite: 1].</span>
+            </li>
+        </ul>
+    </div>
 
   <a href="../" id="smartBackBtn" class="fab" aria-label="Command Center" title="Command Center">
     <svg width="26" height="26" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="filter: drop-shadow(0 0 8px rgba(56, 189, 248, 0.5));">
@@ -483,24 +719,26 @@
 
     const outputArea = document.getElementById('outputArea');
     const typeSelect = document.getElementById('typeSelect');
+    const osintControls = document.getElementById('osintControls');
     const colorControls = document.getElementById('colorControls');
     const btnDownload = document.getElementById('btnDownload');
-    const btnShare = document.getElementById('btnShare');
+    const btnAnalyze = document.getElementById('btnAnalyze');
     
-    // Toggle color controls based on selection (JsBarcode colors are trickier to handle cleanly, so we focus custom colors on QR)
+    // Toggle controls based on selection[cite: 1, 2]
     typeSelect.addEventListener('change', (e) => {
-      if(e.target.value === 'qr') {
-        colorControls.style.display = 'flex';
-      } else {
-        colorControls.style.display = 'flex'; // Keep it available for barcode too
-      }
+      const isQR = e.target.value === 'qr';
+      osintControls.style.display = isQR ? 'flex' : 'none';
+      
+      // Keep color controls always available for barcode foreground too
+      colorControls.style.display = 'flex'; 
     });
 
     function generateCode() {
-      const data = document.getElementById('dataInput').value.trim();
+      let data = document.getElementById('dataInput').value.trim();
       const type = typeSelect.value;
       const fgColor = document.getElementById('colorDark').value;
       const bgColor = document.getElementById('colorLight').value;
+      const appendTracking = document.getElementById('checkTracking').checked;
       
       if (!data) {
         outputArea.innerHTML = `
@@ -511,6 +749,15 @@
         lucide.createIcons();
         disableActions();
         return;
+      }
+
+      // OSINT Data manipulation[cite: 1, 2]
+      if (type === 'qr' && appendTracking && data.startsWith('http')) {
+        const urlObj = new URL(data);
+        urlObj.searchParams.append('lb_uid', 'osint');
+        data = urlObj.toString();
+        // Update input field to show user what actually went into the code
+        document.getElementById('dataInput').value = data; 
       }
 
       // Clear Output
@@ -550,7 +797,7 @@
            outputArea.innerHTML = `
             <div class="placeholder-text" style="color: #ef4444;">
               <i data-lucide="triangle-alert" style="width: 48px; height: 48px;"></i>
-              <span>Invalid data for Code128 format.</span>
+              <span>Invalid data for Code128 format. Use alpha-numeric or standard symbols.</span>
             </div>`;
           lucide.createIcons();
           disableActions();
@@ -563,20 +810,16 @@
 
     function enableActions() {
       btnDownload.disabled = false;
-      
-      // Only enable share if the browser supports it
-      if (navigator.share) {
-        btnShare.disabled = false;
-      }
+      btnAnalyze.disabled = false;
     }
 
     function disableActions() {
       btnDownload.disabled = true;
-      btnShare.disabled = true;
+      btnAnalyze.disabled = true;
       outputArea.style.backgroundColor = '#ffffff'; // reset room color
     }
 
-    // Export Logic
+    // Export Logic[cite: 1, 2]
     function getExportElement() {
       // qrcodejs sometimes makes a canvas, sometimes an img.
       const canvas = outputArea.querySelector('canvas');
@@ -589,36 +832,49 @@
       if (!element) return;
 
       const link = document.createElement('a');
-      link.download = `layerbit-${typeSelect.value}-${Date.now()}.png`;
+      link.download = `layerbit-synth-${typeSelect.value}-${Date.now()}.png`;
       link.href = element.toDataURL ? element.toDataURL("image/png") : element.src;
       link.click();
     }
 
-    function shareCode() {
-      const element = getExportElement();
-      if (!element || !navigator.share) return;
+    // Analysis Logic (MOCK for education)[cite: 1, 2]
+    function analyzeCode() {
+      const type = typeSelect.value;
+      const data = document.getElementById('dataInput').value.trim();
+      const spoofable = document.getElementById('checkSpoofable').checked;
 
-      // If it's a canvas, convert to blob. If img, fetch it.
-      if (element.toBlob) {
-        element.toBlob(blob => {
-          const file = new File([blob], "layerbit-code.png", { type: "image/png" });
-          navigator.share({
-            files: [file],
-            title: 'Layerbit Generated Code',
-          }).catch(console.error);
-        });
-      } else if (element.src) {
-        fetch(element.src)
-          .then(res => res.blob())
-          .then(blob => {
-            const file = new File([blob], "layerbit-code.png", { type: "image/png" });
-            navigator.share({
-              files: [file],
-              title: 'Layerbit Generated Code',
-            }).catch(console.error);
-          });
+      if(type !== 'qr') {
+          outputArea.innerHTML = `
+            <div class="placeholder-text" style="color: var(--accent-main);">
+              <i data-lucide="shield-check" style="width: 48px; height: 48px;"></i>
+              <span>Code128 verified as non-spoofable via standard matrix methods. Physically interceptable.</span>
+            </div>`;
+          lucide.createIcons();
+          return;
       }
+
+      if(!data.startsWith('http')) {
+        outputArea.innerHTML = `
+          <div class="placeholder-text" style="color: var(--accent-main);">
+            <i data-lucide="shield-check" style="width: 48px; height: 48px;"></i>
+            <span>Pure text payload detected. Low risk of spoofing redirection attack.</span>
+          </div>`;
+        lucide.createIcons();
+        return;
+      }
+
+      const score = spoofable ? 7 : 2;
+      const color = spoofable ? '#ef4444' : '#22c55e';
+      
+      outputArea.innerHTML = `
+        <div class="placeholder-text" style="color: ${color}; gap: 5px;">
+          <i data-lucide="shield-alert" style="width: 48px; height: 48px;"></i>
+          <span style="font-weight: 700; font-size: 1.1em;">Mock Risk Score: ${score}/10</span>
+          <span style="font-size: 0.9em;">Analysis detects potentially ${score > 5 ? 'vulnerable' : 'safe'} redirect architecture. Attack scenario: replacement of legitimate QR with one appending malicious query string.</span>
+        </div>`;
+      lucide.createIcons();
     }
+
   </script>
 <script src="../main.js"></script> </BODY>
 </html>

@@ -266,18 +266,43 @@
       font-size: 0.9em;
     }
 
-    /* FIX: Added word-break so extremely long matches don't blow out the container */
     .match-val { color: var(--accent-main); font-weight: bold; font-size: 1.1em; margin-bottom: 5px; word-break: break-all; }
     .match-meta { color: var(--text-muted); font-size: 0.85em; }
 
-    /* Info Panel */
-    .info-panel { max-width: 1000px; margin: 40px auto 60px auto; background: rgba(255,255,255,0.02); border: 1px solid var(--card-border); padding: 40px; border-radius: 20px; }
+    /* SEO/Docs Section Additions */
+    .docs-container { max-width: 1000px; margin: 0 auto 60px auto; display: flex; flex-direction: column; gap: 30px; width: 100%; }
+    .info-panel { background: rgba(255,255,255,0.02); border: 1px solid var(--card-border); padding: 40px; border-radius: 20px; }
     .info-panel h2 { color: #fff; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
     .info-panel h2 i { color: var(--accent-main); }
     .info-panel p { color: var(--text-muted); margin-bottom: 15px; line-height: 1.7; }
     .info-panel ul { list-style: none; margin-bottom: 20px; }
     .info-panel li { color: var(--text-muted); margin-bottom: 10px; display: flex; align-items: center; gap: 10px; }
     .info-panel li i { color: #22c55e; width: 16px; }
+
+    /* Use Cases Grid */
+    .use-cases-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; margin-top: 20px; }
+    .use-case-card { background: rgba(255,255,255,0.03); padding: 20px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); }
+    .use-case-card h3 { display: flex; align-items: center; gap: 8px; font-size: 1.1em; margin-bottom: 10px; color: #fff; }
+    .use-case-card h3 i { color: var(--accent-main); width: 16px; }
+    .use-case-card p { font-size: 0.9em; margin-bottom: 0; color: var(--text-muted); line-height: 1.6; }
+
+    /* Sample Payloads */
+    .sample-btn { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: var(--text-muted); padding: 8px 16px; border-radius: 8px; font-family: 'Space Grotesk', sans-serif; cursor: pointer; margin-right: 10px; margin-bottom: 10px; transition: all 0.2s; }
+    .sample-btn:hover { background: rgba(56, 189, 248, 0.1); color: var(--accent-main); border-color: var(--accent-main); }
+
+    /* FAQ Accordion */
+    .faq-item { border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; margin-bottom: 10px; overflow: hidden; }
+    .faq-question { width: 100%; background: rgba(255,255,255,0.03); border: none; padding: 18px 20px; color: #fff; font-size: 1em; font-weight: 500; text-align: left; cursor: pointer; display: flex; justify-content: space-between; align-items: center; transition: background 0.2s; }
+    .faq-question:hover { background: rgba(255,255,255,0.05); }
+    .faq-question i { transition: transform 0.3s; color: var(--accent-main); }
+    .faq-question.active i { transform: rotate(180deg); }
+    .faq-answer { max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out; background: rgba(0,0,0,0.2); }
+    .faq-answer p { padding: 20px; margin: 0; font-size: 0.95em; color: var(--text-muted); line-height: 1.6; }
+
+    /* Changelog List */
+    .changelog-list { list-style: none; margin: 0; padding: 0; }
+    .changelog-list li { margin-bottom: 12px; font-size: 0.95em; color: var(--text-muted); display: flex; align-items: flex-start; gap: 10px; }
+    .changelog-tag { background: rgba(56, 189, 248, 0.15); color: var(--accent-main); padding: 2px 8px; border-radius: 4px; font-weight: 600; font-size: 0.8em; border: 1px solid rgba(56, 189, 248, 0.3); }
 
     /* Command Center FAB */
     .fab {
@@ -292,14 +317,14 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      z-index: 9999; /* Boosted for visibility */
+      z-index: 9999;
       background: rgba(20, 22, 30, 0.7);
       border: 1px solid rgba(255, 255, 255, 0.1);
       box-shadow: 0 8px 25px rgba(0,0,0,0.5);
       transition: all 0.4s;
       text-decoration: none;
-      -webkit-transform: translateZ(0); /* Safari fix */
-      transform: translateZ(0); /* Hardware acceleration */
+      -webkit-transform: translateZ(0); 
+      transform: translateZ(0); 
       will-change: transform;
     }
     
@@ -323,43 +348,26 @@
        ULTRA-RESPONSIVE (Mobile Phones - Master Patch)
        ========================================= */
     @media (max-width: 600px) {
-      /* 1. Reclaim Screen Real Estate */
-      body { padding: 15px; } /* Tighter padding */
+      body { padding: 15px; } 
       header { margin-bottom: 25px; }
-
-      /* 2. Scale Down Giant Typography */
-      .hero h1 { 
-        font-size: 2em; 
-        flex-direction: column; 
-        gap: 10px; 
-      }
+      .hero h1 { font-size: 2em; flex-direction: column; gap: 10px; }
       .hero p { font-size: 1em; }
-
-      /* 3. FIX: Stop containers from stretching beyond screen width */
+      
       .app-container, .pane, .info-panel, .regex-wrapper, .regex-input {
-        min-width: 0; /* Allows Flex/Grid children to shrink safely */
+        min-width: 0; 
         width: 100%;
         max-width: 100%;
       }
 
-      /* 4. FIX: Force long text and bullet points to wrap politely */
       .info-panel {
         padding: 25px 15px;
         word-break: break-word;
         overflow-wrap: break-word;
       }
       
-      .info-panel h2 {
-        font-size: 1.4em;
-        align-items: flex-start;
-      }
+      .info-panel h2 { font-size: 1.4em; align-items: flex-start; }
+      .info-panel code { white-space: pre-wrap; word-break: break-all; }
 
-      .info-panel code {
-        white-space: pre-wrap;
-        word-break: break-all;
-      }
-
-      /* 5. Stack Toolbars & Pane Headers */
       .pane-header, .telemetry-bar {
         flex-direction: column;
         align-items: flex-start;
@@ -368,7 +376,6 @@
         height: auto;
       }
 
-      /* 6. Make Buttons Fluid & Tappable */
       .btn-group, .flags-container { 
         width: 100%; 
         flex-wrap: wrap; 
@@ -380,18 +387,14 @@
         text-align: center;
       }
 
-      /* 7. Shrink Container Paddings */
-      .regex-control {
-        padding: 15px;
-      }
+      .regex-control { padding: 15px; }
 
-      /* 8. FIX: Prevent the FAB from disappearing by replacing blur with a solid color */
       .fab {
         bottom: 25px; 
         left: 15px; 
         width: 50px; 
         height: 50px;
-        background: rgba(20, 22, 30, 0.98); /* Solid dark color so iOS Safari doesn't bug out */
+        background: rgba(20, 22, 30, 0.98); 
         -webkit-backdrop-filter: none;
         backdrop-filter: none;
         -webkit-transform: none;
@@ -461,14 +464,78 @@
 
   </div>
 
-  <div class="info-panel">
-    <h2><i data-lucide="terminal-square"></i> Regex Engine Specifications</h2>
-    <p>Layerbit's Debugging Terminal runs a high-performance JavaScript RegExp engine locally in your DOM. It provides instant visual feedback without sending sensitive log data or proprietary algorithms over a network.</p>
-    <ul>
-      <li><i data-lucide="check"></i> <strong>Real-Time Highlighting:</strong> The dual-layer editor safely colorizes matches as you type without breaking textarea functionality.</li>
-      <li><i data-lucide="check"></i> <strong>Forensics Extraction:</strong> Captures and isolates exact match data, including index positioning, allowing you to debug complex payloads instantly.</li>
-      <li><i data-lucide="check"></i> <strong>Hardware Toggles:</strong> Enable Global (<code>g</code>), Case Insensitive (<code>i</code>), and Multiline (<code>m</code>) flags with physical UI buttons rather than manual string injection.</li>
-    </ul>
+  <div class="docs-container">
+    <div class="info-panel">
+      <h2><i data-lucide="terminal-square"></i> Regex Engine Specifications</h2>
+      <p>Layerbit's Debugging Terminal runs a high-performance JavaScript RegExp engine locally in your DOM. It provides instant visual feedback without sending sensitive log data or proprietary algorithms over a network.</p>
+      <ul>
+        <li><i data-lucide="check"></i> <strong>Real-Time Highlighting:</strong> The dual-layer editor safely colorizes matches as you type without breaking textarea functionality.</li>
+        <li><i data-lucide="check"></i> <strong>Forensics Extraction:</strong> Captures and isolates exact match data, including index positioning, allowing you to debug complex payloads instantly.</li>
+        <li><i data-lucide="check"></i> <strong>Hardware Toggles:</strong> Enable Global (<code>g</code>), Case Insensitive (<code>i</code>), and Multiline (<code>m</code>) flags with physical UI buttons rather than manual string injection.</li>
+      </ul>
+      
+      <div class="use-cases-grid">
+        <div class="use-case-card">
+          <h3><i data-lucide="file-search"></i> Log Parsing & Data Extraction</h3>
+          <p>Instantly extract IPs, email addresses, or UUIDs from massive raw text logs utilizing the global extraction grid to isolate specific data points.</p>
+        </div>
+        <div class="use-case-card">
+          <h3><i data-lucide="shield-check"></i> Input Validation Testing</h3>
+          <p>Debug the strictness of your password complexity, email formatting, or phone number validation patterns before deploying them to your backend servers.</p>
+        </div>
+        <div class="use-case-card">
+          <h3><i data-lucide="replace"></i> Search & Replace Planning</h3>
+          <p>Test complex capture groups visually to ensure your regex string manipulation logic targets the exact strings required for backend sanitization.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="info-panel">
+      <h2><i data-lucide="flask-conical"></i> Quick Testing Templates</h2>
+      <p>Click the templates below to load predefined regular expressions and test strings into the terminal instantly.</p>
+      <div>
+        <button class="sample-btn" onclick="loadSample('email')">Email Extraction</button>
+        <button class="sample-btn" onclick="loadSample('ipv4')">IPv4 Finder</button>
+        <button class="sample-btn" onclick="loadSample('jwt')">JWT Matcher</button>
+      </div>
+    </div>
+
+    <div class="info-panel">
+      <h2><i data-lucide="help-circle"></i> Technical FAQ</h2>
+      <div class="faq-container">
+        
+        <div class="faq-item">
+          <button class="faq-question">Why is client-side regex testing important? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer">
+            <p>If you are testing patterns against proprietary application logs or databases containing PII (Personally Identifiable Information), pasting that text into an external server-side tool is a massive security risk. Layerbit evaluates your data locally within your browser, ensuring complete privacy.</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question">Which Regex flavor does this terminal use? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer">
+            <p>The terminal utilizes the native JavaScript ES6+ RegExp engine executed by your local browser. This is universally compatible with standard PCRE (Perl Compatible Regular Expressions) syntaxes used in Node.js, Python, and modern web applications.</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question">How does the real-time highlighting work without breaking the input? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer">
+            <p>We utilize a dual-layer DOM architecture. The transparent <code>&lt;textarea&gt;</code> captures your keystrokes while a perfectly aligned <code>&lt;div&gt;</code> sitting behind it dynamically renders the colorized output and handles scrolling synchronization. This provides a rich IDE experience.</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="info-panel">
+      <h2><i data-lucide="git-merge"></i> Deployment Changelog</h2>
+      <ul class="changelog-list">
+        <li><span class="changelog-tag">v1.2.0</span> Added interactive Quick Testing Templates and expanded the forensic documentation panel.</li>
+        <li><span class="changelog-tag">v1.1.0</span> Integrated real-time telemetry matching and the visual Forensics Extraction grid.</li>
+        <li><span class="changelog-tag">v1.0.0</span> Initial release of the Regex Debugging Terminal featuring the dual-layer highlighting editor.</li>
+      </ul>
+    </div>
   </div>
 
   <a href="../" id="smartBackBtn" class="fab" aria-label="Command Center" title="Command Center">
@@ -621,6 +688,63 @@
     // Listeners
     regexInput.addEventListener('input', processRegex);
     testInput.addEventListener('input', processRegex);
+
+    // FAQ Accordion Logic
+    document.querySelectorAll('.faq-question').forEach(button => {
+      button.addEventListener('click', () => {
+        const answer = button.nextElementSibling;
+        const isActive = button.classList.contains('active');
+        
+        document.querySelectorAll('.faq-question').forEach(btn => {
+          btn.classList.remove('active');
+          btn.nextElementSibling.style.maxHeight = null;
+        });
+
+        if (!isActive) {
+          button.classList.add('active');
+          answer.style.maxHeight = answer.scrollHeight + "px";
+        }
+      });
+    });
+
+    // Sample Loader Logic
+    function loadSample(type) {
+      const samples = {
+        email: {
+          regex: '[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}',
+          test: 'Contact our support team at support@layerbit.co.in or reach out to sales at enterprise-sales@layerbit.co.in for licensing information.',
+          flags: ['g', 'i']
+        },
+        ipv4: {
+          regex: '\\b(?:[0-9]{1,3}\\.){3}[0-9]{1,3}\\b',
+          test: '2026-08-06 20:56:50 [WARN] Unauthorized access attempt detected from 192.168.1.105.\n2026-08-06 20:56:55 [INFO] Successful login from 10.0.0.1.',
+          flags: ['g']
+        },
+        jwt: {
+          regex: 'eyJ[A-Za-z0-9-_]+\\.[A-Za-z0-9-_]+\\.[A-Za-z0-9-_]+',
+          test: 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkxheWVyYml0IFVzZXIiLCJpYXQiOjE1MTYyMzkwMjJ9.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c',
+          flags: ['g']
+        }
+      };
+
+      if (samples[type]) {
+        regexInput.value = samples[type].regex;
+        testInput.value = samples[type].test;
+        
+        // Reset and apply flags
+        currentFlags = samples[type].flags;
+        document.querySelectorAll('.flag-btn').forEach(btn => {
+          if (currentFlags.includes(btn.getAttribute('data-flag'))) {
+            btn.classList.add('active');
+          } else {
+            btn.classList.remove('active');
+          }
+        });
+
+        processRegex();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    }
 
   </script>
 <script src="../main.js"></script> </BODY>
