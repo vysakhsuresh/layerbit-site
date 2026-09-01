@@ -390,7 +390,7 @@
       <div id="resultsGrid"></div>
 
       <div class="disclaimer">
-        <strong>Security Disclaimer:</strong> A "CLEAN" response indicates the URL is not currently listed on major blacklists (e.g., Google Safe Browsing)[cite: 2, 3]. It does not guarantee the site is 100% safe. Always verify unexpected links.
+        <strong>Security Disclaimer:</strong> A "CLEAN" response indicates the URL is not currently listed on major blacklists (e.g., Google Safe Browsing). It does not guarantee the site is 100% safe. Always verify unexpected links.
       </div>
     </div>
 
@@ -404,15 +404,15 @@
     <div class="use-cases-grid">
       <div class="use-case-card">
         <h3><i data-lucide="mail-warning"></i> Phishing Campaign Verification</h3>
-        <p>Rapidly analyze URLs received in suspicious emails to identify credential harvesting infrastructure, preventing employee compromise[cite: 2].</p>
+        <p>Rapidly analyze URLs received in suspicious emails to identify credential harvesting infrastructure, preventing employee compromise.</p>
       </div>
       <div class="use-case-card">
         <h3><i data-lucide="code"></i> Supply Chain Compromise Check</h3>
-        <p>Validate external resources (e.g., JS libraries, CDN endpoints) utilized in development to ensure third-party domains haven't been compromised[cite: 2].</p>
+        <p>Validate external resources (e.g., JS libraries, CDN endpoints) utilized in development to ensure third-party domains haven't been compromised.</p>
       </div>
       <div class="use-case-card">
         <h3><i data-lucide="server"></i> C&C Server Detection</h3>
-        <p>Analyze unusual network traffic logs by cross-referencing outbound domains against real-time Command & Control (C&C) registries[cite: 2].</p>
+        <p>Analyze unusual network traffic logs by cross-referencing outbound domains against real-time Command & Control (C&C) registries.</p>
       </div>
     </div>
   </div>
@@ -425,7 +425,7 @@
       <div class="faq-item">
         <button class="faq-question">How are Google Safe Browsing and VirusTotal checked synchronously? <i data-lucide="chevron-down"></i></button>
         <div class="faq-answer">
-          <p>Layerbit's scanning interface communicates with a specialized proxy API hosted on a Render server[cite: 2, 5]. When a scan is initiated, the proxy API concurrently dispatches requests to the Google Safe Browsing[cite: 3] lookup endpoint and the VirusTotal[cite: 4] URL report endpoint. The API aggregates these diverse threat scores and DNS metadata before returning the structured JSON response to your browser.</p>
+          <p>Layerbit's scanning interface communicates with a specialized proxy API hosted on a Render server. When a scan is initiated, the proxy API concurrently dispatches requests to the Google Safe Browsing lookup endpoint and the VirusTotal URL report endpoint. The API aggregates these diverse threat scores and DNS metadata before returning the structured JSON response to your browser.</p>
         </div>
       </div>
 
@@ -439,7 +439,7 @@
       <div class="faq-item">
         <button class="faq-question">Is the URL itself transmitted or stored? <i data-lucide="chevron-down"></i></button>
         <div class="faq-answer">
-          <p>This is a fundamental privacy consideration. The scanner parses the protocol, hostname, and path locally in your browser DOM first[cite: 2]. When the full scan is initiated, the URL is transmitted securely via HTTPS to the proxy API, which then passes the URL to Google[cite: 3] and VirusTotal[cite: 4] for analysis. While standard public API endpoints handle this data, Safe Browsing often utilizes hash-based lookups to preserve user privacy[cite: 3].</p>
+          <p>This is a fundamental privacy consideration. The scanner parses the protocol, hostname, and path locally in your browser DOM first. When the full scan is initiated, the URL is transmitted securely via HTTPS to the proxy API, which then passes the URL to Google and VirusTotal for analysis. While standard public API endpoints handle this data, Safe Browsing often utilizes hash-based lookups to preserve user privacy.</p>
         </div>
       </div>
 
@@ -459,7 +459,7 @@
           <span class="changelog-tag">Minor: Engineering</span>
         </div>
         <ul class="changelog-description">
-          <li>Integrated live DNS validation via Google Public DNS (8.8.8.8) to verify record existence prior to registry check[cite: 2].</li>
+          <li>Integrated live DNS validation via Google Public DNS (8.8.8.8) to verify record existence prior to registry check.</li>
           <li>Upgraded local URL parsing logic to automatically detect and badged non-standard ports (e.g., :8080).</li>
           <li>Added "NXDOMAIN" simulation template for educational validation of failing DNS checks.</li>
         </ul>
@@ -471,8 +471,8 @@
           <span class="changelog-tag">Minor: Stability</span>
         </div>
         <ul class="changelog-description">
-          <li>Migrated threat logic from legacy client-side keys to a specialized proxy API hosted on Render for enhanced stability and security[cite: 2, 5].</li>
-          <li>Optimized concurrent API query logic for Safe Browsing[cite: 3] and VirusTotal[cite: 4], reducing aggregation latency.</li>
+          <li>Migrated threat logic from legacy client-side keys to a specialized proxy API hosted on Render for enhanced stability and security.</li>
+          <li>Optimized concurrent API query logic for Safe Browsing and VirusTotal, reducing aggregation latency.</li>
         </ul>
       </div>
 
@@ -482,9 +482,9 @@
           <span class="changelog-tag">Major: Release</span>
         </div>
         <ul class="changelog-description">
-          <li>Initial deployment of the centralized defensive terminal[cite: 2].</li>
+          <li>Initial deployment of the centralized defensive terminal.</li>
           <li>Implemented local DOM-based forensics parsing for immediate hostname extraction.</li>
-          <li>Integrated Google Safe Browsing and VirusTotal registry checks[cite: 2, 3, 4].</li>
+          <li>Integrated Google Safe Browsing and VirusTotal registry checks.</li>
         </ul>
       </div>
 
