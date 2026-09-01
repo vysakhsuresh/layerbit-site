@@ -428,7 +428,7 @@
     .info-panel li { color: var(--text-muted); margin-bottom: 10px; display: flex; align-items: center; gap: 10px; }
     .info-panel li i { color: #22c55e; width: 16px; }
 
-    /* Changelog panel[cite: 1, 2] */
+    /* Changelog panel */
     .changelog-panel {
         max-width: 1200px;
         margin: 0 auto 60px auto;
@@ -625,7 +625,7 @@
 
   </div>
 
-  <!-- Educational/OSINT Specific Panes[cite: 1, 2] -->
+  <!-- Educational/OSINT Specific Panes -->
   <div class="edu-container">
     
     <div class="edu-pane">
@@ -641,7 +641,7 @@
 
     <div class="edu-pane">
       <h3><i data-lucide="binary"></i> Linear Barcode Structure Deciphering</h3>
-      <p>OSINT is not just about interception, it's about interpretation. This section teaches staff how to read Code128 structure visually if needed[cite: 1, 2].</p>
+      <p>OSINT is not just about interception, it's about interpretation. This section teaches staff how to read Code128 structure visually if needed.</p>
       <ul>
         <li><i data-lucide="brackets"></i> <strong>Quiet Zones & Start Pattern:</strong> Every barcode begins with leading silence and a start character which identifies the barcode set used.</li>
         <li><i data-lucide="barcode"></i> <strong>Data Encoding:</strong> Each character is represented by a specific pattern of bars and spaces. The width of these elements encodes the data.</li>
@@ -675,22 +675,22 @@
 
   <div class="info-panel">
     <h2><i data-lucide="info"></i> Production-Grade Generation (Vulnerability Context)</h2>
-    <p>Layerbit's code synthesizer converts your text or URLs into high-fidelity, machine-readable formats. Unlike consumer generators, this tool performs all rendering inside your browser's local memory, guaranteeing absolute privacy for sensitive serial numbers or internal URLs. This makes it ideal for generating test cases of malicious or internally sensitive data without risk[cite: 1].</p>
+    <p>Layerbit's code synthesizer converts your text or URLs into high-fidelity, machine-readable formats. Unlike consumer generators, this tool performs all rendering inside your browser's local memory, guaranteeing absolute privacy for sensitive serial numbers or internal URLs. This makes it ideal for generating test cases of malicious or internally sensitive data without risk.</p>
     
     <ul>
       <li><i data-lucide="check"></i> <strong>QR Code (Matrix):</strong> Ideal for URLs, VCards, and dense text. Supports custom branding colors. Vunerable to spoofing.</li>
-      <li><i data-lucide="check"></i> <strong>Code128 (Linear):</strong> The industry standard for inventory, shipping, and packaging. Renders flawlessly for laser scanners. Vulnerable to interception[cite: 1, 2].</li>
-      <li><i data-lucide="check"></i> <strong>Native Export:</strong> Extract your generated codes directly to high-quality PNG format for immediate printing or security simulation[cite: 1].</li>
+      <li><i data-lucide="check"></i> <strong>Code128 (Linear):</strong> The industry standard for inventory, shipping, and packaging. Renders flawlessly for laser scanners. Vulnerable to interception.</li>
+      <li><i data-lucide="check"></i> <strong>Native Export:</strong> Extract your generated codes directly to high-quality PNG format for immediate printing or security simulation.</li>
     </ul>
   </div>
 
-  <!-- Changelog panel[cite: 1, 2] -->
+  <!-- Changelog panel -->
     <div class="changelog-panel">
         <h2><i data-lucide="git-branch"></i> Deployment changelog</h2>
         <ul class="changelog-list">
             <li class="changelog-item">
                 <span class="changelog-version">v1.2.0</span>
-                <span>OSINT educational terminal upgrade[cite: 1]. Restored intercept & deciphering panels. Integrated analysis mocking.</span>
+                <span>OSINT educational terminal upgrade. Restored intercept & deciphering panels. Integrated analysis mocking.</span>
             </li>
             <li class="changelog-item">
                 <span class="changelog-version">v1.1.0</span>
@@ -698,7 +698,7 @@
             </li>
             <li class="changelog-item">
                 <span class="changelog-version">v1.0.0</span>
-                <span>Initial internal deployment of the asset tracking synthesizer[cite: 1].</span>
+                <span>Initial internal deployment of the asset tracking synthesizer.</span>
             </li>
         </ul>
     </div>
@@ -724,7 +724,7 @@
     const btnDownload = document.getElementById('btnDownload');
     const btnAnalyze = document.getElementById('btnAnalyze');
     
-    // Toggle controls based on selection[cite: 1, 2]
+    // Toggle controls based on selection
     typeSelect.addEventListener('change', (e) => {
       const isQR = e.target.value === 'qr';
       osintControls.style.display = isQR ? 'flex' : 'none';
@@ -751,7 +751,7 @@
         return;
       }
 
-      // OSINT Data manipulation[cite: 1, 2]
+      // OSINT Data manipulation
       if (type === 'qr' && appendTracking && data.startsWith('http')) {
         const urlObj = new URL(data);
         urlObj.searchParams.append('lb_uid', 'osint');
@@ -819,7 +819,7 @@
       outputArea.style.backgroundColor = '#ffffff'; // reset room color
     }
 
-    // Export Logic[cite: 1, 2]
+    // Export Logic
     function getExportElement() {
       // qrcodejs sometimes makes a canvas, sometimes an img.
       const canvas = outputArea.querySelector('canvas');
@@ -837,7 +837,7 @@
       link.click();
     }
 
-    // Analysis Logic (MOCK for education)[cite: 1, 2]
+    // Analysis Logic (MOCK for education)
     function analyzeCode() {
       const type = typeSelect.value;
       const data = document.getElementById('dataInput').value.trim();
