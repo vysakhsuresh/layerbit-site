@@ -75,6 +75,11 @@
         <i data-lucide="copy"></i> Copy Expression
       </button>
 
+      <div class="next-runs" id="nextRuns">
+        <div class="next-runs-header"><i data-lucide="clock"></i> Next 5 Run Times <span class="next-runs-tz">(UTC — this tool assumes UTC; convert to your server's local timezone)</span></div>
+        <ol class="next-runs-list" id="nextRunsList"></ol>
+      </div>
+
     </div>
 
     <div class="presets-pane">
@@ -161,6 +166,7 @@
     <div class="info-panel">
       <h2><i data-lucide="git-commit"></i> Changelog</h2>
       <ul class="changelog-list">
+        <li><span class="changelog-tag">v1.3.0</span> Added a Next 5 Run Times preview (UTC, clearly labeled) for any valid expression, computed entirely client-side.</li>
         <li><span class="changelog-tag">v1.2.0</span> Introduced the visual dropdown builder map for faster segment configuration.</li>
         <li><span class="changelog-tag">v1.1.0</span> Integrated real-time parsing engine with syntax validation and instant translation feedback.</li>
         <li><span class="changelog-tag">v1.0.0</span> Initial release of the POSIX-compliant expression generator.</li>
@@ -195,6 +201,121 @@
       week: document.getElementById("selWeek")
     };
 
+    // --- Next 5 Run Times --------------------------------------------
+    // A small hand-rolled cron field parser + forward scheduler, all in
+    // UTC (the timezone this tool has always assumed, per its own FAQ).
+    // It only needs to understand *, */step, a-b, a-b/step, comma lists,
+    // and the 'L' (last day of month) token the Day dropdown offers -
+    // anything cronstrue accepts but this parser doesn't (e.g. month
+    // names typed by hand) just hides the panel rather than guessing.
+    const nextRunsEl = document.getElementById("nextRuns");
+    const nextRunsList = document.getElementById("nextRunsList");
+    const WEEKDAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    const MONTH_NAMES = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+    function parseCronField(str, min, max) {
+      if (str === 'L') return { values: new Set(), isLast: true, restricted: true };
+      const values = new Set();
+      for (const part of str.split(',')) {
+        const m = part.match(/^(\*|\d+-\d+|\d+)(?:\/(\d+))?$/);
+        if (!m) throw new Error(`Unsupported field syntax: "${part}"`);
+        const [, range, stepStr] = m;
+        const step = stepStr ? parseInt(stepStr, 10) : 1;
+        let start, end;
+        if (range === '*') { start = min; end = max; }
+        else if (range.includes('-')) { [start, end] = range.split('-').map(Number); }
+        else { start = end = Number(range); }
+        if (start < min || end > max || start > end || step < 1) throw new Error(`Field value out of range: "${part}"`);
+        for (let v = start; v <= end; v += step) values.add(v);
+      }
+      return { values, isLast: false, restricted: str !== '*' };
+    }
+
+    function lastDayOfMonth(year, monthIndex0) {
+      return new Date(Date.UTC(year, monthIndex0 + 1, 0)).getUTCDate();
+    }
+
+    function getNextRuns(cronStr, count) {
+      const parts = cronStr.trim().split(/\s+/);
+      if (parts.length !== 5) return [];
+
+      const minute = parseCronField(parts[0], 0, 59);
+      const hour = parseCronField(parts[1], 0, 23);
+      const dom = parseCronField(parts[2], 1, 31);
+      const month = parseCronField(parts[3], 1, 12);
+      const dow = parseCronField(parts[4], 0, 6);
+      // some dialects allow 7 for Sunday too
+      if (dow.values.has(7)) { dow.values.delete(7); dow.values.add(0); }
+
+      const results = [];
+      let candidate = new Date();
+      candidate.setUTCSeconds(0, 0);
+      candidate.setUTCMinutes(candidate.getUTCMinutes() + 1);
+
+      const maxIterations = 300000; // generous bound; jumps skip whole units, not minutes
+      let i = 0;
+      while (results.length < count && i < maxIterations) {
+        i++;
+        const y = candidate.getUTCFullYear();
+        const mo = candidate.getUTCMonth(); // 0-indexed
+        const d = candidate.getUTCDate();
+        const h = candidate.getUTCHours();
+        const mi = candidate.getUTCMinutes();
+        const wd = candidate.getUTCDay();
+
+        if (!month.values.has(mo + 1)) {
+          candidate = new Date(Date.UTC(y, mo + 1, 1, 0, 0));
+          continue;
+        }
+
+        const domMatch = dom.isLast ? (d === lastDayOfMonth(y, mo)) : dom.values.has(d);
+        const dowMatch = dow.values.has(wd);
+        const dayMatches = (dom.restricted && dow.restricted) ? (domMatch || dowMatch)
+                          : dom.restricted ? domMatch
+                          : dow.restricted ? dowMatch
+                          : true;
+
+        if (!dayMatches) {
+          candidate = new Date(Date.UTC(y, mo, d + 1, 0, 0));
+          continue;
+        }
+        if (!hour.values.has(h)) {
+          candidate = new Date(Date.UTC(y, mo, d, h + 1, 0));
+          continue;
+        }
+        if (!minute.values.has(mi)) {
+          candidate = new Date(candidate.getTime() + 60000);
+          continue;
+        }
+
+        results.push(new Date(candidate));
+        candidate = new Date(candidate.getTime() + 60000);
+      }
+      return results;
+    }
+
+    function formatRunTime(date) {
+      const wd = WEEKDAY_NAMES[date.getUTCDay()];
+      const mo = MONTH_NAMES[date.getUTCMonth()];
+      const hh = String(date.getUTCHours()).padStart(2, '0');
+      const mm = String(date.getUTCMinutes()).padStart(2, '0');
+      return `${wd}, ${mo} ${date.getUTCDate()} ${date.getUTCFullYear()} · ${hh}:${mm} UTC`;
+    }
+
+    function updateNextRuns(cronStr) {
+      try {
+        const runs = getNextRuns(cronStr, 5);
+        if (!runs.length) {
+          nextRunsList.innerHTML = `<li class="next-runs-empty">No matches found in the next few years — this expression may be impossible (e.g. Feb 31).</li>`;
+        } else {
+          nextRunsList.innerHTML = runs.map(d => `<li>${formatRunTime(d)}</li>`).join('');
+        }
+        nextRunsEl.style.display = 'block';
+      } catch (e) {
+        nextRunsEl.style.display = 'none';
+      }
+    }
+
     // Initialize cronstrue
     function translateCron() {
       const val = cronInput.value.trim();
@@ -208,6 +329,7 @@
         const readable = cronstrue.toString(val, { throwExceptionOnParseError: true });
         setValid(readable);
         syncDropdowns(val);
+        updateNextRuns(val);
       } catch (err) {
         setInvalid(err.toString().replace("Error: ", ""));
       }
@@ -222,6 +344,7 @@
     function setInvalid(text) {
       terminalPane.classList.add("error");
       cronTranslation.innerHTML = `<i data-lucide="alert-triangle"></i> Syntax Error: ${text}`;
+      nextRunsEl.style.display = 'none';
       lucide.createIcons();
     }
 

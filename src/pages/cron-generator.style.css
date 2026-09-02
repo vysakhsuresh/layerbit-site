@@ -109,6 +109,33 @@
     }
     .btn-copy:hover { background: rgba(255,255,255,0.1); border-color: var(--accent-main); }
 
+    /* Next Run Times */
+    .next-runs {
+      margin-top: 25px;
+      width: 100%;
+      max-width: 500px;
+      background: rgba(0,0,0,0.2);
+      border: 1px solid var(--card-border);
+      border-radius: 14px;
+      padding: 20px 24px;
+    }
+    .next-runs-header {
+      display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+      font-weight: 600; color: #fff; margin-bottom: 14px; font-size: 0.95em;
+    }
+    .next-runs-header i { width: 16px; color: var(--accent-main); }
+    .next-runs-tz { font-weight: 400; color: var(--text-muted); font-size: 0.8em; }
+    .next-runs-list { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+    .next-runs-list li {
+      font-family: 'Fira Code', monospace; font-size: 0.9em; color: var(--text-muted);
+      padding: 6px 10px; background: rgba(255,255,255,0.03); border-radius: 8px;
+      counter-increment: run-item;
+    }
+    .next-runs-list li::before { content: counter(run-item) ". "; color: var(--accent-main); font-weight: 600; }
+    .next-runs-list { counter-reset: run-item; }
+    .next-runs-empty { color: var(--error-color) !important; font-family: 'Space Grotesk', sans-serif !important; }
+    .next-runs-empty::before { content: '' !important; }
+
     /* Visual Builder Map */
     .builder-map {
       display: grid;
