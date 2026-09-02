@@ -42,7 +42,15 @@
         "name": "How does Parameter Forensics work?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "When a valid URL is detected, the engine intercepts the search property of the parsed URL object. It iterates through the URLSearchParams map, automatically escaping HTML entities to prevent DOM injection, and populates the visual breakdown grid."
+          "text": "When a valid URL is detected, the engine intercepts the search property of the parsed URL object. It iterates through the URLSearchParams map, automatically escaping HTML entities to prevent DOM injection, and populates an editable breakdown grid. Edit any key or value directly and click Re-encode to rebuild both the readable and percent-encoded versions of the URL from your changes."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How does Batch Mode work?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Batch Mode treats each line of the input as an independent item. Every non-empty line is parsed and encoded or decoded on its own — if a line is a full URL, only its query parameters are transformed (same logic as Smart Mode); otherwise the whole line is encoded or decoded as a raw string. Blank lines and line order are preserved, so you can paste a list of endpoints or tracking links and process them all in one pass."
         }
       }
     ]
@@ -160,6 +168,9 @@
     .btn:hover { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.2); }
     .btn i { width: 14px; height: 14px; }
 
+    .btn-primary { background: var(--neon-gradient); color: #000; border: none; box-shadow: 0 0 10px var(--accent-glow); }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 4px 15px var(--accent-glow); background: var(--neon-gradient); }
+
     /* Input Textareas */
     .editor {
       width: 100%; flex-grow: 1; background: transparent; border: none; padding: 20px;
@@ -194,19 +205,47 @@
 
     .analysis-header {
       font-size: 1.1em; font-weight: 600; color: #fff; margin-bottom: 15px;
-      display: flex; align-items: center; gap: 10px;
+      display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;
     }
+    .analysis-header-title { display: flex; align-items: center; gap: 10px; }
     .analysis-header i { color: var(--accent-main); }
 
     .param-grid {
-      display: grid;
-      grid-template-columns: auto 1fr;
-      gap: 10px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
       font-family: 'Fira Code', monospace;
       font-size: 0.95em;
     }
-    .param-key { color: var(--accent-main); font-weight: 600; text-align: right; }
-    .param-val { color: var(--text-main); word-break: break-all; }
+    .param-row { display: flex; align-items: center; gap: 10px; }
+    .param-key-input, .param-val-input {
+      flex: 1;
+      min-width: 0;
+      background: rgba(0,0,0,0.3);
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      padding: 8px 12px;
+      color: var(--text-main);
+      font-family: 'Fira Code', monospace;
+      font-size: 0.95em;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .param-key-input { color: var(--accent-main); font-weight: 600; }
+    .param-key-input:focus, .param-val-input:focus { border-color: var(--accent-main); }
+    .param-remove-btn {
+      flex-shrink: 0;
+      width: 34px; height: 34px;
+      background: rgba(239, 68, 68, 0.1);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      color: var(--error-color);
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+    .param-remove-btn:hover { background: rgba(239, 68, 68, 0.2); }
+    .param-remove-btn i { width: 14px; height: 14px; }
 
     /* SEO/Docs Section Additions */
     .docs-container { max-width: 1400px; margin: 0 auto 60px auto; display: flex; flex-direction: column; gap: 30px; width: 100%; }
@@ -261,8 +300,8 @@
     @media (max-width: 900px) {
       .ide-container { grid-template-columns: 1fr; }
       .pane { height: 250px; }
-      .param-grid { grid-template-columns: 1fr; gap: 5px; }
-      .param-key { text-align: left; }
+      .param-row { flex-wrap: wrap; }
+      .param-key-input, .param-val-input { min-width: 100px; }
     }
 
     /* =========================================
@@ -323,6 +362,7 @@
   <div class="mode-selector">
     <button class="mode-btn active" id="btnModeSmart" onclick="setMode('smart')"><i data-lucide="link"></i> Smart URL Mode</button>
     <button class="mode-btn" id="btnModeRaw" onclick="setMode('raw')"><i data-lucide="file-text"></i> Raw String Mode</button>
+    <button class="mode-btn" id="btnModeBatch" onclick="setMode('batch')"><i data-lucide="list"></i> Batch Mode</button>
   </div>
 
   <div class="ide-container">
@@ -357,7 +397,13 @@
 
   <div class="analysis-container" id="analysisContainer">
     <div class="analysis-pane">
-      <div class="analysis-header"><i data-lucide="list-tree"></i> Detected URL Parameters</div>
+      <div class="analysis-header">
+        <div class="analysis-header-title"><i data-lucide="list-tree"></i> Detected URL Parameters</div>
+        <div class="btn-group">
+          <button class="btn" onclick="addParamRow()"><i data-lucide="plus"></i> Add</button>
+          <button class="btn btn-primary" onclick="reEncodeFromGrid()"><i data-lucide="refresh-cw"></i> Re-encode</button>
+        </div>
+      </div>
       <div class="param-grid" id="paramGrid">
         </div>
     </div>
@@ -370,7 +416,8 @@
       <ul>
         <li><i data-lucide="check"></i> <strong>Smart URL Mode (Default):</strong> When a full URL is detected, the engine preserves the protocol and domain (e.g., <code>https://domain.com/path</code>) and strictly encodes the query parameters. This prevents broken, unclickable URLs.</li>
         <li><i data-lucide="check"></i> <strong>Raw String Mode:</strong> Forces strict RFC 3986 encoding across the entire input block, converting every unsafe character (including slashes and colons).</li>
-        <li><i data-lucide="check"></i> <strong>Parameter Forensics:</strong> Automatically detects query strings (<code>?key=value</code>) and generates a visual breakdown of payload data.</li>
+        <li><i data-lucide="check"></i> <strong>Parameter Forensics:</strong> Automatically detects query strings (<code>?key=value</code>) and generates an editable visual breakdown of payload data — edit any key or value and hit <strong>Re-encode</strong> to rebuild the URL instantly.</li>
+        <li><i data-lucide="check"></i> <strong>Batch Mode:</strong> Paste a list of URLs or strings, one per line, and encode or decode every line at once.</li>
       </ul>
 
       <div class="use-cases-grid">
@@ -420,7 +467,14 @@
         <div class="faq-item">
           <button class="faq-question">How does Parameter Forensics work? <i data-lucide="chevron-down"></i></button>
           <div class="faq-answer">
-            <p>When a valid URL is detected, the engine intercepts the <code>search</code> property of the parsed URL object. It iterates through the <code>URLSearchParams</code> map, automatically escaping HTML entities to prevent DOM injection, and populates the visual breakdown grid.</p>
+            <p>When a valid URL is detected, the engine intercepts the <code>search</code> property of the parsed URL object. It iterates through the <code>URLSearchParams</code> map, automatically escaping HTML entities to prevent DOM injection, and populates an editable breakdown grid. Edit any key or value directly and click <strong>Re-encode</strong> to rebuild both the readable and percent-encoded versions of the URL from your changes.</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question">How does Batch Mode work? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer">
+            <p>Batch Mode treats each line of the input as an independent item. Every non-empty line is parsed and encoded or decoded on its own — if a line is a full URL, only its query parameters are transformed (same logic as Smart Mode); otherwise the whole line is encoded or decoded as a raw string. Blank lines and line order are preserved, so you can paste a list of endpoints or tracking links and process them all in one pass.</p>
           </div>
         </div>
 
@@ -430,6 +484,7 @@
     <div class="info-panel">
       <h2><i data-lucide="git-merge"></i> Deployment Changelog</h2>
       <ul class="changelog-list">
+        <li><span class="changelog-tag">v1.4.0</span> Made the Parameter Forensics grid editable (edit a key/value and click Re-encode to rebuild the URL) and added a Batch Mode for encoding/decoding a list of URLs at once.</li>
         <li><span class="changelog-tag">v1.3.0</span> Added file upload and drag-and-drop to both panes.</li>
         <li><span class="changelog-tag">v1.2.1</span> Enhanced error handling UX. If a URI decode error occurs, the original string is preserved in the Plain Text viewer to allow for immediate debugging.</li>
         <li><span class="changelog-tag">v1.2.0</span> Added interactive Quick Testing Templates and expanded the forensic documentation panel.</li>
@@ -463,27 +518,39 @@
 
 
   <script>
-        let currentMode = 'smart'; // 'smart' or 'raw'
+        let currentMode = 'smart'; // 'smart', 'raw', or 'batch'
     let isSyncing = false;
+    let currentParsedURL = null; // URL object backing the editable param grid (Smart mode only)
 
     const plainText = document.getElementById("plainText");
     const encodedText = document.getElementById("encodedText");
     const decodeError = document.getElementById("decodeError");
     const analysisContainer = document.getElementById("analysisContainer");
     const paramGrid = document.getElementById("paramGrid");
-    
+
     const btnModeSmart = document.getElementById("btnModeSmart");
     const btnModeRaw = document.getElementById("btnModeRaw");
+    const btnModeBatch = document.getElementById("btnModeBatch");
+
+    const PLAIN_PLACEHOLDER = "Paste, type, or drag & drop readable text or an unencoded URL here...\ne.g. https://api.layerbit.co.in/search?q=hello world";
+    const ENCODED_PLACEHOLDER = "Paste or drag & drop encoded strings here...\ne.g. https://api.layerbit.co.in/search?q=hello%20world";
+    const PLAIN_PLACEHOLDER_BATCH = "One URL or string per line...\ne.g.\nhttps://api.layerbit.co.in/search?q=hello world\nhttps://api.layerbit.co.in/track?ref=partner one";
+    const ENCODED_PLACEHOLDER_BATCH = "One encoded item per line...";
 
     function setMode(mode) {
       currentMode = mode;
-      if(mode === 'smart') {
-        btnModeSmart.classList.add('active');
-        btnModeRaw.classList.remove('active');
+      [btnModeSmart, btnModeRaw, btnModeBatch].forEach(btn => btn.classList.remove('active'));
+      ({ smart: btnModeSmart, raw: btnModeRaw, batch: btnModeBatch })[mode].classList.add('active');
+
+      if (mode === 'batch') {
+        plainText.placeholder = PLAIN_PLACEHOLDER_BATCH;
+        encodedText.placeholder = ENCODED_PLACEHOLDER_BATCH;
+        analysisContainer.classList.remove('active');
       } else {
-        btnModeRaw.classList.add('active');
-        btnModeSmart.classList.remove('active');
+        plainText.placeholder = PLAIN_PLACEHOLDER;
+        encodedText.placeholder = ENCODED_PLACEHOLDER;
       }
+
       // Retrigger encoding based on current plain text
       triggerEncode();
     }
@@ -529,10 +596,10 @@
       navigator.clipboard.writeText(text).then(() => {
         const originalText = btnElement.innerHTML;
         btnElement.innerHTML = '<i data-lucide="check"></i> Copied!';
-        lucide.createIcons();
+        if (window.lucide) lucide.createIcons();
         setTimeout(() => {
           btnElement.innerHTML = originalText;
-          lucide.createIcons();
+          if (window.lucide) lucide.createIcons();
         }, 2000);
       });
     }
@@ -542,41 +609,123 @@
       return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
     }
 
-    // Analyzes a string to see if it's a URL with parameters
+    // Escape a value for safe use inside an HTML attribute (adds quote escaping)
+    function escapeAttr(str) {
+      return escapeHTML(str).replace(/"/g, "&quot;");
+    }
+
+    // Analyzes a string to see if it's a URL, and (re)builds the editable param grid
     function analyzeParameters(str) {
       try {
         // Attempt to parse as URL
         const url = new URL(str);
+        currentParsedURL = url;
+
         const params = new URLSearchParams(url.search);
-        
-        let gridHTML = '';
-        let hasParams = false;
+        const rows = [];
+        for (const [key, value] of params.entries()) rows.push({ key, value });
 
-        for (const [key, value] of params.entries()) {
-          hasParams = true;
-          gridHTML += `
-            <div class="param-key">${escapeHTML(key)} :</div>
-            <div class="param-val">${escapeHTML(value)}</div>
-          `;
-        }
-
-        if (hasParams) {
-          paramGrid.innerHTML = gridHTML;
-          analysisContainer.classList.add("active");
-        } else {
-          analysisContainer.classList.remove("active");
-        }
+        renderParamGrid(rows);
+        analysisContainer.classList.add("active");
       } catch (e) {
         // Not a valid URL, hide analysis
+        currentParsedURL = null;
         analysisContainer.classList.remove("active");
       }
+    }
+
+    // Renders the editable key/value rows for the detected URL parameters
+    function renderParamGrid(rows) {
+      paramGrid.innerHTML = rows.map((row, i) => `
+        <div class="param-row">
+          <input type="text" class="param-key-input" data-idx="${i}" value="${escapeAttr(row.key)}" placeholder="key" spellcheck="false" />
+          <input type="text" class="param-val-input" data-idx="${i}" value="${escapeAttr(row.value)}" placeholder="value" spellcheck="false" />
+          <button type="button" class="param-remove-btn" onclick="removeParamRow(${i})" aria-label="Remove parameter"><i data-lucide="x"></i></button>
+        </div>
+      `).join('');
+      if (window.lucide) lucide.createIcons();
+    }
+
+    // Reads the current state of the editable grid back into an array of {key, value}
+    function collectParamRows() {
+      const keys = paramGrid.querySelectorAll('.param-key-input');
+      const vals = paramGrid.querySelectorAll('.param-val-input');
+      const rows = [];
+      for (let i = 0; i < keys.length; i++) {
+        rows.push({ key: keys[i].value, value: vals[i].value });
+      }
+      return rows;
+    }
+
+    function addParamRow() {
+      if (!currentParsedURL) return;
+      const rows = collectParamRows();
+      rows.push({ key: '', value: '' });
+      renderParamGrid(rows);
+    }
+
+    function removeParamRow(idx) {
+      const rows = collectParamRows();
+      rows.splice(idx, 1);
+      renderParamGrid(rows);
+    }
+
+    // Rebuilds the Plain and Encoded panes from the current (possibly edited) param grid
+    function reEncodeFromGrid() {
+      if (!currentParsedURL) return;
+      const rows = collectParamRows().filter(r => r.key.trim() !== '');
+
+      // Percent-encoded version (for the Encoded pane)
+      const encodedParams = new URLSearchParams();
+      rows.forEach(({ key, value }) => encodedParams.append(key, value));
+      const encodedURL = new URL(currentParsedURL.toString());
+      encodedURL.search = encodedParams.toString() ? `?${encodedParams.toString()}` : '';
+
+      // Human-readable version (for the Plain pane)
+      const readableQuery = rows.map(({ key, value }) => `${key}=${value}`).join('&');
+      const readableURL = currentParsedURL.origin + currentParsedURL.pathname
+        + (readableQuery ? `?${readableQuery}` : '') + currentParsedURL.hash;
+
+      isSyncing = true;
+      plainText.value = readableURL;
+      encodedText.value = encodedURL.toString();
+      decodeError.classList.remove("active");
+      isSyncing = false;
+
+      currentParsedURL = encodedURL;
+      renderParamGrid(rows);
+    }
+
+    // Encodes a single item: full URL -> only its query params get encoded (Smart Mode
+    // logic), anything else falls back to raw encoding. Used directly by Smart Mode
+    // and per-line by Batch Mode.
+    function encodeOneSmart(str) {
+      try {
+        const url = new URL(str);
+        const params = new URLSearchParams(url.search);
+        const newSearch = params.toString();
+        url.search = newSearch ? `?${newSearch}` : '';
+        return url.toString();
+      } catch (e) {
+        return encodeURI(str);
+      }
+    }
+
+    // Applies fn to every non-empty line of text, preserving blank lines and order.
+    // A line that throws is left unchanged rather than aborting the whole batch.
+    function batchProcessLines(text, fn) {
+      return text.split('\n').map(line => {
+        if (line.trim() === '') return line;
+        try { return fn(line); } catch (e) { return line; }
+      }).join('\n');
     }
 
     // Engine: Encode Plain -> Encoded
     function triggerEncode() {
       if (isSyncing) return;
-      const val = plainText.value.trim();
-      
+      const raw = plainText.value;
+      const val = raw.trim();
+
       if (!val) {
         isSyncing = true;
         encodedText.value = "";
@@ -589,23 +738,15 @@
       isSyncing = true;
       decodeError.classList.remove("active");
 
+      if (currentMode === 'batch') {
+        encodedText.value = batchProcessLines(raw, encodeOneSmart);
+        analysisContainer.classList.remove("active");
+        isSyncing = false;
+        return;
+      }
+
       if (currentMode === 'smart') {
-        try {
-          // Attempt to parse as URL. If successful, encode only the search params.
-          const url = new URL(val);
-          
-          // Rebuild search params ensuring they are encoded
-          const params = new URLSearchParams(url.search);
-          let newSearch = params.toString(); // URLSearchParams automatically encodes
-          
-          // Reconstruct URL
-          url.search = newSearch ? `?${newSearch}` : '';
-          encodedText.value = url.toString();
-          
-        } catch(e) {
-          // If it fails URL parsing, fallback to raw encodeURI (preserves some characters unlike encodeURIComponent)
-          encodedText.value = encodeURI(val);
-        }
+        encodedText.value = encodeOneSmart(val);
       } else {
         // Raw Mode: encode everything strictly
         encodedText.value = encodeURIComponent(val);
@@ -618,7 +759,8 @@
     // Engine: Decode Encoded -> Plain
     function triggerDecode() {
       if (isSyncing) return;
-      const val = encodedText.value.trim();
+      const raw = encodedText.value;
+      const val = raw.trim();
 
       if (!val) {
         isSyncing = true;
@@ -630,6 +772,15 @@
       }
 
       isSyncing = true;
+
+      if (currentMode === 'batch') {
+        plainText.value = batchProcessLines(raw, (line) => decodeURIComponent(line));
+        decodeError.classList.remove("active");
+        analysisContainer.classList.remove("active");
+        isSyncing = false;
+        return;
+      }
+
       try {
         // Try decoding the whole string
         const decoded = decodeURIComponent(val);

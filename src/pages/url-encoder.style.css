@@ -98,6 +98,9 @@
     .btn:hover { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.2); }
     .btn i { width: 14px; height: 14px; }
 
+    .btn-primary { background: var(--neon-gradient); color: #000; border: none; box-shadow: 0 0 10px var(--accent-glow); }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 4px 15px var(--accent-glow); background: var(--neon-gradient); }
+
     /* Input Textareas */
     .editor {
       width: 100%; flex-grow: 1; background: transparent; border: none; padding: 20px;
@@ -132,19 +135,47 @@
 
     .analysis-header {
       font-size: 1.1em; font-weight: 600; color: #fff; margin-bottom: 15px;
-      display: flex; align-items: center; gap: 10px;
+      display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;
     }
+    .analysis-header-title { display: flex; align-items: center; gap: 10px; }
     .analysis-header i { color: var(--accent-main); }
 
     .param-grid {
-      display: grid;
-      grid-template-columns: auto 1fr;
-      gap: 10px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
       font-family: 'Fira Code', monospace;
       font-size: 0.95em;
     }
-    .param-key { color: var(--accent-main); font-weight: 600; text-align: right; }
-    .param-val { color: var(--text-main); word-break: break-all; }
+    .param-row { display: flex; align-items: center; gap: 10px; }
+    .param-key-input, .param-val-input {
+      flex: 1;
+      min-width: 0;
+      background: rgba(0,0,0,0.3);
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      padding: 8px 12px;
+      color: var(--text-main);
+      font-family: 'Fira Code', monospace;
+      font-size: 0.95em;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .param-key-input { color: var(--accent-main); font-weight: 600; }
+    .param-key-input:focus, .param-val-input:focus { border-color: var(--accent-main); }
+    .param-remove-btn {
+      flex-shrink: 0;
+      width: 34px; height: 34px;
+      background: rgba(239, 68, 68, 0.1);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      color: var(--error-color);
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+    .param-remove-btn:hover { background: rgba(239, 68, 68, 0.2); }
+    .param-remove-btn i { width: 14px; height: 14px; }
 
     /* SEO/Docs Section Additions */
     .docs-container { max-width: 1400px; margin: 0 auto 60px auto; display: flex; flex-direction: column; gap: 30px; width: 100%; }
@@ -199,8 +230,8 @@
     @media (max-width: 900px) {
       .ide-container { grid-template-columns: 1fr; }
       .pane { height: 250px; }
-      .param-grid { grid-template-columns: 1fr; gap: 5px; }
-      .param-key { text-align: left; }
+      .param-row { flex-wrap: wrap; }
+      .param-key-input, .param-val-input { min-width: 100px; }
     }
 
     /* =========================================
