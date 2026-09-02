@@ -109,7 +109,9 @@
       backdrop-filter: blur(16px);
       box-shadow: 0 10px 30px rgba(0,0,0,0.3);
       height: 450px;
+      transition: border-color 0.2s, background 0.2s;
     }
+    .pane.dragover { border-color: var(--accent-main); background: rgba(56, 189, 248, 0.05); }
 
     .pane-header {
       background: rgba(0,0,0,0.3);
@@ -212,24 +214,28 @@
 
   <div class="ide-container">
     
-    <div class="pane">
+    <div class="pane" id="rawPane">
       <div class="pane-header">
         <div class="pane-title"><i data-lucide="code"></i> Raw HTML</div>
         <div class="btn-group">
+          <input type="file" id="rawFile" accept=".html,.htm,.txt" style="display:none;">
+          <button class="btn" onclick="document.getElementById('rawFile').click()"><i data-lucide="upload"></i> Upload</button>
           <button class="btn" onclick="copyContent('rawInput', this)"><i data-lucide="copy"></i> Copy</button>
         </div>
       </div>
-      <textarea id="rawInput" class="editor" placeholder='Type or paste raw HTML here...&#10;&#10;<div class="header">&#10;  <h1>Welcome to Layerbit</h1>&#10;</div>' spellcheck="false"></textarea>
+      <textarea id="rawInput" class="editor" placeholder='Type, paste, or drag & drop raw HTML here...&#10;&#10;<div class="header">&#10;  <h1>Welcome to Layerbit</h1>&#10;</div>' spellcheck="false"></textarea>
     </div>
 
-    <div class="pane">
+    <div class="pane" id="escapedPane">
       <div class="pane-header">
         <div class="pane-title"><i data-lucide="shield-check"></i> Escaped Entities</div>
         <div class="btn-group">
+          <input type="file" id="escapedFile" accept=".html,.htm,.txt" style="display:none;">
+          <button class="btn" onclick="document.getElementById('escapedFile').click()"><i data-lucide="upload"></i> Upload</button>
           <button class="btn" onclick="copyContent('escapedInput', this)"><i data-lucide="copy"></i> Copy</button>
         </div>
       </div>
-      <textarea id="escapedInput" class="editor" placeholder='Type or paste escaped entities here...&#10;&#10;&lt;div class=&quot;header&quot;&gt;&#10;  &lt;h1&gt;Welcome to Layerbit&lt;/h1&gt;&#10;&lt;/div&gt;' spellcheck="false"></textarea>
+      <textarea id="escapedInput" class="editor" placeholder='Type, paste, or drag & drop escaped entities here...&#10;&#10;&lt;div class=&quot;header&quot;&gt;&#10;  &lt;h1&gt;Welcome to Layerbit&lt;/h1&gt;&#10;&lt;/div&gt;' spellcheck="false"></textarea>
     </div>
 
   </div>
@@ -304,6 +310,7 @@
     <div class="info-panel">
       <h2><i data-lucide="git-commit"></i> Changelog</h2>
       <ul class="changelog-list">
+        <li><span class="changelog-tag">v1.3.0</span> Added file upload and drag-and-drop to both panes.</li>
         <li><span class="changelog-tag">v1.2.0</span> Upgraded the rendering engine to provide bidirectional synchronization without infinite loop conflicts.</li>
         <li><span class="changelog-tag">v1.1.0</span> Expanded the regex dictionary matrix to capture backticks and equals signs to mitigate advanced injection variants.</li>
         <li><span class="changelog-tag">v1.0.0</span> Initial deployment of the zero-trust string replacement matrix.</li>
@@ -396,6 +403,34 @@
       rawInput.value = "";
       escapedInput.value = "";
     }
+
+    // File Upload / Drag & Drop - loading a file into either pane re-runs
+    // the same engine a keystroke would trigger
+    function loadFileInto(input, file) {
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        input.value = e.target.result;
+        input.dispatchEvent(new Event('input'));
+      };
+      reader.readAsText(file);
+    }
+
+    document.getElementById('rawFile').addEventListener('change', (e) => loadFileInto(rawInput, e.target.files[0]));
+    document.getElementById('escapedFile').addEventListener('change', (e) => loadFileInto(escapedInput, e.target.files[0]));
+
+    [{ pane: 'rawPane', input: rawInput }, { pane: 'escapedPane', input: escapedInput }].forEach(({ pane, input }) => {
+      const paneEl = document.getElementById(pane);
+      paneEl.addEventListener('dragover', (e) => { e.preventDefault(); paneEl.classList.add('dragover'); });
+      paneEl.addEventListener('dragleave', () => paneEl.classList.remove('dragover'));
+      paneEl.addEventListener('drop', (e) => {
+        e.preventDefault();
+        paneEl.classList.remove('dragover');
+        if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+          loadFileInto(input, e.dataTransfer.files[0]);
+        }
+      });
+    });
 
     function copyContent(elementId, btnElement) {
       const text = document.getElementById(elementId).value;

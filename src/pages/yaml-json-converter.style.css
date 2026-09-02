@@ -47,7 +47,9 @@
       backdrop-filter: blur(16px);
       box-shadow: 0 10px 30px rgba(0,0,0,0.3);
       height: 600px;
+      transition: border-color 0.2s, background 0.2s;
     }
+    .pane.dragover { border-color: var(--accent-main); background: rgba(56, 189, 248, 0.05); }
 
     .pane-header {
       background: rgba(0,0,0,0.3);
@@ -82,10 +84,18 @@
     .btn-clear:hover { background: rgba(239, 68, 68, 0.2); transform: translateY(-2px); }
 
     /* Input Textareas */
+    .editor-wrapper { flex-grow: 1; display: flex; overflow: hidden; min-height: 0; }
+    .gutter {
+      flex-shrink: 0; overflow: hidden; position: relative; min-width: 40px;
+      padding: 20px 8px 20px 12px; background: rgba(0,0,0,0.15); color: rgba(255,255,255,0.25);
+      font-family: 'Fira Code', monospace; font-size: 14px; line-height: 1.6;
+      text-align: right; user-select: none; white-space: pre;
+    }
+    .gutter-inner { white-space: pre; will-change: transform; }
     .editor {
-      width: 100%; flex-grow: 1; background: transparent; border: none; padding: 20px;
+      width: 100%; flex-grow: 1; background: transparent; border: none; padding: 20px 20px 20px 12px;
       color: var(--text-main); font-family: 'Fira Code', monospace; font-size: 14px;
-      line-height: 1.6; resize: none; outline: none;
+      line-height: 1.6; resize: none; outline: none; white-space: pre; overflow: auto;
     }
     .editor::placeholder { color: rgba(255,255,255,0.2); }
 

@@ -337,6 +337,7 @@
       <div class="pane-header">
         <div class="pane-title"><i data-lucide="check-circle"></i> Formatted Result</div>
         <div class="btn-group">
+          <button class="btn" id="btnDownload"><i data-lucide="download"></i> Download</button>
           <button class="btn" id="btnCopy"><i data-lucide="copy"></i> Copy to Clipboard</button>
         </div>
       </div>
@@ -408,6 +409,7 @@
     <div class="info-panel">
       <h2><i data-lucide="git-commit"></i> Changelog</h2>
       <ul class="changelog-list">
+        <li><span class="changelog-tag">v1.3.0</span> Added a Download button next to Copy to Clipboard, matching every other converter in the suite.</li>
         <li><span class="changelog-tag">v1.2.0</span> Optimized syntax highlighting engine to prevent browser lock-ups when rendering heavily nested arrays over 5MB.</li>
         <li><span class="changelog-tag">v1.1.5</span> Adjusted dark theme contrast ratios for better accessibility and added deep clipboard integration for instant payload copying.</li>
         <li><span class="changelog-tag">v1.0.0</span> Initial release of the secure client-side JSON processor.</li>
@@ -449,6 +451,7 @@
     const btnMinify = document.getElementById('btnMinify');
     const btnClear = document.getElementById('btnClear');
     const btnCopy = document.getElementById('btnCopy');
+    const btnDownload = document.getElementById('btnDownload');
 
     // Syntax Highlighter Logic
     function syntaxHighlight(jsonStr) {
@@ -507,9 +510,9 @@
     });
 
     btnCopy.addEventListener('click', () => {
-      const text = jsonOutput.innerText; 
+      const text = jsonOutput.innerText;
       if(!text) return;
-      
+
       navigator.clipboard.writeText(text).then(() => {
         const originalText = btnCopy.innerHTML;
         btnCopy.innerHTML = '<i data-lucide="check"></i> Copied!';
@@ -519,6 +522,17 @@
           lucide.createIcons();
         }, 2000);
       });
+    });
+
+    btnDownload.addEventListener('click', () => {
+      const text = jsonOutput.innerText;
+      if (!text) return;
+
+      const blob = new Blob([text], { type: "application/json;charset=utf-8;" });
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = `layerbit-${Date.now()}.json`;
+      link.click();
     });
 
     // FAQ Accordion Logic

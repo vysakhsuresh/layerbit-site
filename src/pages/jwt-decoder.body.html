@@ -25,6 +25,7 @@
       <div class="split-half">
         <div class="pane-header">
           <div class="pane-title title-red"><i data-lucide="file-code"></i> Header <span style="font-size: 0.8em; color: var(--text-muted); font-weight: 400;">(Algorithm & Type)</span></div>
+          <button class="btn" id="btnCopyHeader" onclick="copyDecoded('header', this)"><i data-lucide="copy"></i> Copy</button>
         </div>
         <div id="headerOutput" class="output-area"></div>
       </div>
@@ -32,6 +33,7 @@
       <div class="split-half">
         <div class="pane-header">
           <div class="pane-title title-purple"><i data-lucide="database"></i> Payload <span style="font-size: 0.8em; color: var(--text-muted); font-weight: 400;">(Data & Claims)</span></div>
+          <button class="btn" id="btnCopyPayload" onclick="copyDecoded('payload', this)"><i data-lucide="copy"></i> Copy</button>
         </div>
         <div id="payloadOutput" class="output-area"></div>
       </div>
@@ -103,6 +105,7 @@
     <div class="info-panel">
       <h2><i data-lucide="git-merge"></i> Deployment Methodology Changelog</h2>
       <ul class="changelog-list">
+        <li><span class="changelog-tag">v1.3.0</span> Added Copy buttons to the Header and Payload panes.</li>
         <li><span class="changelog-tag">v1.2.0</span> Integrated real-time <code>exp</code> claim verification matrix and conditional status badge rendering.</li>
         <li><span class="changelog-tag">v1.1.0</span> Optimized Base64URL parsing logic for high-performance decoding on mobile browsers.</li>
         <li><span class="changelog-tag">v1.0.0</span> Initial deployment of the client-side zero-knowledge JWT Inspector.</li>
@@ -130,6 +133,26 @@
     const statusBadge = document.getElementById('statusBadge');
     const statusIcon = document.getElementById('statusIcon');
     const statusText = document.getElementById('statusText');
+
+    // Plain (non-highlighted) decoded text, kept in sync with the last
+    // successful parse so Copy grabs clean JSON, not the rendered markup
+    let decodedHeaderText = '';
+    let decodedPayloadText = '';
+
+    function copyDecoded(which, btnElement) {
+      const text = which === 'header' ? decodedHeaderText : decodedPayloadText;
+      if (!text) return;
+
+      navigator.clipboard.writeText(text).then(() => {
+        const originalText = btnElement.innerHTML;
+        btnElement.innerHTML = '<i data-lucide="check"></i> Copied!';
+        lucide.createIcons();
+        setTimeout(() => {
+          btnElement.innerHTML = originalText;
+          lucide.createIcons();
+        }, 2000);
+      });
+    }
 
     // Syntax Highlighter for JSON output
     function syntaxHighlight(jsonStr) {
@@ -162,6 +185,8 @@
         jwtBackdrop.innerHTML = "Paste your JWT string here to decode...";
         headerOutput.innerHTML = "";
         payloadOutput.innerHTML = "";
+        decodedHeaderText = '';
+        decodedPayloadText = '';
         statusBadge.className = "status-badge";
         return;
       }
@@ -179,6 +204,8 @@
       if (parts.length < 2) {
         statusBadge.className = "status-badge status-invalid";
         statusText.innerText = "Invalid JWT Format";
+        decodedHeaderText = '';
+        decodedPayloadText = '';
         return;
       }
 
@@ -187,8 +214,10 @@
         const payload = JSON.parse(decodeBase64Url(parts[1]));
 
         // Output JSON
-        headerOutput.innerHTML = syntaxHighlight(JSON.stringify(header, null, 4));
-        payloadOutput.innerHTML = syntaxHighlight(JSON.stringify(payload, null, 4));
+        decodedHeaderText = JSON.stringify(header, null, 4);
+        decodedPayloadText = JSON.stringify(payload, null, 4);
+        headerOutput.innerHTML = syntaxHighlight(decodedHeaderText);
+        payloadOutput.innerHTML = syntaxHighlight(decodedPayloadText);
 
         // Expiration Logic Check
         if (payload.exp) {
@@ -214,6 +243,8 @@
         statusBadge.className = "status-badge status-invalid";
         statusText.innerText = "Decoding Error";
         statusIcon.setAttribute('data-lucide', 'triangle-alert');
+        decodedHeaderText = '';
+        decodedPayloadText = '';
         lucide.createIcons();
       }
     }
