@@ -379,6 +379,7 @@
     <div class="info-panel">
       <h2><i data-lucide="git-commit"></i> Changelog</h2>
       <ul class="changelog-list">
+        <li><span class="changelog-tag">v1.4.0</span> Switched the IP lookup to a keyless endpoint, removing a hardcoded API token that was exposed in client-side source.</li>
         <li><span class="changelog-tag">v1.3.0</span> Integrated Precision Geospatial reverse geocoding to resolve coordinates into human-readable locations.</li>
         <li><span class="changelog-tag">v1.1.0</span> Implemented WebGL Renderer unmasking to extract unique GPU fingerprinting data.</li>
         <li><span class="changelog-tag">v1.0.0</span> Initial release of the Hardware & Network telemetry diagnostic grid.</li>
@@ -483,14 +484,17 @@
         setVal('val-conn', "API Unsupported");
       }
 
-      // IP Info Fetch (Dubai Token Used)
+      // IP Info Fetch - ipapi.co needs no API key, so there's no secret to
+      // leak from client-side source (unlike a token-bearing endpoint, whose
+      // token anyone viewing source could lift and spend against our quota)
       try {
-        const res = await fetch("https://ipinfo.io/json?token=f38556491a0a87");
+        const res = await fetch("https://ipapi.co/json/");
         const ipData = await res.json();
-        
+        if (ipData.error) throw new Error(ipData.reason || "IP lookup error");
+
         setVal('val-ip', ipData.ip || "Unknown");
         setVal('val-isp', ipData.org || "Unknown");
-        const locStr = `${ipData.city || ''}, ${ipData.region || ''}, ${ipData.country || ''}`.replace(/^, | , | ,$/g, '');
+        const locStr = `${ipData.city || ''}, ${ipData.region || ''}, ${ipData.country_name || ''}`.replace(/^, | , | ,$/g, '');
         setVal('val-iploc', locStr || "Unknown");
 
         telemetryData["Public IP"] = ipData.ip;

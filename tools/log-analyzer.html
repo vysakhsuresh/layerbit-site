@@ -42,7 +42,7 @@
         "name": "Why use a client-side tool instead of ELK or Splunk?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "While ELK/Splunk excel at long-term storage and aggregation, Layerbit provides instant, lightweight forensic analysis for immediate IR needs. IR engineers often need to parse a single 2GB raw text file dropped during an incident without waiting for it to index into a database. We offer a SIEM-like experience without the infrastructure overhead."
+          "text": "While ELK/Splunk excel at long-term storage and aggregation, Layerbit provides instant, lightweight forensic analysis for immediate IR needs, with zero setup. It renders every line as a DOM row with no virtualization, so it's built for the single log dump you'd actually paste during an incident — comfortably tens of thousands of lines — not a multi-gigabyte archive; split a file that large first (e.g. grep the relevant window) and load that slice instead."
         }
       }
     ]
@@ -415,7 +415,7 @@
         <div class="faq-item">
           <button class="faq-question">Why use a client-side tool instead of ELK or Splunk? <i data-lucide="chevron-down"></i></button>
           <div class="faq-answer">
-            <p>While ELK/Splunk excel at long-term storage and aggregation, Layerbit provides instant, lightweight forensic analysis for immediate IR needs. IR engineers often need to parse a single 2GB raw text file dropped during an incident without waiting for it to index into a database. We offer a SIEM-like experience without the infrastructure overhead.</p>
+            <p>While ELK/Splunk excel at long-term storage and aggregation, Layerbit provides instant, lightweight forensic analysis for immediate IR needs, with zero setup. It renders every line as a DOM row with no virtualization, so it's built for the single log dump you'd actually paste during an incident &mdash; comfortably tens of thousands of lines &mdash; not a multi-gigabyte archive; split a file that large first (e.g. grep the relevant window) and load that slice instead.</p>
           </div>
         </div>
 
@@ -426,6 +426,7 @@
     <div class="info-panel">
       <h2><i data-lucide="git-merge"></i> Deployment Methodology Changelog</h2>
       <ul class="changelog-list">
+        <li><span class="changelog-tag">v1.3.0</span> Added a file-size warning before loading very large dumps, and corrected the FAQ's file-size claim to match actual (non-virtualized) rendering capacity.</li>
         <li><span class="changelog-tag">v1.2.1</span> Patched multi-line stack trace grepping logic and optimized mobile performance.</li>
         <li><span class="changelog-tag">v1.2.0</span> Integrated multi-source log syntax extraction matrix and real-time failure metrics.</li>
         <li><span class="changelog-tag">v1.1.0</span> Deployed client-side SIEM air-gapped security protocol and Regex mapping.</li>
@@ -469,10 +470,25 @@
     const countInfo = document.getElementById('countInfo');
 
     // UPLOAD LOGIC ADDED HERE
+    // No virtualization downstream - every line becomes its own DOM row - so
+    // a very large file will make the tab sluggish or unresponsive well
+    // before it runs out of memory. Warn rather than silently hang.
+    const LARGE_FILE_WARN_BYTES = 15 * 1024 * 1024; // 15 MB
     const logFileInput = document.getElementById('logFileInput');
     logFileInput.addEventListener('change', function(e) {
       const file = e.target.files[0];
       if (!file) return;
+
+      if (file.size > LARGE_FILE_WARN_BYTES) {
+        const mb = (file.size / (1024 * 1024)).toFixed(1);
+        const proceed = confirm(
+          `This file is ${mb} MB. Every line renders as its own row with no virtualization, so a file this large will make the tab sluggish or unresponsive.\n\nFor a large dump, split it first (e.g. grep the relevant window or tail -n 200000) and load that slice instead.\n\nLoad the full file anyway?`
+        );
+        if (!proceed) {
+          this.value = '';
+          return;
+        }
+      }
 
       const reader = new FileReader();
       reader.onload = function(e) {
