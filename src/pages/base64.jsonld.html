@@ -1,0 +1,32 @@
+<script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What exactly is Base64 encoding?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Base64 is a binary-to-text encoding scheme that translates arbitrary binary data (like images, PDFs, or compiled code) into an ASCII string format. It translates the data into a radix-64 representation, using only 64 specific characters (A-Z, a-z, 0-9, +, and /) ensuring the data remains intact without modification during transport across systems that only support text."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Is Base64 the same thing as encryption?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "No. This is a very common misconception. Base64 is strictly an encoding mechanism used for data translation and transport, not a security protocol. It does not use cryptographic keys, and anyone with access to the Base64 string can instantly decode it back to its original format. Never use Base64 to hide sensitive data or passwords."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Why does my file size increase when converted to Base64?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Because Base64 uses a limited character set to represent binary data, it requires 4 standard ASCII characters to represent every 3 bytes of raw data. This mathematical conversion means that encoding any file into Base64 will automatically increase its overall size by approximately 33%. This is why it is best used for small assets rather than massive video or audio files."
+        }
+      }
+    ]
+  }
+  </script>

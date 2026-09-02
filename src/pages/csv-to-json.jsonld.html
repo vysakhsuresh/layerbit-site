@@ -1,0 +1,32 @@
+<script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What is \"Smart Type Inference\"?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "By default, CSV files treat all data as text strings. When \"Smart Types\" is enabled, Layerbit's engine automatically detects numerical values (like 42 or 3.14) and boolean values (like true or false) and formats them as native integers, floats, and booleans in the resulting JSON output, rather than wrapping them in quotation marks."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How does the parser handle commas inside text fields?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Standard CSV rules dictate that any text containing a comma (like an address: \"Dubai, UAE\") must be wrapped in double quotes. Our custom lexical parser specifically reads these encapsulation markers, ensuring that internal commas are treated as normal text characters rather than accidental column delimiters."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Does my spreadsheet data leave my computer?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Absolutely not. The Layerbit CSV pipeline operates within an air-gapped browser environment. The file reading, parsing logic, and JSON generation are executed entirely client-side using JavaScript. No data is ever transmitted to a backend server or database."
+        }
+      }
+    ]
+  }
+  </script>

@@ -138,3 +138,50 @@ a:focus-visible, button:focus-visible, select:focus-visible, input:focus-visible
       from { background-position: 0 0, 20px 20px; }
       to { background-position: -60px -60px, -40px -40px; }
     }
+
+.cookie-consent-banner {
+  position: fixed;
+  left: 16px;
+  right: 16px;
+  bottom: 16px;
+  z-index: 9999;
+  max-width: 640px;
+  margin: 0 auto;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 20px;
+  background: rgba(15, 17, 24, 0.96);
+  border: 1px solid var(--card-border);
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  font-family: 'Space Grotesk', sans-serif;
+}
+
+.cookie-consent-banner p {
+  flex: 1 1 260px;
+  margin: 0;
+  font-size: 0.88em;
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+
+.cookie-consent-banner a { color: var(--accent-main); }
+
+.cookie-consent-accept {
+  flex: 0 0 auto;
+  background: var(--neon-gradient);
+  color: #041014;
+  font-weight: 600;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 20px;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.9em;
+}
+
+.cookie-consent-accept:hover { filter: brightness(1.08); }

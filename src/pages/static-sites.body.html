@@ -1,0 +1,211 @@
+{{HEADER}}
+
+  <main class="hero">
+    <h1>Static Website Engineering</h1>
+    <p>We deploy lightning-fast, highly secure static sites optimized for conversion. Perfect for portfolios, SaaS landing pages, and product launches.</p>
+  </main>
+
+  <div class="section-container">
+    <div class="doc-grid">
+      <div class="tool-box">
+        <i data-lucide="zap"></i>
+        <h3>Edge Performance</h3>
+        <p>Built for speed. We host your site on global CDN edge networks for near-instant load times worldwide.</p>
+      </div>
+      <div class="tool-box">
+        <i data-lucide="shield"></i>
+        <h3>Ironclad Security</h3>
+        <p>No database means no SQL injection. Our static architecture is inherently immune to most common web vulnerabilities.</p>
+      </div>
+      <div class="tool-box">
+        <i data-lucide="search"></i>
+        <h3>SEO Optimized</h3>
+        <p>Semantic HTML5 and optimized metadata structures ensure your project ranks high on search engines right out of the box.</p>
+      </div>
+    </div>
+
+    <!-- NEW INTERACTIVE FUNCTIONALITY -->
+    <div class="ide-container">
+      <div class="pane">
+        <div class="pane-header">
+          <i data-lucide="settings"></i> Project Architect
+        </div>
+        <div class="simulator-controls">
+          <p style="color: var(--text-muted); font-size: 0.9em; margin-bottom: 5px;">Select a project archetype to simulate the optimal static tech stack.</p>
+          <button class="sim-btn active" onclick="loadArch('portfolio', this)">
+            <i data-lucide="camera"></i> Creative Portfolio
+          </button>
+          <button class="sim-btn" onclick="loadArch('saas', this)">
+            <i data-lucide="rocket"></i> SaaS Landing Page
+          </button>
+          <button class="sim-btn" onclick="loadArch('docs', this)">
+            <i data-lucide="book-open"></i> Technical Documentation
+          </button>
+        </div>
+      </div>
+      
+      <div class="pane">
+        <div class="pane-header">
+          <i data-lucide="server"></i> Deployment Output
+        </div>
+        <div id="archOutput" class="output-area"></div>
+      </div>
+    </div>
+
+    <h2 class="pricing-header">Development Package</h2>
+    <div class="pricing-center">
+      <div class="pricing-box">
+        <h3>Professional Deployment</h3>
+        <span class="price-tag">₹999 / <span>$12</span></span>
+        <ul class="pricing-list">
+          <li><i data-lucide="check-circle"></i> Fully Responsive (Mobile + Desktop)</li>
+          <li><i data-lucide="check-circle"></i> Edge Network Global Hosting</li>
+          <li><i data-lucide="check-circle"></i> Custom Domain Integration</li>
+          <li><i data-lucide="check-circle"></i> Embedded Lead Form (Formspree)</li>
+          <li><i data-lucide="check-circle"></i> 48-Hour Rapid Delivery</li>
+        </ul>
+        <a href="mailto:ceo@layerbit.co.in?subject=Static Website Request" class="btn-main">
+          <i data-lucide="globe"></i> Launch My Site
+        </a>
+      </div>
+    </div>
+
+    <p style="text-align: center; color: var(--text-muted); font-size: 0.9em; font-style: italic;">
+      Need a multi-page site, dynamic CMS integration, or custom animations? Contact us for a bespoke quote.
+    </p>
+  </div>
+
+  <!-- THICKER CONTENT: SEO & DOCS -->
+  <div class="docs-container">
+    <div class="info-panel">
+      <h2><i data-lucide="layers"></i> The Power of the JAMstack</h2>
+      <p>Layerbit utilizes the modern JAMstack (JavaScript, APIs, and Markup) approach. Instead of building pages on a server every time a user visits, we pre-render your entire site into highly optimized static HTML files. This drastically reduces infrastructure costs and eliminates server maintenance.</p>
+      
+      <div class="use-cases-grid">
+        <div class="use-case-card">
+          <h3><i data-lucide="building-2"></i> Startup MVP Sites</h3>
+          <p>Launch your Minimum Viable Product landing page over the weekend. Static sites deploy in seconds, allowing rapid A/B testing of your marketing copy without backend overhead.</p>
+        </div>
+        <div class="use-case-card">
+          <h3><i data-lucide="image"></i> High-Res Portfolios</h3>
+          <p>For photographers and designers. By pre-processing images during the build phase and serving them via a CDN, massive galleries load buttery-smooth without database lag.</p>
+        </div>
+        <div class="use-case-card">
+          <h3><i data-lucide="file-text"></i> Open-Source Docs</h3>
+          <p>Host thousands of pages of technical documentation for pennies. Static generators convert Markdown files into instantaneous, highly searchable web pages.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="info-panel">
+      <h2><i data-lucide="help-circle"></i> Static Engineering FAQ</h2>
+      <div class="faq-container">
+        
+        <div class="faq-item">
+          <button class="faq-question">What exactly makes a website "Static"? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer">
+            <p>A static website consists of pre-rendered HTML, CSS, and JavaScript files. When a user visits the URL, the server simply hands them the file. There is no database to query and no server-side language (like PHP or Python) executing in real-time. This is why they are incredibly fast and secure.</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question">How do I update the content if there is no database? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer">
+            <p>For developers, content is updated via Git commits using Markdown or JSON files. For non-technical users, we integrate "Headless CMS" platforms (like Decap CMS or Sanity). These provide a friendly dashboard that automatically triggers a site rebuild whenever you hit "Publish".</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question">Can I have forms or e-commerce on a static site? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer">
+            <p>Yes. We use the "API" part of the JAMstack. Contact forms are routed through services like Formspree, and e-commerce checkouts are handled securely via client-side JavaScript APIs like Stripe or Snipcart, keeping the core site static while offloading the dynamic tasks.</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="info-panel">
+      <h2><i data-lucide="git-merge"></i> Deployment Changelog</h2>
+      <ul class="changelog-list">
+        <li><span class="changelog-tag">v1.2.0</span> Integrated the Interactive Project Architect to provide immediate tech stack visibility to potential clients.</li>
+        <li><span class="changelog-tag">v1.1.0</span> Expanded the documentation sections and use cases to better educate clients on JAMstack advantages.</li>
+        <li><span class="changelog-tag">v1.0.0</span> Launched the base ₹999 Static Website Deployment package focusing on speed, edge networks, and security.</li>
+      </ul>
+    </div>
+  </div>
+
+  <a href="../" id="smartBackBtn" class="fab" aria-label="Command Center">
+    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="filter: drop-shadow(0 0 8px rgba(56, 189, 248, 0.5));">
+      <path d="M12 2L2 7l10 5 10-5-10-5z" stroke="#38bdf8" stroke-width="2" stroke-linejoin="round" fill="rgba(56,189,248,0.2)"/>
+      <path d="M2 17l10 5 10-5M2 12l10 5 10-5" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </a>
+
+  {{FOOTER}}
+
+  <script src="../js/shared.js"></script>
+
+
+  <script>
+        // Syntax Highlighting for the Simulator
+    function highlightJSON(jsonStr) {
+      return jsonStr.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, function (match) {
+        let color = 'var(--syn-number)';
+        if (/^"/.test(match)) {
+          if (/:$/.test(match)) { color = 'var(--syn-key)'; } 
+          else { color = 'var(--syn-string)'; }
+        }
+        return `<span style="color: ${color};">${match}</span>`;
+      });
+    }
+
+    // Architecture Simulator Logic
+    const archData = {
+      portfolio: {
+        engine: "Astro.js",
+        rendering: "SSG (Static Site Generation)",
+        hosting: "Cloudflare Pages (Global Edge CDN)",
+        data_source: "Local Markdown / MDX",
+        assets: "Optimized WebP via Astro Image",
+        avg_load_time: "< 50ms"
+      },
+      saas: {
+        engine: "Next.js",
+        rendering: "ISR (Incremental Static Regeneration)",
+        hosting: "Vercel Edge Network",
+        data_source: "Headless CMS (Sanity / Decap)",
+        forms_api: "Formspree Integration",
+        avg_load_time: "< 80ms"
+      },
+      docs: {
+        engine: "Hugo / Docusaurus",
+        rendering: "Ultra-Fast SSG",
+        hosting: "GitHub Pages",
+        data_source: "Git-backed Markdown Repository",
+        search: "Algolia DocSearch (Client-side)",
+        avg_load_time: "< 40ms"
+      }
+    };
+
+    function loadArch(type, btnElement) {
+      // Update Buttons
+      document.querySelectorAll('.sim-btn').forEach(btn => btn.classList.remove('active'));
+      btnElement.classList.add('active');
+
+      // Generate JSON Output
+      const data = archData[type];
+      const rawJson = JSON.stringify(data, null, 2);
+      
+      document.getElementById('archOutput').innerHTML = highlightJSON(rawJson);
+    }
+
+    // Load default on start
+    window.addEventListener('DOMContentLoaded', () => {
+      const defaultBtn = document.querySelector('.sim-btn.active');
+      loadArch('portfolio', defaultBtn);
+    });
+
+    // FAQ Accordion Logic
+      </script>
+<script src="../main.js"></script>

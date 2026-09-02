@@ -1,0 +1,32 @@
+<script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "How does the engine handle nested objects?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "The parser utilizes a recursive flattening algorithm. If it encounters a nested object, it collapses it into a single column using dot notation (e.g., a location object containing a city property becomes a column named location.city)."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Is there a limit to how much data I can paste?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Because the grid operates entirely client-side, there are no artificial server limits or payload size caps. The only limitation is the amount of RAM available on your local machine to process and render the DOM elements."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Can I export the filtered data?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes. The CSV export feature intelligently respects your active search filter. If you search for a specific term and click Export CSV, only the rows currently visible on your screen will be downloaded."
+        }
+      }
+    ]
+  }
+  </script>

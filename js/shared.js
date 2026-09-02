@@ -21,4 +21,33 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
   });
+
+  initCookieConsent();
 });
+
+// Cookie consent banner: AdSense, Google Analytics, and (on the LayerLink
+// tools) Firebase all set cookies before any visitor interaction, so a
+// dismissible notice is shown until the visitor accepts it once.
+function initCookieConsent() {
+  try {
+    if (localStorage.getItem('layerbit-cookie-consent') === 'accepted') return;
+  } catch (e) {
+    return; // storage unavailable (e.g. blocked) - don't block rendering over it
+  }
+
+  const prefix = location.pathname.includes('/tools/') ? '../' : '';
+  const banner = document.createElement('div');
+  banner.className = 'cookie-consent-banner';
+  banner.setAttribute('role', 'region');
+  banner.setAttribute('aria-label', 'Cookie notice');
+  banner.innerHTML =
+    '<p>Layerbit uses cookies for analytics and ads, and (on tools that need it) for core functionality. ' +
+    'See our <a href="' + prefix + 'privacy.html">Privacy Policy</a> for details.</p>' +
+    '<button type="button" class="cookie-consent-accept">Accept</button>';
+  document.body.appendChild(banner);
+
+  banner.querySelector('.cookie-consent-accept').addEventListener('click', () => {
+    try { localStorage.setItem('layerbit-cookie-consent', 'accepted'); } catch (e) {}
+    banner.remove();
+  });
+}

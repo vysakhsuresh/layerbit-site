@@ -1,0 +1,32 @@
+<script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "How are Google Safe Browsing and VirusTotal checked synchronously?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Layerbit's scanning interface communicates with a specialized proxy API hosted on a Render server. When a scan is initiated, the proxy API concurrently dispatches requests to the Google Safe Browsing lookup endpoint and the VirusTotal URL report endpoint. The API aggregates these diverse threat scores and DNS metadata before returning the structured JSON response to your browser."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Does this scan guarantee a URL is safe?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "No, a scan only verifies if a URL is currently listed on public registries. Malicious actors frequently utilize \"bulletproof hosting\" and dynamic DNS to cycle through domains faster than registries can index them. A CLEAN result is a standard baseline, not a definitive guarantee of safety. Defensive logic requires perpetual skepticism of untrusted links."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Is the URL itself transmitted or stored?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "This is a fundamental privacy consideration. The scanner parses the protocol, hostname, and path locally in your browser DOM first. When the full scan is initiated, the URL is transmitted securely via HTTPS to the proxy API, which then passes the URL to Google and VirusTotal for analysis. While standard public API endpoints handle this data, Safe Browsing often utilizes hash-based lookups to preserve user privacy."
+        }
+      }
+    ]
+  }
+  </script>

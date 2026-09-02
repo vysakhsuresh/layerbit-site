@@ -1,0 +1,319 @@
+
+    /* Ultra-Premium Dark Theme Variables (Matched to Index) */
+
+    body {
+      font-family: 'Space Grotesk', sans-serif;
+      color: var(--text-main);
+      background-color: var(--bg-base);
+      background-image: var(--bg-gradient);
+      min-height: 100dvh;
+      padding: 20px 40px;
+      position: relative;
+      overflow-x: clip; 
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Animated Drifting Starry Background */
+
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0; left: 0; width: 100vw; height: 100vh;
+      background-image: 
+        radial-gradient(rgba(255,255,255,0.08) 1px, transparent 1px),
+        radial-gradient(rgba(255,255,255,0.05) 1px, transparent 1px);
+      background-size: 60px 60px, 40px 40px;
+      background-position: 0 0, 20px 20px;
+      z-index: -1;
+      pointer-events: none;
+      animation: drift 60s linear infinite;
+    }
+
+    /* Header */
+    header {
+      display: flex;
+      justify-content: flex-start;
+      align-items: center;
+      max-width: 1200px;
+      width: 100%;
+      margin: 0 auto 60px auto;
+    }
+
+    /* Hero Section */
+    .hero {
+      text-align: center;
+      max-width: 850px;
+      margin: 0 auto 40px auto;
+      animation: fadeIn 1.2s ease-out forwards;
+    }
+
+    @keyframes gradientText { 
+      0%{background-position:0% 50%} 
+      50%{background-position:100% 50%} 
+      100%{background-position:0% 50%} 
+    }
+
+    .hero h1 {
+      font-size: 3.5em;
+      font-weight: 700;
+      margin-bottom: 18px;
+      letter-spacing: -1.5px;
+      line-height: 1.1;
+      background: linear-gradient(270deg, #ffffff, #e2e8f0, #38bdf8, #ffffff);
+      background-size: 300% 300%;
+      animation: gradientText 8s ease infinite;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .hero p {
+      font-size: 1.15em;
+      color: var(--text-muted);
+      line-height: 1.7;
+      max-width: 700px;
+      margin: 0 auto;
+    }
+
+    /* Premium Glassmorphic Content Card */
+    .content-panel {
+      max-width: 1000px;
+      margin: 0 auto 60px auto;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      padding: 50px;
+      border-radius: 24px;
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      box-shadow: 0 20px 50px rgba(0,0,0,0.4), 0 0 30px rgba(56, 189, 248, 0.05);
+      animation: fadeSlideUp 1s ease-out forwards;
+      width: 100%;
+    }
+
+    /* Contact Grid */
+    .contact-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 25px;
+      margin-top: 30px;
+    }
+
+    .contact-card {
+      background: rgba(0, 0, 0, 0.2);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      padding: 40px 30px;
+      border-radius: 16px;
+      text-align: center;
+      transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .contact-card:hover {
+      background: var(--card-hover-bg);
+      border-color: var(--card-hover-border);
+      transform: translateY(-5px);
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4), 0 0 25px rgba(56, 189, 248, 0.15);
+    }
+
+    .contact-card i {
+      width: 48px;
+      height: 48px;
+      color: var(--accent-main);
+      margin-bottom: 20px;
+      filter: drop-shadow(0 0 10px var(--accent-glow));
+    }
+
+    .contact-card h2 {
+      font-size: 1.5em;
+      color: #fff;
+      margin-bottom: 15px;
+      font-weight: 600;
+    }
+
+    .contact-card p {
+      color: var(--text-muted);
+      font-size: 1.05em;
+      line-height: 1.6;
+      margin-bottom: 25px;
+    }
+
+    .btn-contact {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      padding: 14px 28px;
+      border-radius: 12px;
+      font-weight: 700;
+      text-decoration: none;
+      transition: all 0.3s;
+      font-size: 1.05em;
+    }
+
+    .btn-contact i {
+      width: 20px;
+      height: 20px;
+      margin: 0;
+      color: inherit;
+      filter: none;
+    }
+
+    .btn-email {
+      background: var(--neon-gradient);
+      color: #000;
+      box-shadow: 0 4px 15px var(--accent-glow);
+    }
+
+    .btn-email:hover {
+      transform: scale(1.05);
+      box-shadow: 0 8px 25px var(--accent-glow);
+    }
+
+    .btn-whatsapp {
+      background: #25D366;
+      color: #fff;
+      box-shadow: 0 4px 15px rgba(37, 211, 102, 0.3);
+    }
+
+    .btn-whatsapp:hover {
+      transform: scale(1.05);
+      box-shadow: 0 8px 25px rgba(37, 211, 102, 0.5);
+    }
+
+    .response-time {
+      text-align: center;
+      margin-top: 40px;
+      padding-top: 25px;
+      border-top: 1px solid rgba(255,255,255,0.05);
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .response-time i {
+      width: 20px;
+      height: 20px;
+      color: #22c55e;
+    }
+
+    /* SEO/Docs Section Additions */
+    .docs-container { max-width: 1000px; margin: 0 auto 60px auto; display: flex; flex-direction: column; gap: 30px; width: 100%; }
+    
+    /* Use Cases Grid */
+
+    /* FAQ Accordion */
+
+    /* Changelog List */
+    .changelog-list { list-style: none; margin: 0; padding: 0; }
+    .changelog-tag { background: rgba(56, 189, 248, 0.15); color: var(--accent-main); padding: 2px 8px; border-radius: 4px; font-weight: 600; font-size: 0.8em; border: 1px solid rgba(56, 189, 248, 0.3); }
+
+    /* Floating Command Center Orb */
+    .fab {
+      position: fixed;
+      bottom: 30px;
+      left: 30px;
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      backdrop-filter: blur(15px);
+      -webkit-backdrop-filter: blur(15px);
+      display: flex !important;
+      opacity: 1 !important;
+      visibility: visible !important;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      z-index: 9998;
+      box-shadow: 0 8px 25px rgba(0,0,0,0.5);
+      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      text-decoration: none;
+      background: rgba(20, 22, 30, 0.7);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      -webkit-transform: translateZ(0); 
+      transform: translateZ(0); 
+      will-change: transform;
+    }
+
+    .fab:hover {
+      transform: scale(1.1) translateZ(0);
+      border-color: rgba(56, 189, 248, 0.5);
+      background: rgba(30, 34, 48, 0.9);
+      box-shadow: 0 12px 30px rgba(0,0,0,0.6), 0 0 25px rgba(56, 189, 248, 0.3);
+    }
+
+    /* Footer */
+    footer {
+      text-align: center;
+      padding: 40px 0;
+      border-top: 1px solid var(--card-border);
+      color: var(--text-muted);
+      font-size: 0.95em;
+      margin-top: auto;
+      width: 100%;
+    }
+
+    footer a { color: var(--text-muted); text-decoration: none; margin: 0 12px; transition: color 0.2s; }
+    footer a:hover { color: var(--accent-main); }
+
+    /* Animations */
+
+    /* =========================================
+       ULTRA-RESPONSIVE (Mobile Phones - Master Patch)
+       ========================================= */
+    @media (max-width: 600px) {
+      body { padding: 15px 20px; }
+      header { margin-bottom: 25px; }
+
+      .hero h1 { 
+        font-size: 2.2em; 
+        line-height: 1.2;
+        margin-bottom: 15px;
+      }
+      .hero p { font-size: 1em; }
+
+      .content-panel, .info-panel {
+        padding: 30px 20px;
+        min-width: 0;
+        width: 100%;
+        max-width: 100%;
+      }
+
+      .contact-grid {
+        grid-template-columns: 1fr; 
+        gap: 20px;
+      }
+
+      .contact-card {
+        padding: 30px 20px;
+      }
+
+      .contact-card h2 {
+        font-size: 1.3em;
+      }
+
+      .btn-contact {
+        width: 100%;
+        justify-content: center;
+      }
+
+      .response-time {
+        flex-direction: column;
+        text-align: center;
+        gap: 15px;
+      }
+
+      .fab {
+        bottom: 20px; 
+        left: 20px; 
+        width: 50px; 
+        height: 50px;
+        background: rgba(20, 22, 30, 0.98); 
+        -webkit-backdrop-filter: none;
+        backdrop-filter: none;
+        -webkit-transform: none;
+        transform: none;
+        will-change: auto;
+      }
+    }
+  

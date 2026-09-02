@@ -1,0 +1,308 @@
+{{HEADER}}
+
+  <main class="hero">
+    <h1>Cron Expression Synthesizer</h1>
+    <p>Build, decode, and validate complex server schedules in real-time.</p>
+  </main>
+
+  <div class="app-container">
+    
+    <div class="terminal-pane" id="terminalPane">
+      
+      <div class="builder-map">
+        <div class="map-segment">
+          <span class="map-label">Minute</span>
+          <select class="map-select" id="selMin">
+            <option value="*">Every (*)</option>
+            <option value="*/5">Every 5m (*/5)</option>
+            <option value="*/15">Every 15m (*/15)</option>
+            <option value="0">At :00 (0)</option>
+            <option value="30">At :30 (30)</option>
+            <option value="custom">Custom...</option>
+          </select>
+        </div>
+        <div class="map-segment">
+          <span class="map-label">Hour</span>
+          <select class="map-select" id="selHour">
+            <option value="*">Every (*)</option>
+            <option value="*/2">Every 2h (*/2)</option>
+            <option value="0">Midnight (0)</option>
+            <option value="12">Noon (12)</option>
+            <option value="custom">Custom...</option>
+          </select>
+        </div>
+        <div class="map-segment">
+          <span class="map-label">Day</span>
+          <select class="map-select" id="selDay">
+            <option value="*">Every (*)</option>
+            <option value="1">1st of Month (1)</option>
+            <option value="15">15th of Month (15)</option>
+            <option value="L">Last Day (L)</option>
+            <option value="custom">Custom...</option>
+          </select>
+        </div>
+        <div class="map-segment">
+          <span class="map-label">Month</span>
+          <select class="map-select" id="selMonth">
+            <option value="*">Every (*)</option>
+            <option value="1">Jan (1)</option>
+            <option value="6">Jun (6)</option>
+            <option value="12">Dec (12)</option>
+            <option value="custom">Custom...</option>
+          </select>
+        </div>
+        <div class="map-segment">
+          <span class="map-label">Weekday</span>
+          <select class="map-select" id="selWeek">
+            <option value="*">Every (*)</option>
+            <option value="1-5">Mon-Fri (1-5)</option>
+            <option value="0,6">Weekend (0,6)</option>
+            <option value="1">Monday (1)</option>
+            <option value="custom">Custom...</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="terminal-input-wrapper">
+        <input type="text" id="cronInput" class="cron-input" value="* * * * *" autocomplete="off" spellcheck="false" />
+      </div>
+
+      <div class="cron-translation" id="cronTranslation">
+        <i data-lucide="check-circle" style="color: var(--success-color);"></i> Every minute
+      </div>
+
+      <button class="btn-copy" id="btnCopy" onclick="copyCron()">
+        <i data-lucide="copy"></i> Copy Expression
+      </button>
+
+    </div>
+
+    <div class="presets-pane">
+      <h3><i data-lucide="library"></i> DevOps Presets</h3>
+      <div class="preset-grid">
+        <button class="preset-btn" onclick="injectPreset('* * * * *')">
+          <span class="preset-desc">Every Minute</span>
+          <span class="preset-code">* * * * *</span>
+        </button>
+        <button class="preset-btn" onclick="injectPreset('*/5 * * * *')">
+          <span class="preset-desc">Every 5 Minutes</span>
+          <span class="preset-code">*/5 * * * *</span>
+        </button>
+        <button class="preset-btn" onclick="injectPreset('0 * * * *')">
+          <span class="preset-desc">Every Hour</span>
+          <span class="preset-code">0 * * * *</span>
+        </button>
+        <button class="preset-btn" onclick="injectPreset('0 0 * * *')">
+          <span class="preset-desc">Every Midnight</span>
+          <span class="preset-code">0 0 * * *</span>
+        </button>
+        <button class="preset-btn" onclick="injectPreset('0 9 * * 1-5')">
+          <span class="preset-desc">Weekdays at 9 AM</span>
+          <span class="preset-code">0 9 * * 1-5</span>
+        </button>
+        <button class="preset-btn" onclick="injectPreset('0 0 1 * *')">
+          <span class="preset-desc">1st of Every Month</span>
+          <span class="preset-code">0 0 1 * *</span>
+        </button>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="docs-container">
+    <div class="info-panel">
+      <h2><i data-lucide="terminal-square"></i> Real-Time Scheduling Forensics</h2>
+      <p>Writing cron jobs manually often leads to silent server failures. Layerbit's Synthesizer acts as an interactive compiler, translating dense server logic into plain English instantly to prevent production downtime.</p>
+      
+      <div class="use-cases-grid">
+        <div class="use-case-card">
+          <h3><i data-lucide="workflow"></i> CI/CD Pipeline Triggers</h3>
+          <p>Automate your GitHub Actions, Jenkins, or GitLab CI pipelines by generating strict POSIX-compliant syntax. Schedule nightly builds, dependency updates, or automated testing environments with absolute precision.</p>
+        </div>
+        <div class="use-case-card">
+          <h3><i data-lucide="database-backup"></i> Database Maintenance</h3>
+          <p>Configure perfectly timed MySQL or PostgreSQL database dumps, log rotations, and cache invalidation scripts without guessing the minute/hour array mapping.</p>
+        </div>
+        <div class="use-case-card">
+          <h3><i data-lucide="cloud-cog"></i> Cloud Infrastructure</h3>
+          <p>Generate valid syntax for AWS EventBridge (CloudWatch Events), Azure Functions, or Google Cloud Scheduler to trigger serverless functions exactly when your application traffic demands it.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="info-panel">
+      <h2><i data-lucide="help-circle"></i> Frequently Asked Questions</h2>
+      <div class="faq-container">
+        
+        <div class="faq-item">
+          <button class="faq-question">What is a Cron Expression? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer">
+            <p>A cron expression is a string comprising five or six fields separated by white space that represents a set of times, normally as a schedule to execute a specific routine or script. It is the standard time-based job scheduler in Unix-like computer operating systems.</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question">Why did my Cron job run at the wrong time? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer">
+            <p>The most common reason for unexpected scheduling is timezone discrepancies. By default, most cloud servers and CI/CD pipelines (like GitHub Actions) operate strictly on Coordinated Universal Time (UTC). If you schedule a job for 9:00 AM local time, you must calculate and apply the correct UTC offset in your expression.</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question">What is the difference between standard and non-standard syntax? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer">
+            <p>Standard POSIX cron utilizes 5 fields (Minute, Hour, Day of Month, Month, Day of Week). Some advanced schedulers (like Quartz) utilize a 6th or 7th field for Seconds and Years. Layerbit currently generates universal 5-field syntax, which guarantees the highest compatibility across all major operating systems and cloud providers.</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="info-panel">
+      <h2><i data-lucide="git-commit"></i> Changelog</h2>
+      <ul class="changelog-list">
+        <li><span class="changelog-tag">v1.2.0</span> Introduced the visual dropdown builder map for faster segment configuration.</li>
+        <li><span class="changelog-tag">v1.1.0</span> Integrated real-time parsing engine with syntax validation and instant translation feedback.</li>
+        <li><span class="changelog-tag">v1.0.0</span> Initial release of the POSIX-compliant expression generator.</li>
+      </ul>
+    </div>
+  </div>
+
+  <a href="../" id="smartBackBtn" class="fab" aria-label="Command Center" title="Command Center">
+    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="filter: drop-shadow(0 0 8px rgba(56, 189, 248, 0.5));">
+      <path d="M12 2L2 7l10 5 10-5-10-5z" stroke="#38bdf8" stroke-width="2" stroke-linejoin="round" fill="rgba(56,189,248,0.2)"/>
+      <path d="M2 17l10 5 10-5M2 12l10 5 10-5" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </a>
+
+  {{FOOTER}}
+
+  <script src="../js/shared.js"></script>
+
+
+  <script>
+        const cronInput = document.getElementById("cronInput");
+    const terminalPane = document.getElementById("terminalPane");
+    const cronTranslation = document.getElementById("cronTranslation");
+    const btnCopy = document.getElementById("btnCopy");
+
+    // Dropdowns
+    const selects = {
+      min: document.getElementById("selMin"),
+      hour: document.getElementById("selHour"),
+      day: document.getElementById("selDay"),
+      month: document.getElementById("selMonth"),
+      week: document.getElementById("selWeek")
+    };
+
+    // Initialize cronstrue
+    function translateCron() {
+      const val = cronInput.value.trim();
+      
+      if(val.split(' ').length < 5) {
+        setInvalid("Incomplete Expression");
+        return;
+      }
+
+      try {
+        const readable = cronstrue.toString(val, { throwExceptionOnParseError: true });
+        setValid(readable);
+        syncDropdowns(val);
+      } catch (err) {
+        setInvalid(err.toString().replace("Error: ", ""));
+      }
+    }
+
+    function setValid(text) {
+      terminalPane.classList.remove("error");
+      cronTranslation.innerHTML = `<i data-lucide="check-circle" style="color: var(--success-color);"></i> ${text}`;
+      lucide.createIcons();
+    }
+
+    function setInvalid(text) {
+      terminalPane.classList.add("error");
+      cronTranslation.innerHTML = `<i data-lucide="alert-triangle"></i> Syntax Error: ${text}`;
+      lucide.createIcons();
+    }
+
+    // Sync from Terminal -> Dropdowns
+    function syncDropdowns(cronStr) {
+      const parts = cronStr.split(' ');
+      if(parts.length >= 5) {
+        setSelectValue(selects.min, parts[0]);
+        setSelectValue(selects.hour, parts[1]);
+        setSelectValue(selects.day, parts[2]);
+        setSelectValue(selects.month, parts[3]);
+        setSelectValue(selects.week, parts[4]);
+      }
+    }
+
+    function setSelectValue(selectEl, val) {
+      // Check if value exists in options
+      let exists = false;
+      for (let i = 0; i < selectEl.options.length; i++) {
+        if (selectEl.options[i].value === val) {
+          exists = true;
+          break;
+        }
+      }
+      selectEl.value = exists ? val : "custom";
+    }
+
+    // Sync from Dropdowns -> Terminal
+    function buildCronFromDropdowns() {
+      // If a dropdown is on "custom", we preserve the existing value from the input for that segment
+      const currentParts = cronInput.value.trim().split(' ');
+      
+      const getVal = (sel, index) => {
+        return sel.value === 'custom' ? (currentParts[index] || '*') : sel.value;
+      };
+
+      const newCron = [
+        getVal(selects.min, 0),
+        getVal(selects.hour, 1),
+        getVal(selects.day, 2),
+        getVal(selects.month, 3),
+        getVal(selects.week, 4)
+      ].join(' ');
+
+      cronInput.value = newCron;
+      translateCron();
+    }
+
+    // Event Listeners
+    cronInput.addEventListener('input', translateCron);
+
+    Object.values(selects).forEach(sel => {
+      sel.addEventListener('change', buildCronFromDropdowns);
+    });
+
+    // FAQ Accordion Logic
+    
+    // Presets Logic
+    function injectPreset(cronStr) {
+      cronInput.value = cronStr;
+      translateCron();
+      // Scroll to terminal smoothly
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // Copy Logic
+    function copyCron() {
+      const text = cronInput.value;
+      navigator.clipboard.writeText(text).then(() => {
+        const originalText = btnCopy.innerHTML;
+        btnCopy.innerHTML = '<i data-lucide="check"></i> Copied!';
+        lucide.createIcons();
+        setTimeout(() => {
+          btnCopy.innerHTML = originalText;
+          lucide.createIcons();
+        }, 2000);
+      });
+    }
+
+    // Initial Translation on Load
+    translateCron();
+
+  </script>
+<script src="../main.js"></script>

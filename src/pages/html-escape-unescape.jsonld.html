@@ -1,0 +1,32 @@
+<script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "Why is DOM injection dangerous for sanitizing tools?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "If an online tool sets your pasted text to element.innerHTML in order to read the browser's parsed entities, any valid <script> tags or inline event handlers (like onload) within your text can immediately execute in the browser. Layerbit operates strictly on regex string replacement to prevent arbitrary execution."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Which HTML characters are actively escaped?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "The matrix targets the most critical control characters utilized in HTML rendering and script execution: Ampersands (&), less than/greater than symbols (< >), double/single quotes (\" '), forward slashes (/), backticks (`), and equals signs (=)."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Is client-side escaping enough to secure my database?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "No. While this tool is perfect for ad-hoc preparation and debugging, enterprise applications should never trust client-side input exclusively. You must always sanitize strings on your backend server before executing SQL inserts or NoSQL document updates."
+        }
+      }
+    ]
+  }
+  </script>

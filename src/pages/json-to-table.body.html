@@ -1,0 +1,351 @@
+{{HEADER}}
+
+  <main class="hero">
+    <h1>JSON Data Grid Viewer</h1>
+    <p>Convert complex JSON arrays into interactive, searchable, and exportable data tables.</p>
+  </main>
+
+  <div class="app-container">
+    
+    <div class="pane">
+      <div class="pane-header">
+        <div class="pane-title"><i data-lucide="braces"></i> JSON Payload Input</div>
+        <div class="btn-group">
+          <button class="btn" onclick="clearInput()"><i data-lucide="trash-2"></i> Clear</button>
+          <button class="btn btn-primary" onclick="processJSON()"><i data-lucide="table"></i> Render Grid</button>
+        </div>
+      </div>
+      <div class="error-banner" id="errorBanner">
+        <i data-lucide="triangle-alert"></i>
+        <span id="errorText">Invalid JSON format. Please ensure it is an Array or contains a 'body' array.</span>
+      </div>
+      <div class="header-summary" id="headerSummary"></div>
+      <textarea id="jsonInput" class="editor" placeholder='Paste a JSON Array here...&#10;[&#10;  { "id": 1, "name": "Alice", "role": "Admin" },&#10;  { "id": 2, "name": "Bob", "role": "User" }&#10;]' spellcheck="false"></textarea>
+    </div>
+
+    <div class="pane">
+      <div class="grid-toolbar">
+        <div class="search-wrapper">
+          <i data-lucide="search"></i>
+          <input type="text" id="searchInput" class="search-input" placeholder="Filter rows in real-time..." onkeyup="filterTable()" disabled>
+        </div>
+        <div class="action-row">
+          <span class="grid-meta" id="rowCount">0 Rows</span>
+          <button class="btn" id="btnExport" onclick="exportCSV()" disabled><i data-lucide="download"></i> Export CSV</button>
+        </div>
+      </div>
+      
+      <div class="table-container">
+        <table id="dataTable">
+          <thead id="tableHead"></thead>
+          <tbody id="tableBody"></tbody>
+        </table>
+        <div id="emptyState" class="empty-state">
+          <i data-lucide="table-properties"></i>
+          <p>Your rendered data grid will appear here.</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="docs-container">
+    <div class="info-panel">
+      <h2><i data-lucide="cpu"></i> Smart Data Architecture</h2>
+      <p>Standard JSON converters fail when encountering nested objects. Layerbit's Grid Engine automatically flattens multi-level objects (e.g., <code>user.address.city</code>) and securely stringifies internal arrays, ensuring zero data loss during conversion.</p>
+      <ul>
+        <li><i data-lucide="check"></i> <strong>Intelligent Parsing:</strong> Accepts direct JSON Arrays or structured objects containing a <code>body</code> array and an optional <code>header</code>.</li>
+        <li><i data-lucide="check"></i> <strong>Client-Side Filtering:</strong> Search through thousands of rows instantly without any server latency or database queries.</li>
+        <li><i data-lucide="check"></i> <strong>Pristine Export:</strong> Generates cleanly escaped CSV files ready for direct import into Excel, Google Sheets, or BI tools.</li>
+      </ul>
+      
+      <div class="use-cases-grid">
+        <div class="use-case-card">
+          <h3><i data-lucide="file-json"></i> API Payload Auditing</h3>
+          <p>Flatten massive nested JSON responses to quickly identify missing fields, verify data types, or spot anomalies across complex data structures.</p>
+        </div>
+        <div class="use-case-card">
+          <h3><i data-lucide="database"></i> NoSQL Database Exports</h3>
+          <p>Visualize document-based database exports (like MongoDB or DynamoDB) in a readable grid format before sharing them with non-technical stakeholders.</p>
+        </div>
+        <div class="use-case-card">
+          <h3><i data-lucide="scroll-text"></i> Log File Analysis</h3>
+          <p>Paste structured JSON application logs into the grid to easily filter by severity levels, timestamp ranges, or specific error codes instantly.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="info-panel">
+      <h2><i data-lucide="test-tube"></i> Quick Testing Templates</h2>
+      <p>Test the grid rendering engine instantly. Click the templates below to load sample payloads and watch how the parser handles flat arrays, nested objects, and API headers.</p>
+      <div>
+        <button class="sample-btn" onclick="loadSample('basic')">Basic Array</button>
+        <button class="sample-btn" onclick="loadSample('nested')">Nested Objects</button>
+        <button class="sample-btn" onclick="loadSample('api')">API Response</button>
+      </div>
+    </div>
+
+    <div class="info-panel">
+      <h2><i data-lucide="help-circle"></i> Frequently Asked Questions</h2>
+      <div class="faq-container">
+        
+        <div class="faq-item">
+          <button class="faq-question">How does the engine handle nested objects? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer">
+            <p>The parser utilizes a recursive flattening algorithm. If it encounters a nested object, it collapses it into a single column using dot notation (e.g., a <code>location</code> object containing a <code>city</code> property becomes a column named <code>location.city</code>).</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question">Is there a limit to how much data I can paste? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer">
+            <p>Because the grid operates entirely client-side, there are no artificial server limits or payload size caps. The only limitation is the amount of RAM available on your local machine to process and render the DOM elements.</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question">Can I export the filtered data? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer">
+            <p>Yes. The CSV export feature intelligently respects your active search filter. If you search for a specific term and click Export CSV, only the rows currently visible on your screen will be downloaded.</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="info-panel">
+      <h2><i data-lucide="git-commit"></i> Changelog</h2>
+      <ul class="changelog-list">
+        <li><span class="changelog-tag">v1.2.0</span> Integrated nested object flattening and robust client-side filtering via the grid toolbar.</li>
+        <li><span class="changelog-tag">v1.1.0</span> Added the CSV export functionality with strict quote escaping for spreadsheet compatibility.</li>
+        <li><span class="changelog-tag">v1.0.0</span> Initial release of the JSON Data Grid Viewer.</li>
+      </ul>
+    </div>
+  </div>
+
+  <a href="../" id="smartBackBtn" class="fab" aria-label="Command Center" title="Command Center">
+    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="filter: drop-shadow(0 0 8px rgba(56, 189, 248, 0.5));">
+      <path d="M12 2L2 7l10 5 10-5-10-5z" stroke="#38bdf8" stroke-width="2" stroke-linejoin="round" fill="rgba(56,189,248,0.2)"/>
+      <path d="M2 17l10 5 10-5M2 12l10 5 10-5" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </a>
+
+  {{FOOTER}}
+
+  <script src="../js/shared.js"></script>
+
+
+  <script>
+        const jsonInput = document.getElementById("jsonInput");
+    const errorBanner = document.getElementById("errorBanner");
+    const errorText = document.getElementById("errorText");
+    const headerSummary = document.getElementById("headerSummary");
+    const tableHead = document.getElementById("tableHead");
+    const tableBody = document.getElementById("tableBody");
+    const emptyState = document.getElementById("emptyState");
+    const searchInput = document.getElementById("searchInput");
+    const btnExport = document.getElementById("btnExport");
+    const rowCountMeta = document.getElementById("rowCount");
+
+    let currentData = [];
+    let currentHeaders = [];
+
+    function clearInput() {
+      jsonInput.value = "";
+      errorBanner.classList.remove("active");
+      headerSummary.style.display = "none";
+      tableHead.innerHTML = "";
+      tableBody.innerHTML = "";
+      emptyState.style.display = "flex";
+      searchInput.value = "";
+      searchInput.disabled = true;
+      btnExport.disabled = true;
+      rowCountMeta.innerText = "0 Rows";
+      currentData = [];
+    }
+
+    // Helper: Flatten nested JSON objects
+    function flattenObject(ob) {
+      let toReturn = {};
+      for (let i in ob) {
+        if (!ob.hasOwnProperty(i)) continue;
+
+        if (typeof ob[i] === 'object' && ob[i] !== null && !Array.isArray(ob[i])) {
+          let flatObject = flattenObject(ob[i]);
+          for (let x in flatObject) {
+            if (!flatObject.hasOwnProperty(x)) continue;
+            toReturn[i + '.' + x] = flatObject[x];
+          }
+        } else if (Array.isArray(ob[i])) {
+          toReturn[i] = JSON.stringify(ob[i]); // Stringify arrays for clean rendering
+        } else {
+          toReturn[i] = ob[i];
+        }
+      }
+      return toReturn;
+    }
+
+    function processJSON() {
+      const inputVal = jsonInput.value.trim();
+      errorBanner.classList.remove("active");
+      headerSummary.style.display = "none";
+      tableHead.innerHTML = "";
+      tableBody.innerHTML = "";
+      currentData = [];
+
+      if (!inputVal) {
+        showError("Please paste JSON data to render.");
+        return;
+      }
+
+      let parsed;
+      let bodyData = [];
+      let headerData = null;
+
+      try {
+        parsed = JSON.parse(inputVal);
+
+        if (Array.isArray(parsed)) {
+          bodyData = parsed;
+        } else if (parsed.body && Array.isArray(parsed.body)) {
+          bodyData = parsed.body;
+          headerData = parsed.header || null;
+        } else {
+          throw new Error("Invalid format. Must be a JSON array or an object with a 'body' array.");
+        }
+      } catch (e) {
+        showError(e.message);
+        return;
+      }
+
+      if (bodyData.length === 0) {
+        showError("The JSON array is empty.");
+        return;
+      }
+
+      // Render Header Summary if exists
+      if (headerData && typeof headerData === "object") {
+        const summary = Object.entries(headerData)
+          .map(([k, v]) => `<strong>${escapeHTML(String(k))}</strong>: ${escapeHTML(String(v))}`)
+          .join(" &nbsp;|&nbsp; ");
+        headerSummary.innerHTML = summary;
+        headerSummary.style.display = "block";
+      }
+
+      // Flatten objects and determine all unique headers
+      const headersSet = new Set();
+      bodyData.forEach(row => {
+        const flatRow = flattenObject(row);
+        currentData.push(flatRow);
+        Object.keys(flatRow).forEach(k => headersSet.add(k));
+      });
+
+      currentHeaders = Array.from(headersSet);
+      renderTable(currentHeaders, currentData);
+    }
+
+    function renderTable(headers, data) {
+      emptyState.style.display = "none";
+      searchInput.disabled = false;
+      btnExport.disabled = false;
+      searchInput.value = ""; // Reset search on new render
+
+      // Build Thead
+      let theadHTML = "<tr>";
+      headers.forEach(h => {
+        theadHTML += `<th>${escapeHTML(h)}</th>`;
+      });
+      theadHTML += "</tr>";
+      tableHead.innerHTML = theadHTML;
+
+      // Build Tbody
+      renderRows(data);
+    }
+
+    function renderRows(dataSubset) {
+      let tbodyHTML = "";
+      dataSubset.forEach(row => {
+        tbodyHTML += "<tr>";
+        currentHeaders.forEach(h => {
+          let cellValue = row[h];
+          if (cellValue === null || cellValue === undefined) cellValue = "";
+          tbodyHTML += `<td>${escapeHTML(String(cellValue))}</td>`;
+        });
+        tbodyHTML += "</tr>";
+      });
+      tableBody.innerHTML = tbodyHTML;
+      rowCountMeta.innerText = `${dataSubset.length} Rows`;
+    }
+
+    function filterTable() {
+      const query = searchInput.value.toLowerCase();
+      if (!query) {
+        renderRows(currentData);
+        return;
+      }
+
+      const filtered = currentData.filter(row => {
+        return Object.values(row).some(val => 
+          String(val).toLowerCase().includes(query)
+        );
+      });
+      renderRows(filtered);
+    }
+
+    function exportCSV() {
+      if (currentData.length === 0) return;
+
+      let csvContent = "";
+      
+      // Headers
+      const headerRow = currentHeaders.map(h => `"${String(h).replace(/"/g, '""')}"`).join(",");
+      csvContent += headerRow + "\n";
+
+      // Currently visible rows (respects filter)
+      const visibleRows = Array.from(tableBody.querySelectorAll("tr"));
+      
+      visibleRows.forEach(row => {
+        const cells = Array.from(row.querySelectorAll("td"));
+        const rowText = cells.map(cell => {
+          let text = cell.innerText;
+          // Escape quotes and wrap in quotes for CSV safety
+          return `"${text.replace(/"/g, '""')}"`;
+        }).join(",");
+        csvContent += rowText + "\n";
+      });
+
+      const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = `layerbit_data_export_${Date.now()}.csv`;
+      link.click();
+    }
+
+    function showError(msg) {
+      errorText.innerText = msg;
+      errorBanner.classList.add("active");
+      emptyState.style.display = "flex";
+      searchInput.disabled = true;
+      btnExport.disabled = true;
+    }
+
+    function escapeHTML(str) {
+      return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    }
+
+    // FAQ Accordion Logic
+    
+    // Sample Loader Logic
+    function loadSample(type) {
+      const samples = {
+        basic: '[\n  { "id": 1, "name": "Alice", "role": "Admin", "active": true },\n  { "id": 2, "name": "Bob", "role": "User", "active": false },\n  { "id": 3, "name": "Charlie", "role": "Moderator", "active": true }\n]',
+        nested: '[\n  { \n    "id": 101, \n    "user": { "firstName": "Jane", "lastName": "Doe" }, \n    "location": { "city": "Dubai", "country": "UAE" },\n    "tags": ["premium", "verified"]\n  },\n  { \n    "id": 102, \n    "user": { "firstName": "John", "lastName": "Smith" }, \n    "location": { "city": "London", "country": "UK" },\n    "tags": ["standard"]\n  }\n]',
+        api: '{\n  "header": {\n    "status": 200,\n    "timestamp": "2026-08-05T08:00:00Z",\n    "environment": "production"\n  },\n  "body": [\n    { "metricId": "cpu_utilization", "value": 45.2, "threshold": 80 },\n    { "metricId": "memory_usage", "value": 72.8, "threshold": 90 },\n    { "metricId": "disk_io", "value": 15.1, "threshold": 50 }\n  ]\n}'
+      };
+      
+      jsonInput.value = samples[type];
+      processJSON();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  </script>
+<script src="../main.js"></script>

@@ -1,0 +1,713 @@
+{{HEADER}}
+
+  <main class="hero">
+    <div class="free-badge"><i data-lucide="shield-check"></i>&nbsp;100% Free &middot; Runs Locally</div>
+    <h1>UAE PINT-AE E-Invoice Compliance Checker</h1>
+    <p>Upload your invoice, get a plain-English compliance score, and download a ready-to-use PINT-AE XML file — free, and entirely inside your browser.</p>
+  </main>
+
+  <div class="content-wrap">
+
+    <div class="intro-grid">
+      <div class="intro-box">
+        <h2><i data-lucide="info"></i> What is PINT-AE?</h2>
+        <p>PINT-AE is the UAE's e-invoicing data format. Instead of a PDF or Excel invoice that a computer can't reliably read, PINT-AE is a structured XML file — built on the international "Peppol" e-invoicing network — that tax systems and accounting software can process automatically.</p>
+        <p>The UAE Federal Tax Authority (FTA) has published technical guidance requiring businesses to eventually issue invoices in this format instead of plain PDFs, spreadsheets, or paper.</p>
+      </div>
+      <div class="intro-box">
+        <h2><i data-lucide="calendar-clock"></i> Do I Need This?</h2>
+        <p>If you invoice customers in the UAE and are VAT-registered, yes — eventually. The rollout is phased, so most small businesses have time to prepare:</p>
+        <ul class="timeline-list">
+          <li><span class="timeline-dot"></span> <span><strong style="color:#fff;">From July 2026</strong> — voluntary. You can start early to get comfortable.</span></li>
+          <li><span class="timeline-dot"></span> <span><strong style="color:#fff;">From January 2027</strong> — mandatory for businesses with annual revenue of AED 50 million or more.</span></li>
+          <li><span class="timeline-dot"></span> <span><strong style="color:#fff;">From July 2027</strong> — mandatory for all other VAT-registered businesses.</span></li>
+        </ul>
+      </div>
+    </div>
+
+    <section class="howto-section">
+      <h2>How to Use This Tool</h2>
+      <div class="howto-steps">
+        <div class="howto-step">
+          <div class="howto-step-num">1</div>
+          <h3>Export your invoice</h3>
+          <p>From Excel, Tally, Zoho Books, or QuickBooks, export or save your invoice as a CSV or Excel (.xlsx) file.</p>
+        </div>
+        <div class="howto-step">
+          <div class="howto-step-num">2</div>
+          <h3>Upload it here</h3>
+          <p>Drag and drop the file below, or click to browse. Nothing is sent anywhere — it stays on your device.</p>
+        </div>
+        <div class="howto-step">
+          <div class="howto-step-num">3</div>
+          <h3>Auto-check or map manually</h3>
+          <p>We'll guess which columns match which fields. Confirm the guess, or map each field yourself.</p>
+        </div>
+        <div class="howto-step">
+          <div class="howto-step-num">4</div>
+          <h3>Fix what's missing</h3>
+          <p>Follow the plain-language checklist to see exactly what your invoice is missing, if anything.</p>
+        </div>
+        <div class="howto-step">
+          <div class="howto-step-num">5</div>
+          <h3>Download your XML</h3>
+          <p>Once your required fields are mapped, download a free PINT-AE compliant XML file — no signup needed.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="tool-section" id="tool">
+      <h2>Check Your Invoice</h2>
+
+      <div class="upload-zone" id="uploadZone">
+        <i data-lucide="upload-cloud"></i>
+        <h3>Drag &amp; drop your CSV or Excel file here</h3>
+        <p>or click to browse &middot; accepts .csv, .xlsx, .xls</p>
+        <div class="file-name" id="fileNameDisplay"></div>
+        <input type="file" id="fileInput" accept=".csv,.xlsx,.xls" style="display:none;">
+      </div>
+
+      <div class="workspace" id="workspace">
+
+        <h3 style="text-align:center; color:#fff; font-size:1.1em; margin-bottom:16px;">Field Mapping</h3>
+        <div class="mode-selector">
+          <button class="mode-btn active" id="btnAutoMode"><i data-lucide="wand-2"></i> Auto-Detect Mode</button>
+          <button class="mode-btn" id="btnManualMode"><i data-lucide="sliders-horizontal"></i> Manual Mapping Mode</button>
+        </div>
+
+        <div class="mapping-panel">
+          <h3><i data-lucide="table-properties"></i> <span id="mappingTitle">Detected Column Mapping</span></h3>
+          <p class="mapping-sub" id="mappingSub">We scanned your file's column headers and matched them to PINT-AE fields automatically. Review below and correct anything that looks wrong, then confirm.</p>
+          <div id="mappingBody"></div>
+          <div class="btn-group-center">
+            <button class="btn btn-primary" id="btnConfirmMapping"><i data-lucide="check-check"></i> Confirm Mapping &amp; Check Compliance</button>
+          </div>
+        </div>
+
+        <div class="score-panel" id="scorePanel">
+          <div class="score-header">
+            <div class="score-ring">
+              <svg width="90" height="90" viewBox="0 0 90 90">
+                <circle class="ring-bg" cx="45" cy="45" r="38"></circle>
+                <circle class="ring-fill" id="ringFill" cx="45" cy="45" r="38" stroke-dasharray="238.76" stroke-dashoffset="238.76"></circle>
+              </svg>
+              <div class="ring-value" id="ringValue">0%</div>
+            </div>
+            <div class="score-summary">
+              <h3 id="scoreHeadline">Compliance Score</h3>
+              <p id="scoreSubtext">Upload and confirm a mapping to see your score.</p>
+            </div>
+          </div>
+          <div class="checklist" id="checklist"></div>
+        </div>
+
+        <div class="btn-group-center" id="downloadRow" style="display:none; margin-bottom: 30px;">
+          <button class="btn btn-primary" id="btnDownloadXml" disabled><i data-lucide="download"></i> Download PINT-AE XML</button>
+          <button class="btn" id="btnPreviewXml"><i data-lucide="eye"></i> Preview XML</button>
+          <button class="btn" id="btnStartOver"><i data-lucide="rotate-ccw"></i> Start Over</button>
+        </div>
+
+        <div class="xml-panel" id="xmlPanel">
+          <div class="xml-panel-header">
+            <div><i data-lucide="file-code"></i> pint-ae-invoice.xml</div>
+          </div>
+          <div class="xml-preview" id="xmlPreview"></div>
+        </div>
+
+      </div>
+
+      <div class="disclaimer-banner">
+        <i data-lucide="triangle-alert"></i>
+        <div><strong>Please verify before filing — no liability accepted.</strong> This tool is a free aid, prepared by Layerbit based on publicly available Peppol International (PINT) and UAE Federal Tax Authority (FTA) technical guidance, to help non-technical teams structure invoice data into a UBL 2.1 / PINT-AE style XML file. It is not an officially certified or FTA-approved tool and has not been validated by an Accredited Service Provider (ASP). Layerbit Technologies accepts no liability for any tax, legal, financial, or regulatory consequences — including rejected filings, penalties, or non-compliance — arising from use of this tool or its output. Always verify the generated XML with your ASP, accountant, or the FTA before submission. See our <a href="../terms.html" style="color: inherit; text-decoration: underline;">Terms of Service</a> for full details.</div>
+      </div>
+
+    </section>
+  </div>
+
+  <div class="docs-container">
+
+    <div class="info-panel">
+      <h2><i data-lucide="building-2"></i> Why UAE E-Invoicing Compliance Matters</h2>
+      <p>Most UAE SMEs currently issue invoices as PDFs or Excel sheets. That works for a human reading the invoice, but it has zero structured compliance value once e-invoicing becomes mandatory — tax authorities and trading partner systems need machine-readable XML, not a picture of an invoice. Getting familiar with the PINT-AE format now, well before your mandatory date, avoids a scramble later.</p>
+      <div class="use-cases-grid">
+        <div class="use-case-card">
+          <h3><i data-lucide="store"></i> Small Business Owners</h3>
+          <p>Check whether the invoices your accounting software already produces contain everything a compliant e-invoice needs, without hiring a consultant just to find out.</p>
+        </div>
+        <div class="use-case-card">
+          <h3><i data-lucide="calculator"></i> Accountants &amp; Bookkeepers</h3>
+          <p>Quickly audit client invoice exports for missing TRNs, VAT breakdowns, or totals before the mandatory rollout reaches their revenue bracket.</p>
+        </div>
+        <div class="use-case-card">
+          <h3><i data-lucide="code-2"></i> Developers &amp; Integrators</h3>
+          <p>Use the generated XML as a reference starting point for UBL 2.1 / PINT-AE structure while building or testing an ERP or invoicing integration.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="info-panel">
+      <h2><i data-lucide="help-circle"></i> Frequently Asked Questions</h2>
+      <div class="faq-container">
+
+        <div class="faq-item">
+          <button class="faq-question">What is PINT-AE and why do I need it? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer">
+            <p>PINT-AE is the UAE's official e-invoicing data format, based on the international Peppol network's XML standard. Instead of sending a PDF or Excel invoice, businesses will need to send a structured XML file that tax systems and accounting software can read automatically. It matters because the UAE Federal Tax Authority (FTA) is rolling out mandatory e-invoicing, and a plain PDF or Excel invoice has no compliance value under the new system.</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question">Is my invoice data stored anywhere? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer">
+            <p>No. This tool runs entirely inside your web browser. Your invoice file is never uploaded to a server, never stored, and never seen by Layerbit. All parsing, compliance checking, and XML generation happen locally on your device, and everything disappears the moment you close or refresh the page.</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question">When does UAE e-invoicing become mandatory? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer">
+            <p>Based on published FTA timelines, e-invoicing is voluntary from July 2026, becomes mandatory from January 2027 for businesses with annual revenue of AED 50 million or more, and becomes mandatory for all other VAT-registered businesses from July 2027. Always confirm your exact obligation date with the FTA or your tax advisor, as phased rollouts can be adjusted.</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question">What if I don't have a CSV export from my accounting software? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer">
+            <p>Most accounting tools can export one. In Excel, use File &gt; Save As and choose CSV. In Tally, use Export (Alt+E) and select the Excel or CSV format for your sales register or invoice report. In Zoho Books and QuickBooks, open the Invoices list and use the Export button, choosing CSV or Excel. If none of that is available, you can build a simple spreadsheet by hand with one row per invoice line item and column headers like Invoice Number, Invoice Date, Buyer TRN, Description, Quantity, Unit Price, VAT Rate, and VAT Amount, then upload that file here.</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question">Is Layerbit responsible if my invoice is rejected or non-compliant? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer">
+            <p>No. This tool is provided free and as-is, based on publicly available Peppol and FTA technical guidance — it is not an officially certified or FTA-approved compliance tool. Layerbit Technologies accepts no liability for tax, legal, financial, or regulatory consequences arising from its use, including rejected filings or penalties for non-compliance. Always have your Accredited Service Provider (ASP) or a qualified tax advisor verify the final XML before you file. See our Terms of Service for full details.</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="info-panel">
+      <h2><i data-lucide="git-commit"></i> Changelog</h2>
+      <ul class="changelog-list">
+        <li><span class="changelog-tag">v1.1.0</span> Added real value-level validation per field (e.g. Currency now checks for an actual ISO code, TRNs are checked for the correct 15-digit shape, numeric fields must actually be numeric) instead of only checking that a mapped column has data. Also fixed TIN derivation to use the first 10 digits of the TRN, per published UAE guidance (previously used the last 10).</li>
+        <li><span class="changelog-tag">v1.0.0</span> Initial release: auto-detect &amp; manual field mapping, compliance scoring, and free UBL 2.1 / PINT-AE XML export, entirely client-side.</li>
+      </ul>
+    </div>
+
+  </div>
+
+  <a href="../" id="smartBackBtn" class="fab" aria-label="Command Center" title="Command Center">
+    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="filter: drop-shadow(0 0 8px rgba(56, 189, 248, 0.5));">
+      <path d="M12 2L2 7l10 5 10-5-10-5z" stroke="#38bdf8" stroke-width="2" stroke-linejoin="round" fill="rgba(56,189,248,0.2)"/>
+      <path d="M2 17l10 5 10-5M2 12l10 5 10-5" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </a>
+
+  {{FOOTER}}
+
+  <script src="../js/shared.js"></script>
+
+
+  <script>
+        // ---------- Field definitions ----------
+    const FIELDS = [
+      { key: 'supplierTIN', label: 'Supplier TIN (from TRN)', hint: '15-digit TRN, starts with 100', group: 'header', groupLabel: 'Invoice Header', guidance: 'Your business\'s Tax Registration Number (TRN) issued by the FTA. Add a "Supplier TRN" column to your export.', variants: ['supplier tin','supplier trn','seller trn','my trn','trn','company trn','vendor trn','supplier tax number'] },
+      { key: 'buyerTIN', label: 'Buyer TIN (from TRN)', hint: '15-digit TRN, starts with 100', group: 'header', groupLabel: 'Invoice Header', guidance: 'Your customer\'s Tax Registration Number. Add a "Buyer TRN" or "Customer TRN" column to your export.', variants: ['buyer tin','buyer trn','customer trn','client trn','recipient trn','customer tax number'] },
+      { key: 'invoiceNumber', label: 'Invoice Number', group: 'header', groupLabel: 'Invoice Header', guidance: 'A unique reference for this invoice, e.g. INV-2026-001. Almost every export includes this — check for a column named "Invoice No" or similar.', variants: ['invoice no','invoice number','inv no','bill no','invoice #','doc no','document number','voucher no'] },
+      { key: 'issueDate', label: 'Issue Date', hint: 'a valid date', group: 'header', groupLabel: 'Invoice Header', guidance: 'The date the invoice was created. Add an "Invoice Date" column if missing.', variants: ['invoice date','issue date','date','bill date','doc date','voucher date'] },
+      { key: 'dueDate', label: 'Due Date', hint: 'a valid date', group: 'header', groupLabel: 'Invoice Header', guidance: 'The date payment is due. Add a "Due Date" column, or use your invoice date plus your standard payment terms.', variants: ['due date','payment due','payment due date','due on'] },
+      { key: 'currency', label: 'Currency Code', hint: '3-letter code, e.g. AED', group: 'header', groupLabel: 'Invoice Header', guidance: 'The 3-letter ISO currency code, e.g. AED or USD. If missing, we\'ll default this to AED for UAE invoices.', variants: ['currency','currency code','ccy','curr'] },
+      { key: 'description', label: 'Line Item Description', group: 'line', groupLabel: 'Line Items', guidance: 'What each line is for (a product or service description). Needed for every invoice line.', variants: ['description','item','item description','product','particulars','item name'] },
+      { key: 'quantity', label: 'Quantity', hint: 'numeric', group: 'line', groupLabel: 'Line Items', guidance: 'How many units were billed on each line.', variants: ['qty','quantity','units','no of units'] },
+      { key: 'unitPrice', label: 'Unit Price', hint: 'numeric', group: 'line', groupLabel: 'Line Items', guidance: 'The price per unit, before VAT.', variants: ['unit price','rate','price','unit cost','unit rate'] },
+      { key: 'vatRate', label: 'VAT Rate (%)', hint: 'numeric, 0-100', group: 'line', groupLabel: 'Line Items', guidance: 'The VAT percentage for this line — usually 5% in the UAE.', variants: ['vat rate','vat %','tax rate','gst rate','vat percent'] },
+      { key: 'vatAmount', label: 'VAT Amount', hint: 'numeric', group: 'line', groupLabel: 'Line Items', guidance: 'The VAT charged on this line. We can calculate this from quantity, unit price, and VAT rate if it\'s missing.', variants: ['vat amount','tax amount','vat value'], autoCalc: true },
+      { key: 'totalTaxable', label: 'Total Taxable Amount', hint: 'numeric', group: 'total', groupLabel: 'Invoice Totals', guidance: 'The total value of goods/services before VAT. We\'ll calculate this from your line items automatically if it\'s missing.', variants: ['taxable amount','total taxable','net amount','subtotal','sub total'], autoCalc: true },
+      { key: 'totalVAT', label: 'Total VAT Amount', hint: 'numeric', group: 'total', groupLabel: 'Invoice Totals', guidance: 'The total VAT charged. We\'ll calculate this from your line items automatically if it\'s missing.', variants: ['total vat','vat total','tax total'], autoCalc: true },
+      { key: 'totalInvoice', label: 'Total Invoice Amount', hint: 'numeric', group: 'total', groupLabel: 'Invoice Totals', guidance: 'The grand total including VAT. We\'ll calculate this from your line items automatically if it\'s missing.', variants: ['total amount','grand total','invoice total','amount due'], autoCalc: true }
+    ];
+
+    // ---------- Per-field value validation ----------
+    // Presence of a mapped column isn't enough on its own - if the wrong column gets mapped
+    // to a field (e.g. an Invoice Number column mapped to Currency Code), the value in it
+    // should fail a basic shape check for that field. These are lightweight sanity checks,
+    // not a full official schema/business-rule validation.
+    const ISO_CURRENCY_CODES = new Set(['AED','AFN','ALL','AMD','ANG','AOA','ARS','AUD','AWG','AZN','BAM','BBD','BDT','BGN','BHD','BIF','BMD','BND','BOB','BRL','BSD','BTN','BWP','BYN','BZD','CAD','CDF','CHF','CLP','CNY','COP','CRC','CUP','CVE','CZK','DJF','DKK','DOP','DZD','EGP','ERN','ETB','EUR','FJD','FKP','GBP','GEL','GHS','GIP','GMD','GNF','GTQ','GYD','HKD','HNL','HTG','HUF','IDR','ILS','INR','IQD','IRR','ISK','JMD','JOD','JPY','KES','KGS','KHR','KMF','KPW','KRW','KWD','KYD','KZT','LAK','LBP','LKR','LRD','LSL','LYD','MAD','MDL','MGA','MKD','MMK','MNT','MOP','MRU','MUR','MVR','MWK','MXN','MYR','MZN','NAD','NGN','NIO','NOK','NPR','NZD','OMR','PAB','PEN','PGK','PHP','PKR','PLN','PYG','QAR','RON','RSD','RUB','RWF','SAR','SBD','SCR','SDG','SEK','SGD','SHP','SLE','SOS','SRD','SSP','STN','SYP','SZL','THB','TJS','TMT','TND','TOP','TRY','TTD','TWD','TZS','UAH','UGX','USD','UYU','UZS','VES','VND','VUV','WST','XAF','XCD','XOF','XPF','YER','ZAR','ZMW','ZWL']);
+
+    function isNumericValue(v) {
+      const s = String(v).trim().replace(/,/g, '');
+      if (s === '') return false;
+      const n = parseFloat(s);
+      return !isNaN(n) && isFinite(n) && /^-?\d+(\.\d+)?$/.test(s);
+    }
+
+    function isValidDateValue(v) {
+      const d = new Date(v);
+      return !isNaN(d.getTime());
+    }
+
+    function isValidTrnValue(v) {
+      const digits = String(v).replace(/\D/g, '');
+      return digits.length === 15 && digits.startsWith('100');
+    }
+
+    const VALIDATORS = {
+      supplierTIN: isValidTrnValue,
+      buyerTIN: isValidTrnValue,
+      issueDate: isValidDateValue,
+      dueDate: isValidDateValue,
+      currency: v => ISO_CURRENCY_CODES.has(String(v).trim().toUpperCase()),
+      quantity: isNumericValue,
+      unitPrice: isNumericValue,
+      vatRate: v => isNumericValue(v) && parseFloat(v) >= 0 && parseFloat(v) <= 100,
+      vatAmount: isNumericValue,
+      totalTaxable: isNumericValue,
+      totalVAT: isNumericValue,
+      totalInvoice: isNumericValue
+    };
+
+    // ---------- State ----------
+    let currentHeaders = [];
+    let currentRows = [];       // array of row objects keyed by header
+    let currentMode = 'auto';   // 'auto' | 'manual'
+    let mapping = {};           // fieldKey -> header (or '' if unmapped)
+    let lastReport = null;
+    let lastXml = '';
+
+    // ---------- DOM refs ----------
+    const uploadZone = document.getElementById('uploadZone');
+    const fileInput = document.getElementById('fileInput');
+    const fileNameDisplay = document.getElementById('fileNameDisplay');
+    const workspace = document.getElementById('workspace');
+    const btnAutoMode = document.getElementById('btnAutoMode');
+    const btnManualMode = document.getElementById('btnManualMode');
+    const mappingTitle = document.getElementById('mappingTitle');
+    const mappingSub = document.getElementById('mappingSub');
+    const mappingBody = document.getElementById('mappingBody');
+    const btnConfirmMapping = document.getElementById('btnConfirmMapping');
+    const scorePanel = document.getElementById('scorePanel');
+    const ringFill = document.getElementById('ringFill');
+    const ringValue = document.getElementById('ringValue');
+    const scoreHeadline = document.getElementById('scoreHeadline');
+    const scoreSubtext = document.getElementById('scoreSubtext');
+    const checklist = document.getElementById('checklist');
+    const downloadRow = document.getElementById('downloadRow');
+    const btnDownloadXml = document.getElementById('btnDownloadXml');
+    const btnPreviewXml = document.getElementById('btnPreviewXml');
+    const btnStartOver = document.getElementById('btnStartOver');
+    const xmlPanel = document.getElementById('xmlPanel');
+    const xmlPreview = document.getElementById('xmlPreview');
+
+    // ---------- File handling ----------
+    uploadZone.addEventListener('click', () => fileInput.click());
+    uploadZone.addEventListener('dragover', (e) => { e.preventDefault(); uploadZone.classList.add('dragover'); });
+    uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('dragover'));
+    uploadZone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      uploadZone.classList.remove('dragover');
+      if (e.dataTransfer.files && e.dataTransfer.files.length > 0) handleFile(e.dataTransfer.files[0]);
+    });
+    fileInput.addEventListener('change', (e) => { if (e.target.files[0]) handleFile(e.target.files[0]); });
+
+    function handleFile(file) {
+      fileNameDisplay.textContent = file.name;
+      const ext = file.name.split('.').pop().toLowerCase();
+
+      if (ext === 'csv') {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const rows = parseCSV(e.target.result);
+          ingestRows(rows);
+        };
+        reader.readAsText(file);
+      } else if (ext === 'xlsx' || ext === 'xls') {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          try {
+            const data = new Uint8Array(e.target.result);
+            const wb = XLSX.read(data, { type: 'array' });
+            const sheet = wb.Sheets[wb.SheetNames[0]];
+            const rows = XLSX.utils.sheet_to_json(sheet, { header: 1, raw: false, defval: '' });
+            ingestRows(rows);
+          } catch (err) {
+            alert('Could not read this Excel file. Please try exporting it as CSV instead.');
+          }
+        };
+        reader.readAsArrayBuffer(file);
+      } else {
+        alert('Please upload a .csv, .xlsx, or .xls file.');
+      }
+    }
+
+    // Simple CSV parser (handles quoted commas/newlines)
+    function parseCSV(text) {
+      let p = '', row = [''], ret = [row], i = 0, r = 0, s = true, l;
+      for (l of text) {
+        if (l === '"') { if (s && l === p) row[i] += l; s = !s; }
+        else if (l === ',' && s) l = row[++i] = '';
+        else if (l === '\n' && s) { if (p === '\r') row[i] = row[i].slice(0, -1); row = ret[++r] = [l = '']; i = 0; }
+        else row[i] += l;
+        p = l;
+      }
+      return ret[0].length && !ret[ret.length - 1][0] ? ret.slice(0, -1) : ret;
+    }
+
+    function ingestRows(rawRows) {
+      const rows = rawRows.filter(r => r.some(c => String(c).trim() !== ''));
+      if (rows.length < 2) {
+        alert('This file needs a header row plus at least one data row.');
+        return;
+      }
+      currentHeaders = rows[0].map(h => String(h).trim());
+      currentRows = rows.slice(1).map(r => {
+        const obj = {};
+        currentHeaders.forEach((h, idx) => { obj[h] = r[idx] !== undefined ? String(r[idx]).trim() : ''; });
+        return obj;
+      });
+
+      mapping = autoDetectMapping(currentHeaders);
+      currentMode = 'auto';
+      setMode('auto');
+      renderMappingPanel();
+      workspace.classList.add('active');
+      scorePanel.classList.remove('active');
+      downloadRow.style.display = 'none';
+      xmlPanel.classList.remove('active');
+      workspace.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    function normalizeHeader(h) {
+      return h.toLowerCase().replace(/[._#()/-]/g, ' ').replace(/\s+/g, ' ').trim();
+    }
+
+    function autoDetectMapping(headers) {
+      const norm = headers.map(h => ({ raw: h, n: normalizeHeader(h) }));
+      const result = {};
+      FIELDS.forEach(field => {
+        let found = '';
+        for (const variant of field.variants) {
+          const exact = norm.find(h => h.n === variant);
+          if (exact) { found = exact.raw; break; }
+        }
+        if (!found) {
+          for (const variant of field.variants) {
+            const partial = norm.find(h => h.n.includes(variant));
+            if (partial) { found = partial.raw; break; }
+          }
+        }
+        result[field.key] = found;
+      });
+      return result;
+    }
+
+    // ---------- Mode toggle ----------
+    btnAutoMode.addEventListener('click', () => setMode('auto'));
+    btnManualMode.addEventListener('click', () => setMode('manual'));
+
+    function setMode(mode) {
+      currentMode = mode;
+      btnAutoMode.classList.toggle('active', mode === 'auto');
+      btnManualMode.classList.toggle('active', mode === 'manual');
+      if (mode === 'auto') {
+        mappingTitle.textContent = 'Detected Column Mapping';
+        mappingSub.textContent = 'We scanned your file\'s column headers and matched them to PINT-AE fields automatically. Review below and correct anything that looks wrong, then confirm.';
+      } else {
+        mappingTitle.textContent = 'Manual Field Mapping';
+        mappingSub.textContent = 'Choose which column in your file corresponds to each PINT-AE field. Fields we already guessed correctly are pre-filled.';
+      }
+      if (currentHeaders.length) renderMappingPanel();
+    }
+
+    function renderMappingPanel() {
+      let html = '';
+      let lastGroup = '';
+      FIELDS.forEach(field => {
+        if (field.group !== lastGroup) {
+          html += `<div class="mapping-group-label">${field.groupLabel}</div>`;
+          lastGroup = field.group;
+        }
+        const selected = mapping[field.key] || '';
+        const liveStatus = selected ? evaluateField(field) : '';
+        const rowClass = liveStatus === 'ok' ? 'matched' : liveStatus === 'invalid' ? 'mismatch' : '';
+        const hintHtml = field.hint ? ` <span style="color: var(--text-muted); font-weight: 400; font-size: 0.85em;">(${escapeHtml(field.hint)})</span>` : '';
+        const warningHtml = liveStatus === 'invalid'
+          ? `<div class="mapping-row-warning"><i data-lucide="alert-triangle"></i> "${escapeHtml(selected)}" doesn't look like ${field.hint || field.label.toLowerCase()} — you may have mapped the wrong column.</div>`
+          : '';
+        html += `
+          <div class="mapping-row ${rowClass}">
+            <label>${field.label}${hintHtml}</label>
+            <select data-field="${field.key}" onchange="updateMapping('${field.key}', this.value)">
+              <option value="">-- Not in file --</option>
+              ${currentHeaders.map(h => `<option value="${escapeAttr(h)}" ${h === selected ? 'selected' : ''}>${escapeHtml(h)}</option>`).join('')}
+            </select>
+            ${warningHtml}
+          </div>`;
+      });
+      mappingBody.innerHTML = html;
+      lucide.createIcons();
+    }
+
+    function updateMapping(key, value) {
+      mapping[key] = value;
+      renderMappingPanel();
+    }
+    window.updateMapping = updateMapping;
+
+    function escapeHtml(str) { return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+    function escapeAttr(str) { return escapeHtml(str).replace(/"/g, '&quot;'); }
+
+    // ---------- Compliance check ----------
+    btnConfirmMapping.addEventListener('click', () => {
+      lastReport = buildComplianceReport();
+      renderScore(lastReport);
+      scorePanel.classList.add('active');
+      downloadRow.style.display = 'flex';
+      btnDownloadXml.disabled = !lastReport.canExport;
+      xmlPanel.classList.remove('active');
+      scorePanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+
+    function fieldValues(key) {
+      const header = mapping[key];
+      if (!header) return [];
+      return currentRows.map(r => String(r[header] || '').trim()).filter(v => v !== '');
+    }
+
+    function evaluateField(field) {
+      const values = fieldValues(field.key);
+      if (values.length === 0) return field.autoCalc ? 'calc' : 'missing';
+      const validator = VALIDATORS[field.key];
+      if (!validator) return 'ok';
+      return values.every(v => validator(v)) ? 'ok' : 'invalid';
+    }
+
+    function buildComplianceReport() {
+      const results = FIELDS.map(field => {
+        const status = evaluateField(field);
+        return { ...field, status };
+      });
+      const total = results.length;
+      const satisfied = results.filter(r => r.status === 'ok' || r.status === 'calc').length;
+      const score = Math.round((satisfied / total) * 100);
+
+      const blockingHeader = results.some(r => r.group === 'header' && !r.autoCalc && (r.status === 'missing' || r.status === 'invalid'));
+      const blockingLine = results.some(r => r.group === 'line' && !r.autoCalc && (r.status === 'missing' || r.status === 'invalid'));
+      const canExport = !blockingHeader && !blockingLine;
+
+      return { results, score, canExport };
+    }
+
+    function renderScore(report) {
+      const circumference = 2 * Math.PI * 38;
+      const offset = circumference - (report.score / 100) * circumference;
+      ringFill.style.strokeDasharray = circumference.toFixed(2);
+      ringFill.style.strokeDashoffset = offset.toFixed(2);
+      ringValue.textContent = report.score + '%';
+
+      if (report.score === 100) {
+        ringFill.style.stroke = 'var(--success-color)';
+        scoreHeadline.textContent = 'Fully Mapped';
+        scoreSubtext.textContent = 'All required PINT-AE fields were found or calculated. You\'re ready to export.';
+      } else if (report.canExport) {
+        ringFill.style.stroke = 'var(--accent-main)';
+        scoreHeadline.textContent = 'Mostly Compliant';
+        scoreSubtext.textContent = 'Core fields are present. A few optional totals will be auto-calculated for you.';
+      } else {
+        ringFill.style.stroke = 'var(--warn-color)';
+        const hasInvalid = report.results.some(r => r.status === 'invalid');
+        scoreHeadline.textContent = hasInvalid ? 'Check Your Field Mapping' : 'Missing Required Fields';
+        scoreSubtext.textContent = hasInvalid
+          ? 'Some mapped columns don\'t contain the right kind of data — you may have mapped the wrong column. See the flagged fields below.'
+          : 'Add the missing fields below to your source file, then re-upload.';
+      }
+
+      checklist.innerHTML = report.results.map(r => {
+        let iconName = 'check', cls = 'ok', note = 'Found in your file.';
+        if (r.status === 'calc') { iconName = 'calculator'; cls = 'calc'; note = 'Not in your file — we\'ll calculate this automatically.'; }
+        if (r.status === 'missing') { iconName = 'x'; cls = 'missing'; note = r.guidance; }
+        if (r.status === 'invalid') { iconName = 'alert-triangle'; cls = 'invalid'; note = `The column mapped to this field doesn't contain valid ${r.label.toLowerCase()} values${r.hint ? ` (expected: ${r.hint})` : ''}. Double check you mapped the correct column.`; }
+        return `
+          <div class="check-item ${cls}">
+            <div class="check-icon"><i data-lucide="${iconName}"></i></div>
+            <div>
+              <div class="check-label">${r.label}</div>
+              <div class="check-guidance">${note}</div>
+            </div>
+          </div>`;
+      }).join('');
+      lucide.createIcons();
+    }
+
+    // ---------- TIN normalization ----------
+    // PINT-AE identifies parties with a 10-digit Tax Identification Number (TIN), formed
+    // from the FIRST 10 digits of the UAE Federal Tax Authority's 15-digit Tax Registration
+    // Number (TRN) - every UAE TRN starts with "100". This is a best-effort derivation for
+    // this free tool, not an official FTA algorithm — always verify the final TIN with your
+    // tax advisor or ASP before filing.
+    function deriveTIN(raw) {
+      const digits = String(raw || '').replace(/\D/g, '');
+      if (!digits) return '';
+      if (digits.length >= 10) return digits.slice(0, 10);
+      return digits.padStart(10, '0');
+    }
+
+    // ---------- XML generation ----------
+    function xmlEscape(str) {
+      return String(str == null ? '' : str)
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;').replace(/'/g, '&apos;');
+    }
+
+    function toIsoDate(val) {
+      if (!val) return '';
+      const d = new Date(val);
+      if (isNaN(d.getTime())) return xmlEscape(val);
+      return d.toISOString().slice(0, 10);
+    }
+
+    function num(val, fallback) {
+      const n = parseFloat(String(val).replace(/[^0-9.\-]/g, ''));
+      return isNaN(n) ? (fallback !== undefined ? fallback : 0) : n;
+    }
+
+    function firstNonEmpty(header) {
+      if (!header) return '';
+      const row = currentRows.find(r => String(r[header] || '').trim() !== '');
+      return row ? row[header].trim() : '';
+    }
+
+    function generatePintAeXml() {
+      const get = key => firstNonEmpty(mapping[key]);
+      const currency = get('currency') || 'AED';
+      const invoiceNumber = get('invoiceNumber') || 'UNSPECIFIED';
+      const issueDate = toIsoDate(get('issueDate')) || new Date().toISOString().slice(0, 10);
+      const dueDate = toIsoDate(get('dueDate')) || issueDate;
+      const supplierTIN = deriveTIN(get('supplierTIN'));
+      const buyerTIN = deriveTIN(get('buyerTIN'));
+
+      // Build line items
+      const descHeader = mapping['description'], qtyHeader = mapping['quantity'], priceHeader = mapping['unitPrice'];
+      const vatRateHeader = mapping['vatRate'], vatAmtHeader = mapping['vatAmount'];
+
+      const lines = currentRows
+        .filter(r => descHeader && String(r[descHeader] || '').trim() !== '')
+        .map((r, idx) => {
+          const qty = num(r[qtyHeader], 1);
+          const price = num(r[priceHeader], 0);
+          const lineExt = qty * price;
+          const vatRate = num(r[vatRateHeader], 5);
+          const vatAmt = vatAmtHeader && r[vatAmtHeader] ? num(r[vatAmtHeader]) : +(lineExt * vatRate / 100).toFixed(2);
+          return {
+            id: idx + 1,
+            description: r[descHeader] || '',
+            qty, price, lineExt: +lineExt.toFixed(2), vatRate, vatAmt
+          };
+        });
+
+      const calcTaxable = lines.reduce((s, l) => s + l.lineExt, 0);
+      const calcVat = lines.reduce((s, l) => s + l.vatAmt, 0);
+      const calcTotal = calcTaxable + calcVat;
+
+      const totalTaxable = get('totalTaxable') ? num(get('totalTaxable')) : +calcTaxable.toFixed(2);
+      const totalVAT = get('totalVAT') ? num(get('totalVAT')) : +calcVat.toFixed(2);
+      const totalInvoice = get('totalInvoice') ? num(get('totalInvoice')) : +calcTotal.toFixed(2);
+
+      const lineXml = lines.map(l => `  <cac:InvoiceLine>
+    <cbc:ID>${l.id}</cbc:ID>
+    <cbc:InvoicedQuantity unitCode="EA">${l.qty}</cbc:InvoicedQuantity>
+    <cbc:LineExtensionAmount currencyID="${xmlEscape(currency)}">${l.lineExt.toFixed(2)}</cbc:LineExtensionAmount>
+    <cac:Item>
+      <cbc:Description>${xmlEscape(l.description)}</cbc:Description>
+    </cac:Item>
+    <cac:Price>
+      <cbc:PriceAmount currencyID="${xmlEscape(currency)}">${l.price.toFixed(2)}</cbc:PriceAmount>
+    </cac:Price>
+    <cac:TaxTotal>
+      <cbc:TaxAmount currencyID="${xmlEscape(currency)}">${l.vatAmt.toFixed(2)}</cbc:TaxAmount>
+      <cac:TaxSubtotal>
+        <cbc:TaxableAmount currencyID="${xmlEscape(currency)}">${l.lineExt.toFixed(2)}</cbc:TaxableAmount>
+        <cbc:TaxAmount currencyID="${xmlEscape(currency)}">${l.vatAmt.toFixed(2)}</cbc:TaxAmount>
+        <cac:TaxCategory>
+          <cbc:Percent>${l.vatRate}</cbc:Percent>
+          <cac:TaxScheme><cbc:ID>VAT</cbc:ID></cac:TaxScheme>
+        </cac:TaxCategory>
+      </cac:TaxSubtotal>
+    </cac:TaxTotal>
+  </cac:InvoiceLine>`).join('\n');
+
+      return `<?xml version="1.0" encoding="UTF-8"?>
+<!-- Generated for free by Layerbit's PINT-AE Checker (layerbit.co.in/tools/pint-ae-checker.html). -->
+<!-- Best-effort UBL 2.1 / PINT-AE structure based on public Peppol & FTA guidance. Verify via your ASP before filing. -->
+<Invoice xmlns="urn:oasis:names:specification:ubl:schema:xsd:Invoice-2"
+         xmlns:cac="urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2"
+         xmlns:cbc="urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2">
+  <cbc:CustomizationID>urn:peppol:pint:billing-1@ae-1</cbc:CustomizationID>
+  <cbc:ProfileID>urn:peppol:bis:billing</cbc:ProfileID>
+  <cbc:ID>${xmlEscape(invoiceNumber)}</cbc:ID>
+  <cbc:IssueDate>${issueDate}</cbc:IssueDate>
+  <cbc:DueDate>${dueDate}</cbc:DueDate>
+  <cbc:InvoiceTypeCode>380</cbc:InvoiceTypeCode>
+  <cbc:DocumentCurrencyCode>${xmlEscape(currency)}</cbc:DocumentCurrencyCode>
+  <cac:AccountingSupplierParty>
+    <cac:Party>
+      <cac:PartyTaxScheme>
+        <cbc:CompanyID>${xmlEscape(supplierTIN)}</cbc:CompanyID>
+        <cac:TaxScheme><cbc:ID>VAT</cbc:ID></cac:TaxScheme>
+      </cac:PartyTaxScheme>
+    </cac:Party>
+  </cac:AccountingSupplierParty>
+  <cac:AccountingCustomerParty>
+    <cac:Party>
+      <cac:PartyTaxScheme>
+        <cbc:CompanyID>${xmlEscape(buyerTIN)}</cbc:CompanyID>
+        <cac:TaxScheme><cbc:ID>VAT</cbc:ID></cac:TaxScheme>
+      </cac:PartyTaxScheme>
+    </cac:Party>
+  </cac:AccountingCustomerParty>
+  <cac:TaxTotal>
+    <cbc:TaxAmount currencyID="${xmlEscape(currency)}">${totalVAT.toFixed(2)}</cbc:TaxAmount>
+  </cac:TaxTotal>
+  <cac:LegalMonetaryTotal>
+    <cbc:LineExtensionAmount currencyID="${xmlEscape(currency)}">${totalTaxable.toFixed(2)}</cbc:LineExtensionAmount>
+    <cbc:TaxExclusiveAmount currencyID="${xmlEscape(currency)}">${totalTaxable.toFixed(2)}</cbc:TaxExclusiveAmount>
+    <cbc:TaxInclusiveAmount currencyID="${xmlEscape(currency)}">${totalInvoice.toFixed(2)}</cbc:TaxInclusiveAmount>
+    <cbc:PayableAmount currencyID="${xmlEscape(currency)}">${totalInvoice.toFixed(2)}</cbc:PayableAmount>
+  </cac:LegalMonetaryTotal>
+${lineXml || '  <!-- No line items detected -->'}
+</Invoice>
+`;
+    }
+
+    // ---------- Export actions ----------
+    btnPreviewXml.addEventListener('click', () => {
+      lastXml = generatePintAeXml();
+      xmlPreview.textContent = lastXml;
+      xmlPanel.classList.add('active');
+      xmlPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+
+    btnDownloadXml.addEventListener('click', () => {
+      if (btnDownloadXml.disabled) return;
+      lastXml = generatePintAeXml();
+      const blob = new Blob([lastXml], { type: 'application/xml' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      const invNum = (firstNonEmpty(mapping['invoiceNumber']) || 'invoice').replace(/[^a-z0-9\-_]/gi, '_');
+      link.download = `pint-ae_${invNum}.xml`;
+      link.click();
+    });
+
+    btnStartOver.addEventListener('click', () => {
+      currentHeaders = []; currentRows = []; mapping = {}; lastReport = null; lastXml = '';
+      fileInput.value = ''; fileNameDisplay.textContent = '';
+      workspace.classList.remove('active');
+      scorePanel.classList.remove('active');
+      downloadRow.style.display = 'none';
+      xmlPanel.classList.remove('active');
+      uploadZone.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+
+    // ---------- FAQ Accordion ----------
+      </script>
+<script src="../main.js"></script>

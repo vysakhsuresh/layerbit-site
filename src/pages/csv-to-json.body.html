@@ -1,0 +1,304 @@
+{{HEADER}}
+
+  <main class="hero">
+    <h1>CSV to JSON Pipeline</h1>
+    <p>Convert raw comma-separated data into structured JSON objects instantly.</p>
+  </main>
+
+  <div class="ide-container">
+    
+    <div class="pane" id="inputPane">
+      <div class="pane-header">
+        <div class="pane-title"><i data-lucide="sheet"></i> Raw CSV Data</div>
+        <div class="btn-group">
+          <label class="toggle-wrapper" title="Automatically convert '123' to numbers and 'true' to booleans">
+            <input type="checkbox" id="inferTypes" checked> Smart Types
+          </label>
+          <input type="file" id="csvFile" accept=".csv" style="display: none;">
+          <button class="btn" onclick="document.getElementById('csvFile').click()"><i data-lucide="upload"></i> Upload</button>
+          <button class="btn btn-primary" onclick="processCSV()"><i data-lucide="arrow-right-left"></i> Convert</button>
+        </div>
+      </div>
+      <div class="error-banner" id="errorBanner">
+        <i data-lucide="triangle-alert"></i>
+        <span id="errorText">Invalid CSV format.</span>
+      </div>
+      <textarea id="csvInput" class="editor" placeholder='Paste CSV data or drag & drop a .csv file here...&#10;&#10;id,name,role,active&#10;1,John Doe,Admin,true&#10;2,"Smith, Jane",User,false' spellcheck="false"></textarea>
+    </div>
+
+    <div class="pane">
+      <div class="pane-header">
+        <div class="pane-title"><i data-lucide="braces"></i> JSON Array</div>
+        <div class="btn-group">
+          <button class="btn" id="btnCopy" onclick="copyJSON()" disabled><i data-lucide="copy"></i> Copy</button>
+          <button class="btn" id="btnDownload" onclick="downloadJSON()" disabled><i data-lucide="download"></i> Save .json</button>
+        </div>
+      </div>
+      <div id="jsonOutput" class="output-area"></div>
+    </div>
+
+  </div>
+
+  <div class="docs-container">
+    
+    <div class="info-panel">
+      <h2><i data-lucide="database"></i> Enterprise Data Extraction Engine</h2>
+      <p>Layerbit's CSV pipeline utilizes a custom lexical parser to guarantee data integrity. Unlike standard regex-based converters, it accurately maps complex fields containing internal commas and line breaks wrapped in quotes.</p>
+      
+      <div class="use-cases-grid">
+        <div class="use-case-card">
+          <h3><i data-lucide="file-json"></i> NoSQL Database Migrations</h3>
+          <p>Easily transition relational spreadsheet data (like Excel or Google Sheets exports) into structured document arrays ready for direct import into MongoDB, Firebase, or DynamoDB collections.</p>
+        </div>
+        <div class="use-case-card">
+          <h3><i data-lucide="shopping-cart"></i> E-Commerce Bulk Uploads</h3>
+          <p>Transform large CSV vendor catalogs into nested JSON payloads to programmatically update Shopify, WooCommerce, or custom e-commerce backend APIs via bulk REST operations.</p>
+        </div>
+        <div class="use-case-card">
+          <h3><i data-lucide="bar-chart-2"></i> Data Science & Machine Learning</h3>
+          <p>Pre-process raw CSV datasets into clean JSON objects for easier integration with Python scripts, frontend charting libraries like Chart.js, or client-side analytical dashboards.</p>
+        </div>
+        <div class="use-case-card">
+          <h3><i data-lucide="receipt"></i> UAE Invoice Compliance</h3>
+          <p>Already have your invoices as a CSV export? Run the same file through our <a href="pint-ae-checker.html" style="color: var(--accent-main);">UAE PINT-AE Compliance Checker</a> to score it against FTA e-invoicing requirements and export a compliant XML file for free.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="info-panel">
+      <h2><i data-lucide="file-code"></i> Quick Testing Templates</h2>
+      <p>Click any of the sample CSV configurations below to instantly load them into the pipeline and verify the converter's logic.</p>
+      <div>
+        <button class="sample-btn" onclick="loadSample('basic')">Basic Records</button>
+        <button class="sample-btn" onclick="loadSample('quotes')">Quoted Commas</button>
+        <button class="sample-btn" onclick="loadSample('types')">Smart Types</button>
+      </div>
+    </div>
+
+    <div class="info-panel">
+      <h2><i data-lucide="help-circle"></i> Frequently Asked Questions</h2>
+      <div class="faq-container">
+        
+        <div class="faq-item">
+          <button class="faq-question">What is "Smart Type Inference"? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer">
+            <p>By default, CSV files treat all data as text strings. When "Smart Types" is enabled, Layerbit's engine automatically detects numerical values (like <code>42</code> or <code>3.14</code>) and boolean values (like <code>true</code> or <code>false</code>) and formats them as native integers, floats, and booleans in the resulting JSON output, rather than wrapping them in quotation marks.</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question">How does the parser handle commas inside text fields? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer">
+            <p>Standard CSV rules dictate that any text containing a comma (like an address: <code>"Dubai, UAE"</code>) must be wrapped in double quotes. Our custom lexical parser specifically reads these encapsulation markers, ensuring that internal commas are treated as normal text characters rather than accidental column delimiters.</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question">Does my spreadsheet data leave my computer? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer">
+            <p>Absolutely not. The Layerbit CSV pipeline operates within an air-gapped browser environment. The file reading, parsing logic, and JSON generation are executed entirely client-side using JavaScript. No data is ever transmitted to a backend server or database.</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="info-panel">
+      <h2><i data-lucide="git-commit"></i> Changelog</h2>
+      <ul class="changelog-list">
+        <li><span class="changelog-tag">v1.4.0</span> Added direct-to-disk download capability for generating <code>.json</code> files natively in the browser.</li>
+        <li><span class="changelog-tag">v1.3.5</span> Rewrote the CSV parsing engine to correctly handle multi-line strings and escaped quotes.</li>
+        <li><span class="changelog-tag">v1.1.0</span> Introduced the Smart Type Inference toggle for cleaner payload generation.</li>
+      </ul>
+    </div>
+  </div>
+
+  <a href="../" id="smartBackBtn" class="fab" aria-label="Command Center" title="Command Center">
+    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="filter: drop-shadow(0 0 8px rgba(56, 189, 248, 0.5));">
+      <path d="M12 2L2 7l10 5 10-5-10-5z" stroke="#38bdf8" stroke-width="2" stroke-linejoin="round" fill="rgba(56,189,248,0.2)"/>
+      <path d="M2 17l10 5 10-5M2 12l10 5 10-5" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </a>
+
+  {{FOOTER}}
+
+  <script src="../js/shared.js"></script>
+
+
+  <script>
+        const csvInput = document.getElementById("csvInput");
+    const jsonOutput = document.getElementById("jsonOutput");
+    const csvFile = document.getElementById("csvFile");
+    const inputPane = document.getElementById("inputPane");
+    const errorBanner = document.getElementById("errorBanner");
+    const errorText = document.getElementById("errorText");
+    const inferTypes = document.getElementById("inferTypes");
+    const btnCopy = document.getElementById("btnCopy");
+    const btnDownload = document.getElementById("btnDownload");
+
+    let finalJSONString = "";
+
+    // Syntax Highlighter
+    function syntaxHighlight(jsonStr) {
+      jsonStr = jsonStr.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      return jsonStr.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, function (match) {
+        let cls = 'syn-number';
+        if (/^"/.test(match)) {
+          if (/:$/.test(match)) { cls = 'syn-key'; } 
+          else { cls = 'syn-string'; }
+        } else if (/true|false/.test(match)) { cls = 'syn-boolean'; } 
+        else if (/null/.test(match)) { cls = 'syn-null'; }
+        return '<span class="' + cls + '">' + match + '</span>';
+      });
+    }
+
+    // Robust CSV Parser (Handles quoted commas and newlines)
+    function parseCSVToArray(text) {
+      let p = '', row = [''], ret = [row], i = 0, r = 0, s = !0, l;
+      for (l of text) {
+        if ('"' === l) {
+          if (s && l === p) row[i] += l;
+          s = !s;
+        } else if (',' === l && s) l = row[++i] = '';
+        else if ('\n' === l && s) {
+          if ('\r' === p) row[i] = row[i].slice(0, -1);
+          row = ret[++r] = [l = '']; i = 0;
+        } else row[i] += l;
+        p = l;
+      }
+      return ret[0].length && !ret[ret.length-1][0] ? ret.slice(0, -1) : ret;
+    }
+
+    // Type Inference Engine
+    function parseValue(val) {
+      if (!inferTypes.checked) return val;
+      const lower = val.toLowerCase();
+      if (lower === "true") return true;
+      if (lower === "false") return false;
+      if (lower === "null" || lower === "") return null;
+      if (!isNaN(val) && val.trim() !== "") return Number(val);
+      return val;
+    }
+
+    function processCSV() {
+      const input = csvInput.value.trim();
+      errorBanner.classList.remove("active");
+      jsonOutput.innerHTML = "";
+      finalJSONString = "";
+      btnCopy.disabled = true;
+      btnDownload.disabled = true;
+
+      if (!input) {
+        showError("Please provide CSV data.");
+        return;
+      }
+
+      try {
+        const rows = parseCSVToArray(input);
+        if (rows.length < 2) throw new Error("CSV requires at least a header row and one data row.");
+
+        const headers = rows[0].map(h => h.trim());
+        const jsonArray = [];
+
+        for (let i = 1; i < rows.length; i++) {
+          let obj = {};
+          const currentRow = rows[i];
+          // Skip empty trailing rows
+          if (currentRow.length === 1 && currentRow[0].trim() === "") continue;
+
+          headers.forEach((header, index) => {
+            let val = currentRow[index] !== undefined ? currentRow[index].trim() : "";
+            obj[header] = parseValue(val);
+          });
+          jsonArray.push(obj);
+        }
+
+        finalJSONString = JSON.stringify(jsonArray, null, 4);
+        jsonOutput.innerHTML = syntaxHighlight(finalJSONString);
+        
+        btnCopy.disabled = false;
+        btnDownload.disabled = false;
+
+      } catch (err) {
+        showError(err.message);
+      }
+    }
+
+    function showError(msg) {
+      errorText.innerText = msg;
+      errorBanner.classList.add("active");
+    }
+
+    // Export Logic
+    function copyJSON() {
+      if (!finalJSONString) return;
+      navigator.clipboard.writeText(finalJSONString).then(() => {
+        const original = btnCopy.innerHTML;
+        btnCopy.innerHTML = '<i data-lucide="check"></i> Copied!';
+        lucide.createIcons();
+        setTimeout(() => {
+          btnCopy.innerHTML = original;
+          lucide.createIcons();
+        }, 2000);
+      });
+    }
+
+    function downloadJSON() {
+      if (!finalJSONString) return;
+      const blob = new Blob([finalJSONString], { type: "application/json" });
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = `layerbit_data_${Date.now()}.json`;
+      link.click();
+    }
+
+    // Drag & Drop / File Upload Logic
+    csvFile.addEventListener('change', function(e) { handleFile(e.target.files[0]); });
+    
+    inputPane.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      inputPane.classList.add('dragover');
+    });
+    inputPane.addEventListener('dragleave', () => {
+      inputPane.classList.remove('dragover');
+    });
+    inputPane.addEventListener('drop', (e) => {
+      e.preventDefault();
+      inputPane.classList.remove('dragover');
+      if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+        handleFile(e.dataTransfer.files[0]);
+      }
+    });
+
+    function handleFile(file) {
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        csvInput.value = e.target.result;
+        processCSV();
+      };
+      reader.readAsText(file);
+    }
+
+    // FAQ Accordion Logic
+    
+    // Sample Loader Logic
+    function loadSample(type) {
+      const samples = {
+        basic: "id,first_name,last_name,email\n1,Alan,Turing,alan@example.com\n2,Ada,Lovelace,ada@example.com\n3,Grace,Hopper,grace@example.com",
+        quotes: "product_id,title,price,category\n101,\"Laptop, Pro Model\",1299.99,Electronics\n102,\"Mouse, Wireless Optical\",49.50,Accessories\n103,\"Keyboard, Mechanical\",105.00,Accessories",
+        types: "user_id,is_active,account_balance,role\n1,true,4500.50,admin\n2,false,0,guest\n3,true,-15.00,user"
+      };
+
+      csvInput.value = samples[type];
+      
+      // Auto-trigger the inference checkbox logic for the 'types' example to show it off
+      if(type === 'types') {
+        inferTypes.checked = true;
+      }
+      
+      processCSV();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  </script>
+<script src="../main.js"></script>

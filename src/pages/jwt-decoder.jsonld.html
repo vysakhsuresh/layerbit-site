@@ -1,0 +1,32 @@
+<script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "Why does Layerbit prioritize client-side decoding?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "JWTs often contain sensitive user data (PII) or critical authorization scopes. Sending these tokens to a remote server for decoding introduces a significant security risk. By performing all Base64URL decoding and JSON parsing within your browser DOM, we guarantee that your tokens are never logged, stored, or intercepted."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Does this tool verify the JWT signature?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "No. Signature verification requires access to the public key (for asymmetric algorithms like RS256) or the shared secret (for symmetric algorithms like HS256). Since this tool operates in a zero-knowledge, client-side environment, we only decode and display the data. We do *check* the expiration claim as a utility, but this is not a substitute for proper backend cryptographic verification."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Why use JWTs instead of traditional opaque session cookies?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "JWTs are stateless and self-contained. Traditional cookies require the backend to perform a database lookup for every request to verify session data. JWTs store the session data directly in the payload, which is cryptographically signed. This allows API gateways and microservices to verify authorization instantly without hitting a central session database, significantly improving scalability."
+        }
+      }
+    ]
+  }
+  </script>

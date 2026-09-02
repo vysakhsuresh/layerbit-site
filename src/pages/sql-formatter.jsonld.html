@@ -1,0 +1,32 @@
+<script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "Why does Layerbit process queries client-side?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Database queries inherently contain sensitive information, including proprietary schema designs, table structures, and business logic. Processing queries purely in your local browser prevents this critical data from being intercepted or logged on external servers."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Will minification break my query if it has comments?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "The formatter safely processes standard SQL comments. However, when using the \"Minify\" function, inline comments (--) may be stripped or reformatted to prevent them from accidentally commenting out the rest of the single-line string."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Does this tool validate or execute the queries?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "No. This tool acts strictly as a structural formatter and syntax highlighter. It organizes the text to make it human-readable but does not connect to your database or execute the commands."
+        }
+      }
+    ]
+  }
+  </script>

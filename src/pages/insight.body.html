@@ -1,0 +1,390 @@
+{{HEADER}}
+
+  <main class="hero">
+    <h1>Hardware & Network Telemetry</h1>
+    <p>Perform an instant diagnostic scan of your local device profile, browser engine, and network footprint.</p>
+  </main>
+
+  <div class="command-bar">
+    <button class="btn btn-primary" onclick="getExactGeolocation()" id="btnGeo">
+      <i data-lucide="crosshair"></i> Acquire GPS Target
+    </button>
+    <button class="btn" onclick="exportTelemetry()">
+      <i data-lucide="download"></i> Export Telemetry
+    </button>
+    <button class="btn" onclick="shareTelemetry()">
+      <i data-lucide="share-2"></i> Secure Share
+    </button>
+  </div>
+
+  <div class="telemetry-container" id="telemetryGrid">
+    
+    <div class="module-card">
+      <div class="module-header"><i data-lucide="network"></i> Network Intelligence</div>
+      <div class="module-body">
+        <div class="data-row"><div class="data-label"><i data-lucide="globe"></i> Public IP Address</div><div class="data-value val-highlight" id="val-ip"><span class="val-pending">Scanning...</span></div></div>
+        <div class="data-row"><div class="data-label"><i data-lucide="server"></i> ISP / Organization</div><div class="data-value" id="val-isp"><span class="val-pending">Scanning...</span></div></div>
+        <div class="data-row"><div class="data-label"><i data-lucide="map"></i> IP Location Node</div><div class="data-value" id="val-iploc"><span class="val-pending">Scanning...</span></div></div>
+        <div class="data-row"><div class="data-label"><i data-lucide="wifi"></i> Connection Profile</div><div class="data-value" id="val-conn"><span class="val-pending">Analyzing...</span></div></div>
+      </div>
+    </div>
+
+    <div class="module-card">
+      <div class="module-header"><i data-lucide="cpu"></i> Hardware Architecture</div>
+      <div class="module-body">
+        <div class="data-row"><div class="data-label"><i data-lucide="microchip"></i> Logical Processors</div><div class="data-value" id="val-cpu"><span class="val-pending">Analyzing...</span></div></div>
+        <div class="data-row"><div class="data-label"><i data-lucide="memory-stick"></i> Device Memory</div><div class="data-value" id="val-ram"><span class="val-pending">Analyzing...</span></div></div>
+        <div class="data-row"><div class="data-label"><i data-lucide="monitor"></i> Display Resolution</div><div class="data-value" id="val-screen"><span class="val-pending">Analyzing...</span></div></div>
+        <div class="data-row"><div class="data-label"><i data-lucide="battery-charging"></i> Power Status</div><div class="data-value" id="val-bat"><span class="val-pending">Analyzing...</span></div></div>
+      </div>
+    </div>
+
+    <div class="module-card">
+      <div class="module-header"><i data-lucide="chrome"></i> Browser Engine</div>
+      <div class="module-body">
+        <div class="data-row"><div class="data-label"><i data-lucide="terminal"></i> User Agent</div><div class="data-value" id="val-ua"><span class="val-pending">Analyzing...</span></div></div>
+        <div class="data-row"><div class="data-label"><i data-lucide="layers"></i> OS Platform</div><div class="data-value" id="val-os"><span class="val-pending">Analyzing...</span></div></div>
+        <div class="data-row"><div class="data-label"><i data-lucide="palette"></i> WebGL Renderer</div><div class="data-value" id="val-gpu"><span class="val-pending">Analyzing...</span></div></div>
+        <div class="data-row"><div class="data-label"><i data-lucide="shield"></i> Privacy Tracking (DNT)</div><div class="data-value" id="val-dnt"><span class="val-pending">Analyzing...</span></div></div>
+      </div>
+    </div>
+
+    <div class="module-card" id="geoCard">
+      <div class="module-header"><i data-lucide="compass"></i> Precision Geospatial Data</div>
+      <div class="module-body">
+        <div class="data-row"><div class="data-label"><i data-lucide="satellite"></i> Latitude</div><div class="data-value" id="val-lat">Awaiting authorization</div></div>
+        <div class="data-row"><div class="data-label"><i data-lucide="satellite"></i> Longitude</div><div class="data-value" id="val-lon">Awaiting authorization</div></div>
+        <div class="data-row"><div class="data-label"><i data-lucide="map-pin"></i> Reverse Geocode</div><div class="data-value" id="val-place">Awaiting authorization</div></div>
+        <div class="data-row"><div class="data-label"><i data-lucide="clock"></i> Local Timezone</div><div class="data-value" id="val-tz"><span class="val-pending">Analyzing...</span></div></div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="docs-container">
+    <div class="info-panel">
+      <h2><i data-lucide="fingerprint"></i> Enterprise Applications & Methodology</h2>
+      <p>Layerbit Device Insight utilizes native HTML5 APIs, WebGL rendering contexts, and IP routing databases to generate a comprehensive profile of your machine's footprint on the web. This diagnostic telemetry is critical for several enterprise security scenarios.</p>
+      
+      <div class="use-cases-grid">
+        <div class="use-case-card">
+          <h3><i data-lucide="shield-alert"></i> Anti-Fraud & Payment Security</h3>
+          <p>Detect high-risk transaction attempts by identifying mismatching geospatial data, VPN exit nodes, or devices flagged as bots/emulators using hardware fingerprinting.</p>
+        </div>
+        <div class="use-case-card">
+          <h3><i data-lucide="siren"></i> OSINT Investigation & Compliance</h3>
+          <p>Gather critical device telemetry during authorized red-teaming exercises to verify target authenticity or enforce strict geographic compliance (Geo-fencing) standards.</p>
+        </div>
+        <div class="use-case-card">
+          <h3><i data-lucide="monitor-check"></i> Authentication & Ad Fraud</h3>
+          <p>Bypass standard browser spoofing layers to identify unique GPU hardware via WebGL extraction, essential for ad verification and identifying sophisticated botnets.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="info-panel">
+      <h2><i data-lucide="test-tube"></i> Quick Testing Templates</h2>
+      <p>Mock standard diagnostic scenarios instantly. Click the templates below to watch how the telemetry grid reacts to spoofing attempts and standard device signatures.</p>
+      <div>
+        <button class="sample-btn" onclick="loadSample('spoof')">GPS Spoof Detected</button>
+        <button class="sample-btn" onclick="loadSample('auth')">Auth Verification</button>
+      </div>
+    </div>
+
+    <div class="info-panel">
+      <h2><i data-lucide="help-circle"></i> Frequently Asked Questions</h2>
+      <div class="faq-container">
+        
+        <div class="faq-item">
+          <button class="faq-question">How does major website tracking work with fingerprinting? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer">
+            <p>Websites combine thousands of standard attributes (like screen resolution, logical cores, and available fonts) with unique hardware signatures (like the WebGL renderer) to create a highly accurate, sticky fingerprint that persists even when cookies are cleared or a VPN is used.</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question">Does Layerbit store or log my device telemetry? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer">
+            <p>Absolutely not. We operate under a strict Zero-Log policy. This telemetry dashboard pulls data directly to your local browser DOM. All diagnostic manipulation, reverse geocoding, and export functions occur entirely client-side on your device.</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question">Can spoofing my GPS Lat/Long hide my location? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer">
+            <p>While basic browser tools can spoof Geolocation APIs (which this tool utilizes), advanced OSINT tools cross-reference that signal against IP address routing hops, connection latency, and browser state (like DNT or timezones) to instantly detect a high-probability spoofing attempt.</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="info-panel">
+      <h2><i data-lucide="git-commit"></i> Changelog</h2>
+      <ul class="changelog-list">
+        <li><span class="changelog-tag">v1.3.0</span> Integrated Precision Geospatial reverse geocoding to resolve coordinates into human-readable locations.</li>
+        <li><span class="changelog-tag">v1.1.0</span> Implemented WebGL Renderer unmasking to extract unique GPU fingerprinting data.</li>
+        <li><span class="changelog-tag">v1.0.0</span> Initial release of the Hardware & Network telemetry diagnostic grid.</li>
+      </ul>
+    </div>
+  </div>
+
+  <a href="../" id="smartBackBtn" class="fab" aria-label="Command Center" title="Command Center">
+    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="filter: drop-shadow(0 0 8px rgba(56, 189, 248, 0.5));">
+      <path d="M12 2L2 7l10 5 10-5-10-5z" stroke="#38bdf8" stroke-width="2" stroke-linejoin="round" fill="rgba(56,189,248,0.2)"/>
+      <path d="M2 17l10 5 10-5M2 12l10 5 10-5" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </a>
+
+  {{FOOTER}}
+
+  <script src="../js/shared.js"></script>
+
+
+  <script>
+        // Utility to set values safely
+    function setVal(id, text) {
+      document.getElementById(id).innerHTML = text;
+    }
+
+    // Global Telemetry Object for Export
+    let telemetryData = {};
+
+    async function runDiagnostics() {
+      // Clear data on fresh run
+      telemetryData = {};
+      
+      // 1. Hardware Architecture
+      const cpu = navigator.hardwareConcurrency ? `${navigator.hardwareConcurrency} Cores` : "Restricted";
+      const ram = navigator.deviceMemory ? `${navigator.deviceMemory} GB+` : "Restricted";
+      const screenRes = `${screen.width}x${screen.height} (${screen.colorDepth}-bit)`;
+      
+      setVal('val-cpu', cpu);
+      setVal('val-ram', ram);
+      setVal('val-screen', screenRes);
+
+      telemetryData["CPU Cores"] = cpu;
+      telemetryData["Memory"] = ram;
+      telemetryData["Screen"] = screenRes;
+
+      // Battery API (Chrome/Edge)
+      if ('getBattery' in navigator) {
+        try {
+          const battery = await navigator.getBattery();
+          const level = Math.round(battery.level * 100) + "%";
+          const status = battery.charging ? "Charging ⚡" : "Discharging";
+          setVal('val-bat', `${level} (${status})`);
+          telemetryData["Battery"] = `${level} (${status})`;
+        } catch(e) { setVal('val-bat', "Restricted by Browser"); }
+      } else {
+        setVal('val-bat', "API Unsupported");
+      }
+
+      // 2. Browser Engine
+      setVal('val-ua', navigator.userAgent);
+      setVal('val-os', navigator.platform || "Unknown");
+      const dnt = navigator.doNotTrack === "1" ? "Enabled" : "Disabled";
+      setVal('val-dnt', dnt);
+
+      telemetryData["User Agent"] = navigator.userAgent;
+      telemetryData["OS Platform"] = navigator.platform;
+      telemetryData["Do Not Track"] = dnt;
+
+      // WebGL
+      try {
+        const canvas = document.createElement('canvas');
+        const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+        const debugInfo = gl.getExtension('WEBGL_debug_renderer_info');
+        const renderer = gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL);
+        setVal('val-gpu', renderer || "Masked");
+        telemetryData["GPU Renderer"] = renderer || "Masked";
+      } catch {
+        setVal('val-gpu', "Blocked / Unavailable");
+        telemetryData["GPU Renderer"] = "Blocked";
+      }
+
+      // 3. Network Intelligence
+      // Connection API (Chrome/Edge)
+      if (navigator.connection) {
+        const conn = navigator.connection;
+        const type = conn.effectiveType ? conn.effectiveType.toUpperCase() : "Unknown";
+        const down = conn.downlink ? `${conn.downlink} Mbps` : "";
+        setVal('val-conn', `${type} ${down}`);
+        telemetryData["Connection"] = `${type} ${down}`;
+      } else {
+        setVal('val-conn', "API Unsupported");
+      }
+
+      // IP Info Fetch (Dubai Token Used)
+      try {
+        const res = await fetch("https://ipinfo.io/json?token=f38556491a0a87");
+        const ipData = await res.json();
+        
+        setVal('val-ip', ipData.ip || "Unknown");
+        setVal('val-isp', ipData.org || "Unknown");
+        const locStr = `${ipData.city || ''}, ${ipData.region || ''}, ${ipData.country || ''}`.replace(/^, | , | ,$/g, '');
+        setVal('val-iploc', locStr || "Unknown");
+
+        telemetryData["Public IP"] = ipData.ip;
+        telemetryData["ISP"] = ipData.org;
+        telemetryData["IP Location"] = locStr;
+
+      } catch {
+        setVal('val-ip', "Fetch Failed");
+        setVal('val-isp', "Fetch Failed");
+        setVal('val-iploc', "Fetch Failed");
+      }
+
+      // 4. Geospatial (Timezone)
+      const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      setVal('val-tz', tz);
+      telemetryData["Timezone"] = tz;
+    }
+
+    // GPS Location Function
+    async function getExactGeolocation() {
+      const btnGeo = document.getElementById('btnGeo');
+      btnGeo.innerHTML = `<i data-lucide="loader" class="animate-spin"></i> Acquiring Signal...`;
+      lucide.createIcons();
+      btnGeo.disabled = true;
+
+      if (!navigator.geolocation) {
+        alert("Geolocation is not supported by your browser.");
+        resetGeoBtn(btnGeo);
+        return;
+      }
+
+      navigator.geolocation.getCurrentPosition(
+        async position => {
+          const lat = position.coords.latitude.toFixed(6);
+          const lon = position.coords.longitude.toFixed(6);
+          
+          setVal('val-lat', `<span class="val-highlight">${lat}</span>`);
+          setVal('val-lon', `<span class="val-highlight">${lon}</span>`);
+          
+          telemetryData["GPS Latitude"] = lat;
+          telemetryData["GPS Longitude"] = lon;
+
+          // Reverse Geocoding
+          setVal('val-place', '<span class="val-pending">Resolving coordinates...</span>');
+          try {
+            const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`);
+            const locData = await res.json();
+            if (locData.address) {
+              const city = locData.address.city || locData.address.town || locData.address.village || locData.address.county || "";
+              const country = locData.address.country || "";
+              const placeStr = `${city}, ${country}`.replace(/^, | , | ,$/g, '');
+              setVal('val-place', placeStr);
+              telemetryData["GPS Place"] = placeStr;
+            } else {
+              setVal('val-place', "Resolution Failed");
+            }
+          } catch (e) {
+            setVal('val-place', "Resolution Failed");
+          }
+          resetGeoBtn(btnGeo, true);
+        },
+        error => {
+          alert("GPS Authorization denied or unavailable.");
+          resetGeoBtn(btnGeo);
+          setVal('val-lat', "Authorization Denied");
+          setVal('val-lon', "Authorization Denied");
+          setVal('val-place', "Authorization Denied");
+        },
+        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+      );
+    }
+
+    function resetGeoBtn(btn, success = false) {
+      if(success) {
+        btn.innerHTML = `<i data-lucide="check-circle"></i> Target Acquired`;
+        btn.classList.add("btn-primary");
+      } else {
+        btn.innerHTML = `<i data-lucide="crosshair"></i> Acquire GPS Target`;
+        btn.disabled = false;
+      }
+      lucide.createIcons();
+    }
+
+    // Export & Share
+    function buildReportString() {
+      let report = "LAYERBIT DEVICE TELEMETRY REPORT\n";
+      report += "Generated: " + new Date().toISOString() + "\n";
+      report += "----------------------------------------\n\n";
+      for (const [key, value] of Object.entries(telemetryData)) {
+        report += `${key}: ${value}\n`;
+      }
+      return report;
+    }
+
+    function exportTelemetry() {
+      const report = buildReportString();
+      const blob = new Blob([report], { type: 'text/plain;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `layerbit-telemetry-${Date.now()}.txt`;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function shareTelemetry() {
+      const report = buildReportString();
+      if (navigator.share) {
+        navigator.share({
+          title: 'Layerbit Device Telemetry',
+          text: report,
+        }).catch(() => console.log("Share cancelled"));
+      } else {
+        navigator.clipboard.writeText(report).then(() => {
+          alert("Telemetry copied to clipboard! (Native sharing unavailable)");
+        });
+      }
+    }
+
+    // FAQ Accordion Logic
+    
+    // Sample Loader Logic
+    function loadSample(type) {
+      // Clear data first
+      runDiagnostics();
+      
+      // Mocked data for spoofing scenario - Using Dubai Coordinates
+      if (type === 'spoof') {
+        const lat = "25.204849"; // Dubai coordinate
+        const lon = "55.270782"; // Dubai coordinate
+        const place = "WARNING: Geolocation Spoof Detected";
+        
+        setVal('val-lat', `<span class="val-highlight">${lat}</span>`);
+        setVal('val-lon', `<span class="val-highlight">${lon}</span>`);
+        setVal('val-place', `<span class="val-error">${place}</span>`);
+        
+        telemetryData["GPS Latitude"] = lat;
+        telemetryData["GPS Longitude"] = lon;
+        telemetryData["GPS Place"] = place;
+        
+        // Mock connection failure
+        setVal('val-conn', "4G 1.5 Mbps (VPN DETECTED)");
+        
+        alert("Spoofing signature applied to Geolocation data.");
+      } 
+      // Mocked data for Auth Verification scenario
+      else if (type === 'auth') {
+        setVal('val-ua', "Mozilla/5.0 (Authentication Failure: Device Integrity Check Failed)");
+        setVal('val-gpu', "Blocked (Emulated GPU Detected)");
+        
+        telemetryData["User Agent"] = "Authentication Failure: Device Integrity Check Failed";
+        telemetryData["GPU Renderer"] = "Blocked (Emulated GPU Detected)";
+        
+        alert("Emulation signatures applied to Browser Engine. Device integrity failed.");
+      }
+      
+      // Scroll to grid to see action
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // Initialize diagnostics on load
+    window.addEventListener('DOMContentLoaded', runDiagnostics);
+
+  </script>
+<script src="../main.js"></script>

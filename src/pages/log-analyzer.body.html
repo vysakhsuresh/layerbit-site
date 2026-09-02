@@ -1,0 +1,315 @@
+{{HEADER}}
+
+  <main class="hero">
+    <h1>Log Forensics Dashboard</h1>
+    <p>Extract metrics, filter severity, and isolate critical errors in raw server logs.</p>
+  </main>
+
+  <div class="ide-container">
+    
+    <div class="pane">
+      <div class="pane-header">
+        <div class="pane-title"><i data-lucide="file-text"></i> Raw Server Dump</div>
+        <div class="btn-group">
+          <input type="file" id="logFileInput" style="display: none;" accept=".txt,.log,.csv" />
+          <button class="btn" onclick="document.getElementById('logFileInput').click()"><i data-lucide="upload"></i> Upload File</button>
+          
+          <button class="btn" onclick="clearLogs()"><i data-lucide="trash-2"></i> Clear</button>
+          <button class="btn btn-primary" onclick="analyzeLogs()"><i data-lucide="activity"></i> Parse Logs</button>
+        </div>
+      </div>
+      <textarea id="logInput" class="editor" placeholder="Paste your raw Nginx, Apache, Node.js, or Docker logs here...&#10;&#10;2026-04-18 10:15:32 [INFO] Server started on port 8080&#10;2026-04-18 10:16:01 [WARN] High memory usage detected&#10;2026-04-18 10:16:45 [ERROR] Connection timeout to database" spellcheck="false"></textarea>
+    </div>
+
+    <div class="pane">
+      <div class="pane-header">
+        <div class="pane-title"><i data-lucide="terminal"></i> Telemetry Console</div>
+        <div class="btn-group">
+          <button class="btn" onclick="exportLogs()"><i data-lucide="download"></i> Export Filtered</button>
+        </div>
+      </div>
+      
+      <div class="telemetry-toolbar">
+        <div class="telemetry-stats">
+          <div class="stat-badge stat-all active" id="filter-ALL" onclick="setFilter('ALL')">ALL: <span id="countAll">0</span></div>
+          <div class="stat-badge stat-err" id="filter-ERROR" onclick="setFilter('ERROR')">ERRORS: <span id="countErr">0</span></div>
+          <div class="stat-badge stat-warn" id="filter-WARN" onclick="setFilter('WARN')">WARNS: <span id="countWarn">0</span></div>
+          <div class="stat-badge stat-info" id="filter-INFO" onclick="setFilter('INFO')">INFO: <span id="countInfo">0</span></div>
+        </div>
+        <div class="search-wrapper">
+          <i data-lucide="search"></i>
+          <input type="text" id="searchInput" class="search-input" placeholder="Grep output..." onkeyup="grepLogs()">
+        </div>
+      </div>
+
+      <div class="console-output" id="logOutput" data-filter="ALL">
+        <div style="padding: 20px; color: var(--text-muted); text-align: center; font-style: italic;">
+          Awaiting log ingestion...
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="docs-container">
+    <div class="info-panel">
+      <h2><i data-lucide="cpu"></i> Forensic Parsing Engine</h2>
+      <p>Layerbit’s Log Analyzer doesn’t just colorize text—it acts as a client-side SIEM (Security Information and Event Management) tool. It uses complex Regex mapping to structure raw text into queryable data.</p>
+      
+      <!-- Restored Section: Use Cases Grid -->
+      <div class="use-cases-grid">
+        <div class="use-case-card">
+          <h3><i data-lucide="shield-alert"></i> Incident Response</h3>
+          <p>Rapidly isolate critical ERROR and FATAL entries during production outages to identify the root cause, ignoring INFO noise.</p>
+        </div>
+        <div class="use-case-card">
+          <h3><i data-lucide="search"></i> Forensic Grepping</h3>
+          <p>Search massive log dumps for specific IP addresses, request IDs, or error codes instantly across filtered or unfiltered views.</p>
+        </div>
+        <div class="use-case-card">
+          <h3><i data-lucide="database-zap"></i> Performance Auditing</h3>
+          <p>Analyze WARN entries to detect high memory usage, slow database queries, or connection pool exhaustion patterns.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section Restore: Quick Testing Templates -->
+    <div class="info-panel">
+      <h2><i data-lucide="test-tube"></i> Quick Testing Templates</h2>
+      <p>Mock forensic scenarios instantly. Click the templates below to load sample logs and watch how the engine categorizes severity and extracts timestamps.</p>
+      <div>
+        <button class="sample-btn" onclick="loadSample('mixed')">Mixed Server Logs</button>
+        <button class="sample-btn" onclick="loadSample('error')">Error Stack Trace</button>
+        <button class="sample-btn" onclick="loadSample('info')">Bulk INFO Logs</button>
+      </div>
+    </div>
+
+    <!-- Restored Section: FAQ Accordion -->
+    <div class="info-panel">
+      <h2><i data-lucide="help-circle"></i> Log Analysis FAQ</h2>
+      <div class="faq-container">
+        
+        <div class="faq-item">
+          <button class="faq-question">How does Layerbit secure my sensitive production logs? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer">
+            <p>We prioritize zero-trust security architecture. The entire application operates strictly within your browser's DOM. Logs uploaded or pasted are processed locally by JavaScript. Absolutely no data is transmitted over the network, ensuring complete air-gapped security for sensitive production data.</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question">What log formats does the Forensic Engine support? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer">
+            <p>Our complex Regex mapping logic automatically structures raw text from standard Nginx (access/error), Apache, Node.js, Spring Boot, and Docker containers. It targets universal markers for severities like ERROR, FATAL, WARN, INFO, NOTICE, and DEBUG, as well as common ISO/UTC timestamps.</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question">Why use a client-side tool instead of ELK or Splunk? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer">
+            <p>While ELK/Splunk excel at long-term storage and aggregation, Layerbit provides instant, lightweight forensic analysis for immediate IR needs. IR engineers often need to parse a single 2GB raw text file dropped during an incident without waiting for it to index into a database. We offer a SIEM-like experience without the infrastructure overhead.</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Restored Section: Deployment Changelog -->
+    <div class="info-panel">
+      <h2><i data-lucide="git-merge"></i> Deployment Methodology Changelog</h2>
+      <ul class="changelog-list">
+        <li><span class="changelog-tag">v1.2.1</span> Patched multi-line stack trace grepping logic and optimized mobile performance.</li>
+        <li><span class="changelog-tag">v1.2.0</span> Integrated multi-source log syntax extraction matrix and real-time failure metrics.</li>
+        <li><span class="changelog-tag">v1.1.0</span> Deployed client-side SIEM air-gapped security protocol and Regex mapping.</li>
+        <li><span class="changelog-tag">v1.0.0</span> Initial deployment of Log Forensics Dashboard.</li>
+      </ul>
+    </div>
+  </div>
+
+  <a href="../" id="smartBackBtn" class="fab" aria-label="Command Center" title="Command Center">
+    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="filter: drop-shadow(0 0 8px rgba(56, 189, 248, 0.5));">
+      <path d="M12 2L2 7l10 5 10-5-10-5z" stroke="#38bdf8" stroke-width="2" stroke-linejoin="round" fill="rgba(56,189,248,0.2)"/>
+      <path d="M2 17l10 5 10-5M2 12l10 5 10-5" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </a>
+
+  {{FOOTER}}
+
+  <script src="../js/shared.js"></script>
+
+
+  <script>
+        const logInput = document.getElementById('logInput');
+    const logOutput = document.getElementById('logOutput');
+    const searchInput = document.getElementById('searchInput');
+    
+    // Stats Counters
+    const countAll = document.getElementById('countAll');
+    const countErr = document.getElementById('countErr');
+    const countWarn = document.getElementById('countWarn');
+    const countInfo = document.getElementById('countInfo');
+
+    // UPLOAD LOGIC ADDED HERE
+    const logFileInput = document.getElementById('logFileInput');
+    logFileInput.addEventListener('change', function(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        logInput.value = e.target.result;
+        analyzeLogs(); // Auto-parse after upload for better UX
+      };
+      reader.readAsText(file);
+      this.value = ''; // Reset so the same file can be uploaded again if needed
+    });
+
+    // Regex Patterns
+    const rxError = /\b(ERROR|ERR|FATAL|EXCEPTION|CRITICAL)\b/i;
+    const rxWarn = /\b(WARN|WARNING)\b/i;
+    const rxInfo = /\b(INFO|NOTICE)\b/i;
+    const rxDebug = /\b(DEBUG|TRACE)\b/i;
+    // Basic timestamp matcher (YYYY-MM-DD HH:MM:SS or ISO variants)
+    const rxTime = /\b(\d{4}[-/]\d{2}[-/]\d{2}[T\s]\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:?\d{2})?)\b/g;
+
+    function clearLogs() {
+      logInput.value = '';
+      logOutput.innerHTML = '<div style="padding: 20px; color: var(--text-muted); text-align: center; font-style: italic;">Awaiting log ingestion...</div>';
+      countAll.innerText = '0';
+      countErr.innerText = '0';
+      countWarn.innerText = '0';
+      countInfo.innerText = '0';
+      searchInput.value = '';
+    }
+
+    function escapeHTML(str) {
+      return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    }
+
+    function analyzeLogs() {
+      const rawText = logInput.value.trim();
+      if (!rawText) return;
+
+      const lines = rawText.split('\n');
+      
+      let htmlBuilder = '';
+      let cErr = 0, cWarn = 0, cInfo = 0;
+
+      for (let i = 0; i < lines.length; i++) {
+        let line = lines[i];
+        if (!line.trim()) continue; // Skip empty lines
+
+        let safeLine = escapeHTML(line);
+        let rowClass = 'type-normal';
+        let severityClass = '';
+
+        // Determine Severity
+        if (rxError.test(line)) {
+          rowClass = 'type-error';
+          cErr++;
+          safeLine = safeLine.replace(new RegExp(rxError.source, 'gi'), '<span class="badge-error">$&</span>');
+        } else if (rxWarn.test(line)) {
+          rowClass = 'type-warn';
+          cWarn++;
+          safeLine = safeLine.replace(new RegExp(rxWarn.source, 'gi'), '<span class="badge-warn">$&</span>');
+        } else if (rxInfo.test(line)) {
+          rowClass = 'type-info';
+          cInfo++;
+          safeLine = safeLine.replace(new RegExp(rxInfo.source, 'gi'), '<span class="badge-info">$&</span>');
+        } else if (rxDebug.test(line)) {
+          safeLine = safeLine.replace(new RegExp(rxDebug.source, 'gi'), '<span class="badge-debug">$&</span>');
+        }
+
+        // Highlight Timestamps
+        safeLine = safeLine.replace(rxTime, '<span class="hl-timestamp">$&</span>');
+
+        htmlBuilder += `<div class="log-line ${rowClass}"><div class="line-num">${i + 1}</div><div class="line-content">${safeLine}</div></div>`;
+      }
+
+      logOutput.innerHTML = htmlBuilder;
+      
+      // Update Telemetry
+      countAll.innerText = lines.filter(l => l.trim() !== '').length;
+      countErr.innerText = cErr;
+      countWarn.innerText = cWarn;
+      countInfo.innerText = cInfo;
+
+      // Reset Search & Filter
+      setFilter('ALL');
+      searchInput.value = '';
+    }
+
+    function setFilter(type) {
+      logOutput.setAttribute('data-filter', type);
+      
+      // Update UI Tabs
+      document.querySelectorAll('.stat-badge').forEach(b => b.classList.remove('active'));
+      document.getElementById('filter-' + type).classList.add('active');
+    }
+
+    function grepLogs() {
+      const query = searchInput.value.toLowerCase();
+      const lines = logOutput.querySelectorAll('.log-line');
+
+      lines.forEach(line => {
+        const text = line.querySelector('.line-content').innerText.toLowerCase();
+        if (text.includes(query)) {
+          line.style.display = ''; // Revert to CSS data-filter logic
+        } else {
+          line.style.display = 'none'; // Force hide
+        }
+      });
+    }
+
+    function exportLogs() {
+      // Grab only visible lines (respecting both data-filter and grep search)
+      const lines = logOutput.querySelectorAll('.log-line');
+      let exportText = '';
+
+      lines.forEach(line => {
+        // If display is not 'none' and it matches the current severity filter
+        const filterState = logOutput.getAttribute('data-filter');
+        const isVisibleBySearch = line.style.display !== 'none';
+        
+        let isVisibleByFilter = true;
+        if (filterState === 'ERROR' && !line.classList.contains('type-error')) isVisibleByFilter = false;
+        if (filterState === 'WARN' && !line.classList.contains('type-warn')) isVisibleByFilter = false;
+        if (filterState === 'INFO' && !line.classList.contains('type-info')) isVisibleByFilter = false;
+
+        if (isVisibleBySearch && isVisibleByFilter) {
+          exportText += line.querySelector('.line-content').innerText + '\n';
+        }
+      });
+
+      if (!exportText) {
+        alert("No visible logs to export.");
+        return;
+      }
+
+      const blob = new Blob([exportText], { type: "text/plain;charset=utf-8;" });
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = `layerbit-logs-${Date.now()}.log`;
+      link.click();
+    }
+
+    // FAQ Accordion Logic
+    
+    // Sample Loader Logic
+    function loadSample(type) {
+      clearLogs(); // Clean workspace first
+
+      const samples = {
+        mixed: '2026-05-20T08:15:01Z [INFO] Incoming GET request to /api/v1/users (IP: 192.168.1.50)\n2026-05-20T08:15:03Z [INFO] User authentication successful (uid: layerbit_admin)\n2026-05-20T08:15:15Z [WARN] Database pool connection limits reaching 90% capacity\n2026-05-20T08:16:01Z [ERROR] Failed to flush Redis cache (Key: system_settings)\n2026-05-20T08:16:02Z [INFO] Retrying Redis connection...\n2026-05-20T08:16:30Z [FATAL] Stack Overflow in core calculation module. Shutting down.',
+        error: '2026-05-21 14:20:10 [ERROR] java.lang.NullPointerException: Cannot invoke "String.toLowerCase()" because "configValue" is null\n    at co.layerbit.config.Loader.parseParams(Loader.java:152)\n    at co.layerbit.config.Loader.init(Loader.java:80)\n    at co.layerbit.core.Application.start(Application.java:210)\n    at co.layerbit.core.Application.main(Application.java:45)\n2026-05-21 14:20:11 [CRITICAL] Application terminating abnormally.',
+        info: '2026-05-22 09:00:00 [INFO] Initializing co.layerbit.Microservice framework v2.5.1...\n2026-05-22 09:00:01 [INFO] Loading configuration schema from consul:8500\n2026-05-22 09:00:02 [DEBUG] Setting TCP keepalive: true, timeout: 5000ms\n2026-05-22 09:00:05 [INFO] Schema validated successfully. Initializing modules.\n2026-05-22 09:00:10 [INFO] gRPC Server listening on 0.0.0.0:50051\n2026-05-22 09:00:10 [INFO] HTTP Health Check listening on 0.0.0.0:8081\n2026-05-22 09:00:11 [INFO] Microservice startup sequence complete.'
+      };
+      
+      logInput.value = samples[type];
+      analyzeLogs(); // Auto-parse
+      
+      // Optional: scroll back to top to see result immediately
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+  </script>
+<script src="../main.js"></script>

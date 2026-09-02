@@ -1,0 +1,32 @@
+<script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What is a Cron Expression?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "A cron expression is a string comprising five or six fields separated by white space that represents a set of times, normally as a schedule to execute a specific routine or script. It is the standard time-based job scheduler in Unix-like computer operating systems."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Why did my Cron job run at the wrong time?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "The most common reason for unexpected scheduling is timezone discrepancies. By default, most cloud servers and CI/CD pipelines (like GitHub Actions) operate strictly on Coordinated Universal Time (UTC). If you schedule a job for 9:00 AM local time, you must calculate and apply the correct UTC offset in your expression."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is the difference between standard and non-standard syntax?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Standard POSIX cron utilizes 5 fields (Minute, Hour, Day of Month, Month, Day of Week). Some advanced schedulers (like Quartz) utilize a 6th or 7th field for Seconds and Years. Layerbit currently generates universal 5-field syntax, which guarantees the highest compatibility across all major operating systems and cloud providers."
+        }
+      }
+    ]
+  }
+  </script>

@@ -1,0 +1,232 @@
+{{HEADER}}
+
+  <main class="hero">
+    <h1>JSON Validator & Formatter</h1>
+    <p>Client-side validation, beautification, and minification. 100% secure.</p>
+  </main>
+
+  <div class="ide-container">
+    <div class="pane">
+      <div class="pane-header">
+        <div class="pane-title"><i data-lucide="file-json-2"></i> Raw JSON Input</div>
+        <div class="btn-group">
+          <button class="btn" id="btnClear" title="Clear Input"><i data-lucide="trash-2"></i></button>
+          <button class="btn btn-primary" id="btnMinify"><i data-lucide="minimize-2"></i> Minify</button>
+          <button class="btn btn-primary" id="btnFormat"><i data-lucide="sparkles"></i> Beautify</button>
+        </div>
+      </div>
+      <div class="error-banner" id="errorBanner">
+        <i data-lucide="triangle-alert"></i>
+        <span id="errorText">Invalid JSON format.</span>
+      </div>
+      <textarea id="jsonInput" class="editor" placeholder='Paste your JSON payload here...&#10;&#10;{&#10;  "status": "waiting",&#10;  "data": []&#10;}' spellcheck="false"></textarea>
+    </div>
+
+    <div class="pane">
+      <div class="pane-header">
+        <div class="pane-title"><i data-lucide="check-circle"></i> Formatted Result</div>
+        <div class="btn-group">
+          <button class="btn" id="btnCopy"><i data-lucide="copy"></i> Copy to Clipboard</button>
+        </div>
+      </div>
+      <div id="jsonOutput" class="output-area"></div>
+    </div>
+  </div>
+
+  <!-- Rejuvenated SEO & Content Depth Section -->
+  <div class="docs-container">
+    
+    <div class="info-panel">
+      <h2><i data-lucide="book-open"></i> Technical Documentation & Use Cases</h2>
+      <p>This utility provides immediate syntax validation and formatting for JSON payloads. Engineered for developers handling API responses, configuration files, and webhooks, it strictly parses standard JSON architecture. Zero server calls are made—everything operates entirely within your browser environment.</p>
+      
+      <div class="use-cases-grid">
+        <div class="use-case-card">
+          <h3><i data-lucide="server"></i> REST API Debugging</h3>
+          <p>Modern microservices often return massive, minified JSON responses. Paste raw third-party API outputs here to instantly format the payload, trace nested array structures, and verify data types before mapping them to your application models.</p>
+        </div>
+        <div class="use-case-card">
+          <h3><i data-lucide="database"></i> Database Seed Configuration</h3>
+          <p>Prevent fatal runtime errors by validating NoSQL document structures (like MongoDB objects) or complex JSON configuration files before executing automated seed operations or large-scale database migrations.</p>
+        </div>
+        <div class="use-case-card">
+          <h3><i data-lucide="webhook"></i> CI/CD Pipeline Webhooks</h3>
+          <p>Automated deployment webhooks demand absolute syntax compliance. Catch invisible formatting errors, trailing commas, or missing quotation marks instantly before triggering your GitHub Actions or Jenkins pipelines.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="info-panel">
+      <h2><i data-lucide="file-code"></i> Quick Testing Templates</h2>
+      <p>Need to test the validator? Click any of the standard JSON architectures below to load them directly into the editor for instant formatting and minification testing.</p>
+      <div>
+        <button class="sample-btn" onclick="loadSample('config')">appsettings.json Mock</button>
+        <button class="sample-btn" onclick="loadSample('api')">REST API Response</button>
+        <button class="sample-btn" onclick="loadSample('error')">Syntax Error Example</button>
+      </div>
+    </div>
+
+    <div class="info-panel">
+      <h2><i data-lucide="help-circle"></i> Frequently Asked Questions</h2>
+      <div class="faq-container">
+        
+        <div class="faq-item">
+          <button class="faq-question">Why is client-side JSON processing more secure? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer">
+            <p>Unlike server-side validation tools that transmit your pasted data across the internet, Layerbit executes all parsing and formatting locally within your machine using native <code>JSON.parse()</code> capabilities. This means sensitive API keys, private user data, and proprietary system configurations remain strictly on your device.</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question">What are the most common JSON syntax errors? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer">
+            <p>The standard JSON specification is incredibly strict. The most common errors that cause parsing to fail include: trailing commas at the end of objects or arrays, using single quotes (<code>'</code>) instead of double quotes (<code>"</code>) for keys/strings, and unescaped special characters embedded within string values.</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question">How does JSON minification impact network performance? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer">
+            <p>Minification strips out all unnecessary whitespace, line breaks, and indentation from the payload. While this makes the data unreadable to human developers, it significantly reduces the overall byte size of the file, resulting in faster network transfer speeds and lower bandwidth consumption for production API environments.</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="info-panel">
+      <h2><i data-lucide="git-commit"></i> Changelog</h2>
+      <ul class="changelog-list">
+        <li><span class="changelog-tag">v1.2.0</span> Optimized syntax highlighting engine to prevent browser lock-ups when rendering heavily nested arrays over 5MB.</li>
+        <li><span class="changelog-tag">v1.1.5</span> Adjusted dark theme contrast ratios for better accessibility and added deep clipboard integration for instant payload copying.</li>
+        <li><span class="changelog-tag">v1.0.0</span> Initial release of the secure client-side JSON processor.</li>
+      </ul>
+    </div>
+
+  </div>
+
+  <a href="../" id="smartBackBtn" class="fab" aria-label="Command Center" title="Command Center">
+    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="filter: drop-shadow(0 0 8px rgba(56, 189, 248, 0.5));">
+      <path d="M12 2L2 7l10 5 10-5-10-5z" stroke="#38bdf8" stroke-width="2" stroke-linejoin="round" fill="rgba(56,189,248,0.2)"/>
+      <path d="M2 17l10 5 10-5M2 12l10 5 10-5" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </a>
+
+  {{FOOTER}}
+
+  <script src="../js/shared.js"></script>
+
+
+  <script>
+        // Elements
+    const jsonInput = document.getElementById('jsonInput');
+    const jsonOutput = document.getElementById('jsonOutput');
+    const errorBanner = document.getElementById('errorBanner');
+    const errorText = document.getElementById('errorText');
+    const btnFormat = document.getElementById('btnFormat');
+    const btnMinify = document.getElementById('btnMinify');
+    const btnClear = document.getElementById('btnClear');
+    const btnCopy = document.getElementById('btnCopy');
+
+    // Syntax Highlighter Logic
+    function syntaxHighlight(jsonStr) {
+      jsonStr = jsonStr.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      return jsonStr.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, function (match) {
+        let cls = 'syn-number';
+        if (/^"/.test(match)) {
+          if (/:$/.test(match)) {
+            cls = 'syn-key';
+          } else {
+            cls = 'syn-string';
+          }
+        } else if (/true|false/.test(match)) {
+          cls = 'syn-boolean';
+        } else if (/null/.test(match)) {
+          cls = 'syn-null';
+        }
+        return '<span class="' + cls + '">' + match + '</span>';
+      });
+    }
+
+    // Core Process Logic
+    function processJSON(action) {
+      const raw = jsonInput.value.trim();
+      errorBanner.classList.remove('active');
+      jsonOutput.innerHTML = '';
+      
+      if (!raw) return;
+
+      try {
+        const parsed = JSON.parse(raw);
+        let resultStr = "";
+
+        if (action === 'format') {
+          resultStr = JSON.stringify(parsed, null, 4);
+        } else if (action === 'minify') {
+          resultStr = JSON.stringify(parsed);
+        }
+
+        jsonOutput.innerHTML = syntaxHighlight(resultStr);
+        
+      } catch (err) {
+        errorText.textContent = `Invalid JSON: ${err.message}`;
+        errorBanner.classList.add('active');
+      }
+    }
+
+    // Event Listeners
+    btnFormat.addEventListener('click', () => processJSON('format'));
+    btnMinify.addEventListener('click', () => processJSON('minify'));
+    
+    btnClear.addEventListener('click', () => {
+      jsonInput.value = '';
+      jsonOutput.innerHTML = '';
+      errorBanner.classList.remove('active');
+    });
+
+    btnCopy.addEventListener('click', () => {
+      const text = jsonOutput.innerText; 
+      if(!text) return;
+      
+      navigator.clipboard.writeText(text).then(() => {
+        const originalText = btnCopy.innerHTML;
+        btnCopy.innerHTML = '<i data-lucide="check"></i> Copied!';
+        lucide.createIcons();
+        setTimeout(() => {
+          btnCopy.innerHTML = '<i data-lucide="copy"></i> Copy to Clipboard';
+          lucide.createIcons();
+        }, 2000);
+      });
+    });
+
+    // FAQ Accordion Logic
+    
+    // Sample Loader Logic
+    function loadSample(type) {
+      const samples = {
+        // Raw, minified string so the before/after contrast is massive
+        config: `{"Logging":{"LogLevel":{"Default":"Information","Microsoft.AspNetCore":"Warning"}},"AllowedHosts":"*","ConnectionStrings":{"DefaultConnection":"Server=localhost;Database=master;User Id=sa;Password=Secret;"}}`,
+        
+        // Raw, minified API payload
+        api: `{"status":200,"message":"Data retrieved successfully","data":[{"id":101,"name":"Quantum CPU","inStock":true,"price":499.99,"tags":["hardware","computing"]}],"metadata":{"timestamp":"2026-08-04T17:22:33Z","page":1}}`,
+        
+        // Formatted with an intentional error
+        error: `{\n  "name": "John Doe",\n  "age": 35,\n  "isActive": true,\n  "settings": {\n    "theme": "dark",\n    "notifications": false\n  },  <-- Notice this trailing comma!\n}`
+      };
+      
+      jsonInput.value = samples[type];
+      jsonOutput.innerHTML = '';
+      errorBanner.classList.remove('active');
+      
+      // Auto-format valid ones
+      if(type !== 'error') {
+        processJSON('format');
+      } else {
+        processJSON('format'); // Triggers the error banner naturally
+      }
+      
+      // Scroll to top to see action
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  </script>
+<script src="../main.js"></script>
