@@ -24,7 +24,15 @@
         "name": "How does Parameter Forensics work?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "When a valid URL is detected, the engine intercepts the search property of the parsed URL object. It iterates through the URLSearchParams map, automatically escaping HTML entities to prevent DOM injection, and populates the visual breakdown grid."
+          "text": "When a valid URL is detected, the engine intercepts the search property of the parsed URL object. It iterates through the URLSearchParams map, automatically escaping HTML entities to prevent DOM injection, and populates an editable breakdown grid. Edit any key or value directly and click Re-encode to rebuild both the readable and percent-encoded versions of the URL from your changes."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How does Batch Mode work?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Batch Mode treats each line of the input as an independent item. Every non-empty line is parsed and encoded or decoded on its own — if a line is a full URL, only its query parameters are transformed (same logic as Smart Mode); otherwise the whole line is encoded or decoded as a raw string. Blank lines and line order are preserved, so you can paste a list of endpoints or tracking links and process them all in one pass."
         }
       }
     ]
