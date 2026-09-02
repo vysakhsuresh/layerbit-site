@@ -657,36 +657,48 @@
       }
     }
 
+    // Guard against lucide's async CDN script not having loaded yet (e.g. a
+    // browser restoring <select> state and firing 'change' before it lands),
+    // so a missing icon library never gets mistaken for a cron syntax error.
+    function safeCreateIcons() {
+      try {
+        if (window.lucide) lucide.createIcons();
+      } catch (e) {}
+    }
+
     // Initialize cronstrue
     function translateCron() {
       const val = cronInput.value.trim();
-      
+
       if(val.split(' ').length < 5) {
         setInvalid("Incomplete Expression");
         return;
       }
 
+      let readable;
       try {
-        const readable = cronstrue.toString(val, { throwExceptionOnParseError: true });
-        setValid(readable);
-        syncDropdowns(val);
-        updateNextRuns(val);
+        readable = cronstrue.toString(val, { throwExceptionOnParseError: true });
       } catch (err) {
         setInvalid(err.toString().replace("Error: ", ""));
+        return;
       }
+
+      setValid(readable);
+      syncDropdowns(val);
+      updateNextRuns(val);
     }
 
     function setValid(text) {
       terminalPane.classList.remove("error");
       cronTranslation.innerHTML = `<i data-lucide="check-circle" style="color: var(--success-color);"></i> ${text}`;
-      lucide.createIcons();
+      safeCreateIcons();
     }
 
     function setInvalid(text) {
       terminalPane.classList.add("error");
       cronTranslation.innerHTML = `<i data-lucide="alert-triangle"></i> Syntax Error: ${text}`;
       nextRunsEl.style.display = 'none';
-      lucide.createIcons();
+      safeCreateIcons();
     }
 
     // Sync from Terminal -> Dropdowns
@@ -757,10 +769,10 @@
       navigator.clipboard.writeText(text).then(() => {
         const originalText = btnCopy.innerHTML;
         btnCopy.innerHTML = '<i data-lucide="check"></i> Copied!';
-        lucide.createIcons();
+        safeCreateIcons();
         setTimeout(() => {
           btnCopy.innerHTML = originalText;
-          lucide.createIcons();
+          safeCreateIcons();
         }, 2000);
       });
     }
