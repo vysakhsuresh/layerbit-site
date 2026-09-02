@@ -257,7 +257,11 @@
     .view-tab.active { background: rgba(56, 189, 248, 0.15); color: var(--accent-main); }
 
     /* Collapsible JSON Tree View */
-    .json-tree { cursor: default; overflow-x: auto; }
+    /* Reset the inherited white-space:pre-wrap from .output-area so the
+       newlines/indentation inside the tree-building JS template literals
+       (used only for source readability) don't render as literal blank
+       lines between nodes; .tree-row below restores pre for actual content. */
+    .json-tree { cursor: default; overflow-x: auto; white-space: normal; }
     .tree-row {
       display: flex;
       align-items: center;
