@@ -16,7 +16,7 @@
         "name": "Does this tool verify the JWT signature?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "No. Signature verification requires access to the public key (for asymmetric algorithms like RS256) or the shared secret (for symmetric algorithms like HS256). Since this tool operates in a zero-knowledge, client-side environment, we only decode and display the data. We do *check* the expiration claim as a utility, but this is not a substitute for proper backend cryptographic verification."
+          "text": "Optionally, yes. The Verify Signature panel below the decoder accepts a shared secret for HS256/384/512 tokens or a PEM public key for RS256/384/512 tokens, and checks the signature using your browser's native Web Crypto API — the secret or key never leaves your device. Other algorithms (like ES256 or none) aren't supported yet. Either way, this is a debugging aid, not a substitute for your backend's own verification on every request."
         }
       },
       {

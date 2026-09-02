@@ -42,6 +42,30 @@
 
   </div>
 
+  <div class="info-panel verify-panel">
+    <h2><i data-lucide="shield-check"></i> Verify Signature <span class="verify-subtitle">(optional &mdash; runs entirely in your browser via the Web Crypto API, nothing is sent anywhere)</span></h2>
+
+    <div id="verifyNoToken" class="verify-row">
+      <p>Decode a token above to verify its signature.</p>
+    </div>
+
+    <div id="verifyUnsupported" class="verify-row" style="display:none;">
+      <p>Signature verification for <strong id="unsupportedAlg"></strong> isn't implemented here yet &mdash; only HS256/384/512 (shared secret) and RS256/384/512 (public key) are supported.</p>
+    </div>
+
+    <div id="verifyHS256" class="verify-row" style="display:none;">
+      <label for="hmacSecret">Shared Secret</label>
+      <input type="text" id="hmacSecret" class="verify-input" placeholder="your-256-bit-secret" autocomplete="off" spellcheck="false">
+    </div>
+
+    <div id="verifyRS256" class="verify-row" style="display:none;">
+      <label for="publicKeyPem">Public Key <span class="verify-hint">(PEM, SPKI format)</span></label>
+      <textarea id="publicKeyPem" class="verify-input verify-textarea" placeholder="-----BEGIN PUBLIC KEY-----&#10;...&#10;-----END PUBLIC KEY-----" spellcheck="false"></textarea>
+    </div>
+
+    <div id="verifyResult" class="verify-result"></div>
+  </div>
+
   <!-- New Documentation Container -->
   <div class="docs-container">
     <div class="info-panel">
@@ -88,7 +112,7 @@
         <div class="faq-item">
           <button class="faq-question">Does this tool verify the JWT signature? <i data-lucide="chevron-down"></i></button>
           <div class="faq-answer">
-            <p>No. Signature verification requires access to the public key (for asymmetric algorithms like RS256) or the shared secret (for symmetric algorithms like HS256). Since this tool operates in a zero-knowledge, client-side environment, we only decode and display the data. We do *check* the expiration claim as a utility, but this is not a substitute for proper backend cryptographic verification.</p>
+            <p>Optionally, yes. The Verify Signature panel below the decoder accepts a shared secret for HS256/384/512 tokens or a PEM public key for RS256/384/512 tokens, and checks the signature using your browser's native Web Crypto API &mdash; the secret or key never leaves your device. Other algorithms (like ES256 or none) aren't supported yet. Either way, this is a debugging aid, not a substitute for your backend's own verification on every request.</p>
           </div>
         </div>
 
@@ -105,6 +129,7 @@
     <div class="info-panel">
       <h2><i data-lucide="git-merge"></i> Deployment Methodology Changelog</h2>
       <ul class="changelog-list">
+        <li><span class="changelog-tag">v1.4.0</span> Added optional signature verification (HS256/384/512 shared secret, RS256/384/512 public key) via the Web Crypto API. Renamed the "Signature Valid (Client)" status to "Not Expired" since it only ever checked expiration, not the signature.</li>
         <li><span class="changelog-tag">v1.3.0</span> Added Copy buttons to the Header and Payload panes.</li>
         <li><span class="changelog-tag">v1.2.0</span> Integrated real-time <code>exp</code> claim verification matrix and conditional status badge rendering.</li>
         <li><span class="changelog-tag">v1.1.0</span> Optimized Base64URL parsing logic for high-performance decoding on mobile browsers.</li>
@@ -138,6 +163,101 @@
     // successful parse so Copy grabs clean JSON, not the rendered markup
     let decodedHeaderText = '';
     let decodedPayloadText = '';
+
+    // Signature verification state - the exact bytes that were signed
+    // (undecoded base64url header.payload) and the algorithm/signature to
+    // check them against, kept in sync with the last successful parse
+    const hmacSecret = document.getElementById('hmacSecret');
+    const publicKeyPem = document.getElementById('publicKeyPem');
+    const verifyResult = document.getElementById('verifyResult');
+    let sigAlg = null;
+    let signingInput = '';
+    let signatureB64Url = '';
+
+    function base64UrlToBytes(b64url) {
+      const b64 = b64url.replace(/-/g, '+').replace(/_/g, '/');
+      const pad = b64.length % 4;
+      const padded = pad ? b64 + '='.repeat(4 - pad) : b64;
+      const raw = atob(padded);
+      const arr = new Uint8Array(raw.length);
+      for (let i = 0; i < raw.length; i++) arr[i] = raw.charCodeAt(i);
+      return arr;
+    }
+
+    function pemToBytes(pem) {
+      const b64 = pem.replace(/-----BEGIN [^-]+-----/, '').replace(/-----END [^-]+-----/, '').replace(/\s+/g, '');
+      const raw = atob(b64);
+      const arr = new Uint8Array(raw.length);
+      for (let i = 0; i < raw.length; i++) arr[i] = raw.charCodeAt(i);
+      return arr;
+    }
+
+    function showVerifyResult(state, message) {
+      const icon = state === 'valid' ? 'shield-check' : state === 'invalid' ? 'shield-x' : 'triangle-alert';
+      const cls = state === 'valid' ? 'verify-ok' : state === 'invalid' ? 'verify-fail' : 'verify-error';
+      verifyResult.innerHTML = `<span class="verify-badge ${cls}"><i data-lucide="${icon}"></i> ${message}</span>`;
+      lucide.createIcons();
+    }
+
+    async function runHmacVerify() {
+      const secret = hmacSecret.value;
+      if (!secret) { verifyResult.innerHTML = ''; return; }
+      if (!window.crypto || !window.crypto.subtle) {
+        showVerifyResult('error', 'Web Crypto API unavailable (requires a secure context/HTTPS)');
+        return;
+      }
+      try {
+        const hashName = { HS256: 'SHA-256', HS384: 'SHA-384', HS512: 'SHA-512' }[sigAlg];
+        const key = await crypto.subtle.importKey('raw', new TextEncoder().encode(secret), { name: 'HMAC', hash: hashName }, false, ['verify']);
+        const valid = await crypto.subtle.verify('HMAC', key, base64UrlToBytes(signatureB64Url), new TextEncoder().encode(signingInput));
+        showVerifyResult(valid ? 'valid' : 'invalid', valid ? 'Signature Valid' : 'Signature Invalid');
+      } catch (e) {
+        showVerifyResult('error', 'Verification error: ' + e.message);
+      }
+    }
+
+    async function runRsaVerify() {
+      const pem = publicKeyPem.value.trim();
+      if (!pem) { verifyResult.innerHTML = ''; return; }
+      if (!window.crypto || !window.crypto.subtle) {
+        showVerifyResult('error', 'Web Crypto API unavailable (requires a secure context/HTTPS)');
+        return;
+      }
+      try {
+        const hashName = { RS256: 'SHA-256', RS384: 'SHA-384', RS512: 'SHA-512' }[sigAlg];
+        const key = await crypto.subtle.importKey('spki', pemToBytes(pem), { name: 'RSASSA-PKCS1-v1_5', hash: hashName }, false, ['verify']);
+        const valid = await crypto.subtle.verify('RSASSA-PKCS1-v1_5', key, base64UrlToBytes(signatureB64Url), new TextEncoder().encode(signingInput));
+        showVerifyResult(valid ? 'valid' : 'invalid', valid ? 'Signature Valid' : 'Signature Invalid');
+      } catch (e) {
+        showVerifyResult('error', 'Could not verify — check the key is a valid PEM SPKI public key (' + e.message + ')');
+      }
+    }
+
+    function updateVerifyUI() {
+      document.getElementById('verifyHS256').style.display = 'none';
+      document.getElementById('verifyRS256').style.display = 'none';
+      document.getElementById('verifyUnsupported').style.display = 'none';
+      document.getElementById('verifyNoToken').style.display = 'none';
+      verifyResult.innerHTML = '';
+
+      if (!sigAlg) {
+        document.getElementById('verifyNoToken').style.display = 'block';
+        return;
+      }
+      if (/^HS(256|384|512)$/.test(sigAlg)) {
+        document.getElementById('verifyHS256').style.display = 'block';
+        if (hmacSecret.value) runHmacVerify();
+      } else if (/^RS(256|384|512)$/.test(sigAlg)) {
+        document.getElementById('verifyRS256').style.display = 'block';
+        if (publicKeyPem.value.trim()) runRsaVerify();
+      } else {
+        document.getElementById('unsupportedAlg').textContent = sigAlg;
+        document.getElementById('verifyUnsupported').style.display = 'block';
+      }
+    }
+
+    hmacSecret.addEventListener('input', runHmacVerify);
+    publicKeyPem.addEventListener('input', runRsaVerify);
 
     function copyDecoded(which, btnElement) {
       const text = which === 'header' ? decodedHeaderText : decodedPayloadText;
@@ -188,6 +308,8 @@
         decodedHeaderText = '';
         decodedPayloadText = '';
         statusBadge.className = "status-badge";
+        sigAlg = null;
+        updateVerifyUI();
         return;
       }
 
@@ -206,6 +328,8 @@
         statusText.innerText = "Invalid JWT Format";
         decodedHeaderText = '';
         decodedPayloadText = '';
+        sigAlg = null;
+        updateVerifyUI();
         return;
       }
 
@@ -219,6 +343,12 @@
         headerOutput.innerHTML = syntaxHighlight(decodedHeaderText);
         payloadOutput.innerHTML = syntaxHighlight(decodedPayloadText);
 
+        // Signature verification state - only meaningful with all 3 parts
+        sigAlg = (parts.length > 2 && header.alg) ? header.alg : null;
+        signingInput = parts[0] + '.' + parts[1];
+        signatureB64Url = parts[2] || '';
+        updateVerifyUI();
+
         // Expiration Logic Check
         if (payload.exp) {
           const currentTime = Math.floor(Date.now() / 1000);
@@ -228,7 +358,7 @@
             statusIcon.setAttribute('data-lucide', 'shield-alert');
           } else {
             statusBadge.className = "status-badge status-valid";
-            statusText.innerText = "Signature Valid (Client)";
+            statusText.innerText = "Not Expired";
             statusIcon.setAttribute('data-lucide', 'shield-check');
           }
           lucide.createIcons();
@@ -245,6 +375,8 @@
         statusIcon.setAttribute('data-lucide', 'triangle-alert');
         decodedHeaderText = '';
         decodedPayloadText = '';
+        sigAlg = null;
+        updateVerifyUI();
         lucide.createIcons();
       }
     }
