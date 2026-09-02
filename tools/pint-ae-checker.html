@@ -253,6 +253,12 @@
     .mapping-row select:focus { border-color: var(--accent-main); }
     .mapping-row select option { background: #0a0c10; }
     .mapping-row.matched select { border-color: rgba(34, 197, 94, 0.4); }
+    .mapping-row.mismatch select { border-color: var(--warn-color); background: rgba(251, 191, 36, 0.06); }
+    .mapping-row-warning {
+      grid-column: 1 / -1; display: flex; align-items: center; gap: 6px;
+      font-size: 0.8em; color: var(--warn-color); margin-top: -6px;
+    }
+    .mapping-row-warning i { width: 13px; height: 13px; flex-shrink: 0; }
 
     .btn-group-center { display: flex; justify-content: center; gap: 14px; margin-top: 10px; flex-wrap: wrap; }
     .btn {
@@ -823,22 +829,29 @@
           lastGroup = field.group;
         }
         const selected = mapping[field.key] || '';
-        const matchedClass = selected ? 'matched' : '';
+        const liveStatus = selected ? evaluateField(field) : '';
+        const rowClass = liveStatus === 'ok' ? 'matched' : liveStatus === 'invalid' ? 'mismatch' : '';
         const hintHtml = field.hint ? ` <span style="color: var(--text-muted); font-weight: 400; font-size: 0.85em;">(${escapeHtml(field.hint)})</span>` : '';
+        const warningHtml = liveStatus === 'invalid'
+          ? `<div class="mapping-row-warning"><i data-lucide="alert-triangle"></i> "${escapeHtml(selected)}" doesn't look like ${field.hint || field.label.toLowerCase()} — you may have mapped the wrong column.</div>`
+          : '';
         html += `
-          <div class="mapping-row ${matchedClass}">
+          <div class="mapping-row ${rowClass}">
             <label>${field.label}${hintHtml}</label>
             <select data-field="${field.key}" onchange="updateMapping('${field.key}', this.value)">
               <option value="">-- Not in file --</option>
               ${currentHeaders.map(h => `<option value="${escapeAttr(h)}" ${h === selected ? 'selected' : ''}>${escapeHtml(h)}</option>`).join('')}
             </select>
+            ${warningHtml}
           </div>`;
       });
       mappingBody.innerHTML = html;
+      lucide.createIcons();
     }
 
     function updateMapping(key, value) {
       mapping[key] = value;
+      renderMappingPanel();
     }
     window.updateMapping = updateMapping;
 
