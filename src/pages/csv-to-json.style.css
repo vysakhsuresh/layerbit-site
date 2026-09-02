@@ -27,6 +27,26 @@
     .hero h1 { font-size: 2.8em; font-weight: 700; margin-bottom: 10px; }
     .hero p { color: var(--text-muted); font-size: 1.1em; }
 
+    /* Mode Selector */
+    .mode-selector {
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+      margin-bottom: 30px;
+      animation: fadeIn 1s ease-out;
+    }
+
+    .mode-btn {
+      background: rgba(255,255,255,0.05); border: 1px solid var(--card-border); color: var(--text-muted);
+      padding: 12px 24px; border-radius: 12px; font-family: 'Space Grotesk', sans-serif; font-size: 1.05em;
+      font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 10px; transition: all 0.3s;
+    }
+    .mode-btn:hover { background: rgba(255,255,255,0.1); color: #fff; }
+    .mode-btn.active {
+      background: rgba(56, 189, 248, 0.1); border-color: var(--accent-main);
+      color: #fff; box-shadow: 0 0 20px rgba(56, 189, 248, 0.2);
+    }
+
     /* IDE Layout */
     .ide-container {
       max-width: 1400px;
@@ -177,8 +197,8 @@
       .hero h1 { font-size: 2em; flex-direction: column; gap: 10px; }
       .hero p { font-size: 1em; }
       .pane-header { flex-direction: column; align-items: flex-start; gap: 12px; padding: 15px; height: auto; }
-      .btn-group { width: 100%; flex-wrap: wrap; justify-content: stretch; }
-      .btn { flex-grow: 1; justify-content: center; text-align: center; }
+      .btn-group, .mode-selector { width: 100%; flex-wrap: wrap; justify-content: stretch; }
+      .btn, .mode-btn { flex-grow: 1; justify-content: center; text-align: center; }
       .toggle-wrapper { width: 100%; margin-bottom: 5px; }
       .info-panel { padding: 20px; }
       .fab { bottom: 20px; left: 20px; width: 50px; height: 50px; }

@@ -44,6 +44,14 @@
           "@type": "Answer",
           "text": "Absolutely not. The Layerbit CSV pipeline operates within an air-gapped browser environment. The file reading, parsing logic, and JSON generation are executed entirely client-side using JavaScript. No data is ever transmitted to a backend server or database."
         }
+      },
+      {
+        "@type": "Question",
+        "name": "Can it convert JSON back to CSV too?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes. Switch to \"JSON → CSV\" mode and paste a JSON array of objects. The header row is built from the union of every key across all objects, so records with slightly different fields (an optional notes column on some rows, for example) still produce one clean table instead of dropping data. Nested objects or arrays inside a field are stringified into that cell rather than breaking the export."
+        }
       }
     ]
   }
@@ -88,6 +96,26 @@
     .hero { text-align: center; margin-bottom: 40px; animation: fadeIn 1s ease-out; }
     .hero h1 { font-size: 2.8em; font-weight: 700; margin-bottom: 10px; }
     .hero p { color: var(--text-muted); font-size: 1.1em; }
+
+    /* Mode Selector */
+    .mode-selector {
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+      margin-bottom: 30px;
+      animation: fadeIn 1s ease-out;
+    }
+
+    .mode-btn {
+      background: rgba(255,255,255,0.05); border: 1px solid var(--card-border); color: var(--text-muted);
+      padding: 12px 24px; border-radius: 12px; font-family: 'Space Grotesk', sans-serif; font-size: 1.05em;
+      font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 10px; transition: all 0.3s;
+    }
+    .mode-btn:hover { background: rgba(255,255,255,0.1); color: #fff; }
+    .mode-btn.active {
+      background: rgba(56, 189, 248, 0.1); border-color: var(--accent-main);
+      color: #fff; box-shadow: 0 0 20px rgba(56, 189, 248, 0.2);
+    }
 
     /* IDE Layout */
     .ide-container {
@@ -239,8 +267,8 @@
       .hero h1 { font-size: 2em; flex-direction: column; gap: 10px; }
       .hero p { font-size: 1em; }
       .pane-header { flex-direction: column; align-items: flex-start; gap: 12px; padding: 15px; height: auto; }
-      .btn-group { width: 100%; flex-wrap: wrap; justify-content: stretch; }
-      .btn { flex-grow: 1; justify-content: center; text-align: center; }
+      .btn-group, .mode-selector { width: 100%; flex-wrap: wrap; justify-content: stretch; }
+      .btn, .mode-btn { flex-grow: 1; justify-content: center; text-align: center; }
       .toggle-wrapper { width: 100%; margin-bottom: 5px; }
       .info-panel { padding: 20px; }
       .fab { bottom: 20px; left: 20px; width: 50px; height: 50px; }
@@ -262,22 +290,27 @@
   </header>
 
   <main class="hero">
-    <h1>CSV to JSON Pipeline</h1>
-    <p>Convert raw comma-separated data into structured JSON objects instantly.</p>
+    <h1>CSV &harr; JSON Pipeline</h1>
+    <p>Convert raw comma-separated data into structured JSON objects, or back again, instantly.</p>
   </main>
 
+  <div class="mode-selector">
+    <button class="mode-btn active" id="btnModeToJSON" onclick="setMode('toJSON')"><i data-lucide="sheet"></i> CSV &rarr; JSON</button>
+    <button class="mode-btn" id="btnModeToCSV" onclick="setMode('toCSV')"><i data-lucide="braces"></i> JSON &rarr; CSV</button>
+  </div>
+
   <div class="ide-container">
-    
+
     <div class="pane" id="inputPane">
       <div class="pane-header">
-        <div class="pane-title"><i data-lucide="sheet"></i> Raw CSV Data</div>
+        <div class="pane-title" id="inputPaneTitle"><i data-lucide="sheet"></i> Raw CSV Data</div>
         <div class="btn-group">
-          <label class="toggle-wrapper" title="Automatically convert '123' to numbers and 'true' to booleans">
+          <label class="toggle-wrapper" id="inferTypesWrapper" title="Automatically convert '123' to numbers and 'true' to booleans">
             <input type="checkbox" id="inferTypes" checked> Smart Types
           </label>
           <input type="file" id="csvFile" accept=".csv" style="display: none;">
           <button class="btn" onclick="document.getElementById('csvFile').click()"><i data-lucide="upload"></i> Upload</button>
-          <button class="btn btn-primary" onclick="processCSV()"><i data-lucide="arrow-right-left"></i> Convert</button>
+          <button class="btn btn-primary" id="btnConvert" onclick="convert()"><i data-lucide="arrow-right-left"></i> Convert</button>
         </div>
       </div>
       <div class="error-banner" id="errorBanner">
@@ -289,10 +322,10 @@
 
     <div class="pane">
       <div class="pane-header">
-        <div class="pane-title"><i data-lucide="braces"></i> JSON Array</div>
+        <div class="pane-title" id="outputPaneTitle"><i data-lucide="braces"></i> JSON Array</div>
         <div class="btn-group">
-          <button class="btn" id="btnCopy" onclick="copyJSON()" disabled><i data-lucide="copy"></i> Copy</button>
-          <button class="btn" id="btnDownload" onclick="downloadJSON()" disabled><i data-lucide="download"></i> Save .json</button>
+          <button class="btn" id="btnCopy" onclick="copyOutput()" disabled><i data-lucide="copy"></i> Copy</button>
+          <button class="btn" id="btnDownload" onclick="downloadOutput()" disabled><i data-lucide="download"></i> Save .json</button>
         </div>
       </div>
       <div id="jsonOutput" class="output-area"></div>
@@ -333,6 +366,7 @@
         <button class="sample-btn" onclick="loadSample('basic')">Basic Records</button>
         <button class="sample-btn" onclick="loadSample('quotes')">Quoted Commas</button>
         <button class="sample-btn" onclick="loadSample('types')">Smart Types</button>
+        <button class="sample-btn" onclick="loadSample('reverse')">JSON &rarr; CSV</button>
       </div>
     </div>
 
@@ -361,12 +395,20 @@
           </div>
         </div>
 
+        <div class="faq-item">
+          <button class="faq-question">Can it convert JSON back to CSV too? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer">
+            <p>Yes. Switch to "JSON &rarr; CSV" mode and paste a JSON array of objects. The header row is built from the union of every key across all objects, so records with slightly different fields (an optional <code>notes</code> column on some rows, for example) still produce one clean table instead of dropping data. Nested objects or arrays inside a field are stringified into that cell rather than breaking the export.</p>
+          </div>
+        </div>
+
       </div>
     </div>
 
     <div class="info-panel">
       <h2><i data-lucide="git-commit"></i> Changelog</h2>
       <ul class="changelog-list">
+        <li><span class="changelog-tag">v1.5.0</span> Added a JSON &rarr; CSV reverse mode, building the header row from the union of keys across all objects so heterogeneous records don't lose columns.</li>
         <li><span class="changelog-tag">v1.4.0</span> Added direct-to-disk download capability for generating <code>.json</code> files natively in the browser.</li>
         <li><span class="changelog-tag">v1.3.5</span> Rewrote the CSV parsing engine to correctly handle multi-line strings and escaped quotes.</li>
         <li><span class="changelog-tag">v1.1.0</span> Introduced the Smart Type Inference toggle for cleaner payload generation.</li>
@@ -405,10 +447,51 @@
     const errorBanner = document.getElementById("errorBanner");
     const errorText = document.getElementById("errorText");
     const inferTypes = document.getElementById("inferTypes");
+    const inferTypesWrapper = document.getElementById("inferTypesWrapper");
     const btnCopy = document.getElementById("btnCopy");
     const btnDownload = document.getElementById("btnDownload");
+    const inputPaneTitle = document.getElementById("inputPaneTitle");
+    const outputPaneTitle = document.getElementById("outputPaneTitle");
+    const btnModeToJSON = document.getElementById("btnModeToJSON");
+    const btnModeToCSV = document.getElementById("btnModeToCSV");
 
-    let finalJSONString = "";
+    let finalOutputString = "";
+    let mode = 'toJSON'; // 'toJSON' (CSV -> JSON, default) or 'toCSV' (JSON -> CSV)
+
+    function setMode(newMode) {
+      mode = newMode;
+      btnModeToJSON.classList.toggle('active', mode === 'toJSON');
+      btnModeToCSV.classList.toggle('active', mode === 'toCSV');
+
+      csvInput.value = "";
+      jsonOutput.innerHTML = "";
+      finalOutputString = "";
+      errorBanner.classList.remove("active");
+      btnCopy.disabled = true;
+      btnDownload.disabled = true;
+
+      if (mode === 'toJSON') {
+        inputPaneTitle.innerHTML = '<i data-lucide="sheet"></i> Raw CSV Data';
+        outputPaneTitle.innerHTML = '<i data-lucide="braces"></i> JSON Array';
+        inferTypesWrapper.style.display = 'flex';
+        csvFile.setAttribute('accept', '.csv');
+        csvInput.placeholder = 'Paste CSV data or drag & drop a .csv file here...\n\nid,name,role,active\n1,John Doe,Admin,true\n2,"Smith, Jane",User,false';
+        btnDownload.innerHTML = '<i data-lucide="download"></i> Save .json';
+      } else {
+        inputPaneTitle.innerHTML = '<i data-lucide="braces"></i> Raw JSON Array';
+        outputPaneTitle.innerHTML = '<i data-lucide="sheet"></i> CSV Data';
+        inferTypesWrapper.style.display = 'none';
+        csvFile.setAttribute('accept', '.json');
+        csvInput.placeholder = 'Paste a JSON array of objects here...\n\n[\n  { "id": 1, "name": "John Doe", "role": "Admin" },\n  { "id": 2, "name": "Smith, Jane", "role": "User" }\n]';
+        btnDownload.innerHTML = '<i data-lucide="download"></i> Save .csv';
+      }
+      lucide.createIcons();
+    }
+
+    function convert() {
+      if (mode === 'toJSON') processCSV();
+      else processJSONToCSV();
+    }
 
     // Syntax Highlighter
     function syntaxHighlight(jsonStr) {
@@ -456,7 +539,7 @@
       const input = csvInput.value.trim();
       errorBanner.classList.remove("active");
       jsonOutput.innerHTML = "";
-      finalJSONString = "";
+      finalOutputString = "";
       btnCopy.disabled = true;
       btnDownload.disabled = true;
 
@@ -485,9 +568,68 @@
           jsonArray.push(obj);
         }
 
-        finalJSONString = JSON.stringify(jsonArray, null, 4);
-        jsonOutput.innerHTML = syntaxHighlight(finalJSONString);
-        
+        finalOutputString = JSON.stringify(jsonArray, null, 4);
+        jsonOutput.innerHTML = syntaxHighlight(finalOutputString);
+
+        btnCopy.disabled = false;
+        btnDownload.disabled = false;
+
+      } catch (err) {
+        showError(err.message);
+      }
+    }
+
+    // Escapes one CSV cell: wraps in quotes (doubling any embedded quotes)
+    // if the value contains a comma, quote, or newline - standard CSV rules
+    function csvEscape(val) {
+      if (val === null || val === undefined) return '';
+      if (typeof val === 'object') val = JSON.stringify(val);
+      const str = String(val);
+      if (/[",\n\r]/.test(str)) {
+        return '"' + str.replace(/"/g, '""') + '"';
+      }
+      return str;
+    }
+
+    function processJSONToCSV() {
+      const input = csvInput.value.trim();
+      errorBanner.classList.remove("active");
+      jsonOutput.innerHTML = "";
+      finalOutputString = "";
+      btnCopy.disabled = true;
+      btnDownload.disabled = true;
+
+      if (!input) {
+        showError("Please provide JSON data.");
+        return;
+      }
+
+      try {
+        const parsed = JSON.parse(input);
+        const rows = Array.isArray(parsed) ? parsed : [parsed];
+        if (!rows.length) throw new Error("JSON array is empty - nothing to convert.");
+        if (rows.some(r => typeof r !== 'object' || r === null || Array.isArray(r))) {
+          throw new Error("Expected a JSON array of objects, e.g. [{\"id\": 1, \"name\": \"...\"}].");
+        }
+
+        // Union of keys across all objects, in first-seen order, so
+        // heterogeneous records don't silently drop columns
+        const headers = [];
+        const seen = new Set();
+        for (const row of rows) {
+          for (const key of Object.keys(row)) {
+            if (!seen.has(key)) { seen.add(key); headers.push(key); }
+          }
+        }
+
+        const lines = [headers.map(csvEscape).join(',')];
+        for (const row of rows) {
+          lines.push(headers.map(h => csvEscape(row[h])).join(','));
+        }
+
+        finalOutputString = lines.join('\n');
+        jsonOutput.textContent = finalOutputString;
+
         btnCopy.disabled = false;
         btnDownload.disabled = false;
 
@@ -502,9 +644,9 @@
     }
 
     // Export Logic
-    function copyJSON() {
-      if (!finalJSONString) return;
-      navigator.clipboard.writeText(finalJSONString).then(() => {
+    function copyOutput() {
+      if (!finalOutputString) return;
+      navigator.clipboard.writeText(finalOutputString).then(() => {
         const original = btnCopy.innerHTML;
         btnCopy.innerHTML = '<i data-lucide="check"></i> Copied!';
         lucide.createIcons();
@@ -515,18 +657,19 @@
       });
     }
 
-    function downloadJSON() {
-      if (!finalJSONString) return;
-      const blob = new Blob([finalJSONString], { type: "application/json" });
+    function downloadOutput() {
+      if (!finalOutputString) return;
+      const isCSV = mode === 'toCSV';
+      const blob = new Blob([finalOutputString], { type: isCSV ? "text/csv" : "application/json" });
       const link = document.createElement("a");
       link.href = URL.createObjectURL(blob);
-      link.download = `layerbit_data_${Date.now()}.json`;
+      link.download = `layerbit_data_${Date.now()}.${isCSV ? 'csv' : 'json'}`;
       link.click();
     }
 
     // Drag & Drop / File Upload Logic
     csvFile.addEventListener('change', function(e) { handleFile(e.target.files[0]); });
-    
+
     inputPane.addEventListener('dragover', (e) => {
       e.preventDefault();
       inputPane.classList.add('dragover');
@@ -547,7 +690,7 @@
       const reader = new FileReader();
       reader.onload = function(e) {
         csvInput.value = e.target.result;
-        processCSV();
+        convert();
       };
       reader.readAsText(file);
     }
@@ -557,19 +700,22 @@
     // Sample Loader Logic
     function loadSample(type) {
       const samples = {
-        basic: "id,first_name,last_name,email\n1,Alan,Turing,alan@example.com\n2,Ada,Lovelace,ada@example.com\n3,Grace,Hopper,grace@example.com",
-        quotes: "product_id,title,price,category\n101,\"Laptop, Pro Model\",1299.99,Electronics\n102,\"Mouse, Wireless Optical\",49.50,Accessories\n103,\"Keyboard, Mechanical\",105.00,Accessories",
-        types: "user_id,is_active,account_balance,role\n1,true,4500.50,admin\n2,false,0,guest\n3,true,-15.00,user"
+        basic: { mode: 'toJSON', text: "id,first_name,last_name,email\n1,Alan,Turing,alan@example.com\n2,Ada,Lovelace,ada@example.com\n3,Grace,Hopper,grace@example.com" },
+        quotes: { mode: 'toJSON', text: "product_id,title,price,category\n101,\"Laptop, Pro Model\",1299.99,Electronics\n102,\"Mouse, Wireless Optical\",49.50,Accessories\n103,\"Keyboard, Mechanical\",105.00,Accessories" },
+        types: { mode: 'toJSON', text: "user_id,is_active,account_balance,role\n1,true,4500.50,admin\n2,false,0,guest\n3,true,-15.00,user" },
+        reverse: { mode: 'toCSV', text: '[\n  { "id": 1, "name": "Alan Turing", "role": "Admin" },\n  { "id": 2, "name": "Smith, Jane", "role": "User", "notes": "VIP" }\n]' }
       };
 
-      csvInput.value = samples[type];
-      
+      const sample = samples[type];
+      setMode(sample.mode);
+      csvInput.value = sample.text;
+
       // Auto-trigger the inference checkbox logic for the 'types' example to show it off
-      if(type === 'types') {
+      if (type === 'types') {
         inferTypes.checked = true;
       }
-      
-      processCSV();
+
+      convert();
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   </script>
