@@ -291,6 +291,7 @@
     .check-item.ok .check-icon { background: rgba(34, 197, 94, 0.15); color: var(--success-color); }
     .check-item.calc .check-icon { background: rgba(56, 189, 248, 0.15); color: var(--accent-main); }
     .check-item.missing .check-icon { background: rgba(239, 68, 68, 0.15); color: var(--error-border); }
+    .check-item.invalid .check-icon { background: rgba(251, 191, 36, 0.15); color: var(--warn-color); }
     .check-item .check-icon i { width: 13px; height: 13px; }
     .check-item .check-label { font-weight: 600; font-size: 0.92em; color: #fff; }
     .check-item .check-guidance { font-size: 0.85em; color: var(--text-muted); margin-top: 2px; line-height: 1.5; }
@@ -583,6 +584,7 @@
     <div class="info-panel">
       <h2><i data-lucide="git-commit"></i> Changelog</h2>
       <ul class="changelog-list">
+        <li><span class="changelog-tag">v1.1.0</span> Added real value-level validation per field (e.g. Currency now checks for an actual ISO code, TRNs are checked for the correct 15-digit shape, numeric fields must actually be numeric) instead of only checking that a mapped column has data. Also fixed TIN derivation to use the first 10 digits of the TRN, per published UAE guidance (previously used the last 10).</li>
         <li><span class="changelog-tag">v1.0.0</span> Initial release: auto-detect &amp; manual field mapping, compliance scoring, and free UBL 2.1 / PINT-AE XML export, entirely client-side.</li>
       </ul>
     </div>
@@ -605,21 +607,60 @@
 
     // ---------- Field definitions ----------
     const FIELDS = [
-      { key: 'supplierTIN', label: 'Supplier TIN (from TRN)', group: 'header', groupLabel: 'Invoice Header', guidance: 'Your business\'s Tax Registration Number (TRN) issued by the FTA. Add a "Supplier TRN" column to your export.', variants: ['supplier tin','supplier trn','seller trn','my trn','trn','company trn','vendor trn','supplier tax number'] },
-      { key: 'buyerTIN', label: 'Buyer TIN (from TRN)', group: 'header', groupLabel: 'Invoice Header', guidance: 'Your customer\'s Tax Registration Number. Add a "Buyer TRN" or "Customer TRN" column to your export.', variants: ['buyer tin','buyer trn','customer trn','client trn','recipient trn','customer tax number'] },
+      { key: 'supplierTIN', label: 'Supplier TIN (from TRN)', hint: '15-digit TRN, starts with 100', group: 'header', groupLabel: 'Invoice Header', guidance: 'Your business\'s Tax Registration Number (TRN) issued by the FTA. Add a "Supplier TRN" column to your export.', variants: ['supplier tin','supplier trn','seller trn','my trn','trn','company trn','vendor trn','supplier tax number'] },
+      { key: 'buyerTIN', label: 'Buyer TIN (from TRN)', hint: '15-digit TRN, starts with 100', group: 'header', groupLabel: 'Invoice Header', guidance: 'Your customer\'s Tax Registration Number. Add a "Buyer TRN" or "Customer TRN" column to your export.', variants: ['buyer tin','buyer trn','customer trn','client trn','recipient trn','customer tax number'] },
       { key: 'invoiceNumber', label: 'Invoice Number', group: 'header', groupLabel: 'Invoice Header', guidance: 'A unique reference for this invoice, e.g. INV-2026-001. Almost every export includes this — check for a column named "Invoice No" or similar.', variants: ['invoice no','invoice number','inv no','bill no','invoice #','doc no','document number','voucher no'] },
-      { key: 'issueDate', label: 'Issue Date', group: 'header', groupLabel: 'Invoice Header', guidance: 'The date the invoice was created. Add an "Invoice Date" column if missing.', variants: ['invoice date','issue date','date','bill date','doc date','voucher date'] },
-      { key: 'dueDate', label: 'Due Date', group: 'header', groupLabel: 'Invoice Header', guidance: 'The date payment is due. Add a "Due Date" column, or use your invoice date plus your standard payment terms.', variants: ['due date','payment due','payment due date','due on'] },
-      { key: 'currency', label: 'Currency Code', group: 'header', groupLabel: 'Invoice Header', guidance: 'The 3-letter ISO currency code, e.g. AED or USD. If missing, we\'ll default this to AED for UAE invoices.', variants: ['currency','currency code','ccy','curr'] },
+      { key: 'issueDate', label: 'Issue Date', hint: 'a valid date', group: 'header', groupLabel: 'Invoice Header', guidance: 'The date the invoice was created. Add an "Invoice Date" column if missing.', variants: ['invoice date','issue date','date','bill date','doc date','voucher date'] },
+      { key: 'dueDate', label: 'Due Date', hint: 'a valid date', group: 'header', groupLabel: 'Invoice Header', guidance: 'The date payment is due. Add a "Due Date" column, or use your invoice date plus your standard payment terms.', variants: ['due date','payment due','payment due date','due on'] },
+      { key: 'currency', label: 'Currency Code', hint: '3-letter code, e.g. AED', group: 'header', groupLabel: 'Invoice Header', guidance: 'The 3-letter ISO currency code, e.g. AED or USD. If missing, we\'ll default this to AED for UAE invoices.', variants: ['currency','currency code','ccy','curr'] },
       { key: 'description', label: 'Line Item Description', group: 'line', groupLabel: 'Line Items', guidance: 'What each line is for (a product or service description). Needed for every invoice line.', variants: ['description','item','item description','product','particulars','item name'] },
-      { key: 'quantity', label: 'Quantity', group: 'line', groupLabel: 'Line Items', guidance: 'How many units were billed on each line.', variants: ['qty','quantity','units','no of units'] },
-      { key: 'unitPrice', label: 'Unit Price', group: 'line', groupLabel: 'Line Items', guidance: 'The price per unit, before VAT.', variants: ['unit price','rate','price','unit cost','unit rate'] },
-      { key: 'vatRate', label: 'VAT Rate (%)', group: 'line', groupLabel: 'Line Items', guidance: 'The VAT percentage for this line — usually 5% in the UAE.', variants: ['vat rate','vat %','tax rate','gst rate','vat percent'] },
-      { key: 'vatAmount', label: 'VAT Amount', group: 'line', groupLabel: 'Line Items', guidance: 'The VAT charged on this line. We can calculate this from quantity, unit price, and VAT rate if it\'s missing.', variants: ['vat amount','tax amount','vat value'], autoCalc: true },
-      { key: 'totalTaxable', label: 'Total Taxable Amount', group: 'total', groupLabel: 'Invoice Totals', guidance: 'The total value of goods/services before VAT. We\'ll calculate this from your line items automatically if it\'s missing.', variants: ['taxable amount','total taxable','net amount','subtotal','sub total'], autoCalc: true },
-      { key: 'totalVAT', label: 'Total VAT Amount', group: 'total', groupLabel: 'Invoice Totals', guidance: 'The total VAT charged. We\'ll calculate this from your line items automatically if it\'s missing.', variants: ['total vat','vat total','tax total'], autoCalc: true },
-      { key: 'totalInvoice', label: 'Total Invoice Amount', group: 'total', groupLabel: 'Invoice Totals', guidance: 'The grand total including VAT. We\'ll calculate this from your line items automatically if it\'s missing.', variants: ['total amount','grand total','invoice total','amount due'], autoCalc: true }
+      { key: 'quantity', label: 'Quantity', hint: 'numeric', group: 'line', groupLabel: 'Line Items', guidance: 'How many units were billed on each line.', variants: ['qty','quantity','units','no of units'] },
+      { key: 'unitPrice', label: 'Unit Price', hint: 'numeric', group: 'line', groupLabel: 'Line Items', guidance: 'The price per unit, before VAT.', variants: ['unit price','rate','price','unit cost','unit rate'] },
+      { key: 'vatRate', label: 'VAT Rate (%)', hint: 'numeric, 0-100', group: 'line', groupLabel: 'Line Items', guidance: 'The VAT percentage for this line — usually 5% in the UAE.', variants: ['vat rate','vat %','tax rate','gst rate','vat percent'] },
+      { key: 'vatAmount', label: 'VAT Amount', hint: 'numeric', group: 'line', groupLabel: 'Line Items', guidance: 'The VAT charged on this line. We can calculate this from quantity, unit price, and VAT rate if it\'s missing.', variants: ['vat amount','tax amount','vat value'], autoCalc: true },
+      { key: 'totalTaxable', label: 'Total Taxable Amount', hint: 'numeric', group: 'total', groupLabel: 'Invoice Totals', guidance: 'The total value of goods/services before VAT. We\'ll calculate this from your line items automatically if it\'s missing.', variants: ['taxable amount','total taxable','net amount','subtotal','sub total'], autoCalc: true },
+      { key: 'totalVAT', label: 'Total VAT Amount', hint: 'numeric', group: 'total', groupLabel: 'Invoice Totals', guidance: 'The total VAT charged. We\'ll calculate this from your line items automatically if it\'s missing.', variants: ['total vat','vat total','tax total'], autoCalc: true },
+      { key: 'totalInvoice', label: 'Total Invoice Amount', hint: 'numeric', group: 'total', groupLabel: 'Invoice Totals', guidance: 'The grand total including VAT. We\'ll calculate this from your line items automatically if it\'s missing.', variants: ['total amount','grand total','invoice total','amount due'], autoCalc: true }
     ];
+
+    // ---------- Per-field value validation ----------
+    // Presence of a mapped column isn't enough on its own - if the wrong column gets mapped
+    // to a field (e.g. an Invoice Number column mapped to Currency Code), the value in it
+    // should fail a basic shape check for that field. These are lightweight sanity checks,
+    // not a full official schema/business-rule validation.
+    const ISO_CURRENCY_CODES = new Set(['AED','AFN','ALL','AMD','ANG','AOA','ARS','AUD','AWG','AZN','BAM','BBD','BDT','BGN','BHD','BIF','BMD','BND','BOB','BRL','BSD','BTN','BWP','BYN','BZD','CAD','CDF','CHF','CLP','CNY','COP','CRC','CUP','CVE','CZK','DJF','DKK','DOP','DZD','EGP','ERN','ETB','EUR','FJD','FKP','GBP','GEL','GHS','GIP','GMD','GNF','GTQ','GYD','HKD','HNL','HTG','HUF','IDR','ILS','INR','IQD','IRR','ISK','JMD','JOD','JPY','KES','KGS','KHR','KMF','KPW','KRW','KWD','KYD','KZT','LAK','LBP','LKR','LRD','LSL','LYD','MAD','MDL','MGA','MKD','MMK','MNT','MOP','MRU','MUR','MVR','MWK','MXN','MYR','MZN','NAD','NGN','NIO','NOK','NPR','NZD','OMR','PAB','PEN','PGK','PHP','PKR','PLN','PYG','QAR','RON','RSD','RUB','RWF','SAR','SBD','SCR','SDG','SEK','SGD','SHP','SLE','SOS','SRD','SSP','STN','SYP','SZL','THB','TJS','TMT','TND','TOP','TRY','TTD','TWD','TZS','UAH','UGX','USD','UYU','UZS','VES','VND','VUV','WST','XAF','XCD','XOF','XPF','YER','ZAR','ZMW','ZWL']);
+
+    function isNumericValue(v) {
+      const s = String(v).trim().replace(/,/g, '');
+      if (s === '') return false;
+      const n = parseFloat(s);
+      return !isNaN(n) && isFinite(n) && /^-?\d+(\.\d+)?$/.test(s);
+    }
+
+    function isValidDateValue(v) {
+      const d = new Date(v);
+      return !isNaN(d.getTime());
+    }
+
+    function isValidTrnValue(v) {
+      const digits = String(v).replace(/\D/g, '');
+      return digits.length === 15 && digits.startsWith('100');
+    }
+
+    const VALIDATORS = {
+      supplierTIN: isValidTrnValue,
+      buyerTIN: isValidTrnValue,
+      issueDate: isValidDateValue,
+      dueDate: isValidDateValue,
+      currency: v => ISO_CURRENCY_CODES.has(String(v).trim().toUpperCase()),
+      quantity: isNumericValue,
+      unitPrice: isNumericValue,
+      vatRate: v => isNumericValue(v) && parseFloat(v) >= 0 && parseFloat(v) <= 100,
+      vatAmount: isNumericValue,
+      totalTaxable: isNumericValue,
+      totalVAT: isNumericValue,
+      totalInvoice: isNumericValue
+    };
 
     // ---------- State ----------
     let currentHeaders = [];
@@ -783,9 +824,10 @@
         }
         const selected = mapping[field.key] || '';
         const matchedClass = selected ? 'matched' : '';
+        const hintHtml = field.hint ? ` <span style="color: var(--text-muted); font-weight: 400; font-size: 0.85em;">(${escapeHtml(field.hint)})</span>` : '';
         html += `
           <div class="mapping-row ${matchedClass}">
-            <label>${field.label}</label>
+            <label>${field.label}${hintHtml}</label>
             <select data-field="${field.key}" onchange="updateMapping('${field.key}', this.value)">
               <option value="">-- Not in file --</option>
               ${currentHeaders.map(h => `<option value="${escapeAttr(h)}" ${h === selected ? 'selected' : ''}>${escapeHtml(h)}</option>`).join('')}
@@ -814,25 +856,32 @@
       scorePanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
     });
 
-    function fieldHasData(key) {
+    function fieldValues(key) {
       const header = mapping[key];
-      if (!header) return false;
-      return currentRows.some(r => String(r[header] || '').trim() !== '');
+      if (!header) return [];
+      return currentRows.map(r => String(r[header] || '').trim()).filter(v => v !== '');
+    }
+
+    function evaluateField(field) {
+      const values = fieldValues(field.key);
+      if (values.length === 0) return field.autoCalc ? 'calc' : 'missing';
+      const validator = VALIDATORS[field.key];
+      if (!validator) return 'ok';
+      return values.every(v => validator(v)) ? 'ok' : 'invalid';
     }
 
     function buildComplianceReport() {
       const results = FIELDS.map(field => {
-        const present = fieldHasData(field.key);
-        let status = present ? 'ok' : (field.autoCalc ? 'calc' : 'missing');
-        return { ...field, present, status };
+        const status = evaluateField(field);
+        return { ...field, status };
       });
       const total = results.length;
-      const satisfied = results.filter(r => r.status !== 'missing').length;
+      const satisfied = results.filter(r => r.status === 'ok' || r.status === 'calc').length;
       const score = Math.round((satisfied / total) * 100);
 
-      const requiredHeaderMissing = results.some(r => r.group === 'header' && !r.autoCalc && r.status === 'missing');
-      const lineMissing = results.some(r => r.group === 'line' && !r.autoCalc && r.status === 'missing');
-      const canExport = !requiredHeaderMissing && !lineMissing;
+      const blockingHeader = results.some(r => r.group === 'header' && !r.autoCalc && (r.status === 'missing' || r.status === 'invalid'));
+      const blockingLine = results.some(r => r.group === 'line' && !r.autoCalc && (r.status === 'missing' || r.status === 'invalid'));
+      const canExport = !blockingHeader && !blockingLine;
 
       return { results, score, canExport };
     }
@@ -854,14 +903,18 @@
         scoreSubtext.textContent = 'Core fields are present. A few optional totals will be auto-calculated for you.';
       } else {
         ringFill.style.stroke = 'var(--warn-color)';
-        scoreHeadline.textContent = 'Missing Required Fields';
-        scoreSubtext.textContent = 'Add the missing fields below to your source file, then re-upload.';
+        const hasInvalid = report.results.some(r => r.status === 'invalid');
+        scoreHeadline.textContent = hasInvalid ? 'Check Your Field Mapping' : 'Missing Required Fields';
+        scoreSubtext.textContent = hasInvalid
+          ? 'Some mapped columns don\'t contain the right kind of data — you may have mapped the wrong column. See the flagged fields below.'
+          : 'Add the missing fields below to your source file, then re-upload.';
       }
 
       checklist.innerHTML = report.results.map(r => {
         let iconName = 'check', cls = 'ok', note = 'Found in your file.';
         if (r.status === 'calc') { iconName = 'calculator'; cls = 'calc'; note = 'Not in your file — we\'ll calculate this automatically.'; }
         if (r.status === 'missing') { iconName = 'x'; cls = 'missing'; note = r.guidance; }
+        if (r.status === 'invalid') { iconName = 'alert-triangle'; cls = 'invalid'; note = `The column mapped to this field doesn't contain valid ${r.label.toLowerCase()} values${r.hint ? ` (expected: ${r.hint})` : ''}. Double check you mapped the correct column.`; }
         return `
           <div class="check-item ${cls}">
             <div class="check-icon"><i data-lucide="${iconName}"></i></div>
@@ -875,14 +928,15 @@
     }
 
     // ---------- TIN normalization ----------
-    // PINT-AE identifies parties with a 10-digit TIN. UAE TRNs are commonly issued as
-    // 15-digit numbers, so this derives a 10-digit identifier from whatever TRN/TIN value
-    // is supplied. This is a best-effort transformation for this free tool, not an
-    // official FTA algorithm — always verify the final TIN with your tax advisor or ASP.
+    // PINT-AE identifies parties with a 10-digit Tax Identification Number (TIN), formed
+    // from the FIRST 10 digits of the UAE Federal Tax Authority's 15-digit Tax Registration
+    // Number (TRN) - every UAE TRN starts with "100". This is a best-effort derivation for
+    // this free tool, not an official FTA algorithm — always verify the final TIN with your
+    // tax advisor or ASP before filing.
     function deriveTIN(raw) {
       const digits = String(raw || '').replace(/\D/g, '');
       if (!digits) return '';
-      if (digits.length >= 10) return digits.slice(-10);
+      if (digits.length >= 10) return digits.slice(0, 10);
       return digits.padStart(10, '0');
     }
 
