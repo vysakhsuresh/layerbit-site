@@ -26,6 +26,14 @@
           "@type": "Answer",
           "text": "Absolutely not. The Layerbit CSV pipeline operates within an air-gapped browser environment. The file reading, parsing logic, and JSON generation are executed entirely client-side using JavaScript. No data is ever transmitted to a backend server or database."
         }
+      },
+      {
+        "@type": "Question",
+        "name": "Can it convert JSON back to CSV too?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes. Switch to \"JSON → CSV\" mode and paste a JSON array of objects. The header row is built from the union of every key across all objects, so records with slightly different fields (an optional notes column on some rows, for example) still produce one clean table instead of dropping data. Nested objects or arrays inside a field are stringified into that cell rather than breaking the export."
+        }
       }
     ]
   }
