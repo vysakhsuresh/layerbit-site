@@ -28,31 +28,10 @@
   <link href="../layerbit-logo.png" rel="icon" type="image/x-icon" />
   <link rel="manifest" href="../manifest.json" />
   <link rel="apple-touch-icon" href="../apple-touch-icon.png" />
+  <link rel="stylesheet" href="../css/base.css" />
   
   <style>
     /* Ultra-Premium Dark Theme Variables */
-    :root {
-      --bg-base: #0a0c10;
-      --bg-gradient: radial-gradient(circle at 50% 0%, #1a1e2d 0%, #0a0c10 70%);
-      --text-main: #f8fafc;
-      --text-muted: #94a3b8;
-      --card-bg: rgba(20, 22, 30, 0.6);
-      --card-border: rgba(255, 255, 255, 0.08);
-      --card-hover-border: rgba(56, 189, 248, 0.4);
-      --accent-main: #38bdf8;
-      --accent-glow: rgba(56, 189, 248, 0.5);
-      --neon-gradient: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%);
-      --error-bg: rgba(239, 68, 68, 0.1);
-      --error-border: #ef4444;
-      --info-bg: rgba(56, 189, 248, 0.1);
-      --info-border: rgba(56, 189, 248, 0.3);
-    }
-
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    a:focus-visible, button:focus-visible, select:focus-visible, input:focus-visible, [tabindex]:focus-visible {
-      outline: 2px solid var(--accent-main); outline-offset: 2px;
-    }
-    html { scroll-behavior: smooth; }
 
     body {
       font-family: 'Space Grotesk', sans-serif;
@@ -68,10 +47,6 @@
     }
 
     /* Animated Drifting Starry Background */
-    @keyframes drift {
-      from { background-position: 0 0, 20px 20px; }
-      to { background-position: -60px -60px, -40px -40px; }
-    }
 
     body::before {
       content: '';
@@ -95,17 +70,6 @@
       width: 100%;
       margin: 0 auto 40px auto;
     }
-
-    .brand {
-      font-size: 1.6em;
-      font-weight: 700;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      text-decoration: none;
-      color: #fff;
-    }
-    .brand svg { filter: drop-shadow(0 0 10px var(--accent-glow)); }
 
     /* Hero */
     .hero { text-align: center; margin-bottom: 30px; animation: fadeIn 1s ease-out; }
@@ -428,18 +392,6 @@
     .decipher-table td { color: var(--text-muted); }
 
     /* SEO/Docs Section */
-    .info-panel {
-      max-width: 1200px;
-      margin: 0 auto 60px auto;
-      background: rgba(255,255,255,0.02);
-      border: 1px solid var(--card-border);
-      padding: 40px;
-      border-radius: 20px;
-    }
-
-    .info-panel h2 { color: #fff; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
-    .info-panel h2 i { color: var(--accent-main); }
-    .info-panel p { color: var(--text-muted); margin-bottom: 15px; line-height: 1.7; }
     .info-panel ul { list-style: none; margin-bottom: 20px; }
     .info-panel li { color: var(--text-muted); margin-bottom: 10px; display: flex; align-items: center; gap: 10px; }
     .info-panel li i { color: #22c55e; width: 16px; }
@@ -495,9 +447,6 @@
       .synth-container { grid-template-columns: 1fr; }
       .edu-container { grid-template-columns: 1fr; }
     }
-
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(-15px); } to { opacity: 1; transform: translateY(0); } }
-    @keyframes fadeSlideUp { from { opacity: 0; transform: translateY(40px); } to { opacity: 1; transform: translateY(0); } }
 
     /* =========================================
        ULTRA-RESPONSIVE (Mobile Phones - Master Patch)
@@ -730,10 +679,11 @@
     &copy; 2025 - 2026 <strong>Layerbit Technologies</strong>. All rights reserved.
   </footer>
 
-  <script>
-    lucide.createIcons();
+  <script src="../js/shared.js"></script>
 
-    const outputArea = document.getElementById('outputArea');
+
+  <script>
+        const outputArea = document.getElementById('outputArea');
     const typeSelect = document.getElementById('typeSelect');
     const osintControls = document.getElementById('osintControls');
     const colorControls = document.getElementById('colorControls');

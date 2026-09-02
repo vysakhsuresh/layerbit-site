@@ -25,35 +25,10 @@
   <link href="layerbit-logo.png" rel="icon" type="image/x-icon" />
   <link rel="manifest" href="manifest.json" />
   <link rel="apple-touch-icon" href="apple-touch-icon.png" />
+  <link rel="stylesheet" href="css/base.css" />
 
   <style>
     /* Ultra-Premium Dark Theme Variables (Matched to Index) */
-    :root {
-      --bg-base: #0a0c10;
-      --bg-gradient: radial-gradient(circle at 50% 0%, #1a1e2d 0%, #0a0c10 70%);
-      --text-main: #f8fafc;
-      --text-muted: #94a3b8;
-      --card-bg: rgba(20, 22, 30, 0.4);
-      --card-border: rgba(255, 255, 255, 0.04);
-      --card-hover-bg: rgba(30, 34, 48, 0.6);
-      --card-hover-border: rgba(56, 189, 248, 0.4);
-      --accent-main: #38bdf8;
-      --accent-glow: rgba(56, 189, 248, 0.5);
-      --neon-gradient: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%);
-    }
-
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-    a:focus-visible, button:focus-visible, select:focus-visible, input:focus-visible, [tabindex]:focus-visible {
-      outline: 2px solid var(--accent-main); outline-offset: 2px;
-    }
-
-    html {
-      scroll-behavior: smooth;
-    }
 
     body {
       font-family: 'Space Grotesk', sans-serif;
@@ -69,10 +44,6 @@
     }
 
     /* Animated Drifting Starry Background */
-    @keyframes drift {
-      from { background-position: 0 0, 20px 20px; }
-      to { background-position: -60px -60px, -40px -40px; }
-    }
 
     body::before {
       content: '';
@@ -96,21 +67,6 @@
       max-width: 1200px;
       width: 100%;
       margin: 0 auto 60px auto;
-    }
-
-    .brand {
-      font-size: 1.6em;
-      font-weight: 700;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      letter-spacing: -0.5px;
-      text-decoration: none;
-      color: #fff;
-    }
-
-    .brand svg {
-      filter: drop-shadow(0 0 10px var(--accent-glow));
     }
 
     /* Hero Section */
@@ -322,8 +278,6 @@
     }
 
     /* Animations */
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(-15px); } to { opacity: 1; transform: translateY(0); } }
-    @keyframes fadeSlideUp { from { opacity: 0; transform: translateY(40px); } to { opacity: 1; transform: translateY(0); } }
 
     /* =========================================
        ULTRA-RESPONSIVE (Mobile Phones - Master Patch)
@@ -532,9 +486,11 @@
     </div>
   </footer>
 
+  <script src="js/shared.js"></script>
+
+
   <script>
-    lucide.createIcons();
-  </script>
+      </script>
 
   <script src="main.js"></script>
   
