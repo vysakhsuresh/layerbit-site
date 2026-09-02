@@ -334,6 +334,7 @@
       <div class="pane-header">
         <div class="pane-title"><i data-lucide="terminal"></i> Telemetry Console</div>
         <div class="btn-group">
+          <button class="btn" onclick="copyLogs(this)"><i data-lucide="copy"></i> Copy Filtered</button>
           <button class="btn" onclick="exportLogs()"><i data-lucide="download"></i> Export Filtered</button>
         </div>
       </div>
@@ -426,6 +427,7 @@
     <div class="info-panel">
       <h2><i data-lucide="git-merge"></i> Deployment Methodology Changelog</h2>
       <ul class="changelog-list">
+        <li><span class="changelog-tag">v1.4.0</span> Added a Copy Filtered button alongside Export, matching the copy-to-clipboard pattern used elsewhere in the suite.</li>
         <li><span class="changelog-tag">v1.3.0</span> Added a file-size warning before loading very large dumps, and corrected the FAQ's file-size claim to match actual (non-virtualized) rendering capacity.</li>
         <li><span class="changelog-tag">v1.2.1</span> Patched multi-line stack trace grepping logic and optimized mobile performance.</li>
         <li><span class="changelog-tag">v1.2.0</span> Integrated multi-source log syntax extraction matrix and real-time failure metrics.</li>
@@ -596,26 +598,31 @@
       });
     }
 
-    function exportLogs() {
+    function getVisibleLogText() {
       // Grab only visible lines (respecting both data-filter and grep search)
       const lines = logOutput.querySelectorAll('.log-line');
-      let exportText = '';
+      let text = '';
 
       lines.forEach(line => {
         // If display is not 'none' and it matches the current severity filter
         const filterState = logOutput.getAttribute('data-filter');
         const isVisibleBySearch = line.style.display !== 'none';
-        
+
         let isVisibleByFilter = true;
         if (filterState === 'ERROR' && !line.classList.contains('type-error')) isVisibleByFilter = false;
         if (filterState === 'WARN' && !line.classList.contains('type-warn')) isVisibleByFilter = false;
         if (filterState === 'INFO' && !line.classList.contains('type-info')) isVisibleByFilter = false;
 
         if (isVisibleBySearch && isVisibleByFilter) {
-          exportText += line.querySelector('.line-content').innerText + '\n';
+          text += line.querySelector('.line-content').innerText + '\n';
         }
       });
 
+      return text;
+    }
+
+    function exportLogs() {
+      const exportText = getVisibleLogText();
       if (!exportText) {
         alert("No visible logs to export.");
         return;
@@ -626,6 +633,24 @@
       link.href = URL.createObjectURL(blob);
       link.download = `layerbit-logs-${Date.now()}.log`;
       link.click();
+    }
+
+    function copyLogs(btnElement) {
+      const text = getVisibleLogText();
+      if (!text) {
+        alert("No visible logs to copy.");
+        return;
+      }
+
+      navigator.clipboard.writeText(text).then(() => {
+        const originalText = btnElement.innerHTML;
+        btnElement.innerHTML = '<i data-lucide="check"></i> Copied!';
+        lucide.createIcons();
+        setTimeout(() => {
+          btnElement.innerHTML = originalText;
+          lucide.createIcons();
+        }, 2000);
+      });
     }
 
     // FAQ Accordion Logic

@@ -107,7 +107,9 @@
       overflow: hidden;
       backdrop-filter: blur(16px);
       box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+      transition: border-color 0.2s, background 0.2s;
     }
+    .pane.dragover { border-color: var(--accent-main); background: rgba(56, 189, 248, 0.05); }
 
     .pane-header {
       background: rgba(0,0,0,0.3);
@@ -256,18 +258,26 @@
   </main>
 
   <div class="ide-container">
-    <div class="pane">
+    <div class="pane" id="text1Pane">
       <div class="pane-header">
         <div class="pane-title title-red"><i data-lucide="file-minus"></i> Original Text</div>
+        <div class="btn-group">
+          <input type="file" id="text1File" accept=".txt" style="display:none;">
+          <button class="btn" onclick="document.getElementById('text1File').click()"><i data-lucide="upload"></i> Upload</button>
+        </div>
       </div>
-      <textarea id="text1" class="editor" placeholder="Paste the original code or text block here..."></textarea>
+      <textarea id="text1" class="editor" placeholder="Paste, type, or drag & drop the original code or text block here..."></textarea>
     </div>
 
-    <div class="pane">
+    <div class="pane" id="text2Pane">
       <div class="pane-header">
         <div class="pane-title title-green"><i data-lucide="file-plus"></i> Modified Text</div>
+        <div class="btn-group">
+          <input type="file" id="text2File" accept=".txt" style="display:none;">
+          <button class="btn" onclick="document.getElementById('text2File').click()"><i data-lucide="upload"></i> Upload</button>
+        </div>
       </div>
-      <textarea id="text2" class="editor" placeholder="Paste the modified code or text block here..."></textarea>
+      <textarea id="text2" class="editor" placeholder="Paste, type, or drag & drop the modified code or text block here..."></textarea>
     </div>
   </div>
 
@@ -373,6 +383,7 @@
     <div class="info-panel">
       <h2><i data-lucide="git-merge"></i> Deployment Changelog</h2>
       <ul class="changelog-list">
+        <li><span class="changelog-tag">v2.2.0</span> Added file upload and drag-and-drop to both panes.</li>
         <li><span class="changelog-tag">v2.1.0</span> Integrated Quick Testing Templates for rapid forensic evaluation.</li>
         <li><span class="changelog-tag">v2.0.0</span> Major Engine Overhaul: Integrated high-performance <code>jsdiff</code> library for exact character-level forensic highlighting.</li>
         <li><span class="changelog-tag">v1.3.0</span> Added "Inline vs Split View" rendering modes for easier mobile debugging.</li>
@@ -438,6 +449,30 @@
       text2.value = "";
       outputSection.style.display = "none";
     }
+
+    // File Upload / Drag & Drop
+    function loadFileInto(input, file) {
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (e) => { input.value = e.target.result; };
+      reader.readAsText(file);
+    }
+
+    document.getElementById('text1File').addEventListener('change', (e) => loadFileInto(text1, e.target.files[0]));
+    document.getElementById('text2File').addEventListener('change', (e) => loadFileInto(text2, e.target.files[0]));
+
+    [{ pane: 'text1Pane', input: text1 }, { pane: 'text2Pane', input: text2 }].forEach(({ pane, input }) => {
+      const paneEl = document.getElementById(pane);
+      paneEl.addEventListener('dragover', (e) => { e.preventDefault(); paneEl.classList.add('dragover'); });
+      paneEl.addEventListener('dragleave', () => paneEl.classList.remove('dragover'));
+      paneEl.addEventListener('drop', (e) => {
+        e.preventDefault();
+        paneEl.classList.remove('dragover');
+        if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+          loadFileInto(input, e.dataTransfer.files[0]);
+        }
+      });
+    });
 
     // Line Creators
     function createSplitLine(type, text, lineNum, isHighlight = false) {

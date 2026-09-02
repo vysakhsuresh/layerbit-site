@@ -130,7 +130,9 @@
       -webkit-backdrop-filter: blur(16px);
       box-shadow: 0 10px 30px rgba(0,0,0,0.3);
       height: 350px;
+      transition: border-color 0.2s, background 0.2s;
     }
+    .pane.dragover { border-color: var(--accent-main); background: rgba(56, 189, 248, 0.05); }
 
     .pane-header {
       background: rgba(0,0,0,0.3);
@@ -325,26 +327,30 @@
 
   <div class="ide-container">
     
-    <div class="pane">
+    <div class="pane" id="plainPane">
       <div class="pane-header">
         <div class="pane-title"><i data-lucide="unlock"></i> Plain / Decoded</div>
         <div class="btn-group">
           <span id="decodeError" class="error-text"><i data-lucide="alert-circle"></i> Invalid URI</span>
+          <input type="file" id="plainFile" accept=".txt" style="display:none;">
+          <button class="btn" onclick="document.getElementById('plainFile').click()"><i data-lucide="upload"></i> Upload</button>
           <button class="btn" onclick="clearAll()"><i data-lucide="trash-2"></i> Clear</button>
           <button class="btn" onclick="copyContent('plainText', this)"><i data-lucide="copy"></i> Copy</button>
         </div>
       </div>
-      <textarea id="plainText" class="editor" placeholder="Paste readable text or an unencoded URL here...&#10;e.g. https://api.layerbit.co.in/search?q=hello world" spellcheck="false"></textarea>
+      <textarea id="plainText" class="editor" placeholder="Paste, type, or drag & drop readable text or an unencoded URL here...&#10;e.g. https://api.layerbit.co.in/search?q=hello world" spellcheck="false"></textarea>
     </div>
 
-    <div class="pane">
+    <div class="pane" id="encodedPane">
       <div class="pane-header">
         <div class="pane-title"><i data-lucide="lock"></i> Encoded Payload</div>
         <div class="btn-group">
+          <input type="file" id="encodedFile" accept=".txt" style="display:none;">
+          <button class="btn" onclick="document.getElementById('encodedFile').click()"><i data-lucide="upload"></i> Upload</button>
           <button class="btn" onclick="copyContent('encodedText', this)"><i data-lucide="copy"></i> Copy</button>
         </div>
       </div>
-      <textarea id="encodedText" class="editor" placeholder="Paste encoded strings here...&#10;e.g. https://api.layerbit.co.in/search?q=hello%20world" spellcheck="false"></textarea>
+      <textarea id="encodedText" class="editor" placeholder="Paste or drag & drop encoded strings here...&#10;e.g. https://api.layerbit.co.in/search?q=hello%20world" spellcheck="false"></textarea>
     </div>
 
   </div>
@@ -424,6 +430,7 @@
     <div class="info-panel">
       <h2><i data-lucide="git-merge"></i> Deployment Changelog</h2>
       <ul class="changelog-list">
+        <li><span class="changelog-tag">v1.3.0</span> Added file upload and drag-and-drop to both panes.</li>
         <li><span class="changelog-tag">v1.2.1</span> Enhanced error handling UX. If a URI decode error occurs, the original string is preserved in the Plain Text viewer to allow for immediate debugging.</li>
         <li><span class="changelog-tag">v1.2.0</span> Added interactive Quick Testing Templates and expanded the forensic documentation panel.</li>
         <li><span class="changelog-tag">v1.1.0</span> Engineered the Parameter Forensics grid to automatically parse and visualize query string arrays.</li>
@@ -487,6 +494,33 @@
       decodeError.classList.remove("active");
       analysisContainer.classList.remove("active");
     }
+
+    // File Upload / Drag & Drop
+    function loadFileInto(input, file) {
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        input.value = e.target.result;
+        input.dispatchEvent(new Event('input'));
+      };
+      reader.readAsText(file);
+    }
+
+    document.getElementById('plainFile').addEventListener('change', (e) => loadFileInto(plainText, e.target.files[0]));
+    document.getElementById('encodedFile').addEventListener('change', (e) => loadFileInto(encodedText, e.target.files[0]));
+
+    [{ pane: 'plainPane', input: plainText }, { pane: 'encodedPane', input: encodedText }].forEach(({ pane, input }) => {
+      const paneEl = document.getElementById(pane);
+      paneEl.addEventListener('dragover', (e) => { e.preventDefault(); paneEl.classList.add('dragover'); });
+      paneEl.addEventListener('dragleave', () => paneEl.classList.remove('dragover'));
+      paneEl.addEventListener('drop', (e) => {
+        e.preventDefault();
+        paneEl.classList.remove('dragover');
+        if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+          loadFileInto(input, e.dataTransfer.files[0]);
+        }
+      });
+    });
 
     function copyContent(elementId, btnElement) {
       const text = document.getElementById(elementId).value;

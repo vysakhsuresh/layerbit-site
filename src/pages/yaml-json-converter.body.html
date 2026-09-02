@@ -7,28 +7,38 @@
 
   <div class="ide-container">
     
-    <div class="pane">
+    <div class="pane" id="yamlPane">
       <div class="pane-header">
         <div class="pane-title title-yaml"><i data-lucide="file-code-2"></i> YAML Config</div>
         <div class="btn-group">
           <span id="yamlError" class="error-text"><i data-lucide="alert-circle"></i> Invalid Syntax</span>
+          <input type="file" id="yamlFile" accept=".yaml,.yml" style="display:none;">
+          <button class="btn" onclick="document.getElementById('yamlFile').click()"><i data-lucide="upload"></i> Upload</button>
           <button class="btn" onclick="copyContent('yamlInput', this)"><i data-lucide="copy"></i> Copy</button>
           <button class="btn" onclick="downloadFile('yamlInput', 'yaml')"><i data-lucide="download"></i> Save</button>
         </div>
       </div>
-      <textarea id="yamlInput" class="editor" placeholder="Paste or type YAML here...&#10;&#10;server:&#10;  port: 8080&#10;  host: localhost&#10;features:&#10;  - logging&#10;  - metrics" spellcheck="false"></textarea>
+      <div class="editor-wrapper">
+        <div class="gutter" id="yamlGutterWrap" aria-hidden="true"><div class="gutter-inner" id="yamlGutter">1</div></div>
+        <textarea id="yamlInput" class="editor" placeholder="Paste, type, or drag & drop YAML here...&#10;&#10;server:&#10;  port: 8080&#10;  host: localhost&#10;features:&#10;  - logging&#10;  - metrics" spellcheck="false"></textarea>
+      </div>
     </div>
 
-    <div class="pane">
+    <div class="pane" id="jsonPane">
       <div class="pane-header">
         <div class="pane-title title-json"><i data-lucide="braces"></i> JSON Payload</div>
         <div class="btn-group">
           <span id="jsonError" class="error-text"><i data-lucide="alert-circle"></i> Invalid Syntax</span>
+          <input type="file" id="jsonFile" accept=".json" style="display:none;">
+          <button class="btn" onclick="document.getElementById('jsonFile').click()"><i data-lucide="upload"></i> Upload</button>
           <button class="btn" onclick="copyContent('jsonInput', this)"><i data-lucide="copy"></i> Copy</button>
           <button class="btn" onclick="downloadFile('jsonInput', 'json')"><i data-lucide="download"></i> Save</button>
         </div>
       </div>
-      <textarea id="jsonInput" class="editor" placeholder='Paste or type JSON here...&#10;&#10;{&#10;  "server": {&#10;    "port": 8080,&#10;    "host": "localhost"&#10;  },&#10;  "features": [&#10;    "logging",&#10;    "metrics"&#10;  ]&#10;}' spellcheck="false"></textarea>
+      <div class="editor-wrapper">
+        <div class="gutter" id="jsonGutterWrap" aria-hidden="true"><div class="gutter-inner" id="jsonGutter">1</div></div>
+        <textarea id="jsonInput" class="editor" placeholder='Paste, type, or drag & drop JSON here...&#10;&#10;{&#10;  "server": {&#10;    "port": 8080,&#10;    "host": "localhost"&#10;  },&#10;  "features": [&#10;    "logging",&#10;    "metrics"&#10;  ]&#10;}' spellcheck="false"></textarea>
+      </div>
     </div>
 
   </div>
@@ -104,6 +114,7 @@
     <div class="info-panel">
       <h2><i data-lucide="git-merge"></i> Deployment Changelog</h2>
       <ul class="changelog-list">
+        <li><span class="changelog-tag">v1.3.0</span> Added file upload, drag-and-drop, and line-number gutters to both panes.</li>
         <li><span class="changelog-tag">v1.2.0</span> Integrated interactive Quick Testing Templates for rapid validation of the bidirectional JS-YAML engine.</li>
         <li><span class="changelog-tag">v1.1.0</span> Engineered non-destructive syntax error isolation to prevent unintended data loss during edits.</li>
         <li><span class="changelog-tag">v1.0.0</span> Initial deployment of the secure, real-time client-side synchronization interface.</li>
@@ -128,8 +139,28 @@
     const jsonInput = document.getElementById("jsonInput");
     const yamlError = document.getElementById("yamlError");
     const jsonError = document.getElementById("jsonError");
+    const yamlGutter = document.getElementById("yamlGutter");
+    const jsonGutter = document.getElementById("jsonGutter");
 
     let isSyncing = false; // Prevents infinite echo loops
+
+    // Line-number gutters
+    function lineCount(text) {
+      return text.length ? text.split('\n').length : 1;
+    }
+    function renderGutter(el, count) {
+      el.textContent = Array.from({ length: count }, (_, i) => i + 1).join('\n');
+    }
+    function updateGutters() {
+      renderGutter(yamlGutter, lineCount(yamlInput.value));
+      renderGutter(jsonGutter, lineCount(jsonInput.value));
+    }
+    yamlInput.addEventListener('scroll', () => {
+      yamlGutter.style.transform = `translateY(-${yamlInput.scrollTop}px)`;
+    });
+    jsonInput.addEventListener('scroll', () => {
+      jsonGutter.style.transform = `translateY(-${jsonInput.scrollTop}px)`;
+    });
 
     // YAML to JSON
     yamlInput.addEventListener("input", () => {
@@ -142,6 +173,7 @@
         yamlError.classList.remove("active");
         jsonError.classList.remove("active");
         isSyncing = false;
+        updateGutters();
         return;
       }
 
@@ -149,7 +181,7 @@
         const obj = jsyaml.load(val);
         // If parsed object is just a string/number, ignore unless it's a real object
         if (typeof obj !== 'object' || obj === null) throw new Error("Not a valid object");
-        
+
         isSyncing = true;
         jsonInput.value = JSON.stringify(obj, null, 4);
         yamlError.classList.remove("active");
@@ -158,6 +190,7 @@
         yamlError.classList.add("active");
       } finally {
         isSyncing = false;
+        updateGutters();
       }
     });
 
@@ -172,6 +205,7 @@
         yamlError.classList.remove("active");
         jsonError.classList.remove("active");
         isSyncing = false;
+        updateGutters();
         return;
       }
 
@@ -185,6 +219,7 @@
         jsonError.classList.add("active");
       } finally {
         isSyncing = false;
+        updateGutters();
       }
     });
 
@@ -194,7 +229,35 @@
       jsonInput.value = "";
       yamlError.classList.remove("active");
       jsonError.classList.remove("active");
+      updateGutters();
     }
+
+    // File Upload / Drag & Drop
+    function loadFileInto(input, file) {
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        input.value = e.target.result;
+        input.dispatchEvent(new Event('input'));
+      };
+      reader.readAsText(file);
+    }
+
+    document.getElementById('yamlFile').addEventListener('change', (e) => loadFileInto(yamlInput, e.target.files[0]));
+    document.getElementById('jsonFile').addEventListener('change', (e) => loadFileInto(jsonInput, e.target.files[0]));
+
+    [{ pane: 'yamlPane', input: yamlInput }, { pane: 'jsonPane', input: jsonInput }].forEach(({ pane, input }) => {
+      const paneEl = document.getElementById(pane);
+      paneEl.addEventListener('dragover', (e) => { e.preventDefault(); paneEl.classList.add('dragover'); });
+      paneEl.addEventListener('dragleave', () => paneEl.classList.remove('dragover'));
+      paneEl.addEventListener('drop', (e) => {
+        e.preventDefault();
+        paneEl.classList.remove('dragover');
+        if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+          loadFileInto(input, e.dataTransfer.files[0]);
+        }
+      });
+    });
 
     function copyContent(elementId, btnElement) {
       const text = document.getElementById(elementId).value;

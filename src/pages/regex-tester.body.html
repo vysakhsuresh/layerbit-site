@@ -33,6 +33,7 @@
       </div>
 
       <div class="editor-wrapper">
+        <div class="gutter" id="testGutterWrap" aria-hidden="true"><div class="gutter-inner" id="testGutter">1</div></div>
         <div id="testBackdrop" class="test-backdrop">Paste your test data here to see match highlights...</div>
         <textarea id="testInput" class="test-input" spellcheck="false"></textarea>
       </div>
@@ -113,6 +114,7 @@
     <div class="info-panel">
       <h2><i data-lucide="git-merge"></i> Deployment Changelog</h2>
       <ul class="changelog-list">
+        <li><span class="changelog-tag">v1.3.0</span> Added a line-number gutter to the test string editor (long lines now scroll horizontally instead of wrapping, to keep line numbers accurate).</li>
         <li><span class="changelog-tag">v1.2.0</span> Added interactive Quick Testing Templates and expanded the forensic documentation panel.</li>
         <li><span class="changelog-tag">v1.1.0</span> Integrated real-time telemetry matching and the visual Forensics Extraction grid.</li>
         <li><span class="changelog-tag">v1.0.0</span> Initial release of the Regex Debugging Terminal featuring the dual-layer highlighting editor.</li>
@@ -136,6 +138,7 @@
         const regexInput = document.getElementById("regexInput");
     const testInput = document.getElementById("testInput");
     const testBackdrop = document.getElementById("testBackdrop");
+    const testGutter = document.getElementById("testGutter");
     const mainPane = document.getElementById("mainPane");
     const errorText = document.getElementById("errorText");
     const errorMsg = document.getElementById("errorMsg");
@@ -165,7 +168,14 @@
       return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
     }
 
+    // Line-number gutter, synced to the test string textarea
+    function updateTestGutter() {
+      const count = testInput.value.length ? testInput.value.split('\n').length : 1;
+      testGutter.textContent = Array.from({ length: count }, (_, i) => i + 1).join('\n');
+    }
+
     function processRegex() {
+      updateTestGutter();
       const pattern = regexInput.value;
       const text = testInput.value;
 
@@ -264,6 +274,7 @@
     // Sync scroll
     testInput.addEventListener('scroll', function() {
       testBackdrop.scrollTop = this.scrollTop;
+      testGutter.style.transform = `translateY(-${this.scrollTop}px)`;
     });
 
     // Listeners
