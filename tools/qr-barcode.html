@@ -541,10 +541,6 @@
       <div class="osint-controls" id="osintControls" style="display: none;">
         <div class="osint-header"><i data-lucide="bug"></i> OSINT Analysis Config</div>
         <div class="checkbox-group">
-          <input type="checkbox" id="checkSpoofable" checked>
-          <label for="checkSpoofable">Analyze for URL Spoofability</label>
-        </div>
-        <div class="checkbox-group">
           <input type="checkbox" id="checkTracking">
           <label for="checkTracking">Append Mock Tracking Param (?lb_uid=osint)</label>
         </div>
@@ -653,8 +649,12 @@
         <h2><i data-lucide="git-branch"></i> Deployment changelog</h2>
         <ul class="changelog-list">
             <li class="changelog-item">
+                <span class="changelog-version">v1.3.0</span>
+                <span>Replaced the mocked Analyze score with real structural checks (IP-literal hosts, punycode labels, userinfo tricks, known shorteners, subdomain depth, non-standard ports).</span>
+            </li>
+            <li class="changelog-item">
                 <span class="changelog-version">v1.2.0</span>
-                <span>OSINT educational terminal upgrade. Restored intercept & deciphering panels. Integrated analysis mocking.</span>
+                <span>OSINT educational terminal upgrade. Restored intercept & deciphering panels.</span>
             </li>
             <li class="changelog-item">
                 <span class="changelog-version">v1.1.0</span>
@@ -811,40 +811,86 @@
       link.click();
     }
 
-    // Analysis Logic (MOCK for education)
+    // Analysis Logic - real structural checks on the encoded URL itself.
+    // This isn't a reputation/blocklist lookup (pair with the Threat
+    // Intelligence Scanner for that); it only flags URL-shape patterns that
+    // are genuinely, cheaply detectable client-side.
+    const URL_SHORTENERS = new Set([
+      'bit.ly', 'tinyurl.com', 't.co', 'goo.gl', 'ow.ly', 'is.gd', 'buff.ly',
+      'rebrand.ly', 'cutt.ly', 'shorturl.at', 'tiny.cc', 'rb.gy', 'lnkd.in'
+    ]);
+
     function analyzeCode() {
       const type = typeSelect.value;
       const data = document.getElementById('dataInput').value.trim();
-      const spoofable = document.getElementById('checkSpoofable').checked;
 
-      if(type !== 'qr') {
-          outputArea.innerHTML = `
-            <div class="placeholder-text" style="color: var(--accent-main);">
-              <i data-lucide="shield-check" style="width: 48px; height: 48px;"></i>
-              <span>Code128 verified as non-spoofable via standard matrix methods. Physically interceptable.</span>
-            </div>`;
-          lucide.createIcons();
-          return;
-      }
-
-      if(!data.startsWith('http')) {
+      if (type !== 'qr') {
         outputArea.innerHTML = `
           <div class="placeholder-text" style="color: var(--accent-main);">
             <i data-lucide="shield-check" style="width: 48px; height: 48px;"></i>
-            <span>Pure text payload detected. Low risk of spoofing redirection attack.</span>
+            <span>Code128 encodes raw data directly &mdash; there's no URL-redirect indirection to inspect. The printed code can still be physically swapped, which no scan-time check can catch.</span>
           </div>`;
         lucide.createIcons();
         return;
       }
 
-      const score = spoofable ? 7 : 2;
-      const color = spoofable ? '#ef4444' : '#22c55e';
-      
+      if (!/^https?:\/\//i.test(data)) {
+        outputArea.innerHTML = `
+          <div class="placeholder-text" style="color: var(--accent-main);">
+            <i data-lucide="shield-check" style="width: 48px; height: 48px;"></i>
+            <span>Plain-text payload, not a URL &mdash; no redirect-spoofing surface to check.</span>
+          </div>`;
+        lucide.createIcons();
+        return;
+      }
+
+      let url;
+      try {
+        url = new URL(data);
+      } catch {
+        outputArea.innerHTML = `
+          <div class="placeholder-text" style="color: #ef4444;">
+            <i data-lucide="triangle-alert" style="width: 48px; height: 48px;"></i>
+            <span>Malformed URL &mdash; can't be parsed to analyze.</span>
+          </div>`;
+        lucide.createIcons();
+        return;
+      }
+
+      const findings = [];
+      if (/^(\d{1,3}\.){3}\d{1,3}$/.test(url.hostname) || url.hostname.includes(':')) {
+        findings.push('Host is a raw IP address rather than a domain name');
+      }
+      if (url.hostname.split('.').some(label => label.startsWith('xn--'))) {
+        findings.push('Punycode-encoded label present &mdash; possible homograph/lookalike domain');
+      }
+      if (url.username || url.password) {
+        findings.push('URL contains userinfo before the host (user@host) &mdash; the visible label can mislead about the real destination');
+      }
+      if (URL_SHORTENERS.has(url.hostname.replace(/^www\./, ''))) {
+        findings.push(`Known URL-shortener domain (${url.hostname}) &mdash; the real destination is hidden until the link is followed`);
+      }
+      if (url.hostname.split('.').length >= 5) {
+        findings.push('Unusually deep subdomain chain &mdash; a common trick for burying a fake brand name earlier in the hostname');
+      }
+      if (url.port && !['80', '443'].includes(url.port)) {
+        findings.push(`Non-standard port (${url.port})`);
+      }
+
+      const score = Math.min(findings.length ? findings.length * 2 + 1 : 0, 10);
+      const color = score >= 5 ? '#ef4444' : (score > 0 ? '#eab308' : '#22c55e');
+      const list = findings.length
+        ? findings.map(f => `<li>${f}</li>`).join('')
+        : '<li>No red flags found in the URL\'s structure</li>';
+
       outputArea.innerHTML = `
-        <div class="placeholder-text" style="color: ${color}; gap: 5px;">
-          <i data-lucide="shield-alert" style="width: 48px; height: 48px;"></i>
-          <span style="font-weight: 700; font-size: 1.1em;">Mock Risk Score: ${score}/10</span>
-          <span style="font-size: 0.9em;">Analysis detects potentially ${score > 5 ? 'vulnerable' : 'safe'} redirect architecture. Attack scenario: replacement of legitimate QR with one appending malicious query string.</span>
+        <div class="placeholder-text" style="color: ${color}; gap: 8px; text-align: left; align-items: flex-start; max-width: 340px;">
+          <div style="display:flex; align-items:center; gap:8px; align-self:center;">
+            <i data-lucide="shield-alert" style="width: 32px; height: 32px;"></i>
+            <span style="font-weight: 700; font-size: 1.1em;">Structural Risk Score: ${score}/10</span>
+          </div>
+          <ul style="margin:0; padding-left: 18px; font-size: 0.85em; line-height:1.5;">${list}</ul>
+          <span style="font-size: 0.78em; opacity: 0.75; align-self:center; text-align:center;">Heuristic checks on the URL's structure only, not a live reputation lookup. Pair with the <a href="malicious-url-checker-dns-only.html" style="color:inherit;">Threat Intelligence Scanner</a> for that.</span>
         </div>`;
       lucide.createIcons();
     }
