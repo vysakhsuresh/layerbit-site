@@ -16,6 +16,39 @@
   <meta name="twitter:title" content="Threat Intelligence Scanner - Layerbit" />
   <meta name="twitter:description" content="Enterprise Malicious URL Scanner. Perform real-time threat intelligence checks via Google Safe Browsing and VirusTotal APIs." />
   <meta name="twitter:image" content="https://layerbit.co.in/layerbit-logo.png" />
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "How are Google Safe Browsing and VirusTotal checked synchronously?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Layerbit's scanning interface communicates with a specialized proxy API hosted on a Render server. When a scan is initiated, the proxy API concurrently dispatches requests to the Google Safe Browsing lookup endpoint and the VirusTotal URL report endpoint. The API aggregates these diverse threat scores and DNS metadata before returning the structured JSON response to your browser."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Does this scan guarantee a URL is safe?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "No, a scan only verifies if a URL is currently listed on public registries. Malicious actors frequently utilize \"bulletproof hosting\" and dynamic DNS to cycle through domains faster than registries can index them. A CLEAN result is a standard baseline, not a definitive guarantee of safety. Defensive logic requires perpetual skepticism of untrusted links."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Is the URL itself transmitted or stored?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "This is a fundamental privacy consideration. The scanner parses the protocol, hostname, and path locally in your browser DOM first. When the full scan is initiated, the URL is transmitted securely via HTTPS to the proxy API, which then passes the URL to Google and VirusTotal for analysis. While standard public API endpoints handle this data, Safe Browsing often utilizes hash-based lookups to preserve user privacy."
+        }
+      }
+    ]
+  }
+  </script>
   
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6072772587431629" crossorigin="anonymous"></script>
   
@@ -25,33 +58,10 @@
   <link href="../layerbit-logo.png" rel="icon" type="image/x-icon" />
   <link rel="manifest" href="../manifest.json" />
   <link rel="apple-touch-icon" href="../apple-touch-icon.png" />
+  <link rel="stylesheet" href="../css/base.css" />
   
   <style>
     /* Ultra-Premium Dark Theme Variables */
-    :root {
-      --bg-base: #0a0c10;
-      --bg-gradient: radial-gradient(circle at 50% 0%, #1a1e2d 0%, #0a0c10 70%);
-      --text-main: #f8fafc;
-      --text-muted: #94a3b8;
-      --card-bg: rgba(20, 22, 30, 0.6);
-      --card-border: rgba(255, 255, 255, 0.08);
-      --card-hover-border: rgba(56, 189, 248, 0.4);
-      --accent-main: #38bdf8;
-      --accent-glow: rgba(56, 189, 248, 0.5);
-      --neon-gradient: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%);
-      
-      /* Threat Colors */
-      --threat-clean: #22c55e;
-      --threat-warn: #eab308;
-      --threat-critical: #ef4444;
-      --threat-neutral: #64748b;
-    }
-
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    a:focus-visible, button:focus-visible, select:focus-visible, input:focus-visible, [tabindex]:focus-visible {
-      outline: 2px solid var(--accent-main); outline-offset: 2px;
-    }
-    html { scroll-behavior: smooth; }
 
     body {
       font-family: 'Space Grotesk', sans-serif;
@@ -65,8 +75,6 @@
       display: flex;
       flex-direction: column;
     }
-
-    @keyframes drift { from { background-position: 0 0, 20px 20px; } to { background-position: -60px -60px, -40px -40px; } }
     body::before {
       content: ''; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
       background-image: radial-gradient(rgba(255,255,255,0.08) 1px, transparent 1px), radial-gradient(rgba(255,255,255,0.05) 1px, transparent 1px);
@@ -74,8 +82,6 @@
     }
 
     header { display: flex; justify-content: flex-start; align-items: center; max-width: 1400px; width: 100%; margin: 0 auto 40px auto; }
-    .brand { font-size: 1.6em; font-weight: 700; display: flex; align-items: center; gap: 12px; text-decoration: none; color: #fff; }
-    .brand svg { filter: drop-shadow(0 0 10px var(--accent-glow)); }
 
     .hero { text-align: center; margin-bottom: 40px; animation: fadeIn 1s ease-out; }
     .hero h1 { font-size: 2.8em; font-weight: 700; margin-bottom: 10px; }
@@ -254,42 +260,11 @@
     }
 
     /* Info Panel & Documentation Sections */
-    .info-panel { max-width: 900px; margin: 0 auto 60px auto; background: rgba(255,255,255,0.02); border: 1px solid var(--card-border); padding: 40px; border-radius: 20px; }
-    .info-panel h2 { color: #fff; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
-    .info-panel h2 i { color: var(--accent-main); }
-    .info-panel p { color: var(--text-muted); margin-bottom: 20px; line-height: 1.7; }
     
     /* Use Cases Grid */
-    .use-cases-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-      gap: 20px;
-      margin-top: 20px;
-    }
-    .use-case-card {
-      background: rgba(255,255,255,0.03);
-      padding: 20px;
-      border-radius: 12px;
-      border: 1px solid rgba(255,255,255,0.05);
-    }
-    .use-case-card h3 { display: flex; align-items: center; gap: 8px; font-size: 1.1em; margin-bottom: 10px; color: #fff; }
-    .use-case-card h3 i { color: var(--accent-main); width: 16px; }
-    .use-case-card p { font-size: 0.9em; margin-bottom: 0; color: var(--text-muted); line-height: 1.6; }
 
     /* FAQ Accordion */
     .faq-accordion { display: flex; flex-direction: column; gap: 10px; }
-    .faq-item { border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; overflow: hidden; }
-    
-    .faq-question {
-      width: 100%; background: rgba(255,255,255,0.03); border: none; padding: 18px 20px;
-      color: #fff; font-size: 1em; font-weight: 500; text-align: left; cursor: pointer;
-      display: flex; justify-content: space-between; align-items: center;
-    }
-    .faq-question i { color: var(--accent-main); transition: transform 0.3s; }
-    .faq-question.active i { transform: rotate(180deg); }
-    
-    .faq-answer { max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out; background: rgba(0,0,0,0.2); }
-    .faq-answer p { padding: 20px; margin: 0; font-size: 0.95em; color: var(--text-muted); line-height: 1.6; }
 
     /* Changelog Panel */
     .changelog-panel { max-width: 900px; margin: 0 auto 60px auto; background: rgba(255,255,255,0.02); border: 1px solid var(--card-border); padding: 40px; border-radius: 20px; }
@@ -312,9 +287,6 @@
     .fab:hover { transform: scale(1.1); border-color: var(--accent-main); background: rgba(30, 34, 48, 0.9); box-shadow: 0 12px 30px rgba(0,0,0,0.6), 0 0 25px rgba(56, 189, 248, 0.3); }
 
     footer { text-align: center; padding: 40px 0; border-top: 1px solid var(--card-border); color: var(--text-muted); font-size: 0.95em; margin-top: auto; }
-
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(-15px); } to { opacity: 1; transform: translateY(0); } }
-    @keyframes fadeSlideUp { from { opacity: 0; transform: translateY(40px); } to { opacity: 1; transform: translateY(0); } }
 
     /* Responsive Design Adjustments */
     @media (max-width: 768px) {
@@ -518,10 +490,11 @@
     &copy; 2025 - 2026 <strong>Layerbit Technologies</strong>. All rights reserved.
   </footer>
 
-  <script>
-    lucide.createIcons();
+  <script src="../js/shared.js"></script>
 
-    const urlInput = document.getElementById('urlInput');
+
+  <script>
+        const urlInput = document.getElementById('urlInput');
     const btnScan = document.getElementById('btnScan');
     const parseGrid = document.getElementById('parseGrid');
     const valProtocol = document.getElementById('valProtocol');
@@ -686,24 +659,7 @@
     }
 
     // FAQ Accordion JavaScript
-    document.querySelectorAll('.faq-question').forEach(button => {
-      button.addEventListener('click', () => {
-        const answer = button.nextElementSibling;
-        const isActive = button.classList.contains('active');
-        
-        // Close others
-        document.querySelectorAll('.faq-question').forEach(btn => {
-          btn.classList.remove('active');
-          btn.nextElementSibling.style.maxHeight = null;
-        });
-
-        if (!isActive) {
-          button.classList.add('active');
-          answer.style.maxHeight = answer.scrollHeight + "px";
-        }
-      });
-    });
-
+    
     // Quick Test Template Handlers
     function loadBenign() {
       urlInput.value = "https://www.wikipedia.org/";

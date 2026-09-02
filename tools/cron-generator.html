@@ -16,6 +16,39 @@
   <meta name="twitter:title" content="Cron Expression Synthesizer - Layerbit" />
   <meta name="twitter:description" content="Advanced Cron Expression Generator and Parser. Build, decode, and validate cron schedules in real-time." />
   <meta name="twitter:image" content="https://layerbit.co.in/layerbit-logo.png" />
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What is a Cron Expression?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "A cron expression is a string comprising five or six fields separated by white space that represents a set of times, normally as a schedule to execute a specific routine or script. It is the standard time-based job scheduler in Unix-like computer operating systems."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Why did my Cron job run at the wrong time?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "The most common reason for unexpected scheduling is timezone discrepancies. By default, most cloud servers and CI/CD pipelines (like GitHub Actions) operate strictly on Coordinated Universal Time (UTC). If you schedule a job for 9:00 AM local time, you must calculate and apply the correct UTC offset in your expression."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is the difference between standard and non-standard syntax?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Standard POSIX cron utilizes 5 fields (Minute, Hour, Day of Month, Month, Day of Week). Some advanced schedulers (like Quartz) utilize a 6th or 7th field for Seconds and Years. Layerbit currently generates universal 5-field syntax, which guarantees the highest compatibility across all major operating systems and cloud providers."
+        }
+      }
+    ]
+  }
+  </script>
   
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6072772587431629" crossorigin="anonymous"></script>
   
@@ -27,28 +60,10 @@
   <link href="../layerbit-logo.png" rel="icon" type="image/x-icon" />
   <link rel="manifest" href="../manifest.json" />
   <link rel="apple-touch-icon" href="../apple-touch-icon.png" />
+  <link rel="stylesheet" href="../css/base.css" />
   
   <style>
     /* Ultra-Premium Dark Theme Variables */
-    :root {
-      --bg-base: #0a0c10;
-      --bg-gradient: radial-gradient(circle at 50% 0%, #1a1e2d 0%, #0a0c10 70%);
-      --text-main: #f8fafc;
-      --text-muted: #94a3b8;
-      --card-bg: rgba(20, 22, 30, 0.6);
-      --card-border: rgba(255, 255, 255, 0.08);
-      --accent-main: #38bdf8;
-      --accent-glow: rgba(56, 189, 248, 0.5);
-      --neon-gradient: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%);
-      --error-color: #ef4444;
-      --success-color: #22c55e;
-    }
-
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    a:focus-visible, button:focus-visible, select:focus-visible, input:focus-visible, [tabindex]:focus-visible {
-      outline: 2px solid var(--accent-main); outline-offset: 2px;
-    }
-    html { scroll-behavior: smooth; }
 
     body {
       font-family: 'Space Grotesk', sans-serif;
@@ -62,8 +77,6 @@
       display: flex;
       flex-direction: column;
     }
-
-    @keyframes drift { from { background-position: 0 0, 20px 20px; } to { background-position: -60px -60px, -40px -40px; } }
     body::before {
       content: ''; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
       background-image: radial-gradient(rgba(255,255,255,0.08) 1px, transparent 1px), radial-gradient(rgba(255,255,255,0.05) 1px, transparent 1px);
@@ -71,8 +84,6 @@
     }
 
     header { display: flex; justify-content: flex-start; align-items: center; max-width: 1400px; width: 100%; margin: 0 auto 40px auto; }
-    .brand { font-size: 1.6em; font-weight: 700; display: flex; align-items: center; gap: 12px; text-decoration: none; color: #fff; }
-    .brand svg { filter: drop-shadow(0 0 10px var(--accent-glow)); }
 
     .hero { text-align: center; margin-bottom: 40px; animation: fadeIn 1s ease-out; }
     .hero h1 { font-size: 2.8em; font-weight: 700; margin-bottom: 10px; }
@@ -245,73 +256,13 @@
       flex-direction: column;
       gap: 30px;
     }
-
-    .info-panel {
-      background: rgba(255,255,255,0.02);
-      border: 1px solid var(--card-border);
-      padding: 40px;
-      border-radius: 20px;
-    }
-
-    .info-panel h2 { color: #fff; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
-    .info-panel h2 i { color: var(--accent-main); }
-    .info-panel p { color: var(--text-muted); margin-bottom: 20px; line-height: 1.7; }
     
     /* Use Cases Grid */
-    .use-cases-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-      gap: 20px;
-      margin-top: 20px;
-    }
-    
-    .use-case-card {
-      background: rgba(255,255,255,0.03);
-      padding: 20px;
-      border-radius: 12px;
-      border: 1px solid rgba(255,255,255,0.05);
-    }
-    
-    .use-case-card h3 { display: flex; align-items: center; gap: 8px; font-size: 1.1em; margin-bottom: 10px; color: #fff; }
-    .use-case-card h3 i { color: var(--accent-main); width: 16px; }
-    .use-case-card p { font-size: 0.9em; margin-bottom: 0; color: var(--text-muted); line-height: 1.6; }
 
     /* FAQ Accordion */
-    .faq-item {
-      border: 1px solid rgba(255,255,255,0.05);
-      border-radius: 12px;
-      margin-bottom: 10px;
-      overflow: hidden;
-    }
-    .faq-question {
-      width: 100%;
-      background: rgba(255,255,255,0.03);
-      border: none;
-      padding: 18px 20px;
-      color: #fff;
-      font-size: 1em;
-      font-weight: 500;
-      text-align: left;
-      cursor: pointer;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      transition: background 0.2s;
-    }
-    .faq-question:hover { background: rgba(255,255,255,0.05); }
-    .faq-question i { transition: transform 0.3s; color: var(--accent-main); }
-    .faq-question.active i { transform: rotate(180deg); }
-    .faq-answer {
-      max-height: 0;
-      overflow: hidden;
-      transition: max-height 0.3s ease-out;
-      background: rgba(0,0,0,0.2);
-    }
-    .faq-answer p { padding: 20px; margin: 0; font-size: 0.95em; color: var(--text-muted); line-height: 1.6; }
 
     /* Changelog */
     .changelog-list { list-style: none; }
-    .changelog-list li { margin-bottom: 12px; font-size: 0.95em; color: var(--text-muted); display: flex; align-items: flex-start; gap: 10px; }
     .changelog-tag { background: var(--accent-main); color: #000; padding: 2px 8px; border-radius: 4px; font-weight: 600; font-size: 0.8em; }
 
     /* Command Center FAB */
@@ -337,9 +288,6 @@
       .fab { bottom: 20px; left: 20px; width: 50px; height: 50px; }
       .fab svg { width: 22px; height: 22px; }
     }
-
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(-15px); } to { opacity: 1; transform: translateY(0); } }
-    @keyframes fadeSlideUp { from { opacity: 0; transform: translateY(40px); } to { opacity: 1; transform: translateY(0); } }
   </style>
 </head>
 <body>
@@ -535,10 +483,11 @@
     &copy; 2025 - 2026 <strong>Layerbit Technologies</strong>. All rights reserved.
   </footer>
 
-  <script>
-    lucide.createIcons();
+  <script src="../js/shared.js"></script>
 
-    const cronInput = document.getElementById("cronInput");
+
+  <script>
+        const cronInput = document.getElementById("cronInput");
     const terminalPane = document.getElementById("terminalPane");
     const cronTranslation = document.getElementById("cronTranslation");
     const btnCopy = document.getElementById("btnCopy");
@@ -635,23 +584,7 @@
     });
 
     // FAQ Accordion Logic
-    document.querySelectorAll('.faq-question').forEach(button => {
-      button.addEventListener('click', () => {
-        const answer = button.nextElementSibling;
-        const isActive = button.classList.contains('active');
-        
-        document.querySelectorAll('.faq-question').forEach(btn => {
-          btn.classList.remove('active');
-          btn.nextElementSibling.style.maxHeight = null;
-        });
-
-        if (!isActive) {
-          button.classList.add('active');
-          answer.style.maxHeight = answer.scrollHeight + "px";
-        }
-      });
-    });
-
+    
     // Presets Logic
     function injectPreset(cronStr) {
       cronInput.value = cronStr;
