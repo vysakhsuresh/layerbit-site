@@ -496,6 +496,7 @@
     <div class="info-panel">
       <h2><i data-lucide="git-commit"></i> Changelog</h2>
       <ul class="changelog-list">
+        <li><span class="changelog-tag">v1.3.1</span> Fixed a bug where the icon library loading asynchronously could cause a valid expression to be mislabeled as a syntax error on page load.</li>
         <li><span class="changelog-tag">v1.3.0</span> Added a Next 5 Run Times preview (UTC, clearly labeled) for any valid expression, computed entirely client-side.</li>
         <li><span class="changelog-tag">v1.2.0</span> Introduced the visual dropdown builder map for faster segment configuration.</li>
         <li><span class="changelog-tag">v1.1.0</span> Integrated real-time parsing engine with syntax validation and instant translation feedback.</li>
@@ -657,36 +658,48 @@
       }
     }
 
+    // Guard against lucide's async CDN script not having loaded yet (e.g. a
+    // browser restoring <select> state and firing 'change' before it lands),
+    // so a missing icon library never gets mistaken for a cron syntax error.
+    function safeCreateIcons() {
+      try {
+        if (window.lucide) lucide.createIcons();
+      } catch (e) {}
+    }
+
     // Initialize cronstrue
     function translateCron() {
       const val = cronInput.value.trim();
-      
+
       if(val.split(' ').length < 5) {
         setInvalid("Incomplete Expression");
         return;
       }
 
+      let readable;
       try {
-        const readable = cronstrue.toString(val, { throwExceptionOnParseError: true });
-        setValid(readable);
-        syncDropdowns(val);
-        updateNextRuns(val);
+        readable = cronstrue.toString(val, { throwExceptionOnParseError: true });
       } catch (err) {
         setInvalid(err.toString().replace("Error: ", ""));
+        return;
       }
+
+      setValid(readable);
+      syncDropdowns(val);
+      updateNextRuns(val);
     }
 
     function setValid(text) {
       terminalPane.classList.remove("error");
       cronTranslation.innerHTML = `<i data-lucide="check-circle" style="color: var(--success-color);"></i> ${text}`;
-      lucide.createIcons();
+      safeCreateIcons();
     }
 
     function setInvalid(text) {
       terminalPane.classList.add("error");
       cronTranslation.innerHTML = `<i data-lucide="alert-triangle"></i> Syntax Error: ${text}`;
       nextRunsEl.style.display = 'none';
-      lucide.createIcons();
+      safeCreateIcons();
     }
 
     // Sync from Terminal -> Dropdowns
@@ -757,10 +770,10 @@
       navigator.clipboard.writeText(text).then(() => {
         const originalText = btnCopy.innerHTML;
         btnCopy.innerHTML = '<i data-lucide="check"></i> Copied!';
-        lucide.createIcons();
+        safeCreateIcons();
         setTimeout(() => {
           btnCopy.innerHTML = originalText;
-          lucide.createIcons();
+          safeCreateIcons();
         }, 2000);
       });
     }
