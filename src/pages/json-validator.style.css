@@ -164,6 +164,53 @@
     .syn-boolean { color: var(--syn-boolean); }
     .syn-null { color: var(--syn-null); font-style: italic; }
 
+    /* Output View Toggle (Text / Tree) */
+    .view-toggle {
+      display: flex;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .view-tab {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      padding: 6px 14px;
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 600;
+      font-size: 0.85em;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .view-tab:hover { color: #fff; }
+    .view-tab.active { background: rgba(56, 189, 248, 0.15); color: var(--accent-main); }
+
+    /* Collapsible JSON Tree View */
+    .json-tree { cursor: default; overflow-x: auto; }
+    .tree-row {
+      display: flex;
+      align-items: center;
+      white-space: pre;
+      padding: 1px 0;
+    }
+    .tree-toggle { cursor: pointer; user-select: none; }
+    .tree-toggle:hover { background: rgba(255,255,255,0.04); border-radius: 4px; }
+    .tree-caret {
+      width: 14px; height: 14px; flex-shrink: 0; margin-right: 4px;
+      color: var(--text-muted);
+      transition: transform 0.15s ease;
+    }
+    .tree-node.collapsed > .tree-toggle .tree-caret { transform: rotate(-90deg); }
+    .tree-punct { color: var(--text-muted); }
+    .tree-summary { display: none; color: var(--text-muted); font-style: italic; margin: 0 6px; }
+    .tree-node.collapsed > .tree-toggle .tree-summary { display: inline; }
+    .tree-node.collapsed > .tree-toggle .tree-inline-close { display: inline; }
+    .tree-inline-close { display: none; }
+    .tree-node.collapsed > .tree-children,
+    .tree-node.collapsed > .tree-close-line { display: none; }
+    .tree-children { margin: 0; }
+
     /* SEO/Docs Section Additions */
     .docs-container {
       max-width: 1400px;

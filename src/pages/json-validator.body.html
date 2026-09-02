@@ -26,11 +26,18 @@
       <div class="pane-header">
         <div class="pane-title"><i data-lucide="check-circle"></i> Formatted Result</div>
         <div class="btn-group">
+          <div class="view-toggle">
+            <button class="view-tab active" id="viewTabText" onclick="setOutputView('text')">Text</button>
+            <button class="view-tab" id="viewTabTree" onclick="setOutputView('tree')">Tree</button>
+          </div>
+          <button class="btn" id="btnExpandAll" onclick="setAllTreeNodes(false)" title="Expand All" style="display:none;"><i data-lucide="chevrons-down"></i></button>
+          <button class="btn" id="btnCollapseAll" onclick="setAllTreeNodes(true)" title="Collapse All" style="display:none;"><i data-lucide="chevrons-up"></i></button>
           <button class="btn" id="btnDownload"><i data-lucide="download"></i> Download</button>
           <button class="btn" id="btnCopy"><i data-lucide="copy"></i> Copy to Clipboard</button>
         </div>
       </div>
       <div id="jsonOutput" class="output-area"></div>
+      <div id="jsonTree" class="output-area json-tree" style="display:none;"></div>
     </div>
   </div>
 
@@ -92,12 +99,20 @@
           </div>
         </div>
 
+        <div class="faq-item">
+          <button class="faq-question">What does the Tree view offer over the raw text output? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer">
+            <p>The Tree view renders the same parsed payload as a collapsible outline, letting you fold entire objects or arrays down to a single line and expand only the branches you need. This is especially useful for deeply nested API responses, where the plain formatted text can run to thousands of lines. Use Expand All or Collapse All to jump between a full overview and a fully drilled-in view.</p>
+          </div>
+        </div>
+
       </div>
     </div>
 
     <div class="info-panel">
       <h2><i data-lucide="git-commit"></i> Changelog</h2>
       <ul class="changelog-list">
+        <li><span class="changelog-tag">v1.4.0</span> Added a collapsible Tree view alongside the raw text output, with Expand All / Collapse All controls for quickly navigating deeply nested payloads.</li>
         <li><span class="changelog-tag">v1.3.0</span> Added a Download button next to Copy to Clipboard, matching every other converter in the suite.</li>
         <li><span class="changelog-tag">v1.2.0</span> Optimized syntax highlighting engine to prevent browser lock-ups when rendering heavily nested arrays over 5MB.</li>
         <li><span class="changelog-tag">v1.1.5</span> Adjusted dark theme contrast ratios for better accessibility and added deep clipboard integration for instant payload copying.</li>
@@ -123,6 +138,7 @@
         // Elements
     const jsonInput = document.getElementById('jsonInput');
     const jsonOutput = document.getElementById('jsonOutput');
+    const jsonTree = document.getElementById('jsonTree');
     const errorBanner = document.getElementById('errorBanner');
     const errorText = document.getElementById('errorText');
     const btnFormat = document.getElementById('btnFormat');
@@ -130,6 +146,13 @@
     const btnClear = document.getElementById('btnClear');
     const btnCopy = document.getElementById('btnCopy');
     const btnDownload = document.getElementById('btnDownload');
+    const viewTabText = document.getElementById('viewTabText');
+    const viewTabTree = document.getElementById('viewTabTree');
+    const btnExpandAll = document.getElementById('btnExpandAll');
+    const btnCollapseAll = document.getElementById('btnCollapseAll');
+
+    let outputView = 'text'; // 'text' or 'tree'
+    let lastParsed = null; // the most recently parsed JSON value, for the tree view
 
     // Syntax Highlighter Logic
     function syntaxHighlight(jsonStr) {
@@ -151,12 +174,91 @@
       });
     }
 
+    // Collapsible Tree View Logic
+    let treeNodeSeq = 0;
+
+    function formatScalar(val) {
+      if (val === null) return `<span class="syn-null">null</span>`;
+      if (typeof val === 'boolean') return `<span class="syn-boolean">${val}</span>`;
+      if (typeof val === 'number') return `<span class="syn-number">${val}</span>`;
+      return `<span class="syn-string">"${escapeHTMLText(String(val))}"</span>`;
+    }
+
+    function escapeHTMLText(str) {
+      return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+
+    // Builds the HTML for one tree node (and, recursively, its children)
+    function buildTreeNode(key, value, isLast, depth) {
+      const indent = `padding-left:${depth * 18}px`;
+      const keyHTML = key !== null ? `<span class="syn-key">"${escapeHTMLText(String(key))}"</span><span class="tree-punct">: </span>` : '';
+      const comma = isLast ? '' : '<span class="tree-punct">,</span>';
+
+      if (value !== null && typeof value === 'object') {
+        const isArray = Array.isArray(value);
+        const entries = isArray ? value.map((v, i) => [i, v]) : Object.entries(value);
+        const openBr = isArray ? '[' : '{';
+        const closeBr = isArray ? ']' : '}';
+
+        if (entries.length === 0) {
+          return `<div class="tree-row tree-leaf" style="${indent}">${keyHTML}<span class="tree-punct">${openBr}${closeBr}</span>${comma}</div>`;
+        }
+
+        const count = entries.length;
+        const label = `${count} ${isArray ? (count === 1 ? 'item' : 'items') : (count === 1 ? 'key' : 'keys')}`;
+        const id = 'tnode-' + (treeNodeSeq++);
+        const childrenHTML = entries
+          .map(([k, v], i) => buildTreeNode(isArray ? null : k, v, i === entries.length - 1, depth + 1))
+          .join('');
+
+        return `
+          <div class="tree-node" id="${id}">
+            <div class="tree-row tree-toggle" style="${indent}" onclick="toggleTreeNode('${id}')">
+              <i data-lucide="chevron-down" class="tree-caret"></i>${keyHTML}<span class="tree-punct">${openBr}</span><span class="tree-summary">${label}</span><span class="tree-punct tree-inline-close">${closeBr}${comma}</span>
+            </div>
+            <div class="tree-children">${childrenHTML}</div>
+            <div class="tree-row tree-close-line" style="${indent}"><span class="tree-punct">${closeBr}${comma}</span></div>
+          </div>
+        `;
+      }
+
+      return `<div class="tree-row tree-leaf" style="${indent}">${keyHTML}${formatScalar(value)}${comma}</div>`;
+    }
+
+    function renderTree(parsed) {
+      treeNodeSeq = 0;
+      jsonTree.innerHTML = buildTreeNode(null, parsed, true, 0);
+      if (window.lucide) lucide.createIcons();
+    }
+
+    function toggleTreeNode(id) {
+      const el = document.getElementById(id);
+      if (el) el.classList.toggle('collapsed');
+    }
+
+    function setAllTreeNodes(collapsed) {
+      jsonTree.querySelectorAll('.tree-node').forEach(el => el.classList.toggle('collapsed', collapsed));
+    }
+
+    function setOutputView(view) {
+      outputView = view;
+      const isTree = view === 'tree';
+      viewTabText.classList.toggle('active', !isTree);
+      viewTabTree.classList.toggle('active', isTree);
+      jsonOutput.style.display = isTree ? 'none' : '';
+      jsonTree.style.display = isTree ? '' : 'none';
+      btnExpandAll.style.display = isTree ? '' : 'none';
+      btnCollapseAll.style.display = isTree ? '' : 'none';
+    }
+
     // Core Process Logic
     function processJSON(action) {
       const raw = jsonInput.value.trim();
       errorBanner.classList.remove('active');
       jsonOutput.innerHTML = '';
-      
+      jsonTree.innerHTML = '';
+      lastParsed = null;
+
       if (!raw) return;
 
       try {
@@ -170,7 +272,9 @@
         }
 
         jsonOutput.innerHTML = syntaxHighlight(resultStr);
-        
+        lastParsed = parsed;
+        renderTree(parsed);
+
       } catch (err) {
         errorText.textContent = `Invalid JSON: ${err.message}`;
         errorBanner.classList.add('active');
@@ -184,26 +288,30 @@
     btnClear.addEventListener('click', () => {
       jsonInput.value = '';
       jsonOutput.innerHTML = '';
+      jsonTree.innerHTML = '';
+      lastParsed = null;
       errorBanner.classList.remove('active');
     });
 
     btnCopy.addEventListener('click', () => {
-      const text = jsonOutput.innerText;
+      // Use textContent (not innerText) since jsonOutput may be display:none while
+      // the Tree view is active -- innerText returns "" for unrendered elements.
+      const text = jsonOutput.textContent;
       if(!text) return;
 
       navigator.clipboard.writeText(text).then(() => {
         const originalText = btnCopy.innerHTML;
         btnCopy.innerHTML = '<i data-lucide="check"></i> Copied!';
-        lucide.createIcons();
+        if (window.lucide) lucide.createIcons();
         setTimeout(() => {
           btnCopy.innerHTML = '<i data-lucide="copy"></i> Copy to Clipboard';
-          lucide.createIcons();
+          if (window.lucide) lucide.createIcons();
         }, 2000);
       });
     });
 
     btnDownload.addEventListener('click', () => {
-      const text = jsonOutput.innerText;
+      const text = jsonOutput.textContent;
       if (!text) return;
 
       const blob = new Blob([text], { type: "application/json;charset=utf-8;" });
