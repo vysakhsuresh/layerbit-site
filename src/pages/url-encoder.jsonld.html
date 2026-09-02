@@ -1,0 +1,32 @@
+<script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What is the technical difference between Smart and Raw mode?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Smart Mode attempts to parse the string using the JavaScript URL API, extracting and modifying the URLSearchParams to safely encode query parameters while preserving the base protocol structure. Raw Mode bypasses URL parsing and applies a blanket encodeURIComponent() to the entire string."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Why is client-side processing necessary?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "URLs frequently contain highly sensitive session tokens, API keys, and temporary authorization grants within their parameters. Processing this data entirely within your local browser DOM guarantees zero-trust security—your keys are never sent to or logged by our servers."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How does Parameter Forensics work?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "When a valid URL is detected, the engine intercepts the search property of the parsed URL object. It iterates through the URLSearchParams map, automatically escaping HTML entities to prevent DOM injection, and populates the visual breakdown grid."
+        }
+      }
+    ]
+  }
+  </script>

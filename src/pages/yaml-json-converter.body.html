@@ -1,0 +1,246 @@
+{{HEADER}}
+
+  <main class="hero">
+    <h1>YAML ↔ JSON Synchronizer</h1>
+    <p>Real-time bidirectional serialization between YAML markup and JSON data structures.</p>
+  </main>
+
+  <div class="ide-container">
+    
+    <div class="pane">
+      <div class="pane-header">
+        <div class="pane-title title-yaml"><i data-lucide="file-code-2"></i> YAML Config</div>
+        <div class="btn-group">
+          <span id="yamlError" class="error-text"><i data-lucide="alert-circle"></i> Invalid Syntax</span>
+          <button class="btn" onclick="copyContent('yamlInput', this)"><i data-lucide="copy"></i> Copy</button>
+          <button class="btn" onclick="downloadFile('yamlInput', 'yaml')"><i data-lucide="download"></i> Save</button>
+        </div>
+      </div>
+      <textarea id="yamlInput" class="editor" placeholder="Paste or type YAML here...&#10;&#10;server:&#10;  port: 8080&#10;  host: localhost&#10;features:&#10;  - logging&#10;  - metrics" spellcheck="false"></textarea>
+    </div>
+
+    <div class="pane">
+      <div class="pane-header">
+        <div class="pane-title title-json"><i data-lucide="braces"></i> JSON Payload</div>
+        <div class="btn-group">
+          <span id="jsonError" class="error-text"><i data-lucide="alert-circle"></i> Invalid Syntax</span>
+          <button class="btn" onclick="copyContent('jsonInput', this)"><i data-lucide="copy"></i> Copy</button>
+          <button class="btn" onclick="downloadFile('jsonInput', 'json')"><i data-lucide="download"></i> Save</button>
+        </div>
+      </div>
+      <textarea id="jsonInput" class="editor" placeholder='Paste or type JSON here...&#10;&#10;{&#10;  "server": {&#10;    "port": 8080,&#10;    "host": "localhost"&#10;  },&#10;  "features": [&#10;    "logging",&#10;    "metrics"&#10;  ]&#10;}' spellcheck="false"></textarea>
+    </div>
+
+  </div>
+
+  <div class="action-bar">
+    <button class="btn-clear" onclick="clearAll()"><i data-lucide="trash-2"></i> Clear Workspace</button>
+  </div>
+
+  <div class="docs-container">
+    <div class="info-panel">
+      <h2><i data-lucide="workflow"></i> Bidirectional Architecture</h2>
+      <p>The Layerbit Serializer eliminates the need for manual conversion triggers. Engineered for DevOps and Backend engineers handling config files (Kubernetes, Docker, CI/CD) and API payloads.</p>
+      <ul>
+        <li><i data-lucide="check"></i> <strong>Live Synchronization:</strong> Type in either the YAML or JSON pane, and the engine automatically parses and translates your data to the opposing format in real-time.</li>
+        <li><i data-lucide="check"></i> <strong>Non-Destructive Parsing:</strong> Syntax errors in one pane will not erase data in the other; a localized warning simply alerts you until the syntax is corrected.</li>
+        <li><i data-lucide="check"></i> <strong>Zero-Trust Processing:</strong> JS-YAML execution happens entirely within your local browser DOM. No sensitive configurations are sent to external servers.</li>
+      </ul>
+
+      <div class="use-cases-grid">
+        <div class="use-case-card">
+          <h3><i data-lucide="box"></i> Kubernetes Translation</h3>
+          <p>Easily convert sprawling K8s YAML deployment manifests into rigid JSON objects for dynamic programmatic injection or API processing.</p>
+        </div>
+        <div class="use-case-card">
+          <h3><i data-lucide="webhook"></i> API Payload Testing</h3>
+          <p>Drafting complex nested JSON payloads is prone to bracket errors. Draft your payload in YAML for readability, and instantly copy the generated JSON for your API tests.</p>
+        </div>
+        <div class="use-case-card">
+          <h3><i data-lucide="braces"></i> CI/CD Pipeline Configs</h3>
+          <p>Translate specific package configurations or GitHub Actions steps back and forth safely without formatting loss or external data leaks.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="info-panel">
+      <h2><i data-lucide="flask-conical"></i> Quick Testing Templates</h2>
+      <p>Instantly load pre-configured data structures to watch the real-time parser handle complex arrays and object nesting.</p>
+      <div>
+        <button class="sample-btn" onclick="loadSample('k8s')">Kubernetes Deployment</button>
+        <button class="sample-btn" onclick="loadSample('api')">Complex JSON API Payload</button>
+        <button class="sample-btn" onclick="loadSample('docker')">Docker Compose Config</button>
+      </div>
+    </div>
+
+    <div class="info-panel">
+      <h2><i data-lucide="help-circle"></i> Engineering FAQ</h2>
+      <div class="faq-container">
+        
+        <div class="faq-item">
+          <button class="faq-question">How does real-time synchronization prevent infinite loops? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer">
+            <p>Layerbit's serializer utilizes an `isSyncing` boolean flag. When you type in the YAML editor, it locks the JSON editor from firing its own event listener until the conversion finishes. This completely eliminates feedback loops and browser crashing.</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question">Why prefer YAML over JSON for configuration? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer">
+            <p>YAML minimizes structural syntax—removing the need for brackets and quotation marks—and enforces readability through strict indentation. It also natively supports commenting, which JSON strictly forbids, making YAML the standard for human-readable DevOps configuration files.</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question">Is it secure for proprietary server secrets? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer">
+            <p>Absolutely. We employ a Zero-Trust client-side processing architecture. The entire JS-YAML conversion engine runs in your browser's local memory. Your AWS keys, database passwords, and API tokens never touch an external server or log file.</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="info-panel">
+      <h2><i data-lucide="git-merge"></i> Deployment Changelog</h2>
+      <ul class="changelog-list">
+        <li><span class="changelog-tag">v1.2.0</span> Integrated interactive Quick Testing Templates for rapid validation of the bidirectional JS-YAML engine.</li>
+        <li><span class="changelog-tag">v1.1.0</span> Engineered non-destructive syntax error isolation to prevent unintended data loss during edits.</li>
+        <li><span class="changelog-tag">v1.0.0</span> Initial deployment of the secure, real-time client-side synchronization interface.</li>
+      </ul>
+    </div>
+  </div>
+
+  <a href="../" id="smartBackBtn" class="fab" aria-label="Command Center" title="Command Center">
+    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="filter: drop-shadow(0 0 8px rgba(56, 189, 248, 0.5));">
+      <path d="M12 2L2 7l10 5 10-5-10-5z" stroke="#38bdf8" stroke-width="2" stroke-linejoin="round" fill="rgba(56,189,248,0.2)"/>
+      <path d="M2 17l10 5 10-5M2 12l10 5 10-5" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </a>
+
+  {{FOOTER}}
+
+  <script src="../js/shared.js"></script>
+
+
+  <script>
+        const yamlInput = document.getElementById("yamlInput");
+    const jsonInput = document.getElementById("jsonInput");
+    const yamlError = document.getElementById("yamlError");
+    const jsonError = document.getElementById("jsonError");
+
+    let isSyncing = false; // Prevents infinite echo loops
+
+    // YAML to JSON
+    yamlInput.addEventListener("input", () => {
+      if (isSyncing) return;
+      
+      const val = yamlInput.value.trim();
+      if (!val) {
+        isSyncing = true;
+        jsonInput.value = "";
+        yamlError.classList.remove("active");
+        jsonError.classList.remove("active");
+        isSyncing = false;
+        return;
+      }
+
+      try {
+        const obj = jsyaml.load(val);
+        // If parsed object is just a string/number, ignore unless it's a real object
+        if (typeof obj !== 'object' || obj === null) throw new Error("Not a valid object");
+        
+        isSyncing = true;
+        jsonInput.value = JSON.stringify(obj, null, 4);
+        yamlError.classList.remove("active");
+        jsonError.classList.remove("active");
+      } catch (err) {
+        yamlError.classList.add("active");
+      } finally {
+        isSyncing = false;
+      }
+    });
+
+    // JSON to YAML
+    jsonInput.addEventListener("input", () => {
+      if (isSyncing) return;
+
+      const val = jsonInput.value.trim();
+      if (!val) {
+        isSyncing = true;
+        yamlInput.value = "";
+        yamlError.classList.remove("active");
+        jsonError.classList.remove("active");
+        isSyncing = false;
+        return;
+      }
+
+      try {
+        const obj = JSON.parse(val);
+        isSyncing = true;
+        yamlInput.value = jsyaml.dump(obj, { indent: 2, lineWidth: -1 });
+        jsonError.classList.remove("active");
+        yamlError.classList.remove("active");
+      } catch (err) {
+        jsonError.classList.add("active");
+      } finally {
+        isSyncing = false;
+      }
+    });
+
+    // Utilities
+    function clearAll() {
+      yamlInput.value = "";
+      jsonInput.value = "";
+      yamlError.classList.remove("active");
+      jsonError.classList.remove("active");
+    }
+
+    function copyContent(elementId, btnElement) {
+      const text = document.getElementById(elementId).value;
+      if (!text) return;
+      
+      navigator.clipboard.writeText(text).then(() => {
+        const originalText = btnElement.innerHTML;
+        btnElement.innerHTML = '<i data-lucide="check"></i> Copied!';
+        lucide.createIcons();
+        setTimeout(() => {
+          btnElement.innerHTML = originalText;
+          lucide.createIcons();
+        }, 2000);
+      });
+    }
+
+    function downloadFile(elementId, ext) {
+      const text = document.getElementById(elementId).value;
+      if (!text) return;
+
+      const blob = new Blob([text], { type: "text/plain;charset=utf-8;" });
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = `layerbit-config-${Date.now()}.${ext}`;
+      link.click();
+    }
+
+    // FAQ Accordion Logic
+    
+    // Sample Loader Logic
+    function loadSample(type) {
+      const samples = {
+        k8s: `apiVersion: apps/v1\nkind: Deployment\nmetadata:\n  name: layerbit-api\n  labels:\n    app: layerbit\nspec:\n  replicas: 3\n  selector:\n    matchLabels:\n      app: layerbit\n  template:\n    metadata:\n      labels:\n        app: layerbit\n    spec:\n      containers:\n      - name: api\n        image: layerbit/api:latest\n        ports:\n        - containerPort: 8080`,
+        api: `{\n  "status": "success",\n  "data": {\n    "users": [\n      {\n        "id": "usr_1001",\n        "role": "admin",\n        "active": true\n      },\n      {\n        "id": "usr_1002",\n        "role": "editor",\n        "active": false\n      }\n    ],\n    "meta": {\n      "total_records": 2,\n      "current_page": 1\n    }\n  }\n}`,
+        docker: `version: '3.8'\nservices:\n  redis_cache:\n    image: redis:alpine\n    ports:\n      - "6379:6379"\n    volumes:\n      - redis_data:/data\n    environment:\n      - ALLOW_EMPTY_PASSWORD=yes\nvolumes:\n  redis_data:`
+      };
+
+      if (type === 'api') {
+        jsonInput.value = samples[type];
+        jsonInput.dispatchEvent(new Event('input'));
+      } else {
+        yamlInput.value = samples[type];
+        yamlInput.dispatchEvent(new Event('input'));
+      }
+      
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  </script>
+<script src="../main.js"></script>

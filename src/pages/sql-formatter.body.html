@@ -1,0 +1,593 @@
+{{HEADER}}
+
+  <main class="hero">
+    <h1>Universal SQL Formatter</h1>
+    <p>Beautify, debug, and standardize database queries across multiple dialects instantly.</p>
+  </main>
+
+  <div class="ide-container">
+    
+    <div class="pane">
+      <div class="pane-header">
+        <div class="pane-title"><i data-lucide="database"></i> Raw Query</div>
+        <div class="btn-group">
+          <select id="dialectSelect" class="dialect-select" aria-label="SQL dialect">
+            <optgroup label="Common">
+              <option value="sql">Standard SQL</option>
+              <option value="mysql">MySQL</option>
+              <option value="postgresql">PostgreSQL</option>
+              <option value="tsql">T-SQL (SQL Server)</option>
+              <option value="plsql">PL/SQL (Oracle)</option>
+            </optgroup>
+            <optgroup label="More Dialects">
+              <option value="bigquery">BigQuery</option>
+              <option value="db2">DB2</option>
+              <option value="hive">Hive</option>
+              <option value="mariadb">MariaDB</option>
+              <option value="n1ql">N1QL (Couchbase)</option>
+              <option value="redshift">Redshift</option>
+              <option value="spark">Spark</option>
+              <option value="sqlite">SQLite</option>
+              <option value="tidb">TiDB</option>
+              <option value="trino">Trino</option>
+              <option value="singlestoredb">SingleStoreDB</option>
+            </optgroup>
+          </select>
+          <button class="btn" id="btnClear" title="Clear input"><i data-lucide="trash-2"></i></button>
+          <button class="btn" id="btnMinify" title="Minify to a single line"><i data-lucide="minimize-2"></i> Minify</button>
+          <button class="btn btn-primary" id="btnFormat"><i data-lucide="sparkles"></i> Format</button>
+        </div>
+      </div>
+      <div class="options-bar">
+        <label class="option-field">Indent
+          <select id="indentSelect" aria-label="Indent width">
+            <option value="2">2 spaces</option>
+            <option value="4">4 spaces</option>
+          </select>
+        </label>
+        <label class="option-field">Keywords
+          <select id="keywordCaseSelect" aria-label="Keyword case">
+            <option value="upper">UPPER</option>
+            <option value="lower">lower</option>
+            <option value="preserve">Preserve</option>
+          </select>
+        </label>
+        <label class="option-field">Indent Style
+          <select id="indentStyleSelect" aria-label="Indent style">
+            <option value="standard">Standard</option>
+            <option value="tabularLeft">Tabular (comma left)</option>
+            <option value="tabularRight">Tabular (comma right)</option>
+          </select>
+        </label>
+        <label class="option-field checkbox">
+          <input type="checkbox" id="uppercaseFunctions" />
+          Uppercase functions
+        </label>
+      </div>
+      <div class="error-banner" id="errorBanner" role="alert" aria-live="assertive">
+        <div class="error-banner-row">
+          <i data-lucide="triangle-alert"></i>
+          <div class="error-body">
+            <div class="error-headline" id="errorText">SQL Syntax Error.</div>
+            <div class="error-hint" id="errorHint" hidden></div>
+            <pre class="error-snippet" id="errorSnippet" hidden></pre>
+            <button class="error-details-toggle" id="btnErrorDetails" type="button" hidden>Show technical details</button>
+            <pre class="error-raw" id="errorRaw" hidden></pre>
+          </div>
+          <button class="btn" id="btnDismissError" title="Dismiss" style="margin-left:auto; padding:4px 8px; flex-shrink:0;"><i data-lucide="x"></i></button>
+        </div>
+      </div>
+      <div class="editor-wrapper">
+        <div class="gutter" id="inputGutterWrap" aria-hidden="true"><div class="gutter-inner" id="inputGutter">1</div></div>
+        <textarea id="sqlInput" class="editor" placeholder="SELECT * FROM users WHERE active=1;" spellcheck="false" wrap="off" aria-label="Raw SQL query input"></textarea>
+      </div>
+      <div class="pane-footer">
+        <span id="inputStats">0 lines · 0 chars</span>
+        <span class="hint">Ctrl/Cmd + Enter to format</span>
+      </div>
+    </div>
+
+    <div class="pane">
+      <div class="pane-header">
+        <div class="pane-title"><i data-lucide="check-circle"></i> Optimized SQL</div>
+        <div class="btn-group">
+          <button class="btn" id="btnDownload" title="Download as .sql file"><i data-lucide="download"></i> Download</button>
+          <button class="btn" id="btnCopy"><i data-lucide="copy"></i> Copy Query</button>
+        </div>
+      </div>
+      <div class="output-area" id="sqlOutputArea">
+        <div class="gutter" id="outputGutterWrap" aria-hidden="true"></div>
+        <pre id="sqlOutput" class="output-content" aria-label="Formatted SQL output"></pre>
+      </div>
+      <div class="pane-footer">
+        <span id="outputStats">0 lines · 0 chars</span>
+        <span class="hint" id="dialectHint">Standard SQL</span>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="docs-container">
+    <div class="info-panel">
+      <h2><i data-lucide="info"></i> Database Engineering Standard</h2>
+      <p>Layerbit's SQL Formatter is an essential utility for Database Administrators and Backend Engineers. It takes minified, poorly structured, or deeply nested queries and converts them into readable, standardized architecture.</p>
+      
+      <ul>
+        <li><i data-lucide="check"></i> <strong>Syntax Colorization:</strong> Intelligent visual parsing separates commands, strings, and parameters.</li>
+        <li><i data-lucide="check"></i> <strong>Client-Side Processing:</strong> Your database structure and query logic never leave your browser. Zero tracking.</li>
+      </ul>
+    </div>
+
+    <!-- NEW CONTENT: Supported Database Engines Grid -->
+    <div class="info-panel">
+      <h2><i data-lucide="server"></i> Supported Database Engines</h2>
+      <p>Our formatting engine natively supports 16 distinct SQL dialects, ensuring accurate keyword recognition and structural alignment for your specific technology stack.</p>
+      <div class="use-cases-grid">
+        <div class="use-case-card">
+          <h3><i data-lucide="database"></i> Relational (RDBMS)</h3>
+          <p>Full support for industry standards including <strong>PostgreSQL</strong>, <strong>MySQL</strong>, <strong>MariaDB</strong>, and <strong>SQLite</strong>. Handles standard CRUD operations, indexing, and complex joins.</p>
+        </div>
+        <div class="use-case-card">
+          <h3><i data-lucide="building"></i> Enterprise Servers</h3>
+          <p>Optimized for proprietary corporate stacks like <strong>T-SQL (SQL Server)</strong>, <strong>Oracle PL/SQL</strong>, and <strong>IBM DB2</strong>. Preserves specific stored procedure and variable syntax.</p>
+        </div>
+        <div class="use-case-card">
+          <h3><i data-lucide="cloud"></i> Cloud Data Warehouses</h3>
+          <p>Native parsing for massive analytical queries running on <strong>Google BigQuery</strong>, <strong>Amazon Redshift</strong>, <strong>Apache Spark</strong>, <strong>Trino</strong>, and <strong>Hive</strong>.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- NEW CONTENT: Advanced Formatting Controls -->
+    <div class="info-panel">
+      <h2><i data-lucide="settings-2"></i> Advanced Formatting Controls</h2>
+      <p>Go beyond basic indentation. Layerbit provides granular control over how your SQL statements are structured for code reviews and version control.</p>
+      <ul>
+        <li><i data-lucide="check"></i> <strong>Tabular Indentation:</strong> Align commas to the left or right of column names. This makes massive <code>SELECT</code> statements significantly easier to read and modify.</li>
+        <li><i data-lucide="check"></i> <strong>Query Minification:</strong> Click the "Minify" button to compress sprawling SQL files into a single string. This is perfect for embedding raw SQL inside JSON payloads, application code, or YAML configuration files.</li>
+        <li><i data-lucide="check"></i> <strong>Function Casing:</strong> Automatically force standard SQL functions (like <code>COUNT()</code>, <code>MAX()</code>, <code>COALESCE()</code>) to uppercase while preserving your table and column casing.</li>
+        <li><i data-lucide="check"></i> <strong>Persistent State:</strong> Your dialect choice, formatting preferences, and active query are saved to local storage. You will never lose your work if you accidentally refresh the browser.</li>
+      </ul>
+    </div>
+
+    <div class="info-panel">
+      <h2><i data-lucide="target"></i> Developer Use Cases</h2>
+      <div class="use-cases-grid">
+        <div class="use-case-card">
+          <h3><i data-lucide="server-cog"></i> ORM Log Extraction</h3>
+          <p>Take unreadable, single-line queries exported from ORMs (Prisma, Hibernate, Entity Framework) and expand them into formatted architecture to analyze execution plans.</p>
+        </div>
+        <div class="use-case-card">
+          <h3><i data-lucide="code-2"></i> Code Review Standardization</h3>
+          <p>Format massive, deeply nested stored procedures and complex JOIN operations before committing them to your version control repositories to maintain code quality.</p>
+        </div>
+        <div class="use-case-card">
+          <h3><i data-lucide="arrow-right-left"></i> Cross-Dialect Migration</h3>
+          <p>Quickly adapt the structural layout of legacy queries when migrating databases between different environments like PostgreSQL and MySQL.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="info-panel">
+      <h2><i data-lucide="flask-conical"></i> Quick Testing Templates</h2>
+      <p>Test the SQL syntax formatter instantly. Click the templates below to load sample queries directly into the IDE.</p>
+      <div>
+        <button class="sample-btn" onclick="loadSample('complex')">Complex JOIN Query</button>
+        <button class="sample-btn" onclick="loadSample('insert')">Bulk INSERT Statement</button>
+        <button class="sample-btn" onclick="loadSample('error')">Simulate Syntax Error</button>
+      </div>
+    </div>
+
+    <div class="info-panel">
+      <h2><i data-lucide="help-circle"></i> Engineering FAQ</h2>
+      <div class="faq-container">
+        
+        <div class="faq-item">
+          <button class="faq-question">Why does Layerbit process queries client-side? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer">
+            <p>Database queries inherently contain sensitive information, including proprietary schema designs, table structures, and business logic. Processing queries purely in your local browser prevents this critical data from being intercepted or logged on external servers.</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question">Will minification break my query if it has comments? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer">
+            <p>The formatter safely processes standard SQL comments. However, when using the "Minify" function, inline comments (<code>--</code>) may be stripped or reformatted to prevent them from accidentally commenting out the rest of the single-line string.</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question">Does this tool validate or execute the queries? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer">
+            <p>No. This tool acts strictly as a structural formatter and syntax highlighter. It organizes the text to make it human-readable but does not connect to your database or execute the commands.</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="info-panel">
+      <h2><i data-lucide="git-merge"></i> Deployment Changelog</h2>
+      <ul class="changelog-list">
+        <li><span class="changelog-tag">v1.4.0</span> Expanded enterprise documentation, detailing tabular formatting and the 16+ supported dialect configurations.</li>
+        <li><span class="changelog-tag">v1.3.1</span> Replaced the deprecated <code>commaPosition</code> formatter config with the supported <code>indentStyle</code> option (Standard / Tabular Left / Tabular Right) to fix a formatting error.</li>
+        <li><span class="changelog-tag">v1.3.0</span> Added line numbers, configurable format options (indent, keyword case, comma position, function case), 11 additional dialects, single-line minify mode, .sql download, keyboard shortcuts, and persistent session state.</li>
+        <li><span class="changelog-tag">v1.2.2</span> Truncated the AST stack trace dump output to prevent parser failures from breaking the UI wrapper.</li>
+        <li><span class="changelog-tag">v1.2.1</span> Fixed error testing template to reliably trigger syntax parsing alerts across all dialects.</li>
+        <li><span class="changelog-tag">v1.2.0</span> Added interactive Quick Testing Templates and dynamic dialect switching for optimized testing.</li>
+        <li><span class="changelog-tag">v1.1.0</span> Integrated client-side syntax highlighting for SQL keywords, strings, and numeric values.</li>
+        <li><span class="changelog-tag">v1.0.0</span> Initial release of the Universal SQL Formatter engine utilizing secure, local processing.</li>
+      </ul>
+    </div>
+  </div>
+
+  <a href="../" id="smartBackBtn" class="fab" aria-label="Command Center" title="Command Center">
+    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="filter: drop-shadow(0 0 8px rgba(56, 189, 248, 0.5));">
+      <path d="M12 2L2 7l10 5 10-5-10-5z" stroke="#38bdf8" stroke-width="2" stroke-linejoin="round" fill="rgba(56,189,248,0.2)"/>
+      <path d="M2 17l10 5 10-5M2 12l10 5 10-5" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </a>
+
+  {{FOOTER}}
+
+  <script src="../js/shared.js"></script>
+
+
+  <script>
+    // Guard against the lucide CDN failing to load (network block, ad-blocker,
+    // offline testing, etc.) so the rest of the tool still works without icons.
+    function safeCreateIcons() {
+      if (typeof lucide !== 'undefined' && lucide.createIcons) {
+        try { lucide.createIcons(); } catch (e) { /* icon render failed — ignore */ }
+      }
+    }
+    safeCreateIcons();
+
+    const sqlInput = document.getElementById('sqlInput');
+    const sqlOutput = document.getElementById('sqlOutput');
+    const sqlOutputArea = document.getElementById('sqlOutputArea');
+    const dialectSelect = document.getElementById('dialectSelect');
+    const indentSelect = document.getElementById('indentSelect');
+    const keywordCaseSelect = document.getElementById('keywordCaseSelect');
+    const indentStyleSelect = document.getElementById('indentStyleSelect');
+    const uppercaseFunctions = document.getElementById('uppercaseFunctions');
+    const errorBanner = document.getElementById('errorBanner');
+    const errorText = document.getElementById('errorText');
+    const errorHint = document.getElementById('errorHint');
+    const errorSnippet = document.getElementById('errorSnippet');
+    const btnErrorDetails = document.getElementById('btnErrorDetails');
+    const errorRaw = document.getElementById('errorRaw');
+    const btnFormat = document.getElementById('btnFormat');
+    const btnClear = document.getElementById('btnClear');
+    const btnMinify = document.getElementById('btnMinify');
+    const btnCopy = document.getElementById('btnCopy');
+    const btnDownload = document.getElementById('btnDownload');
+    const btnDismissError = document.getElementById('btnDismissError');
+    const inputGutterWrap = document.getElementById('inputGutterWrap');
+    const inputGutter = document.getElementById('inputGutter');
+    const outputGutterWrap = document.getElementById('outputGutterWrap');
+    const inputStats = document.getElementById('inputStats');
+    const outputStats = document.getElementById('outputStats');
+    const dialectHint = document.getElementById('dialectHint');
+
+    const STORAGE_KEY = 'layerbit_sql_formatter_state_v2';
+
+    // ---------- Syntax Highlighting ----------
+    function highlightSQL(sql) {
+      let html = sql.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+      // Match Strings ('...' or "...")
+      html = html.replace(/('.*?'|".*?")/g, '<span class="sql-string">$1</span>');
+
+      // Match Numbers
+      html = html.replace(/\b(\d+)\b/g, '<span class="sql-number">$1</span>');
+
+      // Match SQL Keywords (Common uppercase output from formatter)
+      const keywords = [
+        'SELECT', 'FROM', 'WHERE', 'AND', 'OR', 'NOT', 'INSERT', 'INTO', 'VALUES',
+        'UPDATE', 'SET', 'DELETE', 'CREATE', 'TABLE', 'DROP', 'ALTER', 'INDEX',
+        'VIEW', 'JOIN', 'INNER', 'LEFT', 'RIGHT', 'OUTER', 'ON', 'GROUP BY',
+        'ORDER BY', 'HAVING', 'LIMIT', 'OFFSET', 'ASC', 'DESC', 'AS', 'IS', 'NULL',
+        'CASE', 'WHEN', 'THEN', 'ELSE', 'END', 'BETWEEN', 'IN', 'LIKE',
+        'select', 'from', 'where', 'and', 'or', 'not', 'insert', 'into', 'values',
+        'update', 'set', 'delete', 'create', 'table', 'drop', 'alter', 'index',
+        'view', 'join', 'inner', 'left', 'right', 'outer', 'group by',
+        'order by', 'having', 'limit', 'offset', 'asc', 'desc', 'as', 'is', 'null',
+        'case', 'when', 'then', 'else', 'end', 'between', 'in', 'like'
+      ];
+      const regex = new RegExp('\\b(' + keywords.join('|') + ')\\b', 'g');
+      html = html.replace(regex, '<span class="sql-keyword">$1</span>');
+
+      return html;
+    }
+
+    // ---------- Gutters & Stats ----------
+    function lineCount(text) {
+      return text.length ? text.split('\n').length : 0;
+    }
+
+    function renderGutter(el, count) {
+      el.textContent = count > 0 ? Array.from({ length: count }, (_, i) => i + 1).join('\n') : '';
+    }
+
+    function formatStats(text) {
+      const lines = lineCount(text);
+      const chars = text.length;
+      return `${lines} line${lines !== 1 ? 's' : ''} · ${chars} char${chars !== 1 ? 's' : ''}`;
+    }
+
+    function updateInputMeta() {
+      renderGutter(inputGutter, lineCount(sqlInput.value));
+      inputStats.textContent = formatStats(sqlInput.value);
+    }
+
+    function updateOutputMeta(text) {
+      renderGutter(outputGutterWrap, lineCount(text));
+      outputStats.textContent = formatStats(text);
+    }
+
+    sqlInput.addEventListener('scroll', () => {
+      inputGutter.style.transform = `translateY(-${sqlInput.scrollTop}px)`;
+    });
+
+    // ---------- Format Options ----------
+    function getFormatOptions() {
+      return {
+        language: dialectSelect.value,
+        tabWidth: parseInt(indentSelect.value, 10),
+        keywordCase: keywordCaseSelect.value,
+        indentStyle: indentStyleSelect.value,
+        functionCase: uppercaseFunctions.checked ? 'upper' : 'preserve'
+      };
+    }
+
+    function renderOutput(text) {
+      sqlOutput.innerHTML = highlightSQL(text);
+      updateOutputMeta(text);
+    }
+
+    // Parses the sql-formatter library's raw error text (typically
+    // `Parse error: Unexpected "..." at line X column Y`) into a plain-English
+    // headline plus a source-line snippet with a caret, so the banner is
+    // readable without needing to decode the library's internal wording.
+    function showError(err, rawInput) {
+      const msg = (err && err.message) ? err.message : String(err);
+
+      errorHint.hidden = true;
+      errorHint.textContent = '';
+      errorSnippet.hidden = true;
+      errorSnippet.textContent = '';
+      errorRaw.hidden = true;
+      errorRaw.textContent = msg;
+      btnErrorDetails.hidden = false;
+      btnErrorDetails.textContent = 'Show technical details';
+
+      const withLocation = msg.match(/Unexpected\s*"([^]*?)"\s*at line (\d+) column (\d+)/i);
+      const withoutLocation = !withLocation && msg.match(/Unexpected\s*"([^]*?)"\s*$/i);
+
+      if (withLocation) {
+        const unexpected = withLocation[1].replace(/\s+/g, ' ').trim();
+        const lineNum = parseInt(withLocation[2], 10);
+        const colNum = parseInt(withLocation[3], 10);
+        const preview = unexpected.length > 40 ? unexpected.slice(0, 40) + '…' : unexpected;
+
+        errorText.textContent = unexpected
+          ? `Syntax error on line ${lineNum}, column ${colNum} — unexpected "${preview}"`
+          : `Syntax error on line ${lineNum}, column ${colNum} — the query ends unexpectedly here`;
+
+        errorHint.hidden = false;
+        errorHint.textContent = 'Check for a missing or extra keyword, comma, quote, or parenthesis near this spot.';
+
+        const sourceLine = (rawInput || sqlInput.value).split('\n')[lineNum - 1];
+        if (typeof sourceLine === 'string') {
+          const caretPos = Math.max(0, colNum - 1);
+          errorSnippet.textContent = `${sourceLine}\n${' '.repeat(caretPos)}^`;
+          errorSnippet.hidden = false;
+        }
+      } else if (withoutLocation) {
+        const unexpected = withoutLocation[1].replace(/\s+/g, ' ').trim();
+        errorText.textContent = unexpected
+          ? `Unexpected "${unexpected.length > 40 ? unexpected.slice(0, 40) + '…' : unexpected}" — the query looks incomplete.`
+          : 'The query ends unexpectedly — something looks incomplete.';
+        errorHint.hidden = false;
+        errorHint.textContent = 'Check for a missing closing parenthesis, quote, or final clause.';
+      } else if (msg && msg.length <= 120) {
+        // Not a recognized parser message (e.g. the CDN-load-failure message) — show it as-is.
+        errorText.textContent = msg;
+      } else {
+        errorText.textContent = "We couldn't parse this query.";
+        errorHint.hidden = false;
+        errorHint.textContent = 'Check for mismatched quotes, unbalanced parentheses, or syntax not supported by the selected dialect.';
+      }
+
+      errorBanner.classList.add('active');
+    }
+
+    function clearError() {
+      errorBanner.classList.remove('active');
+      errorRaw.hidden = true;
+      btnErrorDetails.textContent = 'Show technical details';
+    }
+
+    btnErrorDetails.addEventListener('click', () => {
+      const willShow = errorRaw.hidden;
+      errorRaw.hidden = !willShow;
+      btnErrorDetails.textContent = willShow ? 'Hide technical details' : 'Show technical details';
+    });
+
+    // ---------- Core Actions ----------
+    function processSQL() {
+      const raw = sqlInput.value.trim();
+
+      clearError();
+      sqlOutput.innerHTML = '';
+      updateOutputMeta('');
+
+      if (!raw) return;
+
+      if (typeof sqlFormatter === 'undefined') {
+        showError({ message: 'The formatting engine failed to load. Check your connection and refresh the page.' });
+        return;
+      }
+
+      try {
+        const formatted = sqlFormatter.format(raw, getFormatOptions());
+        renderOutput(formatted);
+      } catch (err) {
+        showError(err);
+      }
+    }
+
+    function minifySQL() {
+      const raw = sqlInput.value.trim();
+
+      clearError();
+      sqlOutput.innerHTML = '';
+      updateOutputMeta('');
+
+      if (!raw) return;
+
+      if (typeof sqlFormatter === 'undefined') {
+        showError({ message: 'The formatting engine failed to load. Check your connection and refresh the page.' });
+        return;
+      }
+
+      try {
+        const formatted = sqlFormatter.format(raw, { language: dialectSelect.value });
+        const minified = formatted.replace(/\s+/g, ' ').trim();
+        renderOutput(minified);
+      } catch (err) {
+        showError(err);
+      }
+    }
+
+    btnFormat.addEventListener('click', processSQL);
+    btnMinify.addEventListener('click', minifySQL);
+
+    btnClear.addEventListener('click', () => {
+      sqlInput.value = '';
+      sqlOutput.innerHTML = '';
+      updateInputMeta();
+      updateOutputMeta('');
+      clearError();
+      sqlInput.focus();
+      saveState();
+    });
+
+    btnDismissError.addEventListener('click', clearError);
+
+    btnCopy.addEventListener('click', () => {
+      const text = sqlOutput.innerText;
+      if (!text) return;
+
+      navigator.clipboard.writeText(text).then(() => {
+        const originalText = btnCopy.innerHTML;
+        btnCopy.innerHTML = '<i data-lucide="check"></i> Copied!';
+        safeCreateIcons();
+        clearTimeout(btnCopy._resetTimer);
+        btnCopy._resetTimer = setTimeout(() => {
+          btnCopy.innerHTML = '<i data-lucide="copy"></i> Copy Query';
+          safeCreateIcons();
+        }, 2000);
+      });
+    });
+
+    btnDownload.addEventListener('click', () => {
+      const text = sqlOutput.innerText;
+      if (!text) return;
+
+      const blob = new Blob([text], { type: 'text/plain' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'formatted-query.sql';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    });
+
+    // ---------- Keyboard Shortcut ----------
+    sqlInput.addEventListener('keydown', (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+        e.preventDefault();
+        processSQL();
+      }
+    });
+
+    // ---------- Live Gutter/Stats + Persistence ----------
+    function debounce(fn, delay) {
+      let t;
+      return (...args) => {
+        clearTimeout(t);
+        t = setTimeout(() => fn(...args), delay);
+      };
+    }
+
+    function saveState() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify({
+          query: sqlInput.value,
+          dialect: dialectSelect.value,
+          tabWidth: indentSelect.value,
+          keywordCase: keywordCaseSelect.value,
+          indentStyle: indentStyleSelect.value,
+          uppercaseFunctions: uppercaseFunctions.checked
+        }));
+      } catch (e) { /* localStorage unavailable — ignore */ }
+    }
+
+    function loadState() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return;
+        const state = JSON.parse(raw);
+        if (typeof state.query === 'string') sqlInput.value = state.query;
+        if (state.dialect) dialectSelect.value = state.dialect;
+        if (state.tabWidth) indentSelect.value = state.tabWidth;
+        if (state.keywordCase) keywordCaseSelect.value = state.keywordCase;
+        if (state.indentStyle) indentStyleSelect.value = state.indentStyle;
+        if (typeof state.uppercaseFunctions === 'boolean') uppercaseFunctions.checked = state.uppercaseFunctions;
+      } catch (e) { /* corrupted or unavailable state — ignore */ }
+    }
+
+    const debouncedSave = debounce(saveState, 400);
+
+    sqlInput.addEventListener('input', () => {
+      updateInputMeta();
+      debouncedSave();
+    });
+
+    [dialectSelect, indentSelect, keywordCaseSelect, indentStyleSelect].forEach(el => {
+      el.addEventListener('change', () => {
+        dialectHint.textContent = dialectSelect.options[dialectSelect.selectedIndex].text;
+        saveState();
+      });
+    });
+    uppercaseFunctions.addEventListener('change', saveState);
+
+    // FAQ Accordion Logic
+    
+    // Sample Loader Logic
+    function loadSample(type) {
+      const samples = {
+        complex: 'select p.product_id,p.name,c.category_name,sum(s.quantity) as total_sold from products p inner join categories c on p.category_id=c.id left join sales s on p.product_id=s.product_id where p.active=1 and c.status="visible" group by p.product_id,p.name,c.category_name having sum(s.quantity)>100 order by total_sold desc limit 50;',
+        insert: 'INSERT INTO user_logs (user_id, action, ip_address, created_at) VALUES (101, "LOGIN", "192.168.1.1", NOW()), (102, "UPDATE_PROFILE", "10.0.0.5", NOW()), (103, "LOGOUT", "172.16.0.2", NOW());',
+        error: 'SELECT id, username, email FROM users WHERE id IN (101, 102, 103;' // Intentional unclosed parenthesis
+      };
+
+      sqlInput.value = samples[type];
+      updateInputMeta();
+      processSQL();
+      saveState();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // ---------- Init ----------
+    loadState();
+    updateInputMeta();
+    updateOutputMeta('');
+    dialectHint.textContent = dialectSelect.options[dialectSelect.selectedIndex].text;
+    if (sqlInput.value.trim()) processSQL();
+  </script>
+<script src="../main.js"></script>

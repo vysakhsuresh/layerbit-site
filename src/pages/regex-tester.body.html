@@ -1,0 +1,315 @@
+{{HEADER}}
+
+  <main class="hero">
+    <h1>Regex Debugging Terminal</h1>
+    <p>Test patterns, extract groups, and validate expressions with real-time telemetry.</p>
+  </main>
+
+  <div class="app-container">
+    
+    <div class="pane" id="mainPane">
+      <div class="pane-header">
+        <div class="pane-title"><i data-lucide="regex"></i> Expression Editor</div>
+      </div>
+
+      <div class="regex-control">
+        <div class="regex-wrapper">
+          <div class="regex-delimiter">/</div>
+          <input type="text" id="regexInput" class="regex-input" placeholder="\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b" autocomplete="off" spellcheck="false" />
+          <div class="regex-delimiter">/</div>
+        </div>
+        <div class="flags-container">
+          <button class="flag-btn active" data-flag="g" title="Global (Match all occurrences)">g</button>
+          <button class="flag-btn" data-flag="i" title="Case Insensitive">i</button>
+          <button class="flag-btn" data-flag="m" title="Multiline">m</button>
+        </div>
+      </div>
+
+      <div id="errorText" class="error-text"><i data-lucide="triangle-alert"></i> <span id="errorMsg">Invalid regular expression</span></div>
+
+      <div class="telemetry-bar">
+        <span>Test String</span>
+        <span class="match-count" id="matchCount"><i data-lucide="check-circle" style="width:14px;"></i> 0 Matches</span>
+      </div>
+
+      <div class="editor-wrapper">
+        <div id="testBackdrop" class="test-backdrop">Paste your test data here to see match highlights...</div>
+        <textarea id="testInput" class="test-input" spellcheck="false"></textarea>
+      </div>
+    </div>
+
+    <div class="breakdown-pane" id="breakdownPane">
+      <div class="breakdown-title"><i data-lucide="crosshair"></i> Forensics Extraction</div>
+      <div class="matches-grid" id="matchesGrid">
+        </div>
+    </div>
+
+  </div>
+
+  <div class="docs-container">
+    <div class="info-panel">
+      <h2><i data-lucide="terminal-square"></i> Regex Engine Specifications</h2>
+      <p>Layerbit's Debugging Terminal runs a high-performance JavaScript RegExp engine locally in your DOM. It provides instant visual feedback without sending sensitive log data or proprietary algorithms over a network.</p>
+      <ul>
+        <li><i data-lucide="check"></i> <strong>Real-Time Highlighting:</strong> The dual-layer editor safely colorizes matches as you type without breaking textarea functionality.</li>
+        <li><i data-lucide="check"></i> <strong>Forensics Extraction:</strong> Captures and isolates exact match data, including index positioning, allowing you to debug complex payloads instantly.</li>
+        <li><i data-lucide="check"></i> <strong>Hardware Toggles:</strong> Enable Global (<code>g</code>), Case Insensitive (<code>i</code>), and Multiline (<code>m</code>) flags with physical UI buttons rather than manual string injection.</li>
+      </ul>
+      
+      <div class="use-cases-grid">
+        <div class="use-case-card">
+          <h3><i data-lucide="file-search"></i> Log Parsing & Data Extraction</h3>
+          <p>Instantly extract IPs, email addresses, or UUIDs from massive raw text logs utilizing the global extraction grid to isolate specific data points.</p>
+        </div>
+        <div class="use-case-card">
+          <h3><i data-lucide="shield-check"></i> Input Validation Testing</h3>
+          <p>Debug the strictness of your password complexity, email formatting, or phone number validation patterns before deploying them to your backend servers.</p>
+        </div>
+        <div class="use-case-card">
+          <h3><i data-lucide="replace"></i> Search & Replace Planning</h3>
+          <p>Test complex capture groups visually to ensure your regex string manipulation logic targets the exact strings required for backend sanitization.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="info-panel">
+      <h2><i data-lucide="flask-conical"></i> Quick Testing Templates</h2>
+      <p>Click the templates below to load predefined regular expressions and test strings into the terminal instantly.</p>
+      <div>
+        <button class="sample-btn" onclick="loadSample('email')">Email Extraction</button>
+        <button class="sample-btn" onclick="loadSample('ipv4')">IPv4 Finder</button>
+        <button class="sample-btn" onclick="loadSample('jwt')">JWT Matcher</button>
+      </div>
+    </div>
+
+    <div class="info-panel">
+      <h2><i data-lucide="help-circle"></i> Technical FAQ</h2>
+      <div class="faq-container">
+        
+        <div class="faq-item">
+          <button class="faq-question">Why is client-side regex testing important? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer">
+            <p>If you are testing patterns against proprietary application logs or databases containing PII (Personally Identifiable Information), pasting that text into an external server-side tool is a massive security risk. Layerbit evaluates your data locally within your browser, ensuring complete privacy.</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question">Which Regex flavor does this terminal use? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer">
+            <p>The terminal utilizes the native JavaScript ES6+ RegExp engine executed by your local browser. This is universally compatible with standard PCRE (Perl Compatible Regular Expressions) syntaxes used in Node.js, Python, and modern web applications.</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question">How does the real-time highlighting work without breaking the input? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer">
+            <p>We utilize a dual-layer DOM architecture. The transparent <code>&lt;textarea&gt;</code> captures your keystrokes while a perfectly aligned <code>&lt;div&gt;</code> sitting behind it dynamically renders the colorized output and handles scrolling synchronization. This provides a rich IDE experience.</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="info-panel">
+      <h2><i data-lucide="git-merge"></i> Deployment Changelog</h2>
+      <ul class="changelog-list">
+        <li><span class="changelog-tag">v1.2.0</span> Added interactive Quick Testing Templates and expanded the forensic documentation panel.</li>
+        <li><span class="changelog-tag">v1.1.0</span> Integrated real-time telemetry matching and the visual Forensics Extraction grid.</li>
+        <li><span class="changelog-tag">v1.0.0</span> Initial release of the Regex Debugging Terminal featuring the dual-layer highlighting editor.</li>
+      </ul>
+    </div>
+  </div>
+
+  <a href="../" id="smartBackBtn" class="fab" aria-label="Command Center" title="Command Center">
+    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="filter: drop-shadow(0 0 8px rgba(56, 189, 248, 0.5));">
+      <path d="M12 2L2 7l10 5 10-5-10-5z" stroke="#38bdf8" stroke-width="2" stroke-linejoin="round" fill="rgba(56,189,248,0.2)"/>
+      <path d="M2 17l10 5 10-5M2 12l10 5 10-5" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </a>
+
+  {{FOOTER}}
+
+  <script src="../js/shared.js"></script>
+
+
+  <script>
+        const regexInput = document.getElementById("regexInput");
+    const testInput = document.getElementById("testInput");
+    const testBackdrop = document.getElementById("testBackdrop");
+    const mainPane = document.getElementById("mainPane");
+    const errorText = document.getElementById("errorText");
+    const errorMsg = document.getElementById("errorMsg");
+    const matchCount = document.getElementById("matchCount");
+    const breakdownPane = document.getElementById("breakdownPane");
+    const matchesGrid = document.getElementById("matchesGrid");
+
+    let currentFlags = ['g'];
+
+    // Flag Toggle Logic
+    document.querySelectorAll('.flag-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const flag = e.target.getAttribute('data-flag');
+        if (currentFlags.includes(flag)) {
+          currentFlags = currentFlags.filter(f => f !== flag);
+          e.target.classList.remove('active');
+        } else {
+          currentFlags.push(flag);
+          e.target.classList.add('active');
+        }
+        processRegex();
+      });
+    });
+
+    // Escape HTML to prevent injection in the highlighter
+    function escapeHTML(str) {
+      return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    }
+
+    function processRegex() {
+      const pattern = regexInput.value;
+      const text = testInput.value;
+
+      // Reset state
+      mainPane.classList.remove("error");
+      errorText.classList.remove("active");
+      
+      if (!text) {
+        testBackdrop.innerHTML = "Paste your test data here to see match highlights...";
+        matchCount.innerHTML = `<i data-lucide="check-circle" style="width:14px;"></i> 0 Matches`;
+        breakdownPane.classList.remove("active");
+        lucide.createIcons();
+        return;
+      }
+
+      if (!pattern) {
+        testBackdrop.innerHTML = escapeHTML(text);
+        matchCount.innerHTML = `<i data-lucide="check-circle" style="width:14px;"></i> 0 Matches`;
+        breakdownPane.classList.remove("active");
+        lucide.createIcons();
+        return;
+      }
+
+      try {
+        const flagsStr = currentFlags.join('');
+        const regex = new RegExp(pattern, flagsStr);
+        
+        let match;
+        let count = 0;
+        let breakdownHTML = '';
+        
+        // Ensure global flag is present if we are doing matchAll replacement trick
+        // If 'g' is off, we only highlight the first match.
+        const isGlobal = currentFlags.includes('g');
+        
+        // Highlight logic
+        let highlightedText = escapeHTML(text);
+        
+        if(isGlobal) {
+            highlightedText = text.replace(regex, (m) => `<span class="hl-match">${escapeHTML(m)}</span>`);
+        } else {
+            // Re-apply RegExp without global to find first match
+            const singleMatch = text.match(regex);
+            if(singleMatch) {
+               const idx = singleMatch.index;
+               const len = singleMatch[0].length;
+               const before = escapeHTML(text.substring(0, idx));
+               const theMatch = `<span class="hl-match">${escapeHTML(singleMatch[0])}</span>`;
+               const after = escapeHTML(text.substring(idx + len));
+               highlightedText = before + theMatch + after;
+            } else {
+               highlightedText = escapeHTML(text);
+            }
+        }
+        
+        // Render Backdrop
+        testBackdrop.innerHTML = highlightedText;
+
+        // Forensics Logic
+        const tempRegex = new RegExp(pattern, isGlobal ? flagsStr : flagsStr + 'g');
+        while ((match = tempRegex.exec(text)) !== null) {
+          count++;
+          breakdownHTML += `
+            <div class="match-item">
+              <div class="match-val">${escapeHTML(match[0])}</div>
+              <div class="match-meta">Match ${count} — Index Position: [${match.index} - ${match.index + match[0].length}]</div>
+            </div>
+          `;
+          if (!isGlobal) break; // If not global, only extract first match
+        }
+
+        // Update UI
+        matchCount.innerHTML = `<i data-lucide="check-circle" style="width:14px;"></i> ${count} Matches`;
+        
+        if (count > 0) {
+          matchesGrid.innerHTML = breakdownHTML;
+          breakdownPane.classList.add("active");
+        } else {
+          breakdownPane.classList.remove("active");
+        }
+
+        lucide.createIcons();
+
+      } catch (err) {
+        // Syntax Error
+        mainPane.classList.add("error");
+        errorMsg.innerText = err.message;
+        errorText.classList.add("active");
+        testBackdrop.innerHTML = escapeHTML(text); // Remove highlights
+        matchCount.innerHTML = `<i data-lucide="x-circle" style="width:14px; color:var(--error-color);"></i> Error`;
+        breakdownPane.classList.remove("active");
+        lucide.createIcons();
+      }
+    }
+
+    // Sync scroll
+    testInput.addEventListener('scroll', function() {
+      testBackdrop.scrollTop = this.scrollTop;
+    });
+
+    // Listeners
+    regexInput.addEventListener('input', processRegex);
+    testInput.addEventListener('input', processRegex);
+
+    // FAQ Accordion Logic
+    
+    // Sample Loader Logic
+    function loadSample(type) {
+      const samples = {
+        email: {
+          regex: '[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}',
+          test: 'Contact our support team at support@layerbit.co.in or reach out to sales at enterprise-sales@layerbit.co.in for licensing information.',
+          flags: ['g', 'i']
+        },
+        ipv4: {
+          regex: '\\b(?:[0-9]{1,3}\\.){3}[0-9]{1,3}\\b',
+          test: '2026-08-06 20:56:50 [WARN] Unauthorized access attempt detected from 192.168.1.105.\n2026-08-06 20:56:55 [INFO] Successful login from 10.0.0.1.',
+          flags: ['g']
+        },
+        jwt: {
+          regex: 'eyJ[A-Za-z0-9-_]+\\.[A-Za-z0-9-_]+\\.[A-Za-z0-9-_]+',
+          test: 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkxheWVyYml0IFVzZXIiLCJpYXQiOjE1MTYyMzkwMjJ9.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c',
+          flags: ['g']
+        }
+      };
+
+      if (samples[type]) {
+        regexInput.value = samples[type].regex;
+        testInput.value = samples[type].test;
+        
+        // Reset and apply flags
+        currentFlags = samples[type].flags;
+        document.querySelectorAll('.flag-btn').forEach(btn => {
+          if (currentFlags.includes(btn.getAttribute('data-flag'))) {
+            btn.classList.add('active');
+          } else {
+            btn.classList.remove('active');
+          }
+        });
+
+        processRegex();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    }
+
+  </script>
+<script src="../main.js"></script>

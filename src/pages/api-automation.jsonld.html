@@ -1,0 +1,32 @@
+<script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "How do you handle API rate limits and downtime?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Our automation pipelines are built with resilience in mind. We implement intelligent request queuing, token bucket algorithms to respect external rate limits (like 429 Too Many Requests), and exponential backoff protocols. If a third-party server goes down, your data is held safely in a dead-letter queue until the connection is restored."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What authentication standards do you support?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "We engineer integrations using industry-standard security protocols. Depending on the external API requirements, we can implement OAuth 2.0 flows, secure JWT (JSON Web Token) generation, rotating Bearer tokens, API key header injection, or Mutual TLS (mTLS) for high-security financial endpoints."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Where is my data processed and stored?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Layerbit utilizes a \"pass-through\" middleware architecture for standard integrations. This means we ingest, transform, and forward your payload in memory without permanently storing your sensitive database records on our servers, ensuring strict compliance with data privacy standards."
+        }
+      }
+    ]
+  }
+  </script>

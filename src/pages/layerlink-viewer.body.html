@@ -1,0 +1,257 @@
+<div class="top-bar">
+    <a href="../" class="brand">
+      <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <polygon points="32,20 54,28 32,36 10,28" stroke="#f8fafc" stroke-width="4" stroke-linejoin="round"/>
+        <polyline points="10,38 32,46 54,38" stroke="#f8fafc" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+        <polyline points="10,48 32,56 54,48" stroke="#f8fafc" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      LayerLink
+    </a>
+    <div id="statusUI" class="status-indicator ready">
+      <i data-lucide="info"></i> Ready
+    </div>
+  </div>
+
+  <div class="theater-mode">
+    <div id="overlayMsg" class="overlay-message">
+      <div class="seo-content-block">
+        <h1>LayerLink Viewer Terminal</h1>
+        <p>Welcome to the LayerLink Client Terminal. This secure web utility allows users to view remote broadcasts, presentations, and screen shares in real-time using peer-to-peer WebRTC technology.</p>
+        
+        <h2>How to Connect to a Stream</h2>
+        <ul>
+          <li>Obtain a secure session URL from the host broadcaster.</li>
+          <li>Paste the complete URL into your browser's address bar.</li>
+          <li>The system will automatically authenticate and establish a secure connection.</li>
+        </ul>
+        
+        <p style="font-size: 0.9em; opacity: 0.6; margin-top: 20px;">
+          * Note: This page serves as the viewer client. Without a valid session ID, no video data will be transmitted or displayed.
+        </p>
+      </div>
+    </div>
+    
+    <video id="video" autoplay playsinline muted></video>
+  </div>
+
+  <!-- Documentation & Educational Content -->
+  <div class="docs-container">
+    <div class="info-panel">
+      <h2><i data-lucide="shield"></i> WebRTC Architecture (Viewer)</h2>
+      <p>LayerLink utilizes WebRTC (Web Real-Time Communication) to establish a secure, peer-to-peer (P2P) connection directly between the host and your browser. As a viewer, you receive the video feed directly from the host's device, ensuring minimum latency and maximum privacy.</p>
+      
+      <div class="use-cases-grid">
+        <div class="use-case-card">
+          <h3><i data-lucide="monitor-play"></i> Client Presentations</h3>
+          <p>Join a high-quality screen share instantly without needing to download desktop applications, install plugins, or create user accounts.</p>
+        </div>
+        <div class="use-case-card">
+          <h3><i data-lucide="code-2"></i> Remote Code Reviews</h3>
+          <p>Watch a developer navigate their IDE in real-time. P2P WebRTC technology ensures the text remains crisp and the frame rate stays high.</p>
+        </div>
+        <div class="use-case-card">
+          <h3><i data-lucide="eye-off"></i> Secure IT Support</h3>
+          <p>View sensitive server configurations or internal dashboards knowing that the video feed is end-to-end encrypted and never passes through a recording server.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="info-panel">
+      <h2><i data-lucide="test-tube"></i> UI State Simulation</h2>
+      <p>Test the dynamic UI state handling of the LayerLink Viewer terminal without needing an active Firebase session URL.</p>
+      <div>
+        <button class="sample-btn" onclick="simulateState('searching')">Simulate "Searching for Host"</button>
+        <button class="sample-btn" onclick="simulateState('live')">Simulate "Connection Live"</button>
+        <button class="sample-btn" onclick="simulateState('error')">Simulate "Signal Lost"</button>
+      </div>
+    </div>
+
+    <div class="info-panel">
+      <h2><i data-lucide="help-circle"></i> Viewer FAQ</h2>
+      <div class="faq-container">
+        
+        <div class="faq-item">
+          <button class="faq-question">Do I need to install any software to view the stream? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer">
+            <p>No. LayerLink relies entirely on native browser APIs. As long as you are using a modern browser (Chrome, Firefox, Safari, Edge), the WebRTC engine will process the incoming video stream directly in the DOM.</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question">Can the host see my screen or access my camera? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer">
+            <p>Absolutely not. This terminal acts strictly as a "Receiver." It only interprets the incoming video tracks provided by the host's WebRTC offer. It does not request microphone, camera, or screen recording permissions from your device.</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question">What happens if the host disconnects? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer">
+            <p>If the host stops sharing their screen or closes their browser tab, the peer-to-peer connection state will immediately detect the failure, terminate the video feed, and display a "Signal Lost" error state.</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="info-panel">
+      <h2><i data-lucide="git-merge"></i> Deployment Changelog</h2>
+      <ul class="changelog-list">
+        <li><span class="changelog-tag">v1.3.0</span> Deployed enterprise documentation architecture and UI state simulation tools for the viewer terminal.</li>
+        <li><span class="changelog-tag">v1.2.0</span> Added automatic fallback handling for browser autoplay policies to ensure the stream plays even if muted by the client OS.</li>
+        <li><span class="changelog-tag">v1.1.0</span> Resolved a critical race condition by queueing remote ICE candidates until the local WebRTC description is fully established.</li>
+        <li><span class="changelog-tag">v1.0.0</span> Initial deployment of the LayerLink WebRTC Viewer Terminal utilizing Firebase signaling.</li>
+      </ul>
+    </div>
+  </div>
+
+{{FOOTER}}
+
+  <a href="../" id="smartBackBtn" class="fab" aria-label="Command Center" title="Command Center">
+    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="filter: drop-shadow(0 0 8px rgba(56, 189, 248, 0.5));">
+      <path d="M12 2L2 7l10 5 10-5-10-5z" stroke="#38bdf8" stroke-width="2" stroke-linejoin="round" fill="rgba(56,189,248,0.2)"/>
+      <path d="M2 17l10 5 10-5M2 12l10 5 10-5" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </a>
+
+  <script src="../js/shared.js"></script>
+
+
+  <script>
+        // WARNING: DO NOT ALTER FIREBASE KEYS OR WEBRTC CONFIGURATIONS
+    const firebaseConfig = {
+      apiKey: "AIzaSyAR948frOLq4VZ1qSdxIMXu6BaCoehClAU",
+      authDomain: "layerlink-58948.firebaseapp.com",
+      databaseURL: "https://layerlink-58948-default-rtdb.firebaseio.com",
+      projectId: "layerlink-58948",
+      storageBucket: "layerlink-58948.appspot.com",
+      messagingSenderId: "164370572506",
+      appId: "1:164370572506:web:cbeed3bfa6cb67c902b1e3"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    const statusUI = document.getElementById('statusUI');
+    const overlayMsg = document.getElementById('overlayMsg');
+    const videoElement = document.getElementById('video');
+
+    function setStatus(state) {
+      if (state === 'searching') {
+        statusUI.className = 'status-indicator';
+        statusUI.innerHTML = `<i data-lucide="loader" class="animate-spin"></i> Initializing...`;
+        overlayMsg.innerHTML = `
+          <i data-lucide="satellite-dish" style="width: 48px; height: 48px; color: var(--accent-main); animation: pulse 2s infinite;"></i>
+          <h2 style="font-weight: 600; font-size: 1.5em; margin-top: 15px;">Searching for Host Signal</h2>
+          <p style="opacity: 0.7; margin-top: 10px;">Waiting for the broadcaster to start the stream...</p>
+        `;
+        overlayMsg.style.display = 'flex';
+        videoElement.style.display = 'none';
+      } else if (state === 'live') {
+        statusUI.className = 'status-indicator live';
+        statusUI.innerHTML = `<i data-lucide="radio"></i> LIVE`;
+        overlayMsg.style.display = 'none';
+        videoElement.style.display = 'block';
+      } else if (state === 'error') {
+        statusUI.className = 'status-indicator error';
+        statusUI.innerHTML = `<i data-lucide="alert-triangle"></i> Signal Lost`;
+        overlayMsg.style.display = 'flex';
+        videoElement.style.display = 'none';
+        overlayMsg.innerHTML = `
+          <div class="seo-content-block" style="text-align: center;">
+            <i data-lucide="plug-zap" style="color: #ef4444; width: 48px; height: 48px; margin-bottom: 15px;"></i>
+            <h2 style="font-weight: 600; color: #fff; margin: 0 0 10px 0;">Connection Dropped</h2>
+            <p style="opacity: 0.7;">The host has stopped sharing, the session is invalid, or the network failed.</p>
+            <button onclick="location.reload()" style="margin-top:20px; padding:12px 24px; background:#ef4444; color:#fff; border:none; border-radius:8px; cursor:pointer; font-family:'Space Grotesk', sans-serif; font-weight:bold; transition: 0.3s;">Reconnect</button>
+          </div>
+        `;
+      }
+      lucide.createIcons();
+    }
+
+    // UI Simulation Functions
+    function simulateState(state) {
+      if(state === 'searching') {
+        setStatus('searching');
+      } else if(state === 'live') {
+        setStatus('live');
+        // Visual indicator that this is a simulation since there is no actual video feed
+        videoElement.style.border = "2px dashed var(--accent-main)";
+      } else if(state === 'error') {
+        setStatus('error');
+      }
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // FAQ Accordion Logic
+    
+    // Core WebRTC Logic
+    const params = new URLSearchParams(location.search);
+    const sessionId = params.get("session");
+    
+    if (sessionId) {
+      // Valid session ID found, initialize WebRTC
+      setStatus('searching');
+      const conn = db.ref("sessions/" + sessionId);
+
+      const configuration = {
+        iceServers: [
+          { urls: 'stun:stun.l.google.com:19302' },
+          { urls: 'stun:stun1.l.google.com:19302' }
+        ]
+      };
+
+      const peer = new RTCPeerConnection(configuration);
+      let remoteStream = new MediaStream();
+
+      peer.ontrack = event => {
+        remoteStream.addTrack(event.track);
+        videoElement.srcObject = remoteStream;
+        videoElement.play().catch(err => {
+            console.warn("Browser autoplay policy blocked the video. User interaction required.", err);
+        });
+      };
+
+      peer.onconnectionstatechange = () => {
+        if (peer.connectionState === 'connected') setStatus('live');
+        if (peer.connectionState === 'disconnected' || peer.connectionState === 'failed') setStatus('error');
+      };
+
+      peer.onicecandidate = e => {
+        if (e.candidate) {
+          conn.child("answerCandidates").push(JSON.stringify(e.candidate));
+        }
+      };
+
+      let hasRemoteDesc = false;
+      let candidateQueue = [];
+
+      async function connect() {
+        conn.child("offer").on("value", async snap => {
+          if (!snap.val()) return;
+          const offer = JSON.parse(snap.val());
+          
+          await peer.setRemoteDescription(offer);
+          hasRemoteDesc = true;
+          
+          candidateQueue.forEach(c => peer.addIceCandidate(c));
+          candidateQueue = [];
+
+          const answer = await peer.createAnswer();
+          await peer.setLocalDescription(answer);
+          conn.child("answer").set(JSON.stringify(answer));
+        });
+      }
+
+      conn.child("offerCandidates").on("child_added", snap => {
+        const candidate = new RTCIceCandidate(JSON.parse(snap.val()));
+        if (hasRemoteDesc) {
+          peer.addIceCandidate(candidate);
+        } else {
+          candidateQueue.push(candidate);
+        }
+      });
+
+      connect();
+    }
+  </script>
+  <script src="../main.js"></script>

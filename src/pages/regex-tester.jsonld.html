@@ -1,0 +1,32 @@
+<script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "Why is client-side regex testing important?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "If you are testing patterns against proprietary application logs or databases containing PII (Personally Identifiable Information), pasting that text into an external server-side tool is a massive security risk. Layerbit evaluates your data locally within your browser, ensuring complete privacy."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Which Regex flavor does this terminal use?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "The terminal utilizes the native JavaScript ES6+ RegExp engine executed by your local browser. This is universally compatible with standard PCRE (Perl Compatible Regular Expressions) syntaxes used in Node.js, Python, and modern web applications."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How does the real-time highlighting work without breaking the input?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "We utilize a dual-layer DOM architecture. The transparent <textarea> captures your keystrokes while a perfectly aligned <div> sitting behind it dynamically renders the colorized output and handles scrolling synchronization. This provides a rich IDE experience."
+        }
+      }
+    ]
+  }
+  </script>

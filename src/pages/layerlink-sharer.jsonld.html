@@ -1,0 +1,32 @@
+<script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "Why does this tool require a desktop browser?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "The core JavaScript API required to capture a screen stream (navigator.mediaDevices.getDisplayMedia) is intentionally restricted by Apple and Google on mobile operating systems for security reasons. While a mobile device can view the stream, only a desktop/laptop environment can host it."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is Firebase used for in this app?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Firebase Realtime Database acts purely as the \"Signaling Server.\" In order for a P2P connection to occur, both browsers need to exchange connection data (SDP offers and ICE candidates) so they know how to find each other on the internet. Once the connection is established, Firebase's job is done."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Can multiple people view the stream?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "No, this architecture is strictly a 1-to-1 P2P connection. Scaling WebRTC to multiple viewers requires an SFU (Selective Forwarding Unit) server to process and distribute the video streams, which breaks the zero-trust P2P model used here."
+        }
+      }
+    ]
+  }
+  </script>

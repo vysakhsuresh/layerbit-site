@@ -1,0 +1,254 @@
+
+    /* Ultra-Premium Dark Theme Variables */
+
+    body {
+      font-family: 'Space Grotesk', sans-serif;
+      color: var(--text-main);
+      background-color: var(--bg-base);
+      background-image: var(--bg-gradient);
+      min-height: 100dvh; 
+      padding: 20px 40px;
+      position: relative;
+      overflow-x: clip; 
+      display: flex;
+      flex-direction: column;
+    }
+    body::before {
+      content: ''; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+      background-image: radial-gradient(rgba(255,255,255,0.08) 1px, transparent 1px), radial-gradient(rgba(255,255,255,0.05) 1px, transparent 1px);
+      background-size: 60px 60px, 40px 40px; z-index: -1; animation: drift 60s linear infinite; pointer-events: none;
+    }
+
+    header { display: flex; justify-content: flex-start; align-items: center; max-width: 1400px; width: 100%; margin: 0 auto 40px auto; }
+
+    .hero { text-align: center; margin-bottom: 40px; animation: fadeIn 1s ease-out; }
+    .hero h1 { font-size: 2.8em; font-weight: 700; margin-bottom: 10px; display: flex; align-items: center; justify-content: center; gap: 15px; }
+    .hero h1 i { color: var(--accent-main); width: 40px; height: 40px; filter: drop-shadow(0 0 15px var(--accent-glow)); }
+    .hero p { color: var(--text-muted); font-size: 1.1em; }
+
+    /* Layout */
+    .dashboard-container {
+      max-width: 1200px;
+      width: 100%;
+      margin: 0 auto 60px auto;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 30px;
+      animation: fadeSlideUp 1s ease-out forwards;
+    }
+
+    /* Modules */
+    .module-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 20px;
+      -webkit-backdrop-filter: blur(16px);
+      backdrop-filter: blur(16px);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+      padding: 40px;
+      display: flex;
+      flex-direction: column;
+      transition: border 0.3s, box-shadow 0.3s;
+    }
+
+    .module-header {
+      font-size: 1.4em;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 15px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .module-desc {
+      color: var(--text-muted);
+      line-height: 1.6;
+      margin-bottom: 25px;
+      font-size: 0.95em;
+    }
+
+    /* Password Scanner Elements */
+    .input-wrapper {
+      position: relative;
+      width: 100%;
+      margin-bottom: 20px;
+    }
+
+    .password-input {
+      width: 100%;
+      background: rgba(0,0,0,0.4);
+      border: 2px solid var(--card-border);
+      border-radius: 12px;
+      padding: 16px 50px 16px 16px;
+      color: #fff;
+      font-family: 'Fira Code', monospace;
+      font-size: 1.1em;
+      outline: none;
+      transition: all 0.3s;
+    }
+    .password-input:focus { border-color: var(--accent-main); box-shadow: 0 0 15px var(--accent-glow); }
+    .password-input::placeholder { color: rgba(255,255,255,0.2); }
+
+    .btn-toggle-eye {
+      position: absolute;
+      right: 15px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: 0.2s;
+    }
+    .btn-toggle-eye:hover { color: var(--accent-main); }
+
+    .btn-scan {
+      width: 100%;
+      padding: 16px;
+      background: var(--neon-gradient);
+      color: #000;
+      border: none;
+      border-radius: 12px;
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1.1em;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 10px;
+      transition: all 0.3s;
+      box-shadow: 0 4px 15px var(--accent-glow);
+    }
+    .btn-scan:hover { transform: translateY(-2px); box-shadow: 0 8px 25px var(--accent-glow); }
+    .btn-scan:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
+
+    /* Telemetry Result Box */
+    .result-box {
+      margin-top: 25px;
+      padding: 20px;
+      border-radius: 12px;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      gap: 10px;
+      animation: fadeIn 0.3s ease-out;
+    }
+    .result-box.active { display: flex; }
+    
+    .res-clean { background: var(--threat-clean-bg); border: 1px solid var(--threat-clean); color: var(--threat-clean); }
+    .res-critical { background: var(--threat-critical-bg); border: 1px solid var(--threat-critical); color: var(--threat-critical); }
+    
+    .res-icon { width: 36px; height: 36px; }
+    .res-title { font-size: 1.2em; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; }
+    .res-details { font-size: 0.9em; font-weight: 500; opacity: 0.9; }
+
+    /* Identity Portal Elements */
+    .portal-link {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      color: #fff;
+      padding: 16px 24px;
+      border-radius: 12px;
+      text-decoration: none;
+      font-weight: 700;
+      font-size: 1.1em;
+      transition: 0.3s;
+      margin-top: auto;
+    }
+    .portal-link:hover {
+      background: rgba(255,255,255,0.1);
+      border-color: var(--text-muted);
+      transform: translateY(-2px);
+    }
+    .portal-link i { color: var(--accent-main); }
+
+    /* SEO/Docs Section Additions */
+    .docs-container {
+      max-width: 1200px;
+      margin: 0 auto 60px auto;
+      display: flex;
+      flex-direction: column;
+      gap: 30px;
+    }
+    .info-panel ul { list-style: none; margin-bottom: 20px; }
+    .info-panel li { color: var(--text-muted); margin-bottom: 10px; display: flex; align-items: flex-start; gap: 10px; line-height: 1.6; }
+    .info-panel li i { color: #22c55e; width: 16px; margin-top: 4px; flex-shrink: 0; }
+    
+    /* Use Cases Grid */
+
+    /* Sample Payloads */
+
+    /* FAQ Accordion */
+
+    /* Changelog */
+    .changelog-list { list-style: none; margin: 0; padding: 0; }
+    .changelog-tag { background: var(--accent-main); color: #000; padding: 2px 8px; border-radius: 4px; font-weight: 600; font-size: 0.8em; }
+
+    /* Command Center FAB */
+    .fab { 
+      position: fixed; 
+      bottom: 30px; 
+      left: 30px; 
+      width: 60px; 
+      height: 60px; 
+      border-radius: 50%; 
+      -webkit-backdrop-filter: blur(15px);
+      backdrop-filter: blur(15px); 
+      display: flex; 
+      align-items: center; 
+      justify-content: center; 
+      z-index: 9999; 
+      background: rgba(20, 22, 30, 0.7); 
+      border: 1px solid rgba(255, 255, 255, 0.1); 
+      box-shadow: 0 8px 25px rgba(0,0,0,0.5); 
+      transition: all 0.4s; 
+      text-decoration: none; 
+      -webkit-transform: translateZ(0); 
+      transform: translateZ(0); 
+      will-change: transform; 
+    }
+    
+    .fab:hover { 
+      transform: scale(1.1) translateZ(0); 
+      border-color: var(--accent-main); 
+      background: rgba(30, 34, 48, 0.9); 
+      box-shadow: 0 12px 30px rgba(0,0,0,0.6), 0 0 25px rgba(56, 189, 248, 0.3); 
+    }
+
+    footer { text-align: center; padding: 40px 0; border-top: 1px solid var(--card-border); color: var(--text-muted); font-size: 0.95em; margin-top: auto; }
+
+    @media (max-width: 900px) {
+      .dashboard-container { grid-template-columns: 1fr; }
+    }
+    
+    /* =========================================
+       ULTRA-RESPONSIVE (Mobile Phones - Master Patch)
+       ========================================= */
+    @media (max-width: 600px) {
+      body { padding: 15px; } 
+      header { margin-bottom: 25px; }
+      .hero h1 { font-size: 2em; flex-direction: column; gap: 10px; }
+      .hero p { font-size: 1em; }
+      .dashboard-container, .module-card, .info-panel { min-width: 0; width: 100%; max-width: 100%; }
+      .info-panel { padding: 25px 15px; word-break: break-word; overflow-wrap: break-word; }
+      .info-panel h2 { font-size: 1.4em; align-items: flex-start; }
+      .btn-group, .input-wrapper, .portal-link { width: 100%; flex-wrap: wrap; justify-content: stretch; }
+      .btn, .btn-scan { flex-grow: 1; justify-content: center; text-align: center; }
+      .module-card { padding: 20px; }
+      .fab {
+        bottom: 25px; left: 15px; width: 50px; height: 50px;
+        background: rgba(20, 22, 30, 0.98); -webkit-backdrop-filter: none; backdrop-filter: none;
+        -webkit-transform: none; transform: none; will-change: auto;
+      }
+    }
+  

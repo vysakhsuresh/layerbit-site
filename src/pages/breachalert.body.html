@@ -1,0 +1,262 @@
+{{HEADER}}
+
+  <main class="hero">
+    <h1><i data-lucide="shield-alert"></i> BreachAlert Intelligence</h1>
+    <p>Detect compromised credentials and exposed identities across global data breaches.</p>
+  </main>
+
+  <div class="dashboard-container">
+    
+    <div class="module-card">
+      <div class="module-header">
+        <i data-lucide="key-round"></i> Cryptographic Password Scanner
+      </div>
+      <p class="module-desc">Securely check if a password has been compromised in a known data breach. We use K-Anonymity logic—meaning your actual password is never transmitted over the network.</p>
+      
+      <div class="input-wrapper">
+        <input type="password" id="passInput" class="password-input" placeholder="Enter a password to test..." />
+        <button class="btn-toggle-eye" id="btnEye" onclick="toggleVisibility()" aria-label="Show password">
+          <i data-lucide="eye"></i>
+        </button>
+      </div>
+
+      <button class="btn-scan" id="btnScan" onclick="checkPassword()">
+        <i data-lucide="radar"></i> Scan Databases
+      </button>
+
+      <div id="resultBox" class="result-box">
+        <i id="resIcon" class="res-icon" data-lucide="shield-check"></i>
+        <div id="resTitle" class="res-title">CLEAN</div>
+        <div id="resDetails" class="res-details">Awaiting input...</div>
+      </div>
+    </div>
+
+    <div class="module-card">
+      <div class="module-header">
+        <i data-lucide="fingerprint"></i> Identity Exposure Portal
+      </div>
+      <p class="module-desc">Check if your <strong>email address</strong> or <strong>phone number</strong> has been exposed in a major data breach (e.g., LinkedIn, Adobe, Canva leaks).</p>
+      <p class="module-desc">Due to strict privacy regulations, email lookup requires a verified API key. Layerbit guides you directly to the official <em>Have I Been Pwned</em> registry for a secure, ad-free verification.</p>
+      
+      <a href="https://haveibeenpwned.com/" target="_blank" rel="noopener noreferrer" class="portal-link">
+        <i data-lucide="external-link"></i> Launch Global Identity Check
+      </a>
+    </div>
+
+  </div>
+
+  <div class="docs-container">
+<div class="info-panel">
+      <h2><i data-lucide="lock"></i> Zero-Knowledge K-Anonymity Architecture</h2>
+      <p>How do we verify your credentials without actually seeing them? Layerbit engineers a strict, zero-trust validation pipeline that guarantees your sensitive data never touches a backend server.</p>
+      <ul>
+        <li><i data-lucide="check"></i> <strong>Client-Side Cryptography:</strong> The moment you type, Layerbit leverages your browser's native Web Crypto API to instantly scramble your password into a secure SHA-1 hash. The raw text never leaves the input box.</li>
+        <li><i data-lucide="check"></i> <strong>K-Anonymity Prefixing:</strong> We slice off just the first 5 characters of that hash and transmit them to the global threat registry. Because millions of different passwords share those exact same 5 starting characters, your specific password remains perfectly hidden in the crowd.</li>
+        <li><i data-lucide="check"></i> <strong>Air-Gapped Resolution:</strong> The registry replies with a massive list of compromised suffixes. Layerbit's engine scans this list locally on your own hardware to find a match. Your complete hash is never transmitted across the network.</li>
+      </ul>
+      
+      <div class="use-cases-grid">
+        <div class="use-case-card">
+          <h3><i data-lucide="building-2"></i> Corporate Credential Audits</h3>
+          <p>IT administrators can verify that employees are not using easily guessable or previously exposed passwords for company portals, minimizing brute-force vulnerabilities.</p>
+        </div>
+        <div class="use-case-card">
+          <h3><i data-lucide="siren"></i> Incident Response</h3>
+          <p>Rapidly cross-reference newly discovered credentials from a phishing attempt against known global databases to determine the extent of the security compromise.</p>
+        </div>
+        <div class="use-case-card">
+          <h3><i data-lucide="shield-check"></i> NIST Compliance</h3>
+          <p>Modern cybersecurity frameworks (like NIST 800-63B) highly recommend checking user passwords against known breached databases during registration or password resets.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="info-panel">
+      <h2><i data-lucide="test-tube"></i> Quick Testing Templates</h2>
+      <p>Want to see the K-Anonymity engine in action without exposing your real password? Click the templates below to automatically test known compromised and clean passwords.</p>
+      <div>
+        <button class="sample-btn" onclick="loadSample('breached')">Known Breached Password</button>
+        <button class="sample-btn" onclick="loadSample('clean')">Highly Secure Password</button>
+      </div>
+    </div>
+
+    <div class="info-panel">
+      <h2><i data-lucide="help-circle"></i> Frequently Asked Questions</h2>
+      <div class="faq-container">
+        
+        <div class="faq-item">
+          <button class="faq-question">What should I do if my password says COMPROMISED? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer">
+            <p>If the scanner flags your password, it means hackers already possess it in their databases and are likely using it in automated credential stuffing attacks. You must immediately change this password on all websites and applications where you currently use it. We highly recommend adopting a reputable password manager.</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question">Does this tool save or log my password? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer">
+            <p>Absolutely not. Because of the K-Anonymity model, your actual plaintext password never even reaches our servers. The entire verification process—from hashing the password to comparing the threat results—happens locally in your computer's RAM and is destroyed the moment you close the browser tab.</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question">Why don't you check emails directly on this page? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer">
+            <p>To protect global users from malicious scraping and stalking, official threat registries require strict API verification and often demand domain verification before allowing bulk email checks. To ensure your ultimate privacy, we route you directly to the official source rather than acting as a middleman for your personal email.</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="info-panel">
+      <h2><i data-lucide="git-commit"></i> Changelog</h2>
+      <ul class="changelog-list">
+        <li><span class="changelog-tag">v1.2.0</span> Integrated HIBP K-Anonymity API for real-time, zero-trust password validation.</li>
+        <li><span class="changelog-tag">v1.1.0</span> Implemented native Web Crypto API for client-side SHA-1 cryptographic hashing.</li>
+        <li><span class="changelog-tag">v1.0.0</span> Initial launch of the BreachAlert Intelligence module.</li>
+      </ul>
+    </div>
+  </div>
+
+  <a href="../" id="smartBackBtn" class="fab" aria-label="Command Center" title="Command Center">
+    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="filter: drop-shadow(0 0 8px rgba(56, 189, 248, 0.5));">
+      <path d="M12 2L2 7l10 5 10-5-10-5z" stroke="#38bdf8" stroke-width="2" stroke-linejoin="round" fill="rgba(56,189,248,0.2)"/>
+      <path d="M2 17l10 5 10-5M2 12l10 5 10-5" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </a>
+
+  {{FOOTER}}
+
+  <script src="../js/shared.js"></script>
+
+
+  <script>
+        const passInput = document.getElementById('passInput');
+    const btnEye = document.getElementById('btnEye');
+    const btnScan = document.getElementById('btnScan');
+    const resultBox = document.getElementById('resultBox');
+    const resIcon = document.getElementById('resIcon');
+    const resTitle = document.getElementById('resTitle');
+    const resDetails = document.getElementById('resDetails');
+
+    // Toggle Password Visibility
+    function toggleVisibility() {
+      if (passInput.type === "password") {
+        passInput.type = "text";
+        btnEye.innerHTML = '<i data-lucide="eye-off"></i>';
+        btnEye.setAttribute('aria-label', 'Hide password');
+      } else {
+        passInput.type = "password";
+        btnEye.innerHTML = '<i data-lucide="eye"></i>';
+        btnEye.setAttribute('aria-label', 'Show password');
+      }
+      lucide.createIcons();
+    }
+
+    // SHA-1 Hash generation using Web Crypto API
+    async function sha1(str) {
+      const buffer = new TextEncoder().encode(str);
+      const hash = await crypto.subtle.digest('SHA-1', buffer);
+      const hexCodes = [];
+      const view = new DataView(hash);
+      for (let i = 0; i < view.byteLength; i += 4) {
+        const value = view.getUint32(i);
+        const stringValue = value.toString(16).padStart(8, '0');
+        hexCodes.push(stringValue);
+      }
+      return hexCodes.join('').toUpperCase();
+    }
+
+    // Formatter for numbers
+    function formatNumber(num) {
+      return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    }
+
+    // Core Scanner Logic
+    async function checkPassword() {
+      const password = passInput.value;
+      if (!password) return;
+
+      // UI Loading State
+      btnScan.disabled = true;
+      btnScan.innerHTML = `<i data-lucide="loader" class="animate-spin"></i> Scanning Databases...`;
+      lucide.createIcons();
+      resultBox.classList.remove('active', 'res-clean', 'res-critical');
+
+      try {
+        const hash = await sha1(password);
+        const prefix = hash.substring(0, 5);
+        const suffix = hash.substring(5);
+
+        // Fetch using K-Anonymity API
+        const response = await fetch(`https://api.pwnedpasswords.com/range/${prefix}`);
+        
+        if (!response.ok) {
+          throw new Error("API Connection Failed");
+        }
+
+        const text = await response.text();
+        const lines = text.split('\n');
+        
+        let matchCount = 0;
+
+        // Search the returned suffixes for our specific suffix
+        for (let line of lines) {
+          const [hashSuffix, count] = line.trim().split(':');
+          if (hashSuffix === suffix) {
+            matchCount = parseInt(count, 10);
+            break;
+          }
+        }
+
+        // Display Results
+        if (matchCount > 0) {
+          resultBox.classList.add('res-critical', 'active');
+          resIcon.setAttribute('data-lucide', 'shield-alert');
+          resTitle.innerText = "COMPROMISED";
+          resDetails.innerText = `This password has been seen ${formatNumber(matchCount)} times in data breaches. Do not use it.`;
+        } else {
+          resultBox.classList.add('res-clean', 'active');
+          resIcon.setAttribute('data-lucide', 'shield-check');
+          resTitle.innerText = "CLEAN (FOR NOW)";
+          resDetails.innerText = "This password was not found in any known data breaches.";
+        }
+
+      } catch (err) {
+        resultBox.classList.add('res-critical', 'active');
+        resIcon.setAttribute('data-lucide', 'triangle-alert');
+        resTitle.innerText = "SCAN FAILED";
+        resDetails.innerText = "Could not connect to the threat registry. Please try again later.";
+      } finally {
+        // Reset Button
+        btnScan.disabled = false;
+        btnScan.innerHTML = `<i data-lucide="radar"></i> Scan Databases`;
+        lucide.createIcons();
+      }
+    }
+
+    // Trigger on enter key
+    passInput.addEventListener('keypress', function (e) {
+      if (e.key === 'Enter') {
+        checkPassword();
+      }
+    });
+
+    // FAQ Accordion Logic
+    
+    // Sample Loader Logic
+    function loadSample(type) {
+      if (type === 'breached') {
+        passInput.value = 'password123';
+      } else if (type === 'clean') {
+        passInput.value = 'L@y3rb1t_S3cur3_2026!#';
+      }
+      
+      // Auto-trigger the scan
+      checkPassword();
+      
+      // Scroll to top so user sees the result box appear
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  </script>
+<script src="../main.js"></script>

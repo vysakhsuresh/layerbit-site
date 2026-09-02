@@ -1,0 +1,383 @@
+{{HEADER}}
+
+  <main class="hero">
+    <h1>Source Code Diff Analyzer</h1>
+    <p>Perform granular, character-level version comparisons with advanced Git-style highlighting.</p>
+  </main>
+
+  <div class="ide-container">
+    <div class="pane">
+      <div class="pane-header">
+        <div class="pane-title title-red"><i data-lucide="file-minus"></i> Original Text</div>
+      </div>
+      <textarea id="text1" class="editor" placeholder="Paste the original code or text block here..."></textarea>
+    </div>
+
+    <div class="pane">
+      <div class="pane-header">
+        <div class="pane-title title-green"><i data-lucide="file-plus"></i> Modified Text</div>
+      </div>
+      <textarea id="text2" class="editor" placeholder="Paste the modified code or text block here..."></textarea>
+    </div>
+  </div>
+
+  <div class="action-bar">
+    <label class="toggle-label">
+      <input type="checkbox" id="ignoreWhitespace"> Ignore Whitespace
+    </label>
+    <label class="toggle-label">
+      <input type="checkbox" id="inlineMode"> Inline View
+    </label>
+    
+    <button class="btn" onclick="swapInputs()"><i data-lucide="arrow-left-right"></i> Swap</button>
+    <button class="btn" onclick="clearInputs()"><i data-lucide="trash-2"></i> Clear</button>
+    <button class="btn btn-primary" onclick="runDiff()"><i data-lucide="search"></i> Analyze Diff</button>
+  </div>
+
+  <div class="ide-container" id="outputSection" style="display: none;">
+    
+    <!-- Split View Containers -->
+    <div class="pane split-pane">
+      <div class="pane-header">
+        <div class="pane-title"><i data-lucide="file-output"></i> Original Result</div>
+        <div class="btn-group diff-nav">
+          <button class="btn" onclick="navDiff(-1)" title="Previous Change"><i data-lucide="chevron-up"></i></button>
+          <button class="btn" onclick="navDiff(1)" title="Next Change"><i data-lucide="chevron-down"></i></button>
+        </div>
+      </div>
+      <div id="leftPanel" class="diff-output"></div>
+    </div>
+
+    <div class="pane split-pane">
+      <div class="pane-header">
+        <div class="pane-title"><i data-lucide="file-output"></i> Modified Result</div>
+      </div>
+      <div id="rightPanel" class="diff-output"></div>
+    </div>
+
+    <!-- Inline View Container -->
+    <div class="pane inline-pane" style="display: none;">
+      <div class="pane-header">
+        <div class="pane-title"><i data-lucide="file-output"></i> Unified Result</div>
+        <div class="btn-group diff-nav">
+          <button class="btn" onclick="navDiff(-1)" title="Previous Change"><i data-lucide="chevron-up"></i></button>
+          <button class="btn" onclick="navDiff(1)" title="Next Change"><i data-lucide="chevron-down"></i></button>
+        </div>
+      </div>
+      <div id="inlinePanel" class="diff-output"></div>
+    </div>
+  </div>
+
+  <div class="docs-container">
+    <div class="info-panel">
+      <h2><i data-lucide="info"></i> Version Control Forensics</h2>
+      <p>Layerbit’s Diff Analyzer implements advanced algorithmic mapping to extract exact character and word-level modifications. It is engineered to handle configuration files, raw source code, and extensive text blocks safely.</p>
+      
+      <div class="use-cases-grid">
+        <div class="use-case-card">
+          <h3><i data-lucide="code-2"></i> Code Review</h3>
+          <p>Easily spot minor typo fixes, variable name changes, and formatting shifts without having to manually scan line by line. The word-level highlights isolate the exact character changes.</p>
+        </div>
+        <div class="use-case-card">
+          <h3><i data-lucide="file-json"></i> Config Verification</h3>
+          <p>Compare massive JSON payloads, environment variable files, or server configurations to track down breaking changes before deploying to production.</p>
+        </div>
+        <div class="use-case-card">
+          <h3><i data-lucide="eye-off"></i> Secure Auditing</h3>
+          <p>Air-Gapped Security: Your code never leaves your computer. The engine runs 100% locally in your browser's memory, ensuring proprietary algorithms stay private.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="info-panel">
+      <h2><i data-lucide="flask-conical"></i> Quick Testing Templates</h2>
+      <p>Test the diff engine instantly. Click the templates below to load sample comparisons and watch how the word-level highlighting and whitespace filtering perform.</p>
+      <div>
+        <button class="sample-btn" onclick="loadSample('code')">Code Refactoring</button>
+        <button class="sample-btn" onclick="loadSample('json')">JSON Config Update</button>
+        <button class="sample-btn" onclick="loadSample('whitespace')">Whitespace Formatting</button>
+      </div>
+    </div>
+
+    <div class="info-panel">
+      <h2><i data-lucide="help-circle"></i> Engineering FAQ</h2>
+      <div class="faq-container">
+        
+        <div class="faq-item">
+          <button class="faq-question">How does Word-Level highlighting work? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer">
+            <p>Unlike basic diff checkers that only show if an entire line was replaced, Layerbit runs a secondary pass on modified lines. If a line is removed and immediately replaced, the engine diffs the characters within those specific lines to highlight the exact insertion or deletion.</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question">What does the "Ignore Whitespace" toggle do? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer">
+            <p>When code is reformatted by a linter, the indentation changes can create massive false-positive diffs. Toggling this feature forces the engine to ignore tabs, spaces, and line breaks, isolating only the actual logic changes.</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="info-panel">
+      <h2><i data-lucide="git-merge"></i> Deployment Changelog</h2>
+      <ul class="changelog-list">
+        <li><span class="changelog-tag">v2.1.0</span> Integrated Quick Testing Templates for rapid forensic evaluation.</li>
+        <li><span class="changelog-tag">v2.0.0</span> Major Engine Overhaul: Integrated high-performance <code>jsdiff</code> library for exact character-level forensic highlighting.</li>
+        <li><span class="changelog-tag">v1.3.0</span> Added "Inline vs Split View" rendering modes for easier mobile debugging.</li>
+        <li><span class="changelog-tag">v1.2.0</span> Integrated "Next/Prev Diff" navigation to jump directly to code changes in large files.</li>
+        <li><span class="changelog-tag">v1.1.0</span> Added "Ignore Whitespace" toggle.</li>
+      </ul>
+    </div>
+  </div>
+
+  <a href="../" id="smartBackBtn" class="fab" aria-label="Command Center" title="Command Center">
+    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="filter: drop-shadow(0 0 8px rgba(56, 189, 248, 0.5));">
+      <path d="M12 2L2 7l10 5 10-5-10-5z" stroke="#38bdf8" stroke-width="2" stroke-linejoin="round" fill="rgba(56,189,248,0.2)"/>
+      <path d="M2 17l10 5 10-5M2 12l10 5 10-5" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </a>
+
+  {{FOOTER}}
+
+  <script src="../js/shared.js"></script>
+
+
+  <script>
+        // Elements
+    const text1 = document.getElementById("text1");
+    const text2 = document.getElementById("text2");
+    const leftPanel = document.getElementById("leftPanel");
+    const rightPanel = document.getElementById("rightPanel");
+    const inlinePanel = document.getElementById("inlinePanel");
+    const outputSection = document.getElementById("outputSection");
+    const inlineModeToggle = document.getElementById("inlineMode");
+    const ignoreWhitespaceToggle = document.getElementById("ignoreWhitespace");
+
+    // Arrays to store diff node offsets for navigation
+    let diffNodesLeft = [];
+    let diffNodesRight = [];
+    let diffNodesInline = [];
+    let currentDiffIndex = -1;
+
+    function escapeHTML(str) {
+      if(!str) return '';
+      return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    }
+
+    function swapInputs() {
+      const temp = text1.value;
+      text1.value = text2.value;
+      text2.value = temp;
+    }
+
+    function clearInputs() {
+      text1.value = "";
+      text2.value = "";
+      outputSection.style.display = "none";
+    }
+
+    // Line Creators
+    function createSplitLine(type, text, lineNum, isHighlight = false) {
+      const numHTML = lineNum !== '' ? `<div class="diff-num">${lineNum}</div>` : `<div class="diff-num"></div>`;
+      const diffClass = isHighlight ? `has-diff diff-${type}` : '';
+      const textHTML = `<div class="diff-text">${text === '' ? '&nbsp;' : text}</div>`;
+      return `<div class="diff-line line-${type} ${diffClass}">${numHTML}${textHTML}</div>`;
+    }
+
+    function createInlineLine(type, text, leftNum, rightNum, isHighlight = false) {
+      const numHTML = `<div class="diff-num"><span>${leftNum}</span><span>${rightNum}</span></div>`;
+      const diffClass = isHighlight ? `has-diff diff-${type}` : '';
+      const textHTML = `<div class="diff-text">${text === '' ? '&nbsp;' : text}</div>`;
+      return `<div class="diff-line line-${type} ${diffClass}">${numHTML}${textHTML}</div>`;
+    }
+
+    // Word Diffing for modified lines
+    function diffWordsInline(oldText, newText) {
+      const diffs = Diff.diffWords(oldText, newText);
+      let outOld = "", outNew = "";
+      
+      diffs.forEach(part => {
+        const val = escapeHTML(part.value);
+        if (part.added) {
+          outNew += `<span class="word-added">${val}</span>`;
+        } else if (part.removed) {
+          outOld += `<span class="word-removed">${val}</span>`;
+        } else {
+          outOld += val;
+          outNew += val;
+        }
+      });
+      return { oldText: outOld, newText: outNew };
+    }
+
+    function runDiff() {
+      outputSection.style.display = "grid";
+      const isInline = inlineModeToggle.checked;
+      const ignoreWs = ignoreWhitespaceToggle.checked;
+
+      // Handle UI Mode Toggling
+      if (isInline) {
+        outputSection.classList.add("inline-mode");
+        document.querySelectorAll(".split-pane").forEach(el => el.style.display = "none");
+        document.querySelector(".inline-pane").style.display = "flex";
+      } else {
+        outputSection.classList.remove("inline-mode");
+        document.querySelectorAll(".split-pane").forEach(el => el.style.display = "flex");
+        document.querySelector(".inline-pane").style.display = "none";
+      }
+
+      // Run jsDiff
+      const diff = Diff.diffLines(text1.value, text2.value, { ignoreWhitespace: ignoreWs });
+
+      let leftHTML = "";
+      let rightHTML = "";
+      let inlineHTML = "";
+      
+      let leftLine = 1;
+      let rightLine = 1;
+
+      // Pre-process for modified lines (removed followed immediately by added)
+      for (let i = 0; i < diff.length; i++) {
+        const part = diff[i];
+        const nextPart = diff[i+1];
+        
+        const lines = part.value.replace(/\n$/, '').split('\n');
+
+        if (part.removed && nextPart && nextPart.added && part.count === nextPart.count) {
+          // It's a direct modification of lines, let's do word-level highlights
+          const nextLines = nextPart.value.replace(/\n$/, '').split('\n');
+          
+          for (let k = 0; k < lines.length; k++) {
+            const wordDiffs = diffWordsInline(lines[k], nextLines[k] || '');
+            
+            leftHTML += createSplitLine('removed', wordDiffs.oldText, leftLine++, true);
+            rightHTML += createSplitLine('added', wordDiffs.newText, rightLine++, true);
+            
+            inlineHTML += createInlineLine('removed', wordDiffs.oldText, leftLine - 1, '', true);
+            inlineHTML += createInlineLine('added', wordDiffs.newText, '', rightLine - 1, true);
+          }
+          i++; // Skip the next part since we processed it
+        } 
+        else if (part.removed) {
+          lines.forEach(l => {
+            leftHTML += createSplitLine('removed', escapeHTML(l), leftLine++, true);
+            rightHTML += createSplitLine('blank', '', '');
+            inlineHTML += createInlineLine('removed', escapeHTML(l), leftLine - 1, '', true);
+          });
+        } 
+        else if (part.added) {
+          lines.forEach(l => {
+            leftHTML += createSplitLine('blank', '', '');
+            rightHTML += createSplitLine('added', escapeHTML(l), rightLine++, true);
+            inlineHTML += createInlineLine('added', escapeHTML(l), '', rightLine - 1, true);
+          });
+        } 
+        else {
+          // Unchanged
+          lines.forEach(l => {
+            leftHTML += createSplitLine('match', escapeHTML(l), leftLine);
+            rightHTML += createSplitLine('match', escapeHTML(l), rightLine);
+            inlineHTML += createInlineLine('match', escapeHTML(l), leftLine, rightLine);
+            leftLine++; rightLine++;
+          });
+        }
+      }
+
+      leftPanel.innerHTML = leftHTML;
+      rightPanel.innerHTML = rightHTML;
+      inlinePanel.innerHTML = inlineHTML;
+
+      // Setup Navigation Forensics
+      setTimeout(buildNavigation, 100);
+      
+      outputSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    // Diff Navigation Logic
+    function buildNavigation() {
+      diffNodesLeft = Array.from(leftPanel.querySelectorAll('.has-diff'));
+      diffNodesRight = Array.from(rightPanel.querySelectorAll('.has-diff'));
+      diffNodesInline = Array.from(inlinePanel.querySelectorAll('.has-diff'));
+      currentDiffIndex = -1;
+    }
+
+    function navDiff(direction) {
+      const isInline = inlineModeToggle.checked;
+      const targetNodes = isInline ? diffNodesInline : diffNodesRight; // Right is primary for split
+      const scrollPanel = isInline ? inlinePanel : rightPanel;
+      
+      if (targetNodes.length === 0) return;
+
+      currentDiffIndex += direction;
+      
+      if (currentDiffIndex >= targetNodes.length) currentDiffIndex = 0;
+      if (currentDiffIndex < 0) currentDiffIndex = targetNodes.length - 1;
+
+      const node = targetNodes[currentDiffIndex];
+      if (node) {
+        // Scroll into view within the div
+        scrollPanel.scrollTop = node.offsetTop - scrollPanel.offsetTop - 50;
+      }
+    }
+
+    // Synchronized Scrolling Logic
+    let isSyncingLeftScroll = false;
+    let isSyncingRightScroll = false;
+
+    leftPanel.addEventListener('scroll', function(e) {
+      if (!isSyncingLeftScroll) {
+        isSyncingRightScroll = true;
+        rightPanel.scrollTop = this.scrollTop;
+        rightPanel.scrollLeft = this.scrollLeft;
+      }
+      isSyncingLeftScroll = false;
+    });
+
+    rightPanel.addEventListener('scroll', function(e) {
+      if (!isSyncingRightScroll) {
+        isSyncingLeftScroll = true;
+        leftPanel.scrollTop = this.scrollTop;
+        leftPanel.scrollLeft = this.scrollLeft;
+      }
+      isSyncingRightScroll = false;
+    });
+
+    // FAQ Accordion Logic
+    
+    // Sample Loader Logic
+    function loadSample(type) {
+      const samples = {
+        code: {
+          t1: "function calculateTotal(price, tax) {\n  let total = price + tax;\n  console.log('The total is: ' + total);\n  return total;\n}",
+          t2: "function calculateTotal(basePrice, taxRate) {\n  let finalTotal = basePrice + taxRate;\n  console.warn('The final total is: ' + finalTotal);\n  return finalTotal;\n}"
+        },
+        json: {
+          t1: '{\n  "server": "api.layerbit.co.in",\n  "port": 8080,\n  "timeout": 3000,\n  "features": {\n    "logging": true,\n    "auth": false\n  }\n}',
+          t2: '{\n  "server": "api.layerbit.co.in",\n  "port": 443,\n  "timeout": 5000,\n  "retry": 3,\n  "features": {\n    "logging": true,\n    "auth": true,\n    "ssl": true\n  }\n}'
+        },
+        whitespace: {
+          t1: "const user = {\nname: 'Admin',\nrole: 'Superuser'\n};",
+          t2: "const user = {\n    name: 'Admin',\n    role: 'Superuser'\n};"
+        }
+      };
+
+      if (samples[type]) {
+        text1.value = samples[type].t1;
+        text2.value = samples[type].t2;
+        
+        // Setup specific UI toggles based on the test case
+        const wsToggle = document.getElementById("ignoreWhitespace");
+        if (type === 'whitespace') {
+            wsToggle.checked = true;
+        } else {
+            wsToggle.checked = false;
+        }
+
+        runDiff();
+      }
+    }
+
+  </script>
+<script src="../main.js"></script>

@@ -1,0 +1,316 @@
+
+    /* Ultra-Premium Dark Theme Variables (Matched to Index) */
+
+    body {
+      font-family: 'Space Grotesk', sans-serif;
+      color: var(--text-main);
+      background-color: var(--bg-base);
+      background-image: var(--bg-gradient);
+      min-height: 100dvh; /* Upgraded for mobile UI */
+      padding: 20px 40px;
+      position: relative;
+      overflow-x: clip; /* Safely clips without breaking fixed elements */
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Animated Drifting Starry Background */
+
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0; left: 0; width: 100vw; height: 100vh;
+      background-image: 
+        radial-gradient(rgba(255,255,255,0.08) 1px, transparent 1px),
+        radial-gradient(rgba(255,255,255,0.05) 1px, transparent 1px);
+      background-size: 60px 60px, 40px 40px;
+      background-position: 0 0, 20px 20px;
+      z-index: -1;
+      pointer-events: none;
+      animation: drift 60s linear infinite;
+    }
+
+    /* Header */
+    header {
+      display: flex;
+      justify-content: flex-start;
+      align-items: center;
+      max-width: 1200px;
+      width: 100%;
+      margin: 0 auto 60px auto;
+    }
+
+    /* Hero Section */
+    .hero {
+      text-align: center;
+      max-width: 900px;
+      margin: 0 auto 40px auto;
+      animation: fadeIn 1.2s ease-out forwards;
+    }
+
+    @keyframes gradientText { 
+      0%{background-position:0% 50%} 
+      50%{background-position:100% 50%} 
+      100%{background-position:0% 50%} 
+    }
+
+    .hero h1 {
+      font-size: 3.5em;
+      font-weight: 700;
+      margin-bottom: 18px;
+      letter-spacing: -1.5px;
+      line-height: 1.1;
+      background: linear-gradient(270deg, #ffffff, #e2e8f0, #38bdf8, #ffffff);
+      background-size: 300% 300%;
+      animation: gradientText 8s ease infinite;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .hero p {
+      font-size: 1.15em;
+      color: var(--text-muted);
+      line-height: 1.7;
+      max-width: 750px;
+      margin: 0 auto;
+    }
+
+    /* Documentation Container */
+    .doc-container {
+      max-width: 1100px;
+      margin: 0 auto 80px auto;
+      width: 100%;
+      animation: fadeSlideUp 1s ease-out forwards;
+      flex-grow: 1;
+    }
+
+    /* Section Headers */
+    .doc-container h2 {
+      font-size: 2em;
+      color: #fff;
+      margin-top: 60px;
+      margin-bottom: 30px;
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+      padding-bottom: 15px;
+    }
+
+    .doc-container h2 i {
+      color: var(--accent-main);
+      width: 32px;
+      height: 32px;
+      filter: drop-shadow(0 0 10px var(--accent-glow));
+    }
+
+    /* Glassmorphic Tool Grid */
+    .doc-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+      gap: 25px;
+    }
+
+    .tool-box {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 30px;
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .tool-box::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; width: 4px; height: 100%;
+      background: var(--neon-gradient);
+      opacity: 0.5;
+      transition: opacity 0.3s;
+    }
+
+    .tool-box:hover {
+      transform: translateY(-5px);
+      background: var(--card-hover-bg);
+      border-color: var(--card-hover-border);
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4), 0 0 25px rgba(56, 189, 248, 0.1);
+    }
+
+    .tool-box:hover::before {
+      opacity: 1;
+    }
+
+    .tool-box h3 {
+      font-size: 1.3em;
+      color: #fff;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 600;
+    }
+
+    .tool-box h3 i {
+      color: var(--accent-main);
+      width: 24px;
+      height: 24px;
+    }
+
+    .tool-box p {
+      font-size: 1em;
+      color: var(--text-muted);
+      line-height: 1.6;
+    }
+
+    /* Footer Note inside Doc */
+    .footer-note {
+      text-align: center;
+      margin-top: 80px;
+      padding: 30px;
+      background: rgba(56, 189, 248, 0.05);
+      border: 1px solid rgba(56, 189, 248, 0.2);
+      border-radius: 16px;
+    }
+
+    .footer-note p {
+      font-size: 1.1em;
+      color: var(--text-muted);
+    }
+
+    .footer-note a {
+      color: var(--accent-main);
+      text-decoration: none;
+      font-weight: bold;
+      transition: all 0.3s;
+    }
+
+    .footer-note a:hover {
+      color: #fff;
+      text-shadow: 0 0 10px var(--accent-glow);
+    }
+
+    /* Floating Command Center Orb */
+    .fab {
+      position: fixed;
+      bottom: 30px;
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      backdrop-filter: blur(15px);
+      -webkit-backdrop-filter: blur(15px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      z-index: 9998;
+      box-shadow: 0 8px 25px rgba(0,0,0,0.5);
+      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      text-decoration: none;
+      -webkit-transform: translateZ(0); 
+      transform: translateZ(0); 
+      will-change: transform;
+    }
+
+    .home-fab-premium {
+      left: 30px;
+      background: rgba(20, 22, 30, 0.7);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .home-fab-premium:hover {
+      transform: scale(1.1) translateZ(0);
+      border-color: rgba(56, 189, 248, 0.5);
+      background: rgba(30, 34, 48, 0.9);
+      box-shadow: 0 12px 30px rgba(0,0,0,0.6), 0 0 25px rgba(56, 189, 248, 0.3);
+    }
+
+    /* Standardized Footer */
+    footer {
+      text-align: center;
+      padding: 40px 0;
+      border-top: 1px solid var(--card-border);
+      color: var(--text-muted);
+      font-size: 0.95em;
+      margin-top: auto;
+      width: 100%;
+    }
+
+    footer a { color: var(--text-muted); text-decoration: none; margin: 0 12px; transition: color 0.2s; }
+    footer a:hover { color: var(--accent-main); }
+
+    /* Responsive Grid Adjustments */
+    @media (max-width: 768px) {
+      .doc-grid { grid-template-columns: 1fr; }
+    }
+
+    /* Animations */
+
+    /* =========================================
+       ULTRA-RESPONSIVE (Mobile Phones - Master Patch)
+       ========================================= */
+    @media (max-width: 600px) {
+      /* 1. Reclaim Screen Real Estate */
+      body { padding: 15px 20px; }
+      header { margin-bottom: 25px; }
+
+      /* 2. Scale Down Giant Typography */
+      .hero h1 { 
+        font-size: 2.2em; 
+        line-height: 1.2;
+        margin-bottom: 15px;
+      }
+      .hero p { font-size: 1em; }
+
+      /* 3. Adjust Headers */
+      .doc-container h2 {
+        font-size: 1.5em;
+        margin-top: 40px;
+        flex-wrap: wrap; /* Allows icon and text to wrap if very long */
+      }
+      
+      .doc-container h2 i {
+        width: 24px;
+        height: 24px;
+      }
+
+      /* 4. Fix Grid and Box Paddings to prevent overflow */
+      .doc-container, .tool-box, .footer-note {
+        min-width: 0;
+        width: 100%;
+        max-width: 100%;
+      }
+
+      .doc-grid {
+        grid-template-columns: 1fr; /* Force single column */
+        gap: 20px;
+      }
+
+      .tool-box {
+        padding: 25px 20px;
+      }
+
+      .footer-note {
+        padding: 25px 20px;
+        margin-top: 40px;
+      }
+
+      /* 5. Fix the Disappearing FAB Bug */
+      .fab {
+        bottom: 20px; 
+        left: 20px; 
+        width: 50px; 
+        height: 50px;
+        background: rgba(20, 22, 30, 0.98); /* Solid dark color so iOS Safari doesn't bug out */
+        -webkit-backdrop-filter: none;
+        backdrop-filter: none;
+        -webkit-transform: none;
+        transform: none;
+        will-change: auto;
+      }
+    }
+  

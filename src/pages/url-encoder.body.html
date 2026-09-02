@@ -1,0 +1,321 @@
+{{HEADER}}
+
+  <main class="hero">
+    <h1>URL Encoder / Decoder</h1>
+    <p>Instantly encode payloads or decode URL parameters in real-time.</p>
+  </main>
+
+  <div class="mode-selector">
+    <button class="mode-btn active" id="btnModeSmart" onclick="setMode('smart')"><i data-lucide="link"></i> Smart URL Mode</button>
+    <button class="mode-btn" id="btnModeRaw" onclick="setMode('raw')"><i data-lucide="file-text"></i> Raw String Mode</button>
+  </div>
+
+  <div class="ide-container">
+    
+    <div class="pane">
+      <div class="pane-header">
+        <div class="pane-title"><i data-lucide="unlock"></i> Plain / Decoded</div>
+        <div class="btn-group">
+          <span id="decodeError" class="error-text"><i data-lucide="alert-circle"></i> Invalid URI</span>
+          <button class="btn" onclick="clearAll()"><i data-lucide="trash-2"></i> Clear</button>
+          <button class="btn" onclick="copyContent('plainText', this)"><i data-lucide="copy"></i> Copy</button>
+        </div>
+      </div>
+      <textarea id="plainText" class="editor" placeholder="Paste readable text or an unencoded URL here...&#10;e.g. https://api.layerbit.co.in/search?q=hello world" spellcheck="false"></textarea>
+    </div>
+
+    <div class="pane">
+      <div class="pane-header">
+        <div class="pane-title"><i data-lucide="lock"></i> Encoded Payload</div>
+        <div class="btn-group">
+          <button class="btn" onclick="copyContent('encodedText', this)"><i data-lucide="copy"></i> Copy</button>
+        </div>
+      </div>
+      <textarea id="encodedText" class="editor" placeholder="Paste encoded strings here...&#10;e.g. https://api.layerbit.co.in/search?q=hello%20world" spellcheck="false"></textarea>
+    </div>
+
+  </div>
+
+  <div class="analysis-container" id="analysisContainer">
+    <div class="analysis-pane">
+      <div class="analysis-header"><i data-lucide="list-tree"></i> Detected URL Parameters</div>
+      <div class="param-grid" id="paramGrid">
+        </div>
+    </div>
+  </div>
+
+  <div class="docs-container">
+    <div class="info-panel">
+      <h2><i data-lucide="cpu"></i> Processing Architecture</h2>
+      <p>Layerbit's URL Synthesizer features a dual-engine architecture designed specifically for developers handling API endpoints and webhook payloads.</p>
+      <ul>
+        <li><i data-lucide="check"></i> <strong>Smart URL Mode (Default):</strong> When a full URL is detected, the engine preserves the protocol and domain (e.g., <code>https://domain.com/path</code>) and strictly encodes the query parameters. This prevents broken, unclickable URLs.</li>
+        <li><i data-lucide="check"></i> <strong>Raw String Mode:</strong> Forces strict RFC 3986 encoding across the entire input block, converting every unsafe character (including slashes and colons).</li>
+        <li><i data-lucide="check"></i> <strong>Parameter Forensics:</strong> Automatically detects query strings (<code>?key=value</code>) and generates a visual breakdown of payload data.</li>
+      </ul>
+
+      <div class="use-cases-grid">
+        <div class="use-case-card">
+          <h3><i data-lucide="webhook"></i> Webhook Debugging</h3>
+          <p>Ensure complex payloads carrying raw JSON or XML objects via URL parameters do not break routing logic by safely encoding the transmission string.</p>
+        </div>
+        <div class="use-case-card">
+          <h3><i data-lucide="bar-chart-3"></i> UTM Tracking Generation</h3>
+          <p>Securely encode advanced marketing campaign parameters, ensuring spaces and special characters map perfectly into analytics dashboards without data truncation.</p>
+        </div>
+        <div class="use-case-card">
+          <h3><i data-lucide="shield-alert"></i> Security Sanitization</h3>
+          <p>Rapidly convert malicious or raw input strings into fully encoded formats to safely analyze cross-site scripting (XSS) payloads in application server logs.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="info-panel">
+      <h2><i data-lucide="flask-conical"></i> Quick Testing Templates</h2>
+      <p>Test the URL encoding engine instantly. Click the templates below to load sample payloads directly into the workspace.</p>
+      <div>
+        <button class="sample-btn" onclick="loadSample('webhook')">Webhook Payload (Smart Mode)</button>
+        <button class="sample-btn" onclick="loadSample('raw')">XSS Payload (Raw Mode)</button>
+        <button class="sample-btn" onclick="loadSample('malformed')">Malformed URI Error</button>
+      </div>
+    </div>
+
+    <div class="info-panel">
+      <h2><i data-lucide="help-circle"></i> Engineering FAQ</h2>
+      <div class="faq-container">
+        
+        <div class="faq-item">
+          <button class="faq-question">What is the technical difference between Smart and Raw mode? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer">
+            <p>Smart Mode attempts to parse the string using the JavaScript <code>URL</code> API, extracting and modifying the <code>URLSearchParams</code> to safely encode query parameters while preserving the base protocol structure. Raw Mode bypasses URL parsing and applies a blanket <code>encodeURIComponent()</code> to the entire string.</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question">Why is client-side processing necessary? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer">
+            <p>URLs frequently contain highly sensitive session tokens, API keys, and temporary authorization grants within their parameters. Processing this data entirely within your local browser DOM guarantees zero-trust security—your keys are never sent to or logged by our servers.</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question">How does Parameter Forensics work? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer">
+            <p>When a valid URL is detected, the engine intercepts the <code>search</code> property of the parsed URL object. It iterates through the <code>URLSearchParams</code> map, automatically escaping HTML entities to prevent DOM injection, and populates the visual breakdown grid.</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="info-panel">
+      <h2><i data-lucide="git-merge"></i> Deployment Changelog</h2>
+      <ul class="changelog-list">
+        <li><span class="changelog-tag">v1.2.1</span> Enhanced error handling UX. If a URI decode error occurs, the original string is preserved in the Plain Text viewer to allow for immediate debugging.</li>
+        <li><span class="changelog-tag">v1.2.0</span> Added interactive Quick Testing Templates and expanded the forensic documentation panel.</li>
+        <li><span class="changelog-tag">v1.1.0</span> Engineered the Parameter Forensics grid to automatically parse and visualize query string arrays.</li>
+        <li><span class="changelog-tag">v1.0.0</span> Initial deployment of the dual-engine URL encoder utilizing strict client-side evaluation.</li>
+      </ul>
+    </div>
+  </div>
+
+  <a href="../" id="smartBackBtn" class="fab" aria-label="Command Center" title="Command Center">
+    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="filter: drop-shadow(0 0 8px rgba(56, 189, 248, 0.5));">
+      <path d="M12 2L2 7l10 5 10-5-10-5z" stroke="#38bdf8" stroke-width="2" stroke-linejoin="round" fill="rgba(56,189,248,0.2)"/>
+      <path d="M2 17l10 5 10-5M2 12l10 5 10-5" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </a>
+
+  {{FOOTER}}
+
+  <script src="../js/shared.js"></script>
+
+
+  <script>
+        let currentMode = 'smart'; // 'smart' or 'raw'
+    let isSyncing = false;
+
+    const plainText = document.getElementById("plainText");
+    const encodedText = document.getElementById("encodedText");
+    const decodeError = document.getElementById("decodeError");
+    const analysisContainer = document.getElementById("analysisContainer");
+    const paramGrid = document.getElementById("paramGrid");
+    
+    const btnModeSmart = document.getElementById("btnModeSmart");
+    const btnModeRaw = document.getElementById("btnModeRaw");
+
+    function setMode(mode) {
+      currentMode = mode;
+      if(mode === 'smart') {
+        btnModeSmart.classList.add('active');
+        btnModeRaw.classList.remove('active');
+      } else {
+        btnModeRaw.classList.add('active');
+        btnModeSmart.classList.remove('active');
+      }
+      // Retrigger encoding based on current plain text
+      triggerEncode();
+    }
+
+    function clearAll() {
+      plainText.value = "";
+      encodedText.value = "";
+      decodeError.classList.remove("active");
+      analysisContainer.classList.remove("active");
+    }
+
+    function copyContent(elementId, btnElement) {
+      const text = document.getElementById(elementId).value;
+      if (!text) return;
+      
+      navigator.clipboard.writeText(text).then(() => {
+        const originalText = btnElement.innerHTML;
+        btnElement.innerHTML = '<i data-lucide="check"></i> Copied!';
+        lucide.createIcons();
+        setTimeout(() => {
+          btnElement.innerHTML = originalText;
+          lucide.createIcons();
+        }, 2000);
+      });
+    }
+
+    // Escape HTML to prevent injection in the param grid
+    function escapeHTML(str) {
+      return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    }
+
+    // Analyzes a string to see if it's a URL with parameters
+    function analyzeParameters(str) {
+      try {
+        // Attempt to parse as URL
+        const url = new URL(str);
+        const params = new URLSearchParams(url.search);
+        
+        let gridHTML = '';
+        let hasParams = false;
+
+        for (const [key, value] of params.entries()) {
+          hasParams = true;
+          gridHTML += `
+            <div class="param-key">${escapeHTML(key)} :</div>
+            <div class="param-val">${escapeHTML(value)}</div>
+          `;
+        }
+
+        if (hasParams) {
+          paramGrid.innerHTML = gridHTML;
+          analysisContainer.classList.add("active");
+        } else {
+          analysisContainer.classList.remove("active");
+        }
+      } catch (e) {
+        // Not a valid URL, hide analysis
+        analysisContainer.classList.remove("active");
+      }
+    }
+
+    // Engine: Encode Plain -> Encoded
+    function triggerEncode() {
+      if (isSyncing) return;
+      const val = plainText.value.trim();
+      
+      if (!val) {
+        isSyncing = true;
+        encodedText.value = "";
+        decodeError.classList.remove("active");
+        analysisContainer.classList.remove("active");
+        isSyncing = false;
+        return;
+      }
+
+      isSyncing = true;
+      decodeError.classList.remove("active");
+
+      if (currentMode === 'smart') {
+        try {
+          // Attempt to parse as URL. If successful, encode only the search params.
+          const url = new URL(val);
+          
+          // Rebuild search params ensuring they are encoded
+          const params = new URLSearchParams(url.search);
+          let newSearch = params.toString(); // URLSearchParams automatically encodes
+          
+          // Reconstruct URL
+          url.search = newSearch ? `?${newSearch}` : '';
+          encodedText.value = url.toString();
+          
+        } catch(e) {
+          // If it fails URL parsing, fallback to raw encodeURI (preserves some characters unlike encodeURIComponent)
+          encodedText.value = encodeURI(val);
+        }
+      } else {
+        // Raw Mode: encode everything strictly
+        encodedText.value = encodeURIComponent(val);
+      }
+
+      analyzeParameters(val);
+      isSyncing = false;
+    }
+
+    // Engine: Decode Encoded -> Plain
+    function triggerDecode() {
+      if (isSyncing) return;
+      const val = encodedText.value.trim();
+
+      if (!val) {
+        isSyncing = true;
+        plainText.value = "";
+        decodeError.classList.remove("active");
+        analysisContainer.classList.remove("active");
+        isSyncing = false;
+        return;
+      }
+
+      isSyncing = true;
+      try {
+        // Try decoding the whole string
+        const decoded = decodeURIComponent(val);
+        plainText.value = decoded;
+        decodeError.classList.remove("active");
+        analyzeParameters(decoded);
+      } catch (e) {
+        // Handle malformed URI components
+        decodeError.classList.add("active");
+        plainText.value = val; // Dump raw string so it's not blank
+        analysisContainer.classList.remove("active");
+      }
+      isSyncing = false;
+    }
+
+    // Listeners
+    plainText.addEventListener('input', triggerEncode);
+    encodedText.addEventListener('input', triggerDecode);
+
+    // FAQ Accordion Logic
+    
+    // Sample Loader Logic
+    function loadSample(type) {
+      const samples = {
+        webhook: { text: 'https://api.layerbit.co.in/v1/webhook?payload={"user_id":1024,"action":"login","meta":"foo bar & baz"}', mode: 'smart', isEncoded: false },
+        raw: { text: '<script>alert("XSS Payload Check & Encode!");</scr'+'ipt>', mode: 'raw', isEncoded: false },
+        malformed: { text: 'https://api.layerbit.co.in/search?q=100%_Discount', mode: 'smart', isEncoded: true }
+      };
+
+      if (samples[type]) {
+        setMode(samples[type].mode);
+        clearAll();
+
+        if (samples[type].isEncoded) {
+          encodedText.value = samples[type].text;
+          triggerDecode();
+        } else {
+          plainText.value = samples[type].text;
+          triggerEncode();
+        }
+
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    }
+
+  </script>
+<script src="../main.js"></script>

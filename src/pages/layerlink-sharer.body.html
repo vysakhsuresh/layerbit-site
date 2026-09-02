@@ -1,0 +1,295 @@
+{{HEADER}}
+
+  <main class="hero">
+    <h1>LayerLink Host Terminal</h1>
+    <p>Secure, browser-to-browser screen broadcasting via WebRTC technology.</p>
+  </main>
+
+  <div class="mobile-error" id="mobileError">
+    <i data-lucide="smartphone" style="vertical-align: middle; margin-right: 5px;"></i> Host capabilities require a desktop/laptop browser to capture the screen stream.
+  </div>
+
+  <div class="dashboard" id="mainDashboard">
+    
+    <div class="pane">
+      <h2 style="font-size:1.2em; display:flex; align-items:center; gap:10px;"><i data-lucide="radio"></i> Transmission Control</h2>
+      
+      <div id="statusBadge" class="status-badge status-idle">
+        <i data-lucide="sleep"></i> System Idle
+      </div>
+
+      <button class="btn-start" id="btnStart" onclick="start()">
+        <i data-lucide="cast"></i> Initialize Broadcast
+      </button>
+
+      <div class="link-container" id="linkContainer">
+        <p style="font-size:0.9em; color:var(--text-muted);">Share this secure link with your viewer:</p>
+        <div class="link-input-group">
+          <input type="text" id="shareLink" readonly />
+          <button class="btn-copy" id="btnCopy" onclick="copyLink()" aria-label="Copy share link"><i data-lucide="copy"></i></button>
+        </div>
+      </div>
+    </div>
+
+    <div class="pane" style="padding: 15px;">
+      <div class="video-wrapper">
+        <div class="video-overlay" id="videoOverlay">
+          <i data-lucide="monitor-off"></i>
+          <span>Stream Offline</span>
+        </div>
+        <video id="video" autoplay playsinline muted></video>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="docs-container">
+    <div class="info-panel">
+      <h2><i data-lucide="shield"></i> WebRTC Architecture</h2>
+      <p>LayerLink utilizes WebRTC (Web Real-Time Communication) to establish a secure, peer-to-peer (P2P) connection directly between your browser and the viewer's browser. Once the initial handshake is completed, video data flows directly between the two devices without passing through a centralized server.</p>
+      
+      <div class="use-cases-grid">
+        <div class="use-case-card">
+          <h3><i data-lucide="users"></i> Rapid Client Demos</h3>
+          <p>Share your screen instantly with clients or stakeholders without forcing them to download external applications like Zoom or Microsoft Teams.</p>
+        </div>
+        <div class="use-case-card">
+          <h3><i data-lucide="code-2"></i> Pair Programming</h3>
+          <p>Broadcast your IDE securely to a colleague. Because the connection is P2P, the latency is significantly lower than traditional cloud-routed video software.</p>
+        </div>
+        <div class="use-case-card">
+          <h3><i data-lucide="lock"></i> Secure Troubleshooting</h3>
+          <p>Share highly sensitive internal dashboards or server logs with remote IT staff, knowing the video stream is encrypted end-to-end and unrecorded.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="info-panel">
+      <h2><i data-lucide="test-tube"></i> UI State Simulation</h2>
+      <p>Test the dynamic UI state handling of the LayerLink terminal without initializing hardware media streams. (Safe for mobile testing).</p>
+      <div>
+        <button class="sample-btn" onclick="simulateState('waiting')">Simulate "Waiting for Viewer"</button>
+        <button class="sample-btn" onclick="simulateState('live')">Simulate "Connection Live"</button>
+        <button class="sample-btn" onclick="simulateState('error')">Simulate Compatibility Error</button>
+      </div>
+    </div>
+
+    <div class="info-panel">
+      <h2><i data-lucide="help-circle"></i> Engineering FAQ</h2>
+      <div class="faq-container">
+        
+        <div class="faq-item">
+          <button class="faq-question">Why does this tool require a desktop browser? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer">
+            <p>The core JavaScript API required to capture a screen stream (<code>navigator.mediaDevices.getDisplayMedia</code>) is intentionally restricted by Apple and Google on mobile operating systems for security reasons. While a mobile device can <i>view</i> the stream, only a desktop/laptop environment can <i>host</i> it.</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question">What is Firebase used for in this app? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer">
+            <p>Firebase Realtime Database acts purely as the "Signaling Server." In order for a P2P connection to occur, both browsers need to exchange connection data (SDP offers and ICE candidates) so they know how to find each other on the internet. Once the connection is established, Firebase's job is done.</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question">Can multiple people view the stream? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer">
+            <p>No, this architecture is strictly a 1-to-1 P2P connection. Scaling WebRTC to multiple viewers requires an SFU (Selective Forwarding Unit) server to process and distribute the video streams, which breaks the zero-trust P2P model used here.</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="info-panel">
+      <h2><i data-lucide="git-merge"></i> Deployment Changelog</h2>
+      <ul class="changelog-list">
+        <li><span class="changelog-tag">v1.3.0</span> Deployed enterprise documentation architecture and UI state simulation tools.</li>
+        <li><span class="changelog-tag">v1.2.0</span> Implemented mobile OS detection to gracefully disable the host UI on unsupported devices.</li>
+        <li><span class="changelog-tag">v1.1.0</span> Resolved a critical race condition by queueing remote ICE candidates until the remote description is fully established.</li>
+        <li><span class="changelog-tag">v1.0.0</span> Initial deployment of the LayerLink WebRTC Host Terminal utilizing Firebase signaling.</li>
+      </ul>
+    </div>
+  </div>
+
+{{FOOTER}}
+
+  <a href="../" id="smartBackBtn" class="fab" aria-label="Command Center" title="Command Center">
+    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="filter: drop-shadow(0 0 8px rgba(56, 189, 248, 0.5));">
+      <path d="M12 2L2 7l10 5 10-5-10-5z" stroke="#38bdf8" stroke-width="2" stroke-linejoin="round" fill="rgba(56,189,248,0.2)"/>
+      <path d="M2 17l10 5 10-5M2 12l10 5 10-5" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </a>
+
+  <script src="../js/shared.js"></script>
+
+
+  <script>
+        // WARNING: DO NOT ALTER FIREBASE KEYS OR WEBRTC CONFIGURATIONS
+    const firebaseConfig = {
+      apiKey: "AIzaSyAR948frOLq4VZ1qSdxIMXu6BaCoehClAU",
+      authDomain: "layerlink-58948.firebaseapp.com",
+      databaseURL: "https://layerlink-58948-default-rtdb.firebaseio.com",
+      projectId: "layerlink-58948",
+      storageBucket: "layerlink-58948.appspot.com",
+      messagingSenderId: "164370572506",
+      appId: "1:164370572506:web:cbeed3bfa6cb67c902b1e3"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    const mobileError = document.getElementById('mobileError');
+    const mainDashboard = document.getElementById('mainDashboard');
+    const btnStart = document.getElementById('btnStart');
+    const linkContainer = document.getElementById('linkContainer');
+    const shareLink = document.getElementById('shareLink');
+    const btnCopy = document.getElementById('btnCopy');
+    const statusBadge = document.getElementById('statusBadge');
+    const videoOverlay = document.getElementById('videoOverlay');
+    const videoElement = document.getElementById('video');
+
+    window.addEventListener('DOMContentLoaded', () => {
+      if (/Mobi|Android|iPhone/i.test(navigator.userAgent)) {
+        mobileError.style.display = 'block';
+        mainDashboard.style.opacity = '0.3';
+        mainDashboard.style.pointerEvents = 'none';
+      }
+    });
+
+    function setStatus(state) {
+      if (state === 'waiting') {
+        statusBadge.className = 'status-badge status-waiting';
+        statusBadge.innerHTML = `<i data-lucide="loader" class="animate-spin"></i> Awaiting Viewer...`;
+      } else if (state === 'live') {
+        statusBadge.className = 'status-badge status-live';
+        statusBadge.innerHTML = `<i data-lucide="radio"></i> Connection Live`;
+      } else if (state === 'closed') {
+        statusBadge.className = 'status-badge status-idle';
+        statusBadge.innerHTML = `<i data-lucide="alert-circle"></i> Viewer Disconnected`;
+      }
+      lucide.createIcons();
+    }
+
+    function copyLink() {
+      navigator.clipboard.writeText(shareLink.value).then(() => {
+        btnCopy.innerHTML = '<i data-lucide="check"></i>';
+        btnCopy.setAttribute('aria-label', 'Copied');
+        lucide.createIcons();
+        setTimeout(() => {
+          btnCopy.innerHTML = '<i data-lucide="copy"></i>';
+          btnCopy.setAttribute('aria-label', 'Copy share link');
+          lucide.createIcons();
+        }, 2000);
+      });
+    }
+
+    // UI Simulation Functions
+    function simulateState(state) {
+      if(state === 'error') {
+        mobileError.style.display = 'block';
+        mobileError.innerHTML = '<i data-lucide="smartphone" style="vertical-align: middle; margin-right: 5px;"></i> Host capabilities require a desktop/laptop browser to capture the screen stream.';
+        lucide.createIcons();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        return;
+      }
+      
+      mobileError.style.display = 'none';
+      btnStart.style.display = 'none';
+      videoOverlay.innerHTML = `<i data-lucide="monitor"></i><span>Simulation Active</span>`;
+      lucide.createIcons();
+      
+      shareLink.value = "https://layerbit.co.in/tools/layerlink-viewer.html?session=sim_" + Math.random().toString(36).substring(2, 8);
+      linkContainer.classList.add('active');
+      
+      if(state === 'waiting') {
+        setStatus('waiting');
+      } else if(state === 'live') {
+        setStatus('live');
+      }
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // FAQ Accordion Logic
+    
+    // Core WebRTC Logic
+    async function start() {
+      try {
+        const localStream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: false });
+        
+        videoElement.srcObject = localStream;
+        videoOverlay.style.display = 'none';
+        btnStart.style.display = 'none';
+        
+        const sessionId = Math.random().toString(36).substring(2, 8);
+        let baseDomain = window.location.origin;
+        if (baseDomain === "file://" || baseDomain === "null") {
+          baseDomain = "https://layerbit.co.in";
+        }
+        const viewerUrl = baseDomain + "/tools/layerlink-viewer.html?session=" + sessionId;
+        shareLink.value = viewerUrl;
+        linkContainer.classList.add('active');
+        setStatus('waiting');
+
+        const configuration = {
+          iceServers: [
+            { urls: 'stun:stun.l.google.com:19302' },
+            { urls: 'stun:stun1.l.google.com:19302' }
+          ]
+        };
+
+        const peer = new RTCPeerConnection(configuration);
+        localStream.getTracks().forEach(track => peer.addTrack(track, localStream));
+
+        peer.onconnectionstatechange = () => {
+          if (peer.connectionState === 'connected') setStatus('live');
+          if (peer.connectionState === 'disconnected' || peer.connectionState === 'failed') setStatus('closed');
+        };
+
+        localStream.getVideoTracks()[0].onended = () => {
+          peer.close();
+          window.location.reload();
+        };
+
+        const conn = db.ref("sessions/" + sessionId);
+
+        peer.onicecandidate = e => {
+          if (e.candidate) {
+            conn.child("offerCandidates").push(JSON.stringify(e.candidate));
+          }
+        };
+
+        const offer = await peer.createOffer();
+        await peer.setLocalDescription(offer);
+        conn.child("offer").set(JSON.stringify(offer));
+
+        // THE FIX: Queue remote ICE candidates until the remote description is fully set
+        let hasRemoteAnswer = false;
+        let answerCandidateQueue = [];
+
+        conn.child("answer").on("value", async snap => {
+          if (snap.val()) {
+            const answer = JSON.parse(snap.val());
+            await peer.setRemoteDescription(answer);
+            hasRemoteAnswer = true;
+            
+            answerCandidateQueue.forEach(c => peer.addIceCandidate(c));
+            answerCandidateQueue = [];
+          }
+        });
+
+        conn.child("answerCandidates").on("child_added", snap => {
+          const candidate = new RTCIceCandidate(JSON.parse(snap.val()));
+          if (hasRemoteAnswer) {
+            peer.addIceCandidate(candidate);
+          } else {
+            answerCandidateQueue.push(candidate);
+          }
+        });
+
+      } catch (err) {
+        console.error("Screen sharing cancelled or failed.", err);
+      }
+    }
+  </script>
+<script src="../main.js"></script>

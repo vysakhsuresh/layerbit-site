@@ -1,0 +1,89 @@
+<script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What is PINT-AE and why do I need it?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "PINT-AE is the UAE's official e-invoicing data format, based on the international Peppol network's XML standard. Instead of sending a PDF or Excel invoice, businesses will need to send a structured XML file that tax systems and accounting software can read automatically. It matters because the UAE Federal Tax Authority (FTA) is rolling out mandatory e-invoicing, and a plain PDF or Excel invoice has no compliance value under the new system."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Is my invoice data stored anywhere?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "No. This tool runs entirely inside your web browser. Your invoice file is never uploaded to a server, never stored, and never seen by Layerbit. All parsing, compliance checking, and XML generation happen locally on your device, and everything disappears the moment you close or refresh the page."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "When does UAE e-invoicing become mandatory?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Based on published FTA timelines, e-invoicing is voluntary from July 2026, becomes mandatory from January 2027 for businesses with annual revenue of AED 50 million or more, and becomes mandatory for all other VAT-registered businesses from July 2027. Always confirm your exact obligation date with the FTA or your tax advisor, as phased rollouts can be adjusted."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What if I don't have a CSV export from my accounting software?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Most accounting tools can export one. In Excel, use File > Save As and choose CSV. In Tally, use Export (Alt+E) and select the Excel or CSV format for your sales register or invoice report. In Zoho Books and QuickBooks, open the Invoices list and use the Export button, choosing CSV or Excel. If none of that is available, you can build a simple spreadsheet by hand with one row per invoice line item and column headers like Invoice Number, Invoice Date, Buyer TRN, Description, Quantity, Unit Price, VAT Rate, and VAT Amount, then upload that file here."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Is Layerbit responsible if my invoice is rejected or non-compliant?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "No. This tool is provided free and as-is, based on publicly available Peppol and FTA technical guidance — it is not an officially certified or FTA-approved compliance tool. Layerbit Technologies accepts no liability for tax, legal, financial, or regulatory consequences arising from its use, including rejected filings or penalties for non-compliance. Always have your Accredited Service Provider (ASP) or a qualified tax advisor verify the final XML before you file. See our Terms of Service for full details."
+        }
+      }
+    ]
+  }
+  </script>
+<script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "HowTo",
+    "name": "How to check a UAE invoice for PINT-AE compliance and export XML",
+    "description": "Step-by-step guide to checking an invoice exported from Excel, Tally, Zoho Books, or QuickBooks for UAE FTA PINT-AE e-invoicing compliance, and converting it to XML for free using Layerbit's browser-based checker.",
+    "totalTime": "PT3M",
+    "step": [
+      {
+        "@type": "HowToStep",
+        "position": 1,
+        "name": "Export your invoice as CSV or Excel",
+        "text": "Open your invoice in Excel, Tally, Zoho Books, or QuickBooks and export or save it as a CSV or Excel (.xlsx) file."
+      },
+      {
+        "@type": "HowToStep",
+        "position": 2,
+        "name": "Upload the file",
+        "text": "Drag and drop the exported file into the Layerbit PINT-AE Checker, or click Upload to select it. The file is processed entirely in your browser and never leaves your device."
+      },
+      {
+        "@type": "HowToStep",
+        "position": 3,
+        "name": "Auto-check or map fields manually",
+        "text": "The tool automatically scans your column headers and matches them to the required PINT-AE fields. Review the detected mapping, or switch to Manual Mapping Mode to choose each field yourself from dropdowns."
+      },
+      {
+        "@type": "HowToStep",
+        "position": 4,
+        "name": "Fix any missing fields",
+        "text": "The compliance checklist shows which required fields are present and which are missing, with a plain-language explanation for each one so you know exactly what to add to your source file."
+      },
+      {
+        "@type": "HowToStep",
+        "position": 5,
+        "name": "Download the PINT-AE XML file",
+        "text": "Once the required fields are mapped, click Download PINT-AE XML to generate and save a UBL 2.1 / PINT-AE structured XML file for free, with no signup required."
+      }
+    ]
+  }
+  </script>

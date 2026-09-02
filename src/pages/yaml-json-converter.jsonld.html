@@ -1,0 +1,32 @@
+<script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "How does real-time synchronization prevent infinite loops?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Layerbit's serializer utilizes an `isSyncing` boolean flag. When you type in the YAML editor, it locks the JSON editor from firing its own event listener until the conversion finishes. This completely eliminates feedback loops and browser crashing."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Why prefer YAML over JSON for configuration?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "YAML minimizes structural syntax—removing the need for brackets and quotation marks—and enforces readability through strict indentation. It also natively supports commenting, which JSON strictly forbids, making YAML the standard for human-readable DevOps configuration files."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Is it secure for proprietary server secrets?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Absolutely. We employ a Zero-Trust client-side processing architecture. The entire JS-YAML conversion engine runs in your browser's local memory. Your AWS keys, database passwords, and API tokens never touch an external server or log file."
+        }
+      }
+    ]
+  }
+  </script>

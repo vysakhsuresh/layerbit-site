@@ -1,0 +1,351 @@
+{{HEADER}}
+
+  <main class="hero">
+    <h1>Threat Intelligence Scanner</h1>
+    <p>Perform live DNS resolution and threat checks against public security registries.</p>
+  </main>
+
+  <div class="dashboard-container">
+    
+    <div class="pane">
+      <div class="input-wrapper">
+        <i data-lucide="globe" class="input-icon"></i>
+        <input type="text" id="urlInput" class="url-input" placeholder="https://example.com/login" autocomplete="off" spellcheck="false" />
+      </div>
+
+      <!-- Quick Test Templates -->
+      <div class="input-controls">
+        <span style="font-size: 0.8rem; color: var(--text-muted); padding: 8px 0;">Quick Test Templates:</span>
+        <button class="test-btn" onclick="loadBenign()"> Wikipedia (Benign)</button>
+        <button class="test-btn" onclick="loadMalicious()"> GSB Malware (Test)</button>
+        <button class="test-btn" onclick="loadError()"> DNS Fail (Error)</button>
+      </div>
+
+      <div class="parse-grid" id="parseGrid">
+        <div class="parse-item">
+          <span class="parse-label">Protocol</span>
+          <span class="parse-value" id="valProtocol">--</span>
+        </div>
+        <div class="parse-item">
+          <span class="parse-label">Hostname</span>
+          <span class="parse-value" id="valHostname">--</span>
+        </div>
+        <div class="parse-item">
+          <span class="parse-label">Path/Query</span>
+          <span class="parse-value" id="valPath">--</span>
+        </div>
+      </div>
+
+      <button class="btn-scan" id="btnScan" onclick="initiateScan()" disabled>
+        <i data-lucide="shield-alert"></i> Initiate Security Scan
+      </button>
+
+      <div class="error-box" id="errorBox"></div>
+    </div>
+
+    <div class="pane radar-container" id="radarContainer">
+      <div class="radar-core"></div>
+      <div class="radar-text" id="radarText">Resolving DNS Records...</div>
+    </div>
+
+    <div class="pane results-dashboard" id="resultsDashboard">
+      
+      <div id="resultsGrid"></div>
+
+      <div class="disclaimer">
+        <strong>Security Disclaimer:</strong> A "CLEAN" response indicates the URL is not currently listed on major blacklists (e.g., Google Safe Browsing). It does not guarantee the site is 100% safe. Always verify unexpected links.
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Educational/SEO Panel 1: Use Cases -->
+  <div class="info-panel">
+    <h2><i data-lucide="shield-check"></i> Defensive OSINT Architecture</h2>
+    <p>Layerbit's Threat Intelligence Scanner is engineered as a zero-trust diagnostic terminal. It acts as an Open-Source Intelligence (OSINT) aggregator, allowing security professionals and engineers to immediately validate suspicious URLs without accessing them directly.</p>
+    
+    <div class="use-cases-grid">
+      <div class="use-case-card">
+        <h3><i data-lucide="mail-warning"></i> Phishing Campaign Verification</h3>
+        <p>Rapidly analyze URLs received in suspicious emails to identify credential harvesting infrastructure, preventing employee compromise.</p>
+      </div>
+      <div class="use-case-card">
+        <h3><i data-lucide="code"></i> Supply Chain Compromise Check</h3>
+        <p>Validate external resources (e.g., JS libraries, CDN endpoints) utilized in development to ensure third-party domains haven't been compromised.</p>
+      </div>
+      <div class="use-case-card">
+        <h3><i data-lucide="server"></i> C&C Server Detection</h3>
+        <p>Analyze unusual network traffic logs by cross-referencing outbound domains against real-time Command & Control (C&C) registries.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Educational/SEO Panel 2: FAQ -->
+  <div class="info-panel">
+    <h2><i data-lucide="help-circle"></i> Technical Deep Dive (FAQ)</h2>
+    <div class="faq-accordion">
+      
+      <div class="faq-item">
+        <button class="faq-question">How are Google Safe Browsing and VirusTotal checked synchronously? <i data-lucide="chevron-down"></i></button>
+        <div class="faq-answer">
+          <p>Layerbit's scanning interface communicates with a specialized proxy API hosted on a Render server. When a scan is initiated, the proxy API concurrently dispatches requests to the Google Safe Browsing lookup endpoint and the VirusTotal URL report endpoint. The API aggregates these diverse threat scores and DNS metadata before returning the structured JSON response to your browser.</p>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-question">Does this scan guarantee a URL is safe? <i data-lucide="chevron-down"></i></button>
+        <div class="faq-answer">
+          <p>No, a scan only verifies if a URL is currently listed on public registries. Malicious actors frequently utilize "bulletproof hosting" and dynamic DNS to cycle through domains faster than registries can index them. A CLEAN result is a standard baseline, not a definitive guarantee of safety. Defensive logic requires perpetual skepticism of untrusted links.</p>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-question">Is the URL itself transmitted or stored? <i data-lucide="chevron-down"></i></button>
+        <div class="faq-answer">
+          <p>This is a fundamental privacy consideration. The scanner parses the protocol, hostname, and path locally in your browser DOM first. When the full scan is initiated, the URL is transmitted securely via HTTPS to the proxy API, which then passes the URL to Google and VirusTotal for analysis. While standard public API endpoints handle this data, Safe Browsing often utilizes hash-based lookups to preserve user privacy.</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Educational/SEO Panel 3: Changelog -->
+  <div class="changelog-panel">
+    <h2><i data-lucide="git-branch"></i> Deployment & Engineering Methodology</h2>
+    <p style="color: var(--text-muted); margin-bottom: 20px;">Structured engineering updates detailing additions to the OSINT aggregation engine and validation matrices.</p>
+    
+    <div class="changelog-list">
+      
+      <div class="changelog-entry">
+        <div class="changelog-meta">
+          <div class="changelog-version"><i data-lucide="package"></i> Version 1.2.0</div>
+          <span class="changelog-tag">Minor: Engineering</span>
+        </div>
+        <ul class="changelog-description">
+          <li>Integrated live DNS validation via Google Public DNS (8.8.8.8) to verify record existence prior to registry check.</li>
+          <li>Upgraded local URL parsing logic to automatically detect and badged non-standard ports (e.g., :8080).</li>
+          <li>Added "NXDOMAIN" simulation template for educational validation of failing DNS checks.</li>
+        </ul>
+      </div>
+
+      <div class="changelog-entry">
+        <div class="changelog-meta">
+          <div class="changelog-version"><i data-lucide="package"></i> Version 1.1.0</div>
+          <span class="changelog-tag">Minor: Stability</span>
+        </div>
+        <ul class="changelog-description">
+          <li>Migrated threat logic from legacy client-side keys to a specialized proxy API hosted on Render for enhanced stability and security.</li>
+          <li>Optimized concurrent API query logic for Safe Browsing and VirusTotal, reducing aggregation latency.</li>
+        </ul>
+      </div>
+
+      <div class="changelog-entry">
+        <div class="changelog-meta">
+          <div class="changelog-version"><i data-lucide="package"></i> Version 1.0.0</div>
+          <span class="changelog-tag">Major: Release</span>
+        </div>
+        <ul class="changelog-description">
+          <li>Initial deployment of the centralized defensive terminal.</li>
+          <li>Implemented local DOM-based forensics parsing for immediate hostname extraction.</li>
+          <li>Integrated Google Safe Browsing and VirusTotal registry checks.</li>
+        </ul>
+      </div>
+
+    </div>
+  </div>
+
+  <a href="../" id="smartBackBtn" class="fab" aria-label="Command Center" title="Command Center">
+    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="filter: drop-shadow(0 0 8px rgba(56, 189, 248, 0.5));">
+      <path d="M12 2L2 7l10 5 10-5-10-5z" stroke="#38bdf8" stroke-width="2" stroke-linejoin="round" fill="rgba(56,189,248,0.2)"/>
+      <path d="M2 17l10 5 10-5M2 12l10 5 10-5" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </a>
+
+  {{FOOTER}}
+
+  <script src="../js/shared.js"></script>
+
+
+  <script>
+        const urlInput = document.getElementById('urlInput');
+    const btnScan = document.getElementById('btnScan');
+    const parseGrid = document.getElementById('parseGrid');
+    const valProtocol = document.getElementById('valProtocol');
+    const valHostname = document.getElementById('valHostname');
+    const valPath = document.getElementById('valPath');
+    
+    const radarContainer = document.getElementById('radarContainer');
+    const radarText = document.getElementById('radarText');
+    const resultsDashboard = document.getElementById('resultsDashboard');
+    const resultsGrid = document.getElementById('resultsGrid');
+    const errorBox = document.getElementById('errorBox');
+
+    // Real-time URL validation and parsing
+    urlInput.addEventListener('input', updateURLForensics);
+
+    function updateURLForensics() {
+      const rawUrl = urlInput.value.trim();
+      
+      // Reset UI states
+      errorBox.classList.remove('active');
+      resultsDashboard.classList.remove('active');
+      radarContainer.classList.remove('active');
+
+      if (!rawUrl) {
+        parseGrid.classList.remove('active');
+        btnScan.disabled = true;
+        return;
+      }
+
+      try {
+        const urlObj = new URL(rawUrl);
+        valProtocol.innerText = urlObj.protocol.replace(':', '');
+        valHostname.innerText = urlObj.hostname;
+        
+        let pathQuery = urlObj.pathname;
+        if(urlObj.search) pathQuery += urlObj.search;
+        if(pathQuery.length > 25) pathQuery = pathQuery.substring(0, 25) + '...';
+        valPath.innerText = pathQuery || '/';
+        
+        parseGrid.classList.add('active');
+        btnScan.disabled = false;
+      } catch (err) {
+        parseGrid.classList.remove('active');
+        btnScan.disabled = true;
+      }
+    }
+
+    function showError(msg) {
+      radarContainer.classList.remove('active');
+      resultsDashboard.classList.remove('active');
+      errorBox.innerHTML = `<i data-lucide="triangle-alert" style="display:inline; vertical-align:middle;"></i> ${msg}`;
+      errorBox.classList.add('active');
+      lucide.createIcons();
+      btnScan.disabled = false;
+    }
+
+    async function initiateScan() {
+      const rawUrl = urlInput.value.trim();
+      if (!rawUrl) return;
+
+      let domain = "";
+      try {
+        domain = new URL(rawUrl).hostname;
+      } catch(e) {
+        showError("Internal parsing error. Invalid URL.");
+        return;
+      }
+
+      // UI Transition
+      btnScan.disabled = true;
+      errorBox.classList.remove('active');
+      resultsDashboard.classList.remove('active');
+      radarContainer.classList.add('active');
+
+      // 1. DNS Phase
+      radarText.innerText = "Resolving DNS Records...";
+      
+      // MODIFICATION: MOCK DNS FAIL FOR TEMPLATE
+      if (domain === "nxdomain.layerbit.test") {
+        await new Promise(r => setTimeout(r, 1200)); // Simulate delay
+        showError(`NXDOMAIN: Unable to resolve IP address for ${domain}. The site may be offline, fake, or part of a spoofing attempt.`);
+        return;
+      }
+
+      try {
+        const dnsResp = await fetch("https://dns.google/resolve?name=" + domain + "&type=A");
+        const dnsData = await dnsResp.json();
+        if (!dnsData.Answer || dnsData.Status !== 0) {
+          showError(`NXDOMAIN: Unable to resolve IP address for ${domain}. The site may be offline or fake.`);
+          return;
+        }
+      } catch (e) {
+        showError("DNS resolution service unreachable. Check your connection.");
+        return;
+      }
+
+      // 2. Threat API Phase
+      radarText.innerText = "Querying Threat Registries...";
+      try {
+        // Using the proxy API from the original code
+        const response = await fetch("https://malicious-scanner-api.onrender.com/scan?url=" + encodeURIComponent(rawUrl));
+        const data = await response.json();
+
+        radarContainer.classList.remove('active');
+        
+        if (data.error) {
+          showError("Threat Intelligence API is temporarily unavailable.");
+          return;
+        }
+
+        renderResults(data.results);
+
+      } catch (e) {
+        showError("Failed to connect to the Threat Intelligence proxy.");
+      }
+    }
+
+    function renderResults(resultsData) {
+      let html = '';
+
+      // Always show DNS as clean if we made it here
+      html += `
+        <div class="result-row">
+          <div class="source-name"><i data-lucide="server"></i> Local DNS Resolution</div>
+          <div class="threat-badge badge-clean">VERIFIED</div>
+        </div>
+      `;
+
+      for (const [source, result] of Object.entries(resultsData)) {
+        
+        let cleanResult = result;
+        let badgeClass = 'badge-neutral';
+        let icon = 'shield-question';
+
+        if (result.includes("Clean")) {
+          cleanResult = "CLEAN";
+          badgeClass = 'badge-clean';
+          icon = 'shield-check';
+        } else if (result.includes("API Error") || result.includes("unavailable")) {
+          cleanResult = "UNAVAILABLE";
+          badgeClass = 'badge-warn';
+          icon = 'server-crash';
+        } else {
+          // Assuming anything else is a threat
+          cleanResult = "SUSPICIOUS / FLAG";
+          badgeClass = 'badge-critical';
+          icon = 'shield-alert';
+        }
+
+        html += `
+          <div class="result-row">
+            <div class="source-name"><i data-lucide="${icon}"></i> ${source}</div>
+            <div class="threat-badge ${badgeClass}">${cleanResult}</div>
+          </div>
+        `;
+      }
+
+      resultsGrid.innerHTML = html;
+      lucide.createIcons();
+      resultsDashboard.classList.add('active');
+      btnScan.disabled = false;
+    }
+
+    // FAQ Accordion JavaScript
+    
+    // Quick Test Template Handlers
+    function loadBenign() {
+      urlInput.value = "https://www.wikipedia.org/";
+      updateURLForensics(); // Trigger input logic
+    }
+    function loadMalicious() {
+      urlInput.value = "https://testsafebrowsing.appspot.com/s/malware.html"; // Standard GSB Test Link
+      updateURLForensics();
+    }
+    function loadError() {
+      urlInput.value = "http://nxdomain.layerbit.test/"; // Special host for mocking
+      updateURLForensics();
+    }
+
+  </script>
+<script src="../main.js"></script>
