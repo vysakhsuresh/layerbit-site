@@ -44,6 +44,14 @@
           "@type": "Answer",
           "text": "We utilize a dual-layer DOM architecture. The transparent <textarea> captures your keystrokes while a perfectly aligned <div> sitting behind it dynamically renders the colorized output and handles scrolling synchronization. This provides a rich IDE experience."
         }
+      },
+      {
+        "@type": "Question",
+        "name": "What syntax does the Replacement Preview support?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "The same replacement patterns JavaScript's native String.replace() understands: $1, $2, etc. for numbered capture groups, $<name> for named groups declared with (?<name>...), $& for the whole match, and $$ for a literal dollar sign. It respects whichever flags are active, so without the g flag only the first match gets replaced, same as the highlighting above it."
+        }
       }
     ]
   }
@@ -311,6 +319,34 @@
     .match-val { color: var(--accent-main); font-weight: bold; font-size: 1.1em; margin-bottom: 5px; word-break: break-all; }
     .match-meta { color: var(--text-muted); font-size: 0.85em; }
 
+    /* Capture-group breakdown within a match */
+    .match-groups {
+      margin-top: 10px; padding-top: 10px;
+      border-top: 1px dashed var(--card-border);
+      display: flex; flex-direction: column; gap: 6px;
+    }
+    .group-row { display: flex; align-items: baseline; gap: 8px; font-size: 0.85em; flex-wrap: wrap; }
+    .group-label { color: var(--success-color); font-weight: 600; flex-shrink: 0; min-width: 3.5em; }
+    .group-val { color: var(--text-main); word-break: break-all; }
+    .group-val em { color: var(--text-muted); font-style: italic; }
+    .group-range { color: var(--text-muted); font-size: 0.9em; }
+
+    /* Replacement Preview */
+    .replace-body { padding: 20px; display: flex; flex-direction: column; gap: 16px; }
+    .replace-row label { display: block; font-size: 0.85em; font-weight: 600; color: var(--text-muted); margin-bottom: 8px; }
+    .replace-hint { font-weight: 400; opacity: 0.75; }
+    .replace-input {
+      width: 100%; background: rgba(0,0,0,0.2); border: 1px solid var(--card-border); border-radius: 10px;
+      padding: 12px 16px; color: var(--accent-main); font-family: 'Fira Code', monospace; font-size: 0.95em;
+      outline: none; transition: border-color 0.2s;
+    }
+    .replace-input:focus { border-color: var(--accent-main); }
+    .replace-output {
+      margin: 0; background: rgba(0,0,0,0.4); border: 1px solid var(--card-border); border-radius: 10px;
+      padding: 14px 16px; color: var(--text-main); font-family: 'Fira Code', monospace; font-size: 0.9em;
+      white-space: pre-wrap; word-break: break-all; max-height: 240px; overflow-y: auto;
+    }
+
     /* SEO/Docs Section Additions */
     .docs-container { max-width: 1000px; margin: 0 auto 60px auto; display: flex; flex-direction: column; gap: 30px; width: 100%; }
     .info-panel ul { list-style: none; margin-bottom: 20px; }
@@ -483,6 +519,22 @@
         </div>
     </div>
 
+    <div class="pane" id="replacePane">
+      <div class="pane-header">
+        <div class="pane-title"><i data-lucide="replace"></i> Replacement Preview</div>
+      </div>
+      <div class="replace-body">
+        <div class="replace-row">
+          <label for="replaceInput">Replace matches with <span class="replace-hint">($1, $2, $&lt;name&gt;, $&amp; supported)</span></label>
+          <input type="text" id="replaceInput" class="replace-input" placeholder="e.g. $2-$1, [REDACTED], or $&lt;year&gt;-$&lt;month&gt;" autocomplete="off" spellcheck="false" />
+        </div>
+        <div class="replace-row" id="replaceOutputRow" style="display:none;">
+          <label>Result</label>
+          <pre class="replace-output" id="replaceOutput"></pre>
+        </div>
+      </div>
+    </div>
+
   </div>
 
   <div class="docs-container">
@@ -518,6 +570,7 @@
         <button class="sample-btn" onclick="loadSample('email')">Email Extraction</button>
         <button class="sample-btn" onclick="loadSample('ipv4')">IPv4 Finder</button>
         <button class="sample-btn" onclick="loadSample('jwt')">JWT Matcher</button>
+        <button class="sample-btn" onclick="loadSample('dateFormat')">Date Reformat (Named Groups)</button>
       </div>
     </div>
 
@@ -546,12 +599,20 @@
           </div>
         </div>
 
+        <div class="faq-item">
+          <button class="faq-question">What syntax does the Replacement Preview support? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer">
+            <p>The same replacement patterns JavaScript's native <code>String.replace()</code> understands: <code>$1</code>, <code>$2</code>, etc. for numbered capture groups, <code>$&lt;name&gt;</code> for named groups declared with <code>(?&lt;name&gt;...)</code>, <code>$&amp;</code> for the whole match, and <code>$$</code> for a literal dollar sign. It respects whichever flags are active, so without the <code>g</code> flag only the first match gets replaced, same as the highlighting above it.</p>
+          </div>
+        </div>
+
       </div>
     </div>
 
     <div class="info-panel">
       <h2><i data-lucide="git-merge"></i> Deployment Changelog</h2>
       <ul class="changelog-list">
+        <li><span class="changelog-tag">v1.4.0</span> Added a numbered + named capture-group breakdown per match, and a live Replacement Preview panel supporting $1/$&lt;name&gt;/$&amp; substitution syntax.</li>
         <li><span class="changelog-tag">v1.3.0</span> Added a line-number gutter to the test string editor (long lines now scroll horizontally instead of wrapping, to keep line numbers accurate).</li>
         <li><span class="changelog-tag">v1.2.0</span> Added interactive Quick Testing Templates and expanded the forensic documentation panel.</li>
         <li><span class="changelog-tag">v1.1.0</span> Integrated real-time telemetry matching and the visual Forensics Extraction grid.</li>
@@ -594,6 +655,9 @@
     const matchCount = document.getElementById("matchCount");
     const breakdownPane = document.getElementById("breakdownPane");
     const matchesGrid = document.getElementById("matchesGrid");
+    const replaceInput = document.getElementById("replaceInput");
+    const replaceOutputRow = document.getElementById("replaceOutputRow");
+    const replaceOutput = document.getElementById("replaceOutput");
 
     let currentFlags = ['g'];
 
@@ -636,6 +700,7 @@
         testBackdrop.innerHTML = "Paste your test data here to see match highlights...";
         matchCount.innerHTML = `<i data-lucide="check-circle" style="width:14px;"></i> 0 Matches`;
         breakdownPane.classList.remove("active");
+        replaceOutputRow.style.display = 'none';
         lucide.createIcons();
         return;
       }
@@ -644,6 +709,7 @@
         testBackdrop.innerHTML = escapeHTML(text);
         matchCount.innerHTML = `<i data-lucide="check-circle" style="width:14px;"></i> 0 Matches`;
         breakdownPane.classList.remove("active");
+        replaceOutputRow.style.display = 'none';
         lucide.createIcons();
         return;
       }
@@ -683,14 +749,23 @@
         // Render Backdrop
         testBackdrop.innerHTML = highlightedText;
 
-        // Forensics Logic
-        const tempRegex = new RegExp(pattern, isGlobal ? flagsStr : flagsStr + 'g');
+        // Forensics Logic - append 'd' (hasIndices) so captured groups get
+        // their own index range too, when the browser supports it; if not,
+        // fall back to matching without it rather than breaking entirely
+        const forensicsFlags = isGlobal ? flagsStr : flagsStr + 'g';
+        let tempRegex;
+        try {
+          tempRegex = new RegExp(pattern, forensicsFlags.includes('d') ? forensicsFlags : forensicsFlags + 'd');
+        } catch (e) {
+          tempRegex = new RegExp(pattern, forensicsFlags);
+        }
         while ((match = tempRegex.exec(text)) !== null) {
           count++;
           breakdownHTML += `
             <div class="match-item">
               <div class="match-val">${escapeHTML(match[0])}</div>
               <div class="match-meta">Match ${count} — Index Position: [${match.index} - ${match.index + match[0].length}]</div>
+              ${renderGroups(match)}
             </div>
           `;
           if (!isGlobal) break; // If not global, only extract first match
@@ -698,7 +773,7 @@
 
         // Update UI
         matchCount.innerHTML = `<i data-lucide="check-circle" style="width:14px;"></i> ${count} Matches`;
-        
+
         if (count > 0) {
           matchesGrid.innerHTML = breakdownHTML;
           breakdownPane.classList.add("active");
@@ -707,6 +782,7 @@
         }
 
         lucide.createIcons();
+        updateReplacePreview(pattern, flagsStr, text);
 
       } catch (err) {
         // Syntax Error
@@ -716,9 +792,52 @@
         testBackdrop.innerHTML = escapeHTML(text); // Remove highlights
         matchCount.innerHTML = `<i data-lucide="x-circle" style="width:14px; color:var(--error-color);"></i> Error`;
         breakdownPane.classList.remove("active");
+        replaceOutputRow.style.display = 'none';
         lucide.createIcons();
       }
     }
+
+    // Numbered + named capture-group breakdown for one match
+    function renderGroups(match) {
+      const rows = [];
+      for (let gi = 1; gi < match.length; gi++) {
+        const val = match[gi];
+        const range = (match.indices && match.indices[gi]) ? ` <span class="group-range">[${match.indices[gi][0]}-${match.indices[gi][1]}]</span>` : '';
+        const valHTML = val === undefined ? '<em>did not participate</em>' : escapeHTML(val);
+        rows.push(`<div class="group-row"><span class="group-label">$${gi}</span><span class="group-val">${valHTML}</span>${range}</div>`);
+      }
+      if (match.groups) {
+        for (const name in match.groups) {
+          const val = match.groups[name];
+          const valHTML = val === undefined ? '<em>did not participate</em>' : escapeHTML(val);
+          rows.push(`<div class="group-row"><span class="group-label">$&lt;${escapeHTML(name)}&gt;</span><span class="group-val">${valHTML}</span></div>`);
+        }
+      }
+      return rows.length ? `<div class="match-groups">${rows.join('')}</div>` : '';
+    }
+
+    // Replacement preview - mirrors the same global/first-only semantics
+    // the match highlighting above already uses
+    function updateReplacePreview(pattern, flagsStr, text) {
+      const replacement = replaceInput.value;
+      if (!replacement) {
+        replaceOutputRow.style.display = 'none';
+        return;
+      }
+      try {
+        const regex = new RegExp(pattern, flagsStr);
+        replaceOutput.textContent = text.replace(regex, replacement);
+        replaceOutputRow.style.display = 'block';
+      } catch (e) {
+        replaceOutputRow.style.display = 'none';
+      }
+    }
+
+    replaceInput.addEventListener('input', () => {
+      if (regexInput.value && testInput.value && !errorText.classList.contains('active')) {
+        updateReplacePreview(regexInput.value, currentFlags.join(''), testInput.value);
+      }
+    });
 
     // Sync scroll
     testInput.addEventListener('scroll', function() {
@@ -748,14 +867,22 @@
         jwt: {
           regex: 'eyJ[A-Za-z0-9-_]+\\.[A-Za-z0-9-_]+\\.[A-Za-z0-9-_]+',
           test: 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkxheWVyYml0IFVzZXIiLCJpYXQiOjE1MTYyMzkwMjJ9.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c',
-          flags: ['g']
+          flags: ['g'],
+          replace: ''
+        },
+        dateFormat: {
+          regex: '(?<year>\\d{4})-(?<month>\\d{2})-(?<day>\\d{2})',
+          test: 'Invoice #4471 issued 2026-03-14, due 2026-04-13. Last payment recorded 2026-02-01.',
+          flags: ['g'],
+          replace: '$<day>/$<month>/$<year>'
         }
       };
 
       if (samples[type]) {
         regexInput.value = samples[type].regex;
         testInput.value = samples[type].test;
-        
+        replaceInput.value = samples[type].replace || '';
+
         // Reset and apply flags
         currentFlags = samples[type].flags;
         document.querySelectorAll('.flag-btn').forEach(btn => {

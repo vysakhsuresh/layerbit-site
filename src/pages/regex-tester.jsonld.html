@@ -26,6 +26,14 @@
           "@type": "Answer",
           "text": "We utilize a dual-layer DOM architecture. The transparent <textarea> captures your keystrokes while a perfectly aligned <div> sitting behind it dynamically renders the colorized output and handles scrolling synchronization. This provides a rich IDE experience."
         }
+      },
+      {
+        "@type": "Question",
+        "name": "What syntax does the Replacement Preview support?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "The same replacement patterns JavaScript's native String.replace() understands: $1, $2, etc. for numbered capture groups, $<name> for named groups declared with (?<name>...), $& for the whole match, and $$ for a literal dollar sign. It respects whichever flags are active, so without the g flag only the first match gets replaced, same as the highlighting above it."
+        }
       }
     ]
   }
