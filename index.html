@@ -19,10 +19,12 @@
   
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6072772587431629" crossorigin="anonymous"></script>
   
-  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://unpkg.com/lucide@1.39.0" async></script>
 
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <link href="layerbit-logo.png" rel="icon" type="image/x-icon" />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="apple-touch-icon" href="apple-touch-icon.png" />
   
   <style>
     /* Ultra-Premium Dark Theme Variables */
@@ -44,6 +46,9 @@
       box-sizing: border-box;
       margin: 0;
       padding: 0;
+    }
+    a:focus-visible, button:focus-visible, select:focus-visible, input:focus-visible, [tabindex]:focus-visible {
+      outline: 2px solid var(--accent-main); outline-offset: 2px;
     }
 
     html {
@@ -969,10 +974,10 @@
   </div>
 
   <div class="search-pill-wrapper">
-    <div class="search-pill" id="pillSearch">
+    <div class="search-pill" id="pillSearch" role="button" tabindex="0" aria-label="Search developer tools" aria-expanded="false">
       <i data-lucide="search" class="search-icon"></i>
       <input type="text" id="pillInput" placeholder="Search developer tools..." autocomplete="off" />
-      <i data-lucide="x" class="clear-icon" id="clearSearchBtn"></i>
+      <i data-lucide="x" class="clear-icon" id="clearSearchBtn" role="button" tabindex="0" aria-label="Clear search"></i>
     </div>
   </div>
 
@@ -1039,12 +1044,13 @@
       function expandSearch() {
         if (!isSearchExpanded) {
           pillSearch.classList.add('expanded');
-          
+          pillSearch.setAttribute('aria-expanded', 'true');
+
           // Slight delay to allow CSS width animation before showing text input
           setTimeout(() => {
             pillInput.focus();
           }, 200);
-          
+
           isSearchExpanded = true;
           
           // Scroll to tools grid smoothly
@@ -1058,6 +1064,7 @@
 
       function collapseSearch() {
         pillSearch.classList.remove('expanded');
+        pillSearch.setAttribute('aria-expanded', 'false');
         pillInput.value = '';
         filterTools('');
         isSearchExpanded = false;
@@ -1072,20 +1079,34 @@
         });
       }
 
-      // Click pill to expand
+      // Click (or keyboard-activate) pill to expand
       if(pillSearch) {
         pillSearch.addEventListener('click', (e) => {
           // Don't expand if they clicked the clear button
           if (e.target.closest('#clearSearchBtn')) return;
           if (!isSearchExpanded) expandSearch();
         });
+        pillSearch.addEventListener('keydown', (e) => {
+          if (e.target.closest('#clearSearchBtn')) return;
+          if ((e.key === 'Enter' || e.key === ' ') && !isSearchExpanded) {
+            e.preventDefault();
+            expandSearch();
+          }
+        });
       }
 
-      // Click X to clear/close
+      // Click (or keyboard-activate) X to clear/close
       if(clearSearchBtn) {
         clearSearchBtn.addEventListener('click', (e) => {
           e.stopPropagation();
           collapseSearch();
+        });
+        clearSearchBtn.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            e.stopPropagation();
+            collapseSearch();
+          }
         });
       }
 
