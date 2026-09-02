@@ -19,10 +19,12 @@
   
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6072772587431629" crossorigin="anonymous"></script>
   
-  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://unpkg.com/lucide@1.39.0" async></script>
 
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet" />
   <link href="../layerbit-logo.png" rel="icon" type="image/x-icon" />
+  <link rel="manifest" href="../manifest.json" />
+  <link rel="apple-touch-icon" href="../apple-touch-icon.png" />
   
   <style>
     /* Ultra-Premium Dark Theme Variables */
@@ -46,6 +48,9 @@
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
+    a:focus-visible, button:focus-visible, select:focus-visible, input:focus-visible, [tabindex]:focus-visible {
+      outline: 2px solid var(--accent-main); outline-offset: 2px;
+    }
     html { scroll-behavior: smooth; }
 
     body {
@@ -409,7 +414,7 @@
       
       <div class="input-wrapper">
         <input type="password" id="passInput" class="password-input" placeholder="Enter a password to test..." />
-        <button class="btn-toggle-eye" id="btnEye" onclick="toggleVisibility()">
+        <button class="btn-toggle-eye" id="btnEye" onclick="toggleVisibility()" aria-label="Show password">
           <i data-lucide="eye"></i>
         </button>
       </div>
@@ -539,9 +544,11 @@
       if (passInput.type === "password") {
         passInput.type = "text";
         btnEye.innerHTML = '<i data-lucide="eye-off"></i>';
+        btnEye.setAttribute('aria-label', 'Hide password');
       } else {
         passInput.type = "password";
         btnEye.innerHTML = '<i data-lucide="eye"></i>';
+        btnEye.setAttribute('aria-label', 'Show password');
       }
       lucide.createIcons();
     }
