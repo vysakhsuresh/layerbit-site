@@ -2,6 +2,19 @@
 document.addEventListener("DOMContentLoaded", () => {
   if (window.lucide) lucide.createIcons();
 
+  // The lucide script tag is async, so DOMContentLoaded can fire before it's
+  // finished loading (especially on slower mobile connections) -- in that
+  // case the call above silently no-ops and every icon on the page is stuck
+  // as an empty placeholder forever, since nothing ever retries. `load`
+  // fires only once every subresource (async scripts included) has finished,
+  // so it's a guaranteed second chance; calling createIcons() again is a
+  // harmless no-op for anything already converted.
+  if (!window.lucide) {
+    window.addEventListener("load", () => {
+      if (window.lucide) lucide.createIcons();
+    });
+  }
+
   document.querySelectorAll('.faq-question').forEach(button => {
     button.setAttribute('aria-expanded', 'false');
     button.addEventListener('click', () => {
