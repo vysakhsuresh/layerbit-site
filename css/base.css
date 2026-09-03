@@ -111,6 +111,11 @@ html {
 
 .changelog-list li { margin-bottom: 12px; font-size: 0.95em; color: var(--text-muted); display: flex; align-items: flex-start; gap: 10px; }
 
+/* The version pill must never shrink or wrap -- without this, a flex row
+   pairing a short pill with a long changelog description can squeeze the
+   pill's text down to a sliver, wrapping "v1.4.0" across several lines. */
+.changelog-tag { flex-shrink: 0; white-space: nowrap; }
+
 .sample-btn {
       background: rgba(255,255,255,0.05);
       border: 1px solid rgba(255,255,255,0.1);
@@ -185,3 +190,8 @@ a:focus-visible, button:focus-visible, select:focus-visible, input:focus-visible
 }
 
 .cookie-consent-accept:hover { filter: brightness(1.08); }
+
+/* Footer links: only ~14 of 33 pages defined this per-page, so the rest fell
+   back to the browser's default blue/purple underlined link styling. */
+footer a { color: var(--text-muted); text-decoration: none; margin: 0 12px; transition: color 0.2s; }
+footer a:hover { color: var(--accent-main); }
