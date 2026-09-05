@@ -157,6 +157,17 @@
       }
     });
 
+    // lucide is loaded with `async` in <head>, so it can still be mid-download the moment this
+    // script runs (especially on a slow/first-load connection) - calling lucide.createIcons()
+    // directly then throws an uncaught ReferenceError that kills the rest of this script block,
+    // including the WebRTC/Firebase setup below setStatus('waiting'). Guard every call instead;
+    // any missed icon redraw is harmless and self-corrects on the next call.
+    function safeCreateIcons() {
+      try {
+        if (window.lucide) lucide.createIcons();
+      } catch (e) {}
+    }
+
     function setStatus(state) {
       if (state === 'waiting') {
         statusBadge.className = 'status-badge status-waiting';
@@ -168,18 +179,18 @@
         statusBadge.className = 'status-badge status-idle';
         statusBadge.innerHTML = `<i data-lucide="alert-circle"></i> Viewer Disconnected`;
       }
-      lucide.createIcons();
+      safeCreateIcons();
     }
 
     function copyLink() {
       navigator.clipboard.writeText(shareLink.value).then(() => {
         btnCopy.innerHTML = '<i data-lucide="check"></i>';
         btnCopy.setAttribute('aria-label', 'Copied');
-        lucide.createIcons();
+        safeCreateIcons();
         setTimeout(() => {
           btnCopy.innerHTML = '<i data-lucide="copy"></i>';
           btnCopy.setAttribute('aria-label', 'Copy share link');
-          lucide.createIcons();
+          safeCreateIcons();
         }, 2000);
       });
     }
@@ -189,7 +200,7 @@
       if(state === 'error') {
         mobileError.style.display = 'block';
         mobileError.innerHTML = '<i data-lucide="smartphone" style="vertical-align: middle; margin-right: 5px;"></i> Host capabilities require a desktop/laptop browser to capture the screen stream.';
-        lucide.createIcons();
+        safeCreateIcons();
         window.scrollTo({ top: 0, behavior: 'smooth' });
         return;
       }
@@ -197,7 +208,7 @@
       mobileError.style.display = 'none';
       btnStart.style.display = 'none';
       videoOverlay.innerHTML = `<i data-lucide="monitor"></i><span>Simulation Active</span>`;
-      lucide.createIcons();
+      safeCreateIcons();
       
       shareLink.value = "https://layerbit.co.in/tools/layerlink-viewer.html?session=sim_" + Math.random().toString(36).substring(2, 8);
       linkContainer.classList.add('active');
@@ -234,7 +245,22 @@
         const configuration = {
           iceServers: [
             { urls: 'stun:stun.l.google.com:19302' },
-            { urls: 'stun:stun1.l.google.com:19302' }
+            { urls: 'stun:stun1.l.google.com:19302' },
+            {
+              urls: 'turn:openrelay.metered.ca:80',
+              username: 'openrelayproject',
+              credential: 'openrelayproject'
+            },
+            {
+              urls: 'turn:openrelay.metered.ca:443',
+              username: 'openrelayproject',
+              credential: 'openrelayproject'
+            },
+            {
+              urls: 'turn:openrelay.metered.ca:443?transport=tcp',
+              username: 'openrelayproject',
+              credential: 'openrelayproject'
+            }
           ]
         };
 

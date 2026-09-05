@@ -135,6 +135,17 @@
     const overlayMsg = document.getElementById('overlayMsg');
     const videoElement = document.getElementById('video');
 
+    // lucide is loaded with `async` in <head>, so it can still be mid-download the moment this
+    // script runs (especially on a slow/first-load connection) - calling lucide.createIcons()
+    // directly then throws an uncaught ReferenceError that kills the rest of this script block,
+    // including the WebRTC/Firebase setup below setStatus('searching'). Guard every call instead;
+    // any missed icon redraw is harmless and self-corrects on the next setStatus() call.
+    function safeCreateIcons() {
+      try {
+        if (window.lucide) lucide.createIcons();
+      } catch (e) {}
+    }
+
     function setStatus(state) {
       if (state === 'searching') {
         statusUI.className = 'status-indicator';
@@ -165,7 +176,7 @@
           </div>
         `;
       }
-      lucide.createIcons();
+      safeCreateIcons();
     }
 
     // UI Simulation Functions
@@ -196,7 +207,22 @@
       const configuration = {
         iceServers: [
           { urls: 'stun:stun.l.google.com:19302' },
-          { urls: 'stun:stun1.l.google.com:19302' }
+          { urls: 'stun:stun1.l.google.com:19302' },
+          {
+            urls: 'turn:openrelay.metered.ca:80',
+            username: 'openrelayproject',
+            credential: 'openrelayproject'
+          },
+          {
+            urls: 'turn:openrelay.metered.ca:443',
+            username: 'openrelayproject',
+            credential: 'openrelayproject'
+          },
+          {
+            urls: 'turn:openrelay.metered.ca:443?transport=tcp',
+            username: 'openrelayproject',
+            credential: 'openrelayproject'
+          }
         ]
       };
 
