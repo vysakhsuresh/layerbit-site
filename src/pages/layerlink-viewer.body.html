@@ -140,8 +140,10 @@
     // directly then throws an uncaught ReferenceError that kills the rest of this script block,
     // including the WebRTC/Firebase setup below setStatus('searching'). Guard every call instead;
     // any missed icon redraw is harmless and self-corrects on the next setStatus() call.
-    function renderIcons() {
-      if (typeof lucide !== 'undefined') lucide.createIcons();
+    function safeCreateIcons() {
+      try {
+        if (window.lucide) lucide.createIcons();
+      } catch (e) {}
     }
 
     function setStatus(state) {
@@ -174,7 +176,7 @@
           </div>
         `;
       }
-      renderIcons();
+      safeCreateIcons();
     }
 
     // UI Simulation Functions
