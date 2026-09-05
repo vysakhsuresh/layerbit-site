@@ -135,6 +135,15 @@
     const overlayMsg = document.getElementById('overlayMsg');
     const videoElement = document.getElementById('video');
 
+    // lucide is loaded with `async` in <head>, so it can still be mid-download the moment this
+    // script runs (especially on a slow/first-load connection) - calling lucide.createIcons()
+    // directly then throws an uncaught ReferenceError that kills the rest of this script block,
+    // including the WebRTC/Firebase setup below setStatus('searching'). Guard every call instead;
+    // any missed icon redraw is harmless and self-corrects on the next setStatus() call.
+    function renderIcons() {
+      if (typeof lucide !== 'undefined') lucide.createIcons();
+    }
+
     function setStatus(state) {
       if (state === 'searching') {
         statusUI.className = 'status-indicator';
@@ -165,7 +174,7 @@
           </div>
         `;
       }
-      lucide.createIcons();
+      renderIcons();
     }
 
     // UI Simulation Functions

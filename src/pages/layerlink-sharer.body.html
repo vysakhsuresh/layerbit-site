@@ -157,6 +157,15 @@
       }
     });
 
+    // lucide is loaded with `async` in <head>, so it can still be mid-download the moment this
+    // script runs (especially on a slow/first-load connection) - calling lucide.createIcons()
+    // directly then throws an uncaught ReferenceError that kills the rest of this script block,
+    // including the WebRTC/Firebase setup below setStatus('waiting'). Guard every call instead;
+    // any missed icon redraw is harmless and self-corrects on the next call.
+    function renderIcons() {
+      if (typeof lucide !== 'undefined') lucide.createIcons();
+    }
+
     function setStatus(state) {
       if (state === 'waiting') {
         statusBadge.className = 'status-badge status-waiting';
@@ -168,18 +177,18 @@
         statusBadge.className = 'status-badge status-idle';
         statusBadge.innerHTML = `<i data-lucide="alert-circle"></i> Viewer Disconnected`;
       }
-      lucide.createIcons();
+      renderIcons();
     }
 
     function copyLink() {
       navigator.clipboard.writeText(shareLink.value).then(() => {
         btnCopy.innerHTML = '<i data-lucide="check"></i>';
         btnCopy.setAttribute('aria-label', 'Copied');
-        lucide.createIcons();
+        renderIcons();
         setTimeout(() => {
           btnCopy.innerHTML = '<i data-lucide="copy"></i>';
           btnCopy.setAttribute('aria-label', 'Copy share link');
-          lucide.createIcons();
+          renderIcons();
         }, 2000);
       });
     }
@@ -189,7 +198,7 @@
       if(state === 'error') {
         mobileError.style.display = 'block';
         mobileError.innerHTML = '<i data-lucide="smartphone" style="vertical-align: middle; margin-right: 5px;"></i> Host capabilities require a desktop/laptop browser to capture the screen stream.';
-        lucide.createIcons();
+        renderIcons();
         window.scrollTo({ top: 0, behavior: 'smooth' });
         return;
       }
@@ -197,7 +206,7 @@
       mobileError.style.display = 'none';
       btnStart.style.display = 'none';
       videoOverlay.innerHTML = `<i data-lucide="monitor"></i><span>Simulation Active</span>`;
-      lucide.createIcons();
+      renderIcons();
       
       shareLink.value = "https://layerbit.co.in/tools/layerlink-viewer.html?session=sim_" + Math.random().toString(36).substring(2, 8);
       linkContainer.classList.add('active');
