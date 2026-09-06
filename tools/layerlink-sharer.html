@@ -441,7 +441,47 @@
     }
 
     // FAQ Accordion Logic
-    
+
+    // Reconnect countdown -----------------------------------------------
+    // Handles two distinct not-yet-live moments the same way: (1) an answer was
+    // just received and ICE hasn't connected yet, (2) a live connection just
+    // dropped and might recover on its own (a brief Wi-Fi blip). Count down, and
+    // only give up for real (status: closed) if CONNECTED isn't reached by zero.
+    // Unlike the viewer page, this doesn't auto-reload - getDisplayMedia() needs
+    // a direct user gesture, so the user re-clicking "Initialize Broadcast" is
+    // the only way to recapture the screen anyway.
+    const RECONNECT_GRACE_SECONDS = 20;
+    let reconnectTimer = null;
+    let reconnectSecondsLeft = 0;
+
+    function startReconnectCountdown() {
+      clearReconnectCountdown();
+      reconnectSecondsLeft = RECONNECT_GRACE_SECONDS;
+      updateReconnectBadge();
+      reconnectTimer = setInterval(() => {
+        reconnectSecondsLeft -= 1;
+        if (reconnectSecondsLeft <= 0) {
+          clearReconnectCountdown();
+          setStatus('closed');
+        } else {
+          updateReconnectBadge();
+        }
+      }, 1000);
+    }
+
+    function clearReconnectCountdown() {
+      if (reconnectTimer) {
+        clearInterval(reconnectTimer);
+        reconnectTimer = null;
+      }
+    }
+
+    function updateReconnectBadge() {
+      statusBadge.className = 'status-badge status-waiting';
+      statusBadge.innerHTML = `<i data-lucide="loader" class="animate-spin"></i> Connecting… retrying in ${reconnectSecondsLeft}s`;
+      safeCreateIcons();
+    }
+
     // Core WebRTC Logic
     async function start() {
       try {
@@ -487,8 +527,17 @@
         localStream.getTracks().forEach(track => peer.addTrack(track, localStream));
 
         peer.onconnectionstatechange = () => {
-          if (peer.connectionState === 'connected') setStatus('live');
-          if (peer.connectionState === 'disconnected' || peer.connectionState === 'failed') setStatus('closed');
+          if (peer.connectionState === 'connected') {
+            clearReconnectCountdown();
+            setStatus('live');
+          } else if (peer.connectionState === 'disconnected') {
+            startReconnectCountdown();
+          } else if (peer.connectionState === 'failed') {
+            // The browser's own ICE agent already gave up after its own internal retries - no
+            // additional grace period on top of that.
+            clearReconnectCountdown();
+            setStatus('closed');
+          }
         };
 
         localStream.getVideoTracks()[0].onended = () => {
@@ -517,7 +566,10 @@
             const answer = JSON.parse(snap.val());
             await peer.setRemoteDescription(answer);
             hasRemoteAnswer = true;
-            
+            // Negotiation is genuinely starting now - start the countdown so a connection that
+            // never completes doesn't just sit here forever with no explanation.
+            startReconnectCountdown();
+
             answerCandidateQueue.forEach(c => peer.addIceCandidate(c));
             answerCandidateQueue = [];
           }

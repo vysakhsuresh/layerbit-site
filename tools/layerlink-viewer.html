@@ -177,20 +177,27 @@
       <div class="seo-content-block">
         <h1>LayerLink Viewer Terminal</h1>
         <p>Welcome to the LayerLink Client Terminal. This secure web utility allows users to view remote broadcasts, presentations, and screen shares in real-time using peer-to-peer WebRTC technology.</p>
-        
+
         <h2>How to Connect to a Stream</h2>
         <ul>
           <li>Obtain a secure session URL from the host broadcaster.</li>
           <li>Paste the complete URL into your browser's address bar.</li>
           <li>The system will automatically authenticate and establish a secure connection.</li>
         </ul>
-        
+
         <p style="font-size: 0.9em; opacity: 0.6; margin-top: 20px;">
           * Note: This page serves as the viewer client. Without a valid session ID, no video data will be transmitted or displayed.
         </p>
       </div>
     </div>
-    
+
+    <!-- Shown over the still-visible (frozen) video during a brief post-live drop, instead of
+         tearing down to the full "Searching" overlay and losing the last frame. -->
+    <div id="blipBanner" style="display:none; position:absolute; top:16px; left:50%; transform:translateX(-50%); z-index:3; background:rgba(10,12,16,0.85); color:#fff; padding:8px 16px; border-radius:20px; font-size:0.85em; align-items:center; gap:8px; border:1px solid rgba(255,255,255,0.1);">
+      <i data-lucide="wifi-off" style="width:16px;height:16px;"></i>
+      <span id="blipBannerText">Reconnecting…</span>
+    </div>
+
     <video id="video" autoplay playsinline muted></video>
   </div>
 
@@ -325,6 +332,7 @@
           <i data-lucide="satellite-dish" style="width: 48px; height: 48px; color: var(--accent-main); animation: pulse 2s infinite;"></i>
           <h2 style="font-weight: 600; font-size: 1.5em; margin-top: 15px;">Searching for Host Signal</h2>
           <p style="opacity: 0.7; margin-top: 10px;">Waiting for the broadcaster to start the stream...</p>
+          <p id="reconnectCountdown" style="opacity: 0.55; margin-top: 14px; font-size: 0.85em;"></p>
         `;
         overlayMsg.style.display = 'flex';
         videoElement.style.display = 'none';
@@ -333,6 +341,16 @@
         statusUI.innerHTML = `<i data-lucide="radio"></i> LIVE`;
         overlayMsg.style.display = 'none';
         videoElement.style.display = 'block';
+      } else if (state === 'reloading') {
+        statusUI.className = 'status-indicator';
+        statusUI.innerHTML = `<i data-lucide="refresh-cw" class="animate-spin"></i> Reconnecting`;
+        overlayMsg.style.display = 'flex';
+        videoElement.style.display = 'none';
+        overlayMsg.innerHTML = `
+          <i data-lucide="refresh-cw" class="animate-spin" style="width: 48px; height: 48px; color: var(--accent-main);"></i>
+          <h2 style="font-weight: 600; font-size: 1.5em; margin-top: 15px;">Reconnecting…</h2>
+          <p style="opacity: 0.7; margin-top: 10px;">This page will refresh automatically.</p>
+        `;
       } else if (state === 'error') {
         statusUI.className = 'status-indicator error';
         statusUI.innerHTML = `<i data-lucide="alert-triangle"></i> Signal Lost`;
@@ -343,7 +361,7 @@
             <i data-lucide="plug-zap" style="color: #ef4444; width: 48px; height: 48px; margin-bottom: 15px;"></i>
             <h2 style="font-weight: 600; color: #fff; margin: 0 0 10px 0;">Connection Dropped</h2>
             <p style="opacity: 0.7;">The host has stopped sharing, the session is invalid, or the network failed.</p>
-            <button onclick="location.reload()" style="margin-top:20px; padding:12px 24px; background:#ef4444; color:#fff; border:none; border-radius:8px; cursor:pointer; font-family:'Space Grotesk', sans-serif; font-weight:bold; transition: 0.3s;">Reconnect</button>
+            <button onclick="manualReconnect()" style="margin-top:20px; padding:12px 24px; background:#ef4444; color:#fff; border:none; border-radius:8px; cursor:pointer; font-family:'Space Grotesk', sans-serif; font-weight:bold; transition: 0.3s;">Reconnect</button>
           </div>
         `;
       }
@@ -365,7 +383,88 @@
     }
 
     // FAQ Accordion Logic
-    
+
+    // Reconnect countdown + capped auto-reload ------------------------------
+    // Handles two distinct not-yet-live moments the same way: (1) an answer was
+    // just sent and ICE hasn't connected yet, (2) a live connection just dropped
+    // and might recover on its own (a brief Wi-Fi blip). Either way: count down,
+    // and only reload the page for real if it's still not connected by zero -
+    // capped at MAX_AUTO_RELOADS so a genuinely dead link doesn't reload forever.
+    const RECONNECT_GRACE_SECONDS = 20;
+    const MAX_AUTO_RELOADS = 2;
+
+    function getReloadCount() {
+      return parseInt(sessionStorage.getItem('layerlink_reload_' + sessionId) || '0', 10);
+    }
+    function incrementReloadCount() {
+      sessionStorage.setItem('layerlink_reload_' + sessionId, String(getReloadCount() + 1));
+    }
+    function clearReloadCount() {
+      sessionStorage.removeItem('layerlink_reload_' + sessionId);
+    }
+    function manualReconnect() {
+      // A deliberate manual retry gets a fresh auto-reload budget of its own.
+      clearReloadCount();
+      location.reload();
+    }
+
+    let reconnectTimer = null;
+    let reconnectSecondsLeft = 0;
+    let reconnectMode = null; // 'connecting' | 'blip'
+
+    function startReconnectCountdown(mode) {
+      clearReconnectCountdown();
+      reconnectMode = mode;
+      reconnectSecondsLeft = RECONNECT_GRACE_SECONDS;
+      if (mode === 'blip') {
+        const banner = document.getElementById('blipBanner');
+        if (banner) banner.style.display = 'flex';
+      }
+      updateReconnectUI();
+      reconnectTimer = setInterval(() => {
+        reconnectSecondsLeft -= 1;
+        if (reconnectSecondsLeft <= 0) {
+          clearReconnectCountdown();
+          handleReconnectTimeout();
+        } else {
+          updateReconnectUI();
+        }
+      }, 1000);
+    }
+
+    function clearReconnectCountdown() {
+      if (reconnectTimer) {
+        clearInterval(reconnectTimer);
+        reconnectTimer = null;
+      }
+      const banner = document.getElementById('blipBanner');
+      if (banner) banner.style.display = 'none';
+      const label = document.getElementById('reconnectCountdown');
+      if (label) label.textContent = '';
+    }
+
+    function updateReconnectUI() {
+      if (reconnectMode === 'blip') {
+        const text = document.getElementById('blipBannerText');
+        if (text) text.textContent = 'Reconnecting… (' + reconnectSecondsLeft + 's)';
+      } else {
+        const label = document.getElementById('reconnectCountdown');
+        if (label) label.textContent = 'Auto-retry in ' + reconnectSecondsLeft + 's…';
+      }
+    }
+
+    function handleReconnectTimeout() {
+      if (getReloadCount() < MAX_AUTO_RELOADS) {
+        setStatus('reloading');
+        setTimeout(() => {
+          incrementReloadCount();
+          location.reload();
+        }, 2000);
+      } else {
+        setStatus('error');
+      }
+    }
+
     // Core WebRTC Logic
     const params = new URLSearchParams(location.search);
     const sessionId = params.get("session");
@@ -408,9 +507,24 @@
         });
       };
 
+      let wasLive = false;
+
       peer.onconnectionstatechange = () => {
-        if (peer.connectionState === 'connected') setStatus('live');
-        if (peer.connectionState === 'disconnected' || peer.connectionState === 'failed') setStatus('error');
+        if (peer.connectionState === 'connected') {
+          clearReconnectCountdown();
+          wasLive = true;
+          setStatus('live');
+        } else if (peer.connectionState === 'disconnected') {
+          // Was already live and just blipped -> small banner over the frozen frame instead of
+          // tearing down to the full "Searching" overlay. Never reached live in the first place
+          // -> the "still negotiating" countdown already running covers it, nothing to change.
+          if (wasLive) startReconnectCountdown('blip');
+        } else if (peer.connectionState === 'failed') {
+          // The browser's own ICE agent already gave up after its own internal retries - no
+          // additional grace period on top of that.
+          clearReconnectCountdown();
+          setStatus('error');
+        }
       };
 
       peer.onicecandidate = e => {
@@ -436,6 +550,9 @@
           const answer = await peer.createAnswer();
           await peer.setLocalDescription(answer);
           conn.child("answer").set(JSON.stringify(answer));
+          // Negotiation is genuinely starting now - start the countdown so a connection that
+          // never completes doesn't just sit here forever with no explanation or way to recover.
+          startReconnectCountdown('connecting');
         });
       }
 
