@@ -1,0 +1,119 @@
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "TechArticle",
+      "@id": "https://layerbit.co.in/guides/regex-catastrophic-backtracking.html#article",
+      "headline": "How One Regular Expression Can Freeze Your Server",
+      "name": "How One Regular Expression Can Freeze Your Server",
+      "description": "Catastrophic backtracking explained: why (a+)+ takes exponential time, the three dangerous pattern shapes, and how to fix them with atomic groups, linear-time engines or an input length cap.",
+      "url": "https://layerbit.co.in/guides/regex-catastrophic-backtracking.html",
+      "mainEntityOfPage": {
+        "@type": "WebPage",
+        "@id": "https://layerbit.co.in/guides/regex-catastrophic-backtracking.html"
+      },
+      "datePublished": "2026-09-04",
+      "dateModified": "2026-09-21",
+      "inLanguage": "en",
+      "wordCount": 1900,
+      "keywords": "redos, catastrophic backtracking, regex denial of service, nested quantifiers, atomic group, re2 linear time regex, regex performance",
+      "articleSection": "Performance \u0026 Security",
+      "author": {
+        "@type": "Organization",
+        "name": "Layerbit Technologies",
+        "url": "https://layerbit.co.in/about.html"
+      },
+      "publisher": {
+        "@type": "Organization",
+        "name": "Layerbit Technologies",
+        "url": "https://layerbit.co.in/",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://layerbit.co.in/icon-512.png",
+          "width": 512,
+          "height": 512
+        }
+      },
+      "image": {
+        "@type": "ImageObject",
+        "url": "https://layerbit.co.in/icon-512.png",
+        "width": 512,
+        "height": 512
+      },
+      "isAccessibleForFree": true,
+      "proficiencyLevel": "Intermediate"
+    },
+    {
+      "@type": "BreadcrumbList",
+      "@id": "https://layerbit.co.in/guides/regex-catastrophic-backtracking.html#breadcrumb",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://layerbit.co.in/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Guides",
+          "item": "https://layerbit.co.in/blog.html"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": "Catastrophic backtracking",
+          "item": "https://layerbit.co.in/guides/regex-catastrophic-backtracking.html"
+        }
+      ]
+    },
+    {
+      "@type": "FAQPage",
+      "@id": "https://layerbit.co.in/guides/regex-catastrophic-backtracking.html#faq",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "What is catastrophic backtracking?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "It is the exponential blow-up that occurs when a backtracking regex engine has more than one way to divide the same input between parts of a pattern. With a pattern like ^(a+)+$ the engine must try every possible partition of the input before concluding there is no match, so each extra input character doubles the work. Forty characters can take minutes; fifty can take over a week."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Which regex patterns are dangerous?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Three shapes: nested quantifiers such as (a+)+ or ([a-z]+)*; ambiguous alternations under a quantifier such as (a|ab)* or (\\w|\\d)*, where two branches match the same character; and quantified overlapping sequences such as (\\w+\\s?)+, where an optional separator sits inside a repeated group. All three give the engine a choice at every character."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Why does the attack input almost match the pattern?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "A string that matches succeeds on the first attempt and returns immediately. The expensive case is a failed match, because the engine must exhaust every alternative before reporting failure. Attackers therefore send a long repeated run followed by one character that guarantees the match cannot succeed."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Are Go and Rust vulnerable to ReDoS?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "No. Go's regexp package and the Rust regex crate are built on RE2-style automata that guarantee matching in time linear in the input length, so there is no backtracking to explode. The trade-off is that they cannot support backreferences or lookaround, which are the features that make linear-time matching impossible."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What is the simplest ReDoS mitigation?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Cap the input length before the regex runs. Because the blow-up is a function of input length, a hard limit converts an unbounded worst case into a bounded one. It requires no new library, works on every platform, and applies before the dangerous code executes. In JavaScript this matters especially, since regex matching is synchronous and will block the entire event loop."
+          }
+        }
+      ]
+    }
+  ]
+}
+  </script>

@@ -1,0 +1,119 @@
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "TechArticle",
+      "@id": "https://layerbit.co.in/guides/jwt-decode-vs-verify.html#article",
+      "headline": "Decoding a JWT Is Not Verifying It",
+      "name": "Decoding a JWT Is Not Verifying It",
+      "description": "A JWT payload is readable by anyone holding the token. Learn the difference between decoding and verifying, how alg:none and RS256-to-HS256 confusion forge tokens, and the full claim-validation checklist.",
+      "url": "https://layerbit.co.in/guides/jwt-decode-vs-verify.html",
+      "mainEntityOfPage": {
+        "@type": "WebPage",
+        "@id": "https://layerbit.co.in/guides/jwt-decode-vs-verify.html"
+      },
+      "datePublished": "2026-09-12",
+      "dateModified": "2026-09-21",
+      "inLanguage": "en",
+      "wordCount": 2150,
+      "keywords": "jwt verification, alg none attack, algorithm confusion, jwt security, json web token, rs256 hs256, jwt claims validation",
+      "articleSection": "Authentication \u0026 Security",
+      "author": {
+        "@type": "Organization",
+        "name": "Layerbit Technologies",
+        "url": "https://layerbit.co.in/about.html"
+      },
+      "publisher": {
+        "@type": "Organization",
+        "name": "Layerbit Technologies",
+        "url": "https://layerbit.co.in/",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://layerbit.co.in/icon-512.png",
+          "width": 512,
+          "height": 512
+        }
+      },
+      "image": {
+        "@type": "ImageObject",
+        "url": "https://layerbit.co.in/icon-512.png",
+        "width": 512,
+        "height": 512
+      },
+      "isAccessibleForFree": true,
+      "proficiencyLevel": "Intermediate"
+    },
+    {
+      "@type": "BreadcrumbList",
+      "@id": "https://layerbit.co.in/guides/jwt-decode-vs-verify.html#breadcrumb",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://layerbit.co.in/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Guides",
+          "item": "https://layerbit.co.in/blog.html"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": "Decoding vs verifying a JWT",
+          "item": "https://layerbit.co.in/guides/jwt-decode-vs-verify.html"
+        }
+      ]
+    },
+    {
+      "@type": "FAQPage",
+      "@id": "https://layerbit.co.in/guides/jwt-decode-vs-verify.html#faq",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "Can anyone read the contents of a JWT?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes. A JWT is signed, not encrypted. The header and payload are only Base64url-encoded, which requires no key to reverse, so any holder of the token can read every claim inside it. Never place secrets in a JWT payload; use JWE or an opaque session identifier if the contents must stay confidential."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What is the difference between decoding and verifying a JWT?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Decoding simply Base64url-decodes the header and payload and needs no key, so it proves nothing about authenticity. Verifying recomputes the signature with a key you control and proves the token was issued by the holder of that key and has not been modified. Authorisation decisions must only ever be made from a verified token."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What is the alg:none JWT attack?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "RFC 7518 defines an algorithm called none for unsecured tokens. An attacker rewrites a token's payload, sets the header algorithm to none, and removes the signature. A server that reads the algorithm from the token's own header concludes no signature is required and accepts the forgery. The fix is to pass an explicit allowlist of accepted algorithms during verification."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What is JWT algorithm confusion?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "A server expecting RS256 verifies with an RSA public key. If the library takes the algorithm from the token header, an attacker can craft an HS256 token signed with the public key bytes used as an HMAC shared secret. Because the public key is not secret, the forged signature validates. Pinning the algorithm explicitly during verification prevents it."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Is the JWT exp claim in seconds or milliseconds?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Seconds. The exp, nbf and iat claims are NumericDate values measured in seconds since the Unix epoch, while JavaScript's Date.now() returns milliseconds. Use Math.floor(Date.now() / 1000) to produce them, otherwise tokens will either never expire or expire immediately."
+          }
+        }
+      ]
+    }
+  ]
+}
+  </script>

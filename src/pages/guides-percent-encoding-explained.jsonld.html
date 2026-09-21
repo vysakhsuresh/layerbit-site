@@ -1,0 +1,119 @@
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "TechArticle",
+      "@id": "https://layerbit.co.in/guides/percent-encoding-explained.html#article",
+      "headline": "URL Encoding: Why a Space Is Sometimes %20 and Sometimes +",
+      "name": "URL Encoding: Why a Space Is Sometimes %20 and Sometimes +",
+      "description": "Percent-encoding versus form encoding, reserved and unreserved characters, encodeURI vs encodeURIComponent, the C++ filename bug, and how to recognise double encoding from %2520.",
+      "url": "https://layerbit.co.in/guides/percent-encoding-explained.html",
+      "mainEntityOfPage": {
+        "@type": "WebPage",
+        "@id": "https://layerbit.co.in/guides/percent-encoding-explained.html"
+      },
+      "datePublished": "2026-09-02",
+      "dateModified": "2026-09-21",
+      "inLanguage": "en",
+      "wordCount": 1750,
+      "keywords": "percent encoding, url encoding, encodeuricomponent vs encodeuri, x-www-form-urlencoded, double encoding %2520, rfc 3986, urlsearchparams",
+      "articleSection": "Web Fundamentals",
+      "author": {
+        "@type": "Organization",
+        "name": "Layerbit Technologies",
+        "url": "https://layerbit.co.in/about.html"
+      },
+      "publisher": {
+        "@type": "Organization",
+        "name": "Layerbit Technologies",
+        "url": "https://layerbit.co.in/",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://layerbit.co.in/icon-512.png",
+          "width": 512,
+          "height": 512
+        }
+      },
+      "image": {
+        "@type": "ImageObject",
+        "url": "https://layerbit.co.in/icon-512.png",
+        "width": 512,
+        "height": 512
+      },
+      "isAccessibleForFree": true,
+      "proficiencyLevel": "Beginner"
+    },
+    {
+      "@type": "BreadcrumbList",
+      "@id": "https://layerbit.co.in/guides/percent-encoding-explained.html#breadcrumb",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://layerbit.co.in/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Guides",
+          "item": "https://layerbit.co.in/blog.html"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": "URL encoding",
+          "item": "https://layerbit.co.in/guides/percent-encoding-explained.html"
+        }
+      ]
+    },
+    {
+      "@type": "FAQPage",
+      "@id": "https://layerbit.co.in/guides/percent-encoding-explained.html#faq",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "Why is a space sometimes %20 and sometimes a plus sign?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "There are two encodings. RFC 3986 percent-encoding represents a space as %20 and is used in paths and general URIs. The application/x-www-form-urlencoded format used by HTML forms represents a space as +, and a literal plus as %2B. Query strings are form-decoded by most servers, so + reads as a space there, but in a path + is a literal plus character."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What is the difference between encodeURI and encodeURIComponent?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "encodeURI is for an entire URL and deliberately leaves structural characters such as / ? : @ \u0026 = + and # unencoded. encodeURIComponent is for a single value and encodes those characters too. Using encodeURI on a value allows characters in your data to be read as URL structure, which is a parameter-injection bug."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Why does my filename with a plus sign 404 on download?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "A file named C++ notes.pdf percent-encodes to C%2B%2B%20notes.pdf. If any layer form-decodes the path instead of percent-decoding it, the escaped pluses become spaces and the lookup key no longer matches. Paths must always be percent-decoded, never form-decoded."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What does %2520 mean in a URL?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "It is the signature of double encoding. A space was encoded once to %20, then the % of that sequence was itself encoded to %25, producing %2520. It means a value was encoded twice, usually because two layers each believed they were responsible for encoding it. Encode once at assembly time and decode once at parse time."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Should I decode a URL repeatedly until it stops changing?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "No. Repeated decoding is how path-traversal filters get bypassed, because a sequence like %252e%252e%252f passes a check for ../ and then becomes ../ after a second decode. Decode exactly once, then validate the result."
+          }
+        }
+      ]
+    }
+  ]
+}
+  </script>

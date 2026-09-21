@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validates every top-level HTML page (index.html, tools/*.html, ...):
+"""Validates every generated HTML page (index.html, tools/*.html, guides/*.html):
   1. structural HTML - every opening tag has a matching close
   2. JSON-LD blocks parse as valid JSON
   3. inline <script> blocks (no src=, not type=application/ld+json) are
@@ -97,7 +97,8 @@ def main():
     if not node_available:
         print("warning: node not found on PATH, skipping inline JS syntax checks", file=sys.stderr)
 
-    files = sorted(glob.glob("*.html") + glob.glob("tools/*.html"))
+    files = sorted(glob.glob("*.html") + glob.glob("tools/*.html")
+                   + glob.glob("guides/*.html"))
     failures = []
     for f in files:
         text = open(f, encoding="utf-8").read()

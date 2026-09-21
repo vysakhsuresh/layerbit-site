@@ -1,0 +1,119 @@
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "TechArticle",
+      "@id": "https://layerbit.co.in/guides/base64-explained.html#article",
+      "headline": "What Base64 Actually Does (and What It Definitely Does Not)",
+      "name": "What Base64 Actually Does (and What It Definitely Does Not)",
+      "description": "How 3 bytes become 4 characters, why the overhead is exactly 33%, what the = padding is for, when to use base64url, and why btoa throws on emoji.",
+      "url": "https://layerbit.co.in/guides/base64-explained.html",
+      "mainEntityOfPage": {
+        "@type": "WebPage",
+        "@id": "https://layerbit.co.in/guides/base64-explained.html"
+      },
+      "datePublished": "2026-08-31",
+      "dateModified": "2026-09-21",
+      "inLanguage": "en",
+      "wordCount": 1650,
+      "keywords": "base64, base64url, rfc 4648, base64 padding, btoa unicode, base64 is not encryption, data uri base64",
+      "articleSection": "Encoding Fundamentals",
+      "author": {
+        "@type": "Organization",
+        "name": "Layerbit Technologies",
+        "url": "https://layerbit.co.in/about.html"
+      },
+      "publisher": {
+        "@type": "Organization",
+        "name": "Layerbit Technologies",
+        "url": "https://layerbit.co.in/",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://layerbit.co.in/icon-512.png",
+          "width": 512,
+          "height": 512
+        }
+      },
+      "image": {
+        "@type": "ImageObject",
+        "url": "https://layerbit.co.in/icon-512.png",
+        "width": 512,
+        "height": 512
+      },
+      "isAccessibleForFree": true,
+      "proficiencyLevel": "Beginner"
+    },
+    {
+      "@type": "BreadcrumbList",
+      "@id": "https://layerbit.co.in/guides/base64-explained.html#breadcrumb",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://layerbit.co.in/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Guides",
+          "item": "https://layerbit.co.in/blog.html"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": "Base64 explained",
+          "item": "https://layerbit.co.in/guides/base64-explained.html"
+        }
+      ]
+    },
+    {
+      "@type": "FAQPage",
+      "@id": "https://layerbit.co.in/guides/base64-explained.html#faq",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "Is Base64 a form of encryption?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "No. Base64 has no key and no secret - the same input always produces the same output, and any decoder reverses it instantly. HTTP Basic authentication sends base64(user:password), which is why Basic auth over plain HTTP is equivalent to sending the password in clear text. Base64 in a cookie, config file or app bundle protects nothing."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How much larger does Base64 make my data?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Exactly one third larger. Every 3 bytes of input become 4 output characters, a ratio of 4/3 or 33.3% growth, plus up to two padding characters. MIME email adds line breaks every 76 characters, pushing the practical overhead to roughly 37%. This is why inlining large images as data URIs is often a poor trade."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What is the equals sign at the end of a Base64 string?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "It is padding. When the input length is not a multiple of 3 the final group is short, so the output is padded with = to reach a multiple of 4. One leftover byte produces two characters plus ==; two leftover bytes produce three characters plus =. The padding carries no data and some formats, including JWT, omit it entirely."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "When should I use base64url instead of Base64?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Whenever the value goes in a URL, a filename or a cookie. Standard Base64 uses + and /, and in a query string form-decoding turns + into a space while in a path / acts as a separator. Base64url substitutes - and _ for those two characters and usually drops the padding. JWTs use base64url for exactly this reason."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Why does btoa throw an error on non-English text?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "btoa operates on binary strings where every character must be in the range U+0000 to U+00FF, so anything above that - accented letters, CJK characters, emoji - throws InvalidCharacterError. Convert the string to UTF-8 bytes with TextEncoder first, then map those bytes into the Latin-1 range before calling btoa. Base64 encodes bytes, not text."
+          }
+        }
+      ]
+    }
+  ]
+}
+  </script>

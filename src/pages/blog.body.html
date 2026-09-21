@@ -1,110 +1,165 @@
 {{HEADER}}
 
   <main class="hero">
-    <h1>Layerbit Technical Guide</h1>
-    <p>A comprehensive documentation hub for Layerbit’s browser-based developer utilities. Our suite is engineered to simplify complex coding tasks and enhance security workflows without the need for external installations.</p>
+    <h1>Layerbit Engineering Guides</h1>
+    <p>In-depth technical writing on the formats, protocols and security details our tools deal with every day — the specification corners, the failure modes, and the bugs that only show up in production.</p>
   </main>
 
   <div class="doc-container">
 
-    <h2><i data-lucide="shield-alert"></i> 1. Security & System Auditing</h2>
+    <h2><i data-lucide="book-open"></i> Latest guides</h2>
+    <div class="guide-list">
+
+      <a class="guide-card" href="guides/jwt-decode-vs-verify.html">
+        <div class="guide-meta"><span class="guide-tag">Authentication &amp; Security</span><span class="guide-date">12 Sep 2026 · 11 min</span></div>
+        <h3>Decoding a JWT Is Not Verifying It</h3>
+        <p>Anyone holding a token can read every claim inside it without a key. The gap between reading a token and trusting one is where <code>alg: none</code>, RS256&rarr;HS256 confusion, and most authentication bugs live.</p>
+        <span class="guide-more">Read guide <i data-lucide="arrow-right"></i></span>
+      </a>
+
+      <a class="guide-card" href="guides/cron-expressions-explained.html">
+        <div class="guide-meta"><span class="guide-tag">Scheduling &amp; DevOps</span><span class="guide-date">10 Sep 2026 · 10 min</span></div>
+        <h3>The Cron Expression Rules That Catch Everyone Out</h3>
+        <p>Why day-of-month and day-of-week combine as OR rather than AND, why <code>*/7</code> is not "every seven minutes", and how daylight saving quietly skips or doubles a job twice a year.</p>
+        <span class="guide-more">Read guide <i data-lucide="arrow-right"></i></span>
+      </a>
+
+      <a class="guide-card" href="guides/yaml-gotchas.html">
+        <div class="guide-meta"><span class="guide-tag">Configuration &amp; Data Formats</span><span class="guide-date">8 Sep 2026 · 10 min</span></div>
+        <h3>YAML's Sharpest Edges: The Norway Problem and Friends</h3>
+        <p>Why the country code <code>NO</code> becomes the boolean <code>false</code>, <code>1.10</code> becomes <code>1.1</code>, <code>0755</code> becomes 493, and <code>22:22</code> becomes 1342 — all of it specified behaviour.</p>
+        <span class="guide-more">Read guide <i data-lucide="arrow-right"></i></span>
+      </a>
+
+      <a class="guide-card" href="guides/csv-edge-cases.html">
+        <div class="guide-meta"><span class="guide-tag">Data Formats</span><span class="guide-date">6 Sep 2026 · 9 min</span></div>
+        <h3>Why CSV Is Not Really a Format</h3>
+        <p>RFC 4180 quoting rules, the locale that makes Excel open your file as one column, the type inference that corrupts leading zeros and gene names, and the formula injection hiding in your export.</p>
+        <span class="guide-more">Read guide <i data-lucide="arrow-right"></i></span>
+      </a>
+
+      <a class="guide-card" href="guides/regex-catastrophic-backtracking.html">
+        <div class="guide-meta"><span class="guide-tag">Performance &amp; Security</span><span class="guide-date">4 Sep 2026 · 10 min</span></div>
+        <h3>How One Regular Expression Can Freeze Your Server</h3>
+        <p>A validation pattern that runs in microseconds can take longer than the age of the universe on forty characters of carefully chosen input. Catastrophic backtracking, and the three pattern shapes that cause it.</p>
+        <span class="guide-more">Read guide <i data-lucide="arrow-right"></i></span>
+      </a>
+
+      <a class="guide-card" href="guides/percent-encoding-explained.html">
+        <div class="guide-meta"><span class="guide-tag">Web Fundamentals</span><span class="guide-date">2 Sep 2026 · 9 min</span></div>
+        <h3>URL Encoding: Why a Space Is Sometimes %20 and Sometimes +</h3>
+        <p>Two different encodings both called "URL encoding", and they disagree about the space character. Reserved characters, <code>encodeURI</code> vs <code>encodeURIComponent</code>, and what <code>%2520</code> tells you.</p>
+        <span class="guide-more">Read guide <i data-lucide="arrow-right"></i></span>
+      </a>
+
+      <a class="guide-card" href="guides/html-escaping-and-xss-contexts.html">
+        <div class="guide-meta"><span class="guide-tag">Web Security</span><span class="guide-date">29 Aug 2026 · 9 min</span></div>
+        <h3>There Is No Such Thing as "Escaping" — Only Escaping For Something</h3>
+        <p>HTML escaping protects element text and nothing else. Why an unquoted attribute breaks with a plain space, and why <code>&lt;/script&gt;</code> ends a block from inside a JavaScript string.</p>
+        <span class="guide-more">Read guide <i data-lucide="arrow-right"></i></span>
+      </a>
+
+      <a class="guide-card" href="guides/base64-explained.html">
+        <div class="guide-meta"><span class="guide-tag">Encoding Fundamentals</span><span class="guide-date">31 Aug 2026 · 8 min</span></div>
+        <h3>What Base64 Actually Does (and What It Definitely Does Not)</h3>
+        <p>How three bytes become four characters, why the overhead is exactly 33%, what the <code>=</code> padding is for, and why <code>btoa()</code> throws on an emoji.</p>
+        <span class="guide-more">Read guide <i data-lucide="arrow-right"></i></span>
+      </a>
+
+      <a class="guide-card" href="guides/uae-einvoicing-pint-ae.html">
+        <div class="guide-meta"><span class="guide-tag">Compliance &amp; Tax Technology</span><span class="guide-date">27 Aug 2026 · 10 min</span></div>
+        <h3>UAE E-Invoicing: What PINT-AE Actually Requires From Your System</h3>
+        <p>PINT-AE for engineering teams: the UBL 2.1 structure, the five-corner model with the tax authority, the validation failures that recur, and the master-data cleanup worth starting now.</p>
+        <span class="guide-more">Read guide <i data-lucide="arrow-right"></i></span>
+      </a>
+
+    </div>
+
+    <h2><i data-lucide="wrench"></i> Tool reference</h2>
+    <p class="section-intro">Every utility in the suite, grouped by what it does. All of them run in your browser; the ones marked as local never send your input anywhere.</p>
+
+    <h3 class="group-head">Data conversion &amp; encoding</h3>
     <div class="doc-grid">
       <div class="tool-box">
-        <h3><i data-lucide="siren"></i> BreachAlert</h3>
-        <p>Check if your email or phone number has been exposed in known data breaches. This tool scans against public breach databases to help you identify compromised credentials and take preventive action.</p>
+        <h3><i data-lucide="binary"></i> <a href="tools/base64.html">Base64 Encode / Decode</a></h3>
+        <p>Convert text or file contents to and from Base64 for safe transport through text-only channels such as JSON, email and data URIs. See <a href="guides/base64-explained.html">the Base64 guide</a> for the padding and URL-safety rules.</p>
       </div>
       <div class="tool-box">
-        <h3><i data-lucide="shield-x"></i> Malicious URL Checker</h3>
-        <p>Ensure safe browsing by checking URLs against threat intelligence sources to detect phishing, malware, and unsafe links before you access them.</p>
+        <h3><i data-lucide="file-json-2"></i> <a href="tools/csv-to-json.html">CSV ↔ JSON Converter</a></h3>
+        <p>Standards-correct CSV parsing — quoted commas, doubled quotes and embedded newlines all handled — with type inference, plus JSON back to CSV building the header from the union of all keys.</p>
       </div>
       <div class="tool-box">
-        <h3><i data-lucide="key-round"></i> JWT Decoder</h3>
-        <p>Securely inspect JWT headers and payloads. This allows developers to verify token structure and claims for authentication debugging without sending sensitive data to external servers.</p>
+        <h3><i data-lucide="refresh-ccw"></i> <a href="tools/yaml-json-converter.html">YAML ↔ JSON Converter</a></h3>
+        <p>Convert in both directions and inspect the real parsed types, which is the fastest way to catch YAML's implicit conversions before they reach a pipeline.</p>
       </div>
       <div class="tool-box">
-        <h3><i data-lucide="activity"></i> Log Insight Analyzer</h3>
-        <p>Understand your system, browser, and network environment at a glance. It provides critical environment details like IP address and browser data for diagnostics.</p>
+        <h3><i data-lucide="link"></i> <a href="tools/url-encoder.html">URL Encoder / Decoder</a></h3>
+        <p>Smart mode preserves URL structure while encoding query values; raw mode does strict component encoding. Includes an editable parameter grid and a batch mode for lists of URLs.</p>
+      </div>
+      <div class="tool-box">
+        <h3><i data-lucide="code"></i> <a href="tools/html-escape-unescape.html">HTML Escape / Unescape</a></h3>
+        <p>Convert between raw characters and HTML entities in both directions — handy for checking what a template escaped, and for spotting double-escaped output.</p>
       </div>
     </div>
 
-    <h2><i data-lucide="file-output"></i> 2. Data Conversion & Encoding</h2>
+    <h3 class="group-head">Code formatting &amp; inspection</h3>
     <div class="doc-grid">
       <div class="tool-box">
-        <h3><i data-lucide="binary"></i> Base64 Encode / Decode</h3>
-        <p>Easily transform data into text format for safe transmission over APIs and email systems. Ideal for binary data conversion without external libraries.</p>
+        <h3><i data-lucide="braces"></i> <a href="tools/json-validator.html">JSON Validator &amp; Formatter</a></h3>
+        <p>Validate, beautify and minify JSON, with a collapsible tree view alongside the raw text for navigating deeply nested API responses.</p>
       </div>
       <div class="tool-box">
-        <h3><i data-lucide="file-json-2"></i> CSV to JSON Converter</h3>
-        <p>Quickly transform structured CSV files into JSON format. This is a vital utility for developers working with modern web APIs and data processing pipelines.</p>
+        <h3><i data-lucide="database"></i> <a href="tools/sql-formatter.html">Universal SQL Formatter</a></h3>
+        <p>Reformat queries into a consistent, readable shape across several database dialects, so diffs stay meaningful and reviews focus on logic.</p>
       </div>
       <div class="tool-box">
-        <h3><i data-lucide="refresh-ccw"></i> YAML ↔ JSON Converter</h3>
-        <p>Switch between YAML and JSON formats with high accuracy. This tool is specifically built for DevOps and backend configuration management.</p>
+        <h3><i data-lucide="table-properties"></i> <a href="tools/json-to-table.html">JSON Table Viewer</a></h3>
+        <p>Turn arrays of objects into a readable table, including records with differing key sets, for scanning large API payloads quickly.</p>
       </div>
       <div class="tool-box">
-        <h3><i data-lucide="link"></i> URL Encoder / Decoder</h3>
-        <p>Ensure web request safety by converting special characters into URL-safe formats, essential for handling query parameters and web requests correctly.</p>
+        <h3><i data-lucide="file-diff"></i> <a href="tools/text-diff-checker.html">Text Diff Checker</a></h3>
+        <p>Compare two blocks of text or code side by side with the differences highlighted, for config drift and copy review.</p>
       </div>
       <div class="tool-box">
-        <h3><i data-lucide="code"></i> HTML Escape / Unescape</h3>
-        <p>Convert HTML characters into safe entities to prevent broken rendering or security vulnerabilities like XSS when displaying user-generated content.</p>
+        <h3><i data-lucide="regex"></i> <a href="tools/regex-tester.html">Regex Tester</a></h3>
+        <p>Live matching with capture-group breakdown and a replacement preview. Pair it with <a href="guides/regex-catastrophic-backtracking.html">the backtracking guide</a> before shipping a pattern.</p>
+      </div>
+      <div class="tool-box">
+        <h3><i data-lucide="scroll-text"></i> <a href="tools/log-analyzer.html">Log Analyzer</a></h3>
+        <p>Highlight errors, warnings and patterns across pasted log output to find the relevant lines faster.</p>
       </div>
     </div>
 
-    <h2><i data-lucide="code-2"></i> 3. Code Formatting & Visualization</h2>
+    <h3 class="group-head">Security &amp; identity</h3>
     <div class="doc-grid">
       <div class="tool-box">
-        <h3><i data-lucide="database"></i> SQL Formatter</h3>
-        <p>Optimize SQL queries into clean, readable structures. Supports multiple dialects to ensure consistent code quality and easier debugging.</p>
+        <h3><i data-lucide="key-round"></i> <a href="tools/jwt-decoder.html">JWT Decoder &amp; Verifier</a></h3>
+        <p>Split a token into header, payload and signature, and verify HMAC or RSA signatures locally with the Web Crypto API. Start with <a href="guides/jwt-decode-vs-verify.html">decoding vs verifying</a>.</p>
       </div>
       <div class="tool-box">
-        <h3><i data-lucide="braces"></i> JSON Validator & Formatter</h3>
-        <p>Detect syntax errors and beautify JSON data instantly. This ensures your configuration files and API responses are both valid and easy to read.</p>
-      </div>
-      <div class="tool-box">
-        <h3><i data-lucide="table-properties"></i> JSON to Table Viewer</h3>
-        <p>Visualize complex JSON arrays as structured tables. This tool helps developers analyze large datasets and API responses with much greater clarity.</p>
-      </div>
-      <div class="tool-box">
-        <h3><i data-lucide="file-diff"></i> Text Diff Checker</h3>
-        <p>Identify changes between two blocks of text or code versions instantly. Perfect for debugging, content review, and identifying minor technical variations.</p>
-      </div>
-      <div class="tool-box">
-        <h3><i data-lucide="regex"></i> Regex Tester</h3>
-        <p>Build and debug regular expression patterns with real-time matching and highlighting. An essential tool for text processing and data extraction tasks.</p>
+        <h3><i data-lucide="qr-code"></i> <a href="tools/qr-barcode.html">QR / Barcode Generator</a></h3>
+        <p>Generate downloadable QR codes and barcodes for links and text, with structural risk hints on the encoded URL.</p>
       </div>
     </div>
 
-    <h2><i data-lucide="zap"></i> 4. Workflow Automation</h2>
+    <h3 class="group-head">Scheduling, collaboration &amp; compliance</h3>
     <div class="doc-grid">
       <div class="tool-box">
-        <h3><i data-lucide="workflow"></i> API Automation</h3>
-        <p>Streamline your data with API flows. This tool helps you automate repetitive backend tasks and integrate multiple services into a single efficient workflow.</p>
+        <h3><i data-lucide="clock-4"></i> <a href="tools/cron-generator.html">Cron Expression Generator</a></h3>
+        <p>Build a schedule visually, read it back in plain English, and preview the next five run times in UTC. See <a href="guides/cron-expressions-explained.html">the cron guide</a> for the OR rule.</p>
       </div>
       <div class="tool-box">
-        <h3><i data-lucide="clock-4"></i> Cron Expression Generator</h3>
-        <p>Simplify CRON syntax. Use our visual generator to schedule backend jobs and system maintenance tasks without the guesswork of manual CRON strings.</p>
+        <h3><i data-lucide="monitor-up"></i> <a href="tools/layerlink-sharer.html">LayerLink Screen Sharing</a></h3>
+        <p>Peer-to-peer browser screen sharing over WebRTC with no installation. Share a link from a desktop browser and view it from anywhere.</p>
       </div>
       <div class="tool-box">
-        <h3><i data-lucide="monitor-up"></i> LayerLink Sharer</h3>
-        <p>Collaborate in real-time with browser-based screen sharing. No software installation is required, making it ideal for remote support and instant demos.</p>
-      </div>
-      <div class="tool-box">
-        <h3><i data-lucide="terminal-square"></i> Custom Script Generator</h3>
-        <p>Generate tailored scripts for log processing and fixes. Reduce manual coding time by automating repetitive system-level tasks with ease.</p>
-      </div>
-      <div class="tool-box">
-        <h3><i data-lucide="scroll-text"></i> Log Analyzer</h3>
-        <p>Detect system patterns and highlight errors within application logs. It improves monitoring and speeds up the troubleshooting process.</p>
-      </div>
-      <div class="tool-box">
-        <h3><i data-lucide="qr-code"></i> QR / Barcode Generator</h3>
-        <p>Instantly create downloadable codes for links and text sharing. A versatile tool for marketing, quick access links, and data distribution.</p>
+        <h3><i data-lucide="file-check-2"></i> <a href="tools/pint-ae-checker.html">UAE PINT-AE Compliance Checker</a></h3>
+        <p>Check invoice data against the PINT-AE field structure and export PINT-AE style XML. Background in <a href="guides/uae-einvoicing-pint-ae.html">the UAE e-invoicing guide</a>.</p>
       </div>
     </div>
 
     <div class="footer-note">
-      <p>Ready to deploy? Access all utilities from the <a href="/">Main Tools Dashboard</a>.</p>
+      <p>All utilities are free and need no account. Open the <a href="/">main dashboard</a> to get started.</p>
     </div>
   </div>
 
@@ -118,9 +173,5 @@
   {{FOOTER}}
 
   <script src="js/shared.js"></script>
-
-
-  <script>
-      </script>
 
   <script src="main.js"></script>
