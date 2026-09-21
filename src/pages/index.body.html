@@ -177,22 +177,73 @@
   </section>
 
   <section class="section">
+    <h2>Engineering Guides</h2>
+    <p class="section-sub">Written explanations of the specification corners and failure modes behind the tools — the reason a bug happened, not just the fix. <a href="blog.html">Browse all guides &rarr;</a></p>
+    <div class="grid">
+      <a class="tool-card" href="guides/jwt-decode-vs-verify.html">
+        <div class="tool-badge badge-guide"><i data-lucide="book-open"></i> Guide</div>
+        <div class="icon-wrapper"><i data-lucide="key-round"></i></div>
+        <h3>Decoding a JWT Is Not Verifying It</h3>
+        <p>Why anyone can read your token's claims, and how <code>alg: none</code> forges one.</p>
+      </a>
+      <a class="tool-card" href="guides/cron-expressions-explained.html">
+        <div class="tool-badge badge-guide"><i data-lucide="book-open"></i> Guide</div>
+        <div class="icon-wrapper"><i data-lucide="clock-4"></i></div>
+        <h3>The Cron Rules That Catch Everyone Out</h3>
+        <p>Day-of-month and day-of-week are an OR, and <code>*/7</code> is not every seven minutes.</p>
+      </a>
+      <a class="tool-card" href="guides/yaml-gotchas.html">
+        <div class="tool-badge badge-guide"><i data-lucide="book-open"></i> Guide</div>
+        <div class="icon-wrapper"><i data-lucide="refresh-ccw"></i></div>
+        <h3>YAML's Sharpest Edges</h3>
+        <p>How Norway's country code <code>NO</code> becomes the boolean <code>false</code>.</p>
+      </a>
+      <a class="tool-card" href="guides/regex-catastrophic-backtracking.html">
+        <div class="tool-badge badge-guide"><i data-lucide="book-open"></i> Guide</div>
+        <div class="icon-wrapper"><i data-lucide="regex"></i></div>
+        <h3>How One Regex Can Freeze Your Server</h3>
+        <p>Catastrophic backtracking, and the three pattern shapes that cause it.</p>
+      </a>
+      <a class="tool-card" href="guides/csv-edge-cases.html">
+        <div class="tool-badge badge-guide"><i data-lucide="book-open"></i> Guide</div>
+        <div class="icon-wrapper"><i data-lucide="file-json-2"></i></div>
+        <h3>Why CSV Is Not Really a Format</h3>
+        <p>Quoting rules, Excel's locale delimiter, and the formula injection in your export.</p>
+      </a>
+      <a class="tool-card" href="guides/uae-einvoicing-pint-ae.html">
+        <div class="tool-badge badge-guide"><i data-lucide="book-open"></i> Guide</div>
+        <div class="icon-wrapper"><i data-lucide="file-check-2"></i></div>
+        <h3>UAE E-Invoicing and PINT-AE</h3>
+        <p>The UBL structure, the five-corner model, and the data cleanup to start now.</p>
+      </a>
+    </div>
+  </section>
+
+  <section class="section">
     <h2>Why Developers Choose Layerbit</h2>
     <div class="seo-panel">
-      <h3>The Ultimate Browser-Based Developer Toolkit</h3>
-      <p>Layerbit is engineered to streamline modern development workflows by providing a comprehensive suite of secure, browser-based utilities. Whether you need to rapidly format complex SQL queries, validate nested JSON structures, or decode JSON Web Tokens (JWT) on the fly, our platform delivers instant results without the overhead of desktop installations.</p>
-      
-      <h3>Privacy First, Always Free</h3>
-      <p>We understand that developers handle sensitive data. That is why tools like our Base64 Encoder, Regex Tester, and URL Encoder run locally in your browser. We do not track your input strings, store your code snippets, or monitor your workflow. Layerbit offers pure productivity, completely free of charge.</p>
-      
-      <h3>Collaborate with LayerLink</h3>
-      <p>Beyond standard text utilities, Layerbit features <strong>LayerLink</strong>, an innovative browser-based screen sharing tool designed for remote IT support and pair programming. No software downloads are required—simply generate a secure link and start collaborating with your team or clients instantly.</p>
+      <h3>Tools that do not ask you to trust them</h3>
+      <p>Most online developer utilities work the same way: you paste your data into a form, it goes to a server you know nothing about, and a result comes back. That is fine for a sample payload and genuinely risky for a production JWT, a query containing customer identifiers, or a log file with session tokens in it.</p>
+      <p>Layerbit is built the other way round. Every tool here except LayerLink screen sharing is <strong>pure client-side JavaScript</strong>: the parsing, formatting, validating and converting all happen inside the page already open in your browser. There is no endpoint receiving your input, because there is no endpoint at all.</p>
+      <p>You do not have to take our word for that, which is the point. Open your browser's developer tools, switch to the Network tab, and use any tool on the site — nothing leaves. Or load a tool, turn off your internet connection, and keep working: it will carry on formatting your JSON quite happily, because nothing it needs is anywhere else.</p>
 
-      <h3>Frequently Asked Questions</h3>
+      <h3>Built around the details that actually break things</h3>
+      <p>A formatter that only handles clean input is a demo. The interesting work is in the edge cases, so the tools are built for them: the CSV parser is a proper state machine that handles quoted commas, doubled quotes and newlines inside fields; the JWT decoder verifies HMAC and RSA signatures locally with the Web Crypto API rather than just decoding Base64 and calling it validation; the cron generator shows the next five fire times in UTC, because that is the only reliable way to catch the day-of-month/day-of-week OR rule before it hits production.</p>
+      <p>Each tool is paired with a <a href="blog.html">written guide</a> covering the specification behind it and the ways it goes wrong in practice. Knowing <em>why</em> an unquoted YAML country code turned into a boolean is what stops it happening twice.</p>
+
+      <h3>Screen sharing without an install</h3>
+      <p><strong>LayerLink</strong> is peer-to-peer screen sharing over WebRTC, built for remote support and pair programming without asking anyone to install software or create an account. The video stream travels directly between the two browsers; a signalling service is used only for the initial handshake and never carries video. Sharing a screen requires a desktop browser, since mobile operating systems do not expose screen capture to web pages — but viewing a shared screen works on any modern device.</p>
+
+      <h3>Free, and honest about why</h3>
+      <p>There is no paid tier, no trial, no account and no upsell. The site is funded by advertising and by the custom engineering work described under <em>Built for You</em> above. We would rather say that plainly than pretend a free toolkit has no business model — and it is worth noting that because the local tools never transmit your input, there is nothing about you for us to collect or sell even if we wanted to.</p>
+
+      <h3>Frequently asked questions</h3>
       <ul>
-        <li><strong>Do I need to create an account?</strong> No. All Layerbit tools are accessible instantly without registration.</li>
-        <li><strong>Is my data stored on your servers?</strong> For formatting and parsing tools, data processing happens entirely within your local browser instance.</li>
-        <li><strong>Are these tools suitable for enterprise use?</strong> Yes, our utilities are designed to handle complex, large-scale data structures safely and efficiently.</li>
+        <li><strong>Do I need to create an account?</strong> No. There is no sign-up anywhere on the site and no plans for one. Every tool works on first visit.</li>
+        <li><strong>Is my data stored on your servers?</strong> For every tool except LayerLink, your input never reaches a server at all — processing happens entirely in your browser. You can verify this in your browser's Network tab.</li>
+        <li><strong>Can I use these for work with confidential data?</strong> Technically yes, since nothing is transmitted. Your own organisation's policy on what may be pasted into a web page is the constraint that matters, so check it.</li>
+        <li><strong>Are the tools free for commercial use?</strong> Yes, with no attribution required. <a href="contact.html">Get in touch</a> if you need something beyond that, such as a copy hosted inside your own network.</li>
+        <li><strong>Why did some tools disappear?</strong> In September 2026 we removed three utilities that depended on third-party APIs for breach data, URL reputation and IP geolocation — services we did not control and which required sending your input elsewhere. Fewer tools we can fully stand behind is the better trade.</li>
       </ul>
     </div>
   </section>
