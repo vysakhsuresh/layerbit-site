@@ -21,6 +21,30 @@ os.chdir(ROOT)
 
 CHECK = "--check" in sys.argv
 
+# GA4 measurement ID for the layerbit.co.in web data stream, e.g. "G-ABC1234567".
+# An empty string omits the analytics snippet entirely, so every page builds
+# byte-for-byte as it does without it - which is why this can sit in the repo
+# before the Analytics property exists. Filling it in is the only edit needed
+# to instrument all pages at once.
+#
+# IMPORTANT: privacy.html currently states that the site runs no analytics
+# package, and promises the policy is updated *before* such a change ships.
+# Setting this ID therefore requires editing src/pages/privacy.body.html in the
+# same commit, or the published policy becomes false.
+GA_MEASUREMENT_ID = ""
+
+# gtag.js, placed high in <head> per Google's guidance. Built once at import
+# rather than per page, since it is identical everywhere.
+ANALYTICS_TAG = (
+    '  <script async src="https://www.googletagmanager.com/gtag/js?id=%s"></script>\n'
+    "  <script>\n"
+    "    window.dataLayer = window.dataLayer || [];\n"
+    "    function gtag(){dataLayer.push(arguments);}\n"
+    "    gtag('js', new Date());\n"
+    "    gtag('config', '%s');\n"
+    "  </script>\n"
+) % (GA_MEASUREMENT_ID, GA_MEASUREMENT_ID) if GA_MEASUREMENT_ID else ""
+
 with open("src/partials/head.html", encoding="utf-8") as f:
     HEAD_TMPL = f.read()
 with open("src/partials/header.html", encoding="utf-8") as f:
@@ -72,6 +96,7 @@ def build_page(slug_file):
         VIEWPORT=data["viewport"],
         DESCRIPTION=data["description"],
         TITLE=data["title"],
+        ANALYTICS_TAG=ANALYTICS_TAG,
         CANONICAL_TAG=canonical_tag,
         ROBOTS_TAG=robots_tag,
         OG_URL=og_url,
