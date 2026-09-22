@@ -27,15 +27,16 @@ CHECK = "--check" in sys.argv
 # before the Analytics property exists. Filling it in is the only edit needed
 # to instrument all pages at once.
 #
-# IMPORTANT: privacy.html currently states that the site runs no analytics
-# package, and promises the policy is updated *before* such a change ships.
-# Setting this ID therefore requires editing src/pages/privacy.body.html in the
-# same commit, or the published policy becomes false.
-GA_MEASUREMENT_ID = ""
+# IMPORTANT: privacy.html, terms.html and about.html each describe what this
+# site collects, and the policy promises it is updated *before* a collection
+# change ships. Changing or clearing this ID therefore means editing those
+# pages in the same commit, or the published disclosures become false.
+GA_MEASUREMENT_ID = "G-ERX8MNPPP5"
 
 # gtag.js, placed high in <head> per Google's guidance. Built once at import
 # rather than per page, since it is identical everywhere.
 ANALYTICS_TAG = (
+    "  <!-- Google tag (gtag.js) -->\n"
     '  <script async src="https://www.googletagmanager.com/gtag/js?id=%s"></script>\n'
     "  <script>\n"
     "    window.dataLayer = window.dataLayer || [];\n"
