@@ -356,6 +356,47 @@
     </div>
 
     <div class="info-panel">
+      <h2><i data-lucide="microscope"></i> When a script is the right answer — and when it is not</h2>
+      <p>A script is the most cost-effective software there is, right up to the point where it becomes the most expensive. The distinction is usually about who runs it and how often, so it is worth being deliberate rather than letting a one-off grow into infrastructure by accident.</p>
+      <ul>
+        <li><strong>A script is ideal</strong> for a task run by one technical person, whose failure is immediately visible to that person, and where being wrong costs a rerun rather than a recovery.</li>
+        <li><strong>A script is a liability</strong> once it runs unattended on a schedule, other people depend on its output, its failure is silent, or the person who wrote it has moved on. At that point it needs the things real software has — logging, alerting, tests, documented recovery — and pretending otherwise just defers the cost.</li>
+      </ul>
+      <p>We write both, and we will tell you which one you are buying. A throwaway is a legitimate deliverable; a throwaway that has quietly become load-bearing is a problem worth naming early.</p>
+
+      <div class="use-cases-grid">
+        <div class="use-case-card">
+          <h3><i data-lucide="shield"></i> Idempotent and resumable</h3>
+          <p>Any script that mutates data should be safe to run twice and able to resume after an interruption. Processing 100,000 records that dies at 60,000 should not mean starting again — or worse, double-processing the first 60,000.</p>
+        </div>
+        <div class="use-case-card">
+          <h3><i data-lucide="eye"></i> Dry-run first</h3>
+          <p>Anything destructive gets a mode that reports exactly what it <em>would</em> do and changes nothing. The cost is an afternoon; the return is the first time someone runs it against the wrong environment and nothing happens.</p>
+        </div>
+        <div class="use-case-card">
+          <h3><i data-lucide="file-text"></i> Logs that survive</h3>
+          <p>Output to a durable location with timestamps, not just the terminal. A scheduled script whose output went to a closed SSH session is a script you cannot debug and cannot prove ran.</p>
+        </div>
+        <div class="use-case-card">
+          <h3><i data-lucide="lock"></i> No secrets in source</h3>
+          <p>Credentials come from the environment or a secrets manager, never from a literal in the file — because scripts get copied, pasted into tickets and committed to repositories far more casually than applications do.</p>
+        </div>
+        <div class="use-case-card">
+          <h3><i data-lucide="alert-circle"></i> Fail loudly</h3>
+          <p>Shell scripts should start with <code>set -euo pipefail</code>. Without it, a failed command mid-pipeline is ignored and the script reports success — which is how a backup that has silently written zero bytes for six months happens.</p>
+        </div>
+        <div class="use-case-card">
+          <h3><i data-lucide="lock-keyhole"></i> One at a time</h3>
+          <p>A scheduled script that sometimes runs longer than its interval will eventually overlap with itself. A non-blocking lock — <code>flock -n</code> or a lease with a TTL — makes the second run skip rather than compete.</p>
+        </div>
+      </div>
+
+      <h2><i data-lucide="list-checks"></i> Typical work</h2>
+      <p>The requests that come up most often: extracting and reshaping data between systems that have no integration; parsing and summarising log files to answer a specific recurring question; bulk operations against an API with correct rate limiting and resumability; scheduled report generation and delivery; database maintenance and cleanup with verifiable safety; and one-off migrations where correctness matters far more than elegance.</p>
+      <p>Deliverables are the script itself, written to be read by whoever inherits it, a short README covering how to run it and how to recover when it fails, and the scheduling configuration if it is to run unattended. If you would rather understand the approach than outsource it, we are happy to work that way — the goal is that you are not dependent on us to run your own tooling.</p>
+    </div>
+
+    <div class="info-panel">
       <h2><i data-lucide="git-merge"></i> Our Delivery Methodology</h2>
       <ul class="changelog-list">
         <li><span class="changelog-tag">Phase 1</span> <strong>Requirements Analysis:</strong> We evaluate the repetitive task you want to eliminate, define the expected inputs, and select the most efficient language and runtime environment for your infrastructure.</li>

@@ -102,6 +102,51 @@
     </div>
 
     <div class="info-panel">
+      <h2><i data-lucide="microscope"></i> Why ERP projects fail, and what that implies</h2>
+      <p>ERP implementations have a reputation for overrunning, and the causes are consistent enough to plan around. Almost none of them are technical. Being explicit about this is more useful than a feature list, because it determines how the work should be sequenced.</p>
+
+      <div class="use-cases-grid">
+        <div class="use-case-card">
+          <h3><i data-lucide="database"></i> Data migration is the project</h3>
+          <p>Legacy data is always worse than anyone believes: duplicate customers with slightly different names, products with no category, historic transactions that do not balance, addresses in one free-text field. Cleansing and mapping it routinely consumes more effort than configuring the system, and it cannot be compressed by adding people.</p>
+        </div>
+        <div class="use-case-card">
+          <h3><i data-lucide="git-compare"></i> Process versus product</h3>
+          <p>Every ERP encodes assumptions about how a business runs. Where yours differs, you either change the process or customise the software. Customising to preserve a process nobody can justify is how implementations acquire the technical debt that makes upgrades impossible.</p>
+        </div>
+        <div class="use-case-card">
+          <h3><i data-lucide="users"></i> Adoption decides success</h3>
+          <p>A correct system that people work around is a failed project. If the warehouse keeps its real stock figures in a spreadsheet because the new screens take too long, you now have two sources of truth and neither is trusted. Training and workflow design are not overhead.</p>
+        </div>
+        <div class="use-case-card">
+          <h3><i data-lucide="expand"></i> Scope discovery</h3>
+          <p>Requirements gathered in a meeting room are incomplete because the exceptions live in people's heads. The month-end adjustment, the one customer billed differently, the approval that is really a phone call — these surface during build, so the plan must expect them.</p>
+        </div>
+        <div class="use-case-card">
+          <h3><i data-lucide="plug"></i> Integration reality</h3>
+          <p>ERP rarely stands alone. It needs to exchange data with e-commerce, accounting, payroll, logistics or a bank. Each interface has its own reconciliation question: what happens when the two sides disagree, and which one wins?</p>
+        </div>
+        <div class="use-case-card">
+          <h3><i data-lucide="file-check"></i> Compliance is not optional</h3>
+          <p>Tax rules, audit trails and statutory reporting are hard requirements with external deadlines. In the UAE that increasingly includes structured e-invoicing — see our <a href="../guides/uae-einvoicing-pint-ae.html">PINT-AE guide</a> for what that actually demands of a billing system.</p>
+        </div>
+      </div>
+
+      <h2><i data-lucide="route"></i> How we approach it</h2>
+      <p>Given the above, we sequence work to surface the expensive unknowns early rather than late:</p>
+      <ul>
+        <li><strong>Start with the data.</strong> Extract and profile the legacy data in week one, before designing anything. It tells you what the business actually does, as opposed to what it believes it does, and it sizes the migration honestly.</li>
+        <li><strong>Map the exceptions first.</strong> The standard path is easy. Spend the analysis on the edge cases, because they are what will otherwise appear as change requests at the worst moment.</li>
+        <li><strong>Deliver a working slice.</strong> One complete process — quote to cash, or purchase to pay — running end to end on real data beats a broad half-built system. It gives users something to react to, and their reaction is information you cannot get from a specification.</li>
+        <li><strong>Parallel run before cutover.</strong> Run old and new together for a period and reconcile the differences. It is duplicated effort and it is how you find the discrepancy before it becomes an audit finding.</li>
+        <li><strong>Plan the rollback.</strong> Know in advance what happens if go-live fails on the Monday. A cutover without a documented reversal is a bet rather than a plan.</li>
+      </ul>
+
+      <h2><i data-lucide="clipboard-list"></i> What to prepare before talking to anyone</h2>
+      <p>You will get a better and more honest quote — from us or anyone — with these in hand: the processes you need supported, described as they actually run today including the workarounds; roughly how much data exists and where it lives; which other systems must integrate and whether they have APIs; the compliance and reporting obligations you are subject to; how many people will use it and in what roles; and any date that is genuinely fixed, such as a fiscal year or a regulatory deadline. If the answer to several of these is "we are not sure", a short discovery exercise is a better first purchase than an implementation.</p>
+    </div>
+
+    <div class="info-panel">
       <h2><i data-lucide="git-merge"></i> Our Deployment Methodology</h2>
       <ul class="changelog-list">
         <li><span class="changelog-tag">Phase 1</span> <strong>Workflow Auditing:</strong> We conduct a deep-dive analysis into your daily operations, identifying bottlenecks and mapping the precise data structures needed to build a fully tailored system.</li>

@@ -363,6 +363,50 @@
     </div>
 
     <div class="info-panel">
+      <h2><i data-lucide="microscope"></i> What makes an integration survive contact with production</h2>
+      <p>Connecting two systems is usually a day's work. Keeping them connected for two years is the actual engineering, and almost all of it is about what happens when something fails halfway. These are the properties we build in from the start, because retrofitting them means reprocessing history.</p>
+
+      <div class="use-cases-grid">
+        <div class="use-case-card">
+          <h3><i data-lucide="repeat-2"></i> Idempotency</h3>
+          <p>Every retry must be safe to repeat. If a request times out after the remote system committed it, a naive retry creates a duplicate order or a second charge. Idempotency keys — a stable client-generated identifier the receiver deduplicates on — are the difference between "retry safely" and "reconcile manually".</p>
+        </div>
+        <div class="use-case-card">
+          <h3><i data-lucide="timer"></i> Backoff, not just retries</h3>
+          <p>Retrying immediately turns a brief outage into a self-inflicted denial of service. Exponential backoff with jitter spreads the load, and a circuit breaker stops hammering a system that is clearly down. A dead-letter queue keeps the messages that exhausted their attempts, so nothing is lost silently.</p>
+        </div>
+        <div class="use-case-card">
+          <h3><i data-lucide="webhook"></i> Webhooks versus polling</h3>
+          <p>Webhooks are efficient and arrive out of order, more than once, and sometimes not at all. Polling is wasteful and predictable. Most robust designs use webhooks for latency plus a periodic reconciliation sweep to catch what was missed — because assuming delivery is how gaps appear.</p>
+        </div>
+        <div class="use-case-card">
+          <h3><i data-lucide="gauge"></i> Rate limits as a design input</h3>
+          <p>Limits shape the architecture, not just the error handling. A nightly sync of 50,000 records against a 100-requests-per-minute endpoint takes over eight hours — which either needs batching, a different endpoint, or a different schedule. Better to discover that during design than during the first month-end.</p>
+        </div>
+        <div class="use-case-card">
+          <h3><i data-lucide="key"></i> Credentials and rotation</h3>
+          <p>Credentials belong in a secrets manager with a documented rotation path, never in source, environment files committed by accident, or a CI variable nobody can audit. OAuth refresh flows need to handle expiry without human intervention, because they will expire at an inconvenient hour.</p>
+        </div>
+        <div class="use-case-card">
+          <h3><i data-lucide="activity"></i> Observability that answers questions</h3>
+          <p>"The sync is broken" should be answerable in a minute. That needs structured logs with a correlation identifier flowing through every hop, a record of what was processed and when, and an alert on the condition that matters — a queue that stopped draining, not merely an error rate.</p>
+        </div>
+      </div>
+
+      <h2><i data-lucide="alert-triangle"></i> Where integrations actually go wrong</h2>
+      <p>In our experience the failures cluster in a few predictable places, and none of them are the API call itself:</p>
+      <ul>
+        <li><strong>Semantic mismatch.</strong> Two systems both have a "customer", and they mean different things — different identity, different lifecycle, different mandatory fields. Mapping those honestly is the hard part of any integration and the part most likely to be hand-waved in a proposal.</li>
+        <li><strong>Timezones and dates.</strong> One system stores UTC, another local time, a third a date with no time at all. Month-end reports disagree by one day and nobody can say which is right.</li>
+        <li><strong>Silent partial success.</strong> A batch of 500 records where 12 failed validation, the job reported success, and nobody noticed for a fortnight. Partial failure needs to be a first-class outcome with its own alert.</li>
+        <li><strong>Schema drift.</strong> The remote provider adds a field, changes an enum value, or deprecates an endpoint on a timeline you do not control. Contract tests against the live API catch this before your users do.</li>
+      </ul>
+
+      <h2><i data-lucide="clipboard-list"></i> What we will ask you for</h2>
+      <p>To scope work accurately we need to know: which systems, and whether you have working API credentials for each; the direction and frequency of the flow; the volume, both typical and at peak; what "correct" looks like, so we can verify it; and what should happen when the remote system is unavailable — queue and retry, or fail loudly. If any of those are undecided, that is fine and worth saying — the answers usually shape the design more than the technology does.</p>
+    </div>
+
+    <div class="info-panel">
       <h2><i data-lucide="git-merge"></i> Our Deployment Methodology</h2>
       <ul class="changelog-list">
         <li><span class="changelog-tag">Phase 1</span> <strong>Discovery & Architecture:</strong> We map your existing data structures, analyze API documentation, and determine the optimal authentication and transformation logic.</li>
