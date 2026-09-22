@@ -1,0 +1,59 @@
+{{HEADER}}
+
+  <main class="hero">
+    <h1>LayerLink App Privacy Policy</h1>
+  </main>
+
+  <div class="content-panel">
+    <p><strong>Last updated: 22 September 2026.</strong> This policy covers the LayerLink Android app (package <code>com.layerbit.layerlink</code>) specifically — what it captures, what it sends anywhere, and what it doesn't. It is separate from the general <a href="/privacy.html">Layerbit website privacy policy</a>, which covers this website's own advertising, analytics and cookies; none of that applies to the app, since the app contains no advertising SDK, no analytics SDK, and sets no cookies.</p>
+
+    <h2><i data-lucide="monitor-smartphone"></i> What LayerLink does</h2>
+    <p>LayerLink lets you broadcast your Android device's screen to a viewer's web browser in real time, over a direct peer-to-peer connection. You start a broadcast, LayerLink generates a session link, and whoever opens that link in a browser sees your screen live. There is no account, no sign-up, and no login anywhere in the app.</p>
+
+    <h2><i data-lucide="scan"></i> Screen capture</h2>
+    <p>LayerLink uses Android's <code>MediaProjection</code> API to capture your device's screen, running inside a foreground service (permission <code>FOREGROUND_SERVICE_MEDIA_PROJECTION</code>) with a persistent notification for as long as a broadcast is live — this is what keeps the capture running and visible to you even while you're using another app. Android shows its own system permission dialog every time before capture can start, naming exactly what you're about to share, and requires this to be a foreground service specifically so the capture cannot continue silently once you leave the app.</p>
+    <p><strong>The captured video frames are streamed directly to your viewer over WebRTC and are never uploaded to, stored on, or passed through a Layerbit server.</strong> We do not record your broadcasts. We have no ability to view, retain, or replay a session after it ends, because we never receive the video in the first place — it travels peer-to-peer between your device and your viewer's browser, encrypted in transit using WebRTC's mandatory DTLS-SRTP.</p>
+
+    <h2><i data-lucide="cloud-cog"></i> Signaling: the one thing that touches our infrastructure</h2>
+    <p>Two devices that have never met can't establish a direct connection without some third party introducing them. LayerLink uses Google Firebase Realtime Database for exactly that introduction, and nothing else:</p>
+    <ul>
+      <li>When you start a broadcast, LayerLink writes a short-lived record under a random session ID: the WebRTC offer, and as your viewer connects, the answer and ICE candidates (network address information needed to negotiate the direct connection).</li>
+      <li>This record contains no video, no audio, and no identifying information about you — no name, no email, no device ID, no account, because the app has none of these to send.</li>
+      <li><strong>The record is actively deleted from Firebase the moment you stop the broadcast</strong> — LayerLink issues an explicit delete against that session's data as part of ending the session, rather than leaving it to expire on its own.</li>
+      <li>A session ID is only useful while its record exists. Anyone holding a live session's link could attempt to join it while it's active, so treat a LayerLink link like a temporary password and only share it with someone you intend to let view your screen.</li>
+    </ul>
+
+    <h2><i data-lucide="ban"></i> What the app does not do</h2>
+    <ul>
+      <li>No advertising SDK of any kind, and no ads shown anywhere in the app.</li>
+      <li>No analytics or crash-reporting SDK. We don't know how often you open the app, how long a session runs, or what device you're using, because nothing in the app reports that anywhere.</li>
+      <li>No account system, no login, no password, and nothing to reset if forgotten — there's simply nothing stored server-side tied to you.</li>
+      <li>No access to your contacts, photos, files, location, microphone, or camera. LayerLink requests exactly two things beyond normal app permissions: the screen-capture permission described above, and "display over other apps," used only to show the floating Stop control while a broadcast is live so you can end a session without reopening the app.</li>
+      <li>No data sold, rented, or shared with any third party for advertising or any other purpose. Firebase, described above, is the only infrastructure the app talks to, and it carries only the transient connection-negotiation data described above.</li>
+    </ul>
+
+    <h2><i data-lucide="scale"></i> Your rights over your data</h2>
+    <p>Because LayerLink stores nothing tied to you beyond a signaling record that's deleted when your broadcast ends, there is, in practice, very little for a data request to act on. If you have a question about what a specific session might have left behind, or believe something was retained that shouldn't have been, email us at <a href="mailto:ceo@layerbit.co.in">ceo@layerbit.co.in</a> and we'll look into it and respond directly.</p>
+
+    <h2><i data-lucide="users"></i> Children's privacy</h2>
+    <p>LayerLink is a general-purpose screen-sharing utility, not directed at children, and we do not knowingly collect personal information from anyone under 13 (or the equivalent minimum age in your jurisdiction) — in any case, the app has nothing resembling a profile or account to collect that information into.</p>
+
+    <h2><i data-lucide="history"></i> Changes to this policy</h2>
+    <p>When this policy changes we update the date at the top. A change that adds a new capability which touches data — audio transmission, remote control, or any server-side storage, for example — would be reflected here before that capability ships, not afterwards.</p>
+
+    <h2><i data-lucide="mail"></i> Contact</h2>
+    <p>Questions about this policy, or about LayerLink specifically: <a href="mailto:ceo@layerbit.co.in">ceo@layerbit.co.in</a>.</p>
+  </div>
+
+  <a href="/"  id="smartBackBtn"  class="fab home-fab-premium" aria-label="Command Center" title="Command Center">
+    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="filter: drop-shadow(0 0 8px rgba(56, 189, 248, 0.5));">
+      <path d="M12 2L2 7l10 5 10-5-10-5z" stroke="#38bdf8" stroke-width="2" stroke-linejoin="round" fill="rgba(56,189,248,0.2)"/>
+      <path d="M2 17l10 5 10-5M2 12l10 5 10-5" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </a>
+
+  {{FOOTER}}
+
+  <script src="js/shared.js"></script>
+
+  <script src="main.js"></script>
