@@ -129,6 +129,60 @@
     </div>
 
     <div class="info-panel">
+      <h2><i data-lucide="microscope"></i> What a diff is actually computing</h2>
+      <p>Comparing two blocks of text is not a character-by-character scan. A diff algorithm looks for the <em>longest common subsequence</em> — the largest set of lines appearing in both versions in the same order — and everything outside that becomes an addition or a deletion. That framing explains most of the behaviour people find surprising.</p>
+      <p>It is why moving a block of code often shows as a large deletion plus a large insertion rather than "moved": a line-based diff has no concept of movement, only of presence and position. And it is why inserting one line near the top can shift how everything below it aligns, if the algorithm finds a cheaper way to match the remaining text.</p>
+
+      <div class="use-cases-grid">
+        <div class="use-case-card">
+          <h3><i data-lucide="eye-off"></i> Invisible differences</h3>
+          <p>The hardest diffs are the ones you cannot see: a trailing space, a tab where the rest of the file uses spaces, a non-breaking space pasted from a document, or a zero-width character from a web page. The text looks identical and the comparison disagrees — which is the diff being right.</p>
+        </div>
+        <div class="use-case-card">
+          <h3><i data-lucide="corner-down-left"></i> Line endings</h3>
+          <p>Windows uses CRLF, Unix LF. A file that has crossed platforms without normalisation differs on <em>every</em> line while looking unchanged. This is the classic "the whole file is modified but I only edited one line" report.</p>
+        </div>
+        <div class="use-case-card">
+          <h3><i data-lucide="type"></i> Unicode that looks the same</h3>
+          <p>A Cyrillic <code>а</code> renders identically to a Latin <code>a</code>. So do curly and straight quotes after a word processor has been involved. Normalisation form matters too: <code>é</code> can be one code point or <code>e</code> plus a combining accent, and the two are different strings.</p>
+        </div>
+      </div>
+
+      <h2><i data-lucide="list-checks"></i> Where a text diff is the right tool</h2>
+      <p>Version control handles diffing committed code, so the useful cases for a standalone comparison are the ones outside a repository:</p>
+      <ul>
+        <li><strong>Configuration drift.</strong> Comparing the config actually running on a server against what the repository says should be there — the single most common source of "works on staging, fails in production".</li>
+        <li><strong>Environment variable sets.</strong> Two <code>.env</code> files where one key differs, or one is missing entirely.</li>
+        <li><strong>API responses before and after a change.</strong> Confirming that a refactor altered only what you expected, especially with both sides formatted consistently first.</li>
+        <li><strong>Content and copy review.</strong> Finding what changed between two versions of a document when nobody tracked changes.</li>
+        <li><strong>Log comparison.</strong> A successful run against a failing one, to isolate where the behaviour diverges.</li>
+      </ul>
+      <p>One practical tip for structured data: normalise before diffing. Two JSON documents that are semantically identical but formatted differently will diff as completely different text. Format both with the same tool first — then the diff shows genuine changes rather than whitespace.</p>
+
+      <h2><i data-lucide="lock"></i> Runs in your browser</h2>
+      <p>The two things you most often need to compare are a production config and a proposed one, which means connection strings, credentials and internal hostnames. Comparison here is local JavaScript: neither side is transmitted anywhere, so you can diff a live config against a candidate without that config leaving your machine.</p>
+    </div>
+
+        <div class="info-panel">
+          <h2><i data-lucide="alert-triangle"></i> Why two files that look identical still differ</h2>
+          <p>The most frustrating diff is the one that reports a change you cannot see. Almost always the difference is a character that renders as nothing, or as the same thing your editor renders something else as. Four causes account for nearly all of these.</p>
+          <p><strong>Line endings.</strong> Windows terminates a line with <code>CRLF</code> (carriage return plus line feed), Unix and macOS with a bare <code>LF</code>. A file that has travelled through a Windows editor, a zip archive, or a checkout with Git's <code>core.autocrlf</code> enabled can differ from its counterpart on every single line while looking identical on screen. If a diff marks the entire file as changed, check the line endings before you check anything else.</p>
+          <p><strong>Trailing whitespace.</strong> A space or tab at the end of a line is invisible in most editors and significant to a byte-for-byte comparison. It is also the change most often introduced accidentally, because pressing space before a newline leaves no visual trace. Use the ignore-whitespace toggle to confirm that this is the only difference, then remove the whitespace rather than leaving the toggle on permanently — it will hide a real change eventually.</p>
+          <p><strong>Unicode normalisation.</strong> The character <code>é</code> can be stored as a single code point (U+00E9) or as <code>e</code> followed by a combining acute accent (U+0065 U+0301). Both render identically in every font. They are different byte sequences, so they are a difference. macOS filesystems have historically preferred the decomposed form, which is why filenames with accents copied from a Mac can mismatch a list generated on Linux.</p>
+          <p><strong>Invisible and look-alike characters.</strong> A zero-width space (U+200B), a non-breaking space (U+00A0) pasted from a web page or a word processor, a byte-order mark at the start of the file (U+FEFF), or a Cyrillic <code>а</code> standing in for a Latin <code>a</code> all produce a change with no visible cause. The BOM case is particularly common: it is three bytes prepended to a UTF-8 file by some Windows tools, and it breaks shebang lines, YAML documents and JSON parsers while remaining completely invisible in an editor.</p>
+          <p>When a difference refuses to explain itself, the fastest resolution is to stop looking at the rendered text and look at the bytes. <code>cat -A file</code> on Linux marks line endings with <code>$</code> and tabs with <code>^I</code>; <code>xxd file | head</code> shows you the raw hex, including a leading <code>efbbbf</code> BOM. Once you know which character it is, the fix is usually a single editor setting away.</p>
+        </div>
+
+        <div class="info-panel">
+          <h2><i data-lucide="git-compare"></i> Line diff, word diff, character diff</h2>
+          <p>The same two inputs can produce three very different-looking comparisons depending on the granularity the algorithm works at, and choosing the wrong one is why a diff is sometimes unreadable.</p>
+          <p><strong>Line granularity</strong> treats each line as one indivisible unit: a line either matches or it does not. This is what <code>git diff</code> and code review tools show by default, and it is the right default for source code, where a line is roughly a statement and changing part of a line means the whole line needs re-reading. Its weakness is prose. Reflow a paragraph so the words wrap differently and a line diff reports every line as changed even though only one word moved.</p>
+          <p><strong>Word granularity</strong> splits on whitespace, so a reflowed paragraph shows only the words that actually changed. This is what you want for documentation, translated strings, legal text and anything else written to be read by people rather than parsed by a compiler. It is a poor fit for minified code or long identifiers, where a word can be hundreds of characters long.</p>
+          <p><strong>Character granularity</strong> compares individual characters. It is the only mode that will show you that <code>getUserId</code> became <code>getUserID</code>, or that a single digit changed in a long hash. It is also the noisiest: on two genuinely different paragraphs it produces a mosaic of tiny insertions and deletions that is harder to read than seeing the old and new text side by side.</p>
+          <p>The practical rule is to start at line level to see the shape of the change, then narrow to word or character level on the specific lines that report a difference you cannot account for. Most useful diff views do exactly this automatically: they identify changed lines first, then highlight the changed regions inside those lines at a finer granularity. That two-stage presentation is why a good diff is readable at all — you get the structure from the coarse pass and the detail from the fine one, without drowning in either.</p>
+        </div>
+
+    <div class="info-panel">
       <h2><i data-lucide="git-merge"></i> Deployment Changelog</h2>
       <ul class="changelog-list">
         <li><span class="changelog-tag">v2.2.0</span> Added file upload and drag-and-drop to both panes.</li>

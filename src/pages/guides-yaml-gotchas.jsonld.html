@@ -1,0 +1,119 @@
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "TechArticle",
+      "@id": "https://layerbit.co.in/guides/yaml-gotchas.html#article",
+      "headline": "YAML's Sharpest Edges: The Norway Problem and Friends",
+      "name": "YAML's Sharpest Edges: The Norway Problem and Friends",
+      "description": "Why NO becomes false, 1.10 becomes 1.1, 0755 becomes 493 and 22:22 becomes 1342 - plus duplicate keys, chomping indicators and why you must always use safe_load.",
+      "url": "https://layerbit.co.in/guides/yaml-gotchas.html",
+      "mainEntityOfPage": {
+        "@type": "WebPage",
+        "@id": "https://layerbit.co.in/guides/yaml-gotchas.html"
+      },
+      "datePublished": "2026-09-08",
+      "dateModified": "2026-09-21",
+      "inLanguage": "en",
+      "wordCount": 1850,
+      "keywords": "yaml norway problem, yaml boolean gotcha, yaml safe_load, yaml octal leading zero, yaml sexagesimal, yaml 1.1 vs 1.2, yaml duplicate keys",
+      "articleSection": "Configuration \u0026 Data Formats",
+      "author": {
+        "@type": "Organization",
+        "name": "Layerbit Technologies",
+        "url": "https://layerbit.co.in/about.html"
+      },
+      "publisher": {
+        "@type": "Organization",
+        "name": "Layerbit Technologies",
+        "url": "https://layerbit.co.in/",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://layerbit.co.in/icon-512.png",
+          "width": 512,
+          "height": 512
+        }
+      },
+      "image": {
+        "@type": "ImageObject",
+        "url": "https://layerbit.co.in/icon-512.png",
+        "width": 512,
+        "height": 512
+      },
+      "isAccessibleForFree": true,
+      "proficiencyLevel": "Intermediate"
+    },
+    {
+      "@type": "BreadcrumbList",
+      "@id": "https://layerbit.co.in/guides/yaml-gotchas.html#breadcrumb",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://layerbit.co.in/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Guides",
+          "item": "https://layerbit.co.in/blog.html"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": "YAML gotchas",
+          "item": "https://layerbit.co.in/guides/yaml-gotchas.html"
+        }
+      ]
+    },
+    {
+      "@type": "FAQPage",
+      "@id": "https://layerbit.co.in/guides/yaml-gotchas.html#faq",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "Why does NO become false in YAML?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "YAML 1.1 resolves a long list of bare words to booleans, including y, n, yes, no, on and off in several capitalisations. Norway's ISO country code NO therefore parses as the boolean false. PyYAML still implements YAML 1.1 by default, so this happens in production today. Quoting the value as \"NO\" makes it unambiguously a string in every YAML version."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Why did my YAML version number 1.10 become 1.1?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Unquoted 1.10 is a valid float, so the parser converts it and the trailing zero is lost. Confusingly, 1.2.3 stays a string because two dots cannot form a number. Always quote version strings, for example version: \"1.10\", so they are preserved exactly."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Why does 0755 become 493 in my YAML file?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Under YAML 1.1 a leading zero marks an octal literal, so 0755 is parsed as octal and becomes decimal 493. YAML 1.2 dropped bare octal and requires the 0o prefix. Because file modes in Ansible and Kubernetes manifests are commonly written as 0644 or 0755, both tools recommend quoting them as strings."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What is the difference between yaml.load and yaml.safe_load?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "yaml.safe_load only constructs plain data types. The unsafe loader honours typed tags that can instantiate arbitrary objects, which allows remote code execution from a crafted document. Always use safe_load for YAML you did not author, and treat untrusted YAML as code rather than data."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Why does my YAML secret fail authentication with an invalid key error?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "A block scalar written with | keeps exactly one trailing newline, so the value ends in \\n and no longer matches the real key. Use the strip indicator |- for secrets and tokens, or quote the value inline, so no trailing newline is included."
+          }
+        }
+      ]
+    }
+  ]
+}
+  </script>

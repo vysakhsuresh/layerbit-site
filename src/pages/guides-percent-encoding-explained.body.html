@@ -1,0 +1,176 @@
+{{HEADER}}
+
+  <nav class="crumbs" aria-label="Breadcrumb">
+    <a href="../">Home</a>
+    <span class="sep">/</span>
+    <a href="../blog.html">Guides</a>
+    <span class="sep">/</span>
+    <span aria-current="page">URL encoding</span>
+  </nav>
+
+  <article class="article">
+    <header class="article-head">
+      <span class="article-kicker">Web Fundamentals</span>
+      <h1>URL Encoding: Why a Space Is Sometimes <code>%20</code> and Sometimes <code>+</code></h1>
+      <p class="article-standfirst">There are two different encodings both loosely called "URL encoding", and they disagree about the space character. Mixing them up corrupts search queries, breaks file paths containing a plus sign, and produces the <code>%2520</code> that means somebody encoded something twice.</p>
+      <div class="article-meta">
+        <span class="byline">Layerbit Engineering</span>
+        <span><i data-lucide="calendar"></i>Published 2 September 2026</span>
+        <span><i data-lucide="clock"></i>9 min read</span>
+      </div>
+    </header>
+
+    <div class="takeaways">
+      <h2><i data-lucide="list-checks"></i> The short version</h2>
+      <ul>
+        <li><strong>Percent-encoding</strong> (RFC 3986) encodes a space as <code>%20</code>. <strong>Form encoding</strong> (<code>application/x-www-form-urlencoded</code>) encodes it as <code>+</code>.</li>
+        <li>Form encoding is correct in a query string. In a <em>path</em>, <code>+</code> is a literal plus — decoding it as a space corrupts data.</li>
+        <li><code>encodeURI</code> is for a whole URL; <code>encodeURIComponent</code> is for a single component. They are not interchangeable.</li>
+        <li><code>%2520</code> is the signature of double encoding: the <code>%</code> of a <code>%20</code> got encoded again.</li>
+      </ul>
+    </div>
+
+    <div class="prose">
+      <h2 id="why">Why encoding is needed at all</h2>
+      <p>A URL is a structured string where certain characters are <em>structural</em>: <code>?</code> starts the query, <code>&amp;</code> separates parameters, <code>/</code> separates path segments, <code>#</code> starts the fragment. If a value you are inserting contains one of those characters, the parser cannot tell your data from the URL's own punctuation.</p>
+      <p>Percent-encoding solves this by replacing a character with <code>%</code> followed by the two hex digits of its byte value. RFC 3986 divides characters into three groups:</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Group</th><th>Characters</th><th>Rule</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Unreserved</strong></td><td><code>A-Z a-z 0-9 - . _ ~</code></td><td>Never need encoding; encoding them is legal but pointless</td></tr>
+            <tr><td><strong>Reserved (gen-delims)</strong></td><td><code>: / ? # [ ] @</code></td><td>Structural. Encode when they are data</td></tr>
+            <tr><td><strong>Reserved (sub-delims)</strong></td><td><code>! $ &amp; ' ( ) * + , ; =</code></td><td>Structural within components. Encode when they are data</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>Everything else — spaces, non-ASCII, control characters — must be encoded. For non-ASCII, the character is first converted to UTF-8 bytes and then each byte is percent-encoded, so <code>é</code> becomes <code>%C3%A9</code> (two bytes, two escapes).</p>
+
+      <h2 id="two-encodings">The two encodings</h2>
+      <p>Here is the source of most confusion. HTML form submission predates RFC 3986 and defined its own variant, <code>application/x-www-form-urlencoded</code>, which differs in one visible way: <strong>a space becomes <code>+</code></strong>, not <code>%20</code>. A literal plus must therefore itself be encoded as <code>%2B</code>.</p>
+      <pre><code>Value:  hello world & C++
+
+Percent-encoding (RFC 3986):  hello%20world%20%26%20C%2B%2B
+Form encoding:                hello+world+%26+C%2B%2B</code></pre>
+      <p>Both are correct — in their own context. The rules of thumb:</p>
+      <ul>
+        <li><strong>Query strings:</strong> either works. Servers and frameworks form-decode query strings, so <code>+</code> is read as a space. This is why search URLs are full of plus signs.</li>
+        <li><strong>Path segments:</strong> percent-encoding only. There is no form encoding in a path, so <code>+</code> is a literal plus character.</li>
+        <li><strong>Request bodies</strong> with content type <code>application/x-www-form-urlencoded</code>: form encoding, by definition.</li>
+      </ul>
+      <div class="callout warn">
+        <div class="callout-title"><i data-lucide="alert-triangle"></i> The C++ bug</div>
+        <p>A file named <code>C++ notes.pdf</code> uploaded to a path-based storage key becomes <code>/files/C%2B%2B%20notes.pdf</code>. If any layer in the chain form-decodes that path instead of percent-decoding it, the pluses turn into spaces and you are now looking for <code>C   notes.pdf</code>, which does not exist. This is why "the file uploads fine but 404s on download" reports so often involve a plus, a space, or both.</p>
+      </div>
+
+      <h2 id="js">The four JavaScript functions, and which to use</h2>
+      <p>JavaScript ships two encoding functions with a deliberately different scope, plus <code>URLSearchParams</code>:</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Function</th><th>Leaves unencoded</th><th>Use for</th></tr></thead>
+          <tbody>
+            <tr>
+              <td><code>encodeURI()</code></td>
+              <td>Unreserved <em>plus</em> <code>; , / ? : @ &amp; = + $ #</code></td>
+              <td>An entire URL whose structure is already correct</td>
+            </tr>
+            <tr>
+              <td><code>encodeURIComponent()</code></td>
+              <td>Unreserved plus <code>! ' ( ) *</code></td>
+              <td>A single value going into a path or query</td>
+            </tr>
+            <tr>
+              <td><code>URLSearchParams</code></td>
+              <td>Form encoding (space → <code>+</code>)</td>
+              <td>Building query strings — handles escaping for you</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p>The failure mode of using <code>encodeURI</code> where you meant <code>encodeURIComponent</code> is that structural characters in your <em>data</em> survive and become structure:</p>
+      <pre><code>const q = "a=1&amp;admin=true";
+
+"/search?q=" + encodeURI(q)
+// → /search?q=a=1&amp;admin=true      two parameters! q and admin
+
+"/search?q=" + encodeURIComponent(q)
+// → /search?q=a%3D1%26admin%3Dtrue   one parameter, correct</code></pre>
+      <p>That is a parameter-injection bug, and depending on what the extra parameter controls it can be a security one.</p>
+      <h3>The gap in <code>encodeURIComponent</code></h3>
+      <p>Note from the table that <code>encodeURIComponent</code> leaves <code>!</code>, <code>'</code>, <code>(</code>, <code>)</code> and <code>*</code> alone, even though RFC 3986 classes them as sub-delims. It predates the RFC. If you need strict compliance — some OAuth signature schemes and AWS request signing do — patch the output:</p>
+      <pre><code>const strict = s =&gt; encodeURIComponent(s)
+  .replace(/[!'()*]/g, c =&gt;
+    '%' + c.charCodeAt(0).toString(16).toUpperCase());</code></pre>
+      <p>RFC 3986 also says producers should emit uppercase hex digits (<code>%C3</code>, not <code>%c3</code>), while decoders must accept either. Signature schemes that hash the encoded string care about this; most other things do not.</p>
+
+      <div class="tool-cta">
+        <div class="cta-copy">
+          <h3>Encode and decode, with the parameters broken out</h3>
+          <p>Layerbit's URL Encoder / Decoder has a Smart mode that preserves a URL's structure while encoding only its query values, a Raw mode for strict component encoding, an editable parameter grid for rebuilding a query, and a batch mode for processing a list of URLs at once.</p>
+        </div>
+        <a class="cta-btn" href="../tools/url-encoder.html"><i data-lucide="link"></i> Open URL Encoder</a>
+      </div>
+
+      <h2 id="double">Double encoding, and how to recognise it</h2>
+      <p>Encoding is not idempotent. Because <code>%</code> is itself a character that needs encoding (as <code>%25</code>), running an encoder over already-encoded text mangles it:</p>
+      <pre><code>"hello world"  →  "hello%20world"   (once)
+"hello%20world" →  "hello%2520world"  (twice)
+"hello%2520world" → "hello%252520world" (three times)</code></pre>
+      <p>So <code>%2520</code> in a log line or a URL bar is a diagnostic: something encoded a value that was already encoded. Likewise <code>%253A</code> is a double-encoded colon and <code>%2526</code> a double-encoded ampersand.</p>
+      <p>The cause is almost always a value crossing layers, each of which believes it is responsible for encoding: the client encodes, a proxy or SDK encodes again, or a redirect URL is encoded once when built and once when appended as a parameter. The discipline that prevents it:</p>
+      <ol>
+        <li>Encode <strong>once</strong>, at the point where you assemble a raw value into a URL.</li>
+        <li>Store and pass around <strong>decoded</strong> values internally. Encoding is a serialisation concern, not a data property.</li>
+        <li>Decode <strong>once</strong>, at the boundary where you parse the URL.</li>
+      </ol>
+      <p>Note that "decode until it stops changing" is a tempting fix and a genuinely dangerous one — it is how path-traversal filters get bypassed, because <code>%252e%252e%252f</code> passes a check for <code>../</code> and then becomes <code>../</code> after the second decode. Decode exactly once, then validate.</p>
+
+      <h2 id="components">Encode per component, never the whole URL</h2>
+      <p>The rule that resolves most remaining questions: encoding applies to individual components <em>before</em> the URL is assembled, because only then does the code know which characters are data and which are structure.</p>
+      <pre><code>// Wrong - the URL is already built, so & and = are indistinguishable
+encodeURIComponent(`/search?q=${term}&amp;page=${n}`);
+
+// Right - each value encoded while it is still a value
+`/search?q=${encodeURIComponent(term)}&amp;page=${encodeURIComponent(n)}`;
+
+// Better - let the platform handle it
+const u = new URL("/search", location.origin);
+u.searchParams.set("q", term);
+u.searchParams.set("page", n);</code></pre>
+      <p>That third form is the one to reach for. <code>URLSearchParams</code> encodes each value correctly, handles repeated keys, and cannot produce an injection because it never treats your data as syntax. Its only quirk is the one we started with: it form-encodes, so spaces come out as <code>+</code>. In a query string, that is exactly right.</p>
+
+      <h2 id="closing">Two encodings, one question</h2>
+      <p>Whenever you are unsure which form to use, the question to ask is not "which is correct?" but "which layer will decode this, and how?". A query string will be form-decoded, so <code>+</code> is a space. A path will be percent-decoded, so <code>+</code> is a plus. The encoding must match the decoder, and the decoder is determined by position in the URL.</p>
+      <p>Get that pairing right and the rest follows: encode once, per component, at assembly time; decode once, at parse time; and let <code>URLSearchParams</code> do the work wherever it can.</p>
+
+      <div class="further">
+        <h2>Related guides and tools</h2>
+        <div class="further-grid">
+          <a class="further-card" href="../tools/url-encoder.html">
+            <strong>URL Encoder / Decoder</strong>
+            <span>Smart, raw and batch modes with an editable parameter grid.</span>
+          </a>
+          <a class="further-card" href="base64-explained.html">
+            <strong>What Base64 actually does</strong>
+            <span>The 33% cost, padding, and why URLs need a different alphabet.</span>
+          </a>
+          <a class="further-card" href="html-escaping-and-xss-contexts.html">
+            <strong>Escaping is context-dependent</strong>
+            <span>URL encoding is one of four escapings you need, not a general one.</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </article>
+
+  <a href="../" id="smartBackBtn" class="fab" aria-label="Command Center" title="Command Center">
+    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="filter: drop-shadow(0 0 8px rgba(56, 189, 248, 0.5));">
+      <path d="M12 2L2 7l10 5 10-5-10-5z" stroke="#38bdf8" stroke-width="2" stroke-linejoin="round" fill="rgba(56,189,248,0.2)"/>
+      <path d="M2 17l10 5 10-5M2 12l10 5 10-5" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </a>
+
+  {{FOOTER}}
+
+  <script src="../js/shared.js"></script>
+  <script src="../main.js"></script>

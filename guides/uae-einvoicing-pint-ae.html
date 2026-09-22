@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="PINT-AE explained for engineering teams: UBL 2.1 XML structure, the five-corner model with the FTA, the business terms that matter, the validation failures that recur, and the data cleanup to start now." />
+  <title>UAE E-Invoicing: What PINT-AE Actually Requires From Your System - Layerbit Guides</title>
+  <link rel="canonical" href="https://layerbit.co.in/guides/uae-einvoicing-pint-ae.html" />
+  <meta name="robots" content="max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://layerbit.co.in/guides/uae-einvoicing-pint-ae.html" />
+  <meta property="og:site_name" content="Layerbit" />
+  <meta property="og:title" content="UAE E-Invoicing: What PINT-AE Actually Requires From Your System - Layerbit Guides" />
+  <meta property="og:description" content="PINT-AE explained for engineering teams: UBL 2.1 XML structure, the five-corner model with the FTA, the business terms that matter, the validation failures that recur, and the data cleanup to start now." />
+  <meta property="og:image" content="https://layerbit.co.in/og-image.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="Layerbit - free browser-based developer tools" />
+  <meta property="og:locale" content="en" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="UAE E-Invoicing: What PINT-AE Actually Requires From Your System - Layerbit Guides" />
+  <meta name="twitter:description" content="PINT-AE explained for engineering teams: UBL 2.1 XML structure, the five-corner model with the FTA, the business terms that matter, the validation failures that recur, and the data cleanup to start now." />
+  <meta name="twitter:image" content="https://layerbit.co.in/og-image.png" />
+  <meta name="twitter:image:alt" content="Layerbit - free browser-based developer tools" />
+  <meta name="theme-color" content="#0a0c10" />
+  <script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "TechArticle",
+      "@id": "https://layerbit.co.in/guides/uae-einvoicing-pint-ae.html#article",
+      "headline": "UAE E-Invoicing: What PINT-AE Actually Requires From Your System",
+      "name": "UAE E-Invoicing: What PINT-AE Actually Requires From Your System",
+      "description": "PINT-AE explained for engineering teams: UBL 2.1 XML structure, the five-corner model with the FTA, the business terms that matter, the validation failures that recur, and the data cleanup to start now.",
+      "url": "https://layerbit.co.in/guides/uae-einvoicing-pint-ae.html",
+      "mainEntityOfPage": {
+        "@type": "WebPage",
+        "@id": "https://layerbit.co.in/guides/uae-einvoicing-pint-ae.html"
+      },
+      "datePublished": "2026-08-27",
+      "dateModified": "2026-09-21",
+      "inLanguage": "en",
+      "wordCount": 1900,
+      "keywords": "pint-ae, uae e-invoicing, peppol pint, ubl 2.1 invoice, five corner model, accredited service provider uae, en 16931 business terms, uae fta e-invoice",
+      "articleSection": "Compliance \u0026 Tax Technology",
+      "author": {
+        "@type": "Organization",
+        "name": "Layerbit Technologies",
+        "url": "https://layerbit.co.in/about.html"
+      },
+      "publisher": {
+        "@type": "Organization",
+        "name": "Layerbit Technologies",
+        "url": "https://layerbit.co.in/",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://layerbit.co.in/icon-512.png",
+          "width": 512,
+          "height": 512
+        }
+      },
+      "image": {
+        "@type": "ImageObject",
+        "url": "https://layerbit.co.in/icon-512.png",
+        "width": 512,
+        "height": 512
+      },
+      "isAccessibleForFree": true,
+      "proficiencyLevel": "Intermediate"
+    },
+    {
+      "@type": "BreadcrumbList",
+      "@id": "https://layerbit.co.in/guides/uae-einvoicing-pint-ae.html#breadcrumb",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://layerbit.co.in/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Guides",
+          "item": "https://layerbit.co.in/blog.html"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": "UAE e-invoicing and PINT-AE",
+          "item": "https://layerbit.co.in/guides/uae-einvoicing-pint-ae.html"
+        }
+      ]
+    },
+    {
+      "@type": "FAQPage",
+      "@id": "https://layerbit.co.in/guides/uae-einvoicing-pint-ae.html#faq",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "What is PINT-AE?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "PINT-AE is the United Arab Emirates profile of Peppol PINT, OpenPeppol's international invoice specification. Technically it is UBL 2.1 XML that must satisfy both the PINT business rules and the additional requirements the UAE Federal Tax Authority imposes, such as local identifiers and tax categories. A document can be valid UBL and still fail PINT-AE validation."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Is a PDF invoice valid under UAE e-invoicing?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "No. A PDF is an image of an invoice, and the e-invoicing programme requires a structured XML document in the PINT-AE format exchanged through an accredited provider. Attaching XML to a PDF is also not the same thing as issuing a structured e-invoice."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What is the five-corner model?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Standard Peppol is a four-corner network: sender, sender's access point, receiver's access point, receiver. The UAE adds the tax authority as a fifth corner, so your Accredited Service Provider both delivers the invoice to your customer's provider and reports the transaction to the Federal Tax Authority. Reporting becomes a by-product of exchange rather than a separate periodic filing."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Can I send PINT-AE invoices myself?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "No. Exchange must go through an Accredited Service Provider, so you need a contract with one. That also means validation happens outside your control: if your XML fails a business rule it is rejected at the provider and the invoice has not legally been issued."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What should I do now to prepare for UAE e-invoicing?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Start with data rather than integration. Audit every counterparty for a valid tax identifier and a structured address, classify each product and service with a tax category and a valid UN/ECE unit code, make rounding consistent in one place, confirm invoice numbers are genuinely unique, and select a provider early. Then try to express your ten most complicated real invoices as PINT-AE XML to find your actual gaps."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How do corrections work under e-invoicing?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "You cannot edit an issued e-invoice. A correction is itself a structured document - a credit note with invoice type code 381 - that carries a mandatory reference to the original invoice. Your system must therefore retain original document identifiers and be able to link a correction to them, which informal reissue-the-PDF workflows have no equivalent for."
+          }
+        }
+      ]
+    }
+  ]
+}
+  </script>
+
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6072772587431629" crossorigin="anonymous"></script>
+
+  <script src="https://unpkg.com/lucide@1.39.0" async></script>
+
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet" />
+  <link href="../layerbit-logo.png" rel="icon" type="image/x-icon" />
+  <link rel="manifest" href="../manifest.json" />
+  <link rel="apple-touch-icon" href="../apple-touch-icon.png" />
+  <link rel="stylesheet" href="../css/base.css" />
+  <link rel="stylesheet" href="../css/article.css" />
+
+  <style>
+
+    /* Long-form guide styling lives in css/article.css, linked from this page's head. */
+  
+  </style>
+</head>
+<body>
+  <header>
+    <a href="../" class="brand">
+      <svg width="36" height="36" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <polygon points="32,20 54,28 32,36 10,28" stroke="#f8fafc" stroke-width="4" stroke-linejoin="round"/>
+        <polyline points="10,38 32,46 54,38" stroke="#f8fafc" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+        <polyline points="10,48 32,56 54,48" stroke="#f8fafc" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+        <rect x="50" y="10" width="10" height="10" rx="2" fill="#00f2fe" />
+      </svg>
+      Layerbit
+    </a>
+  </header>
+
+  <nav class="crumbs" aria-label="Breadcrumb">
+    <a href="../">Home</a>
+    <span class="sep">/</span>
+    <a href="../blog.html">Guides</a>
+    <span class="sep">/</span>
+    <span aria-current="page">UAE e-invoicing and PINT-AE</span>
+  </nav>
+
+  <article class="article">
+    <header class="article-head">
+      <span class="article-kicker">Compliance &amp; Tax Technology</span>
+      <h1>UAE E-Invoicing: What PINT-AE Actually Requires From Your System</h1>
+      <p class="article-standfirst">A PDF invoice is a picture of an invoice. Under the UAE's e-invoicing programme, what counts is a structured XML document in the PINT-AE format, exchanged through an accredited service provider. If your billing system only produces PDFs today, the work ahead is data work — and most of it can start now.</p>
+      <div class="article-meta">
+        <span class="byline">Layerbit Engineering</span>
+        <span><i data-lucide="calendar"></i>Published 27 August 2026</span>
+        <span><i data-lucide="clock"></i>10 min read</span>
+      </div>
+    </header>
+
+    <div class="callout warn">
+      <div class="callout-title"><i data-lucide="alert-triangle"></i> Verify dates and obligations with the authority</div>
+      <p>This guide explains the <em>technical structure</em> of PINT-AE so engineering teams can prepare. Phased rollout dates, thresholds and exemptions are set by the UAE Ministry of Finance and the Federal Tax Authority and have been adjusted more than once. Confirm your own obligations and deadlines with the FTA, your Accredited Service Provider, or a qualified tax adviser — not with a technical article.</p>
+    </div>
+
+    <div class="takeaways">
+      <h2><i data-lucide="list-checks"></i> The short version</h2>
+      <ul>
+        <li>PINT-AE is the UAE profile of <strong>Peppol PINT</strong>, expressed as <strong>UBL 2.1 XML</strong> — not a PDF, not a PDF with XML attached.</li>
+        <li>The UAE uses a <strong>five-corner model</strong>: you, your provider, their provider, your customer, and the tax authority as the fifth corner.</li>
+        <li>You cannot send invoices yourself. Exchange happens through an <strong>Accredited Service Provider (ASP)</strong>.</li>
+        <li>The real project is data readiness: tax identifiers, structured addresses, unit codes and tax categories for every counterparty and every line.</li>
+      </ul>
+    </div>
+
+    <div class="prose">
+      <h2 id="what">What PINT-AE is</h2>
+      <p>Three layers are worth separating, because the names get used interchangeably and they are not the same thing:</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Layer</th><th>What it is</th></tr></thead>
+          <tbody>
+            <tr><td><strong>UBL 2.1</strong></td><td>The underlying XML grammar — an OASIS standard defining <code>&lt;Invoice&gt;</code>, <code>&lt;InvoiceLine&gt;</code>, <code>&lt;TaxTotal&gt;</code> and so on.</td></tr>
+            <tr><td><strong>Peppol PINT</strong></td><td>OpenPeppol's international invoice specification: which UBL elements are mandatory, what they mean, and the business rules that must hold.</td></tr>
+            <tr><td><strong>PINT-AE</strong></td><td>The UAE-specific profile of PINT — local identifiers, local tax categories, and the additional rules the FTA requires.</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>So "generating a PINT-AE invoice" means producing UBL 2.1 XML that satisfies both the PINT business rules and the UAE additions. A document can be perfectly valid UBL and still fail PINT-AE validation, which is the situation most first integration attempts land in.</p>
+
+      <h2 id="five-corner">The five-corner model</h2>
+      <p>Standard Peppol is a <strong>four-corner</strong> network: sender → sender's access point → receiver's access point → receiver. Neither party needs to know anything about the other's software; the access points speak a common protocol.</p>
+      <p>The UAE adds a fifth corner — the tax authority:</p>
+      <pre><code>  You            Your ASP         Customer's ASP      Customer
+   │                 │                   │                │
+   └──── invoice ───►│──── Peppol  ─────►│──── invoice ──►│
+                     │
+                     └──── report ────► Federal Tax Authority
+                                              (5th corner)</code></pre>
+      <p>Your accredited provider both delivers the invoice to your customer's provider and reports the transaction to the FTA. This is a continuous transaction control model: reporting is a by-product of exchange rather than a separate periodic filing.</p>
+      <p>Two practical consequences follow. First, <strong>you cannot self-send</strong> — you must contract with an ASP, and that choice is a procurement exercise with a lead time. Second, <strong>validation happens outside your control</strong>. If your XML is malformed or fails a business rule, it is rejected at the provider, and your invoice has not legally been issued. Getting the document right is not a nice-to-have.</p>
+
+      <h2 id="structure">What the document looks like</h2>
+      <p>A minimal-but-realistic invoice skeleton. Note the two namespaces: <code>cbc</code> for simple values and <code>cac</code> for composite structures — the most common source of confusion when hand-building UBL.</p>
+      <pre><code>&lt;Invoice xmlns="urn:oasis:names:specification:ubl:schema:xsd:Invoice-2"
+   xmlns:cac="urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2"
+   xmlns:cbc="urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2"&gt;
+
+  &lt;cbc:CustomizationID&gt;...PINT-AE identifier...&lt;/cbc:CustomizationID&gt;
+  &lt;cbc:ID&gt;INV-2026-00417&lt;/cbc:ID&gt;              &lt;!-- BT-1  invoice number --&gt;
+  &lt;cbc:IssueDate&gt;2026-08-27&lt;/cbc:IssueDate&gt;      &lt;!-- BT-2  issue date --&gt;
+  &lt;cbc:InvoiceTypeCode&gt;380&lt;/cbc:InvoiceTypeCode&gt;&lt;!-- BT-3  380 = commercial invoice --&gt;
+  &lt;cbc:DocumentCurrencyCode&gt;AED&lt;/cbc:DocumentCurrencyCode&gt;
+
+  &lt;cac:AccountingSupplierParty&gt;
+    &lt;cac:Party&gt;
+      &lt;cac:PartyIdentification&gt;
+        &lt;cbc:ID&gt;1234567890&lt;/cbc:ID&gt;             &lt;!-- your tax identifier --&gt;
+      &lt;/cac:PartyIdentification&gt;
+      &lt;cac:PostalAddress&gt;
+        &lt;cbc:CityName&gt;Dubai&lt;/cbc:CityName&gt;
+        &lt;cac:Country&gt;&lt;cbc:IdentificationCode&gt;AE&lt;/cbc:IdentificationCode&gt;&lt;/cac:Country&gt;
+      &lt;/cac:PostalAddress&gt;
+    &lt;/cac:Party&gt;
+  &lt;/cac:AccountingSupplierParty&gt;
+
+  &lt;cac:InvoiceLine&gt;
+    &lt;cbc:ID&gt;1&lt;/cbc:ID&gt;
+    &lt;cbc:InvoicedQuantity unitCode="EA"&gt;2&lt;/cbc:InvoicedQuantity&gt;
+    &lt;cbc:LineExtensionAmount currencyID="AED"&gt;500.00&lt;/cbc:LineExtensionAmount&gt;
+  &lt;/cac:InvoiceLine&gt;
+
+  &lt;cac:TaxTotal&gt;
+    &lt;cbc:TaxAmount currencyID="AED"&gt;25.00&lt;/cbc:TaxAmount&gt;
+  &lt;/cac:TaxTotal&gt;
+&lt;/Invoice&gt;</code></pre>
+      <p>Those <code>BT-</code> comments refer to <strong>business terms</strong>. PINT inherits its semantic model from EN 16931, the European standard, where every field has a stable identifier — BT-1 is always the invoice number regardless of syntax. Provider documentation and validation errors are written in BT numbers, so learning the handful that matter to you pays for itself quickly.</p>
+
+      <h2 id="failures">Where validation actually fails</h2>
+      <p>In practice, rejections cluster into a few recurring categories rather than exotic schema problems:</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Problem</th><th>Detail</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Totals that do not reconcile</strong></td><td>The sum of line amounts must equal the line extension total, which must tie to the tax-exclusive amount, the tax total and the payable amount. Every arithmetic relationship is a rule.</td></tr>
+            <tr><td><strong>Rounding drift</strong></td><td>Computing tax per line and computing it on the total can differ by fils. Pick one method, apply it consistently, and make the document internally consistent.</td></tr>
+            <tr><td><strong>Missing or malformed tax identifier</strong></td><td>Both parties must be identified correctly. A transposed digit fails, and a checksum-valid number that is not actually registered fails at the authority.</td></tr>
+            <tr><td><strong>Wrong tax category</strong></td><td>Standard-rated, zero-rated, exempt, out-of-scope and reverse-charge are distinct categories with distinct codes. Zero-rated and exempt are <em>not</em> interchangeable, and exports are not simply "no tax".</td></tr>
+            <tr><td><strong>Invalid unit codes</strong></td><td><code>unitCode</code> comes from the UN/ECE Recommendation 20 code list. <code>EA</code>, <code>HUR</code>, <code>KGM</code> are valid; <code>each</code>, <code>hrs</code>, <code>pcs</code> are not.</td></tr>
+            <tr><td><strong>Unstructured addresses</strong></td><td>A single free-text address blob will not satisfy rules that expect discrete city, country and postal components.</td></tr>
+            <tr><td><strong>Currency inconsistency</strong></td><td>Every <code>currencyID</code> must match the document currency; foreign-currency invoices need the tax amount in AED as well.</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>Notice how few of these are XML problems. They are <em>data</em> problems that XML makes visible. A PDF will happily display an invoice whose totals are 3 fils out and whose customer address is one unparsed string; structured validation will not.</p>
+
+      <div class="tool-cta">
+        <div class="cta-copy">
+          <h3>Check an invoice's structure before you involve a provider</h3>
+          <p>Layerbit's UAE PINT-AE Compliance Checker inspects invoice data against the PINT-AE field structure, shows what is missing, and exports a PINT-AE style XML file — free, no signup, entirely inside your browser. It is a readiness and learning aid, not an FTA-approved filing route: have your ASP or adviser verify anything you actually submit.</p>
+        </div>
+        <a class="cta-btn" href="../tools/pint-ae-checker.html"><i data-lucide="file-check-2"></i> Open PINT-AE Checker</a>
+      </div>
+
+      <h2 id="prepare">What to do now, regardless of your date</h2>
+      <p>The compliance deadline is a deadline for <em>data you already should have</em>. Nothing below depends on a final timeline, and all of it takes longer than the integration itself.</p>
+      <h3>1. Audit counterparty master data</h3>
+      <p>Every customer needs a valid tax identifier and a structured address. In most systems today the identifier lives in a free-text notes field for some customers and nowhere for others, and the address is one line. Cleaning thousands of counterparty records is a months-long exercise with a long tail of customers who do not reply. Start it first.</p>
+      <h3>2. Classify every product and service</h3>
+      <p>Each line needs a tax category and a valid unit code. If your catalogue stores "5% VAT" as a number rather than a category, you cannot distinguish zero-rated from exempt from out-of-scope — and that distinction is mandatory in the XML.</p>
+      <h3>3. Fix your rounding and numbering now</h3>
+      <p>Decide where rounding happens and make it consistent. Confirm invoice numbers are genuinely unique and sequential per the rules you must follow — duplicates that a PDF workflow tolerated will be rejected outright.</p>
+      <h3>4. Choose a provider early</h3>
+      <p>ASP selection involves due diligence, contracts, integration effort and testing. Providers get busier as deadlines approach, and you will be sharing their onboarding capacity with everyone who waited.</p>
+      <h3>5. Produce test documents against real data</h3>
+      <p>Export your ten most complicated invoices — foreign currency, mixed tax categories, credit notes, partial discounts — and try to express each as PINT-AE XML. That exercise finds your genuine gaps faster than any amount of reading, because your edge cases are not the specification's examples.</p>
+
+      <h2 id="credit-notes">Credit notes, and the thing that surprises people</h2>
+      <p>Corrections are themselves structured documents. You cannot amend an issued e-invoice by editing it — you issue a credit note (<code>InvoiceTypeCode</code> 381) that references the original document. That reference is mandatory, which means your system must retain the original identifier and be able to link to it.</p>
+      <p>This tends to be the requirement that forces real change in older billing systems, because informal correction workflows — reissue the PDF, email it again, keep a note in a spreadsheet — have no equivalent. Every correction becomes a first-class document with its own lineage. Check early whether your system can even represent that.</p>
+
+      <h2 id="closing">It is a data project wearing an XML costume</h2>
+      <p>Teams approaching e-invoicing usually budget for the integration — build the XML, connect the provider, test, done. The integration is the small part. The work that consumes the timeline is discovering that a third of your customer records lack a usable tax identifier, that your catalogue cannot distinguish exempt from zero-rated, and that your totals have been quietly rounding in two different places for years.</p>
+      <p>All of which is fixable, and none of which needs to wait for a confirmed date. Structured invoicing does not add requirements so much as it stops letting you ignore the ones you already had.</p>
+
+      <div class="further">
+        <h2>Related guides and tools</h2>
+        <div class="further-grid">
+          <a class="further-card" href="../tools/pint-ae-checker.html">
+            <strong>UAE PINT-AE Compliance Checker</strong>
+            <span>Check invoice fields and export PINT-AE style XML, free.</span>
+          </a>
+          <a class="further-card" href="csv-edge-cases.html">
+            <strong>Why CSV is not really a format</strong>
+            <span>Relevant if your master-data cleanup runs through spreadsheets.</span>
+          </a>
+          <a class="further-card" href="../tools/json-validator.html">
+            <strong>JSON Validator &amp; Formatter</strong>
+            <span>For the API payloads on the way to your provider.</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </article>
+
+  <a href="../" id="smartBackBtn" class="fab" aria-label="Command Center" title="Command Center">
+    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="filter: drop-shadow(0 0 8px rgba(56, 189, 248, 0.5));">
+      <path d="M12 2L2 7l10 5 10-5-10-5z" stroke="#38bdf8" stroke-width="2" stroke-linejoin="round" fill="rgba(56,189,248,0.2)"/>
+      <path d="M2 17l10 5 10-5M2 12l10 5 10-5" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </a>
+
+  <footer>
+    <div style="margin-bottom: 15px;">
+      &copy; 2025 - 2026 <strong>Layerbit Technologies</strong>. All rights reserved.
+    </div>
+    <div>
+      <a href="../about.html">About</a>
+      <a href="../privacy.html">Privacy Policy</a>
+      <a href="../terms.html">Terms of Service</a>
+      <a href="../blog.html">Developer Blog</a>
+      <a href="../contact.html">Contact</a>
+    </div>
+  </footer>
+
+  <script src="../js/shared.js"></script>
+  <script src="../main.js"></script>
+</body>
+</html>

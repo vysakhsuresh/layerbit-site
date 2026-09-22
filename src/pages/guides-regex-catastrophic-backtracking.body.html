@@ -1,0 +1,162 @@
+{{HEADER}}
+
+  <nav class="crumbs" aria-label="Breadcrumb">
+    <a href="../">Home</a>
+    <span class="sep">/</span>
+    <a href="../blog.html">Guides</a>
+    <span class="sep">/</span>
+    <span aria-current="page">Catastrophic backtracking</span>
+  </nav>
+
+  <article class="article">
+    <header class="article-head">
+      <span class="article-kicker">Performance &amp; Security</span>
+      <h1>How One Regular Expression Can Freeze Your Server</h1>
+      <p class="article-standfirst">A validation pattern that runs in microseconds on normal input can take longer than the age of the universe on a carefully chosen string forty characters long. No exploit is needed beyond a text field — this is regular expression denial of service, and the cause is how backtracking engines search.</p>
+      <div class="article-meta">
+        <span class="byline">Layerbit Engineering</span>
+        <span><i data-lucide="calendar"></i>Published 4 September 2026</span>
+        <span><i data-lucide="clock"></i>10 min read</span>
+      </div>
+    </header>
+
+    <div class="takeaways">
+      <h2><i data-lucide="list-checks"></i> The short version</h2>
+      <ul>
+        <li>Nested quantifiers like <code>(a+)+</code> and ambiguous alternations like <code>(a|ab)*</code> can make matching time grow <strong>exponentially</strong> with input length.</li>
+        <li>A failed match is the expensive case. A pattern that matches quickly can still hang on input that <em>nearly</em> matches.</li>
+        <li>JavaScript, Java, Python and .NET all use backtracking engines. Go and Rust use linear-time engines and cannot be attacked this way.</li>
+        <li>The cheapest mitigation available everywhere: cap input length before the regex ever runs.</li>
+      </ul>
+    </div>
+
+    <div class="prose">
+      <h2 id="how">How a backtracking engine actually searches</h2>
+      <p>Most regex engines you use daily — PCRE, Java's <code>java.util.regex</code>, Python's <code>re</code>, .NET, and JavaScript's <code>RegExp</code> — are backtracking engines. They try one possible match, and when it fails they rewind to the most recent decision point and try the next alternative, exhaustively, until something matches or every possibility is exhausted.</p>
+      <p>For most patterns that is fast and gives you powerful features: backreferences, lookahead, lazy quantifiers. The cost appears when a pattern is <em>ambiguous</em> — when there is more than one way for the engine to divide the same input between parts of the pattern.</p>
+      <p>Take the canonical example:</p>
+      <pre><code>/^(a+)+$/.test("aaaaaaaaaaaaaaaaaaaaaaaaaaX")</code></pre>
+      <p>The inner <code>a+</code> can consume one or more <code>a</code>s. The outer <code>+</code> can repeat that group one or more times. So for 26 <code>a</code>s the engine must consider every way of partitioning them into groups: <code>[26]</code>, <code>[25,1]</code>, <code>[1,25]</code>, <code>[24,2]</code>, <code>[13,13]</code>, and so on. That is 2<sup>25</sup> partitions — about 33 million. Each one is tried, each one reaches the final <code>X</code>, and each one fails the <code>$</code> anchor.</p>
+      <p>Add a single character to the input and the work doubles. At 30 <code>a</code>s it is roughly a second. At 40 it is around 15 minutes. At 50, over a week. The pattern itself looks entirely harmless.</p>
+      <div class="callout warn">
+        <div class="callout-title"><i data-lucide="alert-triangle"></i> The trailing character is the weapon</div>
+        <p>Note that the input <em>almost</em> matches. <code>"aaaa...a"</code> with no <code>X</code> matches instantly on the first attempt. It is the one character that guarantees eventual failure that forces the engine to exhaust every alternative before giving up. Attackers append exactly that.</p>
+      </div>
+
+      <h2 id="shapes">The three shapes to recognise</h2>
+      <h3>1. Nested quantifiers</h3>
+      <p>A quantified group that itself contains a quantifier over overlapping characters:</p>
+      <pre><code>(a+)+      (a*)*      (\d+)*     ([a-z]+)*    (\s+)+</code></pre>
+      <p>These are exponential. Any time you see a <code>+</code> or <code>*</code> immediately outside a group whose contents can also repeat, treat it as a defect.</p>
+
+      <h3>2. Ambiguous alternation under a quantifier</h3>
+      <pre><code>(a|a)*     (a|ab)*     (\w|\d)*    (.|\s)*</code></pre>
+      <p>Here two branches can match the same input, so the engine has a genuine choice at every character — and must eventually try all combinations. <code>(\w|\d)*</code> is a common real-world instance, because <code>\d</code> is entirely contained within <code>\w</code>; every digit can be matched two ways.</p>
+
+      <h3>3. Quantified overlapping sequences</h3>
+      <pre><code>\s*\s*     .*a.*      (\w+\s?)+$</code></pre>
+      <p>That last one appears in countless "validate a full name" and "validate a sentence" patterns. The optional <code>\s?</code> inside a repeated group over <code>\w+</code> creates exactly the ambiguity that kills. It is polynomial rather than exponential, which sounds reassuring until you realise polynomial with a large exponent on a 5,000-character input is still a multi-second stall per request.</p>
+
+      <h2 id="realworld">This is a real CVE class, not a curiosity</h2>
+      <p>ReDoS accounts for a steady stream of advisories in npm, PyPI and Maven packages, and the vulnerable patterns are almost always doing something unremarkable: validating an email address, parsing a <code>User-Agent</code> string, trimming whitespace, matching a semver range, parsing a Markdown link.</p>
+      <p>Email validation is the archetype. Patterns of this general shape circulate widely:</p>
+      <pre><code>^([a-zA-Z0-9_\.\-])+\@(([a-zA-Z0-9\-])+\.)+([a-zA-Z0-9]{2,4})+$</code></pre>
+      <p>There are three nested-quantifier defects in there. Given a local part of 40 characters followed by a character that cannot appear, it will not finish. And because email validation runs on the signup form, the attack surface is a public unauthenticated endpoint.</p>
+      <p>The deeper point is that a regex is <em>code</em> with a worst-case complexity, and unlike your other code nobody reviews it for that. It arrives by copy-paste from an answer site, passes every test you write for it, and its complexity characteristics are never examined.</p>
+
+      <div class="tool-cta">
+        <div class="cta-copy">
+          <h3>Test a pattern against adversarial input</h3>
+          <p>Layerbit's Regex Tester runs patterns locally with live match highlighting and a capture-group breakdown, so you can try a pattern against near-miss input — a long repeated run plus one impossible character — and see whether it stalls before it reaches production.</p>
+        </div>
+        <a class="cta-btn" href="../tools/regex-tester.html"><i data-lucide="regex"></i> Open Regex Tester</a>
+      </div>
+
+      <h2 id="fixes">Fixing the pattern</h2>
+      <h3>Remove the ambiguity</h3>
+      <p>Most vulnerable patterns have an unambiguous equivalent that matches exactly the same language. <code>(a+)+</code> accepts precisely the strings <code>a+</code> accepts, so:</p>
+      <pre><code>(a+)+      →  a+
+(\w|\d)*   →  \w*
+(\w+\s?)+  →  [\w\s]+        (if the exact grouping does not matter)
+([a-z]+)*  →  [a-z]*</code></pre>
+      <p>Ask "is there more than one way for the engine to match this input?" If yes, restructure until there is exactly one. For the name-validation case, make the separator mandatory between tokens rather than optional inside the repeat:</p>
+      <pre><code>^\w+(\s\w+)*$        # unambiguous: each space is followed by a word
+^(\w+\s?)+$          # ambiguous: trailing space optional at every step</code></pre>
+
+      <h3>Use atomic groups or possessive quantifiers</h3>
+      <p>Where the language genuinely needs the structure, you can forbid backtracking into a group. An atomic group <code>(?&gt;...)</code> commits to its first match; a possessive quantifier <code>++</code> does the same inline:</p>
+      <pre><code>(?&gt;a+)+$      # atomic - no backtracking into the group
+a++$          # possessive - same effect</code></pre>
+      <p>Support is uneven, and this is important to check before relying on it: available in PCRE, Java and Ruby; <strong>not</strong> available in JavaScript or Python's standard <code>re</code> module. Python users can install the third-party <code>regex</code> package, which supports both.</p>
+
+      <h3>Switch to a linear-time engine</h3>
+      <p>Some engines are immune by construction. RE2 (Google), Go's <code>regexp</code> package, and the Rust <code>regex</code> crate compile to automata and guarantee matching in time linear in the input length. There is no backtracking, so there is nothing to explode.</p>
+      <p>The trade-off is real: they cannot support backreferences or lookaround, because those features are what make linear-time matching impossible. If your pattern needs <code>(\w)\1</code> or <code>(?=...)</code>, you cannot use them. If it does not — and most validation patterns do not — a linear-time engine removes this entire class of bug permanently.</p>
+
+      <h3>Impose a timeout</h3>
+      <p>A timeout is a safety net rather than a fix, and availability varies sharply:</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Platform</th><th>Timeout support</th></tr></thead>
+          <tbody>
+            <tr><td>.NET</td><td>Yes — <code>new Regex(pattern, options, TimeSpan)</code></td></tr>
+            <tr><td>Java</td><td>No built-in timeout; needs a watchdog thread</td></tr>
+            <tr><td>Python <code>re</code></td><td>No; the GIL means a signal-based timeout is unreliable</td></tr>
+            <tr><td>JavaScript / Node</td><td>No. Matching blocks the event loop entirely</td></tr>
+            <tr><td>Go, Rust</td><td>Not needed — linear time by design</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>The JavaScript row deserves emphasis. A regex match in Node is synchronous and uninterruptible, so a single malicious request does not slow the process down — it stops it. No other request is served, health checks fail, and the orchestrator restarts a container that was never actually unhealthy. If you must run a risky pattern in Node, run it in a worker thread you can terminate.</p>
+
+      <h3>Cap the input length</h3>
+      <p>The mitigation that works everywhere, requires no library change, and takes one line:</p>
+      <pre><code>if (input.length &gt; 256) return false;   // before any matching
+return EMAIL_RE.test(input);</code></pre>
+      <p>Because the blow-up is a function of input length, a hard cap converts an unbounded worst case into a bounded one. No legitimate email address is 4,000 characters. No real postcode is 900. Validate length first, always — it is free, and it is the only defence that applies before the dangerous code runs.</p>
+
+      <h2 id="review">What to look for in review</h2>
+      <ol>
+        <li>Any quantifier immediately outside a group containing a quantifier.</li>
+        <li>Alternation branches that can match the same character — especially <code>\w</code> with <code>\d</code>, or <code>.</code> with <code>\s</code>.</li>
+        <li>Optional separators inside repeated groups: <code>(x+\s?)+</code>.</li>
+        <li>Patterns applied to unbounded user input with no length check upstream.</li>
+        <li>Unanchored patterns on long input — without <code>^</code> the engine retries from every position, multiplying any per-position cost.</li>
+        <li>Patterns pasted in from anywhere, on principle. Validate the complexity, not just the behaviour.</li>
+      </ol>
+
+      <h2 id="closing">Treat regular expressions as code with a worst case</h2>
+      <p>The gap that makes ReDoS persistent is that regex correctness and regex complexity are entirely separate properties, and we only ever test the first. Your pattern matches valid input and rejects invalid input; both tests pass; the complexity was never on the agenda.</p>
+      <p>So add one test alongside the others: a long repeated run of the character your pattern loops on, followed by one character that guarantees failure. If that test does not return promptly, the pattern is a denial-of-service vector regardless of how correct it is.</p>
+
+      <div class="further">
+        <h2>Related guides and tools</h2>
+        <div class="further-grid">
+          <a class="further-card" href="../tools/regex-tester.html">
+            <strong>Regex Tester</strong>
+            <span>Live matching, capture groups and a replacement preview.</span>
+          </a>
+          <a class="further-card" href="html-escaping-and-xss-contexts.html">
+            <strong>Escaping is context-dependent</strong>
+            <span>Why one escaping function cannot cover HTML, attributes and URLs.</span>
+          </a>
+          <a class="further-card" href="jwt-decode-vs-verify.html">
+            <strong>Decoding a JWT is not verifying it</strong>
+            <span>Another gap between "it works" and "it is safe".</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </article>
+
+  <a href="../" id="smartBackBtn" class="fab" aria-label="Command Center" title="Command Center">
+    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="filter: drop-shadow(0 0 8px rgba(56, 189, 248, 0.5));">
+      <path d="M12 2L2 7l10 5 10-5-10-5z" stroke="#38bdf8" stroke-width="2" stroke-linejoin="round" fill="rgba(56,189,248,0.2)"/>
+      <path d="M2 17l10 5 10-5M2 12l10 5 10-5" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </a>
+
+  {{FOOTER}}
+
+  <script src="../js/shared.js"></script>
+  <script src="../main.js"></script>

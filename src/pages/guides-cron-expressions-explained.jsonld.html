@@ -1,0 +1,119 @@
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "TechArticle",
+      "@id": "https://layerbit.co.in/guides/cron-expressions-explained.html#article",
+      "headline": "The Cron Expression Rules That Catch Everyone Out",
+      "name": "The Cron Expression Rules That Catch Everyone Out",
+      "description": "Why day-of-month and day-of-week combine as OR not AND, why */7 is not every seven minutes, how daylight saving skips or doubles your jobs, and which cron syntax is Quartz-only.",
+      "url": "https://layerbit.co.in/guides/cron-expressions-explained.html",
+      "mainEntityOfPage": {
+        "@type": "WebPage",
+        "@id": "https://layerbit.co.in/guides/cron-expressions-explained.html"
+      },
+      "datePublished": "2026-09-10",
+      "dateModified": "2026-09-21",
+      "inLanguage": "en",
+      "wordCount": 1900,
+      "keywords": "cron expression, crontab, cron day of week or, cron step values, cron daylight saving, quartz cron, flock overlapping cron",
+      "articleSection": "Scheduling \u0026 DevOps",
+      "author": {
+        "@type": "Organization",
+        "name": "Layerbit Technologies",
+        "url": "https://layerbit.co.in/about.html"
+      },
+      "publisher": {
+        "@type": "Organization",
+        "name": "Layerbit Technologies",
+        "url": "https://layerbit.co.in/",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://layerbit.co.in/icon-512.png",
+          "width": 512,
+          "height": 512
+        }
+      },
+      "image": {
+        "@type": "ImageObject",
+        "url": "https://layerbit.co.in/icon-512.png",
+        "width": 512,
+        "height": 512
+      },
+      "isAccessibleForFree": true,
+      "proficiencyLevel": "Beginner"
+    },
+    {
+      "@type": "BreadcrumbList",
+      "@id": "https://layerbit.co.in/guides/cron-expressions-explained.html#breadcrumb",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://layerbit.co.in/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Guides",
+          "item": "https://layerbit.co.in/blog.html"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": "Cron expressions",
+          "item": "https://layerbit.co.in/guides/cron-expressions-explained.html"
+        }
+      ]
+    },
+    {
+      "@type": "FAQPage",
+      "@id": "https://layerbit.co.in/guides/cron-expressions-explained.html#faq",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "Why does my cron job run on both the day of month and the day of week?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "POSIX cron specifies that when neither the day-of-month nor the day-of-week field is a wildcard, the job runs whenever either field matches. It is an OR, not an AND. An expression like 0 0 13 * 5 fires on the 13th of every month and also every Friday. There is no standard cron syntax for a true AND, so you must schedule the superset and add a date guard inside the job."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Does */7 mean every seven minutes in cron?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Not exactly. A step means every nth value within the field's range, counting from the range start. Because the minute range 0-59 is not divisible by 7, */7 fires at 0, 7, 14, 21, 28, 35, 42, 49 and 56, then resets to 0 - leaving a four-minute gap at the hour boundary. Only steps that divide 60 evenly, such as 1, 2, 3, 4, 5, 6, 10, 12, 15, 20 and 30, produce a uniform interval."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How does daylight saving time affect cron jobs?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Classic cron evaluates local time. When clocks spring forward, a job scheduled inside the skipped hour usually does not run at all. When clocks fall back, that hour occurs twice and the job may run twice. The reliable fix is to run the host in UTC, or set CRON_TZ=UTC in the crontab, and handle timezone conversion inside the application."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Why do L, W and # not work in my crontab?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Those are Quartz scheduler extensions, not POSIX cron. Quartz is the Java scheduler used by Spring and many enterprise products, and much cron documentation online is actually Quartz documentation. Standard Linux crontabs do not support L, W, # or ?, and also use five fields rather than Quartz's six or seven."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How do I stop a cron job running on top of itself?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Cron has no awareness of previous invocations, so a job that runs longer than its interval will overlap. Wrap it in a non-blocking lock, for example flock -n /tmp/job.lock /path/to/job.sh, which skips the run if the previous one is still active. Use the non-blocking flag so you skip rather than queue up waiting processes."
+          }
+        }
+      ]
+    }
+  ]
+}
+  </script>

@@ -6,16 +6,23 @@
   <meta name="description" content="Professional Static Website Development by Layerbit. High-performance, secure, and SEO-optimized sites hosted on global edge networks." />
   <title>Static Website Creation - Layerbit</title>
   <link rel="canonical" href="https://layerbit.co.in/tools/static-sites.html" />
+  <meta name="robots" content="max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://layerbit.co.in/tools/static-sites.html" />
   <meta property="og:site_name" content="Layerbit" />
   <meta property="og:title" content="Static Website Creation - Layerbit" />
   <meta property="og:description" content="Professional Static Website Development by Layerbit. High-performance, secure, and SEO-optimized sites hosted on global edge networks." />
-  <meta property="og:image" content="https://layerbit.co.in/layerbit-logo.png" />
-  <meta name="twitter:card" content="summary" />
+  <meta property="og:image" content="https://layerbit.co.in/og-image.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="Layerbit - free browser-based developer tools" />
+  <meta property="og:locale" content="en" />
+  <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="Static Website Creation - Layerbit" />
   <meta name="twitter:description" content="Professional Static Website Development by Layerbit. High-performance, secure, and SEO-optimized sites hosted on global edge networks." />
-  <meta name="twitter:image" content="https://layerbit.co.in/layerbit-logo.png" />
+  <meta name="twitter:image" content="https://layerbit.co.in/og-image.png" />
+  <meta name="twitter:image:alt" content="Layerbit - free browser-based developer tools" />
+  <meta name="theme-color" content="#0a0c10" />
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -448,6 +455,49 @@
         </div>
 
       </div>
+    </div>
+
+    <div class="info-panel">
+      <h2><i data-lucide="microscope"></i> Why static wins more often than people expect</h2>
+      <p>A static site is pre-rendered HTML served from a CDN. There is no application server, no database and no session state at request time — which sounds like a limitation and is mostly an advantage. This site is built that way, so the reasoning here is the reasoning we applied to ourselves.</p>
+      <ul>
+        <li><strong>Performance.</strong> The first byte comes from an edge location near the visitor. No cold starts, no connection pool, no query. This is difficult to beat with any amount of dynamic optimisation.</li>
+        <li><strong>Security surface.</strong> No server-side execution and no database means no SQL injection, no session fixation, no dependency in production to patch urgently. The things that get sites compromised largely do not exist.</li>
+        <li><strong>Cost and scale.</strong> Traffic spikes are a CDN's normal operating mode. A launch or a viral post does not require capacity planning, and hosting for a typical brochure site is inexpensive to free.</li>
+        <li><strong>Reliability.</strong> Fewer moving parts fail less often. There is no 3 a.m. page because a connection pool exhausted.</li>
+      </ul>
+
+      <div class="use-cases-grid">
+        <div class="use-case-card">
+          <h3><i data-lucide="mail"></i> Forms without a backend</h3>
+          <p>The most common objection, and a solved problem. A form posts to a serverless function or a hosted form service; server-side validation and spam filtering still apply. You get form handling without running an application.</p>
+        </div>
+        <div class="use-case-card">
+          <h3><i data-lucide="search"></i> Search</h3>
+          <p>For a few hundred pages, a prebuilt index shipped to the browser searches instantly with no backend. Beyond that, a hosted search service indexes the site and answers from its own infrastructure.</p>
+        </div>
+        <div class="use-case-card">
+          <h3><i data-lucide="file-edit"></i> Content editing</h3>
+          <p>Non-technical editing is handled by a headless CMS or a git-backed editor that triggers a rebuild on save. Editors get a familiar interface; the site stays static.</p>
+        </div>
+        <div class="use-case-card">
+          <h3><i data-lucide="git-branch"></i> Deploys and rollback</h3>
+          <p>Every commit builds and deploys automatically, with a preview URL per pull request so changes can be reviewed as rendered pages. Rollback is redeploying a previous build — seconds, not a database restore.</p>
+        </div>
+      </div>
+
+      <h2><i data-lucide="alert-triangle"></i> When static is the wrong choice</h2>
+      <p>Worth being straight about, because the answer is not always yes:</p>
+      <ul>
+        <li><strong>Genuinely per-user pages at scale.</strong> A dashboard where every visitor sees different data is not a static site, though it may well be a static shell that calls an API.</li>
+        <li><strong>Very large, very frequently changing catalogues.</strong> If a full rebuild takes twenty minutes and content changes hourly, incremental rendering or a dynamic approach fits better.</li>
+        <li><strong>Real-time content.</strong> Live inventory or pricing that must never be stale needs to be fetched at view time, not baked at build time.</li>
+        <li><strong>Complex authenticated flows.</strong> Possible with serverless functions, but at some point you are running an application and should acknowledge it.</li>
+      </ul>
+      <p>The useful question is not "static or dynamic" but "which parts of this page must be personal or live?" Very often the answer is a small fraction, and the rest can be pre-rendered.</p>
+
+      <h2><i data-lucide="gauge"></i> What we optimise for</h2>
+      <p>Beyond building and deploying, the work is in the details that determine whether the site performs in the field: appropriately sized and formatted responsive images, fonts that do not block rendering or shift layout, cache headers with content-hashed filenames so updates are instant and repeat visits are free, correct canonical URLs and a generated sitemap, structured data where it earns rich results, and accessibility checked with a keyboard rather than assumed. We also set up the deploy pipeline so you can ship without us.</p>
     </div>
 
     <div class="info-panel">

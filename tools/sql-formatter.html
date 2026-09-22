@@ -6,16 +6,23 @@
   <meta name="description" content="Universal SQL Formatter by Layerbit. Format, beautify, and debug queries across MySQL, PostgreSQL, and T-SQL instantly." />
   <title>Universal SQL Formatter - Layerbit</title>
   <link rel="canonical" href="https://layerbit.co.in/tools/sql-formatter.html" />
+  <meta name="robots" content="max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://layerbit.co.in/tools/sql-formatter.html" />
   <meta property="og:site_name" content="Layerbit" />
   <meta property="og:title" content="Universal SQL Formatter - Layerbit" />
   <meta property="og:description" content="Universal SQL Formatter by Layerbit. Format, beautify, and debug queries across MySQL, PostgreSQL, and T-SQL instantly." />
-  <meta property="og:image" content="https://layerbit.co.in/layerbit-logo.png" />
-  <meta name="twitter:card" content="summary" />
+  <meta property="og:image" content="https://layerbit.co.in/og-image.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="Layerbit - free browser-based developer tools" />
+  <meta property="og:locale" content="en" />
+  <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="Universal SQL Formatter - Layerbit" />
   <meta name="twitter:description" content="Universal SQL Formatter by Layerbit. Format, beautify, and debug queries across MySQL, PostgreSQL, and T-SQL instantly." />
-  <meta name="twitter:image" content="https://layerbit.co.in/layerbit-logo.png" />
+  <meta name="twitter:image" content="https://layerbit.co.in/og-image.png" />
+  <meta name="twitter:image:alt" content="Layerbit - free browser-based developer tools" />
+  <meta name="theme-color" content="#0a0c10" />
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -691,6 +698,44 @@
         </div>
 
       </div>
+    </div>
+
+    <div class="info-panel">
+      <h2><i data-lucide="microscope"></i> Why query formatting is a review problem, not a cosmetic one</h2>
+      <p>A query written as one 600-character line is not just unpleasant to read — it is effectively unreviewable. Every change to it produces a diff showing one line removed and one line added, so a reviewer cannot see whether you altered a join condition or only a column alias. Consistent formatting turns SQL into something version control can describe meaningfully.</p>
+      <p>That is the real argument for a formatter: not beauty, but making the <code>WHERE</code> clause you changed visible as a changed line rather than buried inside an unchanged wall of text.</p>
+
+      <div class="use-cases-grid">
+        <div class="use-case-card">
+          <h3><i data-lucide="align-left"></i> Keyword casing</h3>
+          <p>Upper-casing reserved words (<code>SELECT</code>, <code>JOIN</code>, <code>WHERE</code>) separates language from identifiers at a glance. SQL keywords are case-insensitive, so this is purely for readability — but it is the convention nearly every style guide lands on.</p>
+        </div>
+        <div class="use-case-card">
+          <h3><i data-lucide="corner-down-right"></i> Clause alignment</h3>
+          <p>Putting each major clause on its own line, with joins and conditions indented beneath, makes the query's shape match its logic. Nested subqueries become visibly nested instead of implied by parentheses alone.</p>
+        </div>
+        <div class="use-case-card">
+          <h3><i data-lucide="columns"></i> One column per line</h3>
+          <p>For long select lists this is the difference between a reviewable diff and an unreviewable one. Adding a column becomes a single added line, which is exactly what you want a code review to show.</p>
+        </div>
+      </div>
+
+      <h2><i data-lucide="git-fork"></i> Where dialects genuinely diverge</h2>
+      <p>"Standard SQL" is closer to an aspiration than a description. Formatting has to know which dialect it is looking at, because the same characters mean different things:</p>
+      <ul>
+        <li><strong>Identifier quoting.</strong> ANSI and PostgreSQL use double quotes (<code>"order"</code>), MySQL uses backticks (<code>`order`</code>), SQL Server uses brackets (<code>[order]</code>). In MySQL, double-quoted text is a <em>string literal</em> unless <code>ANSI_QUOTES</code> is enabled — so the same query can parse differently depending on a server setting.</li>
+        <li><strong>String concatenation.</strong> <code>||</code> in PostgreSQL and Oracle, <code>CONCAT()</code> in MySQL, <code>+</code> in SQL Server.</li>
+        <li><strong>Row limiting.</strong> <code>LIMIT n</code> in PostgreSQL and MySQL, <code>TOP n</code> in SQL Server, <code>FETCH FIRST n ROWS ONLY</code> in Db2 and standard SQL.</li>
+        <li><strong>Comment syntax.</strong> <code>--</code> and <code>/* */</code> are near-universal, but MySQL requires whitespace after <code>--</code>, so <code>--comment</code> is a subtraction of a negative rather than a comment.</li>
+        <li><strong>Parameter placeholders.</strong> <code>$1</code>, <code>?</code> and <code>@name</code> are all conventions you will meet, and a formatter must leave them intact.</li>
+      </ul>
+
+      <h2><i data-lucide="shield-alert"></i> Formatting is not sanitising</h2>
+      <p>Worth stating plainly: making a query readable does nothing about SQL injection. If any part of a query is assembled from user input by string concatenation, it is injectable whether it is beautifully indented or not. The fix is parameterised queries — placeholders bound by the driver, so user input is never parsed as SQL. A formatter is a readability tool, and reading a query is often how you <em>notice</em> a concatenation that should have been a parameter.</p>
+      <p>Equally, a formatter does not change how a query performs. It rewrites whitespace, never semantics: no clause is reordered, no join is rewritten, no index is chosen differently. For performance work you want <code>EXPLAIN</code>, not a formatter — though a readable plan is considerably easier to reason about alongside a readable query.</p>
+
+      <h2><i data-lucide="lock"></i> Your queries do not leave the page</h2>
+      <p>Production SQL tends to contain table names, column names, business logic and sometimes literal customer data in a <code>WHERE</code> clause. All of that is competitively and legally sensitive, and none of it should be pasted into a service you cannot inspect. This formatter is client-side JavaScript: the parsing and re-rendering happen in the page you have open, nothing is transmitted, and you can verify that in your browser's Network tab or simply by working offline.</p>
     </div>
 
     <div class="info-panel">

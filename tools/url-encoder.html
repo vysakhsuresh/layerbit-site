@@ -6,16 +6,23 @@
   <meta name="description" content="Advanced URL Encoder & Decoder. Smartly encode query parameters or raw strings in real-time. Secure client-side processing by Layerbit." />
   <title>URL Encoder & Decoder - Layerbit</title>
   <link rel="canonical" href="https://layerbit.co.in/tools/url-encoder.html" />
+  <meta name="robots" content="max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://layerbit.co.in/tools/url-encoder.html" />
   <meta property="og:site_name" content="Layerbit" />
   <meta property="og:title" content="URL Encoder & Decoder - Layerbit" />
   <meta property="og:description" content="Advanced URL Encoder & Decoder. Smartly encode query parameters or raw strings in real-time. Secure client-side processing by Layerbit." />
-  <meta property="og:image" content="https://layerbit.co.in/layerbit-logo.png" />
-  <meta name="twitter:card" content="summary" />
+  <meta property="og:image" content="https://layerbit.co.in/og-image.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="Layerbit - free browser-based developer tools" />
+  <meta property="og:locale" content="en" />
+  <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="URL Encoder & Decoder - Layerbit" />
   <meta name="twitter:description" content="Advanced URL Encoder & Decoder. Smartly encode query parameters or raw strings in real-time. Secure client-side processing by Layerbit." />
-  <meta name="twitter:image" content="https://layerbit.co.in/layerbit-logo.png" />
+  <meta name="twitter:image" content="https://layerbit.co.in/og-image.png" />
+  <meta name="twitter:image:alt" content="Layerbit - free browser-based developer tools" />
+  <meta name="theme-color" content="#0a0c10" />
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -479,6 +486,40 @@
         </div>
 
       </div>
+    </div>
+
+    <div class="info-panel">
+      <h2><i data-lucide="microscope"></i> Two encodings, one confusing name</h2>
+      <p>"URL encoding" refers to two different schemes that disagree about the space character, and mixing them up is behind a great many broken links. RFC 3986 percent-encoding represents a space as <code>%20</code>. The <code>application/x-www-form-urlencoded</code> format used by HTML forms represents it as <code>+</code>, and a literal plus as <code>%2B</code>.</p>
+      <p>Both are correct in their own place. Query strings are form-decoded by most servers, so <code>+</code> reads as a space there — which is why search URLs are full of them. Paths are percent-decoded, so in a path <code>+</code> is a literal plus character. Our <a href="../guides/percent-encoding-explained.html">URL encoding guide</a> works through the reserved-character rules and the double-encoding signature in detail.</p>
+
+      <div class="use-cases-grid">
+        <div class="use-case-card">
+          <h3><i data-lucide="file-x"></i> The C++ filename bug</h3>
+          <p>A file named <code>C++ notes.pdf</code> encodes to <code>C%2B%2B%20notes.pdf</code>. If any layer form-decodes that path rather than percent-decoding it, the escaped pluses become spaces and the key no longer matches. "Uploads fine, 404s on download" is almost always this.</p>
+        </div>
+        <div class="use-case-card">
+          <h3><i data-lucide="repeat"></i> <code>%2520</code> means encoded twice</h3>
+          <p>Encoding is not idempotent: <code>%</code> itself encodes to <code>%25</code>, so running an encoder over already-encoded text produces <code>%2520</code> from a space. Seeing it in a log tells you two layers each believed they were responsible for encoding.</p>
+        </div>
+        <div class="use-case-card">
+          <h3><i data-lucide="scissors"></i> Smart vs Raw mode</h3>
+          <p>Smart mode parses the input as a URL and encodes only the query values, preserving the protocol, host and path so the result stays clickable. Raw mode applies strict component encoding to the whole string — correct when the input is a single value rather than a URL.</p>
+        </div>
+      </div>
+
+      <h2><i data-lucide="shield-alert"></i> Encode per component, never the whole URL</h2>
+      <p>The rule that resolves most remaining questions: encoding belongs to individual values <em>before</em> the URL is assembled, because only then does the code know which characters are data and which are structure. Encoding an already-assembled URL cannot distinguish them, and the consequence is a parameter-injection bug:</p>
+      <ul>
+        <li><code>"/search?q=" + encodeURI("a=1&amp;admin=true")</code> yields two parameters — <code>q</code> and an attacker-supplied <code>admin</code>.</li>
+        <li><code>encodeURIComponent</code> on the same value yields <code>a%3D1%26admin%3Dtrue</code>: one parameter, correctly escaped.</li>
+      </ul>
+      <p>In practice, prefer <code>URLSearchParams</code> over either function. It escapes each value correctly, handles repeated keys, and cannot produce an injection because it never treats your data as syntax. Its one quirk is that it form-encodes, so spaces come out as <code>+</code> — which, in a query string, is exactly right.</p>
+      <p>One thing to avoid entirely: decoding repeatedly until the string stops changing. That is how path-traversal filters get bypassed, because <code>%252e%252e%252f</code> passes a check for <code>../</code> and then becomes <code>../</code> after a second decode. Decode exactly once, then validate.</p>
+
+      <h2><i data-lucide="table"></i> The parameter grid and batch mode</h2>
+      <p>When a URL has a dozen query parameters, reading it as one string is the hard way. The parameter grid breaks a detected query into editable key/value rows: change a value, add a parameter, remove one, and <strong>Re-encode</strong> rebuilds both the readable and the percent-encoded forms of the URL. Batch mode takes a list of URLs, one per line, and encodes or decodes every line independently — useful for a column of tracking links pulled out of a spreadsheet.</p>
+      <p>All of it happens in the page. URLs frequently carry session tokens, signed parameters and temporary authorisation grants in their query strings, so nothing you paste here is transmitted anywhere.</p>
     </div>
 
     <div class="info-panel">

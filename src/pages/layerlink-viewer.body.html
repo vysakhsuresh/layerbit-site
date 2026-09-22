@@ -102,6 +102,41 @@
     </div>
 
     <div class="info-panel">
+      <h2><i data-lucide="microscope"></i> What the viewer does, and why it works almost everywhere</h2>
+      <p>The viewer's job is the easy half of a WebRTC session: receive a stream and render it. No screen capture permission is required, no local media is accessed, and nothing is transmitted from your device except the connection negotiation needed to establish the peer link. That is why viewing works on any reasonably modern browser — including phones and tablets, where <em>hosting</em> a share is not possible at all.</p>
+      <p>The asymmetry surprises people, so it is worth stating: mobile operating systems deliberately do not expose screen capture to web pages, which is a platform restriction rather than a limitation of this tool. Receiving video needs none of that machinery. Our <a href="layerlink-sharer.html">sharer page</a> covers the full connection sequence.</p>
+
+      <div class="use-cases-grid">
+        <div class="use-case-card">
+          <h3><i data-lucide="link"></i> A session ID is a capability</h3>
+          <p>Anyone holding the session identifier can attempt to join. Treat the link like a temporary password: send it over a channel you trust, and do not paste it into a public ticket, a shared document or a group chat that outlives the session.</p>
+        </div>
+        <div class="use-case-card">
+          <h3><i data-lucide="activity"></i> Quality adapts to the link</h3>
+          <p>WebRTC continuously adjusts resolution and frame rate to the bandwidth available. Text becoming briefly unreadable during a screen change is the codec reallocating bits after a keyframe, not a fault — it resolves within a second or two on a stable connection.</p>
+        </div>
+        <div class="use-case-card">
+          <h3><i data-lucide="wifi-off"></i> Why a session may not connect</h3>
+          <p>If both peers are behind restrictive NAT or a corporate firewall, no direct path may exist and the connection cannot establish without a relay. A session that works between two home networks and fails from an office is almost always this, not a browser problem.</p>
+        </div>
+      </div>
+
+      <h2><i data-lucide="list-checks"></i> Troubleshooting a session that will not start</h2>
+      <p>In rough order of likelihood:</p>
+      <ul>
+        <li><strong>The host has not started sharing yet.</strong> The viewer cannot render a stream that does not exist; the session must be live at the sharing end first.</li>
+        <li><strong>The session has ended.</strong> Identifiers are not durable — once the host stops sharing or closes the tab, the peer connection is gone and the link is spent.</li>
+        <li><strong>The identifier was altered in transit.</strong> Chat clients and email readers sometimes mangle or truncate long links. Copy it as plain text.</li>
+        <li><strong>A network is blocking peer traffic.</strong> Corporate networks and some VPNs block the UDP traffic WebRTC prefers. Trying a different network is the fastest way to confirm.</li>
+        <li><strong>A browser extension is interfering.</strong> Aggressive privacy extensions sometimes block WebRTC entirely, specifically to prevent local IP disclosure during candidate gathering.</li>
+      </ul>
+      <p>That last point is a genuine trade-off worth understanding rather than working around blindly: ICE candidate gathering can reveal local network addresses to the other peer, which is inherent to establishing a direct connection. Extensions that block it are protecting that information at the cost of peer-to-peer connectivity.</p>
+
+      <h2><i data-lucide="shield-check"></i> What is and is not private here</h2>
+      <p>The media stream is encrypted in transit with DTLS-SRTP, which WebRTC mandates rather than offers, and it travels directly between the two browsers rather than through a server. The signalling service sees only the metadata needed to introduce the peers — never video. This is the one part of Layerbit that involves a network service at all, which is why it carries a <em>Cloud API</em> badge while the rest of the toolkit does not.</p>
+    </div>
+
+    <div class="info-panel">
       <h2><i data-lucide="git-merge"></i> Deployment Changelog</h2>
       <ul class="changelog-list">
         <li><span class="changelog-tag">v1.3.0</span> Deployed enterprise documentation architecture and UI state simulation tools for the viewer terminal.</li>

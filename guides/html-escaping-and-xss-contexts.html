@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="HTML escaping protects element text and nothing else. Why unquoted attributes break with a space, why </script> ends a block inside a JavaScript string, and why you escape on output not input." />
+  <title>Escaping Is Context-Dependent: HTML, Attributes, JavaScript and URLs - Layerbit Guides</title>
+  <link rel="canonical" href="https://layerbit.co.in/guides/html-escaping-and-xss-contexts.html" />
+  <meta name="robots" content="max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://layerbit.co.in/guides/html-escaping-and-xss-contexts.html" />
+  <meta property="og:site_name" content="Layerbit" />
+  <meta property="og:title" content="Escaping Is Context-Dependent: HTML, Attributes, JavaScript and URLs - Layerbit Guides" />
+  <meta property="og:description" content="HTML escaping protects element text and nothing else. Why unquoted attributes break with a space, why </script> ends a block inside a JavaScript string, and why you escape on output not input." />
+  <meta property="og:image" content="https://layerbit.co.in/og-image.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="Layerbit - free browser-based developer tools" />
+  <meta property="og:locale" content="en" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Escaping Is Context-Dependent: HTML, Attributes, JavaScript and URLs - Layerbit Guides" />
+  <meta name="twitter:description" content="HTML escaping protects element text and nothing else. Why unquoted attributes break with a space, why </script> ends a block inside a JavaScript string, and why you escape on output not input." />
+  <meta name="twitter:image" content="https://layerbit.co.in/og-image.png" />
+  <meta name="twitter:image:alt" content="Layerbit - free browser-based developer tools" />
+  <meta name="theme-color" content="#0a0c10" />
+  <script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "TechArticle",
+      "@id": "https://layerbit.co.in/guides/html-escaping-and-xss-contexts.html#article",
+      "headline": "There Is No Such Thing as Escaping - Only Escaping For Something",
+      "name": "There Is No Such Thing as Escaping - Only Escaping For Something",
+      "description": "HTML escaping protects element text and nothing else. Why unquoted attributes break with a space, why \u003c/script\u003e ends a block inside a JavaScript string, and why you escape on output not input.",
+      "url": "https://layerbit.co.in/guides/html-escaping-and-xss-contexts.html",
+      "mainEntityOfPage": {
+        "@type": "WebPage",
+        "@id": "https://layerbit.co.in/guides/html-escaping-and-xss-contexts.html"
+      },
+      "datePublished": "2026-08-29",
+      "dateModified": "2026-09-21",
+      "inLanguage": "en",
+      "wordCount": 1800,
+      "keywords": "xss prevention, html escaping, contextual output encoding, unquoted attribute xss, script block escaping, dompurify sanitize, escape on output",
+      "articleSection": "Web Security",
+      "author": {
+        "@type": "Organization",
+        "name": "Layerbit Technologies",
+        "url": "https://layerbit.co.in/about.html"
+      },
+      "publisher": {
+        "@type": "Organization",
+        "name": "Layerbit Technologies",
+        "url": "https://layerbit.co.in/",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://layerbit.co.in/icon-512.png",
+          "width": 512,
+          "height": 512
+        }
+      },
+      "image": {
+        "@type": "ImageObject",
+        "url": "https://layerbit.co.in/icon-512.png",
+        "width": 512,
+        "height": 512
+      },
+      "isAccessibleForFree": true,
+      "proficiencyLevel": "Intermediate"
+    },
+    {
+      "@type": "BreadcrumbList",
+      "@id": "https://layerbit.co.in/guides/html-escaping-and-xss-contexts.html#breadcrumb",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://layerbit.co.in/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Guides",
+          "item": "https://layerbit.co.in/blog.html"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": "Escaping and XSS contexts",
+          "item": "https://layerbit.co.in/guides/html-escaping-and-xss-contexts.html"
+        }
+      ]
+    },
+    {
+      "@type": "FAQPage",
+      "@id": "https://layerbit.co.in/guides/html-escaping-and-xss-contexts.html#faq",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "Is HTML escaping enough to prevent XSS?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Only in element text and quoted attribute values. It does nothing for a JavaScript block, a URL attribute or CSS, because the dangerous characters in those contexts are not the five that HTML escaping replaces. A javascript: URL, for example, contains no character that HTML escaping touches. Output encoding must match the context the value is rendered into."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Why are unquoted HTML attributes dangerous?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "An unquoted attribute value ends at the first whitespace, so a payload needs no angle brackets or quotes at all. A value such as x onfocus=alert(1) autofocus survives HTML escaping completely intact and adds a new event-handler attribute. The fix is not more escaping but always quoting attributes, so the closing quote is the only exit and that character is escaped."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Why does \u003c/script\u003e break out of a JavaScript string?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "The HTML tokeniser runs before the JavaScript parser and has no concept of being inside a string literal. It ends the script block at the first literal \u003c/script\u003e sequence it sees, even mid-string. Serialise data into a JSON script block or data attribute instead, and when inlining JSON escape \u003c, \u003e and \u0026 as \\u003c, \\u003e and \\u0026."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Should I escape user input before storing it in the database?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "No. At input time you do not know which context the value will be rendered into - HTML, a plain-text email, a JSON response or a CSV export each need different treatment. Escaping on input also corrupts the stored data and causes double-escaped output like \u0026amp;amp;lt;. Store what the user typed and escape at the moment of rendering."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What is the difference between escaping and sanitising HTML?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Escaping renders a value as inert text, so markup is displayed literally - correct for usernames, titles and comments. Sanitising parses the value as HTML and strips everything not on an allowlist while keeping the rest live - correct only when users are genuinely meant to submit formatting. Use a maintained library such as DOMPurify for sanitising, never a regular expression."
+          }
+        }
+      ]
+    }
+  ]
+}
+  </script>
+
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6072772587431629" crossorigin="anonymous"></script>
+
+  <script src="https://unpkg.com/lucide@1.39.0" async></script>
+
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet" />
+  <link href="../layerbit-logo.png" rel="icon" type="image/x-icon" />
+  <link rel="manifest" href="../manifest.json" />
+  <link rel="apple-touch-icon" href="../apple-touch-icon.png" />
+  <link rel="stylesheet" href="../css/base.css" />
+  <link rel="stylesheet" href="../css/article.css" />
+
+  <style>
+
+    /* Long-form guide styling lives in css/article.css, linked from this page's head. */
+  
+  </style>
+</head>
+<body>
+  <header>
+    <a href="../" class="brand">
+      <svg width="36" height="36" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <polygon points="32,20 54,28 32,36 10,28" stroke="#f8fafc" stroke-width="4" stroke-linejoin="round"/>
+        <polyline points="10,38 32,46 54,38" stroke="#f8fafc" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+        <polyline points="10,48 32,56 54,48" stroke="#f8fafc" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+        <rect x="50" y="10" width="10" height="10" rx="2" fill="#00f2fe" />
+      </svg>
+      Layerbit
+    </a>
+  </header>
+
+  <nav class="crumbs" aria-label="Breadcrumb">
+    <a href="../">Home</a>
+    <span class="sep">/</span>
+    <a href="../blog.html">Guides</a>
+    <span class="sep">/</span>
+    <span aria-current="page">Escaping and XSS contexts</span>
+  </nav>
+
+  <article class="article">
+    <header class="article-head">
+      <span class="article-kicker">Web Security</span>
+      <h1>There Is No Such Thing as "Escaping" — Only Escaping <em>For</em> Something</h1>
+      <p class="article-standfirst">Replacing <code>&lt;</code> with <code>&amp;lt;</code> makes a value safe inside HTML text. Put that same escaped value inside an <code>onclick</code> handler, a <code>&lt;script&gt;</code> block, or an <code>href</code>, and it is still a cross-site scripting vulnerability. The escaping you need depends entirely on where the value lands.</p>
+      <div class="article-meta">
+        <span class="byline">Layerbit Engineering</span>
+        <span><i data-lucide="calendar"></i>Published 29 August 2026</span>
+        <span><i data-lucide="clock"></i>9 min read</span>
+      </div>
+    </header>
+
+    <div class="takeaways">
+      <h2><i data-lucide="list-checks"></i> The short version</h2>
+      <ul>
+        <li>HTML escaping protects <strong>one</strong> context — element text. It does nothing for JavaScript, URL or CSS contexts.</li>
+        <li>An unquoted HTML attribute can be escaped out of with a plain space. Always quote attributes.</li>
+        <li>Inside <code>&lt;script&gt;</code>, the string <code>&lt;/script&gt;</code> ends the block even in the middle of a JavaScript string literal.</li>
+        <li>Escape on <strong>output</strong>, not on input. At input time you do not yet know which context the value will be rendered into.</li>
+      </ul>
+    </div>
+
+    <div class="prose">
+      <h2 id="entities">The five characters, and the one context they cover</h2>
+      <p>HTML escaping means replacing characters that have structural meaning with entity references:</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Character</th><th>Entity</th><th>Why</th></tr></thead>
+          <tbody>
+            <tr><td><code>&amp;</code></td><td><code>&amp;amp;</code></td><td>Starts an entity reference — must be escaped first</td></tr>
+            <tr><td><code>&lt;</code></td><td><code>&amp;lt;</code></td><td>Starts a tag</td></tr>
+            <tr><td><code>&gt;</code></td><td><code>&amp;gt;</code></td><td>Ends a tag</td></tr>
+            <tr><td><code>"</code></td><td><code>&amp;quot;</code></td><td>Ends a double-quoted attribute</td></tr>
+            <tr><td><code>'</code></td><td><code>&amp;#39;</code></td><td>Ends a single-quoted attribute</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>Two details matter. The ampersand must be replaced <strong>first</strong>, or you will re-escape the semicolons of your own entities and produce <code>&amp;amp;lt;</code>, which renders visibly as <code>&amp;lt;</code>. And for the apostrophe, prefer the numeric <code>&amp;#39;</code> over <code>&amp;apos;</code> — the named form was not in HTML 4 and is not recognised by some legacy parsers.</p>
+      <p>Do this correctly and a value is safe in exactly one place: as text between tags. Everywhere else needs different treatment.</p>
+
+      <h2 id="contexts">The five contexts</h2>
+      <h3>1. HTML element text — escaping works</h3>
+      <pre><code>&lt;p&gt;Hello, {{ name }}&lt;/p&gt;</code></pre>
+      <p>Escape the five characters and you are done. This is the only context where "HTML escaping" is a complete answer.</p>
+
+      <h3>2. Quoted attribute value — escaping works, if quoted</h3>
+      <pre><code>&lt;input value="{{ name }}"&gt;   &lt;!-- safe when escaped --&gt;
+&lt;input value={{ name }}&gt;     &lt;!-- unsafe even when escaped --&gt;</code></pre>
+      <p>In the unquoted form, the attribute value ends at the first whitespace. So a payload needs no angle brackets and no quotes at all:</p>
+      <pre><code>name = x onfocus=alert(1) autofocus
+→ &lt;input value=x onfocus=alert(1) autofocus&gt;</code></pre>
+      <p>Every character there survives HTML escaping untouched, because none of them are in the list of five. The defence is not more escaping — it is <strong>always quoting your attributes</strong>. Then the closing quote is the only way out, and that character <em>is</em> escaped.</p>
+
+      <h3>3. Inside a <code>&lt;script&gt;</code> block — HTML escaping is the wrong tool</h3>
+      <p>This is where most subtle XSS lives, because the intuitive fix makes things worse:</p>
+      <pre><code>&lt;script&gt;
+  var name = "{{ name }}";
+&lt;/script&gt;</code></pre>
+      <p>HTML-escaping <code>name</code> here does not protect you — and it corrupts the data, because the JavaScript string will literally contain <code>&amp;amp;</code> where the user typed <code>&amp;</code>. Meanwhile the real exits are still open:</p>
+      <ul>
+        <li>A double quote closes the string literal: <code>"; alert(1); //</code></li>
+        <li>A backslash can escape your closing quote and shift the parse.</li>
+        <li>Most importantly, the literal text <code>&lt;/script&gt;</code> <strong>ends the script block</strong> — even inside a JavaScript string. The HTML tokeniser runs before the JavaScript parser and does not know or care that it is "inside a string".</li>
+      </ul>
+      <pre><code>name = &lt;/script&gt;&lt;script&gt;alert(1)&lt;/script&gt;
+→ var name = "&lt;/script&gt;&lt;script&gt;alert(1)&lt;/script&gt;";
+   the browser sees the block end, then a brand-new script</code></pre>
+      <div class="callout">
+        <div class="callout-title"><i data-lucide="check-circle"></i> The reliable pattern</div>
+        <p>Do not interpolate into JavaScript source at all. Serialise the value as JSON into a data attribute or a <code>&lt;script type="application/json"&gt;</code> block and read it from the DOM:</p>
+        <pre><code>&lt;script id="cfg" type="application/json"&gt;{{ json_escaped }}&lt;/script&gt;
+&lt;script&gt;
+  const cfg = JSON.parse(document.getElementById('cfg').textContent);
+&lt;/script&gt;</code></pre>
+        <p>When you must inline JSON, escape <code>&lt;</code>, <code>&gt;</code> and <code>&amp;</code> as <code><</code>, <code>></code> and <code>&</code> — valid JSON that cannot close the block.</p>
+      </div>
+
+      <h3>4. URL context — escaping is not enough, validate the scheme</h3>
+      <pre><code>&lt;a href="{{ url }}"&gt;Profile&lt;/a&gt;</code></pre>
+      <p>HTML-escape this and the attribute is well-formed. It is still exploitable, because the danger is not the syntax — it is the <em>scheme</em>:</p>
+      <pre><code>url = javascript:alert(document.cookie)
+url = data:text/html,&lt;script&gt;alert(1)&lt;/script&gt;</code></pre>
+      <p>Neither contains a character that HTML escaping touches. The defence is an allowlist: parse the URL and accept only <code>http:</code>, <code>https:</code>, <code>mailto:</code> — whatever your feature genuinely needs — and reject everything else. Note that a relative URL is safe, so "starts with <code>/</code>" is a useful fast path.</p>
+      <p>Individual <em>values inside</em> a URL need percent-encoding on top of that, which is a separate concern covered in our <a href="percent-encoding-explained.html">URL encoding guide</a>. Two encodings, applied in the right order: percent-encode the component, then HTML-escape the finished attribute.</p>
+
+      <h3>5. CSS context — avoid entirely</h3>
+      <pre><code>&lt;div style="width: {{ width }}"&gt;</code></pre>
+      <p>CSS can fetch URLs (<code>url(...)</code>) and historically could execute script in some engines. Escaping rules here are genuinely awkward. The practical answer is to never interpolate user input into CSS. Validate against a strict pattern instead — if the value should be a length, confirm it matches <code>^\d+(px|%|em)$</code> and reject anything else. An allowlist of permitted values beats any escaping scheme.</p>
+
+      <h2 id="summary-table">One value, five treatments</h2>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Context</th><th>Correct handling</th></tr></thead>
+          <tbody>
+            <tr><td>Element text</td><td>HTML-escape the five characters</td></tr>
+            <tr><td>Quoted attribute</td><td>HTML-escape, and ensure the quotes are actually there</td></tr>
+            <tr><td>Unquoted attribute</td><td>Do not. Quote it.</td></tr>
+            <tr><td>Script block</td><td>JSON-serialise with <code><</code> escapes, or read from the DOM</td></tr>
+            <tr><td>URL attribute</td><td>Scheme allowlist, then percent-encode components, then HTML-escape</td></tr>
+            <tr><td>CSS</td><td>Pattern-validate against an allowlist; never interpolate freely</td></tr>
+            <tr><td>Event handler attribute</td><td>Never. Attach listeners in JavaScript instead.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="tool-cta">
+        <div class="cta-copy">
+          <h3>Convert between raw text and HTML entities</h3>
+          <p>Layerbit's HTML Escape / Unescape tool converts in both directions locally in your browser — useful for checking exactly which characters a template escaped, and for spotting double-escaped <code>&amp;amp;lt;</code> in output you are debugging.</p>
+        </div>
+        <a class="cta-btn" href="../tools/html-escape-unescape.html"><i data-lucide="code"></i> Open HTML Escape tool</a>
+      </div>
+
+      <h2 id="output-time">Escape on output, never on input</h2>
+      <p>A persistent anti-pattern is escaping data as it arrives and storing the escaped form. It fails for three reasons:</p>
+      <ol>
+        <li><strong>The context is unknown at input time.</strong> The same comment may later be rendered as HTML text, as a plain-text email, as a JSON API response, and in a CSV export. Each needs different treatment — and HTML entities in a plain-text email are simply wrong.</li>
+        <li><strong>Your data is now corrupted.</strong> The stored value is no longer what the user typed. Search, sorting, string length and comparisons all operate on <code>&amp;amp;</code> instead of <code>&amp;</code>.</li>
+        <li><strong>Double escaping.</strong> When a correctly written template escapes the already-escaped value, users see <code>&amp;amp;lt;</code> on the page. The usual "fix" is to disable escaping in that template — which removes the real protection everywhere.</li>
+      </ol>
+      <p>Store exactly what the user typed. Escape at the moment of rendering, using the escaping appropriate to the destination. Input validation is still worthwhile — length limits, format checks, rejecting obvious nonsense — but it is a separate concern from output encoding, and it is not a substitute for it.</p>
+
+      <h2 id="sanitize">Escaping versus sanitising</h2>
+      <p>These solve different problems and are not alternatives:</p>
+      <ul>
+        <li><strong>Escaping</strong> renders the value as inert text. <code>&lt;b&gt;hi&lt;/b&gt;</code> displays as the literal characters <code>&lt;b&gt;hi&lt;/b&gt;</code>. Correct for usernames, comments, titles — anything that should not contain markup.</li>
+        <li><strong>Sanitising</strong> parses the value as HTML and removes everything not on an allowlist, keeping the rest live. <code>&lt;b&gt;hi&lt;/b&gt;</code> renders as bold text; <code>&lt;script&gt;</code> is stripped. Correct only when users are genuinely meant to submit formatted content.</li>
+      </ul>
+      <p>If you need sanitising, use a maintained library — DOMPurify is the reference implementation — and never a regular expression. HTML parsing is far too irregular for pattern matching; every hand-rolled tag stripper has been bypassed, usually via malformed markup that browsers helpfully "correct" into something executable.</p>
+
+      <h3>What modern frameworks give you</h3>
+      <p>React, Vue, Angular and Svelte all escape interpolated values in text and attribute positions by default, which eliminates the common cases. The risk concentrates in the documented escape hatches — <code>dangerouslySetInnerHTML</code>, <code>v-html</code>, <code>[innerHTML]</code>, <code>{@html}</code> — and in URL attributes, which frameworks generally do <em>not</em> scheme-check for you. A <code>href={userUrl}</code> in React is still a <code>javascript:</code> vector.</p>
+      <p>In plain DOM code, the equivalent discipline is to prefer <code>textContent</code> over <code>innerHTML</code>. Assigning to <code>textContent</code> cannot create elements, so there is no context to escape out of — the safety is structural rather than dependent on getting a transformation right.</p>
+
+      <h2 id="closing">Ask where the value is going</h2>
+      <p>The habit that prevents this whole class of bug is small: before interpolating any value into a template, name the context out loud. Element text? Quoted attribute? Script block? URL? Each answer implies a different treatment, and "I escaped it" is only a meaningful statement once you have said escaped <em>for what</em>.</p>
+
+      <div class="further">
+        <h2>Related guides and tools</h2>
+        <div class="further-grid">
+          <a class="further-card" href="percent-encoding-explained.html">
+            <strong>URL encoding, properly explained</strong>
+            <span>The encoding you need inside an href, before HTML escaping.</span>
+          </a>
+          <a class="further-card" href="../tools/html-escape-unescape.html">
+            <strong>HTML Escape / Unescape</strong>
+            <span>Convert both directions and spot double-escaped output.</span>
+          </a>
+          <a class="further-card" href="regex-catastrophic-backtracking.html">
+            <strong>Why regex cannot sanitise HTML</strong>
+            <span>And how one pattern can freeze your server outright.</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </article>
+
+  <a href="../" id="smartBackBtn" class="fab" aria-label="Command Center" title="Command Center">
+    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="filter: drop-shadow(0 0 8px rgba(56, 189, 248, 0.5));">
+      <path d="M12 2L2 7l10 5 10-5-10-5z" stroke="#38bdf8" stroke-width="2" stroke-linejoin="round" fill="rgba(56,189,248,0.2)"/>
+      <path d="M2 17l10 5 10-5M2 12l10 5 10-5" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </a>
+
+  <footer>
+    <div style="margin-bottom: 15px;">
+      &copy; 2025 - 2026 <strong>Layerbit Technologies</strong>. All rights reserved.
+    </div>
+    <div>
+      <a href="../about.html">About</a>
+      <a href="../privacy.html">Privacy Policy</a>
+      <a href="../terms.html">Terms of Service</a>
+      <a href="../blog.html">Developer Blog</a>
+      <a href="../contact.html">Contact</a>
+    </div>
+  </footer>
+
+  <script src="../js/shared.js"></script>
+  <script src="../main.js"></script>
+</body>
+</html>

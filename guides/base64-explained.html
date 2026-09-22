@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="How 3 bytes become 4 characters, why the overhead is exactly 33%, what the = padding is for, when to use base64url, and why btoa throws on emoji." />
+  <title>What Base64 Actually Does (and What It Does Not) - Layerbit Guides</title>
+  <link rel="canonical" href="https://layerbit.co.in/guides/base64-explained.html" />
+  <meta name="robots" content="max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://layerbit.co.in/guides/base64-explained.html" />
+  <meta property="og:site_name" content="Layerbit" />
+  <meta property="og:title" content="What Base64 Actually Does (and What It Does Not) - Layerbit Guides" />
+  <meta property="og:description" content="How 3 bytes become 4 characters, why the overhead is exactly 33%, what the = padding is for, when to use base64url, and why btoa throws on emoji." />
+  <meta property="og:image" content="https://layerbit.co.in/og-image.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="Layerbit - free browser-based developer tools" />
+  <meta property="og:locale" content="en" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="What Base64 Actually Does (and What It Does Not) - Layerbit Guides" />
+  <meta name="twitter:description" content="How 3 bytes become 4 characters, why the overhead is exactly 33%, what the = padding is for, when to use base64url, and why btoa throws on emoji." />
+  <meta name="twitter:image" content="https://layerbit.co.in/og-image.png" />
+  <meta name="twitter:image:alt" content="Layerbit - free browser-based developer tools" />
+  <meta name="theme-color" content="#0a0c10" />
+  <script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "TechArticle",
+      "@id": "https://layerbit.co.in/guides/base64-explained.html#article",
+      "headline": "What Base64 Actually Does (and What It Definitely Does Not)",
+      "name": "What Base64 Actually Does (and What It Definitely Does Not)",
+      "description": "How 3 bytes become 4 characters, why the overhead is exactly 33%, what the = padding is for, when to use base64url, and why btoa throws on emoji.",
+      "url": "https://layerbit.co.in/guides/base64-explained.html",
+      "mainEntityOfPage": {
+        "@type": "WebPage",
+        "@id": "https://layerbit.co.in/guides/base64-explained.html"
+      },
+      "datePublished": "2026-08-31",
+      "dateModified": "2026-09-21",
+      "inLanguage": "en",
+      "wordCount": 1650,
+      "keywords": "base64, base64url, rfc 4648, base64 padding, btoa unicode, base64 is not encryption, data uri base64",
+      "articleSection": "Encoding Fundamentals",
+      "author": {
+        "@type": "Organization",
+        "name": "Layerbit Technologies",
+        "url": "https://layerbit.co.in/about.html"
+      },
+      "publisher": {
+        "@type": "Organization",
+        "name": "Layerbit Technologies",
+        "url": "https://layerbit.co.in/",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://layerbit.co.in/icon-512.png",
+          "width": 512,
+          "height": 512
+        }
+      },
+      "image": {
+        "@type": "ImageObject",
+        "url": "https://layerbit.co.in/icon-512.png",
+        "width": 512,
+        "height": 512
+      },
+      "isAccessibleForFree": true,
+      "proficiencyLevel": "Beginner"
+    },
+    {
+      "@type": "BreadcrumbList",
+      "@id": "https://layerbit.co.in/guides/base64-explained.html#breadcrumb",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://layerbit.co.in/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Guides",
+          "item": "https://layerbit.co.in/blog.html"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": "Base64 explained",
+          "item": "https://layerbit.co.in/guides/base64-explained.html"
+        }
+      ]
+    },
+    {
+      "@type": "FAQPage",
+      "@id": "https://layerbit.co.in/guides/base64-explained.html#faq",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "Is Base64 a form of encryption?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "No. Base64 has no key and no secret - the same input always produces the same output, and any decoder reverses it instantly. HTTP Basic authentication sends base64(user:password), which is why Basic auth over plain HTTP is equivalent to sending the password in clear text. Base64 in a cookie, config file or app bundle protects nothing."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How much larger does Base64 make my data?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Exactly one third larger. Every 3 bytes of input become 4 output characters, a ratio of 4/3 or 33.3% growth, plus up to two padding characters. MIME email adds line breaks every 76 characters, pushing the practical overhead to roughly 37%. This is why inlining large images as data URIs is often a poor trade."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What is the equals sign at the end of a Base64 string?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "It is padding. When the input length is not a multiple of 3 the final group is short, so the output is padded with = to reach a multiple of 4. One leftover byte produces two characters plus ==; two leftover bytes produce three characters plus =. The padding carries no data and some formats, including JWT, omit it entirely."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "When should I use base64url instead of Base64?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Whenever the value goes in a URL, a filename or a cookie. Standard Base64 uses + and /, and in a query string form-decoding turns + into a space while in a path / acts as a separator. Base64url substitutes - and _ for those two characters and usually drops the padding. JWTs use base64url for exactly this reason."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Why does btoa throw an error on non-English text?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "btoa operates on binary strings where every character must be in the range U+0000 to U+00FF, so anything above that - accented letters, CJK characters, emoji - throws InvalidCharacterError. Convert the string to UTF-8 bytes with TextEncoder first, then map those bytes into the Latin-1 range before calling btoa. Base64 encodes bytes, not text."
+          }
+        }
+      ]
+    }
+  ]
+}
+  </script>
+
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6072772587431629" crossorigin="anonymous"></script>
+
+  <script src="https://unpkg.com/lucide@1.39.0" async></script>
+
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet" />
+  <link href="../layerbit-logo.png" rel="icon" type="image/x-icon" />
+  <link rel="manifest" href="../manifest.json" />
+  <link rel="apple-touch-icon" href="../apple-touch-icon.png" />
+  <link rel="stylesheet" href="../css/base.css" />
+  <link rel="stylesheet" href="../css/article.css" />
+
+  <style>
+
+    /* Long-form guide styling lives in css/article.css, linked from this page's head. */
+  
+  </style>
+</head>
+<body>
+  <header>
+    <a href="../" class="brand">
+      <svg width="36" height="36" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <polygon points="32,20 54,28 32,36 10,28" stroke="#f8fafc" stroke-width="4" stroke-linejoin="round"/>
+        <polyline points="10,38 32,46 54,38" stroke="#f8fafc" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+        <polyline points="10,48 32,56 54,48" stroke="#f8fafc" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+        <rect x="50" y="10" width="10" height="10" rx="2" fill="#00f2fe" />
+      </svg>
+      Layerbit
+    </a>
+  </header>
+
+  <nav class="crumbs" aria-label="Breadcrumb">
+    <a href="../">Home</a>
+    <span class="sep">/</span>
+    <a href="../blog.html">Guides</a>
+    <span class="sep">/</span>
+    <span aria-current="page">Base64 explained</span>
+  </nav>
+
+  <article class="article">
+    <header class="article-head">
+      <span class="article-kicker">Encoding Fundamentals</span>
+      <h1>What Base64 Actually Does (and What It Definitely Does Not)</h1>
+      <p class="article-standfirst">Base64 turns arbitrary bytes into 64 safe characters, costs you a third of your payload size, and offers exactly zero security. It is one of the most useful tools in the protocol toolbox and one of the most consistently misunderstood — usually by someone who thinks it counts as obfuscation.</p>
+      <div class="article-meta">
+        <span class="byline">Layerbit Engineering</span>
+        <span><i data-lucide="calendar"></i>Published 31 August 2026</span>
+        <span><i data-lucide="clock"></i>8 min read</span>
+      </div>
+    </header>
+
+    <div class="takeaways">
+      <h2><i data-lucide="list-checks"></i> The short version</h2>
+      <ul>
+        <li>Base64 is an <strong>encoding</strong>, not encryption. Anyone can reverse it instantly, with no key.</li>
+        <li>It costs <strong>33% more bytes</strong> — every 3 bytes of input become 4 characters of output.</li>
+        <li>Standard Base64 uses <code>+</code> and <code>/</code>, which are unsafe in URLs. Use base64url, which substitutes <code>-</code> and <code>_</code>.</li>
+        <li>JavaScript's <code>btoa()</code> throws on any character above U+00FF. Encode to UTF-8 bytes first.</li>
+      </ul>
+    </div>
+
+    <div class="prose">
+      <h2 id="why">The problem it solves</h2>
+      <p>Plenty of systems are not binary-safe. SMTP was specified for 7-bit ASCII. JSON strings cannot hold arbitrary bytes — a null byte or a lone surrogate is not valid. XML has forbidden control characters. HTTP headers are text. Yet we constantly need to move binary data — an image, a signature, an encrypted blob — through these text-only channels.</p>
+      <p>Base64 (RFC 4648) solves it by re-expressing bytes in an alphabet that every text system tolerates: <code>A–Z</code>, <code>a–z</code>, <code>0–9</code>, plus <code>+</code> and <code>/</code>. Sixty-four characters means each one carries exactly 6 bits.</p>
+
+      <h2 id="how">How the transformation works</h2>
+      <p>Take 3 bytes — 24 bits — and regroup them into four 6-bit chunks. Each chunk indexes the alphabet:</p>
+      <pre><code>Input:   M        a        n
+Bytes:   77       97       110
+Binary:  01001101 01100001 01101110
+Regroup: 010011 010110 000101 101110
+Index:   19     22     5      46
+Output:  T      W      F      u        →  "TWFu"</code></pre>
+      <p>Three bytes in, four characters out. That ratio is the whole story: 4/3 means <strong>33.3% size growth</strong>, always. A 3 MB image becomes a 4 MB data URI. This is why inlining large assets as Base64 is usually the wrong optimisation — you trade one HTTP request for a third more bytes on every page load, and the encoded form does not compress as well as the original binary.</p>
+
+      <h3>Padding, and why <code>=</code> appears</h3>
+      <p>When the input length is not a multiple of 3, the final group is short and the output is padded to a multiple of 4 with <code>=</code>:</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Input bytes</th><th>Leftover</th><th>Output chars</th><th>Padding</th></tr></thead>
+          <tbody>
+            <tr><td>3, 6, 9…</td><td>0</td><td>4, 8, 12…</td><td>none</td></tr>
+            <tr><td>4, 7, 10…</td><td>1</td><td>2 + padding</td><td><code>==</code></td></tr>
+            <tr><td>5, 8, 11…</td><td>2</td><td>3 + padding</td><td><code>=</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>So <code>"M"</code> encodes to <code>"TQ=="</code> and <code>"Ma"</code> to <code>"TWE="</code>. The padding carries no data — it exists so a decoder consuming a stream in 4-character blocks knows where the input ended. Some contexts drop it: JWTs omit padding entirely, as does base64url by convention. A decoder that rejects unpadded input will fail on perfectly valid JWT segments, which is a recurring source of "invalid token" bugs in hand-rolled parsers.</p>
+
+      <h2 id="urlsafe">Base64url: the variant for URLs and filenames</h2>
+      <p>Two characters in the standard alphabet cause trouble outside a plain text body:</p>
+      <ul>
+        <li><code>+</code> — in a query string, form-decoding turns this into a <strong>space</strong>, silently corrupting the data.</li>
+        <li><code>/</code> — in a path, this is a segment separator, so your single value becomes two path components.</li>
+        <li><code>=</code> — legal but awkward; it is the key/value separator in query strings and often gets escaped to <code>%3D</code>.</li>
+      </ul>
+      <p>RFC 4648 §5 defines base64url, which is identical except that index 62 is <code>-</code> instead of <code>+</code> and index 63 is <code>_</code> instead of <code>/</code>. Padding is usually omitted. The conversion is a two-character substitution:</p>
+      <pre><code>const toUrlSafe = b64 =&gt; b64
+  .replace(/\+/g, '-')
+  .replace(/\//g, '_')
+  .replace(/=+$/, '');</code></pre>
+      <p>This is exactly what JWTs use for all three segments, which is why you see <code>-</code> and <code>_</code> in tokens but rarely <code>+</code> or <code>/</code>. If you are putting Base64 in a URL, a filename, or a cookie value, use base64url. If you are putting it in a JSON body or an email, standard Base64 is fine.</p>
+
+      <div class="callout warn">
+        <div class="callout-title"><i data-lucide="shield-off"></i> Base64 is not security. At all.</div>
+        <p>It has no key, no secret and no variability — the same input always produces the same output, and every decoder on earth will reverse it. HTTP Basic authentication transmits <code>base64(user:password)</code>, which is why Basic auth over plain HTTP is equivalent to sending the password in clear text. Base64-encoding a value in a cookie, a config file, or a mobile app's source does not protect it; it only makes it marginally less obvious to a casual reader. If you need confidentiality, you need encryption.</p>
+      </div>
+
+      <h2 id="js">Encoding Unicode in JavaScript</h2>
+      <p>The browser's <code>btoa()</code> is older than modern JavaScript string semantics, and it has a sharp edge: it operates on "binary strings", where each character must be in the range U+0000–U+00FF. Anything else throws:</p>
+      <pre><code>btoa("héllo")   // InvalidCharacterError
+btoa("日本語")   // InvalidCharacterError
+btoa("🎉")      // InvalidCharacterError</code></pre>
+      <p>The fix is to convert the string to UTF-8 bytes first, then map those bytes into the Latin-1 range that <code>btoa</code> expects:</p>
+      <pre><code>function encodeUtf8Base64(str) {
+  const bytes = new TextEncoder().encode(str);       // UTF-8 bytes
+  let binary = '';
+  bytes.forEach(b =&gt; { binary += String.fromCharCode(b); });
+  return btoa(binary);
+}
+
+function decodeUtf8Base64(b64) {
+  const binary = atob(b64);
+  const bytes = Uint8Array.from(binary, c =&gt; c.charCodeAt(0));
+  return new TextDecoder().decode(bytes);            // back to a string
+}</code></pre>
+      <p>The conceptual point is worth holding onto: <strong>Base64 encodes bytes, not text.</strong> To encode a string you must first decide how that string becomes bytes, and that decision is a character encoding — almost always UTF-8. Skipping that step is what produces mojibake after a round trip.</p>
+
+      <div class="tool-cta">
+        <div class="cta-copy">
+          <h3>Encode and decode Base64 in your browser</h3>
+          <p>Layerbit's Base64 tool handles text and file input, runs entirely client-side, and never uploads what you paste into it — which matters when the thing you are decoding is a token or a credential from a log file.</p>
+        </div>
+        <a class="cta-btn" href="../tools/base64.html"><i data-lucide="binary"></i> Open Base64 Tool</a>
+      </div>
+
+      <h2 id="where">Where you will actually meet it</h2>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Context</th><th>Variant</th><th>Note</th></tr></thead>
+          <tbody>
+            <tr><td>JWT segments</td><td>base64url, unpadded</td><td>Header and payload are plainly readable</td></tr>
+            <tr><td>Data URIs</td><td>Standard</td><td><code>data:image/png;base64,…</code></td></tr>
+            <tr><td>HTTP Basic auth</td><td>Standard</td><td>Credentials in clear text for practical purposes</td></tr>
+            <tr><td>MIME email</td><td>Standard, 76-char lines</td><td>Line breaks push overhead to roughly 37%</td></tr>
+            <tr><td>PEM keys and certificates</td><td>Standard, 64-char lines</td><td>Between the <code>-----BEGIN-----</code> markers</td></tr>
+            <tr><td>Kubernetes Secrets</td><td>Standard</td><td>Encoded, <em>not</em> encrypted — enable encryption at rest separately</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>That last row is a common misunderstanding with real consequences. A Kubernetes <code>Secret</code> stores values Base64-encoded, which makes them look protected in a manifest. They are not. Anyone with read access to the Secret can decode it in one command, and by default they are stored unencrypted in etcd.</p>
+
+      <h3>Related encodings you may want instead</h3>
+      <ul>
+        <li><strong>Hex (base16)</strong> — 100% overhead, but trivially readable and impossible to get the alphabet wrong. Good for short values like hashes and checksums.</li>
+        <li><strong>Base32</strong> — 60% overhead, case-insensitive, no ambiguous characters. Used for TOTP secrets and onion addresses precisely because a human may need to type it.</li>
+        <li><strong>Base85 / Ascii85</strong> — only 25% overhead, but uses characters that need escaping in most contexts. Mostly seen inside PDFs.</li>
+      </ul>
+      <p>Base64 sits at a deliberate sweet spot: low enough overhead to be practical, an alphabet safe enough for almost every text channel. That balance is why it has outlived nearly every alternative.</p>
+
+      <h2 id="closing">A transport format, nothing more</h2>
+      <p>Base64 has exactly one job: get bytes safely through a channel that only accepts text. It does that job well, at a predictable 33% cost, and it does nothing else. It does not compress, does not protect, and does not validate.</p>
+      <p>So when you see it, ask what it is carrying and whether that thing needs protecting on its own terms. A Base64 string in a URL is fine. A Base64 password in a config file is a password in a config file — the encoding changed nothing except how long it takes a reader to notice.</p>
+
+      <div class="further">
+        <h2>Related guides and tools</h2>
+        <div class="further-grid">
+          <a class="further-card" href="jwt-decode-vs-verify.html">
+            <strong>Decoding a JWT is not verifying it</strong>
+            <span>Base64url is why anyone can read your token's claims.</span>
+          </a>
+          <a class="further-card" href="percent-encoding-explained.html">
+            <strong>URL encoding, properly explained</strong>
+            <span>Why <code>+</code> and <code>/</code> break when Base64 lands in a URL.</span>
+          </a>
+          <a class="further-card" href="../tools/base64.html">
+            <strong>Base64 Encode / Decode</strong>
+            <span>Text and file input, entirely client-side.</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </article>
+
+  <a href="../" id="smartBackBtn" class="fab" aria-label="Command Center" title="Command Center">
+    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="filter: drop-shadow(0 0 8px rgba(56, 189, 248, 0.5));">
+      <path d="M12 2L2 7l10 5 10-5-10-5z" stroke="#38bdf8" stroke-width="2" stroke-linejoin="round" fill="rgba(56,189,248,0.2)"/>
+      <path d="M2 17l10 5 10-5M2 12l10 5 10-5" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </a>
+
+  <footer>
+    <div style="margin-bottom: 15px;">
+      &copy; 2025 - 2026 <strong>Layerbit Technologies</strong>. All rights reserved.
+    </div>
+    <div>
+      <a href="../about.html">About</a>
+      <a href="../privacy.html">Privacy Policy</a>
+      <a href="../terms.html">Terms of Service</a>
+      <a href="../blog.html">Developer Blog</a>
+      <a href="../contact.html">Contact</a>
+    </div>
+  </footer>
+
+  <script src="../js/shared.js"></script>
+  <script src="../main.js"></script>
+</body>
+</html>

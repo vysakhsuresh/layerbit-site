@@ -102,6 +102,49 @@
     </div>
 
     <div class="info-panel">
+      <h2><i data-lucide="microscope"></i> The choice that shapes everything else</h2>
+      <p>Native or cross-platform is the first real decision, and it is less about performance than people assume. Modern cross-platform frameworks are fast enough for the large majority of applications; the differences that actually bite are elsewhere.</p>
+      <ul>
+        <li><strong>Cross-platform</strong> (Flutter, React Native) suits most business applications: one codebase, one team, consistent behaviour, roughly half the maintenance. The cost is a dependency on the framework's release cycle and occasional native work when you need a capability the bridge does not expose well.</li>
+        <li><strong>Native</strong> (Swift, Kotlin) earns its cost when the app lives or dies on platform integration — background processing, complex camera or sensor work, widgets and watch apps, tight accessibility requirements, or interface conventions that must feel exactly right on each platform.</li>
+      </ul>
+      <p>We will give you a straight recommendation rather than defaulting to whatever we prefer, and the reasoning will be about your specific requirements. If your app is primarily forms, lists and API calls, native is usually paying twice for the same result.</p>
+
+      <div class="use-cases-grid">
+        <div class="use-case-card">
+          <h3><i data-lucide="wifi-off"></i> Offline is a design decision</h3>
+          <p>Mobile networks fail in lifts, basements and on aircraft. Deciding early whether the app must work offline changes the architecture fundamentally — a local database with sync and conflict resolution is a different application from one that assumes connectivity, and retrofitting it is close to a rewrite.</p>
+        </div>
+        <div class="use-case-card">
+          <h3><i data-lucide="store"></i> Store review is a dependency</h3>
+          <p>Both stores review submissions, and rejections cost days. Common causes are avoidable: missing privacy disclosures, account creation without a deletion path, payment flows that bypass in-app purchase, or permission requests with no stated justification. Plan the first submission well before the launch date.</p>
+        </div>
+        <div class="use-case-card">
+          <h3><i data-lucide="download"></i> Users do not update</h3>
+          <p>A meaningful share of your users will run a version six months old indefinitely. Your API must stay compatible with old clients, or the app needs a forced-update mechanism built in from version one. This is the most commonly overlooked constraint in mobile work.</p>
+        </div>
+        <div class="use-case-card">
+          <h3><i data-lucide="bell"></i> Push is more involved than it looks</h3>
+          <p>Certificates, token lifecycle, per-platform delivery semantics, permission prompts users decline permanently, and the difference between a notification that arrives and one the operating system decides to batch. Budget real time for it rather than treating it as a checkbox.</p>
+        </div>
+        <div class="use-case-card">
+          <h3><i data-lucide="battery"></i> Battery and data</h3>
+          <p>An app that polls aggressively or holds a wake lock gets uninstalled, and users rarely explain why. Background work needs to be batched, deferred and respectful of the platform's own scheduling — both operating systems actively fight applications that are not.</p>
+        </div>
+        <div class="use-case-card">
+          <h3><i data-lucide="smartphone"></i> Real devices, not just simulators</h3>
+          <p>Simulators do not reproduce thermal throttling, real network variability, low-memory termination, or the behaviour of a three-year-old mid-range Android handset. That last device is what much of your audience is actually using.</p>
+        </div>
+      </div>
+
+      <h2><i data-lucide="shield"></i> Mobile security specifics</h2>
+      <p>The threat model differs from web work in ways worth stating: <strong>anything shipped in the binary is public.</strong> API keys, endpoints and business logic can be extracted from a downloaded app, so a secret embedded in the client is not a secret. Sensitive values belong in the platform keychain or keystore, not in local storage or preferences. Certificate pinning raises the cost of traffic interception on a compromised device. And the server must enforce every rule independently, because a modified client can send anything it likes.</p>
+
+      <h2><i data-lucide="clipboard-list"></i> What we will ask</h2>
+      <p>Which platforms, and whether both are needed at launch; whether the app must function offline; what it integrates with, and whether those APIs exist yet; whether you need push, payments, camera, location or background processing; who owns the store accounts and the eventual releases; and what the app must do in its very first version as opposed to eventually. That last question saves the most money, because the shortest credible first release is almost always shorter than the one initially described.</p>
+    </div>
+
+    <div class="info-panel">
       <h2><i data-lucide="git-merge"></i> Our Deployment Methodology</h2>
       <ul class="changelog-list">
         <li><span class="changelog-tag">Phase 1</span> <strong>Discovery & Wireframing:</strong> We define user journeys and create high-fidelity UI/UX mockups, ensuring the application flow is intuitive before a single line of code is written.</li>

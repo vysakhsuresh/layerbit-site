@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Why day-of-month and day-of-week combine as OR not AND, why */7 is not every seven minutes, how daylight saving skips or doubles your jobs, and which cron syntax is Quartz-only." />
+  <title>The Cron Expression Rules That Catch Everyone Out - Layerbit Guides</title>
+  <link rel="canonical" href="https://layerbit.co.in/guides/cron-expressions-explained.html" />
+  <meta name="robots" content="max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://layerbit.co.in/guides/cron-expressions-explained.html" />
+  <meta property="og:site_name" content="Layerbit" />
+  <meta property="og:title" content="The Cron Expression Rules That Catch Everyone Out - Layerbit Guides" />
+  <meta property="og:description" content="Why day-of-month and day-of-week combine as OR not AND, why */7 is not every seven minutes, how daylight saving skips or doubles your jobs, and which cron syntax is Quartz-only." />
+  <meta property="og:image" content="https://layerbit.co.in/og-image.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="Layerbit - free browser-based developer tools" />
+  <meta property="og:locale" content="en" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="The Cron Expression Rules That Catch Everyone Out - Layerbit Guides" />
+  <meta name="twitter:description" content="Why day-of-month and day-of-week combine as OR not AND, why */7 is not every seven minutes, how daylight saving skips or doubles your jobs, and which cron syntax is Quartz-only." />
+  <meta name="twitter:image" content="https://layerbit.co.in/og-image.png" />
+  <meta name="twitter:image:alt" content="Layerbit - free browser-based developer tools" />
+  <meta name="theme-color" content="#0a0c10" />
+  <script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "TechArticle",
+      "@id": "https://layerbit.co.in/guides/cron-expressions-explained.html#article",
+      "headline": "The Cron Expression Rules That Catch Everyone Out",
+      "name": "The Cron Expression Rules That Catch Everyone Out",
+      "description": "Why day-of-month and day-of-week combine as OR not AND, why */7 is not every seven minutes, how daylight saving skips or doubles your jobs, and which cron syntax is Quartz-only.",
+      "url": "https://layerbit.co.in/guides/cron-expressions-explained.html",
+      "mainEntityOfPage": {
+        "@type": "WebPage",
+        "@id": "https://layerbit.co.in/guides/cron-expressions-explained.html"
+      },
+      "datePublished": "2026-09-10",
+      "dateModified": "2026-09-21",
+      "inLanguage": "en",
+      "wordCount": 1900,
+      "keywords": "cron expression, crontab, cron day of week or, cron step values, cron daylight saving, quartz cron, flock overlapping cron",
+      "articleSection": "Scheduling \u0026 DevOps",
+      "author": {
+        "@type": "Organization",
+        "name": "Layerbit Technologies",
+        "url": "https://layerbit.co.in/about.html"
+      },
+      "publisher": {
+        "@type": "Organization",
+        "name": "Layerbit Technologies",
+        "url": "https://layerbit.co.in/",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://layerbit.co.in/icon-512.png",
+          "width": 512,
+          "height": 512
+        }
+      },
+      "image": {
+        "@type": "ImageObject",
+        "url": "https://layerbit.co.in/icon-512.png",
+        "width": 512,
+        "height": 512
+      },
+      "isAccessibleForFree": true,
+      "proficiencyLevel": "Beginner"
+    },
+    {
+      "@type": "BreadcrumbList",
+      "@id": "https://layerbit.co.in/guides/cron-expressions-explained.html#breadcrumb",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://layerbit.co.in/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Guides",
+          "item": "https://layerbit.co.in/blog.html"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": "Cron expressions",
+          "item": "https://layerbit.co.in/guides/cron-expressions-explained.html"
+        }
+      ]
+    },
+    {
+      "@type": "FAQPage",
+      "@id": "https://layerbit.co.in/guides/cron-expressions-explained.html#faq",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "Why does my cron job run on both the day of month and the day of week?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "POSIX cron specifies that when neither the day-of-month nor the day-of-week field is a wildcard, the job runs whenever either field matches. It is an OR, not an AND. An expression like 0 0 13 * 5 fires on the 13th of every month and also every Friday. There is no standard cron syntax for a true AND, so you must schedule the superset and add a date guard inside the job."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Does */7 mean every seven minutes in cron?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Not exactly. A step means every nth value within the field's range, counting from the range start. Because the minute range 0-59 is not divisible by 7, */7 fires at 0, 7, 14, 21, 28, 35, 42, 49 and 56, then resets to 0 - leaving a four-minute gap at the hour boundary. Only steps that divide 60 evenly, such as 1, 2, 3, 4, 5, 6, 10, 12, 15, 20 and 30, produce a uniform interval."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How does daylight saving time affect cron jobs?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Classic cron evaluates local time. When clocks spring forward, a job scheduled inside the skipped hour usually does not run at all. When clocks fall back, that hour occurs twice and the job may run twice. The reliable fix is to run the host in UTC, or set CRON_TZ=UTC in the crontab, and handle timezone conversion inside the application."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Why do L, W and # not work in my crontab?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Those are Quartz scheduler extensions, not POSIX cron. Quartz is the Java scheduler used by Spring and many enterprise products, and much cron documentation online is actually Quartz documentation. Standard Linux crontabs do not support L, W, # or ?, and also use five fields rather than Quartz's six or seven."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How do I stop a cron job running on top of itself?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Cron has no awareness of previous invocations, so a job that runs longer than its interval will overlap. Wrap it in a non-blocking lock, for example flock -n /tmp/job.lock /path/to/job.sh, which skips the run if the previous one is still active. Use the non-blocking flag so you skip rather than queue up waiting processes."
+          }
+        }
+      ]
+    }
+  ]
+}
+  </script>
+
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6072772587431629" crossorigin="anonymous"></script>
+
+  <script src="https://unpkg.com/lucide@1.39.0" async></script>
+
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet" />
+  <link href="../layerbit-logo.png" rel="icon" type="image/x-icon" />
+  <link rel="manifest" href="../manifest.json" />
+  <link rel="apple-touch-icon" href="../apple-touch-icon.png" />
+  <link rel="stylesheet" href="../css/base.css" />
+  <link rel="stylesheet" href="../css/article.css" />
+
+  <style>
+
+    /* Long-form guide styling lives in css/article.css, linked from this page's head. */
+  
+  </style>
+</head>
+<body>
+  <header>
+    <a href="../" class="brand">
+      <svg width="36" height="36" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <polygon points="32,20 54,28 32,36 10,28" stroke="#f8fafc" stroke-width="4" stroke-linejoin="round"/>
+        <polyline points="10,38 32,46 54,38" stroke="#f8fafc" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+        <polyline points="10,48 32,56 54,48" stroke="#f8fafc" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+        <rect x="50" y="10" width="10" height="10" rx="2" fill="#00f2fe" />
+      </svg>
+      Layerbit
+    </a>
+  </header>
+
+  <nav class="crumbs" aria-label="Breadcrumb">
+    <a href="../">Home</a>
+    <span class="sep">/</span>
+    <a href="../blog.html">Guides</a>
+    <span class="sep">/</span>
+    <span aria-current="page">Cron expressions</span>
+  </nav>
+
+  <article class="article">
+    <header class="article-head">
+      <span class="article-kicker">Scheduling &amp; DevOps</span>
+      <h1>The Cron Expression Rules That Catch Everyone Out</h1>
+      <p class="article-standfirst">Five fields, separated by spaces. Cron looks like the simplest configuration format in Unix — right up until your backup silently runs on the wrong days, your job fires twice one Sunday in autumn, or <code>*/7</code> turns out not to mean "every seven minutes" at all.</p>
+      <div class="article-meta">
+        <span class="byline">Layerbit Engineering</span>
+        <span><i data-lucide="calendar"></i>Published 10 September 2026</span>
+        <span><i data-lucide="clock"></i>10 min read</span>
+      </div>
+    </header>
+
+    <div class="takeaways">
+      <h2><i data-lucide="list-checks"></i> The short version</h2>
+      <ul>
+        <li>When <strong>both</strong> day-of-month and day-of-week are restricted, cron runs when <strong>either</strong> matches — an OR, not an AND. This is the single most misread rule in cron.</li>
+        <li><code>*/7</code> means "every 7th value in the range", so it resets at the range boundary and leaves an uneven gap.</li>
+        <li>Cron runs on the machine's local time. Daylight-saving transitions will skip a job or run it twice unless you schedule in UTC.</li>
+        <li><code>L</code>, <code>W</code> and <code>#</code> are Quartz extensions, not POSIX. They will not work in a standard crontab.</li>
+      </ul>
+    </div>
+
+    <div class="prose">
+      <h2 id="fields">The five fields</h2>
+      <p>A standard crontab entry is five whitespace-separated fields followed by a command:</p>
+      <pre><code>┌─ minute        0-59
+│ ┌─ hour        0-23
+│ │ ┌─ day of month  1-31
+│ │ │ ┌─ month    1-12  (or JAN-DEC)
+│ │ │ │ ┌─ day of week  0-6  (or SUN-SAT; 7 also = Sunday)
+│ │ │ │ │
+* * * * *  /usr/local/bin/backup.sh</code></pre>
+      <p>Each field accepts four constructs, which combine freely:</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Syntax</th><th>Name</th><th>Example</th><th>Means</th></tr></thead>
+          <tbody>
+            <tr><td><code>*</code></td><td>Wildcard</td><td><code>*</code> in hour</td><td>Every hour</td></tr>
+            <tr><td><code>a-b</code></td><td>Range</td><td><code>9-17</code></td><td>9 through 17 inclusive</td></tr>
+            <tr><td><code>a,b,c</code></td><td>List</td><td><code>0,15,30,45</code></td><td>Those exact values</td></tr>
+            <tr><td><code>*/n</code></td><td>Step</td><td><code>*/15</code></td><td>Every 15th value from the range start</td></tr>
+            <tr><td><code>a-b/n</code></td><td>Stepped range</td><td><code>9-17/2</code></td><td>9, 11, 13, 15, 17</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2 id="or-gotcha">The OR rule that breaks backups</h2>
+      <p>Here is the rule most schedules get wrong, and it is specified behaviour rather than a bug. Consider:</p>
+      <pre><code>0 0 13 * 5    # intent: "midnight on Friday the 13th"</code></pre>
+      <p>That is not what it does. POSIX and Vixie cron both specify: if <strong>neither</strong> day-of-month nor day-of-week is <code>*</code>, the job runs when <strong>either</strong> field matches. So this expression fires at midnight on the 13th of every month <em>and</em> at midnight every Friday — roughly 64 times a year instead of the one or two you wanted.</p>
+      <p>The logic table is worth memorising:</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>day-of-month</th><th>day-of-week</th><th>Combination</th></tr></thead>
+          <tbody>
+            <tr><td><code>*</code></td><td>restricted</td><td>Day-of-week only</td></tr>
+            <tr><td>restricted</td><td><code>*</code></td><td>Day-of-month only</td></tr>
+            <tr><td>restricted</td><td>restricted</td><td><strong>OR</strong> — either one matching triggers the job</td></tr>
+            <tr><td><code>*</code></td><td><code>*</code></td><td>Every day</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>There is no cron syntax for a true AND. "The first Monday of the month" cannot be expressed in a standard five-field crontab. The conventional workaround is to schedule the superset and guard inside the job:</p>
+      <pre><code># Run every Monday, but exit unless it is also in the first 7 days
+0 3 * * 1  [ "$(date +\%d)" -le 07 ] &amp;&amp; /opt/bin/monthly-report.sh</code></pre>
+      <p>Note the escaped <code>\%</code>. In a crontab, an unescaped <code>%</code> is special: it terminates the command and sends the remainder to the job's standard input. Forgetting the backslash is a classic way to get a job that appears to do nothing.</p>
+
+      <h2 id="steps">Why <code>*/7</code> is not "every seven minutes"</h2>
+      <p>A step value does not mean "with this interval, continuously". It means "every nth value within this field's range, counting from the range's start". Because the minute field's range is 0–59 and 60 is not divisible by 7:</p>
+      <pre><code>*/7 * * * *
+→ 0, 7, 14, 21, 28, 35, 42, 49, 56, then 0 again
+
+Gaps:  7 7 7 7 7 7 7 7  then 4  ← the boundary jump</code></pre>
+      <p>Eight of the gaps are seven minutes and one is four. Any step that does not divide its range evenly produces this discontinuity — <code>*/7</code>, <code>*/8</code>, <code>*/9</code> and <code>*/45</code> on minutes; <code>*/5</code>, <code>*/7</code> and <code>*/10</code> on hours. If you genuinely need an even cadence that is not a divisor of 60, cron is the wrong tool; use a timer that reschedules itself from completion, or a systemd timer with a monotonic <code>OnUnitActiveSec</code>.</p>
+      <div class="callout">
+        <div class="callout-title"><i data-lucide="check-circle"></i> Steps that divide evenly</div>
+        <p>Minutes: 1, 2, 3, 4, 5, 6, 10, 12, 15, 20, 30. Hours: 1, 2, 3, 4, 6, 8, 12. Stick to these and every interval is uniform.</p>
+      </div>
+
+      <h2 id="timezones">Daylight saving will bite you exactly twice a year</h2>
+      <p>Classic cron evaluates against the system's local time. In a zone that observes daylight saving, two things happen annually:</p>
+      <ul>
+        <li><strong>Spring forward.</strong> Local time jumps from 01:59 to 03:00. A job scheduled for 02:30 has no 02:30 to run at. Most implementations skip it entirely — so a monthly billing run scheduled at 02:30 quietly does not happen.</li>
+        <li><strong>Autumn back.</strong> 02:00 to 02:59 occurs twice. A job scheduled at 02:30 may run <strong>twice</strong>. If it is not idempotent, you have just double-charged customers or double-posted ledger entries.</li>
+      </ul>
+      <p>Vixie cron has partial mitigations for jobs scheduled within the skipped window, but the behaviour differs between implementations and is not something to rely on. The robust answers, in order of preference:</p>
+      <ol>
+        <li><strong>Run the host in UTC</strong> and do all timezone conversion inside the application. UTC has no DST, so every schedule is unambiguous.</li>
+        <li><strong>Set <code>CRON_TZ=UTC</code></strong> at the top of the crontab (supported by Vixie cron and its derivatives) to pin evaluation regardless of system zone.</li>
+        <li><strong>Avoid 00:00–04:00 local</strong> for anything critical if you must run in local time. Nothing interesting happens at 05:30.</li>
+      </ol>
+      <p>Note that GitHub Actions, AWS EventBridge and most managed schedulers evaluate <code>cron</code> in UTC already — which removes the DST problem but introduces a different one: your "9am daily" job drifts an hour relative to local business time twice a year.</p>
+
+      <div class="tool-cta">
+        <div class="cta-copy">
+          <h3>Check what your expression really does</h3>
+          <p>Layerbit's Cron Expression Generator translates any five-field expression into plain English and lists the next five run times in UTC, so the OR rule and step-boundary gaps become visible before you commit the schedule.</p>
+        </div>
+        <a class="cta-btn" href="../tools/cron-generator.html"><i data-lucide="clock-4"></i> Open Cron Generator</a>
+      </div>
+
+      <h2 id="nonstandard">Extensions that are not in standard cron</h2>
+      <p>A great deal of cron documentation on the web is actually Quartz documentation. Quartz is the Java scheduler used by Spring and many enterprise products, and it uses a similar-looking but genuinely different syntax. Pasting Quartz expressions into a Linux crontab fails, often silently.</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Syntax</th><th>Meaning</th><th>Works in POSIX cron?</th></tr></thead>
+          <tbody>
+            <tr><td><code>L</code></td><td>Last day of month / last given weekday</td><td>No — Quartz only</td></tr>
+            <tr><td><code>W</code></td><td>Nearest weekday to a date</td><td>No — Quartz only</td></tr>
+            <tr><td><code>#</code></td><td>Nth weekday of the month (<code>6#3</code> = 3rd Friday)</td><td>No — Quartz only</td></tr>
+            <tr><td><code>?</code></td><td>"No specific value"</td><td>No — Quartz only</td></tr>
+            <tr><td>6 fields (seconds first)</td><td>Second-level precision</td><td>No — Quartz, Spring, some others</td></tr>
+            <tr><td><code>@daily</code>, <code>@hourly</code>, <code>@reboot</code></td><td>Named shortcuts</td><td>Vixie extension — common on Linux, not POSIX</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>Field counts are the fastest way to identify which dialect an expression came from. Five fields is classic cron. Six usually means seconds were prepended (Quartz, Spring) — but six can also mean a <em>year</em> field was appended, which is why you should never assume from count alone. Seven fields is Quartz with both seconds and year.</p>
+
+      <h2 id="overlap">Cron will happily run your job on top of itself</h2>
+      <p>Cron has no concept of a previous invocation. Schedule something <code>*/5</code> that occasionally takes seven minutes, and you will eventually have two copies running concurrently — competing for the same lock, the same temp file, or the same API rate limit. On a bad day the overlap compounds until the box falls over.</p>
+      <p>The standard defence is a lock acquired by the wrapper, not by your code:</p>
+      <pre><code># flock exits immediately if the lock is held, so overlapping runs are skipped
+*/5 * * * * /usr/bin/flock -n /tmp/sync.lock /opt/bin/sync.sh</code></pre>
+      <p>Use <code>-n</code> (fail immediately) rather than blocking, otherwise you build a queue of waiting processes instead of avoiding the problem. A lock file in <code>/tmp</code> is fine for a single host; for anything distributed you need a lease in a shared store with a TTL, so a dead worker cannot hold the lock forever.</p>
+
+      <h3>The other reasons a cron job "does not run"</h3>
+      <p>When a schedule is correct but nothing happens, it is almost always one of these:</p>
+      <ul>
+        <li><strong>PATH.</strong> Cron runs with a minimal environment — typically <code>/usr/bin:/bin</code>. Your shell's PATH is not inherited. Use absolute paths for every binary, or set <code>PATH=</code> at the top of the crontab.</li>
+        <li><strong>No trailing newline.</strong> Older crons silently ignore the final line of a crontab if the file does not end with a newline.</li>
+        <li><strong>Unescaped <code>%</code>.</strong> As above — it truncates your command.</li>
+        <li><strong>Relative working directory.</strong> Jobs start in the user's home directory, not where the script lives. Anything relative resolves somewhere unexpected.</li>
+        <li><strong>Output going nowhere.</strong> Cron mails stdout and stderr to the user; if no mail transport is configured, the output is discarded. Redirect explicitly: <code>&gt;&gt; /var/log/myjob.log 2&gt;&amp;1</code>.</li>
+      </ul>
+      <p>That last one is the most important operationally. A cron job with no log is a job you cannot debug and cannot prove ran. Redirect output somewhere durable before you need it, not after.</p>
+
+      <h2 id="closing">Read the schedule out loud</h2>
+      <p>Cron's real hazard is that an incorrect expression is still a <em>valid</em> expression. There is no syntax error to catch, no test that fails — just a job quietly running at the wrong times, sometimes for months, until someone notices the report covering the wrong window.</p>
+      <p>So before committing a schedule, do two things: translate it into a plain sentence, and look at its next several fire times. If the sentence does not match the intent, or the dates include days that surprise you, the expression is wrong regardless of how reasonable it looks.</p>
+
+      <div class="further">
+        <h2>Related guides and tools</h2>
+        <div class="further-grid">
+          <a class="further-card" href="../tools/cron-generator.html">
+            <strong>Cron Expression Generator</strong>
+            <span>Build a schedule visually and preview its next run times in UTC.</span>
+          </a>
+          <a class="further-card" href="yaml-gotchas.html">
+            <strong>YAML's sharpest edges</strong>
+            <span>The Norway problem and other config-file traps in CI pipelines.</span>
+          </a>
+          <a class="further-card" href="../tools/log-analyzer.html">
+            <strong>Log Analyzer</strong>
+            <span>Surface the errors and warnings in the output your jobs produce.</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </article>
+
+  <a href="../" id="smartBackBtn" class="fab" aria-label="Command Center" title="Command Center">
+    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="filter: drop-shadow(0 0 8px rgba(56, 189, 248, 0.5));">
+      <path d="M12 2L2 7l10 5 10-5-10-5z" stroke="#38bdf8" stroke-width="2" stroke-linejoin="round" fill="rgba(56,189,248,0.2)"/>
+      <path d="M2 17l10 5 10-5M2 12l10 5 10-5" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </a>
+
+  <footer>
+    <div style="margin-bottom: 15px;">
+      &copy; 2025 - 2026 <strong>Layerbit Technologies</strong>. All rights reserved.
+    </div>
+    <div>
+      <a href="../about.html">About</a>
+      <a href="../privacy.html">Privacy Policy</a>
+      <a href="../terms.html">Terms of Service</a>
+      <a href="../blog.html">Developer Blog</a>
+      <a href="../contact.html">Contact</a>
+    </div>
+  </footer>
+
+  <script src="../js/shared.js"></script>
+  <script src="../main.js"></script>
+</body>
+</html>

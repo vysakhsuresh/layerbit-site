@@ -53,7 +53,14 @@ def build_page(slug_file):
     prefix = data["prefix"]
 
     canonical_tag = f'  <link rel="canonical" href="{data["canonical"]}" />\n' if data["canonical"] else ""
-    robots_tag = f'  <meta name="robots" content="{data["robots"]}" />\n' if data.get("robots") else ""
+    # Every page gets the rich-result preview directives; a page that sets its
+    # own "robots" (404.html uses noindex) has that merged in front of them, so
+    # there is exactly one robots meta tag per page rather than two conflicting
+    # ones.
+    SERP_DIRECTIVES = "max-image-preview:large, max-snippet:-1, max-video-preview:-1"
+    robots_value = (f'{data["robots"]}, {SERP_DIRECTIVES}'
+                    if data.get("robots") else SERP_DIRECTIVES)
+    robots_tag = f'  <meta name="robots" content="{robots_value}" />\n'
     og_url = data["og_url"]
     # indent the JSON-LD block's first line to match the head partial's 2-space
     # style (its own internal lines already carry their own indentation from

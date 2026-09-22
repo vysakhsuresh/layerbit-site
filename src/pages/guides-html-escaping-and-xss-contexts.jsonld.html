@@ -1,0 +1,119 @@
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "TechArticle",
+      "@id": "https://layerbit.co.in/guides/html-escaping-and-xss-contexts.html#article",
+      "headline": "There Is No Such Thing as Escaping - Only Escaping For Something",
+      "name": "There Is No Such Thing as Escaping - Only Escaping For Something",
+      "description": "HTML escaping protects element text and nothing else. Why unquoted attributes break with a space, why \u003c/script\u003e ends a block inside a JavaScript string, and why you escape on output not input.",
+      "url": "https://layerbit.co.in/guides/html-escaping-and-xss-contexts.html",
+      "mainEntityOfPage": {
+        "@type": "WebPage",
+        "@id": "https://layerbit.co.in/guides/html-escaping-and-xss-contexts.html"
+      },
+      "datePublished": "2026-08-29",
+      "dateModified": "2026-09-21",
+      "inLanguage": "en",
+      "wordCount": 1800,
+      "keywords": "xss prevention, html escaping, contextual output encoding, unquoted attribute xss, script block escaping, dompurify sanitize, escape on output",
+      "articleSection": "Web Security",
+      "author": {
+        "@type": "Organization",
+        "name": "Layerbit Technologies",
+        "url": "https://layerbit.co.in/about.html"
+      },
+      "publisher": {
+        "@type": "Organization",
+        "name": "Layerbit Technologies",
+        "url": "https://layerbit.co.in/",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://layerbit.co.in/icon-512.png",
+          "width": 512,
+          "height": 512
+        }
+      },
+      "image": {
+        "@type": "ImageObject",
+        "url": "https://layerbit.co.in/icon-512.png",
+        "width": 512,
+        "height": 512
+      },
+      "isAccessibleForFree": true,
+      "proficiencyLevel": "Intermediate"
+    },
+    {
+      "@type": "BreadcrumbList",
+      "@id": "https://layerbit.co.in/guides/html-escaping-and-xss-contexts.html#breadcrumb",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://layerbit.co.in/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Guides",
+          "item": "https://layerbit.co.in/blog.html"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": "Escaping and XSS contexts",
+          "item": "https://layerbit.co.in/guides/html-escaping-and-xss-contexts.html"
+        }
+      ]
+    },
+    {
+      "@type": "FAQPage",
+      "@id": "https://layerbit.co.in/guides/html-escaping-and-xss-contexts.html#faq",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "Is HTML escaping enough to prevent XSS?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Only in element text and quoted attribute values. It does nothing for a JavaScript block, a URL attribute or CSS, because the dangerous characters in those contexts are not the five that HTML escaping replaces. A javascript: URL, for example, contains no character that HTML escaping touches. Output encoding must match the context the value is rendered into."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Why are unquoted HTML attributes dangerous?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "An unquoted attribute value ends at the first whitespace, so a payload needs no angle brackets or quotes at all. A value such as x onfocus=alert(1) autofocus survives HTML escaping completely intact and adds a new event-handler attribute. The fix is not more escaping but always quoting attributes, so the closing quote is the only exit and that character is escaped."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Why does \u003c/script\u003e break out of a JavaScript string?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "The HTML tokeniser runs before the JavaScript parser and has no concept of being inside a string literal. It ends the script block at the first literal \u003c/script\u003e sequence it sees, even mid-string. Serialise data into a JSON script block or data attribute instead, and when inlining JSON escape \u003c, \u003e and \u0026 as \\u003c, \\u003e and \\u0026."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Should I escape user input before storing it in the database?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "No. At input time you do not know which context the value will be rendered into - HTML, a plain-text email, a JSON response or a CSV export each need different treatment. Escaping on input also corrupts the stored data and causes double-escaped output like \u0026amp;amp;lt;. Store what the user typed and escape at the moment of rendering."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What is the difference between escaping and sanitising HTML?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Escaping renders a value as inert text, so markup is displayed literally - correct for usernames, titles and comments. Sanitising parses the value as HTML and strips everything not on an allowlist while keeping the rest live - correct only when users are genuinely meant to submit formatting. Use a maintained library such as DOMPurify for sanitising, never a regular expression."
+          }
+        }
+      ]
+    }
+  ]
+}
+  </script>

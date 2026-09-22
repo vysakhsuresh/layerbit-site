@@ -1,9 +1,9 @@
 {{HEADER}}
 
   <main class="hero">
-    <div class="osint-badge"><i data-lucide="shield-check"></i> OSINT Educational Terminal</div>
-    <h1>Enterprise QR & Barcode Synthesizer</h1>
-    <p>Generate production-ready matrix and linear barcodes, while analyzing security implications.</p>
+    <div class="osint-badge"><i data-lucide="shield-check"></i> Runs entirely in your browser</div>
+    <h1>QR &amp; Barcode Generator</h1>
+    <p>Generate print-ready QR codes and linear barcodes, with structural checks on the URL you are encoding.</p>
   </main>
 
   <div class="synth-container">
@@ -23,10 +23,10 @@
       </div>
 
       <div class="osint-controls" id="osintControls" style="display: none;">
-        <div class="osint-header"><i data-lucide="bug"></i> OSINT Analysis Config</div>
+        <div class="osint-header"><i data-lucide="sliders-horizontal"></i> Payload options</div>
         <div class="checkbox-group">
           <input type="checkbox" id="checkTracking">
-          <label for="checkTracking">Append Mock Tracking Param (?lb_uid=osint)</label>
+          <label for="checkTracking">Append a sample tracking parameter (?lb_uid=demo)</label>
         </div>
       </div>
 
@@ -69,52 +69,69 @@
 
   </div>
 
-  <!-- Educational/OSINT Specific Panes -->
+  <!-- Practical guidance panes -->
   <div class="edu-container">
-    
+
     <div class="edu-pane">
-      <h3><i data-lucide="qr-code"></i> Intercept & Spoof Vulnerability Pane</h3>
-      <p>This pane simulates the educational workflow of analyzing a QR code vulnerability. Security staff must understand how attackers manipulate these vectors.</p>
+      <h3><i data-lucide="qr-code"></i> Before you print a code</h3>
+      <p>Most codes that fail in the field were fine on screen. These are the checks worth making before a code goes to print, in the order they usually matter.</p>
       <ul>
-        <li><i data-lucide="target"></i> <strong>Asset Interception:</strong> In many industrial scenarios, Code128 barcodes track physical assets. Attacking this is often physically invasive but high value.</li>
-        <li><i data-lucide="scan-text"></i> <strong>Spoofing attack simulation:</strong> A malicious actor can intercept a legitimate QR code and replace the underlying data with a spoofed URL. This tool allows security teams to create test cases.</li>
-        <li><i data-lucide="map-pin"></i> <strong>Tracking Param analysis:</strong> Checking if standard analytical tracking parameters are being appended to internal QR codes can identify operational leaks.</li>
+        <li><i data-lucide="maximize"></i> <strong>Keep the quiet zone.</strong> The specification requires a clear margin of four modules on every side. Cropping tight to the pattern, or placing a code over a photograph, stops it scanning even though it looks complete.</li>
+        <li><i data-lucide="ruler"></i> <strong>Test at final size.</strong> Scannability depends on physical module size, so print a proof at the real dimensions and scan it with an ordinary phone in ordinary light rather than judging it on a monitor.</li>
+        <li><i data-lucide="minimize-2"></i> <strong>Shorten the payload first.</strong> A 300-character URL produces a much denser grid than a 40-character one. Density, not capacity, is the limit most people actually hit.</li>
       </ul>
-      <p style="background: var(--error-bg); border-left: 3px solid var(--error-border); padding: 10px; color: #fff;"><strong>OSINT Role:</strong> Security staff can decipher the structure of Code128 without specialized software by understanding start/stop patterns and character encodings. Code128 OSINT reveals internal asset tracking schema.</p>
+      <p style="background: var(--info-bg); border-left: 3px solid var(--info-border); padding: 10px; color: #fff;"><strong>Durability:</strong> For anything on packaging, outdoors, or likely to be handled, raise the error-correction level. Level H tolerates roughly 30% damage and is what makes a centre logo overlay viable — at the cost of a denser code for the same data.</p>
     </div>
 
     <div class="edu-pane">
-      <h3><i data-lucide="binary"></i> Linear Barcode Structure Deciphering</h3>
-      <p>OSINT is not just about interception, it's about interpretation. This section teaches staff how to read Code128 structure visually if needed.</p>
+      <h3><i data-lucide="shield-alert"></i> Why a code is a link you cannot read</h3>
+      <p>A human cannot inspect a QR code before following it, which is the one security property that genuinely distinguishes it from a hyperlink. Attackers exploit that by covering legitimate codes with stickers on parking meters, restaurant tables and payment terminals.</p>
       <ul>
-        <li><i data-lucide="brackets"></i> <strong>Quiet Zones & Start Pattern:</strong> Every barcode begins with leading silence and a start character which identifies the barcode set used.</li>
-        <li><i data-lucide="barcode"></i> <strong>Data Encoding:</strong> Each character is represented by a specific pattern of bars and spaces. The width of these elements encodes the data.</li>
-        <li><i data-lucide="check-circle-2"></i> <strong>Check Digit:</strong> A check digit is used to verify the scan accuracy, preventing OSINT analysis on corrupted codes.</li>
+        <li><i data-lucide="search"></i> <strong>Check the destination on arrival.</strong> Look at the address bar before entering anything. A code that lands on a login or payment page you did not expect is the signal to stop.</li>
+        <li><i data-lucide="hand"></i> <strong>Be wary of physical tampering.</strong> A sticker over a printed code, or a code on a loose card in a public place, deserves suspicion — legitimate ones are usually printed as part of the surrounding material.</li>
+        <li><i data-lucide="link-2-off"></i> <strong>Treat shorteners as opaque.</strong> A shortened URL inside a code hides the real destination twice over, so there is nothing to verify until you are already there.</li>
       </ul>
-      <table class="decipher-table">
-        <thead>
-          <tr>
-            <th>Element Type</th>
-            <th>OSINT Significance</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>Start/Stop Characters</td>
-            <td>Confirms barcode validity and identifies symbology set.</td>
-          </tr>
-          <tr>
-            <td>Character Widths</td>
-            <td>The core data. Decipherable character by character if the standard is known.</td>
-          </tr>
-          <tr>
-            <td>Check Digit Position</td>
-            <td>Final step in verifying the decoded payload.</td>
-          </tr>
-        </tbody>
-      </table>
+      <p>The <strong>Analyze</strong> button applies structural heuristics to the URL you have entered — a raw IP address rather than a hostname, an unusual port, a shortener, punycode or lookalike characters in the domain, an unusual number of redirect parameters. It reasons about the shape of the URL only, entirely in your browser. It is not a reputation lookup and cannot tell you whether a site is currently malicious.</p>
     </div>
 
+  </div>
+
+  <div class="info-panel">
+    <h2><i data-lucide="microscope"></i> Error correction, and why the level matters</h2>
+    <p>QR codes are defined by ISO/IEC 18004 and carry Reed–Solomon error correction, which is why a partially damaged or obscured code still scans. There are four levels, and the choice is a direct trade between resilience and data capacity:</p>
+    <ul>
+      <li><strong>L</strong> — recovers about 7% damage. Maximum capacity, suitable for on-screen display where nothing will degrade.</li>
+      <li><strong>M</strong> — about 15%. The usual default and a sensible general-purpose choice.</li>
+      <li><strong>Q</strong> — about 25%.</li>
+      <li><strong>H</strong> — about 30%. Lowest capacity, but the right choice for anything printed on packaging, exposed to weather, or likely to be scuffed — and the level that makes a centre logo overlay survivable.</li>
+    </ul>
+    <p>Higher correction means more modules for the same payload, so the code becomes denser at the same physical size. That interacts badly with printing small, which is the most common real-world failure.</p>
+
+    <div class="use-cases-grid">
+      <div class="use-case-card">
+        <h3><i data-lucide="maximize"></i> The quiet zone is not optional</h3>
+        <p>The specification requires a clear margin of four modules on every side. Codes cropped tight to the pattern, or placed against a busy background, fail to scan even though they look complete. Most "it works on my screen but not on the poster" problems are a missing quiet zone.</p>
+      </div>
+      <div class="use-case-card">
+        <h3><i data-lucide="contrast"></i> Contrast and inversion</h3>
+        <p>Scanners expect dark modules on a light background. Light-on-dark codes work with some readers and not others, and coloured codes need genuine luminance contrast rather than merely different hues — two colours of similar brightness will not decode reliably.</p>
+      </div>
+      <div class="use-case-card">
+        <h3><i data-lucide="minimize-2"></i> Shorter payload, easier scan</h3>
+        <p>Capacity is not the constraint most people hit — module density is. A 300-character URL produces a far denser grid than a 40-character one, needing better optics and more light. Shorten the URL before generating, not after someone reports it failing.</p>
+      </div>
+    </div>
+
+    <h2><i data-lucide="shield-alert"></i> A printed code is an unverifiable link</h2>
+    <p>This is the genuine security property of QR codes and it deserves stating plainly: a human cannot read one. Clicking a link on a screen at least allows a glance at the destination; scanning a code is trusting whatever it contains, and attackers exploit this by placing stickers over legitimate codes on parking meters, restaurant tables and payment terminals.</p>
+    <p>The structural hints this tool shows on an encoded URL cover the patterns worth noticing — a raw IP address instead of a hostname, an unusual port, a URL shortener hiding the real destination, punycode or lookalike characters in the domain, or an excessive number of redirecting parameters. These are heuristics about the URL's <em>shape</em>, computed locally; they are not a reputation lookup and cannot tell you whether a site is currently malicious. Always verify an unfamiliar destination independently before scanning a code you did not create.</p>
+
+    <h2><i data-lucide="barcode"></i> Barcodes are a different problem</h2>
+    <p>One-dimensional barcodes encode far less — typically 8 to 20 digits — and each symbology has strict rules that are easy to violate accidentally. EAN-13 and UPC-A include a check digit computed from the others, so a transposed digit produces a barcode that either fails validation or, worse, scans as a different product. Code 128 accepts full ASCII; Code 39 accepts a restricted set and produces noticeably wider output for the same data.</p>
+    <p>The practical constraints are physical: a barcode needs adequate width and a minimum bar thickness for the intended scanner, and vertical height affects nothing except how easy it is to aim. Scaling a barcode down to fit a label is the usual cause of unscannable output.</p>
+
+    <h2><i data-lucide="lock"></i> Generated in your browser</h2>
+    <p>The content encoded into a code is frequently a signed URL, a one-time enrolment link, a device provisioning token or a payment reference. Generation here happens entirely in the page, so the payload is never transmitted and the downloadable image is produced locally.</p>
   </div>
 
   <div class="info-panel">
@@ -138,7 +155,7 @@
             </li>
             <li class="changelog-item">
                 <span class="changelog-version">v1.2.0</span>
-                <span>OSINT educational terminal upgrade. Restored intercept & deciphering panels.</span>
+                <span>Replaced the attack-framed panels with practical print-readiness and scan-safety guidance.</span>
             </li>
             <li class="changelog-item">
                 <span class="changelog-version">v1.1.0</span>
@@ -198,10 +215,10 @@
         return;
       }
 
-      // OSINT Data manipulation
+      // Optional sample tracking parameter
       if (type === 'qr' && appendTracking && data.startsWith('http')) {
         const urlObj = new URL(data);
-        urlObj.searchParams.append('lb_uid', 'osint');
+        urlObj.searchParams.append('lb_uid', 'demo');
         data = urlObj.toString();
         // Update input field to show user what actually went into the code
         document.getElementById('dataInput').value = data; 
@@ -363,7 +380,7 @@
             <span style="font-weight: 700; font-size: 1.1em;">Structural Risk Score: ${score}/10</span>
           </div>
           <ul style="margin:0; padding-left: 18px; font-size: 0.85em; line-height:1.5;">${list}</ul>
-          <span style="font-size: 0.78em; opacity: 0.75; align-self:center; text-align:center;">Heuristic checks on the URL's structure only, not a live reputation lookup. Pair with the <a href="malicious-url-checker-dns-only.html" style="color:inherit;">Threat Intelligence Scanner</a> for that.</span>
+          <span style="font-size: 0.78em; opacity: 0.75; align-self:center; text-align:center;">Heuristic checks on the URL's structure only, not a live reputation lookup. Always verify an unfamiliar destination independently before scanning a printed code.</span>
         </div>`;
       lucide.createIcons();
     }

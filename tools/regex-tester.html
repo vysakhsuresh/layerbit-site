@@ -6,16 +6,23 @@
   <meta name="description" content="Advanced Regular Expression Tester. Debug patterns, highlight matches, and extract capture groups instantly in your browser." />
   <title>Regex Debugging Terminal - Layerbit</title>
   <link rel="canonical" href="https://layerbit.co.in/tools/regex-tester.html" />
+  <meta name="robots" content="max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://layerbit.co.in/tools/regex-tester.html" />
   <meta property="og:site_name" content="Layerbit" />
   <meta property="og:title" content="Regex Debugging Terminal - Layerbit" />
   <meta property="og:description" content="Advanced Regular Expression Tester. Debug patterns, highlight matches, and extract capture groups instantly in your browser." />
-  <meta property="og:image" content="https://layerbit.co.in/layerbit-logo.png" />
-  <meta name="twitter:card" content="summary" />
+  <meta property="og:image" content="https://layerbit.co.in/og-image.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="Layerbit - free browser-based developer tools" />
+  <meta property="og:locale" content="en" />
+  <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="Regex Debugging Terminal - Layerbit" />
   <meta name="twitter:description" content="Advanced Regular Expression Tester. Debug patterns, highlight matches, and extract capture groups instantly in your browser." />
-  <meta name="twitter:image" content="https://layerbit.co.in/layerbit-logo.png" />
+  <meta name="twitter:image" content="https://layerbit.co.in/og-image.png" />
+  <meta name="twitter:image:alt" content="Layerbit - free browser-based developer tools" />
+  <meta name="theme-color" content="#0a0c10" />
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -607,6 +614,42 @@
         </div>
 
       </div>
+    </div>
+
+    <div class="info-panel">
+      <h2><i data-lucide="microscope"></i> Test the failing case, not just the passing one</h2>
+      <p>Most regex bugs are not "the pattern does not match" — they are "the pattern matches slightly more than intended", or "the pattern takes four minutes on one particular input". Both are invisible if you only ever test with an example that works.</p>
+      <p>The second category is worth taking seriously. Backtracking engines — JavaScript, Python's <code>re</code>, Java, .NET, PCRE — can take exponential time when a pattern is ambiguous, meaning there is more than one way to divide the same input between its parts. A pattern like <code>^(a+)+$</code> tested against thirty <code>a</code>s followed by one <code>X</code> takes roughly a second; at forty characters it is about fifteen minutes. Our guide on <a href="../guides/regex-catastrophic-backtracking.html">catastrophic backtracking</a> explains the mechanism and the fixes.</p>
+
+      <div class="use-cases-grid">
+        <div class="use-case-card">
+          <h3><i data-lucide="layers"></i> Nested quantifiers</h3>
+          <p><code>(a+)+</code>, <code>(\d+)*</code>, <code>([a-z]+)*</code>. A quantifier immediately outside a group whose contents also repeat is exponential. It usually has a trivially equivalent safe form — <code>(a+)+</code> matches exactly what <code>a+</code> matches.</p>
+        </div>
+        <div class="use-case-card">
+          <h3><i data-lucide="git-branch"></i> Ambiguous alternation</h3>
+          <p><code>(\w|\d)*</code> is dangerous because <code>\d</code> is contained within <code>\w</code>, so every digit can match two ways. Make alternation branches mutually exclusive, or collapse them: <code>\w*</code>.</p>
+        </div>
+        <div class="use-case-card">
+          <h3><i data-lucide="space"></i> Optional separators in a repeat</h3>
+          <p><code>(\w+\s?)+$</code> appears in countless "validate a full name" patterns and is polynomial. Make the separator mandatory between tokens instead: <code>^\w+(\s\w+)*$</code>.</p>
+        </div>
+      </div>
+
+      <h2><i data-lucide="target"></i> Flags change the answer, not just the search</h2>
+      <p>Three flags cause most of the confusion when a pattern behaves differently than expected:</p>
+      <ul>
+        <li><strong><code>g</code> (global)</strong> — with <code>RegExp.test()</code> or <code>exec()</code>, a global regex carries mutable <code>lastIndex</code> state between calls, so calling <code>test()</code> twice on the same string can return <code>true</code> then <code>false</code>. Never reuse a global regex object across calls unless you intend that.</li>
+        <li><strong><code>m</code> (multiline)</strong> — changes <code>^</code> and <code>$</code> to match at line boundaries rather than only at string boundaries. Without it, <code>$</code> anchors to the very end of the input.</li>
+        <li><strong><code>s</code> (dotAll)</strong> — makes <code>.</code> match newlines, which it otherwise does not. This is why a pattern that works on one line silently fails across a wrapped block of text.</li>
+      </ul>
+      <p>Capture groups are the other common source of surprise: <code>(...)</code> captures and is numbered left to right by opening parenthesis, <code>(?:...)</code> groups without capturing, and <code>(?&lt;name&gt;...)</code> captures by name. Adding a group in the middle of a pattern renumbers everything after it, which quietly breaks any code indexing matches positionally. Named groups avoid that entirely.</p>
+
+      <h2><i data-lucide="replace"></i> The replacement preview</h2>
+      <p>Substitutions have their own hazards. <code>$1</code> inserts the first capture group, <code>$&amp;</code> the whole match, and <code>$$</code> a literal dollar sign — so a replacement containing a currency amount needs escaping. Previewing the result against real input is faster than reasoning about it, especially when the replacement references groups whose numbering you have just changed.</p>
+
+      <h2><i data-lucide="lock"></i> Local, which matters for this tool</h2>
+      <p>Regex work often involves the exact data you are trying to extract from: log lines with tokens in them, customer records, email addresses, sample payloads from a bug report. Matching here runs in the page using the browser's own <code>RegExp</code> engine, so the behaviour you see is the behaviour your JavaScript will have, and nothing you paste is transmitted.</p>
     </div>
 
     <div class="info-panel">

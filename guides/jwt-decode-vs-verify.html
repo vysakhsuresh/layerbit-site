@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="A JWT payload is readable by anyone holding the token. Learn the difference between decoding and verifying, how alg:none and RS256-to-HS256 confusion forge tokens, and the full claim-validation checklist." />
+  <title>Decoding a JWT Is Not Verifying It - Layerbit Guides</title>
+  <link rel="canonical" href="https://layerbit.co.in/guides/jwt-decode-vs-verify.html" />
+  <meta name="robots" content="max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://layerbit.co.in/guides/jwt-decode-vs-verify.html" />
+  <meta property="og:site_name" content="Layerbit" />
+  <meta property="og:title" content="Decoding a JWT Is Not Verifying It - Layerbit Guides" />
+  <meta property="og:description" content="A JWT payload is readable by anyone holding the token. Learn the difference between decoding and verifying, how alg:none and RS256-to-HS256 confusion forge tokens, and the full claim-validation checklist." />
+  <meta property="og:image" content="https://layerbit.co.in/og-image.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="Layerbit - free browser-based developer tools" />
+  <meta property="og:locale" content="en" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Decoding a JWT Is Not Verifying It - Layerbit Guides" />
+  <meta name="twitter:description" content="A JWT payload is readable by anyone holding the token. Learn the difference between decoding and verifying, how alg:none and RS256-to-HS256 confusion forge tokens, and the full claim-validation checklist." />
+  <meta name="twitter:image" content="https://layerbit.co.in/og-image.png" />
+  <meta name="twitter:image:alt" content="Layerbit - free browser-based developer tools" />
+  <meta name="theme-color" content="#0a0c10" />
+  <script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "TechArticle",
+      "@id": "https://layerbit.co.in/guides/jwt-decode-vs-verify.html#article",
+      "headline": "Decoding a JWT Is Not Verifying It",
+      "name": "Decoding a JWT Is Not Verifying It",
+      "description": "A JWT payload is readable by anyone holding the token. Learn the difference between decoding and verifying, how alg:none and RS256-to-HS256 confusion forge tokens, and the full claim-validation checklist.",
+      "url": "https://layerbit.co.in/guides/jwt-decode-vs-verify.html",
+      "mainEntityOfPage": {
+        "@type": "WebPage",
+        "@id": "https://layerbit.co.in/guides/jwt-decode-vs-verify.html"
+      },
+      "datePublished": "2026-09-12",
+      "dateModified": "2026-09-21",
+      "inLanguage": "en",
+      "wordCount": 2150,
+      "keywords": "jwt verification, alg none attack, algorithm confusion, jwt security, json web token, rs256 hs256, jwt claims validation",
+      "articleSection": "Authentication \u0026 Security",
+      "author": {
+        "@type": "Organization",
+        "name": "Layerbit Technologies",
+        "url": "https://layerbit.co.in/about.html"
+      },
+      "publisher": {
+        "@type": "Organization",
+        "name": "Layerbit Technologies",
+        "url": "https://layerbit.co.in/",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://layerbit.co.in/icon-512.png",
+          "width": 512,
+          "height": 512
+        }
+      },
+      "image": {
+        "@type": "ImageObject",
+        "url": "https://layerbit.co.in/icon-512.png",
+        "width": 512,
+        "height": 512
+      },
+      "isAccessibleForFree": true,
+      "proficiencyLevel": "Intermediate"
+    },
+    {
+      "@type": "BreadcrumbList",
+      "@id": "https://layerbit.co.in/guides/jwt-decode-vs-verify.html#breadcrumb",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://layerbit.co.in/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Guides",
+          "item": "https://layerbit.co.in/blog.html"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": "Decoding vs verifying a JWT",
+          "item": "https://layerbit.co.in/guides/jwt-decode-vs-verify.html"
+        }
+      ]
+    },
+    {
+      "@type": "FAQPage",
+      "@id": "https://layerbit.co.in/guides/jwt-decode-vs-verify.html#faq",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "Can anyone read the contents of a JWT?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes. A JWT is signed, not encrypted. The header and payload are only Base64url-encoded, which requires no key to reverse, so any holder of the token can read every claim inside it. Never place secrets in a JWT payload; use JWE or an opaque session identifier if the contents must stay confidential."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What is the difference between decoding and verifying a JWT?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Decoding simply Base64url-decodes the header and payload and needs no key, so it proves nothing about authenticity. Verifying recomputes the signature with a key you control and proves the token was issued by the holder of that key and has not been modified. Authorisation decisions must only ever be made from a verified token."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What is the alg:none JWT attack?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "RFC 7518 defines an algorithm called none for unsecured tokens. An attacker rewrites a token's payload, sets the header algorithm to none, and removes the signature. A server that reads the algorithm from the token's own header concludes no signature is required and accepts the forgery. The fix is to pass an explicit allowlist of accepted algorithms during verification."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What is JWT algorithm confusion?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "A server expecting RS256 verifies with an RSA public key. If the library takes the algorithm from the token header, an attacker can craft an HS256 token signed with the public key bytes used as an HMAC shared secret. Because the public key is not secret, the forged signature validates. Pinning the algorithm explicitly during verification prevents it."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Is the JWT exp claim in seconds or milliseconds?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Seconds. The exp, nbf and iat claims are NumericDate values measured in seconds since the Unix epoch, while JavaScript's Date.now() returns milliseconds. Use Math.floor(Date.now() / 1000) to produce them, otherwise tokens will either never expire or expire immediately."
+          }
+        }
+      ]
+    }
+  ]
+}
+  </script>
+
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6072772587431629" crossorigin="anonymous"></script>
+
+  <script src="https://unpkg.com/lucide@1.39.0" async></script>
+
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet" />
+  <link href="../layerbit-logo.png" rel="icon" type="image/x-icon" />
+  <link rel="manifest" href="../manifest.json" />
+  <link rel="apple-touch-icon" href="../apple-touch-icon.png" />
+  <link rel="stylesheet" href="../css/base.css" />
+  <link rel="stylesheet" href="../css/article.css" />
+
+  <style>
+
+    /* Long-form guide styling lives in css/article.css, linked from this page's head. */
+  
+  </style>
+</head>
+<body>
+  <header>
+    <a href="../" class="brand">
+      <svg width="36" height="36" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <polygon points="32,20 54,28 32,36 10,28" stroke="#f8fafc" stroke-width="4" stroke-linejoin="round"/>
+        <polyline points="10,38 32,46 54,38" stroke="#f8fafc" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+        <polyline points="10,48 32,56 54,48" stroke="#f8fafc" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+        <rect x="50" y="10" width="10" height="10" rx="2" fill="#00f2fe" />
+      </svg>
+      Layerbit
+    </a>
+  </header>
+
+  <nav class="crumbs" aria-label="Breadcrumb">
+    <a href="../">Home</a>
+    <span class="sep">/</span>
+    <a href="../blog.html">Guides</a>
+    <span class="sep">/</span>
+    <span aria-current="page">Decoding vs verifying a JWT</span>
+  </nav>
+
+  <article class="article">
+    <header class="article-head">
+      <span class="article-kicker">Authentication &amp; Security</span>
+      <h1>Decoding a JWT Is Not Verifying It</h1>
+      <p class="article-standfirst">Anyone holding a JSON Web Token can read every claim inside it in about two seconds, with no key and no permission. That surprises a lot of teams — and the confusion between <em>reading</em> a token and <em>trusting</em> it is behind some of the most quietly devastating authentication bugs in production today.</p>
+      <div class="article-meta">
+        <span class="byline">Layerbit Engineering</span>
+        <span><i data-lucide="calendar"></i>Published 12 September 2026</span>
+        <span><i data-lucide="clock"></i>11 min read</span>
+      </div>
+    </header>
+
+    <div class="takeaways">
+      <h2><i data-lucide="list-checks"></i> The short version</h2>
+      <ul>
+        <li>A JWT is <strong>signed, not encrypted</strong>. Base64url is an encoding, not a lock — treat every claim as publicly readable.</li>
+        <li>Verification means checking the signature <strong>and</strong> pinning the algorithm, then validating <code>iss</code>, <code>aud</code>, <code>exp</code> and <code>nbf</code>.</li>
+        <li>Two classic forgeries — <code>alg: none</code> and RS256&rarr;HS256 confusion — both work by getting your server to take the attacker's word for which algorithm to use.</li>
+        <li><code>exp</code> is in <strong>seconds</strong>, not milliseconds. Getting this wrong either expires every token instantly or never.</li>
+      </ul>
+    </div>
+
+    <div class="prose">
+      <h2 id="anatomy">What is actually inside a token</h2>
+      <p>A JWT in its common form is a JWS Compact Serialization — three Base64url-encoded segments joined by dots:</p>
+      <pre><code>eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9   &lt;- header
+.eyJzdWIiOiIxMjMiLCJyb2xlIjoiYWRtaW4ifQ  &lt;- payload
+.dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk  &lt;- signature</code></pre>
+      <p>Base64url is a near-identical cousin of Base64: <code>+</code> becomes <code>-</code>, <code>/</code> becomes <code>_</code>, and the trailing <code>=</code> padding is stripped so the token survives being dropped into a URL. That is the <em>entire</em> transformation. Decoding it requires no secret, no key, and no cooperation from the issuer.</p>
+      <p>This is worth sitting with, because it has a direct consequence: <strong>a JWT payload is a postcard, not an envelope.</strong> If you put an internal user ID, an email address, a subscription tier, or a feature flag in a token, assume the person holding that token can read it — and assume they will.</p>
+
+      <div class="callout warn">
+        <div class="callout-title"><i data-lucide="alert-triangle"></i> Never put secrets in a JWT payload</div>
+        <p>Signing guarantees <em>integrity</em> (nobody altered it) and <em>authenticity</em> (a holder of the key created it). It guarantees nothing about <em>confidentiality</em>. If you genuinely need the contents hidden from the bearer, you need JWE (encrypted tokens, RFC 7516) or — far more often the right answer — an opaque random session ID that means nothing outside your database.</p>
+      </div>
+
+      <h2 id="two-operations">Two different operations that look the same</h2>
+      <p>Almost every JWT library exposes both, and they are frequently mixed up because the output looks identical:</p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Operation</th><th>Needs a key?</th><th>What it proves</th><th>Typical API</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Decode</strong></td>
+              <td>No</td>
+              <td>Nothing. It only tells you what the token <em>claims</em>.</td>
+              <td><code>jwt.decode()</code>, <code>atob()</code></td>
+            </tr>
+            <tr>
+              <td><strong>Verify</strong></td>
+              <td>Yes</td>
+              <td>The signature matches, so the claims are authentic and unmodified.</td>
+              <td><code>jwt.verify()</code>, <code>jwtVerify()</code></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p>Both hand you back the same tidy object of claims. The difference is invisible in your logs, invisible in your tests, and catastrophic in production. In Node's widely used <code>jsonwebtoken</code> package, <code>jwt.decode(token)</code> and <code>jwt.verify(token, key)</code> differ by one word at the call site and by <em>everything</em> in their security properties.</p>
+      <p>The rule is blunt: <strong>never make an authorisation decision from a decoded token.</strong> Decoding is for debugging, for reading a token you already verified, and for inspecting one in a tool. Authorisation requires verification.</p>
+
+      <h2 id="alg-none">Attack one: <code>alg: none</code></h2>
+      <p>RFC 7518 defines an algorithm literally called <code>none</code>, intended for cases where a JWS is already protected by some other means. A token using it has an empty third segment:</p>
+      <pre><code>{ "alg": "none", "typ": "JWT" }
+{ "sub": "123", "role": "admin" }
+(no signature)</code></pre>
+      <p>The attack is exactly as simple as it sounds. Take a legitimate token, rewrite the payload to say <code>"role": "admin"</code>, set the header algorithm to <code>none</code>, drop the signature, and send it. A server that reads <code>alg</code> from the header and dispatches on it — which is the naive reading of the spec — will conclude that no signature is required and cheerfully accept the forgery.</p>
+      <p>Mature libraries now refuse <code>none</code> unless you explicitly opt in, but this keeps reappearing in hand-rolled verification code and in older dependency versions. The defence is not "check that alg isn't none" — it is to stop taking the algorithm from the token at all.</p>
+
+      <h2 id="alg-confusion">Attack two: algorithm confusion (RS256 &rarr; HS256)</h2>
+      <p>This one is subtler and considerably more elegant, and it is the reason the previous section says to pin the algorithm rather than blocklist one value.</p>
+      <p>RS256 is asymmetric: the issuer signs with a <strong>private</strong> key, and you verify with the matching <strong>public</strong> key. The public key is, by design, not a secret — it is often served openly at a JWKS endpoint. HS256 is symmetric: the same shared secret both signs and verifies.</p>
+      <p>Now consider verification code that fetches the public key and calls:</p>
+      <pre><code>// Dangerous: the algorithm comes from attacker-controlled input
+jwt.verify(token, publicKeyPem);</code></pre>
+      <p>If the library infers the algorithm from the token's own header, an attacker can:</p>
+      <ol>
+        <li>Download your public key — it is public.</li>
+        <li>Craft a token with <code>{"alg": "HS256"}</code> and whatever claims they like.</li>
+        <li>Sign it with HMAC-SHA256 using <strong>the public key bytes as the shared secret</strong>.</li>
+        <li>Send it. Your server sees <code>HS256</code>, reaches for the key material it was given — the public key — and uses it as an HMAC secret. The signature checks out.</li>
+      </ol>
+      <p>The server has been tricked into treating a public value as a private one. Nothing was cracked; the key material was simply used in the wrong role.</p>
+      <div class="callout">
+        <div class="callout-title"><i data-lucide="shield-check"></i> The fix for both attacks is one line</div>
+        <p>Always pass an explicit allowlist of acceptable algorithms, and make the key type match:</p>
+        <pre><code>jwt.verify(token, publicKeyPem, { algorithms: ['RS256'] });</code></pre>
+        <p>Now a token announcing <code>none</code> or <code>HS256</code> is rejected before any key is touched. The token no longer gets a vote in how it is validated.</p>
+      </div>
+
+      <h2 id="claims">Signature valid is not the same as token acceptable</h2>
+      <p>A verified signature tells you the token is authentic and unmodified. It does not tell you the token is <em>for you</em>, <em>for now</em>, or <em>still good</em>. Those are separate checks against the registered claims in RFC 7519 §4.1:</p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Claim</th><th>Meaning</th><th>Why it matters</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>iss</code></td><td>Issuer</td><td>Pin it. Otherwise a validly signed token from a different tenant or environment may be accepted.</td></tr>
+            <tr><td><code>aud</code></td><td>Audience</td><td>Stops a token minted for service A being replayed against service B that trusts the same issuer.</td></tr>
+            <tr><td><code>exp</code></td><td>Expiry</td><td>Without it, a leaked token is valid forever.</td></tr>
+            <tr><td><code>nbf</code></td><td>Not before</td><td>Rejects tokens presented ahead of their validity window.</td></tr>
+            <tr><td><code>iat</code></td><td>Issued at</td><td>Useful for "reauthenticate if older than N" policies.</td></tr>
+            <tr><td><code>sub</code></td><td>Subject</td><td>The principal. Confirm it still exists and is still active.</td></tr>
+            <tr><td><code>jti</code></td><td>Token ID</td><td>The hook for replay detection and targeted revocation.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>The seconds-versus-milliseconds trap</h3>
+      <p><code>exp</code>, <code>nbf</code> and <code>iat</code> are NumericDate values: <strong>seconds</strong> since the Unix epoch. JavaScript's <code>Date.now()</code> returns <strong>milliseconds</strong>. Mixing them is a rite of passage:</p>
+      <pre><code>// Wrong - expiry roughly 52,000 years from now
+{ exp: Date.now() + 3600 }
+
+// Wrong - already expired, by about 56 years
+{ exp: Math.floor(Date.now() / 1000) - 1_800_000_000 }
+
+// Right
+{ exp: Math.floor(Date.now() / 1000) + 3600 }</code></pre>
+      <p>The failure mode is nastily asymmetric. Multiply by a thousand too many and tokens never expire, which is a silent security hole nobody notices. Divide wrongly and every token is dead on arrival, which is loud and gets fixed in ten minutes. The dangerous bug is the quiet one.</p>
+
+      <h3>Allow a little clock skew</h3>
+      <p>Two servers are never in perfect agreement. If the issuer's clock is 800ms ahead, a token can arrive with an <code>nbf</code> microscopically in the future and be rejected for no good reason. Most libraries expose a leeway or clock-tolerance setting; 30–60 seconds is a common, sane figure. Do not set it to hours — that is quietly extending the lifetime of every token you issue.</p>
+
+      <h2 id="kid">Header fields that reach out into the world</h2>
+      <p>The JOSE header can carry more than <code>alg</code>, and several fields are attacker-controlled input that some implementations act on:</p>
+      <ul>
+        <li><strong><code>kid</code> (key ID)</strong> — tells you which key to use. If you interpolate it into a file path you inherit path traversal; into SQL, injection. Treat it as an untrusted lookup key against a fixed set, never as a location.</li>
+        <li><strong><code>jku</code> / <code>x5u</code></strong> — URLs pointing at key sets. An implementation that fetches whatever URL the token supplies has handed the attacker both SSRF and full key control. Only ever fetch from origins you have allowlisted.</li>
+        <li><strong><code>jwk</code></strong> — an embedded public key. Accepting this means accepting "here is the key, please verify me against it," which is self-certification. Ignore it.</li>
+      </ul>
+      <p>A helpful framing: everything in the header is data the attacker wrote. It can tell you <em>which</em> of your trusted keys to check against. It must never tell you <em>what</em> to trust.</p>
+
+      <div class="tool-cta">
+        <div class="cta-copy">
+          <h3>Inspect and verify a token in your browser</h3>
+          <p>Layerbit's JWT Decoder splits any token into header, payload and signature, flags the <code>alg</code> in use, and can verify HMAC and RSA signatures locally using the Web Crypto API. Nothing is uploaded — parsing and verification happen entirely in the page.</p>
+        </div>
+        <a class="cta-btn" href="../tools/jwt-decoder.html"><i data-lucide="key-round"></i> Open JWT Decoder</a>
+      </div>
+
+      <h2 id="revocation">The part JWTs are genuinely bad at</h2>
+      <p>A verified JWT is a self-contained assertion. That is the whole appeal: your API can authenticate a request without a round trip to a session store. The cost is that you have also given up the ability to change your mind.</p>
+      <p>When a user logs out, is suspended, or has their role downgraded, any token already issued keeps verifying perfectly until <code>exp</code> passes. There is no server-side session to delete. The usual mitigations, in rough order of how often they are the right call:</p>
+      <ol>
+        <li><strong>Short-lived access tokens plus refresh tokens.</strong> Access tokens live 5–15 minutes; the long-lived refresh token is a revocable server-side record. Damage from a leaked access token is time-boxed, and you keep a real revocation point.</li>
+        <li><strong>A <code>jti</code> denylist.</strong> Keep revoked token IDs in fast storage until their natural expiry. This reintroduces a lookup, but only for the exceptional case.</li>
+        <li><strong>A per-user token version.</strong> Store an integer against the user, embed it as a claim, bump it on logout or privilege change, and reject tokens whose version is stale. One cheap read, invalidates every outstanding token for that user at once.</li>
+      </ol>
+      <p>If you find yourself checking a database on every single request anyway, that is worth noticing honestly: you have paid the complexity of JWTs and kept the cost of sessions. Plain opaque session tokens may simply be the better design for your system.</p>
+
+      <h2 id="storage">Where the token lives in a browser</h2>
+      <p>There is no option here without a trade-off, and anyone who tells you otherwise is selling something:</p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Storage</th><th>Exposed to</th><th>Notes</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>localStorage</code></td><td>Any XSS on the origin</td><td>Readable by any script that runs on your page, including a compromised dependency.</td></tr>
+            <tr><td>Non-<code>httpOnly</code> cookie</td><td>Any XSS on the origin</td><td>Same exposure as above, with cookies' automatic-sending behaviour on top.</td></tr>
+            <tr><td><code>httpOnly</code> cookie</td><td>CSRF, if unguarded</td><td>Unreadable by JavaScript. Needs <code>SameSite</code> and/or CSRF tokens.</td></tr>
+            <tr><td>In-memory only</td><td>Nothing persistent</td><td>Safest; lost on refresh, so it needs a refresh-token flow behind it.</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>For most applications, an <code>httpOnly</code>, <code>Secure</code>, <code>SameSite=Lax</code> cookie carrying a short-lived token, with CSRF protection on state-changing requests, is the pragmatic default. The key realisation is that "XSS can steal the token" and "CSRF can use the token" are different problems, and choosing a storage location means choosing which one you are going to defend against deliberately rather than accidentally.</p>
+
+      <h2 id="checklist">A verification checklist</h2>
+      <p>Before a request reaches your business logic, confirm every one of these:</p>
+      <ol>
+        <li>Signature verified with a key <strong>you</strong> selected — not one the token named.</li>
+        <li>Algorithm matched against an explicit allowlist. <code>none</code> never appears on it.</li>
+        <li>Key type is right for the algorithm — an RSA public key can never be an HMAC secret.</li>
+        <li><code>iss</code> equals your expected issuer, compared exactly.</li>
+        <li><code>aud</code> includes this specific service.</li>
+        <li><code>exp</code> in the future and <code>nbf</code> in the past, with modest clock leeway.</li>
+        <li><code>sub</code> resolves to a principal that still exists and is still permitted.</li>
+        <li>Revocation state consulted, whichever mechanism you chose.</li>
+        <li>Token type is what you expect — a refresh token must never be accepted as an access token.</li>
+      </ol>
+      <p>Steps one to three defeat forgery. Four to seven defeat misuse of genuine tokens. Eight and nine defeat replay of tokens that were genuine once and no longer should be. Skipping any tier leaves a category of attack fully open, which is why "we verify the signature" is a beginning rather than an answer.</p>
+
+      <h2 id="closing">Reading a token is a debugging tool, not a security boundary</h2>
+      <p>Paste a token into a decoder and you will see its claims laid out clearly — which is exactly the point of a decoder, and exactly why it proves nothing. That readability is a feature for the engineer debugging a login flow at midnight, and a feature for the attacker reading a support ticket that had a token pasted into it.</p>
+      <p>Hold both facts at once: decoding is free and available to everyone, and verification is the only thing standing between a string of Base64 and a trusted identity. Every JWT bug worth its name lives in the gap between those two sentences.</p>
+
+      <div class="further">
+        <h2>Related guides and tools</h2>
+        <div class="further-grid">
+          <a class="further-card" href="base64-explained.html">
+            <strong>What Base64 actually does</strong>
+            <span>Why it exists, the 33% size cost, and why it is not encryption.</span>
+          </a>
+          <a class="further-card" href="../tools/jwt-decoder.html">
+            <strong>JWT Decoder &amp; Verifier</strong>
+            <span>Split, inspect and locally verify token signatures.</span>
+          </a>
+          <a class="further-card" href="percent-encoding-explained.html">
+            <strong>URL encoding, properly explained</strong>
+            <span>Reserved characters, the <code>+</code> problem, and double-encoding.</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </article>
+
+  <a href="../" id="smartBackBtn" class="fab" aria-label="Command Center" title="Command Center">
+    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="filter: drop-shadow(0 0 8px rgba(56, 189, 248, 0.5));">
+      <path d="M12 2L2 7l10 5 10-5-10-5z" stroke="#38bdf8" stroke-width="2" stroke-linejoin="round" fill="rgba(56,189,248,0.2)"/>
+      <path d="M2 17l10 5 10-5M2 12l10 5 10-5" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </a>
+
+  <footer>
+    <div style="margin-bottom: 15px;">
+      &copy; 2025 - 2026 <strong>Layerbit Technologies</strong>. All rights reserved.
+    </div>
+    <div>
+      <a href="../about.html">About</a>
+      <a href="../privacy.html">Privacy Policy</a>
+      <a href="../terms.html">Terms of Service</a>
+      <a href="../blog.html">Developer Blog</a>
+      <a href="../contact.html">Contact</a>
+    </div>
+  </footer>
+
+  <script src="../js/shared.js"></script>
+  <script src="../main.js"></script>
+</body>
+</html>

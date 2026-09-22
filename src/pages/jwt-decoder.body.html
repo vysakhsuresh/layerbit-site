@@ -127,6 +127,47 @@
     </div>
 
     <div class="info-panel">
+      <h2><i data-lucide="microscope"></i> Reading a token versus trusting one</h2>
+      <p>Decoding a JWT requires no key and no permission — the header and payload are Base64url, which is an encoding rather than a lock. That means two things at once: this tool can show you every claim in any token you hold, and so can anybody else who gets hold of it. A JWT payload is a postcard, not an envelope.</p>
+      <p>Verification is the separate operation that actually matters. It recomputes the signature with a key <em>you</em> supply and proves the token was issued by the holder of that key and has not been altered since. This tool does both, and keeps them visibly distinct, because conflating them is the root of most JWT vulnerabilities. Our guide on <a href="../guides/jwt-decode-vs-verify.html">decoding versus verifying</a> covers the attacks in detail.</p>
+
+      <div class="use-cases-grid">
+        <div class="use-case-card">
+          <h3><i data-lucide="ban"></i> <code>alg: none</code></h3>
+          <p>RFC 7518 defines an algorithm meaning "unsigned". An attacker rewrites the payload, sets <code>alg</code> to <code>none</code>, drops the signature, and any server that reads the algorithm from the token accepts it.</p>
+        </div>
+        <div class="use-case-card">
+          <h3><i data-lucide="shuffle"></i> RS256 &rarr; HS256 confusion</h3>
+          <p>A server expecting RSA verifies with a public key. Send an HS256 token signed with those public key bytes as the HMAC secret and, if the library trusts the header, it validates. The public key was never secret.</p>
+        </div>
+        <div class="use-case-card">
+          <h3><i data-lucide="clock"></i> Seconds, not milliseconds</h3>
+          <p><code>exp</code>, <code>nbf</code> and <code>iat</code> are seconds since the epoch. <code>Date.now()</code> returns milliseconds. Multiply by a thousand too many and your tokens never expire — a silent hole nobody notices.</p>
+        </div>
+      </div>
+
+      <h2><i data-lucide="check-circle"></i> What a complete validation involves</h2>
+      <p>A valid signature is the first check, not the only one. Before a request reaches your business logic, all of the following should hold:</p>
+      <ul>
+        <li><strong>Signature</strong> verified with a key you selected — never one the token named via <code>jwk</code>, <code>jku</code> or <code>x5u</code>.</li>
+        <li><strong>Algorithm</strong> matched against an explicit allowlist. Pass <code>algorithms: ['RS256']</code> rather than letting the library infer it.</li>
+        <li><strong><code>iss</code></strong> equal to your expected issuer, compared exactly.</li>
+        <li><strong><code>aud</code></strong> including this specific service, so a token minted for another service cannot be replayed here.</li>
+        <li><strong><code>exp</code></strong> in the future and <strong><code>nbf</code></strong> in the past, with 30–60 seconds of clock leeway.</li>
+        <li><strong><code>sub</code></strong> resolving to a principal that still exists and is still permitted.</li>
+        <li><strong>Token type</strong> as expected — a refresh token must never be accepted where an access token belongs.</li>
+      </ul>
+      <p>The first two defeat forgery. The middle ones defeat misuse of genuine tokens. The last defeats replay of tokens that were legitimate once. Skipping any tier leaves a whole category of attack open, which is why "we check the signature" is a beginning rather than an answer.</p>
+
+      <h2><i data-lucide="key-round"></i> How local verification works here</h2>
+      <p>Signature verification uses the browser's built-in <a href="https://developer.mozilla.org/en-US/docs/Web/API/Web_Crypto_API" target="_blank" rel="noopener">Web Crypto API</a> — <code>crypto.subtle.importKey</code> followed by <code>crypto.subtle.verify</code> — which is the same vetted cryptographic implementation your browser uses for TLS. HMAC algorithms (HS256/384/512) take your shared secret; RSA algorithms (RS256/384/512) take the public key in PEM form.</p>
+      <p>Because it runs in the page, your secret never travels anywhere. That distinction matters more here than almost anywhere else on this site: an online JWT tool that verifies server-side requires you to upload your signing secret to a third party, which is precisely the thing a signing secret must never do. If you can paste a production HMAC secret into a web page at all, it should be one that cannot leave it.</p>
+
+      <h2><i data-lucide="shield-off"></i> What tokens should not contain</h2>
+      <p>Since anyone holding a token can read it, treat the payload as public. Internal user identifiers, email addresses, subscription tiers and role names are all commonly placed there and all readable by the bearer. That is usually acceptable — but a password, an API key for another service, or a personal detail you are legally obliged to protect is not. If contents genuinely must be hidden from the bearer, you need JWE (encrypted tokens) or, far more often, an opaque random session identifier that means nothing outside your own database.</p>
+    </div>
+
+    <div class="info-panel">
       <h2><i data-lucide="git-merge"></i> Deployment Methodology Changelog</h2>
       <ul class="changelog-list">
         <li><span class="changelog-tag">v1.4.0</span> Added optional signature verification (HS256/384/512 shared secret, RS256/384/512 public key) via the Web Crypto API. Renamed the "Signature Valid (Client)" status to "Not Expired" since it only ever checked expiration, not the signature.</li>

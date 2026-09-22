@@ -101,6 +101,44 @@
     </div>
 
     <div class="info-panel">
+      <h2><i data-lucide="microscope"></i> The five characters, and the order they must be replaced in</h2>
+      <p>HTML escaping replaces characters that carry structural meaning with entity references. There are five that matter, and one ordering rule that catches people out:</p>
+      <ul>
+        <li><code>&amp;</code> &rarr; <code>&amp;amp;</code> — must be replaced <strong>first</strong>, or you re-escape the semicolons of your own entities and produce <code>&amp;amp;lt;</code>, which renders visibly as <code>&amp;lt;</code>.</li>
+        <li><code>&lt;</code> &rarr; <code>&amp;lt;</code> and <code>&gt;</code> &rarr; <code>&amp;gt;</code> — otherwise your value starts or ends a tag.</li>
+        <li><code>"</code> &rarr; <code>&amp;quot;</code> and <code>'</code> &rarr; <code>&amp;#39;</code> — these end a quoted attribute value. Prefer the numeric <code>&amp;#39;</code> over <code>&amp;apos;</code>, which was not in HTML 4 and is unrecognised by some legacy parsers.</li>
+      </ul>
+      <p>Get that right and a value is safe in exactly one context: as text between tags. Everywhere else needs different handling, which is the subject of our guide on <a href="../guides/html-escaping-and-xss-contexts.html">contextual output escaping</a>.</p>
+
+      <div class="use-cases-grid">
+        <div class="use-case-card">
+          <h3><i data-lucide="quote"></i> Unquoted attributes</h3>
+          <p><code>&lt;input value={{ x }}&gt;</code> is unsafe even when escaped, because an unquoted value ends at the first space. A payload of <code>x onfocus=alert(1) autofocus</code> contains none of the five characters and adds an event handler. Always quote attributes.</p>
+        </div>
+        <div class="use-case-card">
+          <h3><i data-lucide="file-code-2"></i> Inside <code>&lt;script&gt;</code></h3>
+          <p>HTML escaping is the wrong tool here and corrupts the data. Worse, the literal text <code>&lt;/script&gt;</code> ends the block even inside a JavaScript string, because the HTML tokeniser runs before the JS parser. Serialise as JSON into a data attribute instead.</p>
+        </div>
+        <div class="use-case-card">
+          <h3><i data-lucide="external-link"></i> Inside <code>href</code></h3>
+          <p>Escaping produces well-formed HTML and does not help: <code>javascript:alert(1)</code> contains no character that escaping touches. The defence is a scheme allowlist — accept <code>http:</code>, <code>https:</code>, <code>mailto:</code> and reject the rest.</p>
+        </div>
+      </div>
+
+      <h2><i data-lucide="arrow-right-left"></i> Escape on output, never on input</h2>
+      <p>A persistent anti-pattern is escaping values as they arrive and storing the escaped form. It fails for three reasons worth knowing:</p>
+      <ul>
+        <li><strong>The context is unknown at input time.</strong> The same comment might later be rendered as HTML, sent as a plain-text email, returned in a JSON API response and included in a CSV export. Each needs different treatment, and HTML entities in a plain-text email are simply wrong.</li>
+        <li><strong>Your data is corrupted.</strong> The stored value is no longer what the user typed, so search, sorting, length checks and comparisons all operate on <code>&amp;amp;</code> instead of <code>&amp;</code>.</li>
+        <li><strong>Double escaping.</strong> When a correctly written template escapes the already-escaped value, users see <code>&amp;amp;lt;</code> on the page — and the usual "fix" is to disable escaping in that template, which removes the real protection.</li>
+      </ul>
+      <p>Store exactly what the user typed; escape at the moment of rendering, for the destination it is rendering into. This tool's unescape direction is genuinely useful for diagnosing the double-escaping case: paste the mangled output and you can see how many rounds of escaping it went through.</p>
+
+      <h2><i data-lucide="shield-check"></i> Escaping is not sanitising</h2>
+      <p>These solve different problems. <strong>Escaping</strong> renders a value as inert text, so <code>&lt;b&gt;hi&lt;/b&gt;</code> displays as those literal characters — correct for usernames, titles and comments. <strong>Sanitising</strong> parses the value as HTML and strips everything not on an allowlist while keeping the rest live — correct only when users are meant to submit formatting. If you need sanitising, use a maintained library such as DOMPurify and never a regular expression: HTML is far too irregular for pattern matching, and every hand-rolled tag stripper has been bypassed via malformed markup that browsers helpfully "correct" into something executable.</p>
+    </div>
+
+    <div class="info-panel">
       <h2><i data-lucide="git-commit"></i> Changelog</h2>
       <ul class="changelog-list">
         <li><span class="changelog-tag">v1.3.0</span> Added file upload and drag-and-drop to both panes.</li>

@@ -1,0 +1,119 @@
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "TechArticle",
+      "@id": "https://layerbit.co.in/guides/csv-edge-cases.html#article",
+      "headline": "Why CSV Is Not Really a Format",
+      "name": "Why CSV Is Not Really a Format",
+      "description": "RFC 4180 quoting rules, why Excel opens comma files as one column in European locales, how spreadsheets corrupt leading zeros and gene names, BOM handling, and CSV formula injection.",
+      "url": "https://layerbit.co.in/guides/csv-edge-cases.html",
+      "mainEntityOfPage": {
+        "@type": "WebPage",
+        "@id": "https://layerbit.co.in/guides/csv-edge-cases.html"
+      },
+      "datePublished": "2026-09-06",
+      "dateModified": "2026-09-21",
+      "inLanguage": "en",
+      "wordCount": 1800,
+      "keywords": "rfc 4180, csv parsing quoted commas, csv injection, excel csv delimiter locale, csv utf-8 bom, csv leading zeros excel",
+      "articleSection": "Data Formats",
+      "author": {
+        "@type": "Organization",
+        "name": "Layerbit Technologies",
+        "url": "https://layerbit.co.in/about.html"
+      },
+      "publisher": {
+        "@type": "Organization",
+        "name": "Layerbit Technologies",
+        "url": "https://layerbit.co.in/",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://layerbit.co.in/icon-512.png",
+          "width": 512,
+          "height": 512
+        }
+      },
+      "image": {
+        "@type": "ImageObject",
+        "url": "https://layerbit.co.in/icon-512.png",
+        "width": 512,
+        "height": 512
+      },
+      "isAccessibleForFree": true,
+      "proficiencyLevel": "Beginner"
+    },
+    {
+      "@type": "BreadcrumbList",
+      "@id": "https://layerbit.co.in/guides/csv-edge-cases.html#breadcrumb",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://layerbit.co.in/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Guides",
+          "item": "https://layerbit.co.in/blog.html"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": "CSV edge cases",
+          "item": "https://layerbit.co.in/guides/csv-edge-cases.html"
+        }
+      ]
+    },
+    {
+      "@type": "FAQPage",
+      "@id": "https://layerbit.co.in/guides/csv-edge-cases.html#faq",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "Why can I not just split a CSV file on commas?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Because RFC 4180 allows a field to contain commas, double quotes and even line breaks as long as the field is wrapped in double quotes, with internal quotes escaped by doubling them. Splitting on commas breaks any such record, and splitting on newlines breaks records containing embedded line breaks. Correct parsing requires a small state machine, so use your language's CSV library rather than string splitting."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Why does my CSV open as a single column in Excel?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Excel uses the list separator from the operating system's regional settings rather than assuming a comma. In locales where the decimal mark is a comma, such as Germany, France and Spain, the list separator is a semicolon, so a comma-delimited file is not split. You can emit a sep=, line as the first row, which Excel honours, or ship an .xlsx file instead."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Why does Excel strip the leading zeros from my CSV data?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Excel runs type inference on every cell when opening a CSV. A value like 01234 is read as the number 1234 because a leading zero has no numeric meaning. Long digit strings also become scientific notation, and values resembling dates are converted. The corruption happens on open, not export, so the file on disk is correct until someone saves it."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What is CSV injection?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "If an exported cell begins with =, +, - or @, spreadsheet applications treat it as a formula. An attacker who can store text in your database can plant a payload that executes when an administrator exports the data and opens it, potentially exfiltrating other cells. Mitigate it by prefixing any such value with an apostrophe or space before writing. Quoting the field alone is not sufficient."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Can CSV distinguish an empty string from null?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "No. CSV has a single representation for absent data - nothing between two delimiters - so empty strings, nulls and missing values all collapse to the same thing. Parsers differ on whether they return an empty string or null. If the distinction matters you need an agreed sentinel value, or a format with a real type system such as JSON or Parquet."
+          }
+        }
+      ]
+    }
+  ]
+}
+  </script>
