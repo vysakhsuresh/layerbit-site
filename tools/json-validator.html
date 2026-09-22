@@ -487,6 +487,55 @@
     </div>
 
     <div class="info-panel">
+      <h2><i data-lucide="microscope"></i> What "valid JSON" actually means</h2>
+      <p>JSON is specified by RFC 8259, and the grammar is deliberately tiny — six structural characters, four literals, strings, and numbers. That small surface is why it won, and it is also why so much of what people write is <em>almost</em> JSON. This validator uses the browser's native <code>JSON.parse()</code>, so what passes here is exactly what will pass in your runtime, not a looser approximation of it.</p>
+
+      <div class="use-cases-grid">
+        <div class="use-case-card">
+          <h3><i data-lucide="x-circle"></i> Trailing commas</h3>
+          <p><code>{"a": 1,}</code> is invalid. JavaScript object literals allow a trailing comma and JSON does not, which is why hand-edited config files break after someone deletes the last entry. This is the single most common parse failure.</p>
+        </div>
+        <div class="use-case-card">
+          <h3><i data-lucide="quote"></i> Single quotes</h3>
+          <p><code>{'a': 1}</code> is invalid. JSON strings must use double quotes, for both keys and values. Output copied from a Python <code>repr()</code> or a JavaScript console almost always needs this fixed.</p>
+        </div>
+        <div class="use-case-card">
+          <h3><i data-lucide="key"></i> Unquoted keys</h3>
+          <p><code>{a: 1}</code> is invalid. Every key is a string and must be quoted. JavaScript permits bare identifiers as keys; JSON never does.</p>
+        </div>
+        <div class="use-case-card">
+          <h3><i data-lucide="message-square-x"></i> Comments</h3>
+          <p>Neither <code>//</code> nor <code>/* */</code> is legal JSON. Formats that appear to allow them — <code>tsconfig.json</code>, VS Code settings — are JSON with Comments (JSONC), a different format parsed by a different reader.</p>
+        </div>
+        <div class="use-case-card">
+          <h3><i data-lucide="infinity"></i> <code>NaN</code> and <code>Infinity</code></h3>
+          <p>Not valid JSON values, despite being valid JavaScript numbers. A serialiser that emits them produces output no conforming parser will read — <code>JSON.stringify</code> converts them to <code>null</code> for exactly this reason.</p>
+        </div>
+        <div class="use-case-card">
+          <h3><i data-lucide="hash"></i> Leading zeros and <code>+</code></h3>
+          <p><code>01</code>, <code>+1</code> and <code>.5</code> are all invalid numbers. JSON requires <code>1</code>, <code>1</code> and <code>0.5</code>. Hex literals such as <code>0xFF</code> are invalid too.</p>
+        </div>
+      </div>
+
+      <h2><i data-lucide="alert-triangle"></i> The precision problem nobody warns you about</h2>
+      <p>JSON numbers have no specified size limit, but JavaScript parses them into IEEE 754 doubles, which hold integers exactly only up to 2<sup>53</sup> − 1. Beyond that, parsing silently loses precision:</p>
+      <ul>
+        <li><code>{"id": 9007199254740993}</code> parses to <code>9007199254740992</code> — quietly off by one.</li>
+        <li>Twitter/X snowflake IDs, Discord IDs and many database bigint primary keys exceed this range routinely.</li>
+        <li>No error is raised. The number simply changes, and you find out when a lookup by ID misses.</li>
+      </ul>
+      <p>This is why mature APIs serialise large identifiers as <strong>strings</strong>. If you control the producer, do the same. If you do not, parse with a library that supports BigInt rather than the native parser. Note that this validator will report such a document as perfectly valid — because it is. The document is fine; the round trip through a double is what loses information.</p>
+
+      <h2><i data-lucide="git-compare"></i> Minify, beautify, and what each is for</h2>
+      <p>Both operations preserve the data exactly and change only the whitespace, but they serve opposite purposes. Beautifying with four-space indentation is for reading, reviewing and diffing — a formatted file produces line-level diffs a human can review, whereas a minified one produces a single enormous changed line. Minifying strips every unnecessary byte for transmission and storage.</p>
+      <p>One caveat worth knowing: neither operation guarantees key order is meaningful. RFC 8259 defines an object as an <em>unordered</em> collection, so while <code>JSON.parse</code> and <code>JSON.stringify</code> happen to preserve insertion order in practice, you should never rely on ordering as data. If order matters, use an array.</p>
+      <p>The tree view is the third way to read the same document: collapse the branches you do not care about and the shape of a deeply nested API response becomes obvious in a way that 4,000 formatted lines never will.</p>
+
+      <h2><i data-lucide="shield-check"></i> Why this runs in your browser</h2>
+      <p>API responses are exactly the kind of thing that contains bearer tokens, customer email addresses, internal identifiers and occasionally a password reset link. Pasting that into a server-side formatter means handing it to infrastructure you cannot inspect. Everything here happens in the page: <code>JSON.parse</code>, the syntax highlighting and the tree rendering are all local JavaScript. Open your browser's Network tab while you work and you will see nothing leave — or disconnect entirely and keep formatting.</p>
+    </div>
+
+    <div class="info-panel">
       <h2><i data-lucide="git-commit"></i> Changelog</h2>
       <ul class="changelog-list">
         <li><span class="changelog-tag">v1.4.0</span> Added a collapsible Tree view alongside the raw text output, with Expand All / Collapse All controls for quickly navigating deeply nested payloads.</li>

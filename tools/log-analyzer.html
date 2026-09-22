@@ -432,6 +432,41 @@
 
     <!-- Restored Section: Deployment Changelog -->
     <div class="info-panel">
+      <h2><i data-lucide="microscope"></i> The problem with reading logs linearly</h2>
+      <p>A log file is a chronological record, which is the worst possible ordering for diagnosis. The line that explains an outage is usually one <code>ERROR</code> buried in ten thousand <code>INFO</code> lines, and the useful signal is often not the loudest error but the quiet warning that started forty seconds earlier.</p>
+      <p>Highlighting by severity changes the reading strategy from sequential to visual: errors and warnings become landmarks you can navigate between, and the density of them over time becomes a shape you can see. That is usually enough to find the window worth reading carefully, which is the actual goal.</p>
+
+      <div class="use-cases-grid">
+        <div class="use-case-card">
+          <h3><i data-lucide="alert-octagon"></i> First error, not worst error</h3>
+          <p>Cascading failures produce dramatic downstream errors — connection pool exhausted, circuit breaker open, timeouts everywhere. The first anomaly in the sequence is usually the cause; everything after it is consequence. Work forward from the earliest deviation, not backward from the loudest.</p>
+        </div>
+        <div class="use-case-card">
+          <h3><i data-lucide="repeat"></i> Repetition is information</h3>
+          <p>The same warning appearing a thousand times in ten seconds is a different problem from it appearing once an hour, even though the message is identical. Rate matters at least as much as content, and is invisible when you read one line at a time.</p>
+        </div>
+        <div class="use-case-card">
+          <h3><i data-lucide="clock"></i> Timestamps and timezones</h3>
+          <p>Correlating logs across services means their clocks and timezones must agree. Mixed local times, or one service in UTC and another not, will make a cause appear to follow its own effect. Log in UTC with an explicit offset.</p>
+        </div>
+      </div>
+
+      <h2><i data-lucide="search"></i> A practical triage sequence</h2>
+      <p>When handed a log file and a vague complaint, this order tends to find the answer fastest:</p>
+      <ul>
+        <li><strong>Establish the window.</strong> Find the first and last occurrence of the problem and ignore everything outside it. Most of the file is irrelevant.</li>
+        <li><strong>Read the earliest error, not the most recent.</strong> The last error is usually the furthest from the cause.</li>
+        <li><strong>Look immediately before it.</strong> Warnings and state changes in the seconds preceding the first error are where the explanation normally lives.</li>
+        <li><strong>Check what stopped.</strong> The absence of an expected line — a heartbeat, a successful completion, a periodic job — is as diagnostic as the presence of an error, and much easier to miss.</li>
+        <li><strong>Compare with a good run.</strong> Diffing a failing sequence against a working one isolates the divergence point quickly.</li>
+      </ul>
+
+      <h2><i data-lucide="shield-alert"></i> Logs are sensitive by default</h2>
+      <p>Log files are among the most sensitive artefacts a system produces, and it is worth being conscious of that before pasting one anywhere. In practice they routinely contain bearer tokens in <code>Authorization</code> headers, session identifiers, full request URLs with query parameters, email addresses, internal hostnames and IP addresses, stack traces revealing file paths and library versions, and occasionally a password that ended up in a logged request body.</p>
+      <p>Which is precisely why this analyzer runs entirely in the page. Your log content is parsed and highlighted by local JavaScript and never transmitted — you can confirm that in your browser's Network tab, or work with the network disconnected entirely. Pasting a production log into a server-side analysis service is, functionally, a data disclosure.</p>
+    </div>
+
+    <div class="info-panel">
       <h2><i data-lucide="git-merge"></i> Deployment Methodology Changelog</h2>
       <ul class="changelog-list">
         <li><span class="changelog-tag">v1.4.0</span> Added a Copy Filtered button alongside Export, matching the copy-to-clipboard pattern used elsewhere in the suite.</li>

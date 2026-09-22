@@ -443,6 +443,39 @@
     </div>
 
     <div class="info-panel">
+      <h2><i data-lucide="microscope"></i> Why tabular beats indented for scanning</h2>
+      <p>Formatted JSON is the right shape for reading one record carefully. It is the wrong shape for comparing forty of them, because each record's fields are separated vertically by every other field — so answering "which of these users has no email address?" means scrolling rather than glancing down a column.</p>
+      <p>A table inverts that. Fields become columns, records become rows, and gaps, outliers and type inconsistencies become visible as visual patterns instead of things you have to hold in memory. That is the whole value: not prettier output, but a layout where anomalies find you rather than the reverse.</p>
+
+      <div class="use-cases-grid">
+        <div class="use-case-card">
+          <h3><i data-lucide="combine"></i> Records with different shapes</h3>
+          <p>API responses are rarely uniform — optional fields appear on some objects and not others. The table is built from the union of all keys across every record, so a field present on only two of fifty rows still gets a column, with the gaps visible rather than silently dropped.</p>
+        </div>
+        <div class="use-case-card">
+          <h3><i data-lucide="search"></i> Spotting type drift</h3>
+          <p>A column where most values are numbers and three are quoted strings is a serialisation bug that is nearly invisible in indented JSON and obvious in a column. The same goes for a mix of <code>null</code>, <code>""</code> and missing — three different states that mean different things.</p>
+        </div>
+        <div class="use-case-card">
+          <h3><i data-lucide="git-branch"></i> Nested structures</h3>
+          <p>Tables are flat and JSON is not, so a nested object or array inside a field has to be represented rather than expanded. Deeply nested payloads are better explored with the <a href="json-validator.html">collapsible tree view</a>; tables are for arrays of broadly flat records.</p>
+        </div>
+      </div>
+
+      <h2><i data-lucide="alert-triangle"></i> What a table cannot represent</h2>
+      <p>Worth being explicit about the lossy parts, because they matter when you copy data out of a table and into something else:</p>
+      <ul>
+        <li><strong>Key order is not data.</strong> RFC 8259 defines a JSON object as an <em>unordered</em> collection. Column order here is a presentation choice, not information about the document.</li>
+        <li><strong>Large integers.</strong> JavaScript parses JSON numbers into IEEE 754 doubles, which hold integers exactly only to 2<sup>53</sup> − 1. A 19-digit snowflake ID or bigint primary key loses precision on parse — silently, with no error. This is why well-designed APIs serialise large identifiers as strings.</li>
+        <li><strong>Distinguishing absent from null.</strong> A blank cell may mean the key was missing, the value was <code>null</code>, or the value was an empty string. Those are three different facts and a table shows them identically.</li>
+      </ul>
+      <p>None of that makes the table wrong — it makes it a <em>view</em>. Use it to find the record or field you care about, then go back to the JSON for the authoritative detail.</p>
+
+      <h2><i data-lucide="lock"></i> Local processing</h2>
+      <p>The JSON most worth viewing as a table is production API output: user records, order lines, audit events. That is exactly the data that should not be pasted into a service you cannot inspect. Parsing and rendering here happen entirely in the page — verifiable in your browser's Network tab, and functional with the network disconnected.</p>
+    </div>
+
+    <div class="info-panel">
       <h2><i data-lucide="git-commit"></i> Changelog</h2>
       <ul class="changelog-list">
         <li><span class="changelog-tag">v1.2.0</span> Integrated nested object flattening and robust client-side filtering via the grid toolbar.</li>

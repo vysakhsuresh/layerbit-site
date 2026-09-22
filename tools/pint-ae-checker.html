@@ -553,6 +553,40 @@
     </div>
 
     <div class="info-panel">
+      <h2><i data-lucide="microscope"></i> Three layers behind the name</h2>
+      <p>"PINT-AE" gets used as though it were a single specification, and separating the layers makes the requirements much clearer:</p>
+      <ul>
+        <li><strong>UBL 2.1</strong> — the underlying XML grammar, an OASIS standard defining <code>&lt;Invoice&gt;</code>, <code>&lt;InvoiceLine&gt;</code>, <code>&lt;TaxTotal&gt;</code> and the rest. Two namespaces do the work: <code>cbc</code> for simple values, <code>cac</code> for composite structures.</li>
+        <li><strong>Peppol PINT</strong> — OpenPeppol's international invoice specification: which UBL elements are mandatory, what they mean, and the business rules that must hold.</li>
+        <li><strong>PINT-AE</strong> — the UAE profile of PINT, adding local identifiers, local tax categories and the Federal Tax Authority's own requirements.</li>
+      </ul>
+      <p>The consequence is that a document can be perfectly valid UBL and still fail PINT-AE validation, which is where most first integration attempts land. Our <a href="../guides/uae-einvoicing-pint-ae.html">UAE e-invoicing guide</a> covers the five-corner exchange model and the readiness work in detail.</p>
+
+      <div class="use-cases-grid">
+        <div class="use-case-card">
+          <h3><i data-lucide="calculator"></i> Totals must reconcile</h3>
+          <p>The sum of line amounts must equal the line extension total, which must tie to the tax-exclusive amount, the tax total and the payable amount. Every arithmetic relationship between them is a rule, and a discrepancy of a few fils fails validation where a PDF would have displayed it happily.</p>
+        </div>
+        <div class="use-case-card">
+          <h3><i data-lucide="percent"></i> Tax categories are distinct</h3>
+          <p>Standard-rated, zero-rated, exempt, out-of-scope and reverse-charge are separate categories with separate codes. Zero-rated and exempt are <em>not</em> interchangeable, and a catalogue that stores "5%" as a number cannot express the difference at all.</p>
+        </div>
+        <div class="use-case-card">
+          <h3><i data-lucide="ruler"></i> Unit codes come from a list</h3>
+          <p><code>unitCode</code> values are drawn from UN/ECE Recommendation 20. <code>EA</code>, <code>HUR</code> and <code>KGM</code> are valid; <code>each</code>, <code>hrs</code> and <code>pcs</code> are not, however reasonable they look.</p>
+        </div>
+      </div>
+
+      <h2><i data-lucide="database"></i> It is a data project, not an XML project</h2>
+      <p>Teams usually budget for the integration — build the XML, connect a provider, test, done — and the integration turns out to be the small part. What consumes the timeline is discovering that a third of your customer records have no usable tax identifier, that addresses are stored as one free-text line where the rules expect discrete city and country components, and that totals have been rounding in two different places for years.</p>
+      <p>None of that cleanup depends on a confirmed deadline, which is the argument for starting now: audit counterparty master data, classify every product and service with a tax category and a valid unit code, make rounding consistent in one place, and confirm invoice numbers are genuinely unique. Then export your ten most complicated real invoices — foreign currency, mixed tax categories, credit notes, partial discounts — and try to express each one. Your edge cases are not the specification's examples, and that exercise finds the real gaps faster than any amount of reading.</p>
+
+      <h2><i data-lucide="alert-triangle"></i> What this tool is and is not</h2>
+      <p>This is a readiness and learning aid. It checks invoice data against the PINT-AE field structure, shows what is missing or inconsistent, and exports a PINT-AE style XML file so you can see the shape of the document your systems will need to produce. It runs entirely in your browser, so nothing you enter is transmitted.</p>
+      <p>It is <strong>not</strong> an FTA-approved filing route, and it cannot be: under the UAE model, invoices are exchanged and reported through an Accredited Service Provider, not submitted directly. Treat output from here as a draft for inspection. Have your ASP or a qualified tax adviser verify anything you actually file, and confirm your own obligations and deadlines with the Federal Tax Authority — phased timelines have been adjusted more than once, and a technical tool is the wrong source for a regulatory date.</p>
+    </div>
+
+    <div class="info-panel">
       <h2><i data-lucide="git-commit"></i> Changelog</h2>
       <ul class="changelog-list">
         <li><span class="changelog-tag">v1.1.0</span> Added real value-level validation per field (e.g. Currency now checks for an actual ISO code, TRNs are checked for the correct 15-digit shape, numeric fields must actually be numeric) instead of only checking that a mapped column has data. Also fixed TIN derivation to use the first 10 digits of the TRN, per published UAE guidance (previously used the last 10).</li>

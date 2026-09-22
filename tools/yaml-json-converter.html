@@ -345,6 +345,43 @@
     </div>
 
     <div class="info-panel">
+      <h2><i data-lucide="microscope"></i> Converting to JSON is how you see what YAML did</h2>
+      <p>YAML's convenience comes from guessing what you meant, and every guess is a place it can be wrong in a way that does not look wrong in the source file. JSON has explicit types and no implicit conversion, so round-tripping a document through JSON is the fastest way to find out what a parser actually built rather than what you intended to write.</p>
+      <p>Most of the surprises come from YAML 1.1, which is still the default in PyYAML — by far the most widely deployed implementation. So these are not historical curiosities; they are live in CI pipelines today. Our <a href="../guides/yaml-gotchas.html">YAML guide</a> covers each case and the quoting discipline that prevents them.</p>
+
+      <div class="use-cases-grid">
+        <div class="use-case-card">
+          <h3><i data-lucide="flag"></i> The Norway problem</h3>
+          <p>YAML 1.1 resolves <code>y</code>, <code>n</code>, <code>yes</code>, <code>no</code>, <code>on</code> and <code>off</code> to booleans. A list of country codes containing <code>NO</code> for Norway silently becomes <code>false</code>. Convert to JSON and you see <code>false</code> where you expected <code>"NO"</code>.</p>
+        </div>
+        <div class="use-case-card">
+          <h3><i data-lucide="hash"></i> Versions and leading zeros</h3>
+          <p><code>1.10</code> is a valid float, so it becomes <code>1.1</code> and loses a digit — while <code>1.2.3</code> stays a string, because two dots cannot be a number. A leading zero can trigger octal parsing, turning <code>0755</code> into 493.</p>
+        </div>
+        <div class="use-case-card">
+          <h3><i data-lucide="clock"></i> Base-60 numbers</h3>
+          <p>YAML 1.1 supports sexagesimal integers, so <code>22:22</code> parses as 1342 and <code>1:30</code> as 90. Any colon-separated numeric value — times, durations, partial MAC addresses — needs quoting.</p>
+        </div>
+      </div>
+
+      <h2><i data-lucide="file-text"></i> Block scalars and the invisible newline</h2>
+      <p>YAML offers two multi-line styles and three chomping modes, and the combination decides exactly which newlines survive. The one that causes real incidents is a trailing newline in a secret:</p>
+      <ul>
+        <li><code>|</code> keeps the internal newlines and <strong>exactly one</strong> trailing newline.</li>
+        <li><code>|-</code> keeps internal newlines and <strong>strips</strong> the trailing one.</li>
+        <li><code>&gt;</code> folds internal newlines into spaces, keeping one trailing newline.</li>
+      </ul>
+      <p>So an API key written under <code>|</code> becomes <code>"sk_live_abc123\n"</code>. Authentication fails, the error says the key is invalid, and you check it character by character — all correct — because the problem is a character you cannot see. Converting to JSON makes it visible immediately as <code>\n</code> in the string. Use <code>|-</code> for anything that must not carry a trailing newline.</p>
+
+      <h2><i data-lucide="shield-alert"></i> Loading YAML is a security decision</h2>
+      <p>YAML supports typed tags, and unsafe loaders will instantiate objects from them — a tag like <code>!!python/object/apply:os.system</code> passed to PyYAML's unsafe loader executes. Always use <code>yaml.safe_load()</code> for any document you did not author, and treat YAML from a user upload, a webhook or a third-party repository exactly as you would treat a pickle: as code, not data.</p>
+      <p>There is a denial-of-service angle too. Anchors and aliases let a document reference itself repeatedly, and nesting those references multiplies the expansion — the "billion laughs" attack in a few hundred bytes. If you accept YAML from outside, impose a size limit and a parse timeout as well as using a safe loader.</p>
+
+      <h2><i data-lucide="lock"></i> Runs in your browser</h2>
+      <p>Configuration files are precisely the things that contain connection strings, API keys and internal hostnames — a <code>values.yaml</code> or an <code>appsettings</code> file is often the most sensitive text in a repository. Conversion here happens entirely in the page, so nothing you paste is transmitted anywhere.</p>
+    </div>
+
+    <div class="info-panel">
       <h2><i data-lucide="git-merge"></i> Deployment Changelog</h2>
       <ul class="changelog-list">
         <li><span class="changelog-tag">v1.3.0</span> Added file upload, drag-and-drop, and line-number gutters to both panes.</li>

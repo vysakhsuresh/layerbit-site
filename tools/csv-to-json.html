@@ -413,6 +413,43 @@
     </div>
 
     <div class="info-panel">
+      <h2><i data-lucide="microscope"></i> Why a real parser matters more than you would expect</h2>
+      <p>CSV looks like it can be handled with two string splits, and that assumption is behind a remarkable number of data-corruption bugs. RFC 4180 permits a field to contain commas, double quotes and even line breaks, provided the field is wrapped in quotes with internal quotes doubled. A perfectly legal single record can therefore look like this:</p>
+      <ul>
+        <li><code>7,"O'Brien, Jr.","He said ""no"" twice","Dubai\nUAE"</code></li>
+      </ul>
+      <p>Four fields — one containing a comma, one containing escaped quotes, one containing a real newline mid-record. Splitting on commas yields six fragments; splitting the file on newlines yields three "rows". Both are wrong, and both are what naive code produces. This converter uses a proper lexical state machine, so quoted delimiters are treated as data rather than structure. Our <a href="../guides/csv-edge-cases.html">CSV guide</a> covers the wider format problems in depth.</p>
+
+      <div class="use-cases-grid">
+        <div class="use-case-card">
+          <h3><i data-lucide="type"></i> Smart type inference</h3>
+          <p>CSV has no type system — every value is text. With Smart Types enabled, numeric and boolean-looking values become real JSON numbers and booleans instead of quoted strings. Turn it off when identifiers must stay strings, which is usually the right call for anything with a leading zero.</p>
+        </div>
+        <div class="use-case-card">
+          <h3><i data-lucide="combine"></i> Union-of-keys on the way back</h3>
+          <p>Converting JSON to CSV, the header row is built from every key seen across all records. Objects with differing shapes — an optional <code>notes</code> field on some rows — produce one complete table rather than silently dropping the columns that only appear later.</p>
+        </div>
+        <div class="use-case-card">
+          <h3><i data-lucide="file-warning"></i> Nulls and empties</h3>
+          <p>CSV cannot distinguish an empty string from a null, a missing field or a deliberate blank — there is one representation for all four. If that distinction matters in your domain, agree a sentinel value with the other side or use a format with real types.</p>
+        </div>
+      </div>
+
+      <h2><i data-lucide="alert-triangle"></i> The spreadsheet at the other end</h2>
+      <p>A correct CSV file can still be corrupted the moment somebody opens it, because spreadsheet applications run type inference on every cell. None of these are hypothetical:</p>
+      <ul>
+        <li><code>01234</code> becomes <code>1234</code> — a leading zero has no numeric meaning, so postcodes and account numbers lose digits.</li>
+        <li>A 16-digit number becomes <code>4.01289E+15</code> once it exceeds 15 significant digits.</li>
+        <li><code>1-5</code> and <code>3/4</code> become dates. So, famously, did the gene symbols <em>SEPT2</em> and <em>MARCH1</em> — corrupted so routinely in published genomics data that the naming committee renamed the genes in 2020.</li>
+        <li>In locales where the decimal mark is a comma, Excel expects a <strong>semicolon</strong> delimiter and opens a comma file as a single column.</li>
+      </ul>
+      <p>This happens on open, not on export: your file is correct until the tool reading it changes it and someone saves. If humans will open the data in a spreadsheet, an <code>.xlsx</code> export avoids the whole category.</p>
+
+      <h2><i data-lucide="shield-alert"></i> Formula injection in exports</h2>
+      <p>One security note that catches people out, because the vulnerability is in your <em>output</em> rather than your input. If a cell begins with <code>=</code>, <code>+</code>, <code>-</code> or <code>@</code>, spreadsheets treat it as a formula. An attacker who can store text in your database — a display name, a ticket subject — can plant a payload that executes when an administrator later exports and opens the file. Before writing any user-supplied value, prefix such values with an apostrophe. Quoting the field is not sufficient, because the quotes are consumed by the CSV parser before the spreadsheet sees the value.</p>
+    </div>
+
+    <div class="info-panel">
       <h2><i data-lucide="git-commit"></i> Changelog</h2>
       <ul class="changelog-list">
         <li><span class="changelog-tag">v1.5.0</span> Added a JSON &rarr; CSV reverse mode, building the header row from the union of keys across all objects so heterogeneous records don't lose columns.</li>

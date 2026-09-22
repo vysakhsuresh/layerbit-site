@@ -195,3 +195,34 @@ a:focus-visible, button:focus-visible, select:focus-visible, input:focus-visible
    back to the browser's default blue/purple underlined link styling. */
 footer a { color: var(--text-muted); text-decoration: none; margin: 0 12px; transition: color 0.2s; }
 footer a:hover { color: var(--accent-main); }
+
+/* Inline code inside the documentation panels. Previously unstyled, so
+   <code> in tool-page prose rendered as plain body text. */
+.info-panel code,
+.use-case-card code,
+.faq-answer code {
+  font-family: 'Fira Code', monospace;
+  font-size: 0.88em;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 5px;
+  padding: 1px 6px;
+  color: #a7f3d0;
+  word-break: break-word;
+}
+
+.info-panel a,
+.use-case-card a {
+  color: var(--accent-main);
+  text-decoration: none;
+  border-bottom: 1px solid rgba(56, 189, 248, 0.35);
+  transition: all 0.2s;
+}
+.info-panel a:hover,
+.use-case-card a:hover { color: #fff; border-bottom-color: #fff; }
+
+/* Lists inside documentation panels - only some pages defined these, so a
+   list added to a page without them fell back to browser defaults. */
+.info-panel ul, .info-panel ol { color: var(--text-muted); margin: 0 0 20px 22px; line-height: 1.7; }
+.info-panel li { margin-bottom: 10px; }
+.info-panel ul li::marker, .info-panel ol li::marker { color: var(--accent-main); }

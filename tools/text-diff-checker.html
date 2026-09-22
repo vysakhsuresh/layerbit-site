@@ -388,6 +388,41 @@
     </div>
 
     <div class="info-panel">
+      <h2><i data-lucide="microscope"></i> What a diff is actually computing</h2>
+      <p>Comparing two blocks of text is not a character-by-character scan. A diff algorithm looks for the <em>longest common subsequence</em> — the largest set of lines appearing in both versions in the same order — and everything outside that becomes an addition or a deletion. That framing explains most of the behaviour people find surprising.</p>
+      <p>It is why moving a block of code often shows as a large deletion plus a large insertion rather than "moved": a line-based diff has no concept of movement, only of presence and position. And it is why inserting one line near the top can shift how everything below it aligns, if the algorithm finds a cheaper way to match the remaining text.</p>
+
+      <div class="use-cases-grid">
+        <div class="use-case-card">
+          <h3><i data-lucide="eye-off"></i> Invisible differences</h3>
+          <p>The hardest diffs are the ones you cannot see: a trailing space, a tab where the rest of the file uses spaces, a non-breaking space pasted from a document, or a zero-width character from a web page. The text looks identical and the comparison disagrees — which is the diff being right.</p>
+        </div>
+        <div class="use-case-card">
+          <h3><i data-lucide="corner-down-left"></i> Line endings</h3>
+          <p>Windows uses CRLF, Unix LF. A file that has crossed platforms without normalisation differs on <em>every</em> line while looking unchanged. This is the classic "the whole file is modified but I only edited one line" report.</p>
+        </div>
+        <div class="use-case-card">
+          <h3><i data-lucide="type"></i> Unicode that looks the same</h3>
+          <p>A Cyrillic <code>а</code> renders identically to a Latin <code>a</code>. So do curly and straight quotes after a word processor has been involved. Normalisation form matters too: <code>é</code> can be one code point or <code>e</code> plus a combining accent, and the two are different strings.</p>
+        </div>
+      </div>
+
+      <h2><i data-lucide="list-checks"></i> Where a text diff is the right tool</h2>
+      <p>Version control handles diffing committed code, so the useful cases for a standalone comparison are the ones outside a repository:</p>
+      <ul>
+        <li><strong>Configuration drift.</strong> Comparing the config actually running on a server against what the repository says should be there — the single most common source of "works on staging, fails in production".</li>
+        <li><strong>Environment variable sets.</strong> Two <code>.env</code> files where one key differs, or one is missing entirely.</li>
+        <li><strong>API responses before and after a change.</strong> Confirming that a refactor altered only what you expected, especially with both sides formatted consistently first.</li>
+        <li><strong>Content and copy review.</strong> Finding what changed between two versions of a document when nobody tracked changes.</li>
+        <li><strong>Log comparison.</strong> A successful run against a failing one, to isolate where the behaviour diverges.</li>
+      </ul>
+      <p>One practical tip for structured data: normalise before diffing. Two JSON documents that are semantically identical but formatted differently will diff as completely different text. Format both with the same tool first — then the diff shows genuine changes rather than whitespace.</p>
+
+      <h2><i data-lucide="lock"></i> Runs in your browser</h2>
+      <p>The two things you most often need to compare are a production config and a proposed one, which means connection strings, credentials and internal hostnames. Comparison here is local JavaScript: neither side is transmitted anywhere, so you can diff a live config against a candidate without that config leaving your machine.</p>
+    </div>
+
+    <div class="info-panel">
       <h2><i data-lucide="git-merge"></i> Deployment Changelog</h2>
       <ul class="changelog-list">
         <li><span class="changelog-tag">v2.2.0</span> Added file upload and drag-and-drop to both panes.</li>

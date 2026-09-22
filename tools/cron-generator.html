@@ -501,6 +501,45 @@
     </div>
 
     <div class="info-panel">
+      <h2><i data-lucide="microscope"></i> The rule that silently breaks schedules</h2>
+      <p>An incorrect cron expression is still a <em>valid</em> cron expression. There is no syntax error to catch and no test that fails — just a job quietly running at the wrong times, sometimes for months, until someone notices a report covering the wrong window. The most misread rule is this one:</p>
+      <ul>
+        <li>When <strong>both</strong> day-of-month and day-of-week are restricted (neither is <code>*</code>), the job runs when <strong>either</strong> matches. It is an OR, not an AND.</li>
+        <li>So <code>0 0 13 * 5</code> — intended as "midnight on Friday the 13th" — actually fires on the 13th of every month <em>and</em> every Friday. Roughly 64 times a year instead of one or two.</li>
+      </ul>
+      <p>POSIX and Vixie cron both specify this, so it is not a bug you can work around by switching implementations. There is no cron syntax for a true AND: "the first Monday of the month" cannot be expressed in five fields. The conventional approach is to schedule the superset and guard inside the job. Our <a href="../guides/cron-expressions-explained.html">cron guide</a> works through this and the other traps in full.</p>
+
+      <div class="use-cases-grid">
+        <div class="use-case-card">
+          <h3><i data-lucide="divide"></i> Steps do not mean intervals</h3>
+          <p><code>*/7</code> means "every 7th value in the range", not "every seven minutes". Since 60 is not divisible by 7 it fires at 0, 7, 14 … 56, then resets — leaving one four-minute gap per hour. Only divisors of 60 give a uniform cadence.</p>
+        </div>
+        <div class="use-case-card">
+          <h3><i data-lucide="sun-moon"></i> Daylight saving, twice a year</h3>
+          <p>Classic cron uses local time. When clocks spring forward a job in the skipped hour usually does not run; when they fall back it may run twice. Run the host in UTC, or set <code>CRON_TZ=UTC</code>, and convert inside the application.</p>
+        </div>
+        <div class="use-case-card">
+          <h3><i data-lucide="git-fork"></i> Quartz is not cron</h3>
+          <p><code>L</code>, <code>W</code>, <code>#</code> and <code>?</code> are Quartz extensions, and much "cron documentation" online is actually Quartz documentation. They fail in a standard crontab — often silently. Quartz also uses six or seven fields to cron's five.</p>
+        </div>
+      </div>
+
+      <h2><i data-lucide="clock"></i> Why the next-run preview matters</h2>
+      <p>Because a wrong expression looks reasonable, the only reliable verification is to read the schedule back as a sentence and look at the actual dates it will fire on. This tool does both: it translates the expression into plain English and computes the next five fire times in UTC. If the sentence does not match your intent, or the dates include days that surprise you, the expression is wrong regardless of how sensible it looks.</p>
+      <p>The times are shown in UTC deliberately rather than in your local timezone. Most managed schedulers — GitHub Actions, AWS EventBridge, Google Cloud Scheduler — evaluate cron in UTC, and presenting local times would hide exactly the offset that causes the mistakes.</p>
+
+      <h2><i data-lucide="layers"></i> The operational failures that are not the expression</h2>
+      <p>When a schedule is correct but nothing happens, it is usually one of these rather than the cron syntax:</p>
+      <ul>
+        <li><strong>PATH.</strong> Cron runs with a minimal environment, typically just <code>/usr/bin:/bin</code>. Your shell's PATH is not inherited, so use absolute paths for every binary.</li>
+        <li><strong>An unescaped <code>%</code>.</strong> In a crontab this is special — it truncates the command and sends the remainder to standard input. Escape it as <code>\%</code>.</li>
+        <li><strong>Output going nowhere.</strong> Cron mails stdout and stderr to the user; with no mail transport configured it is discarded. Redirect explicitly with <code>&gt;&gt; /var/log/job.log 2&gt;&amp;1</code> — a cron job with no log is one you cannot debug and cannot prove ran.</li>
+        <li><strong>Overlapping runs.</strong> Cron has no awareness of a previous invocation, so a job that sometimes runs longer than its interval will eventually run concurrently with itself. Wrap it: <code>flock -n /tmp/job.lock /path/to/job.sh</code>, with <code>-n</code> so you skip rather than queue.</li>
+        <li><strong>No trailing newline.</strong> Older crons silently ignore the last line of a crontab that does not end with one.</li>
+      </ul>
+    </div>
+
+    <div class="info-panel">
       <h2><i data-lucide="git-commit"></i> Changelog</h2>
       <ul class="changelog-list">
         <li><span class="changelog-tag">v1.3.1</span> Fixed a bug where the icon library loading asynchronously could cause a valid expression to be mislabeled as a syntax error on page load.</li>

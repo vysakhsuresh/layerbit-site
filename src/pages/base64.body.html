@@ -137,6 +137,39 @@
     </div>
 
     <div class="info-panel">
+      <h2><i data-lucide="microscope"></i> How the encoding works, and what it costs</h2>
+      <p>Base64 (RFC 4648) regroups every three bytes of input — 24 bits — into four 6-bit chunks, each of which indexes a 64-character alphabet. Three bytes in, four characters out, which fixes the overhead at exactly <strong>33%</strong> regardless of content. A 3&nbsp;MB image becomes a 4&nbsp;MB data URI, and the encoded form compresses worse than the original binary did.</p>
+      <p>That ratio is the main thing to know when deciding whether to inline an asset. Replacing one HTTP request with a third more bytes on every page load is often the wrong trade, and it is always worth measuring rather than assuming. Our <a href="../guides/base64-explained.html">Base64 guide</a> goes into the arithmetic, the padding rules and the URL-safe variant in full.</p>
+
+      <div class="use-cases-grid">
+        <div class="use-case-card">
+          <h3><i data-lucide="equal"></i> What the <code>=</code> is for</h3>
+          <p>Padding. When the input is not a multiple of three bytes the output is padded to a multiple of four: one leftover byte gives two characters plus <code>==</code>, two leftover bytes give three plus <code>=</code>. It carries no data — it only tells a streaming decoder where the input ended.</p>
+        </div>
+        <div class="use-case-card">
+          <h3><i data-lucide="link-2"></i> Why URLs need a variant</h3>
+          <p>Standard Base64 uses <code>+</code> and <code>/</code>. In a query string, form decoding turns <code>+</code> into a space; in a path, <code>/</code> is a separator. Base64url substitutes <code>-</code> and <code>_</code> and usually drops the padding, which is why JWT segments look the way they do.</p>
+        </div>
+        <div class="use-case-card">
+          <h3><i data-lucide="languages"></i> Bytes, not text</h3>
+          <p>Base64 encodes bytes. To encode a string you must first choose how it becomes bytes — almost always UTF-8. The browser's <code>btoa()</code> predates this and throws on any character above U+00FF, so accented letters, CJK text and emoji all fail without a <code>TextEncoder</code> step first.</p>
+        </div>
+      </div>
+
+      <h2><i data-lucide="shield-off"></i> It is an encoding, not a protection</h2>
+      <p>Base64 has no key, no secret and no variability: the same input always produces the same output, and every decoder on earth reverses it instantly. It is worth being blunt about this because the mistake is so common and so consequential.</p>
+      <ul>
+        <li><strong>HTTP Basic authentication</strong> sends <code>base64(user:password)</code>. Over plain HTTP that is a password in clear text — the encoding changes nothing an attacker cares about.</li>
+        <li><strong>Kubernetes Secrets</strong> store values Base64-encoded, which makes them <em>look</em> protected in a manifest. They are not encrypted, and by default they are not encrypted at rest in etcd either.</li>
+        <li><strong>Encoding a credential</strong> in a config file, a cookie or a mobile app bundle makes it marginally less obvious to a casual reader and no harder at all to recover.</li>
+      </ul>
+      <p>If you need confidentiality you need encryption. If you only need to move bytes through a text-only channel, Base64 is exactly the right tool — and those are genuinely different problems.</p>
+
+      <h2><i data-lucide="lock"></i> Why decoding here is local</h2>
+      <p>The Base64 strings developers most often need to decode are the interesting ones: a token from a log file, a credential from a misconfigured header, a certificate body, an encoded payload from a bug report. Pasting those into a server-side decoder means handing the underlying secret to someone else's infrastructure. This tool runs entirely in the page — text and file input alike — so whatever you decode stays on your machine.</p>
+    </div>
+
+    <div class="info-panel">
       <h2><i data-lucide="git-commit"></i> Changelog</h2>
       <ul class="changelog-list">
         <li><span class="changelog-tag">v1.3.0</span> Added deep clipboard API integration with a safe fallback mechanism for mobile devices handling massive image strings.</li>

@@ -103,6 +103,45 @@
     </div>
 
     <div class="info-panel">
+      <h2><i data-lucide="microscope"></i> How a peer-to-peer connection is actually established</h2>
+      <p>Two browsers cannot simply find each other. Both are typically behind NAT with no publicly reachable address, so WebRTC solves this in stages — and understanding them explains both the privacy properties and the occasional failure:</p>
+      <ul>
+        <li><strong>Capture.</strong> <code>getDisplayMedia()</code> asks the operating system for a screen, window or tab. The browser, not the page, renders that permission prompt.</li>
+        <li><strong>Signalling.</strong> The two peers must exchange session descriptions (SDP) and candidate network addresses (ICE). This needs a third party, because at this point they have no way to reach each other. LayerLink uses a signalling service for exactly this handshake — it carries connection metadata and <strong>never any video</strong>.</li>
+        <li><strong>Connection.</strong> With candidates exchanged, the peers attempt a direct path. STUN servers help each side discover its own public address; if a direct route is impossible, a relay is required.</li>
+        <li><strong>Media.</strong> The stream flows directly between the browsers, encrypted with DTLS-SRTP, which is mandatory in WebRTC rather than optional.</li>
+      </ul>
+
+      <div class="use-cases-grid">
+        <div class="use-case-card">
+          <h3><i data-lucide="monitor"></i> Sharing needs a desktop</h3>
+          <p>Screen capture is deliberately unavailable to web pages on iOS and unreliable on Android — the operating systems do not expose it. So hosting a session requires a desktop browser. <em>Viewing</em> one works on any modern device, since receiving a video stream needs no special permission.</p>
+        </div>
+        <div class="use-case-card">
+          <h3><i data-lucide="users"></i> One-to-one by design</h3>
+          <p>This is a direct peer connection, not a broadcast. Serving many viewers from one sender requires an SFU — a media server that receives the stream and redistributes it — which necessarily means your video passes through infrastructure rather than going peer to peer.</p>
+        </div>
+        <div class="use-case-card">
+          <h3><i data-lucide="wifi-off"></i> When direct fails</h3>
+          <p>Symmetric NAT and restrictive corporate firewalls can block every direct path. Without a TURN relay the connection simply does not establish. If a session fails on a corporate network but works on a home one, this is almost always why.</p>
+        </div>
+      </div>
+
+      <h2><i data-lucide="eye"></i> What to know before you share a screen</h2>
+      <p>Screen sharing leaks more than people intend, and the mistakes are consistent enough to be worth listing:</p>
+      <ul>
+        <li><strong>Share a window, not the whole screen,</strong> whenever the task allows. Full-desktop sharing exposes every notification that arrives — including message previews and password-reset emails.</li>
+        <li><strong>Notifications.</strong> Enable do-not-disturb first. A toast notification appearing mid-demo is the single most common accidental disclosure.</li>
+        <li><strong>Browser tabs and bookmarks.</strong> Sharing a browser window reveals your other tab titles and your bookmarks bar, which are often more revealing than the page you meant to show.</li>
+        <li><strong>Credentials on screen.</strong> A terminal with an exported token in its scrollback, or an IDE with a <code>.env</code> file open in another tab, is visible the moment you switch to it.</li>
+        <li><strong>Ending the session.</strong> Stop the share explicitly rather than closing the tab and assuming. The browser shows an active-share indicator; confirm it has gone.</li>
+      </ul>
+
+      <h2><i data-lucide="shield-check"></i> The honest privacy position</h2>
+      <p>LayerLink is the one tool on this site that is not purely local, and it is badged <em>Cloud API</em> for that reason. What we can say precisely: the video stream travels directly between the two browsers and is encrypted in transit; the signalling service sees only the connection metadata required to introduce the peers, never media. What we do not claim is that this is equivalent to the fully offline guarantee the other tools make — it is a different and weaker property, and the badge exists so you know which you are getting before you click.</p>
+    </div>
+
+    <div class="info-panel">
       <h2><i data-lucide="git-merge"></i> Deployment Changelog</h2>
       <ul class="changelog-list">
         <li><span class="changelog-tag">v1.3.0</span> Deployed enterprise documentation architecture and UI state simulation tools.</li>
