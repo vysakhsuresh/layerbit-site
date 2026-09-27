@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="LayerLink Host Terminal. Secure, client-to-client screen broadcasting." />
-  <title>LayerLink Sharer - Layerbit</title>
+  <meta name="description" content="Share your screen from a desktop browser to anyone with a link. Peer-to-peer WebRTC, encrypted in transit, no installation or account required." />
+  <title>Free Browser Screen Sharing, No Install | LayerLink</title>
   <!-- Google tag (gtag.js) -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-ERX8MNPPP5"></script>
   <script>
@@ -18,50 +18,98 @@
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://layerbit.co.in/tools/layerlink-sharer.html" />
   <meta property="og:site_name" content="Layerbit" />
-  <meta property="og:title" content="LayerLink Sharer - Layerbit" />
-  <meta property="og:description" content="LayerLink Host Terminal. Secure, client-to-client screen broadcasting." />
+  <meta property="og:title" content="Free Browser Screen Sharing, No Install | LayerLink" />
+  <meta property="og:description" content="Share your screen from a desktop browser to anyone with a link. Peer-to-peer WebRTC, encrypted in transit, no installation or account required." />
   <meta property="og:image" content="https://layerbit.co.in/og-image.png" />
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
   <meta property="og:image:alt" content="Layerbit - free browser-based developer tools" />
   <meta property="og:locale" content="en" />
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="LayerLink Sharer - Layerbit" />
-  <meta name="twitter:description" content="LayerLink Host Terminal. Secure, client-to-client screen broadcasting." />
+  <meta name="twitter:title" content="Free Browser Screen Sharing, No Install | LayerLink" />
+  <meta name="twitter:description" content="Share your screen from a desktop browser to anyone with a link. Peer-to-peer WebRTC, encrypted in transit, no installation or account required." />
   <meta name="twitter:image" content="https://layerbit.co.in/og-image.png" />
   <meta name="twitter:image:alt" content="Layerbit - free browser-based developer tools" />
   <meta name="theme-color" content="#0a0c10" />
   <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "FAQPage",
-    "mainEntity": [
-      {
-        "@type": "Question",
-        "name": "Why does this tool require a desktop browser?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "The core JavaScript API required to capture a screen stream (navigator.mediaDevices.getDisplayMedia) is intentionally restricted by Apple and Google on mobile operating systems for security reasons. While a mobile device can view the stream, only a desktop/laptop environment can host it."
-        }
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "SoftwareApplication",
+      "@id": "https://layerbit.co.in/tools/layerlink-sharer.html#app",
+      "name": "LayerLink Screen Sharing",
+      "url": "https://layerbit.co.in/tools/layerlink-sharer.html",
+      "description": "Share your screen from a desktop browser to anyone with a link. Peer-to-peer WebRTC, encrypted in transit, no installation or account required.",
+      "applicationCategory": "CommunicationApplication",
+      "operatingSystem": "Any (runs in the browser)",
+      "browserRequirements": "Requires JavaScript",
+      "isAccessibleForFree": true,
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
       },
-      {
-        "@type": "Question",
-        "name": "What is Firebase used for in this app?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "Firebase Realtime Database acts purely as the \"Signaling Server.\" In order for a P2P connection to occur, both browsers need to exchange connection data (SDP offers and ICE candidates) so they know how to find each other on the internet. Once the connection is established, Firebase's job is done."
-        }
-      },
-      {
-        "@type": "Question",
-        "name": "Can multiple people view the stream?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "No, this architecture is strictly a 1-to-1 P2P connection. Scaling WebRTC to multiple viewers requires an SFU (Selective Forwarding Unit) server to process and distribute the video streams, which breaks the zero-trust P2P model used here."
-        }
+      "publisher": {
+        "@id": "https://layerbit.co.in/#organization"
       }
-    ]
-  }
+    },
+    {
+      "@type": "BreadcrumbList",
+      "@id": "https://layerbit.co.in/tools/layerlink-sharer.html#breadcrumb",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://layerbit.co.in/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Tools",
+          "item": "https://layerbit.co.in/blog.html"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": "LayerLink Screen Sharing",
+          "item": "https://layerbit.co.in/tools/layerlink-sharer.html"
+        }
+      ]
+    },
+    {
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "Why does this tool require a desktop browser?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "The core JavaScript API required to capture a screen stream (navigator.mediaDevices.getDisplayMedia) is intentionally restricted by Apple and Google on mobile operating systems for security reasons. While a mobile device can view the stream, only a desktop/laptop environment can host it."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What is Firebase used for in this app?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Firebase Realtime Database acts purely as the \"Signaling Server.\" In order for a P2P connection to occur, both browsers need to exchange connection data (SDP offers and ICE candidates) so they know how to find each other on the internet. Once the connection is established, Firebase's job is done."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Can multiple people view the stream?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "No, this architecture is strictly a 1-to-1 P2P connection. Scaling WebRTC to multiple viewers requires an SFU (Selective Forwarding Unit) server to process and distribute the video streams, which breaks the zero-trust P2P model used here."
+          }
+        }
+      ],
+      "@id": "https://layerbit.co.in/tools/layerlink-sharer.html#faq"
+    }
+  ]
+}
   </script>
 
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6072772587431629" crossorigin="anonymous"></script>
@@ -224,7 +272,7 @@
   </header>
 
   <main class="hero">
-    <h1>LayerLink Host Terminal</h1>
+    <h1>LayerLink Screen Sharing</h1>
     <p>Secure, browser-to-browser screen broadcasting via WebRTC technology.</p>
   </main>
 

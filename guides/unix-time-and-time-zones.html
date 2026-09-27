@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Instants vs wall-clock times, seconds vs milliseconds, why a zone is not an offset, what DST does to schedules, and what to store for events and dates." />
+  <title>Unix Time, ISO 8601 and Time Zones Explained | Layerbit</title>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-ERX8MNPPP5"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-ERX8MNPPP5');
+  </script>
+  <link rel="canonical" href="https://layerbit.co.in/guides/unix-time-and-time-zones.html" />
+  <meta name="robots" content="max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://layerbit.co.in/guides/unix-time-and-time-zones.html" />
+  <meta property="og:site_name" content="Layerbit" />
+  <meta property="og:title" content="Unix Time, ISO 8601 and Time Zones Explained | Layerbit" />
+  <meta property="og:description" content="Instants vs wall-clock times, seconds vs milliseconds, why a zone is not an offset, what DST does to schedules, and what to store for events and dates." />
+  <meta property="og:image" content="https://layerbit.co.in/og-image.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="Layerbit - free browser-based developer tools" />
+  <meta property="og:locale" content="en" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Unix Time, ISO 8601 and Time Zones Explained | Layerbit" />
+  <meta name="twitter:description" content="Instants vs wall-clock times, seconds vs milliseconds, why a zone is not an offset, what DST does to schedules, and what to store for events and dates." />
+  <meta name="twitter:image" content="https://layerbit.co.in/og-image.png" />
+  <meta name="twitter:image:alt" content="Layerbit - free browser-based developer tools" />
+  <meta name="theme-color" content="#0a0c10" />
+  <script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "TechArticle",
+      "@id": "https://layerbit.co.in/guides/unix-time-and-time-zones.html#article",
+      "headline": "Unix Time, ISO 8601 and Time Zones: The Rules Behind Every Off-by-One-Day Bug",
+      "name": "Unix Time, ISO 8601 and Time Zones: The Rules Behind Every Off-by-One-Day Bug",
+      "description": "Instants vs wall-clock times, seconds vs milliseconds, why a zone is not an offset, what DST does to schedules, and what to store for events and dates.",
+      "url": "https://layerbit.co.in/guides/unix-time-and-time-zones.html",
+      "mainEntityOfPage": {
+        "@type": "WebPage",
+        "@id": "https://layerbit.co.in/guides/unix-time-and-time-zones.html"
+      },
+      "datePublished": "2026-09-27",
+      "dateModified": "2026-09-27",
+      "inLanguage": "en",
+      "wordCount": 1877,
+      "keywords": "unix timestamp, ISO 8601, time zones, UTC, daylight saving, epoch milliseconds, year 2038",
+      "articleSection": "Time \u0026 Dates",
+      "author": {
+        "@type": "Organization",
+        "name": "Layerbit Technologies",
+        "url": "https://layerbit.co.in/about.html"
+      },
+      "publisher": {
+        "@type": "Organization",
+        "name": "Layerbit Technologies",
+        "url": "https://layerbit.co.in/",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://layerbit.co.in/icon-512.png",
+          "width": 512,
+          "height": 512
+        }
+      },
+      "image": {
+        "@type": "ImageObject",
+        "url": "https://layerbit.co.in/og-image.png",
+        "width": 1200,
+        "height": 630
+      },
+      "isAccessibleForFree": true,
+      "proficiencyLevel": "Beginner"
+    },
+    {
+      "@type": "BreadcrumbList",
+      "@id": "https://layerbit.co.in/guides/unix-time-and-time-zones.html#breadcrumb",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://layerbit.co.in/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Guides",
+          "item": "https://layerbit.co.in/blog.html"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": "Unix time and time zones",
+          "item": "https://layerbit.co.in/guides/unix-time-and-time-zones.html"
+        }
+      ]
+    },
+    {
+      "@type": "FAQPage",
+      "@id": "https://layerbit.co.in/guides/unix-time-and-time-zones.html#faq",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "Does a Unix timestamp have a time zone?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "No. It counts seconds since 1970-01-01 00:00:00 UTC and identifies a single instant that is the same everywhere. A time zone only enters the picture when you convert that instant into a wall-clock date and time for display, and that conversion is where the zone must be supplied explicitly."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How do I tell whether a timestamp is in seconds or milliseconds?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Count the digits. Current Unix time is a 10-digit number in seconds and a 13-digit number in milliseconds; microseconds have 16 and nanoseconds 19. A value that converts to the year 56,000 was milliseconds read as seconds; one that converts to January 1970 was seconds read as milliseconds."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Should I store dates in UTC or local time?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Store instants — things that have happened — in UTC, and convert to local time only when displaying. Store future appointments as a wall-clock time together with the IANA zone name, because the zone's offset rules may change before the date arrives. Never store just an offset like +04:00 in place of a zone name."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Why does JavaScript treat \"2026-09-27\" as UTC but \"2026-09-27T12:00\" as local?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "A historical quirk of the ECMAScript specification: date-only ISO strings are parsed as UTC midnight, while date-time strings without a zone designator are parsed as local time. The inconsistency causes many off-by-one-day bugs. Avoid it by always including a Z or an explicit offset in any date-time string you exchange, and by treating date-only values as plain dates rather than timestamps."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What is the year 2038 problem and does it still matter?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "A signed 32-bit count of seconds overflows on 19 January 2038 at 03:14:07 UTC, wrapping to a date in 1901. Current operating systems use 64-bit time, but embedded devices, older file formats and some database columns do not, and equipment installed today may still be running then. Check any long-lived system that stores time in 32 bits."
+          }
+        }
+      ]
+    }
+  ]
+}
+  </script>
+
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6072772587431629" crossorigin="anonymous"></script>
+
+  <script src="../js/vendor/lucide.min.js" async></script>
+
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet" />
+  <link href="../layerbit-logo.png" rel="icon" type="image/x-icon" />
+  <link rel="manifest" href="../manifest.json" />
+  <link rel="apple-touch-icon" href="../apple-touch-icon.png" />
+  <link rel="stylesheet" href="../css/base.css" />
+  <link rel="stylesheet" href="../css/article.css" />
+
+  <style>
+
+    /* Long-form guide styling lives in css/article.css, linked from this page's head. */
+  
+  </style>
+</head>
+<body>
+  <header>
+    <a href="../" class="brand">
+      <svg width="36" height="36" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <polygon points="32,20 54,28 32,36 10,28" stroke="#f8fafc" stroke-width="4" stroke-linejoin="round"/>
+        <polyline points="10,38 32,46 54,38" stroke="#f8fafc" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+        <polyline points="10,48 32,56 54,48" stroke="#f8fafc" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+        <rect x="50" y="10" width="10" height="10" rx="2" fill="#00f2fe" />
+      </svg>
+      Layerbit
+    </a>
+  </header>
+
+  <nav class="crumbs" aria-label="Breadcrumb">
+    <a href="../">Home</a>
+    <span class="sep">/</span>
+    <a href="../blog.html">Guides</a>
+    <span class="sep">/</span>
+    <span aria-current="page">Unix time and time zones</span>
+  </nav>
+
+  <article class="article">
+    <header class="article-head">
+      <span class="article-kicker">Time &amp; Dates</span>
+      <h1>Unix Time, ISO 8601 and Time Zones: The Rules Behind Every Off-by-One-Day Bug</h1>
+      <p class="article-standfirst">Timestamps look simple — a number, or a string with a T in the middle — and they produce a disproportionate share of production bugs: a report that is a day off, a scheduled job that runs twice, an expiry that fires an hour early each spring. Almost all of them come from a small set of confusions, and this guide names each one so you can recognise it before it ships.</p>
+      <div class="article-meta">
+        <span class="byline">Layerbit Engineering</span>
+        <span><i data-lucide="calendar"></i>Published 27 September 2026</span>
+        <span><i data-lucide="clock"></i>12 min read</span>
+      </div>
+    </header>
+
+    <div class="takeaways">
+      <h2><i data-lucide="list-checks"></i> The short version</h2>
+      <ul>
+        <li>A Unix timestamp is an <strong>instant</strong>: seconds since 1970-01-01 00:00:00 UTC. It has no time zone. Only a wall-clock time has a zone.</li>
+        <li>Seconds vs milliseconds is a factor-of-1000 bug that reads as "the year 56,000" or "January 1970". Check the digit count: 10 is seconds, 13 is milliseconds.</li>
+        <li>A <strong>zone</strong> (<code>Asia/Dubai</code>) is a set of rules; an <strong>offset</strong> (<code>+04:00</code>) is one value from those rules at one moment. Store the zone name, never just the offset.</li>
+        <li>Store instants in UTC. Convert to local time only at display. For future appointments, also store the zone name.</li>
+        <li>ISO 8601 with an explicit <code>Z</code> or offset is the only string form worth exchanging between systems.</li>
+      </ul>
+    </div>
+
+    <div class="prose">
+      <h2 id="instant">Instants and wall-clock times are different things</h2>
+      <p>The single most useful idea in this whole topic is the distinction between an <em>instant</em> — a point on the universal timeline, the same everywhere on Earth — and a <em>wall-clock time</em> — what a clock on a particular wall shows. <code>1727438400</code> is an instant. "12:00 on 27 September 2024" is a wall-clock time and is meaningless until you say whose wall: it is a different instant in Dubai, London and São Paulo.</p>
+      <p>Unix time is a count of seconds since the epoch, 00:00:00 UTC on 1 January 1970, and it is an instant. That is why it is the right format for systems to exchange and store: no zone, no ambiguity, no daylight-saving rules, and arithmetic is plain subtraction. Every bug in this guide is, at bottom, a wall-clock time being treated as an instant or an instant being displayed as if it were a wall-clock time in the wrong zone.</p>
+
+      <h2 id="units">Seconds, milliseconds and the year 56,000</h2>
+      <p>Unix tradition, most databases and JWT claims count seconds. JavaScript's <code>Date.now()</code>, Java's <code>System.currentTimeMillis()</code>, Go's <code>UnixMilli()</code> and most JSON APIs count milliseconds. Some tracing systems use microseconds or nanoseconds. Mix them and you get a date tens of thousands of years away (milliseconds read as seconds) or a date in January 1970 (seconds read as milliseconds).</p>
+      <p>The tell is the digit count. Current time in seconds is a 10-digit number; in milliseconds, 13; microseconds, 16; nanoseconds, 19. A JWT whose <code>exp</code> has 13 digits was written with <code>Date.now()</code> instead of <code>Math.floor(Date.now() / 1000)</code>, and every validator will treat it as never expiring. Layerbit's timestamp converter reads the unit off the magnitude and says which it assumed, and its JWT inspector warns when a claim looks like milliseconds.</p>
+
+      <h2 id="iso">ISO 8601: which form you actually want</h2>
+      <p>ISO 8601 is a family of formats, and only one member of it is safe for interchange: the full date-time with an explicit zone designator, <code>2026-09-27T12:00:00Z</code> or <code>2026-09-27T16:00:00+04:00</code>. The <code>Z</code> means UTC; the offset means "this wall-clock time, at this offset from UTC". Either way the instant is unambiguous. RFC 3339 is the profile of ISO 8601 that requires this, and it is what "ISO date" should mean in an API contract.</p>
+      <p>The forms without a zone are where trouble starts. <code>2026-09-27T12:00:00</code> is a wall-clock time with no wall; each parser picks one. JavaScript's <code>Date</code> parses that string as local time, but parses the date-only <code>2026-09-27</code> as UTC midnight — so in New York the second one displays as the evening of the 26th. That inconsistency, inherited from an old spec quirk, is the direct cause of a great many "the date is one day off" reports, and the fix is to never emit a date-time string without a <code>Z</code> or offset.</p>
+
+      <h2 id="zones">A zone is not an offset</h2>
+      <p><code>+04:00</code> is a number. <code>Asia/Dubai</code> is a name for a set of rules, maintained in the IANA time zone database, that say what the offset is at every moment in history and (as far as legislation allows) the future. For Dubai the rules are simple: +04:00 always. For <code>Europe/London</code> the offset is +00:00 in winter and +01:00 in summer, and the dates of the switch have changed several times over the decades. For <code>America/Sao_Paulo</code> daylight saving was abolished in 2019, so an offset stored in 2018 for a 2020 appointment was wrong by the time it arrived.</p>
+      <p>This is why storing an offset with a future wall-clock time is a bug waiting to happen. If a user books "9 am on 15 March" in London, storing <code>09:00+00:00</code> gives the wrong instant if the clocks have changed by then. Store the wall-clock time plus the zone name, and compute the instant when it is needed using the rules current at that time. Browsers ship the IANA database through <code>Intl.DateTimeFormat</code>, which is how a purely client-side converter can show the correct historical offset for any date.</p>
+
+      <div class="tool-cta">
+        <div class="cta-copy">
+          <h3>Convert any timestamp in any zone, locally</h3>
+          <p>Layerbit's Unix Timestamp Converter detects the unit, shows the instant as ISO 8601, RFC 2822 and in any IANA zone with the offset in force at that moment, flags 32-bit overflow, and does calendar-correct arithmetic — all in the browser.</p>
+        </div>
+        <a class="cta-btn" href="../tools/timestamp-converter.html"><i data-lucide="calendar-clock"></i> Open Timestamp Converter</a>
+      </div>
+
+      <h2 id="dst">Daylight saving: the hour that happens twice</h2>
+      <p>Twice a year, in zones that observe daylight saving, wall-clock time misbehaves. In spring the clocks jump forward and a whole hour of wall-clock times — 02:00 to 02:59 in most of Europe and North America — never happens. In autumn the clocks fall back and an hour happens twice; 01:30 refers to two different instants. Any code that schedules by wall-clock time has to decide what to do with these, and most code does not decide, it just breaks.</p>
+      <ul>
+        <li>A cron job at <code>30 2 * * *</code> on a server in a DST zone does not run on the spring-forward night and runs twice on the fall-back night. Run schedulers in UTC.</li>
+        <li>"Add one day" to an instant by adding 86,400 seconds gives a wall-clock time an hour off across a transition. Calendar arithmetic must be done in the zone, not on the epoch number.</li>
+        <li>"Add 24 hours" and "add one day" are different operations on a DST day, and a function that does not distinguish them is wrong on two days a year.</li>
+      </ul>
+
+      <h2 id="storage">What to store</h2>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>You are recording…</th><th>Store</th><th>Why</th></tr></thead>
+          <tbody>
+            <tr><td>When something happened (a log, an order, a login)</td><td>The instant, in UTC: <code>timestamptz</code>, or epoch seconds/milliseconds as an integer</td><td>It is a point in time; the zone of the observer is irrelevant to the fact.</td></tr>
+            <tr><td>When something will happen at a place (an appointment, a store opening)</td><td>Wall-clock time <em>plus</em> the IANA zone name</td><td>The instant may move if the zone's rules change before the date arrives.</td></tr>
+            <tr><td>A date with no time (a birthday, a due date)</td><td>A plain date, <code>DATE</code> or <code>YYYY-MM-DD</code>, never a midnight timestamp</td><td>Midnight is a different instant in every zone; a date-as-timestamp shifts by a day at the boundaries.</td></tr>
+            <tr><td>A duration</td><td>Seconds, or an ISO 8601 duration such as <code>PT1H30M</code></td><td>A start and end pair can drift across DST; a duration cannot.</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>Two database notes. MySQL's <code>TIMESTAMP</code> column silently converts to and from the session time zone, so the same row reads differently from two connections with different settings; <code>DATETIME</code> stores what you give it with no conversion. PostgreSQL's <code>timestamptz</code> stores UTC and converts on the way out, which is the behaviour you want, while plain <code>timestamp</code> stores a naked wall-clock time and is almost never what you want.</p>
+
+      <h2 id="edges">The edges: 2038, leap seconds, negative time</h2>
+      <p>A signed 32-bit integer of seconds overflows at 03:14:07 UTC on 19 January 2038. Modern systems use 64 bits, but embedded firmware, older file formats, some database schemas and a surprising amount of C code with <code>int</code> where <code>time_t</code> was meant do not. If a system will still be running in 2038 — and industrial and medical equipment often is — check the width now. Leap seconds are simpler than they sound: Unix time ignores them by definition, pretending every day is exactly 86,400 seconds, which keeps arithmetic simple at the cost of drifting from atomic time by 27 seconds so far. Negative timestamps are legal and mean before 1970; they work almost everywhere except MySQL's <code>TIMESTAMP</code> type, which cannot represent them.</p>
+
+      <h2 id="closing">One rule covers most of it</h2>
+      <p>Represent time as an instant in UTC everywhere inside the system, attach a zone name only where a future wall-clock time is the actual requirement, and convert to local time at the last possible moment for display. Systems built on that rule still have to handle DST edge cases and unit mismatches at their boundaries, but they do not have the pervasive, hard-to-reproduce off-by-an-hour and off-by-a-day bugs that come from letting wall-clock times masquerade as instants deep in the data model.</p>
+
+      <div class="further">
+        <h2>Related guides and tools</h2>
+        <div class="further-grid">
+          <a class="further-card" href="../tools/timestamp-converter.html">
+            <strong>Unix Timestamp Converter</strong>
+            <span>Units, zones, ISO weeks, date arithmetic.</span>
+          </a>
+          <a class="further-card" href="cron-expressions-explained.html">
+            <strong>Cron expressions explained</strong>
+            <span>Including what DST does to a schedule.</span>
+          </a>
+          <a class="further-card" href="jwt-decode-vs-verify.html">
+            <strong>Decoding a JWT is not verifying it</strong>
+            <span>Where exp in milliseconds quietly disables expiry.</span>
+          </a>
+        </div>
+      </div>
+
+      <h2 id="faq">Frequently asked questions</h2>
+      <div class="faq-container">
+        <div class="faq-item">
+          <button class="faq-question">Does a Unix timestamp have a time zone? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>No. It counts seconds since 1970-01-01 00:00:00 UTC and identifies a single instant that is the same everywhere. A time zone only enters the picture when you convert that instant into a wall-clock date and time for display, and that conversion is where the zone must be supplied explicitly.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">How do I tell whether a timestamp is in seconds or milliseconds? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>Count the digits. Current Unix time is a 10-digit number in seconds and a 13-digit number in milliseconds; microseconds have 16 and nanoseconds 19. A value that converts to the year 56,000 was milliseconds read as seconds; one that converts to January 1970 was seconds read as milliseconds.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">Should I store dates in UTC or local time? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>Store instants — things that have happened — in UTC, and convert to local time only when displaying. Store future appointments as a wall-clock time together with the IANA zone name, because the zone's offset rules may change before the date arrives. Never store just an offset like +04:00 in place of a zone name.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">Why does JavaScript treat "2026-09-27" as UTC but "2026-09-27T12:00" as local? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>A historical quirk of the ECMAScript specification: date-only ISO strings are parsed as UTC midnight, while date-time strings without a zone designator are parsed as local time. The inconsistency causes many off-by-one-day bugs. Avoid it by always including a Z or an explicit offset in any date-time string you exchange, and by treating date-only values as plain dates rather than timestamps.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">What is the year 2038 problem and does it still matter? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>A signed 32-bit count of seconds overflows on 19 January 2038 at 03:14:07 UTC, wrapping to a date in 1901. Current operating systems use 64-bit time, but embedded devices, older file formats and some database columns do not, and equipment installed today may still be running then. Check any long-lived system that stores time in 32 bits.</p></div>
+        </div>
+      </div>
+    </div>
+  </article>
+
+  <a href="../" id="smartBackBtn" class="fab" aria-label="Command Center" title="Command Center">
+    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="filter: drop-shadow(0 0 8px rgba(56, 189, 248, 0.5));">
+      <path d="M12 2L2 7l10 5 10-5-10-5z" stroke="#38bdf8" stroke-width="2" stroke-linejoin="round" fill="rgba(56,189,248,0.2)"/>
+      <path d="M2 17l10 5 10-5M2 12l10 5 10-5" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </a>
+
+  <footer>
+    <div style="margin-bottom: 15px;">
+      &copy; 2025 - 2026 <strong>Layerbit Technologies</strong>. All rights reserved.
+    </div>
+    <div>
+      <a href="../about.html">About</a>
+      <a href="../privacy.html">Privacy Policy</a>
+      <a href="../terms.html">Terms of Service</a>
+      <a href="../blog.html">Developer Blog</a>
+      <a href="../contact.html">Contact</a>
+    </div>
+  </footer>
+
+  <script src="../js/shared.js"></script>
+</body>
+</html>

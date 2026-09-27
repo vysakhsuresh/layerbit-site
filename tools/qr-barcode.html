@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="Generate print-ready QR codes and Code128 barcodes with custom colours, plus structural checks on the URL you encode. Runs entirely in your browser - nothing is uploaded." />
-  <title>QR Code & Barcode Generator - Free, Client-Side - Layerbit</title>
+  <meta name="description" content="Generate QR codes for URLs, Wi-Fi, vCards, email and SMS, plus Code 128, Code 39, EAN-13, UPC-A and ITF-14 barcodes, exported as PNG or SVG. Runs locally." />
+  <title>QR Code & Barcode Generator Online (Free, SVG) | Layerbit</title>
   <!-- Google tag (gtag.js) -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-ERX8MNPPP5"></script>
   <script>
@@ -18,19 +18,70 @@
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://layerbit.co.in/tools/qr-barcode.html" />
   <meta property="og:site_name" content="Layerbit" />
-  <meta property="og:title" content="QR Code & Barcode Generator - Free, Client-Side - Layerbit" />
-  <meta property="og:description" content="Generate print-ready QR codes and Code128 barcodes with custom colours, plus structural checks on the URL you encode. Runs entirely in your browser - nothing is uploaded." />
+  <meta property="og:title" content="QR Code & Barcode Generator Online (Free, SVG) | Layerbit" />
+  <meta property="og:description" content="Generate QR codes for URLs, Wi-Fi, vCards, email and SMS, plus Code 128, Code 39, EAN-13, UPC-A and ITF-14 barcodes, exported as PNG or SVG. Runs locally." />
   <meta property="og:image" content="https://layerbit.co.in/og-image.png" />
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
   <meta property="og:image:alt" content="Layerbit - free browser-based developer tools" />
   <meta property="og:locale" content="en" />
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="QR Code & Barcode Generator - Free, Client-Side - Layerbit" />
-  <meta name="twitter:description" content="Generate print-ready QR codes and Code128 barcodes with custom colours, plus structural checks on the URL you encode. Runs entirely in your browser - nothing is uploaded." />
+  <meta name="twitter:title" content="QR Code & Barcode Generator Online (Free, SVG) | Layerbit" />
+  <meta name="twitter:description" content="Generate QR codes for URLs, Wi-Fi, vCards, email and SMS, plus Code 128, Code 39, EAN-13, UPC-A and ITF-14 barcodes, exported as PNG or SVG. Runs locally." />
   <meta name="twitter:image" content="https://layerbit.co.in/og-image.png" />
   <meta name="twitter:image:alt" content="Layerbit - free browser-based developer tools" />
   <meta name="theme-color" content="#0a0c10" />
+  <script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "SoftwareApplication",
+      "@id": "https://layerbit.co.in/tools/qr-barcode.html#app",
+      "name": "QR Code \u0026 Barcode Generator",
+      "url": "https://layerbit.co.in/tools/qr-barcode.html",
+      "description": "Generate QR codes for URLs, Wi-Fi, vCards, email and SMS, plus Code 128, Code 39, EAN-13, UPC-A and ITF-14 barcodes, exported as PNG or SVG. Runs locally.",
+      "applicationCategory": "UtilitiesApplication",
+      "operatingSystem": "Any (runs in the browser)",
+      "browserRequirements": "Requires JavaScript",
+      "isAccessibleForFree": true,
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "publisher": {
+        "@id": "https://layerbit.co.in/#organization"
+      }
+    },
+    {
+      "@type": "BreadcrumbList",
+      "@id": "https://layerbit.co.in/tools/qr-barcode.html#breadcrumb",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://layerbit.co.in/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Tools",
+          "item": "https://layerbit.co.in/blog.html"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": "QR Code \u0026 Barcode Generator",
+          "item": "https://layerbit.co.in/tools/qr-barcode.html"
+        }
+      ]
+    }
+  ]
+}
+  </script>
+
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6072772587431629" crossorigin="anonymous"></script>
 
   <script src="../js/vendor/lucide.min.js" async></script>
@@ -713,6 +764,25 @@
     <h2><i data-lucide="lock"></i> Generated in your browser</h2>
     <p>The content encoded into a code is frequently a signed URL, a one-time enrolment link, a device provisioning token or a payment reference. Generation here happens entirely in the page, so the payload is never transmitted and the downloadable image is produced locally.</p>
   </div>
+
+      <div class="info-panel related-panel">
+        <h2><i data-lucide="link"></i> Related guides and tools</h2>
+        <p>Background reading on the format and failure modes behind this tool, and the tools most often used alongside it.</p>
+        <div class="use-cases-grid">
+          <div class="use-case-card">
+            <h3><i data-lucide="book-open"></i> <a href="../guides/percent-encoding-explained.html">URL percent-encoding explained</a></h3>
+            <p>%20 vs +, reserved characters, encodeURI vs encodeURIComponent.</p>
+          </div>
+          <div class="use-case-card">
+            <h3><i data-lucide="book-open"></i> <a href="../guides/base64-explained.html">Base64 explained</a></h3>
+            <p>An encoding, not encryption; the 33% overhead; base64url.</p>
+          </div>
+          <div class="use-case-card">
+            <h3><i data-lucide="wrench"></i> <a href="url-encoder.html">URL Encoder / Decoder</a></h3>
+            <p>Another local tool that pairs with this one. Runs entirely in your browser.</p>
+          </div>
+        </div>
+      </div>
 
   <div class="info-panel">
     <h2><i data-lucide="info"></i> Production-Grade Generation (Vulnerability Context)</h2>

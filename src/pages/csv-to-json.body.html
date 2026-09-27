@@ -1,8 +1,8 @@
 {{HEADER}}
 
   <main class="hero">
-    <h1>CSV &harr; JSON Pipeline</h1>
-    <p>Convert raw comma-separated data into structured JSON objects, or back again, instantly.</p>
+    <h1>CSV to JSON Converter</h1>
+    <p>Convert CSV to JSON and JSON to CSV with delimiter detection and correct quoting — spreadsheet exports in, API-ready arrays out, all client-side.</p>
   </main>
 
   <div class="mode-selector">
@@ -162,6 +162,25 @@
       <h2><i data-lucide="shield-alert"></i> Formula injection in exports</h2>
       <p>One security note that catches people out, because the vulnerability is in your <em>output</em> rather than your input. If a cell begins with <code>=</code>, <code>+</code>, <code>-</code> or <code>@</code>, spreadsheets treat it as a formula. An attacker who can store text in your database — a display name, a ticket subject — can plant a payload that executes when an administrator later exports and opens the file. Before writing any user-supplied value, prefix such values with an apostrophe. Quoting the field is not sufficient, because the quotes are consumed by the CSV parser before the spreadsheet sees the value.</p>
     </div>
+
+        <div class="info-panel related-panel">
+          <h2><i data-lucide="link"></i> Related guides and tools</h2>
+          <p>Background reading on the format and failure modes behind this tool, and the tools most often used alongside it.</p>
+          <div class="use-cases-grid">
+            <div class="use-case-card">
+              <h3><i data-lucide="book-open"></i> <a href="../guides/csv-edge-cases.html">CSV edge cases</a></h3>
+              <p>Quotes, newlines, BOMs and the Excel semicolon dialect.</p>
+            </div>
+            <div class="use-case-card">
+              <h3><i data-lucide="book-open"></i> <a href="../guides/json-syntax-errors-explained.html">JSON syntax errors explained</a></h3>
+              <p>What 'Unexpected token' means and the seven usual causes.</p>
+            </div>
+            <div class="use-case-card">
+              <h3><i data-lucide="wrench"></i> <a href="json-to-table.html">JSON to Table Viewer</a></h3>
+              <p>Another local tool that pairs with this one. Runs entirely in your browser.</p>
+            </div>
+          </div>
+        </div>
 
     <div class="info-panel">
       <h2><i data-lucide="git-commit"></i> Changelog</h2>

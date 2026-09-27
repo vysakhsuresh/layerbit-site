@@ -1,32 +1,80 @@
 <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "FAQPage",
-    "mainEntity": [
-      {
-        "@type": "Question",
-        "name": "Why does Layerbit prioritize client-side decoding?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "JWTs often contain sensitive user data (PII) or critical authorization scopes. Sending these tokens to a remote server for decoding introduces a significant security risk. By performing all Base64URL decoding and JSON parsing within your browser DOM, we guarantee that your tokens are never logged, stored, or intercepted."
-        }
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "SoftwareApplication",
+      "@id": "https://layerbit.co.in/tools/jwt-decoder.html#app",
+      "name": "JWT Decoder \u0026 Verifier",
+      "url": "https://layerbit.co.in/tools/jwt-decoder.html",
+      "description": "Decode a JWT's header and payload, see exp, nbf and iat as dates, verify HS256 and RS256 signatures with the Web Crypto API, and mint test tokens locally.",
+      "applicationCategory": "SecurityApplication",
+      "operatingSystem": "Any (runs in the browser)",
+      "browserRequirements": "Requires JavaScript",
+      "isAccessibleForFree": true,
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
       },
-      {
-        "@type": "Question",
-        "name": "Does this tool verify the JWT signature?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "Optionally, yes. The Verify Signature panel below the decoder accepts a shared secret for HS256/384/512 tokens or a PEM public key for RS256/384/512 tokens, and checks the signature using your browser's native Web Crypto API — the secret or key never leaves your device. Other algorithms (like ES256 or none) aren't supported yet. Either way, this is a debugging aid, not a substitute for your backend's own verification on every request."
-        }
-      },
-      {
-        "@type": "Question",
-        "name": "Why use JWTs instead of traditional opaque session cookies?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "JWTs are stateless and self-contained. Traditional cookies require the backend to perform a database lookup for every request to verify session data. JWTs store the session data directly in the payload, which is cryptographically signed. This allows API gateways and microservices to verify authorization instantly without hitting a central session database, significantly improving scalability."
-        }
+      "publisher": {
+        "@id": "https://layerbit.co.in/#organization"
       }
-    ]
-  }
+    },
+    {
+      "@type": "BreadcrumbList",
+      "@id": "https://layerbit.co.in/tools/jwt-decoder.html#breadcrumb",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://layerbit.co.in/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Tools",
+          "item": "https://layerbit.co.in/blog.html"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": "JWT Decoder \u0026 Verifier",
+          "item": "https://layerbit.co.in/tools/jwt-decoder.html"
+        }
+      ]
+    },
+    {
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "Why does Layerbit prioritize client-side decoding?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "JWTs often contain sensitive user data (PII) or critical authorization scopes. Sending these tokens to a remote server for decoding introduces a significant security risk. By performing all Base64URL decoding and JSON parsing within your browser DOM, we guarantee that your tokens are never logged, stored, or intercepted."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Does this tool verify the JWT signature?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Optionally, yes. The Verify Signature panel below the decoder accepts a shared secret for HS256/384/512 tokens or a PEM public key for RS256/384/512 tokens, and checks the signature using your browser's native Web Crypto API — the secret or key never leaves your device. Other algorithms (like ES256 or none) aren't supported yet. Either way, this is a debugging aid, not a substitute for your backend's own verification on every request."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Why use JWTs instead of traditional opaque session cookies?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "JWTs are stateless and self-contained. Traditional cookies require the backend to perform a database lookup for every request to verify session data. JWTs store the session data directly in the payload, which is cryptographically signed. This allows API gateways and microservices to verify authorization instantly without hitting a central session database, significantly improving scalability."
+          }
+        }
+      ],
+      "@id": "https://layerbit.co.in/tools/jwt-decoder.html#faq"
+    }
+  ]
+}
   </script>

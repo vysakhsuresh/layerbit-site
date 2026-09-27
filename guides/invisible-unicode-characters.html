@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="The characters that render as nothing, where each comes from, what it breaks, the Trojan Source bidi attack, lookalike letters, and how to strip them." />
+  <title>Invisible Unicode Characters: Zero-Width Space & More</title>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-ERX8MNPPP5"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-ERX8MNPPP5');
+  </script>
+  <link rel="canonical" href="https://layerbit.co.in/guides/invisible-unicode-characters.html" />
+  <meta name="robots" content="max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://layerbit.co.in/guides/invisible-unicode-characters.html" />
+  <meta property="og:site_name" content="Layerbit" />
+  <meta property="og:title" content="Invisible Unicode Characters: Zero-Width Space & More" />
+  <meta property="og:description" content="The characters that render as nothing, where each comes from, what it breaks, the Trojan Source bidi attack, lookalike letters, and how to strip them." />
+  <meta property="og:image" content="https://layerbit.co.in/og-image.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="Layerbit - free browser-based developer tools" />
+  <meta property="og:locale" content="en" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Invisible Unicode Characters: Zero-Width Space & More" />
+  <meta name="twitter:description" content="The characters that render as nothing, where each comes from, what it breaks, the Trojan Source bidi attack, lookalike letters, and how to strip them." />
+  <meta name="twitter:image" content="https://layerbit.co.in/og-image.png" />
+  <meta name="twitter:image:alt" content="Layerbit - free browser-based developer tools" />
+  <meta name="theme-color" content="#0a0c10" />
+  <script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "TechArticle",
+      "@id": "https://layerbit.co.in/guides/invisible-unicode-characters.html#article",
+      "headline": "Invisible Unicode Characters: The Zero-Width Space and Its Relatives",
+      "name": "Invisible Unicode Characters: The Zero-Width Space and Its Relatives",
+      "description": "The characters that render as nothing, where each comes from, what it breaks, the Trojan Source bidi attack, lookalike letters, and how to strip them.",
+      "url": "https://layerbit.co.in/guides/invisible-unicode-characters.html",
+      "mainEntityOfPage": {
+        "@type": "WebPage",
+        "@id": "https://layerbit.co.in/guides/invisible-unicode-characters.html"
+      },
+      "datePublished": "2026-09-27",
+      "dateModified": "2026-09-27",
+      "inLanguage": "en",
+      "wordCount": 1678,
+      "keywords": "zero width space, invisible characters, byte order mark, U+200B, Trojan Source, homograph, Unicode normalization",
+      "articleSection": "Text \u0026 Encoding",
+      "author": {
+        "@type": "Organization",
+        "name": "Layerbit Technologies",
+        "url": "https://layerbit.co.in/about.html"
+      },
+      "publisher": {
+        "@type": "Organization",
+        "name": "Layerbit Technologies",
+        "url": "https://layerbit.co.in/",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://layerbit.co.in/icon-512.png",
+          "width": 512,
+          "height": 512
+        }
+      },
+      "image": {
+        "@type": "ImageObject",
+        "url": "https://layerbit.co.in/og-image.png",
+        "width": 1200,
+        "height": 630
+      },
+      "isAccessibleForFree": true,
+      "proficiencyLevel": "Beginner"
+    },
+    {
+      "@type": "BreadcrumbList",
+      "@id": "https://layerbit.co.in/guides/invisible-unicode-characters.html#breadcrumb",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://layerbit.co.in/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Guides",
+          "item": "https://layerbit.co.in/blog.html"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": "Invisible Unicode characters",
+          "item": "https://layerbit.co.in/guides/invisible-unicode-characters.html"
+        }
+      ]
+    },
+    {
+      "@type": "FAQPage",
+      "@id": "https://layerbit.co.in/guides/invisible-unicode-characters.html#faq",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "What is a zero-width space and why is it in my text?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "U+200B is a Unicode format character that occupies no space on screen and marks a point where a line may break inside a word. It enters text through copy and paste, most often from PDFs, web pages and messaging apps that insert it for layout. Because it is a real character in the string, it breaks exact matching, search and parsing while remaining invisible in every editor."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How do I remove invisible characters from a string?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Use the Unicode format-character class rather than a hand-made list: in JavaScript s.replace(/\\p{Cf}/gu, ''), in Python filter out characters whose unicodedata.category is 'Cf'. Then replace no-break and typographic spaces with ordinary spaces and normalize to NFC. Be careful with zero-width joiners in scripts and emoji sequences where they carry meaning."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Why does my CSV header say \"﻿id\" instead of \"id\"?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "The file starts with a byte order mark, U+FEFF, which Excel's \"CSV UTF-8\" export and many Windows editors prepend. A parser that does not strip it treats the three bytes as part of the first field. Open the file with a BOM-aware encoding (utf-8-sig in Python), or strip a leading U+FEFF before parsing the header row."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What is a Trojan Source attack?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "A technique (CVE-2021-42574) that uses Unicode bidirectional override characters inside source code comments or strings so that the code an editor displays differs from the code a compiler reads. A reviewer sees harmless logic while the stored order does something else. Modern editors and code hosts warn on these characters, and inspecting code points reveals them immediately."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Why does \"café\" not equal \"café\" in my code?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "One string uses the precomposed é (U+00E9) and the other uses e followed by a combining acute accent (U+0065 U+0301). They look identical and Unicode defines them as canonically equivalent, but they are different sequences of code points. Normalize both to the same form, NFC for storage, before comparing."
+          }
+        }
+      ]
+    }
+  ]
+}
+  </script>
+
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6072772587431629" crossorigin="anonymous"></script>
+
+  <script src="../js/vendor/lucide.min.js" async></script>
+
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet" />
+  <link href="../layerbit-logo.png" rel="icon" type="image/x-icon" />
+  <link rel="manifest" href="../manifest.json" />
+  <link rel="apple-touch-icon" href="../apple-touch-icon.png" />
+  <link rel="stylesheet" href="../css/base.css" />
+  <link rel="stylesheet" href="../css/article.css" />
+
+  <style>
+
+    /* Long-form guide styling lives in css/article.css, linked from this page's head. */
+  
+  </style>
+</head>
+<body>
+  <header>
+    <a href="../" class="brand">
+      <svg width="36" height="36" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <polygon points="32,20 54,28 32,36 10,28" stroke="#f8fafc" stroke-width="4" stroke-linejoin="round"/>
+        <polyline points="10,38 32,46 54,38" stroke="#f8fafc" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+        <polyline points="10,48 32,56 54,48" stroke="#f8fafc" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+        <rect x="50" y="10" width="10" height="10" rx="2" fill="#00f2fe" />
+      </svg>
+      Layerbit
+    </a>
+  </header>
+
+  <nav class="crumbs" aria-label="Breadcrumb">
+    <a href="../">Home</a>
+    <span class="sep">/</span>
+    <a href="../blog.html">Guides</a>
+    <span class="sep">/</span>
+    <span aria-current="page">Invisible Unicode characters</span>
+  </nav>
+
+  <article class="article">
+    <header class="article-head">
+      <span class="article-kicker">Text &amp; Encoding</span>
+      <h1>Invisible Unicode Characters: The Zero-Width Space and Its Relatives</h1>
+      <p class="article-standfirst">The bug report says the two strings are identical. The equality check says they are not. Somewhere in one of them is a character that renders as nothing — a zero-width space from a PDF, a non-breaking space from a word processor, a byte-order mark from a Windows editor — and until you can see it, you cannot fix it. This guide catalogues the characters that hide in text, where each one comes from, what it breaks, and how to find and remove it.</p>
+      <div class="article-meta">
+        <span class="byline">Layerbit Engineering</span>
+        <span><i data-lucide="calendar"></i>Published 27 September 2026</span>
+        <span><i data-lucide="clock"></i>11 min read</span>
+      </div>
+    </header>
+
+    <div class="takeaways">
+      <h2><i data-lucide="list-checks"></i> The short version</h2>
+      <ul>
+        <li>Around a dozen Unicode characters take no space on screen. They arrive by copy-paste and break comparison, parsing, search and filenames.</li>
+        <li><code>U+200B</code> zero width space, <code>U+FEFF</code> byte order mark and <code>U+00A0</code> no-break space account for most incidents.</li>
+        <li>The bidirectional overrides (<code>U+202E</code> and friends) can make text <em>display</em> in a different order than it is stored — the "Trojan Source" attack.</li>
+        <li>Lookalike letters from other scripts — Cyrillic <code>а</code> for Latin <code>a</code> — are the same problem in a different form.</li>
+        <li>Strip <code>\p{Cf}</code> (format characters) and normalise to NFC at input boundaries; keep a tool that shows code points for when something still slips through.</li>
+      </ul>
+    </div>
+
+    <div class="prose">
+      <h2 id="catalogue">The characters, and where they come from</h2>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Code point</th><th>Name</th><th>Typical source</th><th>What it breaks</th></tr></thead>
+          <tbody>
+            <tr><td><code>U+200B</code></td><td>Zero width space</td><td>PDF text extraction, web page copy, chat apps, some keyboards</td><td>Exact matching, search, tokenisation, JSON keys</td></tr>
+            <tr><td><code>U+200C</code> / <code>U+200D</code></td><td>Zero width non-joiner / joiner</td><td>Legitimate in Persian, Arabic, Indic scripts and emoji sequences; stray copies elsewhere</td><td>Length checks, deduplication</td></tr>
+            <tr><td><code>U+FEFF</code></td><td>Byte order mark</td><td>Windows editors and Excel exports at file start; concatenated files mid-stream</td><td>JSON and YAML parsers, shebang lines, CSV headers ("﻿id" is not "id")</td></tr>
+            <tr><td><code>U+00A0</code></td><td>No-break space</td><td>Word processors, HTML <code>&amp;nbsp;</code>, macOS Option+Space</td><td>Anything that splits on <code>' '</code>; numbers with thousands separators failing to parse</td></tr>
+            <tr><td><code>U+2060</code></td><td>Word joiner</td><td>Typesetting tools</td><td>Same as ZWSP</td></tr>
+            <tr><td><code>U+00AD</code></td><td>Soft hyphen</td><td>Hyphenated web and e-book text</td><td>Search: "docu­ment" does not match "document"</td></tr>
+            <tr><td><code>U+202A</code>–<code>U+202E</code>, <code>U+2066</code>–<code>U+2069</code></td><td>Bidirectional controls</td><td>Right-to-left text; deliberately, in attacks</td><td>Display order: what you see is not what is stored</td></tr>
+            <tr><td><code>U+2028</code> / <code>U+2029</code></td><td>Line / paragraph separator</td><td>Older Mac apps, some JSON producers</td><td>Historically illegal inside JavaScript string literals; JSON embedded in scripts</td></tr>
+            <tr><td><code>U+FFFD</code></td><td>Replacement character</td><td>A decoder that met invalid bytes</td><td>Nothing itself — it is the evidence that data was already lost</td></tr>
+            <tr><td><code>U+0000</code></td><td>Null</td><td>Binary read as text, C string bugs</td><td>Rejected by many databases and file systems</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2 id="pipeline">How they get into your data</h2>
+      <p>Very few of these are typed on purpose. They travel. A user copies an address from a PDF, whose text layer inserts zero-width spaces at line-break opportunities, and pastes it into a form. A spreadsheet is saved as "CSV UTF-8" by Excel, which prepends a BOM that the importer reads as part of the first column name. A product description is written in Word, where the typographer's habit of a non-breaking space before a unit becomes <code>U+00A0</code> in the export. A support agent pastes an id from a chat client that decorated it with a word joiner to stop it wrapping.</p>
+      <p>None of it is visible at any of those steps, which is why the same character ends up in a database, an API response and a log file before anyone notices. The symptoms are indirect: a lookup that fails for one record, a CSV with a column called <code>﻿email</code>, a search that cannot find text that is plainly on the page, a filename that exists on the Mac but "does not exist" on the Linux server.</p>
+
+      <h2 id="bidi">The ones that lie about order</h2>
+      <p>The bidirectional control characters exist so that Arabic and Hebrew can be mixed with Latin text correctly. <code>U+202E</code> RIGHT-TO-LEFT OVERRIDE forces everything after it to display right-to-left until a pop character. Placed inside a filename, <code>invoice‮fdp.exe</code> is stored as <code>invoice[RLO]fdp.exe</code> but displays as <code>invoiceexe.pdf</code> — an executable wearing a PDF's name.</p>
+      <p>The same trick inside source code is the "Trojan Source" class of vulnerability (CVE-2021-42574): a comment or string containing bidi overrides can make code that a reviewer reads as harmless compile as something else, because the editor renders the reordered text while the compiler consumes the stored order. Modern GitHub, VS Code and most compilers now warn on these characters, and a code review tool that shows code points would have caught it from the start. Treat any bidi control outside genuinely right-to-left content as hostile.</p>
+
+      <h2 id="lookalikes">Lookalikes: visible but wrong</h2>
+      <p>A related family is not invisible at all — it looks exactly like something else. Cyrillic <code>а</code> (U+0430), Greek <code>ο</code> (U+03BF) and Latin <code>a</code> and <code>o</code> are indistinguishable in most fonts. A domain like <code>раypal.com</code> with two Cyrillic letters is the classic homograph attack, and the same substitution in a username or package name gets past a human reviewer every time. Browsers defend domains by refusing to display a name that mixes scripts within a label; you can apply the same rule to any identifier: a word whose letters come from more than one script is suspect. Punctuation has lookalikes too — curly quotes for straight ones, en dashes and minus signs for hyphens — which are harmless in prose and fatal in a config file or a command line.</p>
+
+      <div class="tool-cta">
+        <div class="cta-copy">
+          <h3>See exactly what is in the string</h3>
+          <p>Layerbit's Unicode Inspector lists every code point with its UTF-8 and UTF-16 bytes, names the invisible and bidi characters, flags words that mix scripts and lookalike punctuation, compares the four normalization forms, and copies a cleaned version — in your browser, so pasting a password or a customer record is safe.</p>
+        </div>
+        <a class="cta-btn" href="../tools/unicode-inspector.html"><i data-lucide="type"></i> Open Unicode Inspector</a>
+      </div>
+
+      <h2 id="normalization">The other way two strings differ</h2>
+      <p>Even with no invisible characters, <code>café</code> can be two different strings: <code>U+00E9</code> (one code point, "precomposed") or <code>U+0065 U+0301</code> (e plus a combining acute accent). They render identically, they are canonically equivalent under Unicode, and <code>===</code> says they are different. Normalization fixes this by picking one form. NFC composes where possible and is what you should store; NFD decomposes; the K forms additionally fold compatibility characters, turning <code>ﬁ</code> into <code>fi</code> and full-width <code>Ａ</code> into <code>A</code>, which is right for loose identifier matching and wrong for content.</p>
+      <p>The place this bites in practice is macOS filenames. HFS+ stored names in a decomposed form, so a file created on a Mac and synced to Linux can have a name that does not byte-match the composed name in your database. Normalize to NFC on the way in — <code>str.normalize('NFC')</code> in JavaScript, <code>unicodedata.normalize('NFC', s)</code> in Python, <code>Normalizer.normalize(s, Form.NFC)</code> in Java — and the problem does not arise.</p>
+
+      <h2 id="fix">Finding and removing them</h2>
+      <p>To see what is there, print code points rather than characters: <code>[...s].map(c =&gt; c.codePointAt(0).toString(16))</code> in JavaScript, <code>[hex(ord(c)) for c in s]</code> in Python, <code>xxd</code> or <code>cat -A</code> on a file. To remove the invisible ones in bulk, use Unicode property classes rather than a hand-written list:</p>
+      <pre><code>// JavaScript: strip format characters, normalise spaces, compose accents
+s.replace(/\p{Cf}/gu, '')          // ZWSP, ZWJ, BOM, bidi controls, soft hyphen …
+ .replace(/[  -   　]/g, ' ')
+ .normalize('NFC');
+
+# Python
+import re, unicodedata
+s = ''.join(c for c in s if unicodedata.category(c) != 'Cf')
+s = unicodedata.normalize('NFC', s)</code></pre>
+      <p>Do this at the boundary — form submission, file import, API ingestion — and once. Be selective about ZWJ and ZWNJ if you handle Persian, Arabic, Indic scripts or emoji, where they are meaningful; stripping them corrupts the text. And keep the raw input somewhere for a while, because a cleaning step that is too aggressive is itself a data-loss bug.</p>
+
+      <h2 id="closing">Make the invisible visible first</h2>
+      <p>Every problem in this guide is trivial once you can see the character and baffling until you can. A string is a sequence of code points, not of glyphs, and the tools that show you the code points — a hex dump, a code-point list, a diff that marks invisible characters — turn hours of "but they look the same" into a two-minute fix. Add one to the toolbox before the next bug report arrives.</p>
+
+      <div class="further">
+        <h2>Related guides and tools</h2>
+        <div class="further-grid">
+          <a class="further-card" href="../tools/unicode-inspector.html">
+            <strong>Unicode Inspector</strong>
+            <span>Code points, bytes, invisibles, lookalikes and normalization.</span>
+          </a>
+          <a class="further-card" href="csv-edge-cases.html">
+            <strong>CSV edge cases</strong>
+            <span>Where the BOM in the first column name comes from.</span>
+          </a>
+          <a class="further-card" href="../tools/text-diff-checker.html">
+            <strong>Text Diff Checker</strong>
+            <span>Character-level highlighting for the change you cannot see.</span>
+          </a>
+        </div>
+      </div>
+
+      <h2 id="faq">Frequently asked questions</h2>
+      <div class="faq-container">
+        <div class="faq-item">
+          <button class="faq-question">What is a zero-width space and why is it in my text? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>U+200B is a Unicode format character that occupies no space on screen and marks a point where a line may break inside a word. It enters text through copy and paste, most often from PDFs, web pages and messaging apps that insert it for layout. Because it is a real character in the string, it breaks exact matching, search and parsing while remaining invisible in every editor.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">How do I remove invisible characters from a string? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>Use the Unicode format-character class rather than a hand-made list: in JavaScript s.replace(/\p{Cf}/gu, ''), in Python filter out characters whose unicodedata.category is 'Cf'. Then replace no-break and typographic spaces with ordinary spaces and normalize to NFC. Be careful with zero-width joiners in scripts and emoji sequences where they carry meaning.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">Why does my CSV header say "﻿id" instead of "id"? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>The file starts with a byte order mark, U+FEFF, which Excel's "CSV UTF-8" export and many Windows editors prepend. A parser that does not strip it treats the three bytes as part of the first field. Open the file with a BOM-aware encoding (utf-8-sig in Python), or strip a leading U+FEFF before parsing the header row.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">What is a Trojan Source attack? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>A technique (CVE-2021-42574) that uses Unicode bidirectional override characters inside source code comments or strings so that the code an editor displays differs from the code a compiler reads. A reviewer sees harmless logic while the stored order does something else. Modern editors and code hosts warn on these characters, and inspecting code points reveals them immediately.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">Why does "café" not equal "café" in my code? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>One string uses the precomposed é (U+00E9) and the other uses e followed by a combining acute accent (U+0065 U+0301). They look identical and Unicode defines them as canonically equivalent, but they are different sequences of code points. Normalize both to the same form, NFC for storage, before comparing.</p></div>
+        </div>
+      </div>
+    </div>
+  </article>
+
+  <a href="../" id="smartBackBtn" class="fab" aria-label="Command Center" title="Command Center">
+    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="filter: drop-shadow(0 0 8px rgba(56, 189, 248, 0.5));">
+      <path d="M12 2L2 7l10 5 10-5-10-5z" stroke="#38bdf8" stroke-width="2" stroke-linejoin="round" fill="rgba(56,189,248,0.2)"/>
+      <path d="M2 17l10 5 10-5M2 12l10 5 10-5" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </a>
+
+  <footer>
+    <div style="margin-bottom: 15px;">
+      &copy; 2025 - 2026 <strong>Layerbit Technologies</strong>. All rights reserved.
+    </div>
+    <div>
+      <a href="../about.html">About</a>
+      <a href="../privacy.html">Privacy Policy</a>
+      <a href="../terms.html">Terms of Service</a>
+      <a href="../blog.html">Developer Blog</a>
+      <a href="../contact.html">Contact</a>
+    </div>
+  </footer>
+
+  <script src="../js/shared.js"></script>
+</body>
+</html>

@@ -1,24 +1,72 @@
 <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "FAQPage",
-    "mainEntity": [
-      {
-        "@type": "Question",
-        "name": "How does Word-Level highlighting work?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "Unlike basic diff checkers that only show if an entire line was replaced, Layerbit runs a secondary pass on modified lines. If a line is removed and immediately replaced, the engine diffs the characters within those specific lines to highlight the exact insertion or deletion."
-        }
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "SoftwareApplication",
+      "@id": "https://layerbit.co.in/tools/text-diff-checker.html#app",
+      "name": "Text Diff Checker",
+      "url": "https://layerbit.co.in/tools/text-diff-checker.html",
+      "description": "Compare two texts or files side by side or inline with line, word or character highlighting, whitespace ignoring and change navigation. Runs in your browser.",
+      "applicationCategory": "DeveloperApplication",
+      "operatingSystem": "Any (runs in the browser)",
+      "browserRequirements": "Requires JavaScript",
+      "isAccessibleForFree": true,
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
       },
-      {
-        "@type": "Question",
-        "name": "What does the \"Ignore Whitespace\" toggle do?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "When code is reformatted by a linter, the indentation changes can create massive false-positive diffs. Toggling this feature forces the engine to ignore tabs, spaces, and line breaks, isolating only the actual logic changes."
-        }
+      "publisher": {
+        "@id": "https://layerbit.co.in/#organization"
       }
-    ]
-  }
+    },
+    {
+      "@type": "BreadcrumbList",
+      "@id": "https://layerbit.co.in/tools/text-diff-checker.html#breadcrumb",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://layerbit.co.in/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Tools",
+          "item": "https://layerbit.co.in/blog.html"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": "Text Diff Checker",
+          "item": "https://layerbit.co.in/tools/text-diff-checker.html"
+        }
+      ]
+    },
+    {
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "How does Word-Level highlighting work?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Unlike basic diff checkers that only show if an entire line was replaced, Layerbit runs a secondary pass on modified lines. If a line is removed and immediately replaced, the engine diffs the characters within those specific lines to highlight the exact insertion or deletion."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What does the \"Ignore Whitespace\" toggle do?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "When code is reformatted by a linter, the indentation changes can create massive false-positive diffs. Toggling this feature forces the engine to ignore tabs, spaces, and line breaks, isolating only the actual logic changes."
+          }
+        }
+      ],
+      "@id": "https://layerbit.co.in/tools/text-diff-checker.html#faq"
+    }
+  ]
+}
   </script>

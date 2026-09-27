@@ -1,8 +1,8 @@
 {{HEADER}}
 
   <main class="hero">
-    <h1>HTML Entity Sanitizer</h1>
-    <p>Securely escape and unescape HTML strings bidirectionally without DOM injection.</p>
+    <h1>HTML Escape / Unescape</h1>
+    <p>Escape raw HTML for safe display and decode entities back to text, bidirectionally and in real time, entirely in your browser.</p>
   </main>
 
   <div class="ide-container">
@@ -16,7 +16,7 @@
           <button class="btn" onclick="copyContent('rawInput', this)"><i data-lucide="copy"></i> Copy</button>
         </div>
       </div>
-      <textarea id="rawInput" class="editor" placeholder='Type, paste, or drag & drop raw HTML here...&#10;&#10;<div class="header">&#10;  <h1>Welcome to Layerbit</h1>&#10;</div>' spellcheck="false"></textarea>
+      <textarea id="rawInput" class="editor" placeholder='Type, paste, or drag &amp; drop raw HTML here...&#10;&#10;&lt;div class="header"&gt;&#10;  &lt;h1&gt;Welcome to Layerbit&lt;/h1&gt;&#10;&lt;/div&gt;' spellcheck="false"></textarea>
     </div>
 
     <div class="pane" id="escapedPane">
@@ -144,6 +144,25 @@
       <h2><i data-lucide="shield-check"></i> Escaping is not sanitising</h2>
       <p>These solve different problems. <strong>Escaping</strong> renders a value as inert text, so <code>&lt;b&gt;hi&lt;/b&gt;</code> displays as those literal characters — correct for usernames, titles and comments. <strong>Sanitising</strong> parses the value as HTML and strips everything not on an allowlist while keeping the rest live — correct only when users are meant to submit formatting. If you need sanitising, use a maintained library such as DOMPurify and never a regular expression: HTML is far too irregular for pattern matching, and every hand-rolled tag stripper has been bypassed via malformed markup that browsers helpfully "correct" into something executable.</p>
     </div>
+
+        <div class="info-panel related-panel">
+          <h2><i data-lucide="link"></i> Related guides and tools</h2>
+          <p>Background reading on the format and failure modes behind this tool, and the tools most often used alongside it.</p>
+          <div class="use-cases-grid">
+            <div class="use-case-card">
+              <h3><i data-lucide="book-open"></i> <a href="../guides/html-escaping-and-xss-contexts.html">HTML escaping by context</a></h3>
+              <p>Text, attributes, JavaScript, URLs: each needs different escaping.</p>
+            </div>
+            <div class="use-case-card">
+              <h3><i data-lucide="book-open"></i> <a href="../guides/invisible-unicode-characters.html">Invisible Unicode characters</a></h3>
+              <p>Zero-width spaces, BOMs, bidi overrides and lookalikes.</p>
+            </div>
+            <div class="use-case-card">
+              <h3><i data-lucide="wrench"></i> <a href="unicode-inspector.html">Unicode Inspector</a></h3>
+              <p>Another local tool that pairs with this one. Runs entirely in your browser.</p>
+            </div>
+          </div>
+        </div>
 
     <div class="info-panel">
       <h2><i data-lucide="git-commit"></i> Changelog</h2>

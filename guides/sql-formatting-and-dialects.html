@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Where MySQL, PostgreSQL, SQL Server and SQLite disagree: identifier quoting, concatenation, LIMIT vs TOP, dates, booleans, and formatting as a review tool." />
+  <title>SQL Dialects Compared: Quoting, Case, LIMIT, Dates | Layerbit</title>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-ERX8MNPPP5"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-ERX8MNPPP5');
+  </script>
+  <link rel="canonical" href="https://layerbit.co.in/guides/sql-formatting-and-dialects.html" />
+  <meta name="robots" content="max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://layerbit.co.in/guides/sql-formatting-and-dialects.html" />
+  <meta property="og:site_name" content="Layerbit" />
+  <meta property="og:title" content="SQL Dialects Compared: Quoting, Case, LIMIT, Dates | Layerbit" />
+  <meta property="og:description" content="Where MySQL, PostgreSQL, SQL Server and SQLite disagree: identifier quoting, concatenation, LIMIT vs TOP, dates, booleans, and formatting as a review tool." />
+  <meta property="og:image" content="https://layerbit.co.in/og-image.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="Layerbit - free browser-based developer tools" />
+  <meta property="og:locale" content="en" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="SQL Dialects Compared: Quoting, Case, LIMIT, Dates | Layerbit" />
+  <meta name="twitter:description" content="Where MySQL, PostgreSQL, SQL Server and SQLite disagree: identifier quoting, concatenation, LIMIT vs TOP, dates, booleans, and formatting as a review tool." />
+  <meta name="twitter:image" content="https://layerbit.co.in/og-image.png" />
+  <meta name="twitter:image:alt" content="Layerbit - free browser-based developer tools" />
+  <meta name="theme-color" content="#0a0c10" />
+  <script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "TechArticle",
+      "@id": "https://layerbit.co.in/guides/sql-formatting-and-dialects.html#article",
+      "headline": "SQL Dialects Compared: Where MySQL, PostgreSQL, SQL Server and SQLite Disagree",
+      "name": "SQL Dialects Compared: Where MySQL, PostgreSQL, SQL Server and SQLite Disagree",
+      "description": "Where MySQL, PostgreSQL, SQL Server and SQLite disagree: identifier quoting, concatenation, LIMIT vs TOP, dates, booleans, and formatting as a review tool.",
+      "url": "https://layerbit.co.in/guides/sql-formatting-and-dialects.html",
+      "mainEntityOfPage": {
+        "@type": "WebPage",
+        "@id": "https://layerbit.co.in/guides/sql-formatting-and-dialects.html"
+      },
+      "datePublished": "2026-09-27",
+      "dateModified": "2026-09-27",
+      "inLanguage": "en",
+      "wordCount": 1686,
+      "keywords": "SQL dialects, MySQL vs PostgreSQL, T-SQL vs MySQL, SQL formatting, identifier quoting, LIMIT vs TOP, SQL style guide",
+      "articleSection": "Databases",
+      "author": {
+        "@type": "Organization",
+        "name": "Layerbit Technologies",
+        "url": "https://layerbit.co.in/about.html"
+      },
+      "publisher": {
+        "@type": "Organization",
+        "name": "Layerbit Technologies",
+        "url": "https://layerbit.co.in/",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://layerbit.co.in/icon-512.png",
+          "width": 512,
+          "height": 512
+        }
+      },
+      "image": {
+        "@type": "ImageObject",
+        "url": "https://layerbit.co.in/og-image.png",
+        "width": 1200,
+        "height": 630
+      },
+      "isAccessibleForFree": true,
+      "proficiencyLevel": "Intermediate"
+    },
+    {
+      "@type": "BreadcrumbList",
+      "@id": "https://layerbit.co.in/guides/sql-formatting-and-dialects.html#breadcrumb",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://layerbit.co.in/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Guides",
+          "item": "https://layerbit.co.in/blog.html"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": "SQL dialects compared",
+          "item": "https://layerbit.co.in/guides/sql-formatting-and-dialects.html"
+        }
+      ]
+    },
+    {
+      "@type": "FAQPage",
+      "@id": "https://layerbit.co.in/guides/sql-formatting-and-dialects.html#faq",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "Why does my MySQL query fail on PostgreSQL with \"column does not exist\"?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Almost always a double-quoted string. MySQL accepts \"active\" as a string literal, but standard SQL and PostgreSQL treat double quotes as an identifier, so WHERE status = \"active\" looks for a column named active. Use single quotes for every string literal and the query becomes portable."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What is the SQL Server equivalent of LIMIT?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Either SELECT TOP n for a simple cap, or ORDER BY … OFFSET m ROWS FETCH NEXT n ROWS ONLY for limit with offset (SQL Server 2012 and later). The OFFSET form requires an ORDER BY clause. The same OFFSET/FETCH syntax is the SQL standard and also works in Oracle 12c+, DB2 and PostgreSQL."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How do I concatenate strings portably across databases?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Use CONCAT(a, b), which MySQL, PostgreSQL, SQL Server, Oracle and modern SQLite all support. The || operator is standard but is a syntax error in SQL Server and means logical OR in MySQL unless PIPES_AS_CONCAT is enabled; + works only in SQL Server. Be aware that CONCAT treats NULL as an empty string in MySQL and SQL Server but returns NULL in PostgreSQL."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Are string comparisons case-sensitive in SQL?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "It depends on the engine and collation. MySQL and SQL Server use case-insensitive collations by default, so 'abc' = 'ABC' is true. PostgreSQL and SQLite compare case-sensitively, so it is false. For a portable case-insensitive match, apply LOWER() to both sides or use PostgreSQL's ILIKE, and consider a case-insensitive collation or a functional index if the query is hot."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Does formatting SQL change how it runs?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "No. Whitespace and keyword case are irrelevant to the query planner, so a formatted query executes identically to the one-line original. The benefit is entirely for people: consistent formatting makes reviews show logic changes instead of reflowed text and exposes precedence and join mistakes that hide in a single line."
+          }
+        }
+      ]
+    }
+  ]
+}
+  </script>
+
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6072772587431629" crossorigin="anonymous"></script>
+
+  <script src="../js/vendor/lucide.min.js" async></script>
+
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet" />
+  <link href="../layerbit-logo.png" rel="icon" type="image/x-icon" />
+  <link rel="manifest" href="../manifest.json" />
+  <link rel="apple-touch-icon" href="../apple-touch-icon.png" />
+  <link rel="stylesheet" href="../css/base.css" />
+  <link rel="stylesheet" href="../css/article.css" />
+
+  <style>
+
+    /* Long-form guide styling lives in css/article.css, linked from this page's head. */
+  
+  </style>
+</head>
+<body>
+  <header>
+    <a href="../" class="brand">
+      <svg width="36" height="36" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <polygon points="32,20 54,28 32,36 10,28" stroke="#f8fafc" stroke-width="4" stroke-linejoin="round"/>
+        <polyline points="10,38 32,46 54,38" stroke="#f8fafc" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+        <polyline points="10,48 32,56 54,48" stroke="#f8fafc" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+        <rect x="50" y="10" width="10" height="10" rx="2" fill="#00f2fe" />
+      </svg>
+      Layerbit
+    </a>
+  </header>
+
+  <nav class="crumbs" aria-label="Breadcrumb">
+    <a href="../">Home</a>
+    <span class="sep">/</span>
+    <a href="../blog.html">Guides</a>
+    <span class="sep">/</span>
+    <span aria-current="page">SQL dialects compared</span>
+  </nav>
+
+  <article class="article">
+    <header class="article-head">
+      <span class="article-kicker">Databases</span>
+      <h1>SQL Dialects Compared: Where MySQL, PostgreSQL, SQL Server and SQLite Disagree</h1>
+      <p class="article-standfirst">SQL is a standard the way English is a standard: everyone agrees on the core and then diverges wherever it matters. A query that runs on MySQL can fail on PostgreSQL over a double quote, on SQL Server over a <code>LIMIT</code>, and on SQLite over a date. This guide is the map of those divergences — the ones that actually stop queries — and an argument that consistent formatting is a review tool, not decoration.</p>
+      <div class="article-meta">
+        <span class="byline">Layerbit Engineering</span>
+        <span><i data-lucide="calendar"></i>Published 27 September 2026</span>
+        <span><i data-lucide="clock"></i>11 min read</span>
+      </div>
+    </header>
+
+    <div class="takeaways">
+      <h2><i data-lucide="list-checks"></i> The short version</h2>
+      <ul>
+        <li>Double quotes are for <strong>identifiers</strong> in standard SQL and PostgreSQL, but for <strong>strings</strong> in MySQL by default. That single difference breaks more ported queries than anything else.</li>
+        <li>Row limiting is <code>LIMIT</code> in MySQL, PostgreSQL and SQLite, <code>TOP</code> or <code>OFFSET … FETCH</code> in SQL Server, and <code>FETCH FIRST</code> in Oracle and DB2.</li>
+        <li>String concatenation is <code>||</code> in the standard and most engines, <code>+</code> in SQL Server, and <code>CONCAT()</code> everywhere if you want to be portable.</li>
+        <li>Date arithmetic and formatting functions differ in <em>every</em> engine. Wrap them, or push them to the application.</li>
+        <li>Format SQL the same way every time so that a diff shows a logic change, not a whitespace change.</li>
+      </ul>
+    </div>
+
+    <div class="prose">
+      <h2 id="quoting">Quoting: the one that breaks silently</h2>
+      <p>Standard SQL uses single quotes for string literals and double quotes for identifiers that need protecting — a column named <code>order</code>, a table with a space in its name, a mixed-case name in PostgreSQL. MySQL, by default, treats double quotes as a second string delimiter and uses backticks for identifiers. SQL Server uses square brackets for identifiers and accepts double quotes only when <code>QUOTED_IDENTIFIER</code> is on, which it is in most modern connections but not all.</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Engine</th><th>String literal</th><th>Quoted identifier</th><th>Case handling for unquoted names</th></tr></thead>
+          <tbody>
+            <tr><td>Standard / PostgreSQL</td><td><code>'text'</code></td><td><code>"Order Id"</code></td><td>Folded to lower case; a quoted mixed-case name must always be quoted</td></tr>
+            <tr><td>MySQL / MariaDB</td><td><code>'text'</code> or <code>"text"</code></td><td><code>`Order Id`</code></td><td>Tables case-sensitive on Linux by default, columns not</td></tr>
+            <tr><td>SQL Server</td><td><code>'text'</code></td><td><code>[Order Id]</code> or <code>"Order Id"</code></td><td>Depends on database collation; usually case-insensitive</td></tr>
+            <tr><td>SQLite</td><td><code>'text'</code></td><td><code>"Order Id"</code>, also accepts <code>[…]</code> and backticks</td><td>Case-insensitive</td></tr>
+            <tr><td>BigQuery</td><td><code>'text'</code> or <code>"text"</code></td><td><code>`project.dataset.table`</code></td><td>Case-insensitive for datasets, sensitive for columns</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>The trap is that MySQL's double-quoted "string" is <em>accepted</em> by PostgreSQL — as a column reference. <code>WHERE status = "active"</code> runs in MySQL and fails in PostgreSQL with "column active does not exist", which is at least loud. The reverse is quieter: a PostgreSQL query with <code>"Order Id"</code> as an identifier runs in MySQL as a string comparison and returns nothing, with no error. Setting MySQL's <code>ANSI_QUOTES</code> mode makes it behave like the standard, and single-quoting every string literal makes the query portable in the first place.</p>
+
+      <h2 id="limit">Limiting rows</h2>
+      <pre><code>-- MySQL, PostgreSQL, SQLite
+SELECT * FROM orders ORDER BY created_at DESC LIMIT 10 OFFSET 20;
+
+-- SQL Server (2012+); ORDER BY is mandatory
+SELECT * FROM orders ORDER BY created_at DESC OFFSET 20 ROWS FETCH NEXT 10 ROWS ONLY;
+SELECT TOP 10 * FROM orders ORDER BY created_at DESC;   -- no offset
+
+-- Oracle 12c+, DB2, and the SQL:2008 standard
+SELECT * FROM orders ORDER BY created_at DESC OFFSET 20 ROWS FETCH FIRST 10 ROWS ONLY;</code></pre>
+      <p>Two things bite here beyond the syntax. Without an <code>ORDER BY</code>, a limited result is an arbitrary subset that can change between runs, and SQL Server enforces this by refusing <code>OFFSET</code> without one. And <code>OFFSET</code>-based pagination reads and discards every skipped row, so page 1,000 of a large table is slow on every engine; keyset pagination (<code>WHERE created_at &lt; :last_seen ORDER BY created_at DESC LIMIT 10</code>) is the portable fix.</p>
+
+      <h2 id="strings">Strings, nulls and booleans</h2>
+      <ul>
+        <li><strong>Concatenation:</strong> <code>||</code> in PostgreSQL, SQLite, Oracle and the standard; <code>+</code> in SQL Server (where <code>||</code> is a syntax error); MySQL treats <code>||</code> as logical OR unless <code>PIPES_AS_CONCAT</code> is set. <code>CONCAT(a, b)</code> works everywhere except older SQLite.</li>
+        <li><strong>Null in concatenation:</strong> <code>'a' || NULL</code> is <code>NULL</code> in PostgreSQL and Oracle; <code>CONCAT('a', NULL)</code> is <code>'a'</code> in MySQL and SQL Server but <code>NULL</code> in PostgreSQL. This inconsistency corrupts generated addresses and names across migrations.</li>
+        <li><strong>Booleans:</strong> PostgreSQL has a real <code>BOOLEAN</code> with <code>TRUE</code>/<code>FALSE</code>; MySQL's <code>BOOLEAN</code> is <code>TINYINT(1)</code>; SQL Server has no boolean, only <code>BIT</code>, and cannot use a bit column directly in <code>WHERE active</code> — it needs <code>WHERE active = 1</code>.</li>
+        <li><strong>Case-insensitive comparison:</strong> MySQL and SQL Server compare strings case-insensitively by default collation; PostgreSQL and SQLite are case-sensitive. <code>WHERE email = 'A@X.COM'</code> matches in one and not the other. PostgreSQL's <code>ILIKE</code> or <code>LOWER()</code> on both sides is the portable form.</li>
+      </ul>
+
+      <div class="tool-cta">
+        <div class="cta-copy">
+          <h3>Format for the dialect you are actually running</h3>
+          <p>Layerbit's SQL Formatter understands MySQL, MariaDB, PostgreSQL, SQL Server (T-SQL), SQLite, BigQuery, Snowflake and more, so it will not mangle <code>[Order Id]</code> in T-SQL or backticks in MySQL. Keyword case, indent size and style are configurable, and the query never leaves your browser.</p>
+        </div>
+        <a class="cta-btn" href="../tools/sql-formatter.html"><i data-lucide="database"></i> Open SQL Formatter</a>
+      </div>
+
+      <h2 id="dates">Dates: assume nothing is portable</h2>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Task</th><th>MySQL</th><th>PostgreSQL</th><th>SQL Server</th><th>SQLite</th></tr></thead>
+          <tbody>
+            <tr><td>Current timestamp</td><td><code>NOW()</code></td><td><code>NOW()</code>, <code>CURRENT_TIMESTAMP</code></td><td><code>GETDATE()</code>, <code>SYSUTCDATETIME()</code></td><td><code>datetime('now')</code></td></tr>
+            <tr><td>Add 7 days</td><td><code>DATE_ADD(d, INTERVAL 7 DAY)</code></td><td><code>d + INTERVAL '7 days'</code></td><td><code>DATEADD(day, 7, d)</code></td><td><code>datetime(d, '+7 days')</code></td></tr>
+            <tr><td>Difference in days</td><td><code>DATEDIFF(a, b)</code></td><td><code>a::date - b::date</code></td><td><code>DATEDIFF(day, b, a)</code> — argument order reversed</td><td><code>julianday(a) - julianday(b)</code></td></tr>
+            <tr><td>Format as text</td><td><code>DATE_FORMAT(d, '%Y-%m')</code></td><td><code>TO_CHAR(d, 'YYYY-MM')</code></td><td><code>FORMAT(d, 'yyyy-MM')</code></td><td><code>strftime('%Y-%m', d)</code></td></tr>
+            <tr><td>Truncate to month</td><td><code>DATE_FORMAT(d, '%Y-%m-01')</code></td><td><code>DATE_TRUNC('month', d)</code></td><td><code>DATETRUNC(month, d)</code> (2022+)</td><td><code>date(d, 'start of month')</code></td></tr>
+            <tr><td>Epoch seconds</td><td><code>UNIX_TIMESTAMP(d)</code></td><td><code>EXTRACT(EPOCH FROM d)</code></td><td><code>DATEDIFF(second, '1970-01-01', d)</code></td><td><code>strftime('%s', d)</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>Note the reversed argument order in SQL Server's <code>DATEDIFF</code> compared with MySQL's — a query that is copied across returns negated intervals and nothing warns you. Storage differs too: SQLite has no date type at all and stores whatever text or number you give it; MySQL's <code>TIMESTAMP</code> converts through the session time zone while <code>DATETIME</code> does not; PostgreSQL's <code>timestamptz</code> is the one that behaves the way people expect. For anything beyond trivial arithmetic, doing date work in the application language with a proper time-zone library is more portable than any SQL.</p>
+
+      <h2 id="upsert">Upsert, returning, and other useful non-standards</h2>
+      <p>"Insert or update if it exists" has four spellings: MySQL's <code>INSERT … ON DUPLICATE KEY UPDATE</code>, PostgreSQL's and SQLite's <code>INSERT … ON CONFLICT (key) DO UPDATE SET …</code>, and SQL Server's <code>MERGE</code>, which is more general and considerably easier to get wrong. Getting the inserted row back is <code>RETURNING *</code> in PostgreSQL and SQLite (3.35+), <code>OUTPUT INSERTED.*</code> in SQL Server, and <code>LAST_INSERT_ID()</code> as a separate call in MySQL. Window functions, common table expressions and <code>FILTER</code> clauses are now widely supported but arrived in MySQL only in version 8 and in SQLite only in 3.25, so a query using them fails on older installations with an unhelpful syntax error.</p>
+
+      <h2 id="formatting">Why formatting is a review tool</h2>
+      <p>None of the differences above are visible in a single-line query pasted from a log. Formatted, they are: every clause on its own line, joins aligned, subqueries indented, keywords in one case. The value is not aesthetic. A consistently formatted query means a code review shows the changed condition rather than a reflowed blob; a hand-written <code>WHERE a = 1 OR b = 2 AND c = 3</code> reveals its precedence problem when the formatter indents <code>AND</code> under <code>OR</code>; and a <code>JOIN</code> without an <code>ON</code> that has silently become a cross join stands out on its own line.</p>
+      <p>Pick one style — keyword case, comma placement, indent width — and apply it mechanically in a pre-commit hook or on paste, so that the formatting never carries information and the diff only ever shows logic. A formatter that knows the dialect is a prerequisite, because one that treats <code>[Order Id]</code> as an array or backticks as garbage will break the query it is meant to tidy.</p>
+
+      <h2 id="closing">Write to the standard, test on the engine</h2>
+      <p>Portable SQL is mostly discipline: single quotes for strings, quoted identifiers only when unavoidable, <code>CONCAT</code> over operators, explicit <code>ORDER BY</code> with every limit, booleans compared explicitly, dates handled in one place. None of it costs anything on the engine you use today, and all of it is what makes the migration or the second database possible later. And when a query does need an engine-specific feature, isolate it and comment it, so the next person knows that <code>DATEDIFF</code>'s argument order was a decision and not a typo.</p>
+
+      <div class="further">
+        <h2>Related guides and tools</h2>
+        <div class="further-grid">
+          <a class="further-card" href="../tools/sql-formatter.html">
+            <strong>SQL Formatter</strong>
+            <span>Dialect-aware formatting and minifying, in the browser.</span>
+          </a>
+          <a class="further-card" href="unix-time-and-time-zones.html">
+            <strong>Unix time and time zones</strong>
+            <span>Why TIMESTAMP and DATETIME behave differently.</span>
+          </a>
+          <a class="further-card" href="csv-edge-cases.html">
+            <strong>CSV edge cases</strong>
+            <span>The format every database imports and exports badly.</span>
+          </a>
+        </div>
+      </div>
+
+      <h2 id="faq">Frequently asked questions</h2>
+      <div class="faq-container">
+        <div class="faq-item">
+          <button class="faq-question">Why does my MySQL query fail on PostgreSQL with "column does not exist"? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>Almost always a double-quoted string. MySQL accepts "active" as a string literal, but standard SQL and PostgreSQL treat double quotes as an identifier, so WHERE status = "active" looks for a column named active. Use single quotes for every string literal and the query becomes portable.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">What is the SQL Server equivalent of LIMIT? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>Either SELECT TOP n for a simple cap, or ORDER BY … OFFSET m ROWS FETCH NEXT n ROWS ONLY for limit with offset (SQL Server 2012 and later). The OFFSET form requires an ORDER BY clause. The same OFFSET/FETCH syntax is the SQL standard and also works in Oracle 12c+, DB2 and PostgreSQL.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">How do I concatenate strings portably across databases? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>Use CONCAT(a, b), which MySQL, PostgreSQL, SQL Server, Oracle and modern SQLite all support. The || operator is standard but is a syntax error in SQL Server and means logical OR in MySQL unless PIPES_AS_CONCAT is enabled; + works only in SQL Server. Be aware that CONCAT treats NULL as an empty string in MySQL and SQL Server but returns NULL in PostgreSQL.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">Are string comparisons case-sensitive in SQL? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>It depends on the engine and collation. MySQL and SQL Server use case-insensitive collations by default, so 'abc' = 'ABC' is true. PostgreSQL and SQLite compare case-sensitively, so it is false. For a portable case-insensitive match, apply LOWER() to both sides or use PostgreSQL's ILIKE, and consider a case-insensitive collation or a functional index if the query is hot.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">Does formatting SQL change how it runs? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>No. Whitespace and keyword case are irrelevant to the query planner, so a formatted query executes identically to the one-line original. The benefit is entirely for people: consistent formatting makes reviews show logic changes instead of reflowed text and exposes precedence and join mistakes that hide in a single line.</p></div>
+        </div>
+      </div>
+    </div>
+  </article>
+
+  <a href="../" id="smartBackBtn" class="fab" aria-label="Command Center" title="Command Center">
+    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="filter: drop-shadow(0 0 8px rgba(56, 189, 248, 0.5));">
+      <path d="M12 2L2 7l10 5 10-5-10-5z" stroke="#38bdf8" stroke-width="2" stroke-linejoin="round" fill="rgba(56,189,248,0.2)"/>
+      <path d="M2 17l10 5 10-5M2 12l10 5 10-5" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </a>
+
+  <footer>
+    <div style="margin-bottom: 15px;">
+      &copy; 2025 - 2026 <strong>Layerbit Technologies</strong>. All rights reserved.
+    </div>
+    <div>
+      <a href="../about.html">About</a>
+      <a href="../privacy.html">Privacy Policy</a>
+      <a href="../terms.html">Terms of Service</a>
+      <a href="../blog.html">Developer Blog</a>
+      <a href="../contact.html">Contact</a>
+    </div>
+  </footer>
+
+  <script src="../js/shared.js"></script>
+</body>
+</html>

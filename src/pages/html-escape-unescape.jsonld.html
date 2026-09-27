@@ -1,32 +1,80 @@
 <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "FAQPage",
-    "mainEntity": [
-      {
-        "@type": "Question",
-        "name": "Why is DOM injection dangerous for sanitizing tools?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "If an online tool sets your pasted text to a live element's innerHTML in order to read the browser's parsed entities, inline event handlers (like onerror) within your text can immediately execute. Layerbit escapes with pure string replacement and unescapes through a detached textarea, whose content is RCDATA: the parser decodes character references but never creates elements from it, so nothing can run."
-        }
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "SoftwareApplication",
+      "@id": "https://layerbit.co.in/tools/html-escape-unescape.html#app",
+      "name": "HTML Escape / Unescape",
+      "url": "https://layerbit.co.in/tools/html-escape-unescape.html",
+      "description": "Escape HTML special characters to entities and decode any named or numeric entity back, with three escape profiles. Pure string replacement, nothing uploaded.",
+      "applicationCategory": "DeveloperApplication",
+      "operatingSystem": "Any (runs in the browser)",
+      "browserRequirements": "Requires JavaScript",
+      "isAccessibleForFree": true,
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
       },
-      {
-        "@type": "Question",
-        "name": "Which HTML characters are actively escaped?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "The extended profile (default) escapes ampersands (&), less than/greater than symbols (< >), double/single quotes (\" '), forward slashes (/), backticks (`), and equals signs (=). The essential profile escapes only the first five, and a third profile additionally turns every non-ASCII character into a hex reference."
-        }
-      },
-      {
-        "@type": "Question",
-        "name": "Is client-side escaping enough to secure my database?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "No. While this tool is perfect for ad-hoc preparation and debugging, enterprise applications should never trust client-side input exclusively. You must always sanitize strings on your backend server before executing SQL inserts or NoSQL document updates."
-        }
+      "publisher": {
+        "@id": "https://layerbit.co.in/#organization"
       }
-    ]
-  }
+    },
+    {
+      "@type": "BreadcrumbList",
+      "@id": "https://layerbit.co.in/tools/html-escape-unescape.html#breadcrumb",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://layerbit.co.in/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Tools",
+          "item": "https://layerbit.co.in/blog.html"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": "HTML Escape / Unescape",
+          "item": "https://layerbit.co.in/tools/html-escape-unescape.html"
+        }
+      ]
+    },
+    {
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "Why is DOM injection dangerous for sanitizing tools?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "If an online tool sets your pasted text to a live element's innerHTML in order to read the browser's parsed entities, inline event handlers (like onerror) within your text can immediately execute. Layerbit escapes with pure string replacement and unescapes through a detached textarea, whose content is RCDATA: the parser decodes character references but never creates elements from it, so nothing can run."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Which HTML characters are actively escaped?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "The extended profile (default) escapes ampersands (\u0026), less than/greater than symbols (\u003c \u003e), double/single quotes (\" '), forward slashes (/), backticks (`), and equals signs (=). The essential profile escapes only the first five, and a third profile additionally turns every non-ASCII character into a hex reference."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Is client-side escaping enough to secure my database?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "No. While this tool is perfect for ad-hoc preparation and debugging, enterprise applications should never trust client-side input exclusively. You must always sanitize strings on your backend server before executing SQL inserts or NoSQL document updates."
+          }
+        }
+      ],
+      "@id": "https://layerbit.co.in/tools/html-escape-unescape.html#faq"
+    }
+  ]
+}
   </script>

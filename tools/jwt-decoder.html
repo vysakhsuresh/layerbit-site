@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="Secure, client-side JWT Decoder. Inspect JSON Web Token headers, payloads, and instantly check expiration status without sending data to a server." />
-  <title>JWT Decoder & Security Inspector - Layerbit</title>
+  <meta name="description" content="Decode a JWT's header and payload, see exp, nbf and iat as dates, verify HS256 and RS256 signatures with the Web Crypto API, and mint test tokens locally." />
+  <title>JWT Decoder & Verifier Online (HS256, RS256) | Layerbit</title>
   <!-- Google tag (gtag.js) -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-ERX8MNPPP5"></script>
   <script>
@@ -18,50 +18,98 @@
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://layerbit.co.in/tools/jwt-decoder.html" />
   <meta property="og:site_name" content="Layerbit" />
-  <meta property="og:title" content="JWT Decoder & Security Inspector - Layerbit" />
-  <meta property="og:description" content="Secure, client-side JWT Decoder. Inspect JSON Web Token headers, payloads, and instantly check expiration status without sending data to a server." />
+  <meta property="og:title" content="JWT Decoder & Verifier Online (HS256, RS256) | Layerbit" />
+  <meta property="og:description" content="Decode a JWT's header and payload, see exp, nbf and iat as dates, verify HS256 and RS256 signatures with the Web Crypto API, and mint test tokens locally." />
   <meta property="og:image" content="https://layerbit.co.in/og-image.png" />
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
   <meta property="og:image:alt" content="Layerbit - free browser-based developer tools" />
   <meta property="og:locale" content="en" />
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="JWT Decoder & Security Inspector - Layerbit" />
-  <meta name="twitter:description" content="Secure, client-side JWT Decoder. Inspect JSON Web Token headers, payloads, and instantly check expiration status without sending data to a server." />
+  <meta name="twitter:title" content="JWT Decoder & Verifier Online (HS256, RS256) | Layerbit" />
+  <meta name="twitter:description" content="Decode a JWT's header and payload, see exp, nbf and iat as dates, verify HS256 and RS256 signatures with the Web Crypto API, and mint test tokens locally." />
   <meta name="twitter:image" content="https://layerbit.co.in/og-image.png" />
   <meta name="twitter:image:alt" content="Layerbit - free browser-based developer tools" />
   <meta name="theme-color" content="#0a0c10" />
   <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "FAQPage",
-    "mainEntity": [
-      {
-        "@type": "Question",
-        "name": "Why does Layerbit prioritize client-side decoding?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "JWTs often contain sensitive user data (PII) or critical authorization scopes. Sending these tokens to a remote server for decoding introduces a significant security risk. By performing all Base64URL decoding and JSON parsing within your browser DOM, we guarantee that your tokens are never logged, stored, or intercepted."
-        }
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "SoftwareApplication",
+      "@id": "https://layerbit.co.in/tools/jwt-decoder.html#app",
+      "name": "JWT Decoder \u0026 Verifier",
+      "url": "https://layerbit.co.in/tools/jwt-decoder.html",
+      "description": "Decode a JWT's header and payload, see exp, nbf and iat as dates, verify HS256 and RS256 signatures with the Web Crypto API, and mint test tokens locally.",
+      "applicationCategory": "SecurityApplication",
+      "operatingSystem": "Any (runs in the browser)",
+      "browserRequirements": "Requires JavaScript",
+      "isAccessibleForFree": true,
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
       },
-      {
-        "@type": "Question",
-        "name": "Does this tool verify the JWT signature?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "Optionally, yes. The Verify Signature panel below the decoder accepts a shared secret for HS256/384/512 tokens or a PEM public key for RS256/384/512 tokens, and checks the signature using your browser's native Web Crypto API — the secret or key never leaves your device. Other algorithms (like ES256 or none) aren't supported yet. Either way, this is a debugging aid, not a substitute for your backend's own verification on every request."
-        }
-      },
-      {
-        "@type": "Question",
-        "name": "Why use JWTs instead of traditional opaque session cookies?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "JWTs are stateless and self-contained. Traditional cookies require the backend to perform a database lookup for every request to verify session data. JWTs store the session data directly in the payload, which is cryptographically signed. This allows API gateways and microservices to verify authorization instantly without hitting a central session database, significantly improving scalability."
-        }
+      "publisher": {
+        "@id": "https://layerbit.co.in/#organization"
       }
-    ]
-  }
+    },
+    {
+      "@type": "BreadcrumbList",
+      "@id": "https://layerbit.co.in/tools/jwt-decoder.html#breadcrumb",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://layerbit.co.in/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Tools",
+          "item": "https://layerbit.co.in/blog.html"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": "JWT Decoder \u0026 Verifier",
+          "item": "https://layerbit.co.in/tools/jwt-decoder.html"
+        }
+      ]
+    },
+    {
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "Why does Layerbit prioritize client-side decoding?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "JWTs often contain sensitive user data (PII) or critical authorization scopes. Sending these tokens to a remote server for decoding introduces a significant security risk. By performing all Base64URL decoding and JSON parsing within your browser DOM, we guarantee that your tokens are never logged, stored, or intercepted."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Does this tool verify the JWT signature?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Optionally, yes. The Verify Signature panel below the decoder accepts a shared secret for HS256/384/512 tokens or a PEM public key for RS256/384/512 tokens, and checks the signature using your browser's native Web Crypto API — the secret or key never leaves your device. Other algorithms (like ES256 or none) aren't supported yet. Either way, this is a debugging aid, not a substitute for your backend's own verification on every request."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Why use JWTs instead of traditional opaque session cookies?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "JWTs are stateless and self-contained. Traditional cookies require the backend to perform a database lookup for every request to verify session data. JWTs store the session data directly in the payload, which is cryptographically signed. This allows API gateways and microservices to verify authorization instantly without hitting a central session database, significantly improving scalability."
+          }
+        }
+      ],
+      "@id": "https://layerbit.co.in/tools/jwt-decoder.html#faq"
+    }
+  ]
+}
   </script>
 
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6072772587431629" crossorigin="anonymous"></script>
@@ -366,8 +414,8 @@
   </header>
 
   <main class="hero">
-    <h1>JWT Inspector</h1>
-    <p>Decode JSON Web Tokens instantly. Verify algorithms, claims, and expiration securely in your browser.</p>
+    <h1>JWT Decoder &amp; Verifier</h1>
+    <p>Decode JSON Web Tokens, read the time claims as real dates, and verify signatures in your browser — the token never leaves the page.</p>
   </main>
 
   <div class="ide-container">
@@ -564,6 +612,25 @@
       <h2><i data-lucide="shield-off"></i> What tokens should not contain</h2>
       <p>Since anyone holding a token can read it, treat the payload as public. Internal user identifiers, email addresses, subscription tiers and role names are all commonly placed there and all readable by the bearer. That is usually acceptable — but a password, an API key for another service, or a personal detail you are legally obliged to protect is not. If contents genuinely must be hidden from the bearer, you need JWE (encrypted tokens) or, far more often, an opaque random session identifier that means nothing outside your own database.</p>
     </div>
+
+        <div class="info-panel related-panel">
+          <h2><i data-lucide="link"></i> Related guides and tools</h2>
+          <p>Background reading on the format and failure modes behind this tool, and the tools most often used alongside it.</p>
+          <div class="use-cases-grid">
+            <div class="use-case-card">
+              <h3><i data-lucide="book-open"></i> <a href="../guides/jwt-decode-vs-verify.html">Decoding a JWT is not verifying it</a></h3>
+              <p>What signature verification actually checks.</p>
+            </div>
+            <div class="use-case-card">
+              <h3><i data-lucide="book-open"></i> <a href="../guides/hashing-vs-encryption-vs-encoding.html">Hashing vs encryption vs encoding</a></h3>
+              <p>Three different operations, one question to tell them apart.</p>
+            </div>
+            <div class="use-case-card">
+              <h3><i data-lucide="wrench"></i> <a href="hash-generator.html">Hash & HMAC Generator</a></h3>
+              <p>Another local tool that pairs with this one. Runs entirely in your browser.</p>
+            </div>
+          </div>
+        </div>
 
     <div class="info-panel">
       <h2><i data-lucide="git-merge"></i> Deployment Methodology Changelog</h2>

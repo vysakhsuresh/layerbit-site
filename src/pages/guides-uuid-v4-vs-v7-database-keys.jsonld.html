@@ -1,0 +1,119 @@
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "TechArticle",
+      "@id": "https://layerbit.co.in/guides/uuid-v4-vs-v7-database-keys.html#article",
+      "headline": "UUID v4 vs v7 for Database Keys: Why Random Ids Get Slow",
+      "name": "UUID v4 vs v7 for Database Keys: Why Random Ids Get Slow",
+      "description": "Why random UUIDs make large tables slow, how v7's leading timestamp fixes B-tree inserts, when v4 is still right, and how to store UUIDs compactly.",
+      "url": "https://layerbit.co.in/guides/uuid-v4-vs-v7-database-keys.html",
+      "mainEntityOfPage": {
+        "@type": "WebPage",
+        "@id": "https://layerbit.co.in/guides/uuid-v4-vs-v7-database-keys.html"
+      },
+      "datePublished": "2026-09-27",
+      "dateModified": "2026-09-27",
+      "inLanguage": "en",
+      "wordCount": 1722,
+      "keywords": "UUID v7, UUID v4 vs v7, primary key, B-tree index, ULID, RFC 9562, UUID storage",
+      "articleSection": "Databases",
+      "author": {
+        "@type": "Organization",
+        "name": "Layerbit Technologies",
+        "url": "https://layerbit.co.in/about.html"
+      },
+      "publisher": {
+        "@type": "Organization",
+        "name": "Layerbit Technologies",
+        "url": "https://layerbit.co.in/",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://layerbit.co.in/icon-512.png",
+          "width": 512,
+          "height": 512
+        }
+      },
+      "image": {
+        "@type": "ImageObject",
+        "url": "https://layerbit.co.in/og-image.png",
+        "width": 1200,
+        "height": 630
+      },
+      "isAccessibleForFree": true,
+      "proficiencyLevel": "Intermediate"
+    },
+    {
+      "@type": "BreadcrumbList",
+      "@id": "https://layerbit.co.in/guides/uuid-v4-vs-v7-database-keys.html#breadcrumb",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://layerbit.co.in/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Guides",
+          "item": "https://layerbit.co.in/blog.html"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": "UUID v4 vs v7",
+          "item": "https://layerbit.co.in/guides/uuid-v4-vs-v7-database-keys.html"
+        }
+      ]
+    },
+    {
+      "@type": "FAQPage",
+      "@id": "https://layerbit.co.in/guides/uuid-v4-vs-v7-database-keys.html#faq",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "Is UUID v7 better than v4 for a primary key?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "For a database primary key, yes. Its leading millisecond timestamp means new ids sort after existing ones, so inserts append to the end of the B-tree index instead of splitting random pages, which keeps large tables fast and indexes compact. It still contains 74 random bits, so collisions are not a concern. The only reason to prefer v4 is when the id's creation time must stay secret."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Can two UUIDs collide?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "In principle; in practice, no. A v4 has 122 random bits, so you would need to generate about 2.7 quintillion ids for a 50% chance of a single duplicate. A v7 generated within the same millisecond has 74 random bits, still far beyond any realistic volume. Collisions that do occur in the wild come from broken random number generators or copied virtual machine images, not from the format."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Does a UUID v7 reveal when a record was created?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes. The first 48 bits are the creation time in milliseconds, and anyone with the id can read it. For most database rows this is harmless or even useful. For an id that acts as a secret, such as a password-reset token, use v4 instead so the id carries no information beyond its randomness."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Should I store UUIDs as text or binary?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Binary. Use PostgreSQL's uuid type, MySQL's BINARY(16) or SQL Server's uniqueidentifier. The 36-character text form is more than twice the size, slows comparisons and joins, and bloats every index that references the key. Convert to text only when displaying or exposing the id."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What is the difference between a UUID v7 and a ULID?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "They share the same 128-bit idea: a 48-bit millisecond timestamp followed by random bits. A ULID is written as 26 characters of Crockford base32 with no hyphens and is case-insensitive, which suits URLs and logs. A v7 uses the standard UUID text form and sets the UUID version and variant bits, so it works with every existing UUID column and library. Pick v7 for databases and ULID where the string form matters."
+          }
+        }
+      ]
+    }
+  ]
+}
+  </script>

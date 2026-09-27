@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="Advanced CSV to JSON Converter. Securely parse, format, and export spreadsheet data to JSON arrays locally in your browser." />
-  <title>CSV to JSON Converter - Layerbit</title>
+  <meta name="description" content="Convert CSV to a JSON array or JSON back to CSV in your browser. Auto-detects comma, semicolon, tab and pipe delimiters and handles quoted fields." />
+  <title>CSV to JSON Converter Online (and JSON to CSV) | Layerbit</title>
   <!-- Google tag (gtag.js) -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-ERX8MNPPP5"></script>
   <script>
@@ -18,58 +18,106 @@
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://layerbit.co.in/tools/csv-to-json.html" />
   <meta property="og:site_name" content="Layerbit" />
-  <meta property="og:title" content="CSV to JSON Converter - Layerbit" />
-  <meta property="og:description" content="Advanced CSV to JSON Converter. Securely parse, format, and export spreadsheet data to JSON arrays locally in your browser." />
+  <meta property="og:title" content="CSV to JSON Converter Online (and JSON to CSV) | Layerbit" />
+  <meta property="og:description" content="Convert CSV to a JSON array or JSON back to CSV in your browser. Auto-detects comma, semicolon, tab and pipe delimiters and handles quoted fields." />
   <meta property="og:image" content="https://layerbit.co.in/og-image.png" />
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
   <meta property="og:image:alt" content="Layerbit - free browser-based developer tools" />
   <meta property="og:locale" content="en" />
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="CSV to JSON Converter - Layerbit" />
-  <meta name="twitter:description" content="Advanced CSV to JSON Converter. Securely parse, format, and export spreadsheet data to JSON arrays locally in your browser." />
+  <meta name="twitter:title" content="CSV to JSON Converter Online (and JSON to CSV) | Layerbit" />
+  <meta name="twitter:description" content="Convert CSV to a JSON array or JSON back to CSV in your browser. Auto-detects comma, semicolon, tab and pipe delimiters and handles quoted fields." />
   <meta name="twitter:image" content="https://layerbit.co.in/og-image.png" />
   <meta name="twitter:image:alt" content="Layerbit - free browser-based developer tools" />
   <meta name="theme-color" content="#0a0c10" />
   <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "FAQPage",
-    "mainEntity": [
-      {
-        "@type": "Question",
-        "name": "What is \"Smart Type Inference\"?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "By default, CSV files treat all data as text strings. When \"Smart Types\" is enabled, Layerbit's engine automatically detects numerical values (like 42 or 3.14) and boolean values (like true or false) and formats them as native integers, floats, and booleans in the resulting JSON output, rather than wrapping them in quotation marks."
-        }
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "SoftwareApplication",
+      "@id": "https://layerbit.co.in/tools/csv-to-json.html#app",
+      "name": "CSV to JSON Converter",
+      "url": "https://layerbit.co.in/tools/csv-to-json.html",
+      "description": "Convert CSV to a JSON array or JSON back to CSV in your browser. Auto-detects comma, semicolon, tab and pipe delimiters and handles quoted fields.",
+      "applicationCategory": "DeveloperApplication",
+      "operatingSystem": "Any (runs in the browser)",
+      "browserRequirements": "Requires JavaScript",
+      "isAccessibleForFree": true,
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
       },
-      {
-        "@type": "Question",
-        "name": "How does the parser handle commas inside text fields?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "Standard CSV rules dictate that any text containing a comma (like an address: \"Dubai, UAE\") must be wrapped in double quotes. Our custom lexical parser specifically reads these encapsulation markers, ensuring that internal commas are treated as normal text characters rather than accidental column delimiters."
-        }
-      },
-      {
-        "@type": "Question",
-        "name": "Does my spreadsheet data leave my computer?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "Absolutely not. The Layerbit CSV pipeline operates within an air-gapped browser environment. The file reading, parsing logic, and JSON generation are executed entirely client-side using JavaScript. No data is ever transmitted to a backend server or database."
-        }
-      },
-      {
-        "@type": "Question",
-        "name": "Can it convert JSON back to CSV too?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "Yes. Switch to \"JSON → CSV\" mode and paste a JSON array of objects. The header row is built from the union of every key across all objects, so records with slightly different fields (an optional notes column on some rows, for example) still produce one clean table instead of dropping data. Nested objects or arrays inside a field are stringified into that cell rather than breaking the export."
-        }
+      "publisher": {
+        "@id": "https://layerbit.co.in/#organization"
       }
-    ]
-  }
+    },
+    {
+      "@type": "BreadcrumbList",
+      "@id": "https://layerbit.co.in/tools/csv-to-json.html#breadcrumb",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://layerbit.co.in/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Tools",
+          "item": "https://layerbit.co.in/blog.html"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": "CSV to JSON Converter",
+          "item": "https://layerbit.co.in/tools/csv-to-json.html"
+        }
+      ]
+    },
+    {
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "What is \"Smart Type Inference\"?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "By default, CSV files treat all data as text strings. When \"Smart Types\" is enabled, Layerbit's engine automatically detects numerical values (like 42 or 3.14) and boolean values (like true or false) and formats them as native integers, floats, and booleans in the resulting JSON output, rather than wrapping them in quotation marks."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How does the parser handle commas inside text fields?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Standard CSV rules dictate that any text containing a comma (like an address: \"Dubai, UAE\") must be wrapped in double quotes. Our custom lexical parser specifically reads these encapsulation markers, ensuring that internal commas are treated as normal text characters rather than accidental column delimiters."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Does my spreadsheet data leave my computer?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Absolutely not. The Layerbit CSV pipeline operates within an air-gapped browser environment. The file reading, parsing logic, and JSON generation are executed entirely client-side using JavaScript. No data is ever transmitted to a backend server or database."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Can it convert JSON back to CSV too?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes. Switch to \"JSON → CSV\" mode and paste a JSON array of objects. The header row is built from the union of every key across all objects, so records with slightly different fields (an optional notes column on some rows, for example) still produce one clean table instead of dropping data. Nested objects or arrays inside a field are stringified into that cell rather than breaking the export."
+          }
+        }
+      ],
+      "@id": "https://layerbit.co.in/tools/csv-to-json.html#faq"
+    }
+  ]
+}
   </script>
 
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6072772587431629" crossorigin="anonymous"></script>
@@ -311,8 +359,8 @@
   </header>
 
   <main class="hero">
-    <h1>CSV &harr; JSON Pipeline</h1>
-    <p>Convert raw comma-separated data into structured JSON objects, or back again, instantly.</p>
+    <h1>CSV to JSON Converter</h1>
+    <p>Convert CSV to JSON and JSON to CSV with delimiter detection and correct quoting — spreadsheet exports in, API-ready arrays out, all client-side.</p>
   </main>
 
   <div class="mode-selector">
@@ -472,6 +520,25 @@
       <h2><i data-lucide="shield-alert"></i> Formula injection in exports</h2>
       <p>One security note that catches people out, because the vulnerability is in your <em>output</em> rather than your input. If a cell begins with <code>=</code>, <code>+</code>, <code>-</code> or <code>@</code>, spreadsheets treat it as a formula. An attacker who can store text in your database — a display name, a ticket subject — can plant a payload that executes when an administrator later exports and opens the file. Before writing any user-supplied value, prefix such values with an apostrophe. Quoting the field is not sufficient, because the quotes are consumed by the CSV parser before the spreadsheet sees the value.</p>
     </div>
+
+        <div class="info-panel related-panel">
+          <h2><i data-lucide="link"></i> Related guides and tools</h2>
+          <p>Background reading on the format and failure modes behind this tool, and the tools most often used alongside it.</p>
+          <div class="use-cases-grid">
+            <div class="use-case-card">
+              <h3><i data-lucide="book-open"></i> <a href="../guides/csv-edge-cases.html">CSV edge cases</a></h3>
+              <p>Quotes, newlines, BOMs and the Excel semicolon dialect.</p>
+            </div>
+            <div class="use-case-card">
+              <h3><i data-lucide="book-open"></i> <a href="../guides/json-syntax-errors-explained.html">JSON syntax errors explained</a></h3>
+              <p>What 'Unexpected token' means and the seven usual causes.</p>
+            </div>
+            <div class="use-case-card">
+              <h3><i data-lucide="wrench"></i> <a href="json-to-table.html">JSON to Table Viewer</a></h3>
+              <p>Another local tool that pairs with this one. Runs entirely in your browser.</p>
+            </div>
+          </div>
+        </div>
 
     <div class="info-panel">
       <h2><i data-lucide="git-commit"></i> Changelog</h2>

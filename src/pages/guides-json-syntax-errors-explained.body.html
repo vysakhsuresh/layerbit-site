@@ -1,0 +1,154 @@
+{{HEADER}}
+
+  <nav class="crumbs" aria-label="Breadcrumb">
+    <a href="../">Home</a>
+    <span class="sep">/</span>
+    <a href="../blog.html">Guides</a>
+    <span class="sep">/</span>
+    <span aria-current="page">JSON syntax errors</span>
+  </nav>
+
+  <article class="article">
+    <header class="article-head">
+      <span class="article-kicker">Data Formats</span>
+      <h1>JSON Syntax Errors Explained: What "Unexpected Token" Is Actually Telling You</h1>
+      <p class="article-standfirst">JSON has one of the shortest grammars of any format in use, which makes it strange that "Unexpected token in JSON at position 217" is such a familiar sight. The grammar is short precisely because it refuses things that look reasonable — a trailing comma, a comment, a single-quoted string — and every one of those refusals has a rationale. This guide walks through the seven mistakes behind nearly every invalid document, how to read the error, and how to find position 217 in a file with no line breaks.</p>
+      <div class="article-meta">
+        <span class="byline">Layerbit Engineering</span>
+        <span><i data-lucide="calendar"></i>Published 27 September 2026</span>
+        <span><i data-lucide="clock"></i>10 min read</span>
+      </div>
+    </header>
+
+    <div class="takeaways">
+      <h2><i data-lucide="list-checks"></i> The short version</h2>
+      <ul>
+        <li>JSON allows: objects, arrays, double-quoted strings, numbers, <code>true</code>, <code>false</code>, <code>null</code>. Nothing else — no comments, no trailing commas, no single quotes, no <code>NaN</code>.</li>
+        <li>"Unexpected token X at position N" means the parser was fine up to byte N and the character there is not allowed by the grammar <em>at that point</em>. The mistake is usually just before it.</li>
+        <li>Position is a character offset from the start, not a line number. Convert it, or use a validator that does.</li>
+        <li>A byte-order mark, a smart quote or a zero-width space is an invisible cause of "Unexpected token" at position 0 or in a string that looks fine.</li>
+        <li>JSON5 and JSONC exist for configuration files that need comments; do not expect <code>JSON.parse</code> to read them.</li>
+      </ul>
+    </div>
+
+    <div class="prose">
+      <h2 id="grammar">The whole grammar, on one screen</h2>
+      <p>A JSON <em>value</em> is one of: an object <code>{ "key": value, … }</code> with string keys; an array <code>[ value, … ]</code>; a string in double quotes with backslash escapes; a number in decimal notation with optional fraction and exponent; or one of the literals <code>true</code>, <code>false</code>, <code>null</code>. Whitespace between tokens is ignored. That is the complete specification of RFC 8259, and every rule below is a consequence of it being that small.</p>
+
+      <h2 id="mistakes">The seven mistakes</h2>
+      <h3>1. Trailing commas</h3>
+      <pre><code>{ "a": 1, "b": 2, }      ✗   Expected double-quoted property name
+[1, 2, 3, ]              ✗   Unexpected token ]</code></pre>
+      <p>JavaScript object literals allow a trailing comma; JSON does not. It is the most common error by a wide margin because it appears whenever a line is deleted from the end of a hand-edited list. The message points at the closing bracket, but the problem is the comma before it.</p>
+
+      <h3>2. Single quotes</h3>
+      <pre><code>{ 'name': 'Ada' }        ✗   Unexpected token '</code></pre>
+      <p>Strings and keys must use double quotes. Python's <code>str(dict)</code> and JavaScript's default object printing both produce single quotes, which is how single-quoted "JSON" ends up in log files and gets pasted into a parser.</p>
+
+      <h3>3. Unquoted keys</h3>
+      <pre><code>{ name: "Ada" }          ✗   Expected double-quoted property name</code></pre>
+      <p>Legal in JavaScript, not in JSON. Every key is a string and every string is double-quoted.</p>
+
+      <h3>4. Comments</h3>
+      <pre><code>{
+  // the user's display name
+  "name": "Ada"
+}                        ✗   Unexpected token /</code></pre>
+      <p>JSON deliberately has no comments — its designer removed them to prevent parsing directives from creeping in. Configuration formats that want them use JSONC (VS Code's settings) or JSON5, which accept comments, trailing commas and single quotes. A standard parser rejects all three, so a <code>tsconfig.json</code> with comments cannot be read by <code>JSON.parse</code> even though TypeScript reads it fine.</p>
+
+      <h3>5. Values that are not JSON values</h3>
+      <pre><code>{ "ratio": NaN }         ✗   Unexpected token N
+{ "when": undefined }    ✗   Unexpected token u
+{ "big": 1_000_000 }     ✗   Unexpected token _
+{ "hex": 0xFF }          ✗   Unexpected token x
+{ "n": .5 }              ✗   Unexpected token .
+{ "n": 01 }              ✗   Unexpected number</code></pre>
+      <p><code>NaN</code>, <code>Infinity</code> and <code>undefined</code> are JavaScript, not JSON; <code>JSON.stringify</code> turns the first two into <code>null</code> and drops properties holding the third, which is a separate surprise. Numbers must be plain decimal: no leading zeros, no leading dot, no hex, no separators.</p>
+
+      <h3>6. Control characters and bad escapes inside strings</h3>
+      <pre><code>{ "path": "C:\Users\ada" }     ✗   Bad escaped character
+{ "text": "line one
+line two" }                    ✗   Bad control character in string literal</code></pre>
+      <p>Inside a string, a backslash must start one of nine escapes: <code>\"</code>, <code>\\</code>, <code>\/</code>, <code>\b</code>, <code>\f</code>, <code>\n</code>, <code>\r</code>, <code>\t</code> or <code>\uXXXX</code>. A Windows path needs doubled backslashes. A literal newline inside a string is not allowed; it must be written <code>\n</code>. Tabs and other control characters likewise.</p>
+
+      <h3>7. Something outside the document</h3>
+      <pre><code>{"a":1}{"b":2}           ✗   Unexpected non-whitespace character after JSON
+                         ✗   Unexpected end of JSON input
+\ufeff{"a":1}            ✗   Unexpected token  (at position 0)</code></pre>
+      <p>A file must contain exactly one value. Two objects back to back are two documents (that is NDJSON, one per line, which needs a different reader). Empty input is not <code>null</code>; it is an error. And a byte-order mark before the opening brace — added by Windows editors and Excel — is an invisible character at position 0 that makes a perfectly good file fail with a message that seems to complain about the brace.</p>
+
+      <div class="tool-cta">
+        <div class="cta-copy">
+          <h3>Find the position, see the problem</h3>
+          <p>Layerbit's JSON Validator reports errors with line and column and moves the caret to the offending character, so "position 217" becomes a highlighted comma. It also formats, minifies, queries any path and shows the structure as a tree, entirely in your browser.</p>
+        </div>
+        <a class="cta-btn" href="../tools/json-validator.html"><i data-lucide="braces"></i> Open JSON Validator</a>
+      </div>
+
+      <h2 id="reading">Reading the error message</h2>
+      <p>Parsers report the first point at which the input stops matching the grammar. That is not always where the mistake is. Given <code>{"a": 1 "b": 2}</code>, the missing comma after <code>1</code> is the bug, but the parser was still happy at the <code>1</code> — a number can be followed by whitespace — and only fails at the <code>"</code> that begins <code>"b"</code>. So the reported position is <em>after</em> the real mistake, and the habit to build is: look at the token named in the message, then look left.</p>
+      <p>Engines differ in wording. V8 (Chrome, Node) says <code>Unexpected token '"', …"a": 1 "b": 2}" is not valid JSON</code> in recent versions, or <code>Unexpected string in JSON at position 8</code> in older ones. Firefox says <code>JSON.parse: expected ',' or '}' after property value in object at line 1 column 9</code>, which is more helpful. Python says <code>Expecting ',' delimiter: line 1 column 9 (char 8)</code>. All three are describing the same byte; only Firefox and Python give you a line and column directly.</p>
+
+      <h2 id="position">Turning a position into a line</h2>
+      <p>A position is a zero-based character index from the start of the text. For a pretty-printed file, count newlines before that index to get the line, and the distance from the last newline to get the column. For a minified file there are no newlines, so the position <em>is</em> the column, and the practical technique is to format the document first and validate again — the error moves to a readable line, and the surrounding structure is visible. Beware that the index counts UTF-16 code units in JavaScript and bytes in some other tools, so a document with emoji before the error can put the two off by one or two.</p>
+
+      <h2 id="invisible">When the file looks valid and is not</h2>
+      <p>If every quote, comma and bracket checks out and the parser still objects, the cause is a character you cannot see. The byte-order mark at position 0 is the classic. Smart quotes <code>“ ”</code> pasted from a document or a chat app look like <code>"</code> and are not — the parser reports an unexpected token at the start of a string that appears perfectly normal. A non-breaking space between tokens is not whitespace to JSON. A zero-width space inside a key makes the key fail to match on lookup rather than fail to parse, which is worse. Inspecting the code points around the reported position resolves all of these in a minute; guessing does not.</p>
+
+      <h2 id="closing">Strict by design</h2>
+      <p>Every rejection above is a feature. A format with no comments cannot carry hidden directives. A format with no trailing commas has one canonical serialisation of any value. A format with no <code>NaN</code> and no <code>undefined</code> forces the producer to decide what it meant. That strictness is why JSON parses identically in every language and why a file that is valid today is valid forever. The cost is that hand-editing it is unforgiving — so let a validator do the checking, read the error from the named token leftwards, and keep an eye out for the characters that are not there.</p>
+
+      <div class="further">
+        <h2>Related guides and tools</h2>
+        <div class="further-grid">
+          <a class="further-card" href="../tools/json-validator.html">
+            <strong>JSON Validator &amp; Formatter</strong>
+            <span>Errors with line and column, path queries, tree view.</span>
+          </a>
+          <a class="further-card" href="invisible-unicode-characters.html">
+            <strong>Invisible Unicode characters</strong>
+            <span>The BOM and the smart quote, and how to find them.</span>
+          </a>
+          <a class="further-card" href="yaml-gotchas.html">
+            <strong>YAML gotchas</strong>
+            <span>The format that is too permissive, for contrast.</span>
+          </a>
+        </div>
+      </div>
+
+      <h2 id="faq">Frequently asked questions</h2>
+      <div class="faq-container">
+        <div class="faq-item">
+          <button class="faq-question">Why does JSON not allow trailing commas? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>Because the grammar defines an object as key-value pairs separated by commas, with nothing after the last pair. Allowing an optional trailing comma would create two valid spellings of the same value and complicate every parser. JavaScript object literals do permit it, which is why the habit carries over and why it is the most common JSON error.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">Can I put comments in a JSON file? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>Not in standard JSON. The format was deliberately specified without comments so that it could not carry parsing directives. Configuration files that need them use JSONC (as in VS Code settings) or JSON5, which accept comments, trailing commas and single quotes, but those must be read with a parser that supports them; JSON.parse and most language libraries will reject them.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">What does "Unexpected token in JSON at position N" mean? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>The parser accepted everything up to character index N and found a character there that the grammar does not permit at that point. The actual mistake is often just before that position, such as a missing comma between two values. Convert the position to a line and column, or format the document first so the error lands on a readable line, then look at the named token and to its left.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">Why is my JSON invalid when it looks completely correct? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>Usually an invisible or lookalike character: a byte-order mark before the opening brace, curly "smart" quotes instead of straight double quotes, a non-breaking space between tokens, or a literal newline or tab inside a string. Inspect the code points near the reported position; a validator that moves the caret to the error makes this quick.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">Are single quotes valid in JSON? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>No. Every string and every key must be enclosed in double quotes. Single-quoted output usually comes from printing a Python dictionary or a JavaScript object with the language's default formatter rather than a JSON serialiser; use json.dumps or JSON.stringify to produce real JSON.</p></div>
+        </div>
+      </div>
+    </div>
+  </article>
+
+  <a href="../" id="smartBackBtn" class="fab" aria-label="Command Center" title="Command Center">
+    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="filter: drop-shadow(0 0 8px rgba(56, 189, 248, 0.5));">
+      <path d="M12 2L2 7l10 5 10-5-10-5z" stroke="#38bdf8" stroke-width="2" stroke-linejoin="round" fill="rgba(56,189,248,0.2)"/>
+      <path d="M2 17l10 5 10-5M2 12l10 5 10-5" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </a>
+
+  {{FOOTER}}
+
+  <script src="../js/shared.js"></script>

@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Why random UUIDs make large tables slow, how v7's leading timestamp fixes B-tree inserts, when v4 is still right, and how to store UUIDs compactly." />
+  <title>UUID v4 vs v7 for Database Primary Keys | Layerbit</title>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-ERX8MNPPP5"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-ERX8MNPPP5');
+  </script>
+  <link rel="canonical" href="https://layerbit.co.in/guides/uuid-v4-vs-v7-database-keys.html" />
+  <meta name="robots" content="max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://layerbit.co.in/guides/uuid-v4-vs-v7-database-keys.html" />
+  <meta property="og:site_name" content="Layerbit" />
+  <meta property="og:title" content="UUID v4 vs v7 for Database Primary Keys | Layerbit" />
+  <meta property="og:description" content="Why random UUIDs make large tables slow, how v7's leading timestamp fixes B-tree inserts, when v4 is still right, and how to store UUIDs compactly." />
+  <meta property="og:image" content="https://layerbit.co.in/og-image.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="Layerbit - free browser-based developer tools" />
+  <meta property="og:locale" content="en" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="UUID v4 vs v7 for Database Primary Keys | Layerbit" />
+  <meta name="twitter:description" content="Why random UUIDs make large tables slow, how v7's leading timestamp fixes B-tree inserts, when v4 is still right, and how to store UUIDs compactly." />
+  <meta name="twitter:image" content="https://layerbit.co.in/og-image.png" />
+  <meta name="twitter:image:alt" content="Layerbit - free browser-based developer tools" />
+  <meta name="theme-color" content="#0a0c10" />
+  <script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "TechArticle",
+      "@id": "https://layerbit.co.in/guides/uuid-v4-vs-v7-database-keys.html#article",
+      "headline": "UUID v4 vs v7 for Database Keys: Why Random Ids Get Slow",
+      "name": "UUID v4 vs v7 for Database Keys: Why Random Ids Get Slow",
+      "description": "Why random UUIDs make large tables slow, how v7's leading timestamp fixes B-tree inserts, when v4 is still right, and how to store UUIDs compactly.",
+      "url": "https://layerbit.co.in/guides/uuid-v4-vs-v7-database-keys.html",
+      "mainEntityOfPage": {
+        "@type": "WebPage",
+        "@id": "https://layerbit.co.in/guides/uuid-v4-vs-v7-database-keys.html"
+      },
+      "datePublished": "2026-09-27",
+      "dateModified": "2026-09-27",
+      "inLanguage": "en",
+      "wordCount": 1722,
+      "keywords": "UUID v7, UUID v4 vs v7, primary key, B-tree index, ULID, RFC 9562, UUID storage",
+      "articleSection": "Databases",
+      "author": {
+        "@type": "Organization",
+        "name": "Layerbit Technologies",
+        "url": "https://layerbit.co.in/about.html"
+      },
+      "publisher": {
+        "@type": "Organization",
+        "name": "Layerbit Technologies",
+        "url": "https://layerbit.co.in/",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://layerbit.co.in/icon-512.png",
+          "width": 512,
+          "height": 512
+        }
+      },
+      "image": {
+        "@type": "ImageObject",
+        "url": "https://layerbit.co.in/og-image.png",
+        "width": 1200,
+        "height": 630
+      },
+      "isAccessibleForFree": true,
+      "proficiencyLevel": "Intermediate"
+    },
+    {
+      "@type": "BreadcrumbList",
+      "@id": "https://layerbit.co.in/guides/uuid-v4-vs-v7-database-keys.html#breadcrumb",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://layerbit.co.in/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Guides",
+          "item": "https://layerbit.co.in/blog.html"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": "UUID v4 vs v7",
+          "item": "https://layerbit.co.in/guides/uuid-v4-vs-v7-database-keys.html"
+        }
+      ]
+    },
+    {
+      "@type": "FAQPage",
+      "@id": "https://layerbit.co.in/guides/uuid-v4-vs-v7-database-keys.html#faq",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "Is UUID v7 better than v4 for a primary key?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "For a database primary key, yes. Its leading millisecond timestamp means new ids sort after existing ones, so inserts append to the end of the B-tree index instead of splitting random pages, which keeps large tables fast and indexes compact. It still contains 74 random bits, so collisions are not a concern. The only reason to prefer v4 is when the id's creation time must stay secret."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Can two UUIDs collide?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "In principle; in practice, no. A v4 has 122 random bits, so you would need to generate about 2.7 quintillion ids for a 50% chance of a single duplicate. A v7 generated within the same millisecond has 74 random bits, still far beyond any realistic volume. Collisions that do occur in the wild come from broken random number generators or copied virtual machine images, not from the format."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Does a UUID v7 reveal when a record was created?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes. The first 48 bits are the creation time in milliseconds, and anyone with the id can read it. For most database rows this is harmless or even useful. For an id that acts as a secret, such as a password-reset token, use v4 instead so the id carries no information beyond its randomness."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Should I store UUIDs as text or binary?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Binary. Use PostgreSQL's uuid type, MySQL's BINARY(16) or SQL Server's uniqueidentifier. The 36-character text form is more than twice the size, slows comparisons and joins, and bloats every index that references the key. Convert to text only when displaying or exposing the id."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What is the difference between a UUID v7 and a ULID?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "They share the same 128-bit idea: a 48-bit millisecond timestamp followed by random bits. A ULID is written as 26 characters of Crockford base32 with no hyphens and is case-insensitive, which suits URLs and logs. A v7 uses the standard UUID text form and sets the UUID version and variant bits, so it works with every existing UUID column and library. Pick v7 for databases and ULID where the string form matters."
+          }
+        }
+      ]
+    }
+  ]
+}
+  </script>
+
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6072772587431629" crossorigin="anonymous"></script>
+
+  <script src="../js/vendor/lucide.min.js" async></script>
+
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet" />
+  <link href="../layerbit-logo.png" rel="icon" type="image/x-icon" />
+  <link rel="manifest" href="../manifest.json" />
+  <link rel="apple-touch-icon" href="../apple-touch-icon.png" />
+  <link rel="stylesheet" href="../css/base.css" />
+  <link rel="stylesheet" href="../css/article.css" />
+
+  <style>
+
+    /* Long-form guide styling lives in css/article.css, linked from this page's head. */
+  
+  </style>
+</head>
+<body>
+  <header>
+    <a href="../" class="brand">
+      <svg width="36" height="36" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <polygon points="32,20 54,28 32,36 10,28" stroke="#f8fafc" stroke-width="4" stroke-linejoin="round"/>
+        <polyline points="10,38 32,46 54,38" stroke="#f8fafc" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+        <polyline points="10,48 32,56 54,48" stroke="#f8fafc" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+        <rect x="50" y="10" width="10" height="10" rx="2" fill="#00f2fe" />
+      </svg>
+      Layerbit
+    </a>
+  </header>
+
+  <nav class="crumbs" aria-label="Breadcrumb">
+    <a href="../">Home</a>
+    <span class="sep">/</span>
+    <a href="../blog.html">Guides</a>
+    <span class="sep">/</span>
+    <span aria-current="page">UUID v4 vs v7</span>
+  </nav>
+
+  <article class="article">
+    <header class="article-head">
+      <span class="article-kicker">Databases &amp; Identifiers</span>
+      <h1>UUID v4 vs v7 for Database Keys: Why Random Ids Get Slow</h1>
+      <p class="article-standfirst">Random UUIDs are the default primary key in a great many schemas, and they work fine — until the table is large enough that inserts start to crawl and the index outgrows memory. The cause is not the UUID; it is the randomness. RFC 9562's time-ordered v7 keeps everything people like about UUIDs and removes the one property that hurts, and this guide explains the mechanism well enough that you can decide for your own tables.</p>
+      <div class="article-meta">
+        <span class="byline">Layerbit Engineering</span>
+        <span><i data-lucide="calendar"></i>Published 27 September 2026</span>
+        <span><i data-lucide="clock"></i>10 min read</span>
+      </div>
+    </header>
+
+    <div class="takeaways">
+      <h2><i data-lucide="list-checks"></i> The short version</h2>
+      <ul>
+        <li>A B-tree index stores keys in order. Random keys insert at random positions, splitting pages all over the tree; time-ordered keys append at the end.</li>
+        <li><strong>UUID v7</strong> puts a 48-bit millisecond timestamp first, then random bits. Ids created later sort later, and each one still has 74 random bits.</li>
+        <li>Use <strong>v7</strong> (or a ULID) for new primary keys. Use <strong>v4</strong> when the id must not reveal creation time — session tokens, invitation links.</li>
+        <li>An auto-increment integer is still the fastest key; UUIDs earn their place when ids are generated in many places or exposed outside the system.</li>
+        <li>Never generate ids with <code>Math.random()</code>. Use the platform's cryptographic generator.</li>
+      </ul>
+    </div>
+
+    <div class="prose">
+      <h2 id="btree">What a random key does to a B-tree</h2>
+      <p>Every mainstream database indexes a primary key with a B-tree, a structure that keeps keys sorted so it can find any one in a handful of page reads. Inserting a key means locating the page where it belongs in sort order and writing it there; when that page is full, it is split into two and the parent updated.</p>
+      <p>With a sequential key — an auto-increment integer, or anything that increases over time — every new row belongs at the far right of the tree. The same rightmost page fills and splits, the pages just before it are finished and never touched again, and the working set is a few hot pages that live comfortably in memory.</p>
+      <p>With a random key, every new row belongs somewhere different. At a hundred thousand rows the whole index still fits in RAM and nobody notices. At a hundred million rows it does not; a random insert now means reading a cold page from disk, splitting it, and writing two pages back, over and over, for every single row. Write throughput collapses, the index bloats because split pages average half-full, and the cache hit rate falls for reads too. MySQL's InnoDB and SQL Server, which cluster the table itself on the primary key, suffer most, because they are rearranging the rows and not just an index. PostgreSQL's heap tables are less affected but its B-tree indexes bloat the same way.</p>
+
+      <h2 id="v7">What v7 changes</h2>
+      <p>A UUID v7, defined in RFC 9562 (May 2024), lays out its 128 bits as:</p>
+      <pre><code>unix_ts_ms (48 bits) | ver (4) | rand_a (12) | var (2) | rand_b (62)</code></pre>
+      <p>The first 48 bits are the Unix timestamp in milliseconds, which sorts ids by creation time to the millisecond. The <code>rand_a</code> field is either 12 more random bits or, in the better implementations, a counter that makes ids generated within the same millisecond monotonic. Everything after the variant bits is random — 62 bits, or 74 including <code>rand_a</code>, which is far more than enough to make collisions a non-issue.</p>
+      <p>The effect on the B-tree is exactly the sequential case above: new ids land at the right edge, the working set stays hot, pages fill completely before splitting. Benchmarks on large InnoDB tables commonly show insert throughput several times higher with v7 than v4, and the index noticeably smaller. You also get a creation timestamp for free, readable from the id without a query — Layerbit's UUID tool decodes it — which is handy in logs and support tickets.</p>
+      <p>The cost is that the timestamp is readable by anyone who sees the id. For a row id in a database that is usually irrelevant. For a token that gates access, it can matter, which is the one case where v4 remains the right choice.</p>
+
+      <div class="tool-cta">
+        <div class="cta-copy">
+          <h3>Generate and decode UUIDs locally</h3>
+          <p>Layerbit's UUID &amp; ULID Generator makes v4, monotonic v7, namespace v5 and ULIDs in bulk, formats them for your database or language, and decodes any id to its version, variant and embedded timestamp — all with the browser's cryptographic random generator, nothing sent anywhere.</p>
+        </div>
+        <a class="cta-btn" href="../tools/uuid-generator.html"><i data-lucide="id-card"></i> Open UUID Generator</a>
+      </div>
+
+      <h2 id="others">The other versions, briefly</h2>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Version</th><th>Built from</th><th>Sortable</th><th>Use it for</th></tr></thead>
+          <tbody>
+            <tr><td>v1</td><td>100-ns timestamp since 1582, clock sequence, MAC address</td><td>No (timestamp is stored low bits first)</td><td>Legacy systems. Leaks the MAC address; superseded by v6 and v7.</td></tr>
+            <tr><td>v3 / v5</td><td>MD5 / SHA-1 of a namespace UUID plus a name</td><td>No</td><td>Deterministic ids: the same name in the same namespace always gives the same UUID. v5 preferred.</td></tr>
+            <tr><td>v4</td><td>122 random bits</td><td>No</td><td>Anything that must not reveal when it was created.</td></tr>
+            <tr><td>v6</td><td>v1's fields reordered so the timestamp sorts</td><td>Yes</td><td>Migrating a v1 system to sortable ids without changing the semantics.</td></tr>
+            <tr><td>v7</td><td>48-bit Unix ms timestamp plus random bits</td><td>Yes</td><td>New database keys. The default for anything created after 2024.</td></tr>
+            <tr><td>ULID</td><td>Same layout as v7, written as 26 chars of Crockford base32</td><td>Yes (as a string)</td><td>Ids in URLs and logs where hyphens and mixed case are a nuisance.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2 id="integer">Do you need a UUID at all?</h2>
+      <p>An auto-increment <code>BIGINT</code> is 8 bytes instead of 16, sorts perfectly, and is the fastest key any database offers. UUIDs justify their extra size in three situations. When ids are minted in several places — mobile clients working offline, sharded services, event producers — and must not collide without coordination. When ids are exposed in URLs or APIs and a sequential integer would let anyone enumerate every record or read your growth rate off the counter. And when data from separate systems will later be merged, and integer ids from two databases would clash.</p>
+      <p>If none of those apply, an integer key with a separate public UUID column is a reasonable compromise: fast joins internally, opaque ids externally. If they do apply, v7 gives you the coordination-free generation and the opacity while keeping most of the integer's index behaviour.</p>
+
+      <h2 id="storage">Storing them properly</h2>
+      <p>The 36-character string form is for humans. In the database, store the 16 raw bytes: PostgreSQL's native <code>uuid</code> type, MySQL's <code>BINARY(16)</code>, SQL Server's <code>uniqueidentifier</code>. A <code>VARCHAR(36)</code> key is more than twice the size, compares character by character, and defeats much of the benefit. Two database-specific traps: MySQL's <code>UUID()</code> function returns a v1, which does not sort, so use v7 generated in the application or <code>UUID_TO_BIN(id, 1)</code> to reorder it; and SQL Server sorts <code>uniqueidentifier</code> by byte groups in an unusual order, so a v7 is not automatically sequential there — <code>NEWSEQUENTIALID()</code> or a byte-swapped layout is needed.</p>
+
+      <h2 id="random">Where the random bits come from</h2>
+      <p>The uniqueness of a v4 or v7 rests entirely on the randomness of its bits. JavaScript's <code>Math.random()</code>, Java's <code>java.util.Random</code> and similar general-purpose generators are predictable: an attacker who sees a few outputs can compute the next ones, which turns an "unguessable" invitation link into a guessable one. Use <code>crypto.randomUUID()</code> or <code>crypto.getRandomValues()</code> in the browser and Node, <code>uuid.uuid4()</code> in Python (which uses <code>os.urandom</code>), <code>UUID.randomUUID()</code> in Java (which uses <code>SecureRandom</code>). The same applies to the random part of a v7: the timestamp makes it sortable, but the random bits are still what makes it unique and unguessable within a millisecond.</p>
+
+      <h2 id="closing">Choose by what the id has to hide</h2>
+      <p>A primary key has to be unique and cheap to index; it does not have to be secret, and it usually does not matter that its creation time is readable. That describes v7. A capability token — a password-reset link, a share URL — has to be unguessable, and its creation time is one fewer thing to leak. That describes v4. Most schemas have far more of the first kind than the second, which is why v7 is the right default for new work and why the random-key slowdown, once you have seen it explained, is an easy problem to avoid.</p>
+
+      <div class="further">
+        <h2>Related guides and tools</h2>
+        <div class="further-grid">
+          <a class="further-card" href="../tools/uuid-generator.html">
+            <strong>UUID &amp; ULID Generator</strong>
+            <span>v4, v7, v5, ULID, and a decoder for any of them.</span>
+          </a>
+          <a class="further-card" href="hashing-vs-encryption-vs-encoding.html">
+            <strong>Hashing vs encryption vs encoding</strong>
+            <span>What v5's SHA-1 derivation actually guarantees.</span>
+          </a>
+          <a class="further-card" href="unix-time-and-time-zones.html">
+            <strong>Unix time and time zones</strong>
+            <span>The 48-bit timestamp inside every v7, explained.</span>
+          </a>
+        </div>
+      </div>
+
+      <h2 id="faq">Frequently asked questions</h2>
+      <div class="faq-container">
+        <div class="faq-item">
+          <button class="faq-question">Is UUID v7 better than v4 for a primary key? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>For a database primary key, yes. Its leading millisecond timestamp means new ids sort after existing ones, so inserts append to the end of the B-tree index instead of splitting random pages, which keeps large tables fast and indexes compact. It still contains 74 random bits, so collisions are not a concern. The only reason to prefer v4 is when the id's creation time must stay secret.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">Can two UUIDs collide? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>In principle; in practice, no. A v4 has 122 random bits, so you would need to generate about 2.7 quintillion ids for a 50% chance of a single duplicate. A v7 generated within the same millisecond has 74 random bits, still far beyond any realistic volume. Collisions that do occur in the wild come from broken random number generators or copied virtual machine images, not from the format.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">Does a UUID v7 reveal when a record was created? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>Yes. The first 48 bits are the creation time in milliseconds, and anyone with the id can read it. For most database rows this is harmless or even useful. For an id that acts as a secret, such as a password-reset token, use v4 instead so the id carries no information beyond its randomness.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">Should I store UUIDs as text or binary? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>Binary. Use PostgreSQL's uuid type, MySQL's BINARY(16) or SQL Server's uniqueidentifier. The 36-character text form is more than twice the size, slows comparisons and joins, and bloats every index that references the key. Convert to text only when displaying or exposing the id.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">What is the difference between a UUID v7 and a ULID? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>They share the same 128-bit idea: a 48-bit millisecond timestamp followed by random bits. A ULID is written as 26 characters of Crockford base32 with no hyphens and is case-insensitive, which suits URLs and logs. A v7 uses the standard UUID text form and sets the UUID version and variant bits, so it works with every existing UUID column and library. Pick v7 for databases and ULID where the string form matters.</p></div>
+        </div>
+      </div>
+    </div>
+  </article>
+
+  <a href="../" id="smartBackBtn" class="fab" aria-label="Command Center" title="Command Center">
+    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="filter: drop-shadow(0 0 8px rgba(56, 189, 248, 0.5));">
+      <path d="M12 2L2 7l10 5 10-5-10-5z" stroke="#38bdf8" stroke-width="2" stroke-linejoin="round" fill="rgba(56,189,248,0.2)"/>
+      <path d="M2 17l10 5 10-5M2 12l10 5 10-5" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </a>
+
+  <footer>
+    <div style="margin-bottom: 15px;">
+      &copy; 2025 - 2026 <strong>Layerbit Technologies</strong>. All rights reserved.
+    </div>
+    <div>
+      <a href="../about.html">About</a>
+      <a href="../privacy.html">Privacy Policy</a>
+      <a href="../terms.html">Terms of Service</a>
+      <a href="../blog.html">Developer Blog</a>
+      <a href="../contact.html">Contact</a>
+    </div>
+  </footer>
+
+  <script src="../js/shared.js"></script>
+</body>
+</html>

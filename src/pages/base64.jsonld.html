@@ -1,32 +1,80 @@
 <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "FAQPage",
-    "mainEntity": [
-      {
-        "@type": "Question",
-        "name": "What exactly is Base64 encoding?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "Base64 is a binary-to-text encoding scheme that translates arbitrary binary data (like images, PDFs, or compiled code) into an ASCII string format. It translates the data into a radix-64 representation, using only 64 specific characters (A-Z, a-z, 0-9, +, and /) ensuring the data remains intact without modification during transport across systems that only support text."
-        }
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "SoftwareApplication",
+      "@id": "https://layerbit.co.in/tools/base64.html#app",
+      "name": "Base64 Encoder \u0026 Decoder",
+      "url": "https://layerbit.co.in/tools/base64.html",
+      "description": "Encode text or files to Base64 and decode it back, including the URL-safe alphabet and unpadded JWT segments. Runs in your browser with a live byte count.",
+      "applicationCategory": "DeveloperApplication",
+      "operatingSystem": "Any (runs in the browser)",
+      "browserRequirements": "Requires JavaScript",
+      "isAccessibleForFree": true,
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
       },
-      {
-        "@type": "Question",
-        "name": "Is Base64 the same thing as encryption?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "No. This is a very common misconception. Base64 is strictly an encoding mechanism used for data translation and transport, not a security protocol. It does not use cryptographic keys, and anyone with access to the Base64 string can instantly decode it back to its original format. Never use Base64 to hide sensitive data or passwords."
-        }
-      },
-      {
-        "@type": "Question",
-        "name": "Why does my file size increase when converted to Base64?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "Because Base64 uses a limited character set to represent binary data, it requires 4 standard ASCII characters to represent every 3 bytes of raw data. This mathematical conversion means that encoding any file into Base64 will automatically increase its overall size by approximately 33%. This is why it is best used for small assets rather than massive video or audio files."
-        }
+      "publisher": {
+        "@id": "https://layerbit.co.in/#organization"
       }
-    ]
-  }
+    },
+    {
+      "@type": "BreadcrumbList",
+      "@id": "https://layerbit.co.in/tools/base64.html#breadcrumb",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://layerbit.co.in/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Tools",
+          "item": "https://layerbit.co.in/blog.html"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": "Base64 Encoder \u0026 Decoder",
+          "item": "https://layerbit.co.in/tools/base64.html"
+        }
+      ]
+    },
+    {
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "What exactly is Base64 encoding?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Base64 is a binary-to-text encoding scheme that translates arbitrary binary data (like images, PDFs, or compiled code) into an ASCII string format. It translates the data into a radix-64 representation, using only 64 specific characters (A-Z, a-z, 0-9, +, and /) ensuring the data remains intact without modification during transport across systems that only support text."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Is Base64 the same thing as encryption?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "No. This is a very common misconception. Base64 is strictly an encoding mechanism used for data translation and transport, not a security protocol. It does not use cryptographic keys, and anyone with access to the Base64 string can instantly decode it back to its original format. Never use Base64 to hide sensitive data or passwords."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Why does my file size increase when converted to Base64?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Because Base64 uses a limited character set to represent binary data, it requires 4 standard ASCII characters to represent every 3 bytes of raw data. This mathematical conversion means that encoding any file into Base64 will automatically increase its overall size by approximately 33%. This is why it is best used for small assets rather than massive video or audio files."
+          }
+        }
+      ],
+      "@id": "https://layerbit.co.in/tools/base64.html#faq"
+    }
+  ]
+}
   </script>

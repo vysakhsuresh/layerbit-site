@@ -1,0 +1,119 @@
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "TechArticle",
+      "@id": "https://layerbit.co.in/guides/json-syntax-errors-explained.html#article",
+      "headline": "JSON Syntax Errors Explained: What \"Unexpected Token\" Is Actually Telling You",
+      "name": "JSON Syntax Errors Explained: What \"Unexpected Token\" Is Actually Telling You",
+      "description": "What 'Unexpected token' means, the seven mistakes behind nearly every invalid JSON (trailing commas, single quotes, comments, NaN, BOMs), and how to find them.",
+      "url": "https://layerbit.co.in/guides/json-syntax-errors-explained.html",
+      "mainEntityOfPage": {
+        "@type": "WebPage",
+        "@id": "https://layerbit.co.in/guides/json-syntax-errors-explained.html"
+      },
+      "datePublished": "2026-09-27",
+      "dateModified": "2026-09-27",
+      "inLanguage": "en",
+      "wordCount": 1760,
+      "keywords": "JSON syntax error, unexpected token in JSON, trailing comma JSON, JSON single quotes, invalid JSON, JSON parse error position",
+      "articleSection": "Data Formats",
+      "author": {
+        "@type": "Organization",
+        "name": "Layerbit Technologies",
+        "url": "https://layerbit.co.in/about.html"
+      },
+      "publisher": {
+        "@type": "Organization",
+        "name": "Layerbit Technologies",
+        "url": "https://layerbit.co.in/",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://layerbit.co.in/icon-512.png",
+          "width": 512,
+          "height": 512
+        }
+      },
+      "image": {
+        "@type": "ImageObject",
+        "url": "https://layerbit.co.in/og-image.png",
+        "width": 1200,
+        "height": 630
+      },
+      "isAccessibleForFree": true,
+      "proficiencyLevel": "Beginner"
+    },
+    {
+      "@type": "BreadcrumbList",
+      "@id": "https://layerbit.co.in/guides/json-syntax-errors-explained.html#breadcrumb",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://layerbit.co.in/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Guides",
+          "item": "https://layerbit.co.in/blog.html"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": "JSON syntax errors",
+          "item": "https://layerbit.co.in/guides/json-syntax-errors-explained.html"
+        }
+      ]
+    },
+    {
+      "@type": "FAQPage",
+      "@id": "https://layerbit.co.in/guides/json-syntax-errors-explained.html#faq",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "Why does JSON not allow trailing commas?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Because the grammar defines an object as key-value pairs separated by commas, with nothing after the last pair. Allowing an optional trailing comma would create two valid spellings of the same value and complicate every parser. JavaScript object literals do permit it, which is why the habit carries over and why it is the most common JSON error."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Can I put comments in a JSON file?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Not in standard JSON. The format was deliberately specified without comments so that it could not carry parsing directives. Configuration files that need them use JSONC (as in VS Code settings) or JSON5, which accept comments, trailing commas and single quotes, but those must be read with a parser that supports them; JSON.parse and most language libraries will reject them."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What does \"Unexpected token in JSON at position N\" mean?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "The parser accepted everything up to character index N and found a character there that the grammar does not permit at that point. The actual mistake is often just before that position, such as a missing comma between two values. Convert the position to a line and column, or format the document first so the error lands on a readable line, then look at the named token and to its left."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Why is my JSON invalid when it looks completely correct?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Usually an invisible or lookalike character: a byte-order mark before the opening brace, curly \"smart\" quotes instead of straight double quotes, a non-breaking space between tokens, or a literal newline or tab inside a string. Inspect the code points near the reported position; a validator that moves the caret to the error makes this quick."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Are single quotes valid in JSON?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "No. Every string and every key must be enclosed in double quotes. Single-quoted output usually comes from printing a Python dictionary or a JavaScript object with the language's default formatter rather than a JSON serialiser; use json.dumps or JSON.stringify to produce real JSON."
+          }
+        }
+      ]
+    }
+  ]
+}
+  </script>

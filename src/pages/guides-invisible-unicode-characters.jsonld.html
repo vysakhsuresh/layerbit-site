@@ -1,0 +1,119 @@
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "TechArticle",
+      "@id": "https://layerbit.co.in/guides/invisible-unicode-characters.html#article",
+      "headline": "Invisible Unicode Characters: The Zero-Width Space and Its Relatives",
+      "name": "Invisible Unicode Characters: The Zero-Width Space and Its Relatives",
+      "description": "The characters that render as nothing, where each comes from, what it breaks, the Trojan Source bidi attack, lookalike letters, and how to strip them.",
+      "url": "https://layerbit.co.in/guides/invisible-unicode-characters.html",
+      "mainEntityOfPage": {
+        "@type": "WebPage",
+        "@id": "https://layerbit.co.in/guides/invisible-unicode-characters.html"
+      },
+      "datePublished": "2026-09-27",
+      "dateModified": "2026-09-27",
+      "inLanguage": "en",
+      "wordCount": 1678,
+      "keywords": "zero width space, invisible characters, byte order mark, U+200B, Trojan Source, homograph, Unicode normalization",
+      "articleSection": "Text \u0026 Encoding",
+      "author": {
+        "@type": "Organization",
+        "name": "Layerbit Technologies",
+        "url": "https://layerbit.co.in/about.html"
+      },
+      "publisher": {
+        "@type": "Organization",
+        "name": "Layerbit Technologies",
+        "url": "https://layerbit.co.in/",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://layerbit.co.in/icon-512.png",
+          "width": 512,
+          "height": 512
+        }
+      },
+      "image": {
+        "@type": "ImageObject",
+        "url": "https://layerbit.co.in/og-image.png",
+        "width": 1200,
+        "height": 630
+      },
+      "isAccessibleForFree": true,
+      "proficiencyLevel": "Beginner"
+    },
+    {
+      "@type": "BreadcrumbList",
+      "@id": "https://layerbit.co.in/guides/invisible-unicode-characters.html#breadcrumb",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://layerbit.co.in/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Guides",
+          "item": "https://layerbit.co.in/blog.html"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": "Invisible Unicode characters",
+          "item": "https://layerbit.co.in/guides/invisible-unicode-characters.html"
+        }
+      ]
+    },
+    {
+      "@type": "FAQPage",
+      "@id": "https://layerbit.co.in/guides/invisible-unicode-characters.html#faq",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "What is a zero-width space and why is it in my text?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "U+200B is a Unicode format character that occupies no space on screen and marks a point where a line may break inside a word. It enters text through copy and paste, most often from PDFs, web pages and messaging apps that insert it for layout. Because it is a real character in the string, it breaks exact matching, search and parsing while remaining invisible in every editor."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How do I remove invisible characters from a string?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Use the Unicode format-character class rather than a hand-made list: in JavaScript s.replace(/\\p{Cf}/gu, ''), in Python filter out characters whose unicodedata.category is 'Cf'. Then replace no-break and typographic spaces with ordinary spaces and normalize to NFC. Be careful with zero-width joiners in scripts and emoji sequences where they carry meaning."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Why does my CSV header say \"﻿id\" instead of \"id\"?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "The file starts with a byte order mark, U+FEFF, which Excel's \"CSV UTF-8\" export and many Windows editors prepend. A parser that does not strip it treats the three bytes as part of the first field. Open the file with a BOM-aware encoding (utf-8-sig in Python), or strip a leading U+FEFF before parsing the header row."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What is a Trojan Source attack?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "A technique (CVE-2021-42574) that uses Unicode bidirectional override characters inside source code comments or strings so that the code an editor displays differs from the code a compiler reads. A reviewer sees harmless logic while the stored order does something else. Modern editors and code hosts warn on these characters, and inspecting code points reveals them immediately."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Why does \"café\" not equal \"café\" in my code?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "One string uses the precomposed é (U+00E9) and the other uses e followed by a combining acute accent (U+0065 U+0301). They look identical and Unicode defines them as canonically equivalent, but they are different sequences of code points. Normalize both to the same form, NFC for storage, before comparing."
+          }
+        }
+      ]
+    }
+  ]
+}
+  </script>

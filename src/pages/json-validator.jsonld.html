@@ -1,40 +1,88 @@
 <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "FAQPage",
-    "mainEntity": [
-      {
-        "@type": "Question",
-        "name": "Why is client-side JSON processing more secure?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "Unlike server-side validation tools that transmit your pasted data across the internet, Layerbit executes all parsing and formatting locally within your machine using native JSON.parse() capabilities. This means sensitive API keys, private user data, and proprietary system configurations remain strictly on your device."
-        }
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "SoftwareApplication",
+      "@id": "https://layerbit.co.in/tools/json-validator.html#app",
+      "name": "JSON Validator \u0026 Formatter",
+      "url": "https://layerbit.co.in/tools/json-validator.html",
+      "description": "Validate, beautify and minify JSON in your browser. Errors show line and column, a path query pulls out any value, and a tree view expands the structure.",
+      "applicationCategory": "DeveloperApplication",
+      "operatingSystem": "Any (runs in the browser)",
+      "browserRequirements": "Requires JavaScript",
+      "isAccessibleForFree": true,
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
       },
-      {
-        "@type": "Question",
-        "name": "What are the most common JSON syntax errors?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "The standard JSON specification is incredibly strict. The most common errors that cause parsing to fail include: trailing commas at the end of objects or arrays, using single quotes (') instead of double quotes (\") for keys/strings, and unescaped special characters embedded within string values."
-        }
-      },
-      {
-        "@type": "Question",
-        "name": "How does JSON minification impact network performance?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "Minification strips out all unnecessary whitespace, line breaks, and indentation from the payload. While this makes the data unreadable to human developers, it significantly reduces the overall byte size of the file, resulting in faster network transfer speeds and lower bandwidth consumption for production API environments."
-        }
-      },
-      {
-        "@type": "Question",
-        "name": "What does the Tree view offer over the raw text output?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "The Tree view renders the same parsed payload as a collapsible outline, letting you fold entire objects or arrays down to a single line and expand only the branches you need. This is especially useful for deeply nested API responses, where the plain formatted text can run to thousands of lines. Use Expand All or Collapse All to jump between a full overview and a fully drilled-in view."
-        }
+      "publisher": {
+        "@id": "https://layerbit.co.in/#organization"
       }
-    ]
-  }
+    },
+    {
+      "@type": "BreadcrumbList",
+      "@id": "https://layerbit.co.in/tools/json-validator.html#breadcrumb",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://layerbit.co.in/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Tools",
+          "item": "https://layerbit.co.in/blog.html"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": "JSON Validator \u0026 Formatter",
+          "item": "https://layerbit.co.in/tools/json-validator.html"
+        }
+      ]
+    },
+    {
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "Why is client-side JSON processing more secure?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Unlike server-side validation tools that transmit your pasted data across the internet, Layerbit executes all parsing and formatting locally within your machine using native JSON.parse() capabilities. This means sensitive API keys, private user data, and proprietary system configurations remain strictly on your device."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What are the most common JSON syntax errors?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "The standard JSON specification is incredibly strict. The most common errors that cause parsing to fail include: trailing commas at the end of objects or arrays, using single quotes (') instead of double quotes (\") for keys/strings, and unescaped special characters embedded within string values."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How does JSON minification impact network performance?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Minification strips out all unnecessary whitespace, line breaks, and indentation from the payload. While this makes the data unreadable to human developers, it significantly reduces the overall byte size of the file, resulting in faster network transfer speeds and lower bandwidth consumption for production API environments."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What does the Tree view offer over the raw text output?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "The Tree view renders the same parsed payload as a collapsible outline, letting you fold entire objects or arrays down to a single line and expand only the branches you need. This is especially useful for deeply nested API responses, where the plain formatted text can run to thousands of lines. Use Expand All or Collapse All to jump between a full overview and a fully drilled-in view."
+          }
+        }
+      ],
+      "@id": "https://layerbit.co.in/tools/json-validator.html#faq"
+    }
+  ]
+}
   </script>
