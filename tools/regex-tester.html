@@ -74,7 +74,7 @@
 
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6072772587431629" crossorigin="anonymous"></script>
 
-  <script src="https://unpkg.com/lucide@1.39.0" async></script>
+  <script src="../js/vendor/lucide.min.js" async></script>
 
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Fira+Code:wght@400;500;700&display=swap" rel="stylesheet" />
   <link href="../layerbit-logo.png" rel="icon" type="image/x-icon" />
@@ -474,6 +474,12 @@
       }
     }
   
+    /* v2.1: engine timing */
+    .match-timing { font-size: 0.78em; color: var(--text-muted); margin-left: auto; margin-right: 14px; }
+    .match-timing:empty { display: none; }
+    .match-timing.slow { color: #f59e0b; }
+    .match-timing a { color: inherit; text-decoration: underline; }
+
   </style>
 </head>
 <body>
@@ -511,6 +517,9 @@
           <button class="flag-btn active" data-flag="g" title="Global (Match all occurrences)">g</button>
           <button class="flag-btn" data-flag="i" title="Case Insensitive">i</button>
           <button class="flag-btn" data-flag="m" title="Multiline">m</button>
+          <button class="flag-btn" data-flag="s" title="dotAll (. also matches newlines)">s</button>
+          <button class="flag-btn" data-flag="u" title="Unicode (\p{..} classes, astral code points)">u</button>
+          <button class="flag-btn" data-flag="y" title="Sticky (match only at lastIndex)">y</button>
         </div>
       </div>
 
@@ -518,6 +527,7 @@
 
       <div class="telemetry-bar">
         <span>Test String</span>
+        <span class="match-timing" id="matchTiming" title="Time spent by the regex engine on this input"></span>
         <span class="match-count" id="matchCount"><i data-lucide="check-circle" style="width:14px;"></i> 0 Matches</span>
       </div>
 
@@ -663,6 +673,7 @@
     <div class="info-panel">
       <h2><i data-lucide="git-merge"></i> Deployment Changelog</h2>
       <ul class="changelog-list">
+        <li><span class="changelog-tag">v2.1.0</span> Added the <code>s</code>, <code>u</code> and <code>y</code> flags, and an engine-time readout beside the match count. A pattern that takes more than 50&nbsp;ms on the current input is flagged, with a link to the backtracking guide, because that growth curve is the earliest warning of a ReDoS-prone expression.</li>
         <li><span class="changelog-tag">v1.4.0</span> Added a numbered + named capture-group breakdown per match, and a live Replacement Preview panel supporting $1/$&lt;name&gt;/$&amp; substitution syntax.</li>
         <li><span class="changelog-tag">v1.3.0</span> Added a line-number gutter to the test string editor (long lines now scroll horizontally instead of wrapping, to keep line numbers accurate).</li>
         <li><span class="changelog-tag">v1.2.0</span> Added interactive Quick Testing Templates and expanded the forensic documentation panel.</li>
@@ -727,6 +738,17 @@
       });
     });
 
+    // Engine time is the practical detector for catastrophic backtracking: a
+    // pattern that takes tens of milliseconds on a few KB will take minutes
+    // on a few MB, and the growth is what matters, not the absolute number.
+    const matchTiming = document.getElementById('matchTiming');
+    function renderTiming(ms, chars) {
+      const slow = ms > 50;
+      matchTiming.className = 'match-timing' + (slow ? ' slow' : '');
+      matchTiming.innerHTML = `${ms < 1 ? ms.toFixed(2) : ms.toFixed(1)} ms on ${chars.toLocaleString()} chars` +
+        (slow ? ` &middot; slow for this size &mdash; see <a href="../guides/regex-catastrophic-backtracking.html">why patterns backtrack</a>` : '');
+    }
+
     // Escape HTML to prevent injection in the highlighter
     function escapeHTML(str) {
       return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
@@ -768,6 +790,7 @@
       try {
         const flagsStr = currentFlags.join('');
         const regex = new RegExp(pattern, flagsStr);
+        const t0 = performance.now();
         
         let match;
         let count = 0;
@@ -824,6 +847,7 @@
 
         // Update UI
         matchCount.innerHTML = `<i data-lucide="check-circle" style="width:14px;"></i> ${count} Matches`;
+        renderTiming(performance.now() - t0, text.length);
 
         if (count > 0) {
           matchesGrid.innerHTML = breakdownHTML;

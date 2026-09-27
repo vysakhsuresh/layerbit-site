@@ -226,3 +226,26 @@ footer a:hover { color: var(--accent-main); }
 .info-panel ul, .info-panel ol { color: var(--text-muted); margin: 0 0 20px 22px; line-height: 1.7; }
 .info-panel li { margin-bottom: 10px; }
 .info-panel ul li::marker, .info-panel ol li::marker { color: var(--accent-main); }
+
+/* ---------------------------------------------------------------------------
+   Mobile layout fixes (September 2026)
+
+   1. Several tool pages style `.info-panel li { display: flex }` to sit a
+      lucide icon beside the text. In a flex row every inline child - text
+      runs, <code>, <em>, <strong> - becomes its own flex item, so the line
+      can no longer wrap and long items push the whole panel past a phone
+      screen. Keep the icon-beside-text look with an absolutely positioned
+      icon and a normal block that wraps. Only list items that actually start
+      with an icon are affected.
+   2. Pane headers hold a title plus a row of buttons; on a 390px screen the
+      row must be allowed to wrap onto a second line.
+   ------------------------------------------------------------------------- */
+.info-panel ul li, .info-panel ol li { display: block; }
+/* lucide swaps each <i data-lucide> for an <svg> once it loads, so the icon
+   is matched in both forms. */
+.info-panel li:has(> :is(i, svg):first-child) { display: block; position: relative; padding-left: 26px; }
+.info-panel li:has(> :is(i, svg):first-child) > :is(i, svg):first-child { position: absolute; left: 0; top: 4px; width: 16px; height: 16px; }
+@media (max-width: 600px) {
+  .pane-header, .btn-group, .header-actions, .action-row { flex-wrap: wrap; }
+  .pane-header { row-gap: 10px; }
+}

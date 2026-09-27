@@ -232,3 +232,17 @@
       .fab { bottom: 20px; left: 20px; width: 50px; height: 50px; }
     }
   
+    /* v2.1: debug filter, regex grep, repeated messages */
+    .stat-debug { color: #a78bfa; background: rgba(167,139,250,0.12); border-color: rgba(167,139,250,0.3); }
+    .console-output[data-filter="DEBUG"] .log-line:not(.type-debug) { display: none; }
+    .regex-toggle { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); display: flex; align-items: center; gap: 4px; font-family: 'Fira Code', monospace; font-size: 0.75em; color: var(--text-muted); cursor: pointer; }
+    .regex-toggle input { accent-color: var(--accent-main); }
+    .search-input { padding-right: 46px; }
+    .search-input.bad { border-color: #ef4444; }
+    .top-messages { border-bottom: 1px solid var(--card-border); background: rgba(0,0,0,0.25); padding: 8px 15px; font-size: 0.78em; }
+    .top-messages:empty { display: none; }
+    .top-title { display: flex; align-items: center; gap: 6px; color: var(--text-muted); font-weight: 600; margin-bottom: 6px; }
+    .top-title i { width: 13px; }
+    .top-row { display: flex; gap: 10px; align-items: baseline; padding: 2px 0; font-family: 'Fira Code', monospace; }
+    .top-count { color: var(--accent-main); min-width: 48px; font-weight: 600; }
+    .top-msg { color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }

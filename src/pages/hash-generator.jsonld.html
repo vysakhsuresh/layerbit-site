@@ -1,0 +1,106 @@
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "SoftwareApplication",
+      "@id": "https://layerbit.co.in/tools/hash-generator.html#app",
+      "name": "Hash \u0026 HMAC Generator",
+      "url": "https://layerbit.co.in/tools/hash-generator.html",
+      "description": "Compute SHA-1, SHA-256, SHA-384, SHA-512 and MD5 hashes of text or files, generate HMACs with a key, and verify a checksum, entirely in your browser with the Web Crypto API.",
+      "applicationCategory": "SecurityApplication",
+      "operatingSystem": "Any (runs in the browser)",
+      "browserRequirements": "Requires JavaScript",
+      "isAccessibleForFree": true,
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "keywords": "sha256 generator, hash generator, hmac generator, md5 checksum, file hash, verify checksum",
+      "publisher": {
+        "@id": "https://layerbit.co.in/#organization"
+      },
+      "datePublished": "2026-09-27"
+    },
+    {
+      "@type": "BreadcrumbList",
+      "@id": "https://layerbit.co.in/tools/hash-generator.html#breadcrumb",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://layerbit.co.in/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Tools",
+          "item": "https://layerbit.co.in/blog.html"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": "Hash \u0026 HMAC Generator",
+          "item": "https://layerbit.co.in/tools/hash-generator.html"
+        }
+      ]
+    },
+    {
+      "@type": "FAQPage",
+      "@id": "https://layerbit.co.in/tools/hash-generator.html#faq",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "Is my text or file uploaded to compute the hash?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "No. Hashing is done by the Web Crypto API built into your browser, and the MD5 implementation is JavaScript in the page. There is no request to any server. You can verify this in the Network tab of your browser's developer tools, or by loading the page and then disconnecting from the internet before hashing a file."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Why does the same text give a different SHA-256 here and on my server?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Almost always the bytes differ even though the characters look the same. A trailing newline added by an editor, Windows CRLF line endings, a UTF-8 byte-order mark, or a different Unicode normalization form all change the digest. Hash the exact bytes on both sides — for a file, hash the file rather than its pasted contents; for text, check the byte count shown under the input against what your server sees."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Can I get the original text back from a hash?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "No. A hash is one-way: the digest is a fixed 256 bits regardless of input size, so infinitely many inputs map to each digest and there is no inverse function. What attackers do instead is guess: precompute digests of likely inputs (a dictionary, or every string up to eight characters) and look yours up. That is why a fast hash of a password is not protection, and why salts and slow functions exist."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What is the difference between a hash and an HMAC?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "A hash has no key: anyone can compute it, so it proves integrity against accidental change but not against a deliberate one, since an attacker who alters the message can recompute the hash too. An HMAC mixes a secret key into the computation using the RFC 2104 construction, so only a holder of the key can produce a valid tag. Use a hash to detect corruption; use an HMAC to authenticate a message from a party you share a secret with."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Why is my HMAC different from the one in the webhook header?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Three usual causes. The body you pasted is not the raw body: it was pretty-printed, re-serialised or had whitespace changed, and the HMAC covers exact bytes. The key was given to you as hex or base64 and you used the encoded string as the key instead of decoding it to bytes. Or the provider signs something other than the bare body, such as a timestamp joined to the body with a dot (Stripe) or a version prefix. Check the provider's documentation for what exactly goes into the signature."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Should I use this to hash passwords for my application?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "No. SHA-256 and its relatives are designed to be fast, which is the opposite of what password storage needs. Use Argon2id, scrypt or bcrypt through a maintained library on the server, with a per-user random salt. A fast hash of a password, even salted, can be attacked at billions of guesses per second on commodity GPUs."
+          }
+        }
+      ]
+    }
+  ]
+}
+  </script>

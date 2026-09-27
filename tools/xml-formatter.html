@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Format, minify and validate XML, evaluate XPath 1.0 queries with namespace support, and convert XML to JSON, using the browser's own parser. Nothing leaves your machine." />
+  <title>XML Formatter, Validator & XPath Tester - Layerbit</title>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-ERX8MNPPP5"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-ERX8MNPPP5');
+  </script>
+  <link rel="canonical" href="https://layerbit.co.in/tools/xml-formatter.html" />
+  <meta name="robots" content="max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://layerbit.co.in/tools/xml-formatter.html" />
+  <meta property="og:site_name" content="Layerbit" />
+  <meta property="og:title" content="XML Formatter, Validator & XPath Tester - Layerbit" />
+  <meta property="og:description" content="Format, minify and validate XML, evaluate XPath 1.0 queries with namespace support, and convert XML to JSON, using the browser's own parser. Nothing leaves your machine." />
+  <meta property="og:image" content="https://layerbit.co.in/og-image.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="Layerbit - free browser-based developer tools" />
+  <meta property="og:locale" content="en" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="XML Formatter, Validator & XPath Tester - Layerbit" />
+  <meta name="twitter:description" content="Format, minify and validate XML, evaluate XPath 1.0 queries with namespace support, and convert XML to JSON, using the browser's own parser. Nothing leaves your machine." />
+  <meta name="twitter:image" content="https://layerbit.co.in/og-image.png" />
+  <meta name="twitter:image:alt" content="Layerbit - free browser-based developer tools" />
+  <meta name="theme-color" content="#0a0c10" />
+  <script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "SoftwareApplication",
+      "@id": "https://layerbit.co.in/tools/xml-formatter.html#app",
+      "name": "XML Formatter \u0026 XPath Tester",
+      "url": "https://layerbit.co.in/tools/xml-formatter.html",
+      "description": "Format, minify and validate XML, evaluate XPath 1.0 queries with namespace support, and convert XML to JSON, using the browser's own parser. Nothing leaves your machine.",
+      "applicationCategory": "DeveloperApplication",
+      "operatingSystem": "Any (runs in the browser)",
+      "browserRequirements": "Requires JavaScript",
+      "isAccessibleForFree": true,
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "keywords": "xml formatter, xml validator, xpath tester, xpath online, xml to json, xml beautifier",
+      "publisher": {
+        "@id": "https://layerbit.co.in/#organization"
+      },
+      "datePublished": "2026-09-27"
+    },
+    {
+      "@type": "BreadcrumbList",
+      "@id": "https://layerbit.co.in/tools/xml-formatter.html#breadcrumb",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://layerbit.co.in/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Tools",
+          "item": "https://layerbit.co.in/blog.html"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": "XML Formatter \u0026 XPath Tester",
+          "item": "https://layerbit.co.in/tools/xml-formatter.html"
+        }
+      ]
+    },
+    {
+      "@type": "FAQPage",
+      "@id": "https://layerbit.co.in/tools/xml-formatter.html#faq",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "Does this validate against an XSD or DTD schema?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "No. It checks well-formedness — that the document is syntactically correct XML with balanced, properly nested tags, quoted attributes and escaped characters — using the browser's parser. Validation against a schema (whether the elements and values are the ones a particular XSD allows) needs a schema processor, which browsers do not include. For that, use xmllint with --schema, or your platform's XML library."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Why does my XPath return no results when the element is clearly there?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Almost always a namespace. If the document's root declares a default namespace with xmlns=\"...\", every unprefixed element is in that namespace, and an unprefixed name in XPath 1.0 matches only elements with no namespace. Use the ns prefix this tool binds to the default namespace (//ns:entry), the prefix shown in the badge for other namespaces, or //*[local-name()='entry'] to ignore namespaces entirely."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Why does formatting change whitespace inside some elements but not others?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Because whitespace inside an element that contains text is part of the data. The formatter only re-indents elements whose children are all elements, where the whitespace between them is insignificant. An element with text content, or mixed text and elements, is left exactly as written, so a document that carries meaningful spacing in its text is not corrupted by pretty-printing."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Is the XML to JSON conversion reversible?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "No, and no XML to JSON mapping can be in general. XML has ordered mixed content, namespaces, comments, processing instructions and a distinction between attributes and child elements; JSON objects have unordered keys and no attributes. The mapping here is designed to be readable and to round-trip the common case of element-only data with attributes, using @ for attributes and #text for text, but it is a convenience view rather than an interchange format."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Which XPath version does the tool support?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "XPath 1.0, because that is what document.evaluate() in browsers implements. It covers the full 1.0 axis set, predicates, and the core function library (contains, starts-with, substring, normalize-space, count, sum, position, last, local-name, name and the rest). Functions and syntax added in XPath 2.0 and later, such as regular-expression matching, sequences and for-expressions, are not available."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Is my XML sent anywhere?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "No. Parsing uses DOMParser, XPath uses document.evaluate, and serialisation is JavaScript in the page; there is no server request. You can confirm this in the Network tab of your browser's developer tools or by using the tool offline. That matters for XML in particular, because SOAP responses, SAML assertions and configuration files routinely contain credentials and personal data."
+          }
+        }
+      ]
+    }
+  ]
+}
+  </script>
+
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6072772587431629" crossorigin="anonymous"></script>
+
+  <script src="../js/vendor/lucide.min.js" async></script>
+
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet" />
+  <link href="../layerbit-logo.png" rel="icon" type="image/x-icon" />
+  <link rel="manifest" href="../manifest.json" />
+  <link rel="apple-touch-icon" href="../apple-touch-icon.png" />
+  <link rel="stylesheet" href="../css/base.css" />
+  <link rel="stylesheet" href="../css/tool.css" />
+
+  <style>
+
+    .hint { font-size: 0.78em; color: var(--text-muted); line-height: 1.5; min-height: 1em; }
+    .hint strong { color: var(--text-main); font-family: 'Fira Code', monospace; }
+    .hint .bad { color: #f87171; }
+    .muted { color: var(--text-muted); font-family: 'Space Grotesk', sans-serif; font-weight: 400; font-size: 0.85em; }
+    .ns-badge { display: flex; gap: 6px; flex-wrap: wrap; font-weight: 400; }
+    .ns-badge .tag { font-size: 0.78em; padding: 2px 8px; border-radius: 999px; background: rgba(56,189,248,0.12); color: var(--accent-main); border: 1px solid rgba(56,189,248,0.3); font-family: 'Fira Code', monospace; }
+    .xpath-results { display: flex; flex-direction: column; gap: 10px; max-height: 420px; overflow: auto; }
+    .xp-row { background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.06); border-radius: 10px; padding: 10px 12px; }
+    .xp-path { font-family: 'Fira Code', monospace; font-size: 0.75em; color: var(--accent-main); margin-bottom: 6px; word-break: break-all; }
+    .xp-val { margin: 0; font-family: 'Fira Code', monospace; font-size: 0.82em; white-space: pre-wrap; word-break: break-word; color: var(--text-main); line-height: 1.5; }
+    #xmlOutput { font-size: 0.85em; }
+    .error-banner span { white-space: pre-wrap; font-family: 'Fira Code', monospace; font-size: 0.92em; }
+
+  </style>
+</head>
+<body>
+  <header>
+    <a href="../" class="brand">
+      <svg width="36" height="36" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <polygon points="32,20 54,28 32,36 10,28" stroke="#f8fafc" stroke-width="4" stroke-linejoin="round"/>
+        <polyline points="10,38 32,46 54,38" stroke="#f8fafc" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+        <polyline points="10,48 32,56 54,48" stroke="#f8fafc" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+        <rect x="50" y="10" width="10" height="10" rx="2" fill="#00f2fe" />
+      </svg>
+      Layerbit
+    </a>
+  </header>
+
+  <main class="hero">
+    <div class="hero-badge"><i data-lucide="shield-check"></i> Browser-native parser · nothing uploaded</div>
+    <h1>XML Formatter, Validator &amp; XPath Tester</h1>
+    <p>Pretty-print or minify XML, see well-formedness errors with their line, run XPath 1.0 queries with namespace support, and convert XML to JSON — all with the parser already inside your browser.</p>
+  </main>
+
+  <div class="ide-container">
+    <div class="pane tall" id="inputPane">
+      <div class="pane-header">
+        <div class="pane-title"><i data-lucide="file-code-2"></i> XML</div>
+        <div class="btn-group">
+          <input type="file" id="fileInput" accept=".xml,.svg,.xsd,.xsl,.xslt,.rss,.atom,.pom,.plist,.config,text/xml,application/xml" style="display:none;">
+          <button class="btn" type="button" onclick="document.getElementById('fileInput').click()"><i data-lucide="upload"></i> Upload</button>
+          <button class="btn" type="button" id="btnSample"><i data-lucide="flask-conical"></i> Sample</button>
+          <button class="btn" type="button" id="btnClear"><i data-lucide="trash-2"></i> Clear</button>
+        </div>
+      </div>
+      <div class="error-banner" id="errorBanner"><i data-lucide="triangle-alert"></i><span id="errorText"></span></div>
+      <textarea id="xmlInput" class="editor" placeholder="Paste XML here, or drop a file on this pane...&#10;&#10;&lt;order id=&quot;1001&quot;&gt;&#10;  &lt;item sku=&quot;A1&quot; qty=&quot;2&quot;&gt;Widget&lt;/item&gt;&#10;&lt;/order&gt;" spellcheck="false"></textarea>
+      <div class="stats-strip" id="statsStrip"></div>
+    </div>
+
+    <div class="pane tall">
+      <div class="pane-header">
+        <div class="pane-title"><i data-lucide="sparkles"></i> Output</div>
+        <div class="btn-group">
+          <select id="modeSelect" class="mini-select">
+            <option value="pretty">Pretty (2 spaces)</option>
+            <option value="pretty4">Pretty (4 spaces)</option>
+            <option value="tabs">Pretty (tabs)</option>
+            <option value="minify">Minify</option>
+            <option value="json">XML → JSON</option>
+          </select>
+          <label class="check" title="Drop comments and processing instructions from the output"><input type="checkbox" id="optStripComments"> strip comments</label>
+          <button class="btn" type="button" id="btnCopy"><i data-lucide="copy"></i> Copy</button>
+          <button class="btn" type="button" id="btnDownload"><i data-lucide="download"></i> Save</button>
+        </div>
+      </div>
+      <div class="output-area" id="xmlOutput"></div>
+    </div>
+  </div>
+
+  <div class="ide-container single">
+    <div class="pane">
+      <div class="pane-header">
+        <div class="pane-title"><i data-lucide="route"></i> XPath</div>
+        <div class="btn-group">
+          <span class="ns-badge" id="nsBadge"></span>
+        </div>
+      </div>
+      <div class="pane-body">
+        <div class="field">
+          <input type="text" id="xpathInput" class="text-input" placeholder="//item[@qty > 1]/@sku   ·   count(//item)   ·   //ns:title/text()" autocomplete="off" spellcheck="false" disabled>
+          <div class="hint" id="xpathHint">Load a document to enable queries. Prefixes declared on the root element are available; the default namespace is bound to <code>ns</code>.</div>
+        </div>
+        <div class="xpath-results" id="xpathResults"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="docs-container">
+    <div class="info-panel">
+      <h2><i data-lucide="book-open"></i> What the formatter does, and does not do</h2>
+      <p>Formatting XML is not just inserting newlines. Whitespace inside an element is data unless the schema says otherwise, so a naive pretty-printer that indents everything changes the meaning of <code>&lt;p&gt;Hello &lt;b&gt;world&lt;/b&gt;&lt;/p&gt;</code>. This tool parses the document with the browser's <code>DOMParser</code>, then re-serialises the tree with a rule: an element whose children are all elements is broken across lines and indented; an element that contains text stays on one line with its text untouched. Comments, CDATA sections and processing instructions are preserved unless you strip them. Attribute order is preserved as written.</p>
+
+      <div class="use-cases-grid">
+        <div class="use-case-card">
+          <h3><i data-lucide="search-code"></i> Reading a SOAP or SAML response</h3>
+          <p>Enterprise APIs still return dense single-line XML. Paste the body here to see the structure, then use XPath to pull the one value you need — <code>//soap:Fault/faultstring</code> or <code>//saml:Attribute[@Name='email']/saml:AttributeValue</code> — without writing a parser for a one-off check.</p>
+        </div>
+        <div class="use-case-card">
+          <h3><i data-lucide="bug"></i> Finding the well-formedness error</h3>
+          <p>"XML parsing error" from a library rarely says where. The browser's parser reports the line and column of the first problem, and the tool shows it with the offending line. The usual culprits are an unescaped <code>&amp;</code> in text, a mismatched closing tag, an attribute without quotes, or a BOM or stray character before the <code>&lt;?xml</code> declaration.</p>
+        </div>
+        <div class="use-case-card">
+          <h3><i data-lucide="braces"></i> XML to JSON for a quick look</h3>
+          <p>The JSON mode gives a compact object view: attributes as keys prefixed with <code>@</code>, text as <code>#text</code> when an element has both, repeated child elements collapsed into arrays. It is meant for reading and for quick scripts, not as a lossless conversion — namespaces, comments and element order across siblings of different names are not representable in a plain object.</p>
+        </div>
+        <div class="use-case-card">
+          <h3><i data-lucide="file-cog"></i> Config files and feeds</h3>
+          <p>Maven <code>pom.xml</code>, <code>web.config</code>, Android manifests, RSS and Atom feeds, SVG, plist — all XML, all readable here. For SVG, formatting is safe; for feeds, an XPath like <code>//item[1]/pubDate</code> answers "when did this last update" faster than opening a reader.</p>
+        </div>
+      </div>
+
+      <h2><i data-lucide="route"></i> XPath in five minutes</h2>
+      <table>
+        <thead><tr><th>Expression</th><th>Selects</th></tr></thead>
+        <tbody>
+          <tr><td><code>/order</code></td><td>The root element, only if it is named <code>order</code></td></tr>
+          <tr><td><code>//item</code></td><td>Every <code>item</code> element anywhere in the document</td></tr>
+          <tr><td><code>//item[@qty &gt; 1]</code></td><td>Items whose <code>qty</code> attribute is greater than 1 (numeric comparison)</td></tr>
+          <tr><td><code>//item[2]</code></td><td>The second <code>item</code> child of each parent — not the second item overall; use <code>(//item)[2]</code> for that</td></tr>
+          <tr><td><code>//item/@sku</code></td><td>The <code>sku</code> attribute nodes of every item</td></tr>
+          <tr><td><code>//item/text()</code></td><td>The text nodes directly inside each item</td></tr>
+          <tr><td><code>count(//item)</code></td><td>A number, not a node set</td></tr>
+          <tr><td><code>//item[contains(., 'Widget')]</code></td><td>Items whose string value contains "Widget"</td></tr>
+          <tr><td><code>//*[local-name()='title']</code></td><td>Any element named <code>title</code> regardless of namespace — the escape hatch when prefixes are awkward</td></tr>
+          <tr><td><code>//ns:entry/ns:title</code></td><td>Elements in the document's default namespace, using the <code>ns</code> prefix this tool binds for you</td></tr>
+        </tbody>
+      </table>
+      <p>Browsers implement XPath 1.0, so functions from XPath 2.0 and 3.1 — <code>matches()</code>, <code>string-join()</code>, <code>for … return</code> — are not available, and a query that uses them fails with a syntax error. The four result types are what XPath 1.0 has: a node set, a string, a number or a boolean, and the tool labels which one you got.</p>
+
+      <h2><i data-lucide="globe"></i> The namespace trap</h2>
+      <p>The most common reason an XPath returns nothing is a default namespace. An Atom feed declares <code>xmlns="http://www.w3.org/2005/Atom"</code> on its root, which puts every element in that namespace; <code>//entry</code> then matches nothing, because in XPath 1.0 an unprefixed name means "no namespace", not "any namespace". You must bind a prefix and write <code>//ns:entry</code>. This tool reads every <code>xmlns</code> and <code>xmlns:prefix</code> declaration on the root element and makes them available, binding the default namespace to <code>ns</code>; the badge above the query box lists what is bound. Prefixes declared deeper in the document are not automatically visible, which is a limitation of resolving from the root; <code>local-name()</code> works around it.</p>
+    </div>
+
+    <div class="info-panel">
+      <h2><i data-lucide="help-circle"></i> Frequently asked questions</h2>
+      <div class="faq-container">
+        <div class="faq-item">
+          <button class="faq-question">Does this validate against an XSD or DTD schema? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>No. It checks well-formedness — that the document is syntactically correct XML with balanced, properly nested tags, quoted attributes and escaped characters — using the browser's parser. Validation against a schema (whether the elements and values are the ones a particular XSD allows) needs a schema processor, which browsers do not include. For that, use xmllint with --schema, or your platform's XML library.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">Why does my XPath return no results when the element is clearly there? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>Almost always a namespace. If the document's root declares a default namespace with xmlns="...", every unprefixed element is in that namespace, and an unprefixed name in XPath 1.0 matches only elements with no namespace. Use the ns prefix this tool binds to the default namespace (//ns:entry), the prefix shown in the badge for other namespaces, or //*[local-name()='entry'] to ignore namespaces entirely.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">Why does formatting change whitespace inside some elements but not others? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>Because whitespace inside an element that contains text is part of the data. The formatter only re-indents elements whose children are all elements, where the whitespace between them is insignificant. An element with text content, or mixed text and elements, is left exactly as written, so a document that carries meaningful spacing in its text is not corrupted by pretty-printing.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">Is the XML to JSON conversion reversible? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>No, and no XML to JSON mapping can be in general. XML has ordered mixed content, namespaces, comments, processing instructions and a distinction between attributes and child elements; JSON objects have unordered keys and no attributes. The mapping here is designed to be readable and to round-trip the common case of element-only data with attributes, using @ for attributes and #text for text, but it is a convenience view rather than an interchange format.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">Which XPath version does the tool support? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>XPath 1.0, because that is what document.evaluate() in browsers implements. It covers the full 1.0 axis set, predicates, and the core function library (contains, starts-with, substring, normalize-space, count, sum, position, last, local-name, name and the rest). Functions and syntax added in XPath 2.0 and later, such as regular-expression matching, sequences and for-expressions, are not available.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">Is my XML sent anywhere? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>No. Parsing uses DOMParser, XPath uses document.evaluate, and serialisation is JavaScript in the page; there is no server request. You can confirm this in the Network tab of your browser's developer tools or by using the tool offline. That matters for XML in particular, because SOAP responses, SAML assertions and configuration files routinely contain credentials and personal data.</p></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="info-panel">
+      <h2><i data-lucide="git-commit"></i> Changelog</h2>
+      <ul class="changelog-list">
+        <li><span class="changelog-tag">v1.0.0</span> Initial release: whitespace-aware pretty-printing and minification, well-formedness errors with line and column, XPath 1.0 with automatic namespace binding from the root element, typed results with node paths, XML to JSON, document statistics, file upload and drag-and-drop.</li>
+      </ul>
+    </div>
+  </div>
+
+  <a id="smartBackBtn" class="fab home-fab-premium" aria-label="Command Center" title="Command Center" href="../">
+    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="filter: drop-shadow(0 0 8px rgba(56, 189, 248, 0.5));">
+      <path d="M12 2L2 7l10 5 10-5-10-5z" stroke="#38bdf8" stroke-width="2" stroke-linejoin="round" fill="rgba(56,189,248,0.2)"/>
+      <path d="M2 17l10 5 10-5M2 12l10 5 10-5" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </a>
+
+  <footer>
+    <div style="margin-bottom: 15px;">
+      &copy; 2025 - 2026 <strong>Layerbit Technologies</strong>. All rights reserved.
+    </div>
+    <div>
+      <a href="../about.html">About</a>
+      <a href="../privacy.html">Privacy Policy</a>
+      <a href="../terms.html">Terms of Service</a>
+      <a href="../blog.html">Developer Blog</a>
+      <a href="../contact.html">Contact</a>
+    </div>
+  </footer>
+
+  <script src="../js/shared.js"></script>
+
+  <script>
+    const xmlInput = document.getElementById('xmlInput');
+    const xmlOutput = document.getElementById('xmlOutput');
+    const errorBanner = document.getElementById('errorBanner');
+    const errorText = document.getElementById('errorText');
+    const statsStrip = document.getElementById('statsStrip');
+    const modeSelect = document.getElementById('modeSelect');
+    const optStripComments = document.getElementById('optStripComments');
+    const xpathInput = document.getElementById('xpathInput');
+    const xpathHint = document.getElementById('xpathHint');
+    const xpathResults = document.getElementById('xpathResults');
+    const nsBadge = document.getElementById('nsBadge');
+    const inputPane = document.getElementById('inputPane');
+
+    let doc = null, nsMap = {}, lastOutput = '';
+    const esc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    const escAttr = s => esc(s).replace(/"/g, '&quot;');
+
+    // ---- parse with a useful error ----
+    function parse(text) {
+      const d = new DOMParser().parseFromString(text, 'application/xml');
+      const pe = d.getElementsByTagName('parsererror')[0];
+      if (!pe) return { doc: d };
+      // Chrome/WebKit put "error on line N at column M: message" in the text;
+      // Firefox puts location in a <sourcetext>. Extract what we can.
+      const msg = pe.textContent.replace(/\s+/g, ' ').trim();
+      const m = /line (\d+)(?: at column (\d+))?:?\s*(.*)/i.exec(msg);
+      let detail = msg;
+      if (m) {
+        const line = Number(m[1]), col = m[2] ? Number(m[2]) : null;
+        const src = text.split('\n')[line - 1] || '';
+        detail = `Line ${line}${col ? `, column ${col}` : ''}: ${m[3].replace(/Below is a rendering.*$/, '').trim()}\n${src.trim().slice(0, 160)}`;
+        // move the caret to the problem
+        const pos = text.split('\n').slice(0, line - 1).join('\n').length + (line > 1 ? 1 : 0) + Math.max(0, (col || 1) - 1);
+        try { xmlInput.setSelectionRange(pos, pos + 1); } catch (e) {}
+      }
+      return { error: detail };
+    }
+
+    // ---- serialiser: indent element-only content, leave text content alone ----
+    function serialize(node, indentUnit, depth, strip) {
+      const pad = indentUnit === null ? '' : indentUnit.repeat(depth);
+      const nl = indentUnit === null ? '' : '\n';
+      switch (node.nodeType) {
+        case 9: { // document
+          const parts = [];
+          for (const c of node.childNodes) { const s = serialize(c, indentUnit, 0, strip); if (s !== null) parts.push(s); }
+          return parts.join(nl);
+        }
+        case 1: { // element
+          const attrs = [...node.attributes].map(a => ` ${a.name}="${escAttr(a.value)}"`).join('');
+          const kids = [...node.childNodes].filter(c => !(strip && (c.nodeType === 8 || c.nodeType === 7)));
+          if (!kids.length) return `${pad}<${node.nodeName}${attrs}/>`;
+          const hasText = kids.some(c => (c.nodeType === 3 && c.nodeValue.trim()) || c.nodeType === 4);
+          if (hasText) {
+            // mixed or text content: preserve verbatim, inline
+            const inner = kids.map(c => serialize(c, null, 0, strip)).filter(s => s !== null).join('');
+            return `${pad}<${node.nodeName}${attrs}>${inner}</${node.nodeName}>`;
+          }
+          const inner = kids.filter(c => c.nodeType !== 3).map(c => serialize(c, indentUnit, depth + 1, strip)).filter(s => s !== null);
+          if (!inner.length) return `${pad}<${node.nodeName}${attrs}/>`;
+          return `${pad}<${node.nodeName}${attrs}>${nl}${inner.join(nl)}${nl}${pad}</${node.nodeName}>`;
+        }
+        case 3: return esc(node.nodeValue);
+        case 4: return `<![CDATA[${node.nodeValue}]]>`;
+        case 8: return strip ? null : `${pad}<!--${node.nodeValue}-->`;
+        case 7: return strip && node.target !== 'xml' ? null : `${pad}<?${node.target}${node.data ? ' ' + node.data : ''}?>`;
+        case 10: { const dt = node; return `${pad}<!DOCTYPE ${dt.name}${dt.publicId ? ` PUBLIC "${dt.publicId}"` : ''}${dt.systemId ? ` "${dt.systemId}"` : ''}>`; }
+        default: return null;
+      }
+    }
+    function minify(node) {
+      return serialize(node, null, 0, true).replace(/>\s+</g, '><');
+    }
+    // ---- XML -> JSON (readable convenience view) ----
+    function toJson(el) {
+      const out = {};
+      for (const a of el.attributes) out['@' + a.name] = a.value;
+      const text = [...el.childNodes].filter(c => c.nodeType === 3 || c.nodeType === 4).map(c => c.nodeValue).join('').trim();
+      const children = [...el.children];
+      if (!children.length) {
+        if (!el.attributes.length) return text;
+        if (text) out['#text'] = text;
+        return out;
+      }
+      for (const c of children) {
+        const v = toJson(c), k = c.nodeName;
+        if (k in out) { if (!Array.isArray(out[k])) out[k] = [out[k]]; out[k].push(v); } else out[k] = v;
+      }
+      if (text) out['#text'] = text;
+      return out;
+    }
+
+    function stats(d) {
+      let elements = 0, attributes = 0, textNodes = 0, comments = 0, depth = 0;
+      (function walk(n, dep) {
+        depth = Math.max(depth, dep);
+        for (const c of n.childNodes) {
+          if (c.nodeType === 1) { elements++; attributes += c.attributes.length; walk(c, dep + 1); }
+          else if (c.nodeType === 3 && c.nodeValue.trim()) textNodes++;
+          else if (c.nodeType === 8) comments++;
+        }
+      })(d, 0);
+      const decl = /^\s*<\?xml[^>]*encoding=["']([^"']+)/i.exec(xmlInput.value);
+      return `<span><strong>${elements.toLocaleString()}</strong> elements</span><span><strong>${attributes.toLocaleString()}</strong> attributes</span><span><strong>${textNodes.toLocaleString()}</strong> text nodes</span><span><strong>${comments}</strong> comments</span><span>depth <strong>${depth}</strong></span><span>root <strong>${esc(d.documentElement.nodeName)}</strong></span><span>${decl ? 'declared ' + esc(decl[1]) : 'no encoding declared'}</span>`;
+    }
+
+    function render() {
+      const text = xmlInput.value;
+      errorBanner.classList.remove('active');
+      if (!text.trim()) { doc = null; xmlOutput.textContent = ''; statsStrip.innerHTML = ''; xpathInput.disabled = true; nsBadge.textContent = ''; xpathResults.innerHTML = ''; return; }
+      const r = parse(text);
+      if (r.error) { doc = null; errorText.textContent = r.error; errorBanner.classList.add('active'); xmlOutput.textContent = ''; statsStrip.innerHTML = ''; xpathInput.disabled = true; nsBadge.textContent = ''; xpathResults.innerHTML = ''; return; }
+      doc = r.doc;
+      const mode = modeSelect.value, strip = optStripComments.checked;
+      if (mode === 'json') lastOutput = JSON.stringify({ [doc.documentElement.nodeName]: toJson(doc.documentElement) }, null, 2);
+      else if (mode === 'minify') lastOutput = minify(doc);
+      else lastOutput = serialize(doc, mode === 'tabs' ? '\t' : mode === 'pretty4' ? '    ' : '  ', 0, strip);
+      xmlOutput.textContent = lastOutput;
+      statsStrip.innerHTML = stats(doc);
+      // namespaces from the root
+      nsMap = {};
+      for (const a of doc.documentElement.attributes) {
+        if (a.name === 'xmlns') nsMap.ns = a.value;
+        else if (a.name.startsWith('xmlns:')) nsMap[a.name.slice(6)] = a.value;
+      }
+      nsBadge.innerHTML = Object.keys(nsMap).length ? Object.entries(nsMap).map(([p, u]) => `<span class="tag" title="${escAttr(u)}">${esc(p)}:</span>`).join(' ') : '<span class="muted">no namespaces</span>';
+      xpathInput.disabled = false;
+      runXPath();
+    }
+
+    // ---- XPath ----
+    function pathOf(n) {
+      if (n.nodeType === 2) return pathOf(n.ownerElement) + '/@' + n.name;
+      if (n.nodeType === 9) return '/';
+      if (n.nodeType !== 1) return pathOf(n.parentNode) + '/' + (n.nodeType === 3 ? 'text()' : n.nodeType === 8 ? 'comment()' : 'node()');
+      let i = 1, s = n.previousElementSibling;
+      while (s) { if (s.nodeName === n.nodeName) i++; s = s.previousElementSibling; }
+      const parent = n.parentNode && n.parentNode.nodeType === 1 ? pathOf(n.parentNode) : '';
+      return `${parent}/${n.nodeName}[${i}]`;
+    }
+    function runXPath() {
+      const q = xpathInput.value.trim();
+      xpathResults.innerHTML = '';
+      if (!doc || !q) { xpathHint.innerHTML = 'Prefixes declared on the root element are available; the default namespace is bound to <code>ns</code>.'; return; }
+      let res;
+      try {
+        res = doc.evaluate(q, doc, p => nsMap[p] || null, XPathResult.ANY_TYPE, null);
+      } catch (e) {
+        xpathHint.innerHTML = `<span class="bad">${esc(e.message.replace(/^Failed to execute 'evaluate' on 'Document': /, ''))}</span>`; return;
+      }
+      if (res.resultType === XPathResult.NUMBER_TYPE) { xpathHint.innerHTML = `number: <strong>${res.numberValue}</strong>`; return; }
+      if (res.resultType === XPathResult.STRING_TYPE) { xpathHint.innerHTML = `string: <strong>${esc(res.stringValue)}</strong>`; return; }
+      if (res.resultType === XPathResult.BOOLEAN_TYPE) { xpathHint.innerHTML = `boolean: <strong>${res.booleanValue}</strong>`; return; }
+      const nodes = []; let n;
+      while ((n = res.iterateNext()) && nodes.length < 500) nodes.push(n);
+      let tip = '';
+      // The classic empty result: an unprefixed name test against a document
+      // with a default namespace. Say so rather than leaving a silent zero.
+      if (!nodes.length && nsMap.ns && /(^|\/|\[)[A-Za-z_][\w.-]*(?=\s*[\/\[\]|]|$)/.test(q.replace(/[a-zA-Z_][\w.-]*:[A-Za-z_*]/g, 'p:x').replace(/@[\w.-]+/g, '@a').replace(/\w+\(/g, 'f('))) {
+        tip = ` — the document has a default namespace; try <code>${esc(q.replace(/(^|\/|\[)(?!ns:|@|\*|\.|text\(|node\(|comment\()([A-Za-z_][\w.-]*)(?![\w.-]*[:(])/g, '$1ns:$2'))}</code> or <code>local-name()</code>`;
+      }
+      xpathHint.innerHTML = `node set: <strong>${nodes.length}${nodes.length === 500 ? '+' : ''}</strong> node${nodes.length === 1 ? '' : 's'}${tip}`;
+      xpathResults.innerHTML = nodes.map((node, i) => {
+        let value;
+        if (node.nodeType === 1) value = serialize(node, '  ', 0, false);
+        else if (node.nodeType === 2) value = `${node.name}="${node.value}"`;
+        else value = node.nodeValue;
+        return `<div class="xp-row"><div class="xp-path">${i + 1}. ${esc(pathOf(node))}</div><pre class="xp-val">${esc(value.length > 1200 ? value.slice(0, 1200) + '…' : value)}</pre></div>`;
+      }).join('');
+    }
+
+    // ---- wiring ----
+    let t = null;
+    xmlInput.addEventListener('input', () => { clearTimeout(t); t = setTimeout(render, 80); });
+    modeSelect.addEventListener('change', render);
+    optStripComments.addEventListener('change', render);
+    xpathInput.addEventListener('input', runXPath);
+    document.getElementById('btnCopy').addEventListener('click', () => lastOutput && navigator.clipboard.writeText(lastOutput));
+    document.getElementById('btnDownload').addEventListener('click', () => { if (!lastOutput) return; const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([lastOutput], { type: modeSelect.value === 'json' ? 'application/json' : 'application/xml' })); a.download = modeSelect.value === 'json' ? 'converted.json' : 'formatted.xml'; a.click(); });
+    document.getElementById('btnClear').addEventListener('click', () => { xmlInput.value = ''; xpathInput.value = ''; render(); });
+    document.getElementById('btnSample').addEventListener('click', () => {
+      xmlInput.value = `<?xml version="1.0" encoding="UTF-8"?>\n<feed xmlns="http://www.w3.org/2005/Atom" xmlns:media="http://search.yahoo.com/mrss/"><title>Layerbit Engineering Guides</title><updated>2026-09-27T09:00:00Z</updated><!-- three most recent --><entry><id>urn:uuid:018f4a6c-9e3b-7c4d-8a2e-1f3b5c7d9e0f</id><title>Decoding a JWT Is Not Verifying It</title><link href="https://layerbit.co.in/guides/jwt-decode-vs-verify.html"/><published>2026-09-22T00:00:00Z</published><category term="security"/><media:thumbnail url="https://layerbit.co.in/og-image.png" width="1200" height="630"/><summary>Why a decoded payload proves nothing about who issued it &amp; what verification actually checks.</summary></entry><entry><id>urn:uuid:018f4a6c-9e3b-7c4d-8a2e-1f3b5c7d9e10</id><title>Why CSV Is Not Really a Format</title><link href="https://layerbit.co.in/guides/csv-edge-cases.html"/><published>2026-09-22T00:00:00Z</published><category term="data"/><summary><![CDATA[Quotes, embedded newlines & the "Excel dialect".]]></summary></entry></feed>`;
+      xpathInput.value = '//ns:entry[ns:category/@term="security"]/ns:title';
+      render();
+    });
+    fileInput.addEventListener('change', async e => { const f = e.target.files[0]; if (f) { xmlInput.value = await f.text(); render(); } });
+    inputPane.addEventListener('dragover', e => { e.preventDefault(); inputPane.classList.add('dragover'); });
+    inputPane.addEventListener('dragleave', () => inputPane.classList.remove('dragover'));
+    inputPane.addEventListener('drop', async e => { e.preventDefault(); inputPane.classList.remove('dragover'); const f = e.dataTransfer.files[0]; if (f) { xmlInput.value = await f.text(); render(); } });
+  </script>
+</body>
+</html>

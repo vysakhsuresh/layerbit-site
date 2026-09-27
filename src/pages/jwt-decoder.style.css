@@ -258,3 +258,17 @@
       .docs-container { gap: 20px; }
     }
   
+    /* v2.2: claim timeline + signer */
+    .claim-times { border-top: 1px solid rgba(255,255,255,0.06); padding: 10px 16px; display: flex; flex-direction: column; gap: 6px; font-size: 0.8em; }
+    .claim-times:empty { display: none; }
+    .claim-row { display: grid; grid-template-columns: 90px 1fr; gap: 10px; color: var(--text-muted); }
+    .claim-row span:first-child { color: var(--text-main); font-weight: 600; }
+    .claim-row.claim-bad span:last-child { color: #f59e0b; }
+    .signer-grid { display: grid; grid-template-columns: 180px 1fr; gap: 16px; }
+    .signer-actions { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; margin-top: 12px; }
+    .signer-actions .verify-hint { display: flex; align-items: center; gap: 6px; }
+    .signer-output { margin: 14px 0 0; padding: 12px 14px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; font-family: 'JetBrains Mono', monospace; font-size: 0.8em; white-space: pre-wrap; word-break: break-all; color: var(--text-main); }
+    .signer-output:empty { display: none; }
+    .signer-output.signer-bad { color: #f87171; }
+    select.verify-input { appearance: none; }
+    @media (max-width: 700px) { .signer-grid { grid-template-columns: 1fr; } .claim-row { grid-template-columns: 1fr; gap: 2px; } }

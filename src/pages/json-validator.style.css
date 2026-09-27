@@ -285,3 +285,18 @@
       .fab { bottom: 20px; left: 20px; width: 50px; height: 50px; }
     }
   
+    /* v2.1: sort toggle, stats strip, path query */
+    .toggle-wrapper { display: flex; align-items: center; gap: 6px; font-size: 0.8em; color: var(--text-muted); cursor: pointer; user-select: none; white-space: nowrap; }
+    .toggle-wrapper input { accent-color: var(--accent-main); width: 14px; height: 14px; cursor: pointer; }
+    .tool-strip { border-bottom: 1px solid rgba(255,255,255,0.06); background: rgba(0,0,0,0.15); padding: 10px 15px; display: flex; flex-direction: column; gap: 8px; }
+    .json-stats { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 0.78em; color: var(--text-muted); min-height: 1em; }
+    .json-stats strong { color: var(--text-main); font-weight: 600; }
+    .path-row { display: flex; align-items: center; gap: 10px; }
+    .path-row label { display: flex; align-items: center; gap: 5px; font-size: 0.8em; color: var(--text-muted); white-space: nowrap; }
+    .path-row label i { width: 14px; height: 14px; }
+    .path-row input { flex: 1; min-width: 0; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); color: var(--text-main); border-radius: 6px; padding: 6px 10px; font-family: 'JetBrains Mono', monospace; font-size: 0.82em; outline: none; }
+    .path-row input:focus { border-color: var(--accent-main); }
+    .path-row input:disabled { opacity: 0.5; }
+    .path-result { margin: 0; max-height: 160px; overflow: auto; font-family: 'JetBrains Mono', monospace; font-size: 0.8em; white-space: pre-wrap; word-break: break-word; color: var(--text-main); }
+    .path-result:empty { display: none; }
+    .path-result.path-miss { color: #f59e0b; }

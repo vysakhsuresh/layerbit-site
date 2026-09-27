@@ -74,7 +74,7 @@
 
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6072772587431629" crossorigin="anonymous"></script>
 
-  <script src="https://unpkg.com/lucide@1.39.0" async></script>
+  <script src="../js/vendor/lucide.min.js" async></script>
 
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet" />
   <link href="../layerbit-logo.png" rel="icon" type="image/x-icon" />
@@ -289,6 +289,12 @@
       .fab { bottom: 20px; left: 20px; width: 50px; height: 50px; }
     }
   
+    /* v2.1: delimiter control */
+    .mini-select { background: rgba(0,0,0,0.3); border: 1px solid var(--card-border); color: var(--text-main); border-radius: 6px; padding: 4px 8px; font-family: inherit; font-size: 0.95em; outline: none; cursor: pointer; }
+    .mini-select:focus { border-color: var(--accent-main); }
+    .mini-select option { background: #0a0c10; }
+    .delim-detected { font-size: 0.9em; color: var(--accent-main); }
+
   </style>
 </head>
 <body>
@@ -320,6 +326,16 @@
       <div class="pane-header">
         <div class="pane-title" id="inputPaneTitle"><i data-lucide="sheet"></i> Raw CSV Data</div>
         <div class="btn-group">
+          <label class="toggle-wrapper" id="delimWrapper" title="Field separator. Auto looks at the first lines and picks the most consistent one.">
+            <select id="delimSelect" class="mini-select">
+              <option value="auto" selected>Auto delimiter</option>
+              <option value=",">Comma ,</option>
+              <option value=";">Semicolon ;</option>
+              <option value="	">Tab</option>
+              <option value="|">Pipe |</option>
+            </select>
+            <span id="delimDetected" class="delim-detected"></span>
+          </label>
           <label class="toggle-wrapper" id="inferTypesWrapper" title="Automatically convert '123' to numbers and 'true' to booleans">
             <input type="checkbox" id="inferTypes" checked> Smart Types
           </label>
@@ -460,6 +476,7 @@
     <div class="info-panel">
       <h2><i data-lucide="git-commit"></i> Changelog</h2>
       <ul class="changelog-list">
+        <li><span class="changelog-tag">v2.1.0</span> Delimiter handling: automatic detection picks the separator that is most consistent across the first lines (comma, semicolon, tab or pipe), which is what European-locale exports from Excel need, and a manual override is a click away. A file that yields one column is now refused with a hint instead of producing a single mangled field.</li>
         <li><span class="changelog-tag">v1.5.0</span> Added a JSON &rarr; CSV reverse mode, building the header row from the union of keys across all objects so heterogeneous records don't lose columns.</li>
         <li><span class="changelog-tag">v1.4.0</span> Added direct-to-disk download capability for generating <code>.json</code> files natively in the browser.</li>
         <li><span class="changelog-tag">v1.3.5</span> Rewrote the CSV parsing engine to correctly handle multi-line strings and escaped quotes.</li>
@@ -526,6 +543,7 @@
         inputPaneTitle.innerHTML = '<i data-lucide="sheet"></i> Raw CSV Data';
         outputPaneTitle.innerHTML = '<i data-lucide="braces"></i> JSON Array';
         inferTypesWrapper.style.display = 'flex';
+        document.getElementById('delimWrapper').style.display = 'flex';
         csvFile.setAttribute('accept', '.csv');
         csvInput.placeholder = 'Paste CSV data or drag & drop a .csv file here...\n\nid,name,role,active\n1,John Doe,Admin,true\n2,"Smith, Jane",User,false';
         btnDownload.innerHTML = '<i data-lucide="download"></i> Save .json';
@@ -533,6 +551,7 @@
         inputPaneTitle.innerHTML = '<i data-lucide="braces"></i> Raw JSON Array';
         outputPaneTitle.innerHTML = '<i data-lucide="sheet"></i> CSV Data';
         inferTypesWrapper.style.display = 'none';
+        document.getElementById('delimWrapper').style.display = 'none';
         csvFile.setAttribute('accept', '.json');
         csvInput.placeholder = 'Paste a JSON array of objects here...\n\n[\n  { "id": 1, "name": "John Doe", "role": "Admin" },\n  { "id": 2, "name": "Smith, Jane", "role": "User" }\n]';
         btnDownload.innerHTML = '<i data-lucide="download"></i> Save .csv';
@@ -560,13 +579,38 @@
     }
 
     // Robust CSV Parser (Handles quoted commas and newlines)
-    function parseCSVToArray(text) {
+    // Picks the separator whose per-line count is both highest and most
+    // consistent across the first 20 lines - the property a real delimiter
+    // has and a stray character in the data does not.
+    function detectDelimiter(text) {
+      const lines = text.split(/\r?\n/).filter(l => l.trim()).slice(0, 20);
+      let best = ',', bestScore = -1;
+      for (const d of [',', ';', '\t', '|']) {
+        const counts = lines.map(l => { let n = 0, q = false; for (const ch of l) { if (ch === '"') q = !q; else if (ch === d && !q) n++; } return n; });
+        const mean = counts.reduce((a, b) => a + b, 0) / (counts.length || 1);
+        if (mean === 0) continue;
+        const variance = counts.reduce((a, b) => a + (b - mean) ** 2, 0) / counts.length;
+        const score = mean / (1 + variance);
+        if (score > bestScore) { bestScore = score; best = d; }
+      }
+      return best;
+    }
+    const DELIM_NAMES = { ',': 'comma', ';': 'semicolon', '\t': 'tab', '|': 'pipe' };
+    function currentDelimiter(text) {
+      const sel = document.getElementById('delimSelect').value;
+      const d = sel === 'auto' ? detectDelimiter(text) : sel;
+      document.getElementById('delimDetected').textContent = sel === 'auto' && text ? `→ ${DELIM_NAMES[d]}` : '';
+      return d;
+    }
+
+    function parseCSVToArray(text, delim) {
+      delim = delim || ',';
       let p = '', row = [''], ret = [row], i = 0, r = 0, s = !0, l;
       for (l of text) {
         if ('"' === l) {
           if (s && l === p) row[i] += l;
           s = !s;
-        } else if (',' === l && s) l = row[++i] = '';
+        } else if (delim === l && s) l = row[++i] = '';
         else if ('\n' === l && s) {
           if ('\r' === p) row[i] = row[i].slice(0, -1);
           row = ret[++r] = [l = '']; i = 0;
@@ -601,8 +645,12 @@
       }
 
       try {
-        const rows = parseCSVToArray(input);
+        const delim = currentDelimiter(input);
+        const rows = parseCSVToArray(input, delim);
         if (rows.length < 2) throw new Error("CSV requires at least a header row and one data row.");
+        if (rows[0].length === 1 && /[;\t|]/.test(rows[0][0])) {
+          throw new Error(`Only one column was found with the ${DELIM_NAMES[delim]} delimiter - the data looks separated by something else. Change the delimiter.`);
+        }
 
         const headers = rows[0].map(h => h.trim());
         const jsonArray = [];

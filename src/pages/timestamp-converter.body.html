@@ -1,0 +1,340 @@
+{{HEADER}}
+
+  <main class="hero">
+    <div class="hero-badge"><i data-lucide="shield-check"></i> Runs entirely in your browser</div>
+    <h1>Unix Timestamp Converter</h1>
+    <p>Epoch seconds, milliseconds, microseconds or nanoseconds to a readable date and back — with time zones, ISO 8601 and RFC 2822 forms, relative time, week numbers and date arithmetic. Units are detected from the number's size.</p>
+  </main>
+
+  <div class="now-strip" id="nowStrip">
+    <div><span class="now-label">Now (seconds)</span><code id="nowSec">–</code><button class="copy-btn" data-copy="nowSec" type="button" title="Copy"><i data-lucide="copy"></i></button></div>
+    <div><span class="now-label">Now (milliseconds)</span><code id="nowMs">–</code><button class="copy-btn" data-copy="nowMs" type="button" title="Copy"><i data-lucide="copy"></i></button></div>
+    <div><span class="now-label">Now (ISO 8601 UTC)</span><code id="nowIso">–</code><button class="copy-btn" data-copy="nowIso" type="button" title="Copy"><i data-lucide="copy"></i></button></div>
+  </div>
+
+  <div class="ide-container wide-right">
+    <div class="pane">
+      <div class="pane-header">
+        <div class="pane-title"><i data-lucide="calendar-clock"></i> Input</div>
+        <div class="btn-group">
+          <button class="btn" id="btnNow" type="button"><i data-lucide="timer"></i> Now</button>
+          <button class="btn" id="btnClear" type="button"><i data-lucide="trash-2"></i> Clear</button>
+        </div>
+      </div>
+      <div class="pane-body">
+        <div class="field">
+          <label for="tsInput"><i data-lucide="text-cursor-input"></i> Timestamp or date</label>
+          <input type="text" id="tsInput" class="text-input" placeholder="1727438400  ·  1727438400000  ·  2026-09-27T12:00:00Z  ·  Sat, 27 Sep 2026 12:00:00 GMT  ·  2026-09-27 15:30" autocomplete="off" spellcheck="false">
+          <div class="hint" id="parseHint">A bare number is treated as seconds, milliseconds, microseconds or nanoseconds depending on its size. A date without a zone is read in the zone selected below.</div>
+        </div>
+        <div class="field">
+          <label for="tzSelect"><i data-lucide="globe"></i> Time zone for display and for zone-less input</label>
+          <select id="tzSelect" class="select-input"></select>
+        </div>
+        <div class="field">
+          <label><i data-lucide="calculator"></i> Add or subtract</label>
+          <div class="row">
+            <input type="number" id="deltaN" class="text-input" value="0" step="1">
+            <select id="deltaUnit" class="select-input">
+              <option value="second">seconds</option><option value="minute">minutes</option><option value="hour">hours</option><option value="day" selected>days</option><option value="week">weeks</option><option value="month">months</option><option value="year">years</option>
+            </select>
+          </div>
+          <div class="hint" id="deltaResult"></div>
+        </div>
+        <div class="field">
+          <label for="diffInput"><i data-lucide="arrow-left-right"></i> Difference to another timestamp</label>
+          <input type="text" id="diffInput" class="text-input" placeholder="1730000000 or any date" autocomplete="off" spellcheck="false">
+          <div class="hint" id="diffResult"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="pane">
+      <div class="pane-header">
+        <div class="pane-title"><i data-lucide="list-checks"></i> Every form of the same instant</div>
+        <div class="btn-group"><button class="btn" id="btnCopyAll" type="button" disabled><i data-lucide="copy"></i> Copy all</button></div>
+      </div>
+      <div class="error-banner" id="errorBanner"><i data-lucide="triangle-alert"></i><span id="errorText"></span></div>
+      <div class="pane-body">
+        <dl class="kv-grid" id="resultGrid"><dt>Waiting</dt><dd class="muted">Enter a timestamp or date, or press Now.</dd></dl>
+        <table class="data-table" id="zoneTable" style="display:none;">
+          <thead><tr><th>Zone</th><th>Local time</th><th>Offset</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="docs-container">
+    <div class="info-panel">
+      <h2><i data-lucide="book-open"></i> What a Unix timestamp actually is</h2>
+      <p>A Unix timestamp is a count of seconds since 00:00:00 UTC on 1 January 1970, ignoring leap seconds. It has no time zone: <code>1727438400</code> is the same instant in Dubai, London and São Paulo, and only turns into a wall-clock time once you choose a zone. That is precisely why it is the format systems exchange — and precisely why bugs appear when one side assumes the timestamp is "local".</p>
+
+      <div class="use-cases-grid">
+        <div class="use-case-card">
+          <h3><i data-lucide="ruler"></i> Seconds or milliseconds?</h3>
+          <p>The most common conversion bug is a factor of a thousand. Unix, most databases and JWT claims use seconds; JavaScript's <code>Date.now()</code>, Java's <code>System.currentTimeMillis()</code> and most JSON APIs use milliseconds; some tracing systems use microseconds or nanoseconds. This tool detects the unit from the number's magnitude — a 10-digit number is seconds, 13 is milliseconds — and says which it assumed, so a value that decodes to the year 56,000 is caught immediately.</p>
+        </div>
+        <div class="use-case-card">
+          <h3><i data-lucide="file-text"></i> ISO 8601 and RFC 3339</h3>
+          <p><code>2026-09-27T12:00:00Z</code> is the interchange form: unambiguous, sortable as a string, and parsed by every language. The trailing <code>Z</code> means UTC; <code>+04:00</code> is an offset. A value without either is ambiguous, and JavaScript treats the date-only form <code>2026-09-27</code> as UTC but the date-time form <code>2026-09-27T12:00</code> as local — a distinction that has produced a great many off-by-a-day bugs.</p>
+        </div>
+        <div class="use-case-card">
+          <h3><i data-lucide="mail"></i> RFC 2822 / HTTP dates</h3>
+          <p><code>Sat, 27 Sep 2026 12:00:00 GMT</code> is the form in email headers, HTTP <code>Date</code>, <code>Last-Modified</code> and <code>Expires</code> headers, and cookies. HTTP requires GMT specifically. It is shown here so you can paste it straight into a cache header or compare it with what a server sent.</p>
+        </div>
+        <div class="use-case-card">
+          <h3><i data-lucide="calendar-days"></i> Weeks, quarters and day-of-year</h3>
+          <p>ISO 8601 week numbers start on Monday and week 1 is the week containing the first Thursday, which means 1 January can belong to week 52 or 53 of the previous year. The result shows the ISO week and week-year together, because reporting code that uses the calendar year with the ISO week produces wrong figures every December and January.</p>
+        </div>
+      </div>
+
+      <h2><i data-lucide="alert-triangle"></i> The 2038 problem, and other limits</h2>
+      <p>A signed 32-bit integer runs out at <code>2,147,483,647</code> seconds — 03:14:07 UTC on 19 January 2038. Systems that still store timestamps in 32 bits (embedded devices, old file systems, some database columns) wrap to 1901 at that moment. The converter flags any value beyond the 32-bit range. JavaScript's own <code>Date</code> covers ±8.64 × 10<sup>15</sup> milliseconds, about ±273,000 years, so inputs beyond that are refused rather than silently corrupted.</p>
+      <p>Negative timestamps are valid and mean before 1970: <code>-86400</code> is 31 December 1969. Not every system accepts them — MySQL's <code>TIMESTAMP</code> column does not — so if you store dates before 1970 in a Unix column, check the column type first.</p>
+
+      <h2><i data-lucide="globe"></i> Time zones are not offsets</h2>
+      <p>An offset like <code>+04:00</code> is a fixed number; a zone like <code>Asia/Dubai</code> is a set of rules that say what the offset is at any given moment, including daylight-saving changes and historical reforms. Dubai's rules are simple (permanently +04:00); <code>Europe/London</code> switches between +00:00 and +01:00 twice a year, and the switch dates themselves have changed over the decades. Store instants as UTC, store the zone name alongside when you need to reproduce a wall-clock time, and never store an offset thinking it is a zone. The zone table above uses the browser's own tz database through <code>Intl.DateTimeFormat</code>, which is how it can show the correct offset for a date years in the past.</p>
+
+      <h2><i data-lucide="code"></i> Getting the current timestamp in common languages</h2>
+      <table>
+        <thead><tr><th>Language</th><th>Seconds</th><th>Milliseconds</th></tr></thead>
+        <tbody>
+          <tr><td>JavaScript</td><td><code>Math.floor(Date.now() / 1000)</code></td><td><code>Date.now()</code></td></tr>
+          <tr><td>Python</td><td><code>int(time.time())</code></td><td><code>int(time.time() * 1000)</code></td></tr>
+          <tr><td>Go</td><td><code>time.Now().Unix()</code></td><td><code>time.Now().UnixMilli()</code></td></tr>
+          <tr><td>Java / Kotlin</td><td><code>Instant.now().getEpochSecond()</code></td><td><code>System.currentTimeMillis()</code></td></tr>
+          <tr><td>C#</td><td><code>DateTimeOffset.UtcNow.ToUnixTimeSeconds()</code></td><td><code>DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()</code></td></tr>
+          <tr><td>PHP</td><td><code>time()</code></td><td><code>(int) (microtime(true) * 1000)</code></td></tr>
+          <tr><td>Shell</td><td><code>date +%s</code></td><td><code>date +%s%3N</code> (GNU)</td></tr>
+          <tr><td>PostgreSQL</td><td><code>extract(epoch from now())::bigint</code></td><td><code>(extract(epoch from now()) * 1000)::bigint</code></td></tr>
+          <tr><td>MySQL</td><td><code>UNIX_TIMESTAMP()</code></td><td><code>ROUND(UNIX_TIMESTAMP(NOW(3)) * 1000)</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="info-panel">
+      <h2><i data-lucide="help-circle"></i> Frequently asked questions</h2>
+      <div class="faq-container">
+        <div class="faq-item">
+          <button class="faq-question">How does the tool know whether my number is seconds or milliseconds? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>By its size. Current Unix time in seconds is a 10-digit number, in milliseconds 13 digits, in microseconds 16 and in nanoseconds 19. The tool picks the unit whose range contains the number and states the assumption next to the result. If a value was genuinely meant as seconds but is 13 digits long, it would represent a date tens of thousands of years away, which is almost never what anyone intended.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">Why does my date come out one day earlier or later than expected? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>Usually a time zone boundary. A timestamp at 23:30 UTC on the 27th is already the 28th in Dubai and still the 27th in New York. If you were converting a date-only string, note that JavaScript and many libraries interpret "2026-09-27" as midnight UTC, which is the evening of the 26th in the Americas. Choose the zone you actually mean in the selector, and compare the UTC and zone rows in the result.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">Do Unix timestamps include leap seconds? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>No. Unix time is defined as if every day has exactly 86,400 seconds, so a leap second is absorbed by repeating or stretching a second rather than adding a count. That keeps day arithmetic simple — a day is always 86,400 — at the cost of Unix time being 27 seconds behind the atomic TAI scale as of 2026. For almost all software this is the right trade and can be ignored.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">What is the year 2038 problem? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>Systems that store Unix time in a signed 32-bit integer can only count up to 2,147,483,647 seconds, which is 19 January 2038 at 03:14:07 UTC. One second later the value overflows to a large negative number, which reads as December 1901. Modern operating systems use 64-bit time, but embedded firmware, older file formats and some database schemas do not. The tool marks any timestamp beyond the 32-bit range so you can see which values would be affected.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">Which timestamp should I store in my database? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>Store the instant in UTC, using a proper timestamp type (PostgreSQL timestamptz, an integer of epoch seconds or milliseconds) rather than a string. If you need to reproduce the wall-clock time a user saw — an appointment at 9 am in their city — store the IANA zone name alongside, not the offset, because the offset for that zone may change before the date arrives. Convert to local time only at the point of display.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">Is my input sent to a server? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>No. Parsing, conversion and the time-zone table are computed in the page with JavaScript's Date and Intl APIs, which carry their own time-zone database. There is no request to any server, which you can confirm in the Network tab of your browser's developer tools, or by using the page after disconnecting from the internet.</p></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="info-panel">
+      <h2><i data-lucide="git-commit"></i> Changelog</h2>
+      <ul class="changelog-list">
+        <li><span class="changelog-tag">v1.0.0</span> Initial release: unit auto-detection (s/ms/µs/ns), ISO 8601, RFC 2822, any IANA zone with a multi-zone table, relative time, ISO week and week-year, quarter, day of year, 32-bit range warning, date arithmetic and difference between two timestamps.</li>
+      </ul>
+    </div>
+  </div>
+
+  <a id="smartBackBtn" class="fab home-fab-premium" aria-label="Command Center" title="Command Center" href="../">
+    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="filter: drop-shadow(0 0 8px rgba(56, 189, 248, 0.5));">
+      <path d="M12 2L2 7l10 5 10-5-10-5z" stroke="#38bdf8" stroke-width="2" stroke-linejoin="round" fill="rgba(56,189,248,0.2)"/>
+      <path d="M2 17l10 5 10-5M2 12l10 5 10-5" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </a>
+
+  {{FOOTER}}
+
+  <script src="../js/shared.js"></script>
+
+  <script>
+    const tsInput = document.getElementById('tsInput');
+    const parseHint = document.getElementById('parseHint');
+    const tzSelect = document.getElementById('tzSelect');
+    const resultGrid = document.getElementById('resultGrid');
+    const zoneTable = document.getElementById('zoneTable');
+    const errorBanner = document.getElementById('errorBanner');
+    const errorText = document.getElementById('errorText');
+    const deltaN = document.getElementById('deltaN'), deltaUnit = document.getElementById('deltaUnit'), deltaResult = document.getElementById('deltaResult');
+    const diffInput = document.getElementById('diffInput'), diffResult = document.getElementById('diffResult');
+    const btnCopyAll = document.getElementById('btnCopyAll');
+
+    // ---- zone plumbing via Intl ----
+    const localZone = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
+    (function populateZones() {
+      let zones = [];
+      try { zones = Intl.supportedValuesOf('timeZone'); } catch (e) { zones = ['UTC', 'Asia/Dubai', 'Asia/Kolkata', 'Europe/London', 'America/New_York']; }
+      tzSelect.add(new Option('UTC', 'UTC'));
+      if (localZone !== 'UTC') tzSelect.add(new Option(`${localZone} (browser)`, localZone));
+      zones.filter(z => z !== 'UTC' && z !== localZone).forEach(z => tzSelect.add(new Option(z, z)));
+      try { tzSelect.value = localStorage.getItem('layerbit-ts-tz') || localZone; } catch (e) { tzSelect.value = localZone; }
+    })();
+    function partsIn(ms, tz) {
+      const f = new Intl.DateTimeFormat('en-US', { timeZone: tz, hourCycle: 'h23', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit', weekday: 'short' });
+      const o = {}; f.formatToParts(new Date(ms)).forEach(p => o[p.type] = p.value); return o;
+    }
+    function offsetMinutes(ms, tz) {
+      const p = partsIn(ms, tz);
+      const asUtc = Date.UTC(+p.year, +p.month - 1, +p.day, +p.hour % 24, +p.minute, +p.second);
+      return Math.round((asUtc - Math.floor(ms / 1000) * 1000) / 60000);
+    }
+    const fmtOffset = m => `${m < 0 ? '-' : '+'}${String(Math.floor(Math.abs(m) / 60)).padStart(2, '0')}:${String(Math.abs(m) % 60).padStart(2, '0')}`;
+    function zoneAbbrev(ms, tz) {
+      try { return new Intl.DateTimeFormat('en-US', { timeZone: tz, timeZoneName: 'short' }).formatToParts(new Date(ms)).find(p => p.type === 'timeZoneName').value; } catch (e) { return ''; }
+    }
+    function wallToInstant(y, mo, d, h, mi, s, tz) {
+      const guess = Date.UTC(y, mo - 1, d, h, mi, s);
+      const off1 = offsetMinutes(guess, tz);
+      const inst = guess - off1 * 60000;
+      const off2 = offsetMinutes(inst, tz);
+      return guess - off2 * 60000;
+    }
+
+    // ---- parsing ----
+    // Returns {ms, note} or throws.
+    function parseInput(raw) {
+      const s = raw.trim();
+      if (!s) throw new Error('empty');
+      const tz = tzSelect.value;
+      if (/^-?\d+(\.\d+)?$/.test(s)) {
+        const n = Number(s), a = Math.abs(n);
+        let ms, unit;
+        if (a < 1e11) { ms = n * 1000; unit = 'seconds'; }
+        else if (a < 1e14) { ms = n; unit = 'milliseconds'; }
+        else if (a < 1e17) { ms = n / 1000; unit = 'microseconds'; }
+        else { ms = n / 1e6; unit = 'nanoseconds'; }
+        if (!isFinite(ms) || Math.abs(ms) > 8.64e15) throw new Error('That value is outside the range JavaScript dates can represent (about ±273,000 years).');
+        return { ms, note: `read as ${unit} (${s.replace('-', '').length} digits)` };
+      }
+      // date-time without zone: interpret in the selected zone
+      let m = /^(\d{4})-(\d{2})-(\d{2})(?:[T ](\d{2}):(\d{2})(?::(\d{2})(?:\.(\d{1,9}))?)?)?$/.exec(s);
+      if (m) {
+        const [y, mo, d, h = 0, mi = 0, sec = 0, frac = ''] = m.slice(1).map((v, i) => i === 6 ? (v || '') : (v === undefined ? 0 : Number(v)));
+        const ms = wallToInstant(y, mo, d, h, mi, sec, tz) + Math.round(Number('0.' + (frac || '0')) * 1000);
+        return { ms, note: `no zone given, read as ${tz}` };
+      }
+      const d = new Date(s);
+      if (isNaN(d.getTime())) throw new Error(`Could not parse "${s}". Try epoch seconds, ISO 8601 (2026-09-27T12:00:00Z), or RFC 2822 (Sat, 27 Sep 2026 12:00:00 GMT).`);
+      return { ms: d.getTime(), note: /[zZ]$|[+-]\d{2}:?\d{2}$|GMT|UTC/.test(s) ? 'zone taken from the input' : 'parsed by the browser; zone-less forms use your browser zone' };
+    }
+
+    // ---- calendar helpers (all in UTC fields of a shifted date) ----
+    function isoWeek(y, mo, d) {
+      const date = new Date(Date.UTC(y, mo - 1, d));
+      const day = (date.getUTCDay() + 6) % 7; // Mon=0
+      date.setUTCDate(date.getUTCDate() - day + 3); // Thursday of this week
+      const weekYear = date.getUTCFullYear();
+      const jan4 = new Date(Date.UTC(weekYear, 0, 4));
+      const week = 1 + Math.round(((date - jan4) / 86400000 - 3 + ((jan4.getUTCDay() + 6) % 7)) / 7);
+      return { week, weekYear };
+    }
+    function dayOfYear(y, mo, d) { return Math.round((Date.UTC(y, mo - 1, d) - Date.UTC(y, 0, 1)) / 86400000) + 1; }
+    function relative(ms) {
+      const d = (ms - Date.now()) / 1000, a = Math.abs(d);
+      const units = [[31557600, 'year'], [2629800, 'month'], [604800, 'week'], [86400, 'day'], [3600, 'hour'], [60, 'minute'], [1, 'second']];
+      for (const [sec, name] of units) if (a >= sec || name === 'second') { const n = Math.floor(a / sec); return `${n} ${name}${n === 1 ? '' : 's'} ${d < 0 ? 'ago' : 'from now'}`; }
+    }
+    const pad = n => String(n).padStart(2, '0');
+    function fmtZone(ms, tz) { const p = partsIn(ms, tz); return `${p.weekday} ${p.year}-${p.month}-${p.day} ${p.hour}:${p.minute}:${p.second}`; }
+
+    let currentMs = null;
+    function render() {
+      const raw = tsInput.value;
+      errorBanner.classList.remove('active');
+      if (!raw.trim()) { currentMs = null; resultGrid.innerHTML = '<dt>Waiting</dt><dd class="muted">Enter a timestamp or date, or press Now.</dd>'; zoneTable.style.display = 'none'; btnCopyAll.disabled = true; parseHint.textContent = 'A bare number is treated as seconds, milliseconds, microseconds or nanoseconds depending on its size. A date without a zone is read in the zone selected below.'; updateDelta(); updateDiff(); return; }
+      let r;
+      try { r = parseInput(raw); } catch (e) { currentMs = null; errorText.textContent = e.message; errorBanner.classList.add('active'); btnCopyAll.disabled = true; return; }
+      currentMs = r.ms; parseHint.textContent = r.note;
+      const ms = r.ms, tz = tzSelect.value, d = new Date(ms);
+      const sec = Math.floor(ms / 1000);
+      const p = partsIn(ms, tz), off = offsetMinutes(ms, tz);
+      const { week, weekYear } = isoWeek(+p.year, +p.month, +p.day);
+      const rows = [];
+      rows.push(['Epoch seconds', `${sec}` + (Math.abs(sec) > 2147483647 ? ' <span class="tag warn">outside signed 32-bit range (year 2038 problem)</span>' : '')]);
+      rows.push(['Epoch milliseconds', `${Math.floor(ms)}`]);
+      rows.push(['ISO 8601 (UTC)', d.toISOString()]);
+      rows.push(['RFC 2822 / HTTP', d.toUTCString()]);
+      rows.push([`In ${tz}`, `${fmtZone(ms, tz)} <span class="tag">${fmtOffset(off)} ${zoneAbbrev(ms, tz)}</span>`]);
+      rows.push(['ISO 8601 with offset', `${p.year}-${p.month}-${p.day}T${p.hour}:${p.minute}:${p.second}${fmtOffset(off)}`]);
+      rows.push(['Relative', relative(ms)]);
+      rows.push(['ISO week', `${weekYear}-W${pad(week)}` + (weekYear !== +p.year ? ` <span class="tag warn">week-year ${weekYear} ≠ calendar year ${p.year}</span>` : '')]);
+      rows.push(['Day of year', `${dayOfYear(+p.year, +p.month, +p.day)} · Q${Math.ceil(+p.month / 3)} · ${p.weekday}`]);
+      rows.push(['Unix date command', `date -u -d @${sec}`]);
+      resultGrid.innerHTML = rows.map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join('');
+      // zone table
+      const zones = ['UTC', 'America/Los_Angeles', 'America/New_York', 'Europe/London', 'Europe/Berlin', 'Asia/Dubai', 'Asia/Kolkata', 'Asia/Singapore', 'Asia/Tokyo', 'Australia/Sydney'];
+      if (!zones.includes(tz)) zones.splice(1, 0, tz);
+      if (!zones.includes(localZone)) zones.splice(1, 0, localZone);
+      zoneTable.querySelector('tbody').innerHTML = zones.map(z => { const o = offsetMinutes(ms, z); return `<tr${z === tz ? ' class="flag"' : ''}><td class="muted">${z}</td><td>${fmtZone(ms, z)}</td><td>${fmtOffset(o)} <span class="muted">${zoneAbbrev(ms, z)}</span></td></tr>`; }).join('');
+      zoneTable.style.display = '';
+      btnCopyAll.disabled = false;
+      updateDelta(); updateDiff();
+    }
+    function updateDelta() {
+      const n = Number(deltaN.value) || 0;
+      if (currentMs === null || !n) { deltaResult.textContent = ''; return; }
+      const tz = tzSelect.value, p = partsIn(currentMs, tz), u = deltaUnit.value;
+      let ms;
+      if (u === 'month' || u === 'year') {
+        // calendar arithmetic in the chosen zone, clamping the day (Jan 31 + 1 month = Feb 28/29)
+        let y = +p.year, mo = +p.month;
+        if (u === 'month') { mo += n; } else { y += n; }
+        y += Math.floor((mo - 1) / 12); mo = ((mo - 1) % 12 + 12) % 12 + 1;
+        const lastDay = new Date(Date.UTC(y, mo, 0)).getUTCDate();
+        ms = wallToInstant(y, mo, Math.min(+p.day, lastDay), +p.hour, +p.minute, +p.second, tz);
+      } else {
+        const secs = { second: 1, minute: 60, hour: 3600, day: 86400, week: 604800 }[u];
+        ms = currentMs + n * secs * 1000;
+      }
+      deltaResult.innerHTML = `${n > 0 ? '+' : ''}${n} ${u}${Math.abs(n) === 1 ? '' : 's'} → <strong>${Math.floor(ms / 1000)}</strong> · ${new Date(ms).toISOString()} · ${fmtZone(ms, tz)} ${tz}` + ((u === 'day' || u === 'week') && offsetMinutes(ms, tz) !== offsetMinutes(currentMs, tz) ? ' <span class="warn">(crosses a DST change; the wall-clock hour shifts)</span>' : '');
+    }
+    function updateDiff() {
+      const raw = diffInput.value.trim();
+      if (currentMs === null || !raw) { diffResult.textContent = ''; return; }
+      let other;
+      try { other = parseInput(raw).ms; } catch (e) { diffResult.innerHTML = `<span class="bad">${e.message}</span>`; return; }
+      const diff = other - currentMs, a = Math.abs(diff) / 1000;
+      const days = Math.floor(a / 86400), h = Math.floor((a % 86400) / 3600), m = Math.floor((a % 3600) / 60), s = Math.floor(a % 60);
+      diffResult.innerHTML = `${diff >= 0 ? 'later by' : 'earlier by'} <strong>${days}d ${h}h ${m}m ${s}s</strong> = ${Math.round(a)} s = ${(a / 86400).toFixed(3)} days`;
+    }
+
+    // live clock
+    function tick() {
+      const now = Date.now();
+      document.getElementById('nowSec').textContent = Math.floor(now / 1000);
+      document.getElementById('nowMs').textContent = now;
+      document.getElementById('nowIso').textContent = new Date(now).toISOString();
+    }
+    tick(); setInterval(tick, 1000);
+
+    tsInput.addEventListener('input', render);
+    tzSelect.addEventListener('change', () => { try { localStorage.setItem('layerbit-ts-tz', tzSelect.value); } catch (e) {} render(); });
+    deltaN.addEventListener('input', updateDelta); deltaUnit.addEventListener('change', updateDelta);
+    diffInput.addEventListener('input', updateDiff);
+    document.getElementById('btnNow').addEventListener('click', () => { tsInput.value = String(Math.floor(Date.now() / 1000)); render(); });
+    document.getElementById('btnClear').addEventListener('click', () => { tsInput.value = ''; diffInput.value = ''; deltaN.value = 0; render(); });
+    btnCopyAll.addEventListener('click', async () => {
+      const lines = [...resultGrid.querySelectorAll('dt')].map((dt, i) => `${dt.textContent}: ${resultGrid.querySelectorAll('dd')[i].textContent.trim()}`);
+      await navigator.clipboard.writeText(lines.join('\n'));
+      btnCopyAll.innerHTML = '<i data-lucide="check"></i> Copied'; if (window.lucide) lucide.createIcons();
+      setTimeout(() => { btnCopyAll.innerHTML = '<i data-lucide="copy"></i> Copy all'; if (window.lucide) lucide.createIcons(); }, 1500);
+    });
+    document.querySelectorAll('.copy-btn[data-copy]').forEach(b => b.addEventListener('click', () => navigator.clipboard.writeText(document.getElementById(b.dataset.copy).textContent)));
+    const q = new URLSearchParams(location.search).get('t');
+    if (q) { tsInput.value = q; render(); }
+  </script>

@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Generate UUID v4, v7, v5 and ULIDs in bulk, and decode any UUID or ULID to its version, variant and embedded timestamp. Cryptographically random, generated locally in your browser." />
+  <title>UUID & ULID Generator and Decoder (v4, v7, v5) - Layerbit</title>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-ERX8MNPPP5"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-ERX8MNPPP5');
+  </script>
+  <link rel="canonical" href="https://layerbit.co.in/tools/uuid-generator.html" />
+  <meta name="robots" content="max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://layerbit.co.in/tools/uuid-generator.html" />
+  <meta property="og:site_name" content="Layerbit" />
+  <meta property="og:title" content="UUID & ULID Generator and Decoder (v4, v7, v5) - Layerbit" />
+  <meta property="og:description" content="Generate UUID v4, v7, v5 and ULIDs in bulk, and decode any UUID or ULID to its version, variant and embedded timestamp. Cryptographically random, generated locally in your browser." />
+  <meta property="og:image" content="https://layerbit.co.in/og-image.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="Layerbit - free browser-based developer tools" />
+  <meta property="og:locale" content="en" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="UUID & ULID Generator and Decoder (v4, v7, v5) - Layerbit" />
+  <meta name="twitter:description" content="Generate UUID v4, v7, v5 and ULIDs in bulk, and decode any UUID or ULID to its version, variant and embedded timestamp. Cryptographically random, generated locally in your browser." />
+  <meta name="twitter:image" content="https://layerbit.co.in/og-image.png" />
+  <meta name="twitter:image:alt" content="Layerbit - free browser-based developer tools" />
+  <meta name="theme-color" content="#0a0c10" />
+  <script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "SoftwareApplication",
+      "@id": "https://layerbit.co.in/tools/uuid-generator.html#app",
+      "name": "UUID \u0026 ULID Generator",
+      "url": "https://layerbit.co.in/tools/uuid-generator.html",
+      "description": "Generate UUID v4, v7, v5 and ULIDs in bulk, and decode any UUID or ULID to its version, variant and embedded timestamp. Cryptographically random, generated locally in your browser.",
+      "applicationCategory": "DeveloperApplication",
+      "operatingSystem": "Any (runs in the browser)",
+      "browserRequirements": "Requires JavaScript",
+      "isAccessibleForFree": true,
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "keywords": "uuid generator, uuid v7, ulid generator, uuid decoder, uuid v5 namespace, guid generator",
+      "publisher": {
+        "@id": "https://layerbit.co.in/#organization"
+      },
+      "datePublished": "2026-09-27"
+    },
+    {
+      "@type": "BreadcrumbList",
+      "@id": "https://layerbit.co.in/tools/uuid-generator.html#breadcrumb",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://layerbit.co.in/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Tools",
+          "item": "https://layerbit.co.in/blog.html"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": "UUID \u0026 ULID Generator",
+          "item": "https://layerbit.co.in/tools/uuid-generator.html"
+        }
+      ]
+    },
+    {
+      "@type": "FAQPage",
+      "@id": "https://layerbit.co.in/tools/uuid-generator.html#faq",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "Are these UUIDs unique? Could two people get the same one?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "A v4 UUID has 122 random bits from a cryptographic generator. The chance that any two of a billion such ids collide is about 1 in 2.7 quintillion; you would need to generate roughly 2.7 quintillion ids before a duplicate became likely. Nothing is checked against a central registry, and nothing needs to be — the probability is what guarantees uniqueness. The same reasoning applies to the 74 or 80 random bits in a v7 or ULID generated within the same millisecond."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What is the difference between a UUID and a GUID?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Nothing in the value. GUID is Microsoft's name for the same 128-bit identifier, and modern GUIDs use the same RFC 4122 layout. Two historical differences remain: Microsoft tools often print them uppercase and in braces, and very old COM GUIDs used a different variant (the \"Microsoft\" or \"NCS\" variant bits), which the decoder reports if it sees one. A value produced by .NET's Guid.NewGuid() is a valid v4 UUID."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Should I use v4 or v7 for a database primary key?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "v7, for any new table. Its leading timestamp makes ids increase over time, so inserts append to the end of a B-tree index instead of splitting pages at random positions, which is the cause of the well-known write slowdown with v4 keys in MySQL and SQL Server. The only reason to prefer v4 is if revealing the row's creation time is a problem for your application, since anyone with the id can read the timestamp."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Can I extract the creation time from a UUID?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "From a v7 or a ULID, yes: the first 48 bits are a Unix millisecond timestamp and the decoder shows it. From a v1 or v6, also yes, as a count of 100-nanosecond intervals since 15 October 1582, which the decoder converts. From a v4, v3 or v5, no — those contain no time information at all, and there is no way to learn when they were made."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How does a v5 UUID work and when would I use one?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "A v5 is SHA-1(namespace UUID bytes + name bytes) with the version and variant bits overwritten, truncated to 128 bits. It is deterministic: the same namespace and name always produce the same UUID, in any language. Use it when independent systems need to agree on the id for the same real-world thing without coordinating — for example, deriving a stable id for \"example.com\" from the DNS namespace, or for a file path from the URL namespace. v3 is the same construction with MD5 and should only be used to match an existing system that requires it."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Is a ULID a valid UUID?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "No. A ULID is 128 bits like a UUID, but it is written as 26 characters of Crockford base32 with no hyphens, and its bit layout does not set the UUID version and variant fields. A UUID library will reject it. The decoder here shows the ULID's timestamp and random component, and also shows the same 128 bits rewritten in UUID form for systems that need to store it in a UUID column, but that rewritten form will decode as an unknown version unless the version bits are overwritten."
+          }
+        }
+      ]
+    }
+  ]
+}
+  </script>
+
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6072772587431629" crossorigin="anonymous"></script>
+
+  <script src="../js/vendor/lucide.min.js" async></script>
+
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet" />
+  <link href="../layerbit-logo.png" rel="icon" type="image/x-icon" />
+  <link rel="manifest" href="../manifest.json" />
+  <link rel="apple-touch-icon" href="../apple-touch-icon.png" />
+  <link rel="stylesheet" href="../css/base.css" />
+  <link rel="stylesheet" href="../css/tool.css" />
+
+  <style>
+
+    .ns-fields { display: flex; flex-direction: column; gap: 14px; }
+    textarea.text-input { resize: vertical; min-height: 70px; }
+    .muted { color: var(--text-muted); font-family: 'Space Grotesk', sans-serif; }
+    .muted-count { font-weight: 400; font-size: 0.8em; color: var(--text-muted); margin-left: 6px; }
+    #outputArea { cursor: pointer; }
+    .kv-grid dd sup { font-size: 0.7em; }
+    .check input:disabled + *, .check:has(input:disabled) { opacity: 0.45; }
+
+  </style>
+</head>
+<body>
+  <header>
+    <a href="../" class="brand">
+      <svg width="36" height="36" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <polygon points="32,20 54,28 32,36 10,28" stroke="#f8fafc" stroke-width="4" stroke-linejoin="round"/>
+        <polyline points="10,38 32,46 54,38" stroke="#f8fafc" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+        <polyline points="10,48 32,56 54,48" stroke="#f8fafc" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+        <rect x="50" y="10" width="10" height="10" rx="2" fill="#00f2fe" />
+      </svg>
+      Layerbit
+    </a>
+  </header>
+
+  <main class="hero">
+    <div class="hero-badge"><i data-lucide="shield-check"></i> crypto.getRandomValues · generated on your device</div>
+    <h1>UUID &amp; ULID Generator and Decoder</h1>
+    <p>Bulk-generate UUID v4, time-ordered v7, namespace v5/v3 and ULIDs, in the format your system wants. Paste any identifier to decode its version, variant and the timestamp hidden inside it.</p>
+  </main>
+
+  <div class="ide-container">
+    <div class="pane">
+      <div class="pane-header">
+        <div class="pane-title"><i data-lucide="sparkles"></i> Generate</div>
+        <div class="btn-group">
+          <button class="btn btn-primary" id="btnGenerate" type="button"><i data-lucide="refresh-cw"></i> Generate</button>
+        </div>
+      </div>
+      <div class="pane-body">
+        <div class="row">
+          <div class="field">
+            <label for="kindSelect"><i data-lucide="layers"></i> Kind</label>
+            <select id="kindSelect" class="select-input">
+              <option value="v4">UUID v4 — random</option>
+              <option value="v7">UUID v7 — time-ordered (RFC 9562)</option>
+              <option value="v5">UUID v5 — SHA-1 of name in namespace</option>
+              <option value="v3">UUID v3 — MD5 of name in namespace</option>
+              <option value="ulid">ULID — time-ordered, Crockford base32</option>
+              <option value="nil">Nil / Max UUID</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="countInput"><i data-lucide="hash"></i> How many</label>
+            <input type="number" id="countInput" class="text-input" value="5" min="1" max="10000">
+          </div>
+        </div>
+        <div id="nsFields" class="ns-fields" style="display:none;">
+          <div class="field">
+            <label for="nsSelect"><i data-lucide="globe"></i> Namespace</label>
+            <select id="nsSelect" class="select-input">
+              <option value="6ba7b810-9dad-11d1-80b4-00c04fd430c8">DNS — 6ba7b810-9dad-11d1-80b4-00c04fd430c8</option>
+              <option value="6ba7b811-9dad-11d1-80b4-00c04fd430c8">URL — 6ba7b811-9dad-11d1-80b4-00c04fd430c8</option>
+              <option value="6ba7b812-9dad-11d1-80b4-00c04fd430c8">OID — 6ba7b812-9dad-11d1-80b4-00c04fd430c8</option>
+              <option value="6ba7b814-9dad-11d1-80b4-00c04fd430c8">X.500 DN — 6ba7b814-9dad-11d1-80b4-00c04fd430c8</option>
+              <option value="custom">Custom UUID…</option>
+            </select>
+            <input type="text" id="nsCustom" class="text-input" placeholder="your namespace UUID" style="display:none; margin-top:8px;" spellcheck="false">
+          </div>
+          <div class="field">
+            <label for="nameInput"><i data-lucide="type"></i> Name (one per line for several)</label>
+            <textarea id="nameInput" class="text-input" rows="3" placeholder="example.com" spellcheck="false"></textarea>
+          </div>
+        </div>
+        <div class="row">
+          <label class="check"><input type="checkbox" id="optUpper"> UPPERCASE</label>
+          <label class="check"><input type="checkbox" id="optNoHyphen"> no hyphens</label>
+          <label class="check"><input type="checkbox" id="optBraces"> {braces}</label>
+          <label class="check"><input type="checkbox" id="optQuote"> "quoted", comma-separated</label>
+        </div>
+      </div>
+      <div class="pane-header" style="border-top:1px solid var(--card-border); border-bottom:none;">
+        <div class="pane-title"><i data-lucide="list"></i> Output <span class="muted-count" id="outCount"></span></div>
+        <div class="btn-group">
+          <button class="btn" id="btnCopyOut" type="button"><i data-lucide="copy"></i> Copy all</button>
+          <button class="btn" id="btnDownloadOut" type="button"><i data-lucide="download"></i> .txt</button>
+        </div>
+      </div>
+      <textarea id="outputArea" class="editor" readonly spellcheck="false" style="min-height:160px;"></textarea>
+    </div>
+
+    <div class="pane">
+      <div class="pane-header">
+        <div class="pane-title"><i data-lucide="scan-search"></i> Decode</div>
+      </div>
+      <div class="pane-body">
+        <div class="field">
+          <label for="decodeInput"><i data-lucide="clipboard-paste"></i> Paste a UUID, GUID or ULID</label>
+          <input type="text" id="decodeInput" class="text-input" placeholder="018f4a6c-9e3b-7c4d-8a2e-1f3b5c7d9e0f  ·  01ARZ3NDEKTSV4RRFFQ69G5FAV  ·  {C56A4180-65AA-42EC-A945-5FD21DEC0538}" autocomplete="off" spellcheck="false">
+        </div>
+        <dl class="kv-grid" id="decodeGrid">
+          <dt>Waiting</dt><dd class="muted">Nothing to decode yet. Generate one on the left and click it, or paste one here.</dd>
+        </dl>
+      </div>
+    </div>
+  </div>
+
+  <div class="docs-container">
+    <div class="info-panel">
+      <h2><i data-lucide="book-open"></i> Which kind of identifier do you actually want?</h2>
+      <p>A UUID is 128 bits, and every version spends those bits differently. The choice affects database performance, sortability, privacy and whether two systems can generate the same id for the same thing on purpose. The generator above makes all of them; this section is about which to pick.</p>
+
+      <div class="use-cases-grid">
+        <div class="use-case-card">
+          <h3><i data-lucide="dice-5"></i> v4 — random</h3>
+          <p>122 random bits, 6 fixed for version and variant. Collision probability is negligible (you would need about 2<sup>61</sup> ids for a 50% chance of one duplicate), and the id reveals nothing about when or where it was made. The cost is that consecutive v4s are scattered across the whole key space, which fragments B-tree indexes and makes them a poor primary key at scale.</p>
+        </div>
+        <div class="use-case-card">
+          <h3><i data-lucide="clock"></i> v7 — time-ordered</h3>
+          <p>RFC 9562 (May 2024). The first 48 bits are a Unix millisecond timestamp, the rest random. Ids created later sort later, so inserts append to the end of an index instead of splitting pages randomly, and you get a creation time for free. This is the right default for a new database primary key. It does disclose creation time, which occasionally matters.</p>
+        </div>
+        <div class="use-case-card">
+          <h3><i data-lucide="fingerprint"></i> v5 / v3 — name-based</h3>
+          <p>Deterministic: hash a namespace UUID plus a name, and the same inputs give the same UUID everywhere, forever. Use it when two systems must agree on an id without talking — the id for "example.com" in the DNS namespace is the same in every language and library. v5 uses SHA-1 and is preferred; v3 uses MD5 and exists for compatibility.</p>
+        </div>
+        <div class="use-case-card">
+          <h3><i data-lucide="arrow-down-a-z"></i> ULID</h3>
+          <p>Same 128 bits as a v7 (48-bit millisecond time plus 80 random bits) but written as 26 characters of Crockford base32 — no hyphens, no ambiguous letters, case-insensitive, and lexically sortable as a plain string. Popular where ids appear in URLs or logs. It is not a UUID and will not parse as one, though it can be re-encoded into a v7-shaped UUID as the decoder shows.</p>
+        </div>
+      </div>
+
+      <h2><i data-lucide="binary"></i> Reading the bits</h2>
+      <p>Take <code>018f4a6c-9e3b-<strong>7</strong>c4d-<strong>8</strong>a2e-1f3b5c7d9e0f</code>. The character after the second hyphen is the version nibble — <code>7</code> here. The first character of the fourth group encodes the variant: <code>8</code>, <code>9</code>, <code>a</code> or <code>b</code> means the RFC 4122 / 9562 layout that every modern UUID uses. Anything else is a legacy Microsoft GUID or reserved layout, and the decoder says so. In a v7, the first 12 hex digits are a millisecond timestamp, so <code>018f4a6c9e3b</code> is <code>1,715,000,000,000</code> ms after the epoch — 6 May 2024. The decoder does this conversion and shows the timestamp in UTC alongside the relative time.</p>
+
+      <h2><i data-lucide="database"></i> Why random UUIDs are slow primary keys</h2>
+      <p>A clustered B-tree index keeps rows in key order. Inserting a v4 lands at a random position, so the database must find and split a page somewhere in the middle of the tree, on almost every insert. At a few million rows the index is larger than memory, most of those page touches become disk reads, and write throughput collapses. MySQL's InnoDB and SQL Server's clustered indexes are the classic sufferers; PostgreSQL's heap tables are less affected but its indexes still bloat. A v7 or ULID makes inserts monotonic, so they land on the rightmost page and the tree grows without churn. If you must keep existing v4 keys, the usual repair is to add a separate sequential column for the physical order.</p>
+
+      <h2><i data-lucide="shield"></i> Randomness quality</h2>
+      <p>Every random bit here comes from <code>crypto.getRandomValues()</code>, the browser's cryptographically secure generator, and v4s use the native <code>crypto.randomUUID()</code>. That matters more than it sounds: a UUID generated with <code>Math.random()</code> can be predicted after observing a handful of outputs, which turns "unguessable" URLs and tokens into guessable ones. Never generate ids that gate access with a non-cryptographic random source.</p>
+
+      <h2><i data-lucide="table"></i> Format cheat sheet</h2>
+      <table>
+        <thead><tr><th>Format</th><th>Example</th><th>Where it appears</th></tr></thead>
+        <tbody>
+          <tr><td>Canonical (RFC 9562)</td><td><code>123e4567-e89b-42d3-a456-426614174000</code></td><td>Everywhere; lowercase is the standard output form</td></tr>
+          <tr><td>Uppercase</td><td><code>123E4567-E89B-42D3-A456-426614174000</code></td><td>.NET, older Windows APIs; equal by value to the lowercase form</td></tr>
+          <tr><td>Braced</td><td><code>{123e4567-e89b-42d3-a456-426614174000}</code></td><td>COM / registry GUIDs, some SQL Server output</td></tr>
+          <tr><td>Simple / hex</td><td><code>123e4567e89b42d3a456426614174000</code></td><td>Python's <code>uuid.hex</code>, MySQL <code>BINARY(16)</code> hex dumps, some REST APIs</td></tr>
+          <tr><td>URN</td><td><code>urn:uuid:123e4567-…</code></td><td>XML, SAML, RFC 4122 URN namespace</td></tr>
+          <tr><td>ULID</td><td><code>01ARZ3NDEKTSV4RRFFQ69G5FAV</code></td><td>URL-safe ids, log correlation, event streams</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="info-panel">
+      <h2><i data-lucide="help-circle"></i> Frequently asked questions</h2>
+      <div class="faq-container">
+        <div class="faq-item">
+          <button class="faq-question">Are these UUIDs unique? Could two people get the same one? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>A v4 UUID has 122 random bits from a cryptographic generator. The chance that any two of a billion such ids collide is about 1 in 2.7 quintillion; you would need to generate roughly 2.7 quintillion ids before a duplicate became likely. Nothing is checked against a central registry, and nothing needs to be — the probability is what guarantees uniqueness. The same reasoning applies to the 74 or 80 random bits in a v7 or ULID generated within the same millisecond.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">What is the difference between a UUID and a GUID? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>Nothing in the value. GUID is Microsoft's name for the same 128-bit identifier, and modern GUIDs use the same RFC 4122 layout. Two historical differences remain: Microsoft tools often print them uppercase and in braces, and very old COM GUIDs used a different variant (the "Microsoft" or "NCS" variant bits), which the decoder reports if it sees one. A value produced by .NET's Guid.NewGuid() is a valid v4 UUID.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">Should I use v4 or v7 for a database primary key? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>v7, for any new table. Its leading timestamp makes ids increase over time, so inserts append to the end of a B-tree index instead of splitting pages at random positions, which is the cause of the well-known write slowdown with v4 keys in MySQL and SQL Server. The only reason to prefer v4 is if revealing the row's creation time is a problem for your application, since anyone with the id can read the timestamp.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">Can I extract the creation time from a UUID? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>From a v7 or a ULID, yes: the first 48 bits are a Unix millisecond timestamp and the decoder shows it. From a v1 or v6, also yes, as a count of 100-nanosecond intervals since 15 October 1582, which the decoder converts. From a v4, v3 or v5, no — those contain no time information at all, and there is no way to learn when they were made.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">How does a v5 UUID work and when would I use one? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>A v5 is SHA-1(namespace UUID bytes + name bytes) with the version and variant bits overwritten, truncated to 128 bits. It is deterministic: the same namespace and name always produce the same UUID, in any language. Use it when independent systems need to agree on the id for the same real-world thing without coordinating — for example, deriving a stable id for "example.com" from the DNS namespace, or for a file path from the URL namespace. v3 is the same construction with MD5 and should only be used to match an existing system that requires it.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">Is a ULID a valid UUID? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>No. A ULID is 128 bits like a UUID, but it is written as 26 characters of Crockford base32 with no hyphens, and its bit layout does not set the UUID version and variant fields. A UUID library will reject it. The decoder here shows the ULID's timestamp and random component, and also shows the same 128 bits rewritten in UUID form for systems that need to store it in a UUID column, but that rewritten form will decode as an unknown version unless the version bits are overwritten.</p></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="info-panel">
+      <h2><i data-lucide="git-commit"></i> Changelog</h2>
+      <ul class="changelog-list">
+        <li><span class="changelog-tag">v1.0.0</span> Initial release: v4, v7, v5, v3, ULID, nil and max generation up to 10,000 at a time with output formatting; decoder for UUID v1–v8 and ULID with version, variant, timestamp, node and clock-sequence fields.</li>
+      </ul>
+    </div>
+  </div>
+
+  <a id="smartBackBtn" class="fab home-fab-premium" aria-label="Command Center" title="Command Center" href="../">
+    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="filter: drop-shadow(0 0 8px rgba(56, 189, 248, 0.5));">
+      <path d="M12 2L2 7l10 5 10-5-10-5z" stroke="#38bdf8" stroke-width="2" stroke-linejoin="round" fill="rgba(56,189,248,0.2)"/>
+      <path d="M2 17l10 5 10-5M2 12l10 5 10-5" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </a>
+
+  <footer>
+    <div style="margin-bottom: 15px;">
+      &copy; 2025 - 2026 <strong>Layerbit Technologies</strong>. All rights reserved.
+    </div>
+    <div>
+      <a href="../about.html">About</a>
+      <a href="../privacy.html">Privacy Policy</a>
+      <a href="../terms.html">Terms of Service</a>
+      <a href="../blog.html">Developer Blog</a>
+      <a href="../contact.html">Contact</a>
+    </div>
+  </footer>
+
+  <script src="../js/shared.js"></script>
+  <script src="../js/md5.js"></script>
+
+  <script>
+    const kindSelect = document.getElementById('kindSelect');
+    const countInput = document.getElementById('countInput');
+    const nsFields = document.getElementById('nsFields');
+    const nsSelect = document.getElementById('nsSelect');
+    const nsCustom = document.getElementById('nsCustom');
+    const nameInput = document.getElementById('nameInput');
+    const outputArea = document.getElementById('outputArea');
+    const outCount = document.getElementById('outCount');
+    const decodeInput = document.getElementById('decodeInput');
+    const decodeGrid = document.getElementById('decodeGrid');
+    const opts = { upper: document.getElementById('optUpper'), noHyphen: document.getElementById('optNoHyphen'), braces: document.getElementById('optBraces'), quote: document.getElementById('optQuote') };
+
+    // ---- byte helpers ----
+    const hex = b => Array.from(b, x => x.toString(16).padStart(2, '0')).join('');
+    const layout = h => `${h.slice(0, 8)}-${h.slice(8, 12)}-${h.slice(12, 16)}-${h.slice(16, 20)}-${h.slice(20)}`;
+    const rand = n => crypto.getRandomValues(new Uint8Array(n));
+    function parseUuidBytes(s) {
+      const h = s.replace(/[{}\-]/g, '').replace(/^urn:uuid:/i, '');
+      if (!/^[0-9a-f]{32}$/i.test(h)) return null;
+      return Uint8Array.from(h.match(/../g), x => parseInt(x, 16));
+    }
+    function setVersion(bytes, v) { bytes[6] = (bytes[6] & 0x0f) | (v << 4); bytes[8] = (bytes[8] & 0x3f) | 0x80; return bytes; }
+
+    // ---- generators ----
+    function v4() { return crypto.randomUUID ? crypto.randomUUID() : layout(hex(setVersion(rand(16), 4))); }
+    // v7: 48-bit ms timestamp, 12 bits rand_a, 62 bits rand_b (RFC 9562 §5.7). A
+    // per-millisecond counter in rand_a keeps ids generated in the same ms
+    // monotonic, which is the property databases want from a v7.
+    let lastMs = 0, seq = 0;
+    function v7(ms) {
+      ms = ms ?? Date.now();
+      if (ms === lastMs) seq = (seq + 1) & 0xfff; else { lastMs = ms; seq = rand(2)[0] & 0x7ff; }
+      const b = rand(16);
+      b[0] = ms / 2 ** 40; b[1] = ms / 2 ** 32; b[2] = ms / 2 ** 24; b[3] = ms / 2 ** 16; b[4] = ms / 2 ** 8; b[5] = ms;
+      b[6] = 0x70 | (seq >> 8); b[7] = seq & 0xff;
+      b[8] = (b[8] & 0x3f) | 0x80;
+      return layout(hex(b));
+    }
+    async function named(version, nsBytes, name) {
+      const data = new Uint8Array(16 + new TextEncoder().encode(name).length);
+      data.set(nsBytes); data.set(new TextEncoder().encode(name), 16);
+      const digest = version === 5 ? new Uint8Array(await crypto.subtle.digest('SHA-1', data)).slice(0, 16) : md5Bytes(data);
+      return layout(hex(setVersion(digest, version)));
+    }
+    const B32 = '0123456789ABCDEFGHJKMNPQRSTVWXYZ';
+    function ulid(ms) {
+      ms = ms ?? Date.now();
+      let t = '', n = BigInt(ms);
+      for (let i = 0; i < 10; i++) { t = B32[Number(n & 31n)] + t; n >>= 5n; }
+      const r = rand(10); let rb = 0n; for (const x of r) rb = (rb << 8n) | BigInt(x);
+      let s = ''; for (let i = 0; i < 16; i++) { s = B32[Number(rb & 31n)] + s; rb >>= 5n; }
+      return t + s;
+    }
+
+    function format(id) {
+      if (kindSelect.value === 'ulid') return opts.quote.checked ? `"${id}"` : id;
+      let s = id;
+      if (opts.noHyphen.checked) s = s.replace(/-/g, '');
+      if (opts.upper.checked) s = s.toUpperCase();
+      if (opts.braces.checked) s = `{${s}}`;
+      if (opts.quote.checked) s = `"${s}"`;
+      return s;
+    }
+    async function generate() {
+      const kind = kindSelect.value;
+      const n = Math.min(10000, Math.max(1, Number(countInput.value) || 1));
+      let ids = [];
+      if (kind === 'v4') for (let i = 0; i < n; i++) ids.push(v4());
+      else if (kind === 'v7') for (let i = 0; i < n; i++) ids.push(v7());
+      else if (kind === 'ulid') for (let i = 0; i < n; i++) ids.push(ulid());
+      else if (kind === 'nil') ids = ['00000000-0000-0000-0000-000000000000', 'ffffffff-ffff-ffff-ffff-ffffffffffff'];
+      else {
+        const nsText = nsSelect.value === 'custom' ? nsCustom.value : nsSelect.value;
+        const nsBytes = parseUuidBytes(nsText);
+        if (!nsBytes) { outputArea.value = 'Namespace must be a valid UUID.'; outCount.textContent = ''; return; }
+        const names = nameInput.value.split('\n').map(s => s.trim()).filter(Boolean);
+        if (!names.length) { outputArea.value = 'Enter at least one name.'; outCount.textContent = ''; return; }
+        for (const name of names) ids.push(await named(kind === 'v5' ? 5 : 3, nsBytes, name));
+      }
+      const formatted = ids.map(format);
+      outputArea.value = opts.quote.checked ? formatted.join(',\n') : formatted.join('\n');
+      outCount.textContent = `${ids.length.toLocaleString()} generated`;
+      // Follow the output in the decoder until the user pastes their own value.
+      if (autoDecode) { decodeInput.value = ids[0]; decode(); }
+    }
+
+    // ---- decoder ----
+    const GREGORIAN_OFFSET = 122192928000000000n; // 100ns intervals between 1582-10-15 and 1970-01-01
+    function relative(ms) {
+      const d = (ms - Date.now()) / 1000, a = Math.abs(d);
+      const u = a < 60 ? [a, 's'] : a < 3600 ? [a / 60, 'min'] : a < 86400 ? [a / 3600, 'h'] : a < 31536000 ? [a / 86400, 'd'] : [a / 31536000, 'y'];
+      return `${u[0].toFixed(u[1] === 'y' ? 1 : 0)} ${u[1]} ${d < 0 ? 'ago' : 'from now'}`;
+    }
+    const iso = ms => new Date(ms).toISOString().replace('T', ' ').replace('Z', ' UTC');
+    function decode() {
+      const raw = decodeInput.value.trim();
+      if (!raw) { decodeGrid.innerHTML = '<dt>Waiting</dt><dd class="muted">Nothing to decode yet.</dd>'; return; }
+      const rows = [];
+      if (/^[0-9A-HJKMNP-TV-Z]{26}$/i.test(raw)) {
+        const s = raw.toUpperCase();
+        if (s[0] > '7') { decodeGrid.innerHTML = '<dt>Invalid</dt><dd><span class="tag bad">ULID overflow</span> first character must be 0–7 (the 128-bit limit)</dd>'; return; }
+        let n = 0n; for (const ch of s) n = (n << 5n) | BigInt(B32.indexOf(ch));
+        const ms = Number(n >> 80n), randPart = n & ((1n << 80n) - 1n);
+        rows.push(['Kind', '<span class="tag">ULID</span> 26 chars, Crockford base32']);
+        rows.push(['Timestamp', `${ms.toLocaleString()} ms → ${iso(ms)} <span class="muted">(${relative(ms)})</span>`]);
+        rows.push(['Random', `80 bits: 0x${randPart.toString(16).padStart(20, '0')}`]);
+        const h = n.toString(16).padStart(32, '0');
+        rows.push(['As UUID layout', `${layout(h)} <span class="muted">(same 128 bits; not a versioned UUID)</span>`]);
+        rows.push(['Lowercase', `${s.toLowerCase()} <span class="muted">(ULIDs are case-insensitive)</span>`]);
+        decodeGrid.innerHTML = rows.map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join(''); return;
+      }
+      const b = parseUuidBytes(raw);
+      if (!b) { decodeGrid.innerHTML = '<dt>Invalid</dt><dd><span class="tag bad">not a UUID or ULID</span> expected 32 hex digits (hyphens, braces and urn:uuid: optional) or 26 base32 characters</dd>'; return; }
+      const h = hex(b), canonical = layout(h);
+      const variantBits = b[8] >> 5, version = b[6] >> 4;
+      const variant = variantBits < 4 ? ['NCS (reserved, pre-RFC)', 'warn'] : variantBits < 6 ? ['RFC 4122 / 9562', 'ok'] : variantBits === 6 ? ['Microsoft legacy GUID', 'warn'] : ['Reserved for future', 'warn'];
+      const isNil = h === '0'.repeat(32), isMax = h === 'f'.repeat(32);
+      rows.push(['Canonical', canonical]);
+      if (isNil || isMax) rows.push(['Kind', `<span class="tag">${isNil ? 'Nil' : 'Max'} UUID</span> special value defined by RFC 9562`]);
+      else {
+        rows.push(['Variant', `<span class="tag ${variant[1]}">${variant[0]}</span> bits ${variantBits.toString(2).padStart(3, '0')}`]);
+        const names = { 1: 'time-based (Gregorian, MAC node)', 2: 'DCE security', 3: 'name-based, MD5', 4: 'random', 5: 'name-based, SHA-1', 6: 'reordered time (RFC 9562)', 7: 'Unix-time ordered (RFC 9562)', 8: 'custom / vendor (RFC 9562)' };
+        rows.push(['Version', `<span class="tag">v${version}</span> ${names[version] || 'unknown - not a standard version'}`]);
+        if (variant[1] !== 'ok') rows.push(['Note', '<span class="muted">Version is only meaningful for the RFC variant; this value uses a different layout.</span>']);
+        if (version === 7 && variant[1] === 'ok') {
+          const ms = Number((BigInt('0x' + h.slice(0, 12))));
+          rows.push(['Timestamp', `${ms.toLocaleString()} ms → ${iso(ms)} <span class="muted">(${relative(ms)})</span>`]);
+          rows.push(['rand_a / rand_b', `0x${h.slice(13, 16)} · 0x${(BigInt('0x' + h.slice(16)) & ((1n << 62n) - 1n)).toString(16)}`]);
+        } else if ((version === 1 || version === 6) && variant[1] === 'ok') {
+          let ts;
+          if (version === 1) ts = (BigInt('0x' + h.slice(13, 16)) << 48n) | (BigInt('0x' + h.slice(8, 12)) << 32n) | BigInt('0x' + h.slice(0, 8));
+          else ts = (BigInt('0x' + h.slice(0, 12)) << 12n) | BigInt('0x' + h.slice(13, 16));
+          const ms = Number((ts - GREGORIAN_OFFSET) / 10000n);
+          rows.push(['Timestamp', `${ts} × 100 ns since 1582-10-15 → ${isFinite(ms) && ms > -1e13 ? iso(ms) : 'out of range'} <span class="muted">(${relative(ms)})</span>`]);
+          rows.push(['Clock sequence', `0x${(((b[8] & 0x3f) << 8) | b[9]).toString(16)}`]);
+          const node = h.slice(20);
+          const multicast = (b[10] & 1) === 1;
+          rows.push(['Node', `${node.match(/../g).join(':')} <span class="tag ${multicast ? 'ok' : 'warn'}">${multicast ? 'random (multicast bit set)' : 'looks like a real MAC address'}</span>`]);
+        } else if (version === 4) rows.push(['Entropy', '122 random bits; no timestamp or origin information']);
+        else if (version === 3 || version === 5) rows.push(['Derived', `${version === 5 ? 'SHA-1' : 'MD5'} of namespace + name; deterministic, no timestamp`]);
+      }
+      rows.push(['Hex (no hyphens)', h]);
+      rows.push(['Uppercase braced', `{${canonical.toUpperCase()}}`]);
+      rows.push(['URN', `urn:uuid:${canonical}`]);
+      rows.push(['Integer', BigInt('0x' + h).toString()]);
+      rows.push(['Base64', btoa(String.fromCharCode(...b))]);
+      decodeGrid.innerHTML = rows.map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join('');
+    }
+
+    // ---- wiring ----
+    function syncKind() {
+      const k = kindSelect.value;
+      nsFields.style.display = (k === 'v5' || k === 'v3') ? 'flex' : 'none';
+      countInput.disabled = (k === 'v5' || k === 'v3' || k === 'nil');
+      opts.noHyphen.disabled = opts.upper.disabled = opts.braces.disabled = (k === 'ulid');
+    }
+    kindSelect.addEventListener('change', () => { syncKind(); generate(); });
+    nsSelect.addEventListener('change', () => { nsCustom.style.display = nsSelect.value === 'custom' ? '' : 'none'; });
+    Object.values(opts).forEach(o => o.addEventListener('change', generate));
+    document.getElementById('btnGenerate').addEventListener('click', generate);
+    document.getElementById('btnCopyOut').addEventListener('click', async () => { await navigator.clipboard.writeText(outputArea.value); });
+    document.getElementById('btnDownloadOut').addEventListener('click', () => { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([outputArea.value], { type: 'text/plain' })); a.download = `${kindSelect.value}-ids.txt`; a.click(); });
+    outputArea.addEventListener('click', () => {
+      // click a line to decode it
+      const pos = outputArea.selectionStart, v = outputArea.value;
+      const start = v.lastIndexOf('\n', pos - 1) + 1, end = v.indexOf('\n', pos);
+      const line = v.slice(start, end < 0 ? undefined : end).replace(/[",{}]/g, '').trim();
+      if (line) { decodeInput.value = line; autoDecode = false; decode(); }
+    });
+    let autoDecode = true;
+    decodeInput.addEventListener('input', () => { autoDecode = !decodeInput.value.trim(); decode(); });
+    syncKind(); generate();
+  </script>
+</body>
+</html>

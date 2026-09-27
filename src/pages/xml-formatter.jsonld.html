@@ -1,0 +1,106 @@
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "SoftwareApplication",
+      "@id": "https://layerbit.co.in/tools/xml-formatter.html#app",
+      "name": "XML Formatter \u0026 XPath Tester",
+      "url": "https://layerbit.co.in/tools/xml-formatter.html",
+      "description": "Format, minify and validate XML, evaluate XPath 1.0 queries with namespace support, and convert XML to JSON, using the browser's own parser. Nothing leaves your machine.",
+      "applicationCategory": "DeveloperApplication",
+      "operatingSystem": "Any (runs in the browser)",
+      "browserRequirements": "Requires JavaScript",
+      "isAccessibleForFree": true,
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "keywords": "xml formatter, xml validator, xpath tester, xpath online, xml to json, xml beautifier",
+      "publisher": {
+        "@id": "https://layerbit.co.in/#organization"
+      },
+      "datePublished": "2026-09-27"
+    },
+    {
+      "@type": "BreadcrumbList",
+      "@id": "https://layerbit.co.in/tools/xml-formatter.html#breadcrumb",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://layerbit.co.in/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Tools",
+          "item": "https://layerbit.co.in/blog.html"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": "XML Formatter \u0026 XPath Tester",
+          "item": "https://layerbit.co.in/tools/xml-formatter.html"
+        }
+      ]
+    },
+    {
+      "@type": "FAQPage",
+      "@id": "https://layerbit.co.in/tools/xml-formatter.html#faq",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "Does this validate against an XSD or DTD schema?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "No. It checks well-formedness — that the document is syntactically correct XML with balanced, properly nested tags, quoted attributes and escaped characters — using the browser's parser. Validation against a schema (whether the elements and values are the ones a particular XSD allows) needs a schema processor, which browsers do not include. For that, use xmllint with --schema, or your platform's XML library."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Why does my XPath return no results when the element is clearly there?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Almost always a namespace. If the document's root declares a default namespace with xmlns=\"...\", every unprefixed element is in that namespace, and an unprefixed name in XPath 1.0 matches only elements with no namespace. Use the ns prefix this tool binds to the default namespace (//ns:entry), the prefix shown in the badge for other namespaces, or //*[local-name()='entry'] to ignore namespaces entirely."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Why does formatting change whitespace inside some elements but not others?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Because whitespace inside an element that contains text is part of the data. The formatter only re-indents elements whose children are all elements, where the whitespace between them is insignificant. An element with text content, or mixed text and elements, is left exactly as written, so a document that carries meaningful spacing in its text is not corrupted by pretty-printing."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Is the XML to JSON conversion reversible?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "No, and no XML to JSON mapping can be in general. XML has ordered mixed content, namespaces, comments, processing instructions and a distinction between attributes and child elements; JSON objects have unordered keys and no attributes. The mapping here is designed to be readable and to round-trip the common case of element-only data with attributes, using @ for attributes and #text for text, but it is a convenience view rather than an interchange format."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Which XPath version does the tool support?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "XPath 1.0, because that is what document.evaluate() in browsers implements. It covers the full 1.0 axis set, predicates, and the core function library (contains, starts-with, substring, normalize-space, count, sum, position, last, local-name, name and the rest). Functions and syntax added in XPath 2.0 and later, such as regular-expression matching, sequences and for-expressions, are not available."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Is my XML sent anywhere?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "No. Parsing uses DOMParser, XPath uses document.evaluate, and serialisation is JavaScript in the page; there is no server request. You can confirm this in the Network tab of your browser's developer tools or by using the tool offline. That matters for XML in particular, because SOAP responses, SAML assertions and configuration files routinely contain credentials and personal data."
+          }
+        }
+      ]
+    }
+  ]
+}
+  </script>

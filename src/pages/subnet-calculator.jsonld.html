@@ -1,0 +1,106 @@
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "SoftwareApplication",
+      "@id": "https://layerbit.co.in/tools/subnet-calculator.html#app",
+      "name": "CIDR \u0026 Subnet Calculator",
+      "url": "https://layerbit.co.in/tools/subnet-calculator.html",
+      "description": "Free IPv4 and IPv6 subnet calculator. Network, broadcast, host range, netmask and wildcard from any CIDR, plus subnet splitting, membership checks and supernet aggregation. Runs in your browser.",
+      "applicationCategory": "NetworkingApplication",
+      "operatingSystem": "Any (runs in the browser)",
+      "browserRequirements": "Requires JavaScript",
+      "isAccessibleForFree": true,
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "keywords": "subnet calculator, CIDR calculator, IPv6 subnet, netmask, wildcard mask, supernet",
+      "publisher": {
+        "@id": "https://layerbit.co.in/#organization"
+      },
+      "datePublished": "2026-09-27"
+    },
+    {
+      "@type": "BreadcrumbList",
+      "@id": "https://layerbit.co.in/tools/subnet-calculator.html#breadcrumb",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://layerbit.co.in/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Tools",
+          "item": "https://layerbit.co.in/blog.html"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": "CIDR \u0026 Subnet Calculator",
+          "item": "https://layerbit.co.in/tools/subnet-calculator.html"
+        }
+      ]
+    },
+    {
+      "@type": "FAQPage",
+      "@id": "https://layerbit.co.in/tools/subnet-calculator.html#faq",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "Why are only 254 hosts usable in a /24 when there are 256 addresses?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Two addresses in every IPv4 subnet of /30 or shorter are reserved: the first (all host bits zero) identifies the network itself, and the last (all host bits one) is the directed broadcast address. Neither can be assigned to an interface, so 256 becomes 254. The exception is a /31, which RFC 3021 defines as a two-address point-to-point link with no broadcast, so both addresses are usable."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Does IPv6 have a broadcast address?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "No. IPv6 replaced broadcast with multicast. The all-ones address in a subnet is an ordinary assignable host address, and the all-zeros address is the subnet-router anycast address, which is reserved but still routes. That is why the calculator shows a broadcast row for IPv4 only, and why the usable count for an IPv6 block is the full block size."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What is the difference between a netmask and a wildcard mask?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "They carry the same information in opposite polarity. A netmask has ones in the network bits (255.255.255.0 for a /24). A wildcard mask has ones in the host bits (0.0.0.255 for a /24) and is the form Cisco IOS access lists, OSPF and EIGRP network statements expect. The calculator shows both so you can paste whichever the device wants without inverting by hand."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How many /64 subnets are in a /48?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "65,536, because 64 minus 48 is 16 bits of subnet identifier and 2 to the power 16 is 65,536. A /56, the common residential allocation, holds 256 /64s. A /64 is the standard size for a single IPv6 LAN because SLAAC address autoconfiguration requires a 64-bit interface identifier; subnets smaller than /64 break it."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Which private ranges does the classification recognise?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "For IPv4: 10.0.0.0/8, 172.16.0.0/12 and 192.168.0.0/16 (RFC 1918 private), 100.64.0.0/10 (RFC 6598 carrier-grade NAT), 127.0.0.0/8 (loopback), 169.254.0.0/16 (link-local), 224.0.0.0/4 (multicast), 240.0.0.0/4 (reserved), and the three documentation ranges 192.0.2.0/24, 198.51.100.0/24 and 203.0.113.0/24. For IPv6: ::1 (loopback), fc00::/7 (unique local), fe80::/10 (link-local), ff00::/8 (multicast), 2001:db8::/32 (documentation), ::ffff:0:0/96 (IPv4-mapped) and 2002::/16 (6to4)."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Is anything I type sent anywhere?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "No. The whole calculation runs in the page as JavaScript, and there is no server endpoint involved. You can confirm this by watching the Network tab of your browser's developer tools while you use the tool, or by loading the page and then disconnecting from the internet — it keeps working. Internal addressing plans are sensitive, and a subnet calculator is exactly the kind of tool that should never see them leave your machine."
+          }
+        }
+      ]
+    }
+  ]
+}
+  </script>

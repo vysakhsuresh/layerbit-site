@@ -21,7 +21,13 @@
 
     <div class="pane" id="escapedPane">
       <div class="pane-header">
-        <div class="pane-title"><i data-lucide="shield-check"></i> Escaped Entities</div>
+        <div class="pane-title"><i data-lucide="shield-check"></i> Escaped Entities
+          <select id="escapeProfile" class="mini-select" title="Which characters to escape">
+            <option value="essential">essential 5 (&amp; &lt; &gt; &quot; ')</option>
+            <option value="extended" selected>extended (+ / ` =)</option>
+            <option value="nonascii">extended + non-ASCII as &amp;#x…;</option>
+          </select>
+        </div>
         <div class="btn-group">
           <input type="file" id="escapedFile" accept=".html,.htm,.txt" style="display:none;">
           <button class="btn" onclick="document.getElementById('escapedFile').click()"><i data-lucide="upload"></i> Upload</button>
@@ -39,10 +45,11 @@
 
   <div class="docs-container">
     <div class="info-panel">
-      <h2><i data-lucide="lock"></i> Zero-Trust Processing Engine</h2>
-      <p>Many online HTML escaping tools use a dangerous method known as DOM injection (<code>element.innerHTML = text</code>) to parse entities. If a malicious script is pasted, the browser might accidentally execute it. Layerbit mitigates this entirely.</p>
+      <h2><i data-lucide="lock"></i> How the two directions are implemented</h2>
+      <p>Some online tools decode entities by assigning your text to a live element's <code>innerHTML</code>, which parses it as markup: a pasted <code>&lt;img onerror=…&gt;</code> executes on the spot. This tool never does that.</p>
       <ul>
-        <li><i data-lucide="check"></i> <strong>Regex Mapping:</strong> We utilize a strict, high-performance dictionary matrix to convert characters purely at the string level. It is mathematically impossible to trigger an XSS attack using this tool.</li>
+        <li><i data-lucide="check"></i> <strong>Escaping is pure string replacement:</strong> a character-to-entity table applied with a regular expression. No parser is involved, so nothing can be interpreted.</li>
+        <li><i data-lucide="check"></i> <strong>Unescaping uses a detached <code>&lt;textarea&gt;</code>:</strong> a textarea's content is RCDATA in the HTML specification, meaning the parser decodes character references but never creates elements from it. That gives full coverage of every named and numeric entity with no execution path, and the element is never attached to the page.</li>
         <li><i data-lucide="check"></i> <strong>Bidirectional Sync:</strong> Paste raw code on the left to secure it for transport, or paste an escaped payload on the right to revert it to readable HTML instantly.</li>
         <li><i data-lucide="check"></i> <strong>Air-Gapped Operation:</strong> No payload data is ever transmitted to external servers. All cryptographic string manipulation occurs locally.</li>
       </ul>
@@ -79,14 +86,14 @@
         <div class="faq-item">
           <button class="faq-question">Why is DOM injection dangerous for sanitizing tools? <i data-lucide="chevron-down"></i></button>
           <div class="faq-answer">
-            <p>If an online tool sets your pasted text to <code>element.innerHTML</code> in order to read the browser's parsed entities, any valid <code>&lt;script&gt;</code> tags or inline event handlers (like <code>onload</code>) within your text can immediately execute in the browser. Layerbit operates strictly on regex string replacement to prevent arbitrary execution.</p>
+            <p>If an online tool sets your pasted text to a live element's <code>innerHTML</code> in order to read the browser's parsed entities, inline event handlers (like <code>onerror</code>) within your text can immediately execute. Layerbit escapes with pure string replacement and unescapes through a detached textarea, whose content is RCDATA: the parser decodes character references but never creates elements from it, so nothing can run.</p>
           </div>
         </div>
 
         <div class="faq-item">
           <button class="faq-question">Which HTML characters are actively escaped? <i data-lucide="chevron-down"></i></button>
           <div class="faq-answer">
-            <p>The matrix targets the most critical control characters utilized in HTML rendering and script execution: Ampersands (<code>&amp;</code>), less than/greater than symbols (<code>&lt; &gt;</code>), double/single quotes (<code>" '</code>), forward slashes (<code>/</code>), backticks (<code>`</code>), and equals signs (<code>=</code>).</p>
+            <p>The extended profile (default) escapes ampersands (<code>&amp;</code>), less than/greater than symbols (<code>&lt; &gt;</code>), double/single quotes (<code>" '</code>), forward slashes (<code>/</code>), backticks (<code>`</code>), and equals signs (<code>=</code>). The essential profile escapes only the first five, and a third profile additionally turns every non-ASCII character into a hex reference.</p>
           </div>
         </div>
 
@@ -141,6 +148,8 @@
     <div class="info-panel">
       <h2><i data-lucide="git-commit"></i> Changelog</h2>
       <ul class="changelog-list">
+        <li><span class="changelog-tag">v1.5.0</span> Added an escape profile: the essential five for HTML text and attributes, the extended set that also covers unquoted-attribute breakouts, or everything non-ASCII as hex references for charset-less destinations.</li>
+        <li><span class="changelog-tag">v1.4.0</span> Unescaping now decodes every HTML5 named entity (all 2,231 of them), plus decimal and hex numeric references, rather than the eight the tool itself produces. <code>&amp;copy;</code>, <code>&amp;nbsp;</code> and <code>&amp;#x1F600;</code> all round-trip.</li>
         <li><span class="changelog-tag">v1.3.0</span> Added file upload and drag-and-drop to both panes.</li>
         <li><span class="changelog-tag">v1.2.0</span> Upgraded the rendering engine to provide bidirectional synchronization without infinite loop conflicts.</li>
         <li><span class="changelog-tag">v1.1.0</span> Expanded the regex dictionary matrix to capture backticks and equals signs to mitigate advanced injection variants.</li>
@@ -191,15 +200,25 @@
     };
 
     function safeEscapeHTML(str) {
-      return String(str).replace(/[&<>"'`=\/]/g, function (s) {
-        return escapeMap[s];
-      });
+      const profile = document.getElementById('escapeProfile').value;
+      const re = profile === 'essential' ? /[&<>"']/g : /[&<>"'`=\/]/g;
+      let out = String(str).replace(re, s => escapeMap[s]);
+      // Numeric references for everything outside ASCII: what you want when
+      // the destination declares no charset, or for an email template that
+      // some client will re-encode on the way through.
+      if (profile === 'nonascii') out = out.replace(/[^\x00-\x7f]/gu, ch => `&#x${ch.codePointAt(0).toString(16).toUpperCase()};`);
+      return out;
     }
+    document.getElementById('escapeProfile').addEventListener('change', () => { escapedInput.value = safeEscapeHTML(rawInput.value); });
 
+    // The browser's own parser knows all 2,231 HTML5 named entities plus
+    // decimal and hex numeric references, including the legacy ones without a
+    // trailing semicolon. Assigning to a detached <textarea>'s innerHTML decodes
+    // them without ever executing markup, since textarea content is raw text.
+    const decoderEl = document.createElement('textarea');
     function safeUnescapeHTML(str) {
-      return String(str).replace(/&(amp|lt|gt|quot|#39|#x2F|#x60|#x3D);/g, function (s) {
-        return unescapeMap[s];
-      });
+      decoderEl.innerHTML = String(str);
+      return decoderEl.value;
     }
 
     // Engine: Raw -> Escaped

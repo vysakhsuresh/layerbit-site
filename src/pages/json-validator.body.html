@@ -10,6 +10,9 @@
       <div class="pane-header">
         <div class="pane-title"><i data-lucide="file-json-2"></i> Raw JSON Input</div>
         <div class="btn-group">
+          <label class="toggle-wrapper" title="Sort object keys alphabetically at every level (arrays keep their order)">
+            <input type="checkbox" id="sortKeys"> Sort keys
+          </label>
           <button class="btn" id="btnClear" title="Clear Input"><i data-lucide="trash-2"></i></button>
           <button class="btn btn-primary" id="btnMinify"><i data-lucide="minimize-2"></i> Minify</button>
           <button class="btn btn-primary" id="btnFormat"><i data-lucide="sparkles"></i> Beautify</button>
@@ -35,6 +38,14 @@
           <button class="btn" id="btnDownload"><i data-lucide="download"></i> Download</button>
           <button class="btn" id="btnCopy"><i data-lucide="copy"></i> Copy to Clipboard</button>
         </div>
+      </div>
+      <div class="tool-strip">
+        <div class="json-stats" id="jsonStats"></div>
+        <div class="path-row">
+          <label for="pathInput"><i data-lucide="route"></i> Query</label>
+          <input type="text" id="pathInput" placeholder="$.data[0].name  ·  users.length  ·  settings[&quot;theme&quot;]" autocomplete="off" spellcheck="false" disabled>
+        </div>
+        <pre class="path-result" id="pathResult"></pre>
       </div>
       <div id="jsonOutput" class="output-area"></div>
       <div id="jsonTree" class="output-area json-tree" style="display:none;"></div>
@@ -161,6 +172,7 @@
     <div class="info-panel">
       <h2><i data-lucide="git-commit"></i> Changelog</h2>
       <ul class="changelog-list">
+        <li><span class="changelog-tag">v2.1.0</span> Added a path query box (<code>$.data[0].name</code>, <code>users.length</code>, bracket keys) that evaluates against the parsed document as you type; a structure readout (keys, objects, arrays, depth, size in and minified); an optional deep key sort; and syntax errors now report line and column and move the caret to the offending character.</li>
         <li><span class="changelog-tag">v1.4.0</span> Added a collapsible Tree view alongside the raw text output, with Expand All / Collapse All controls for quickly navigating deeply nested payloads.</li>
         <li><span class="changelog-tag">v1.3.0</span> Added a Download button next to Copy to Clipboard, matching every other converter in the suite.</li>
         <li><span class="changelog-tag">v1.2.0</span> Optimized syntax highlighting engine to prevent browser lock-ups when rendering heavily nested arrays over 5MB.</li>
@@ -200,8 +212,14 @@
     const btnExpandAll = document.getElementById('btnExpandAll');
     const btnCollapseAll = document.getElementById('btnCollapseAll');
 
+    const sortKeys = document.getElementById('sortKeys');
+    const jsonStats = document.getElementById('jsonStats');
+    const pathInput = document.getElementById('pathInput');
+    const pathResult = document.getElementById('pathResult');
+
     let outputView = 'text'; // 'text' or 'tree'
     let lastParsed = null; // the most recently parsed JSON value, for the tree view
+    let lastAction = 'format';
 
     // Syntax Highlighter Logic
     function syntaxHighlight(jsonStr) {
@@ -311,7 +329,8 @@
       if (!raw) return;
 
       try {
-        const parsed = JSON.parse(raw);
+        let parsed = JSON.parse(raw);
+        if (sortKeys.checked) parsed = sortKeysDeep(parsed);
         let resultStr = "";
 
         if (action === 'format') {
@@ -323,16 +342,117 @@
         jsonOutput.innerHTML = syntaxHighlight(resultStr);
         lastParsed = parsed;
         renderTree(parsed);
+        renderStats(parsed, raw);
+        pathInput.disabled = false;
+        runPathQuery();
 
       } catch (err) {
-        errorText.textContent = `Invalid JSON: ${err.message}`;
+        errorText.textContent = `Invalid JSON: ${describeJsonError(err.message, raw)}`;
         errorBanner.classList.add('active');
+        jsonStats.textContent = '';
+        pathInput.disabled = true;
+        pathResult.textContent = '';
       }
     }
 
+    // Recursively sort object keys; arrays keep their order because in JSON
+    // array order is data, object key order is not.
+    function sortKeysDeep(v) {
+      if (Array.isArray(v)) return v.map(sortKeysDeep);
+      if (v && typeof v === 'object') {
+        return Object.keys(v).sort().reduce((o, k) => { o[k] = sortKeysDeep(v[k]); return o; }, {});
+      }
+      return v;
+    }
+
+    // Engines report "at position N"; a line/column is what a human can use,
+    // and moving the caret there saves hunting through a minified payload.
+    function describeJsonError(message, raw) {
+      let pos = -1;
+      const m = /position (\d+)/.exec(message);
+      if (m) pos = Number(m[1]);
+      else if (/end of JSON input/i.test(message)) pos = raw.length;
+      else {
+        // Newer V8 messages carry a context window instead of an offset:
+        //   Unexpected token ']', ..."b": [1, 2,] }" is not valid JSON
+        // Locate the window in the source, then the offending token nearest
+        // the window's centre (the window is cut around the failure point).
+        const w = /Unexpected (?:token '(.)'|(non-whitespace character)[^,]*), (?:\.\.\.)?"(.*)"(?:\.\.\.)? is not valid JSON/s.exec(message);
+        if (w) {
+          const frag = w[3];
+          let idx = raw.indexOf(frag);
+          if (idx < 0 && frag.length > 1) idx = raw.indexOf(frag.slice(1)) - 1;
+          if (idx >= 0) {
+            const tok = w[1];
+            if (tok) {
+              let best = -1, bestD = Infinity, k = -1;
+              while ((k = frag.indexOf(tok, k + 1)) >= 0) { const d = Math.abs(k - frag.length / 2); if (d < bestD) { bestD = d; best = k; } }
+              pos = best >= 0 ? idx + best : idx;
+            } else pos = idx + Math.floor(frag.length / 2);
+          }
+        }
+      }
+      if (pos < 0) return message;
+      const before = raw.slice(0, pos);
+      const line = before.split('\n').length;
+      const col = pos - before.lastIndexOf('\n');
+      try { jsonInput.setSelectionRange(pos, Math.min(pos + 1, raw.length)); } catch (e) {}
+      return `${message.replace(/\s*\(line \d+ column \d+\)/, '')} — line ${line}, column ${col}`;
+    }
+
+    function renderStats(value, raw) {
+      let objects = 0, arrays = 0, keys = 0, primitives = 0, depth = 0;
+      (function walk(v, d) {
+        depth = Math.max(depth, d);
+        if (Array.isArray(v)) { arrays++; v.forEach(x => walk(x, d + 1)); }
+        else if (v && typeof v === 'object') { objects++; const ks = Object.keys(v); keys += ks.length; ks.forEach(k => walk(v[k], d + 1)); }
+        else primitives++;
+      })(value, 1);
+      const bytes = n => n < 1024 ? `${n} B` : n < 1048576 ? `${(n / 1024).toFixed(1)} KB` : `${(n / 1048576).toFixed(2)} MB`;
+      const minified = new TextEncoder().encode(JSON.stringify(value)).length;
+      const original = new TextEncoder().encode(raw).length;
+      jsonStats.innerHTML = `<span><strong>${keys.toLocaleString()}</strong> keys</span><span><strong>${objects.toLocaleString()}</strong> objects</span><span><strong>${arrays.toLocaleString()}</strong> arrays</span><span><strong>${primitives.toLocaleString()}</strong> values</span><span>depth <strong>${depth}</strong></span><span>${bytes(original)} in, <strong>${bytes(minified)}</strong> minified</span>`;
+    }
+
+    // A small path language: $ or bare start, .key, ["key"], ['key'], [index],
+    // and .length on arrays and strings. Covers what people actually type
+    // when tracing a value in an API response, without a JSONPath library.
+    function evaluatePath(root, path) {
+      let p = path.trim();
+      if (p.startsWith('$')) p = p.slice(1);
+      const re = /\.?([A-Za-z_$][\w$-]*)|\[(\d+)\]|\["((?:[^"\\]|\\.)*)"\]|\['((?:[^'\\]|\\.)*)'\]/g;
+      let cur = root, m, consumed = 0;
+      while ((m = re.exec(p)) !== null) {
+        if (m.index !== consumed) throw new Error(`unexpected "${p.slice(consumed, m.index)}"`);
+        consumed = re.lastIndex;
+        const key = m[1] !== undefined ? m[1] : m[2] !== undefined ? Number(m[2]) : (m[3] !== undefined ? m[3] : m[4]).replace(/\\(.)/g, '$1');
+        if (cur === null || cur === undefined) return undefined;
+        if (typeof key === 'number' && !Array.isArray(cur)) return undefined;
+        cur = cur[key];
+      }
+      if (consumed !== p.length) throw new Error(`unexpected "${p.slice(consumed)}"`);
+      return cur;
+    }
+    function runPathQuery() {
+      const q = pathInput.value.trim();
+      if (!q || lastParsed === null) { pathResult.textContent = ''; pathResult.className = 'path-result'; return; }
+      try {
+        const v = evaluatePath(lastParsed, q);
+        if (v === undefined) { pathResult.textContent = 'undefined — nothing at that path'; pathResult.className = 'path-result path-miss'; return; }
+        const s = JSON.stringify(v, null, 2);
+        pathResult.innerHTML = syntaxHighlight(s.length > 4000 ? s.slice(0, 4000) + '\n… (truncated)' : s);
+        pathResult.className = 'path-result';
+      } catch (e) {
+        pathResult.textContent = `Bad path: ${e.message}`;
+        pathResult.className = 'path-result path-miss';
+      }
+    }
+    pathInput.addEventListener('input', runPathQuery);
+    sortKeys.addEventListener('change', () => { if (jsonInput.value.trim()) processJSON(lastAction); });
+
     // Event Listeners
-    btnFormat.addEventListener('click', () => processJSON('format'));
-    btnMinify.addEventListener('click', () => processJSON('minify'));
+    btnFormat.addEventListener('click', () => processJSON(lastAction = 'format'));
+    btnMinify.addEventListener('click', () => processJSON(lastAction = 'minify'));
     
     btnClear.addEventListener('click', () => {
       jsonInput.value = '';
@@ -340,6 +460,8 @@
       jsonTree.innerHTML = '';
       lastParsed = null;
       errorBanner.classList.remove('active');
+      jsonStats.textContent = '';
+      pathInput.value = ''; pathInput.disabled = true; pathResult.textContent = '';
     });
 
     btnCopy.addEventListener('click', () => {

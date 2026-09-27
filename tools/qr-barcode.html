@@ -33,9 +33,9 @@
   <meta name="theme-color" content="#0a0c10" />
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6072772587431629" crossorigin="anonymous"></script>
 
-  <script src="https://unpkg.com/lucide@1.39.0" async></script>
-  <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/qrcodejs/qrcode.min.js"></script>
+  <script src="../js/vendor/lucide.min.js" async></script>
+  <script src="../js/vendor/JsBarcode.all.min.js"></script>
+  <script src="../js/vendor/qrcode.min.js"></script>
 
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <link href="../layerbit-logo.png" rel="icon" type="image/x-icon" />
@@ -144,7 +144,7 @@
 
     .input-group label i { width: 18px; color: var(--accent-main); }
 
-    .control-pane input[type="text"], .control-pane select {
+    .control-pane input[type="text"], .control-pane textarea, .control-pane select {
       width: 100%;
       padding: 15px;
       background: rgba(0,0,0,0.3);
@@ -157,14 +157,14 @@
       transition: border 0.3s;
     }
 
-    .control-pane input[type="text"]:focus, .control-pane select:focus {
+    .control-pane input[type="text"]:focus, .control-pane textarea:focus, .control-pane select:focus {
       border-color: var(--accent-main);
     }
 
     .control-pane select option { background: #0a0c10; }
 
-    /* Optional payload controls */
-    .osint-controls {
+    /* Payload builder */
+    .payload-builder {
       margin-top: 15px;
       background: rgba(0,0,0,0.3);
       border: 1px solid var(--card-border);
@@ -516,6 +516,16 @@
       }
     }
   
+    /* v1.4: payload builder, QR options grid, live readouts */
+    .payload-builder .input-group { margin-bottom: 0; }
+    .payload-builder .input-group label { font-size: 0.85em; }
+    .qr-options { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px; }
+    .payload-meta { margin-top: 8px; font-size: 0.8em; color: var(--text-muted); min-height: 1.2em; }
+    .payload-meta.warn { color: #f59e0b; }
+    #dataInput[readonly] { opacity: 0.85; cursor: default; }
+    @media (max-width: 600px) { .qr-options { grid-template-columns: 1fr; } }
+    .control-pane textarea { resize: vertical; min-height: 58px; line-height: 1.4; }
+
   </style>
 </head>
 <body>
@@ -541,23 +551,58 @@
     
     <div class="control-pane">
       <div class="input-group">
-        <label for="dataInput"><i data-lucide="link"></i> Payload Data</label>
-        <input id="dataInput" type="text" placeholder="Enter URL, Text, or Serial Number..." autocomplete="off"/>
-      </div>
-
-      <div class="input-group">
         <label for="typeSelect"><i data-lucide="layers"></i> Output Format</label>
         <select id="typeSelect">
-          <option value="qr">QR Code (Matrix)</option>
-          <option value="barcode">Code128 (Linear Barcode)</option>
+          <option value="qr">QR Code (matrix, any text)</option>
+          <option value="CODE128">Code 128 (any ASCII)</option>
+          <option value="CODE39">Code 39 (uppercase, digits, -. $/+%)</option>
+          <option value="EAN13">EAN-13 (12 digits + check digit)</option>
+          <option value="EAN8">EAN-8 (7 digits + check digit)</option>
+          <option value="UPC">UPC-A (11 digits + check digit)</option>
+          <option value="ITF14">ITF-14 (13 digits + check digit)</option>
         </select>
       </div>
 
-      <div class="osint-controls" id="osintControls" style="display: none;">
-        <div class="osint-header"><i data-lucide="sliders-horizontal"></i> Payload options</div>
-        <div class="checkbox-group">
-          <input type="checkbox" id="checkTracking">
-          <label for="checkTracking">Append a sample tracking parameter (?lb_uid=demo)</label>
+      <div class="payload-builder" id="payloadBuilder">
+        <div class="input-group">
+          <label for="payloadType"><i data-lucide="sliders-horizontal"></i> Payload type</label>
+          <select id="payloadType">
+            <option value="text">Plain text or URL</option>
+            <option value="wifi">Wi-Fi network</option>
+            <option value="email">Email (mailto)</option>
+            <option value="phone">Phone number</option>
+            <option value="sms">SMS</option>
+            <option value="vcard">Contact card (vCard)</option>
+            <option value="geo">Map location</option>
+          </select>
+        </div>
+        <div id="payloadFields"></div>
+      </div>
+
+      <div class="input-group">
+        <label for="dataInput"><i data-lucide="link"></i> Encoded payload</label>
+        <textarea id="dataInput" rows="2" placeholder="Enter a URL, text or serial number..." autocomplete="off" spellcheck="false"></textarea>
+        <div class="payload-meta" id="payloadMeta"></div>
+      </div>
+
+      <div class="qr-options" id="qrOptions">
+        <div class="input-group">
+          <label for="ecSelect"><i data-lucide="shield"></i> Error correction</label>
+          <select id="ecSelect">
+            <option value="L">L — 7% recovery, max capacity</option>
+            <option value="M" selected>M — 15% recovery (default)</option>
+            <option value="Q">Q — 25% recovery</option>
+            <option value="H">H — 30% recovery, for print and logos</option>
+          </select>
+        </div>
+        <div class="input-group">
+          <label for="sizeSelect"><i data-lucide="maximize"></i> Export size</label>
+          <select id="sizeSelect">
+            <option value="200">200 px (screen)</option>
+            <option value="300" selected>300 px</option>
+            <option value="500">500 px (print)</option>
+            <option value="800">800 px (large print)</option>
+          </select>
         </div>
       </div>
 
@@ -573,10 +618,11 @@
             <span>Background</span>
           </div>
         </div>
+        <div class="payload-meta" id="contrastMeta"></div>
       </div>
 
       <button class="btn-generate" onclick="generateCode()">
-        <i data-lucide="zap"></i> Synthesize Code
+        <i data-lucide="zap"></i> Generate Code
       </button>
     </div>
 
@@ -589,8 +635,11 @@
       </div>
 
       <div class="action-row">
-        <button class="btn-action" id="btnDownload" onclick="downloadCode()" disabled>
-          <i data-lucide="download"></i> Download
+        <button class="btn-action" id="btnDownload" onclick="downloadCode('png')" disabled>
+          <i data-lucide="download"></i> PNG
+        </button>
+        <button class="btn-action" id="btnDownloadSvg" onclick="downloadCode('svg')" disabled>
+          <i data-lucide="file-code"></i> SVG
         </button>
         <button class="btn-action" id="btnAnalyze" onclick="analyzeCode()" disabled>
           <i data-lucide="search"></i> Analyze
@@ -670,9 +719,10 @@
     <p>Layerbit's code synthesizer converts your text or URLs into high-fidelity, machine-readable formats. Unlike consumer generators, this tool performs all rendering inside your browser's local memory, guaranteeing absolute privacy for sensitive serial numbers or internal URLs. This makes it ideal for generating test cases of malicious or internally sensitive data without risk.</p>
     
     <ul>
-      <li><i data-lucide="check"></i> <strong>QR Code (Matrix):</strong> Ideal for URLs, VCards, and dense text. Supports custom branding colors. Vunerable to spoofing.</li>
-      <li><i data-lucide="check"></i> <strong>Code128 (Linear):</strong> The industry standard for inventory, shipping, and packaging. Renders flawlessly for laser scanners. Vulnerable to interception.</li>
-      <li><i data-lucide="check"></i> <strong>Native Export:</strong> Extract your generated codes directly to high-quality PNG format for immediate printing or security simulation.</li>
+      <li><i data-lucide="check"></i> <strong>QR Code (matrix):</strong> any text up to 2,953 bytes at level L. The payload builder composes the exact string a phone expects for Wi-Fi, contact cards, email, SMS and map locations, so you are not guessing the format.</li>
+      <li><i data-lucide="check"></i> <strong>Code 128 and Code 39:</strong> free-text linear barcodes for inventory and asset tags. Code 128 takes any ASCII; Code 39 is restricted to uppercase, digits and a few symbols but is readable by older scanners.</li>
+      <li><i data-lucide="check"></i> <strong>EAN-13, EAN-8, UPC-A, ITF-14:</strong> the retail and logistics symbologies. The check digit is calculated for you when you supply the data digits, and a wrong length is refused before anything is drawn.</li>
+      <li><i data-lucide="check"></i> <strong>Export:</strong> PNG at a size you choose, or SVG for print work, where a vector scales to any dimension without the blur that stops codes scanning.</li>
     </ul>
   </div>
 
@@ -680,6 +730,10 @@
     <div class="changelog-panel">
         <h2><i data-lucide="git-branch"></i> Deployment changelog</h2>
         <ul class="changelog-list">
+            <li class="changelog-item">
+                <span class="changelog-version">v1.4.0</span>
+                <span>Payload builder for Wi-Fi, vCard, mailto, SMS, tel and geo; six barcode symbologies with length and check-digit validation; selectable error-correction level and export size; SVG export; live capacity and contrast readouts. A payload beyond QR capacity is now reported instead of throwing.</span>
+            </li>
             <li class="changelog-item">
                 <span class="changelog-version">v1.3.0</span>
                 <span>Replaced the mocked Analyze score with real structural checks (IP-literal hosts, punycode labels, userinfo tricks, known shorteners, subdomain depth, non-standard ports).</span>
@@ -723,123 +777,261 @@
 
 
   <script>
-        const outputArea = document.getElementById('outputArea');
+    const outputArea = document.getElementById('outputArea');
     const typeSelect = document.getElementById('typeSelect');
-    const osintControls = document.getElementById('osintControls');
-    const colorControls = document.getElementById('colorControls');
+    const payloadType = document.getElementById('payloadType');
+    const payloadFields = document.getElementById('payloadFields');
+    const payloadBuilder = document.getElementById('payloadBuilder');
+    const payloadMeta = document.getElementById('payloadMeta');
+    const contrastMeta = document.getElementById('contrastMeta');
+    const qrOptions = document.getElementById('qrOptions');
+    const dataInput = document.getElementById('dataInput');
+    const ecSelect = document.getElementById('ecSelect');
+    const sizeSelect = document.getElementById('sizeSelect');
     const btnDownload = document.getElementById('btnDownload');
+    const btnDownloadSvg = document.getElementById('btnDownloadSvg');
     const btnAnalyze = document.getElementById('btnAnalyze');
-    
-    // Toggle controls based on selection
-    typeSelect.addEventListener('change', (e) => {
-      const isQR = e.target.value === 'qr';
-      osintControls.style.display = isQR ? 'flex' : 'none';
-      
-      // Keep color controls always available for barcode foreground too
-      colorControls.style.display = 'flex'; 
-    });
 
+    // Byte-mode capacity of a version-40 QR code per error-correction level
+    // (ISO/IEC 18004 table 7). This is the hard ceiling; density makes codes
+    // hard to scan long before it.
+    const QR_CAPACITY = { L: 2953, M: 2331, Q: 1663, H: 1273 };
+
+    // What each linear symbology accepts. The check digit is computed by the
+    // encoder, so the user supplies the data digits only (or all of them - a
+    // supplied check digit is verified rather than duplicated).
+    const BARCODE_RULES = {
+      CODE128: { test: v => /^[\x20-\x7e]+$/.test(v), hint: 'Code 128 accepts printable ASCII only.' },
+      CODE39:  { test: v => /^[0-9A-Z\-. $\/+%]+$/.test(v), hint: 'Code 39 accepts digits, uppercase A-Z, space and - . $ / + % only.' },
+      EAN13:   { test: v => /^\d{12,13}$/.test(v), hint: 'EAN-13 needs 12 data digits (13 if you include the check digit).' },
+      EAN8:    { test: v => /^\d{7,8}$/.test(v),   hint: 'EAN-8 needs 7 data digits (8 with the check digit).' },
+      UPC:     { test: v => /^\d{11,12}$/.test(v), hint: 'UPC-A needs 11 data digits (12 with the check digit).' },
+      ITF14:   { test: v => /^\d{13,14}$/.test(v), hint: 'ITF-14 needs 13 data digits (14 with the check digit).' },
+    };
+
+    // ---- payload builder ------------------------------------------------
+    // Each type lists its fields and a composer that turns them into the
+    // string phones actually parse (ZXing's conventions for WIFI:/SMSTO:,
+    // RFC 6068 for mailto, RFC 3966 for tel, RFC 5870 for geo, vCard 3.0).
+    const PAYLOADS = {
+      text:  { fields: [], compose: () => null },
+      wifi:  { fields: [['ssid','Network name (SSID)'],['pass','Password'],['enc','Security','select',['WPA','WEP','nopass']],['hidden','Hidden network','checkbox']],
+               compose: f => `WIFI:T:${f.enc};S:${wifiEsc(f.ssid)};${f.enc === 'nopass' ? '' : 'P:' + wifiEsc(f.pass) + ';'}${f.hidden ? 'H:true;' : ''};` },
+      email: { fields: [['to','To address'],['subject','Subject'],['body','Message']],
+               compose: f => `mailto:${f.to}` + query({ subject: f.subject, body: f.body }) },
+      phone: { fields: [['num','Number (with country code)']], compose: f => `tel:${f.num.replace(/[^\d+]/g, '')}` },
+      sms:   { fields: [['num','Number (with country code)'],['msg','Message']], compose: f => `SMSTO:${f.num.replace(/[^\d+]/g, '')}:${f.msg}` },
+      vcard: { fields: [['name','Full name'],['org','Organisation'],['title','Job title'],['tel','Phone'],['email','Email'],['url','Website']],
+               compose: f => ['BEGIN:VCARD','VERSION:3.0',`N:${lastFirst(f.name)}`,`FN:${vEsc(f.name)}`,
+                              f.org && `ORG:${vEsc(f.org)}`, f.title && `TITLE:${vEsc(f.title)}`, f.tel && `TEL;TYPE=CELL:${f.tel}`,
+                              f.email && `EMAIL:${f.email}`, f.url && `URL:${f.url}`, 'END:VCARD'].filter(Boolean).join('\n') },
+      geo:   { fields: [['lat','Latitude'],['lng','Longitude']], compose: f => `geo:${Number(f.lat) || 0},${Number(f.lng) || 0}` },
+    };
+    const wifiEsc = v => String(v).replace(/([\;,":])/g, '\\$1');
+    const vEsc = v => String(v).replace(/([\\,;])/g, '\\$1').replace(/\n/g, '\\n');
+    // N is family;given - the ';' between them is structural, so only the
+    // components themselves are escaped.
+    const lastFirst = n => { const p = n.trim().split(/\s+/); return p.length > 1 ? `${vEsc(p.pop())};${vEsc(p.join(' '))}` : `${vEsc(n)};`; };
+    const query = o => { const q = Object.entries(o).filter(([, v]) => v).map(([k, v]) => `${k}=${encodeURIComponent(v)}`).join('&'); return q ? '?' + q : ''; };
+
+    function renderPayloadFields() {
+      const def = PAYLOADS[payloadType.value];
+      payloadFields.innerHTML = def.fields.map(([key, label, kind, opts]) => {
+        if (kind === 'select') return `<div class="input-group"><label for="pf-${key}">${label}</label><select id="pf-${key}" data-pf="${key}">${opts.map(o => `<option value="${o}">${o === 'nopass' ? 'Open (no password)' : o}</option>`).join('')}</select></div>`;
+        if (kind === 'checkbox') return `<div class="checkbox-group"><input type="checkbox" id="pf-${key}" data-pf="${key}"><label for="pf-${key}">${label}</label></div>`;
+        return `<div class="input-group"><label for="pf-${key}">${label}</label><input type="text" id="pf-${key}" data-pf="${key}" autocomplete="off"></div>`;
+      }).join('');
+      payloadFields.querySelectorAll('[data-pf]').forEach(el => el.addEventListener('input', composePayload));
+      payloadFields.querySelectorAll('select[data-pf]').forEach(el => el.addEventListener('change', composePayload));
+      dataInput.readOnly = def.fields.length > 0;
+      composePayload();
+    }
+    function composePayload() {
+      const def = PAYLOADS[payloadType.value];
+      if (!def.fields.length) { updateMeta(); return; }
+      const f = {};
+      payloadFields.querySelectorAll('[data-pf]').forEach(el => { f[el.dataset.pf] = el.type === 'checkbox' ? el.checked : el.value; });
+      dataInput.value = def.compose(f);
+      updateMeta();
+    }
+
+    // ---- live readouts --------------------------------------------------
+    function updateMeta() {
+      const bytes = new TextEncoder().encode(dataInput.value).length;
+      if (typeSelect.value === 'qr') {
+        const cap = QR_CAPACITY[ecSelect.value];
+        const over = bytes > cap;
+        payloadMeta.textContent = `${bytes.toLocaleString()} bytes - ${over ? 'exceeds' : 'within'} the ${cap.toLocaleString()}-byte limit at level ${ecSelect.value}`;
+        payloadMeta.classList.toggle('warn', over);
+      } else {
+        const rule = BARCODE_RULES[typeSelect.value];
+        const ok = !dataInput.value || rule.test(dataInput.value);
+        payloadMeta.textContent = ok ? `${dataInput.value.length} characters` : rule.hint;
+        payloadMeta.classList.toggle('warn', !ok);
+      }
+      updateContrast();
+    }
+    // Scanners need dark-on-light with strong luminance contrast; the WCAG
+    // ratio is a convenient, well-understood measure of it.
+    function luminance(hex) {
+      const c = [1, 3, 5].map(i => parseInt(hex.slice(i, i + 2), 16) / 255).map(v => v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4));
+      return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2];
+    }
+    function updateContrast() {
+      const dark = document.getElementById('colorDark').value, light = document.getElementById('colorLight').value;
+      const ld = luminance(dark), ll = luminance(light);
+      const ratio = (Math.max(ld, ll) + 0.05) / (Math.min(ld, ll) + 0.05);
+      const inverted = ld > ll;
+      contrastMeta.textContent = `Contrast ${ratio.toFixed(1)}:1` + (inverted ? ' - inverted (light on dark): many scanners will not read this' : ratio < 4.5 ? ' - too low for reliable scanning; aim for 4.5:1 or more' : ' - good');
+      contrastMeta.classList.toggle('warn', inverted || ratio < 4.5);
+    }
+
+    function syncControls() {
+      const isQR = typeSelect.value === 'qr';
+      qrOptions.style.display = isQR ? 'grid' : 'none';
+      payloadBuilder.style.display = isQR ? 'flex' : 'none';
+      if (!isQR) { payloadType.value = 'text'; renderPayloadFields(); }
+      btnAnalyze.style.display = isQR ? '' : 'none';
+      updateMeta();
+    }
+    typeSelect.addEventListener('change', syncControls);
+    payloadType.addEventListener('change', renderPayloadFields);
+    ecSelect.addEventListener('change', updateMeta);
+    dataInput.addEventListener('input', updateMeta);
+    ['colorDark', 'colorLight'].forEach(id => document.getElementById(id).addEventListener('input', updateContrast));
+    renderPayloadFields();
+    syncControls();
+
+    function showMessage(text, color) {
+      outputArea.innerHTML = `
+        <div class="placeholder-text" style="color: ${color};">
+          <i data-lucide="triangle-alert" style="width: 48px; height: 48px;"></i>
+          <span>${text}</span>
+        </div>`;
+      if (window.lucide) lucide.createIcons();
+      disableActions();
+    }
+
+    // ---- generation ----------------------------------------------------
+    let lastSvg = null;
     function generateCode() {
-      let data = document.getElementById('dataInput').value.trim();
+      const data = dataInput.value.trim();
       const type = typeSelect.value;
       const fgColor = document.getElementById('colorDark').value;
       const bgColor = document.getElementById('colorLight').value;
-      const appendTracking = document.getElementById('checkTracking').checked;
-      
-      if (!data) {
-        outputArea.innerHTML = `
-          <div class="placeholder-text" style="color: #ef4444;">
-            <i data-lucide="triangle-alert" style="width: 48px; height: 48px;"></i>
-            <span>Please enter payload data.</span>
-          </div>`;
-        lucide.createIcons();
-        disableActions();
-        return;
-      }
 
-      // Optional sample tracking parameter
-      if (type === 'qr' && appendTracking && data.startsWith('http')) {
-        const urlObj = new URL(data);
-        urlObj.searchParams.append('lb_uid', 'demo');
-        data = urlObj.toString();
-        // Update input field to show user what actually went into the code
-        document.getElementById('dataInput').value = data; 
-      }
+      if (!data) { showMessage('Please enter payload data.', '#ef4444'); return; }
 
-      // Clear Output
       outputArea.innerHTML = '';
-      
-      // We apply background color to the room so transparent codes look right
       outputArea.style.backgroundColor = bgColor;
+      lastSvg = null;
 
       if (type === 'qr') {
-        const qrWrapper = document.createElement('div');
-        outputArea.appendChild(qrWrapper);
-        
-        new QRCode(qrWrapper, {
-          text: data,
-          width: 250,
-          height: 250,
-          colorDark: fgColor,
-          colorLight: bgColor,
-          correctLevel: QRCode.CorrectLevel.H
-        });
-
-      } else if (type === 'barcode') {
-        const canvas = document.createElement('canvas');
-        outputArea.appendChild(canvas);
-        
-        try {
-          JsBarcode(canvas, data, {
-            format: "CODE128",
-            lineColor: fgColor,
-            background: bgColor,
-            width: 2.5,
-            height: 100,
-            displayValue: true,
-            margin: 10
-          });
-        } catch (e) {
-           outputArea.innerHTML = `
-            <div class="placeholder-text" style="color: #ef4444;">
-              <i data-lucide="triangle-alert" style="width: 48px; height: 48px;"></i>
-              <span>Invalid data for Code128 format. Use alpha-numeric or standard symbols.</span>
-            </div>`;
-          lucide.createIcons();
-          disableActions();
+        const cap = QR_CAPACITY[ecSelect.value];
+        const bytes = new TextEncoder().encode(data).length;
+        if (bytes > cap) {
+          showMessage(`Payload is ${bytes.toLocaleString()} bytes; a QR code at level ${ecSelect.value} holds at most ${cap.toLocaleString()}. Shorten it or lower the error-correction level (L holds ${QR_CAPACITY.L.toLocaleString()}).`, '#ef4444');
           return;
         }
+        const size = Number(sizeSelect.value);
+        const qrWrapper = document.createElement('div');
+        outputArea.appendChild(qrWrapper);
+        try {
+          new QRCode(qrWrapper, { text: data, width: size, height: size, colorDark: fgColor, colorLight: bgColor,
+                                  correctLevel: QRCode.CorrectLevel[ecSelect.value] });
+        } catch (e) {
+          // qrcodejs throws on payloads that fit the byte table but overflow its
+          // internal version selection (multi-byte text counts differently).
+          showMessage('This payload is too long for a QR code at the chosen error-correction level. Shorten it or choose level L.', '#ef4444');
+          return;
+        }
+        // A vector copy for SVG export: read the module grid back off the canvas.
+        lastSvg = qrToSvg(qrWrapper, fgColor, bgColor);
+      } else {
+        const rule = BARCODE_RULES[type];
+        if (!rule.test(data)) { showMessage(rule.hint, '#ef4444'); return; }
+        const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        outputArea.appendChild(svg);
+        try {
+          JsBarcode(svg, data, { format: type, lineColor: fgColor, background: bgColor, width: 2.5, height: 100, displayValue: true, margin: 10 });
+        } catch (e) {
+          showMessage(`${rule.hint} ${String(e.message || e).replace(/^.*?:\s*/, '')}`, '#ef4444');
+          return;
+        }
+        lastSvg = svg.outerHTML;
       }
-
       enableActions();
+    }
+
+    // Rebuild the QR as SVG rects by sampling the rendered canvas at module
+    // resolution. qrcodejs does not expose its module matrix, but the canvas is
+    // drawn at an exact integer scale so sampling cell centres is lossless.
+    function qrToSvg(wrapper, fg, bg) {
+      const canvas = wrapper.querySelector('canvas');
+      if (!canvas) return null;
+      const ctx = canvas.getContext('2d');
+      const px = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+      // module count: scan the first row for the first colour transition.
+      let first = -1;
+      for (let x = 0; x < canvas.width; x++) { const i = x * 4; if (px[i] < 128 && px[i+1] < 128 && px[i+2] < 128) { first = x; break; } }
+      if (first < 0) return null;
+      let run = 0; for (let x = first; x < canvas.width; x++) { const i = x * 4; if (px[i] < 128) run++; else break; }
+      const modulePx = run / 7; // the finder pattern's outer run is 7 modules wide
+      const n = Math.round(canvas.width / modulePx);
+      const rects = [];
+      for (let r = 0; r < n; r++) for (let c = 0; c < n; c++) {
+        const x = Math.floor((c + 0.5) * modulePx), y = Math.floor((r + 0.5) * modulePx);
+        const i = (y * canvas.width + x) * 4;
+        if (px[i] < 128 && px[i+1] < 128 && px[i+2] < 128) rects.push(`<rect x="${c}" y="${r}" width="1" height="1"/>`);
+      }
+      return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="-4 -4 ${n + 8} ${n + 8}" shape-rendering="crispEdges"><rect x="-4" y="-4" width="${n + 8}" height="${n + 8}" fill="${bg}"/><g fill="${fg}">${rects.join('')}</g></svg>`;
     }
 
     function enableActions() {
       btnDownload.disabled = false;
+      btnDownloadSvg.disabled = !lastSvg;
       btnAnalyze.disabled = false;
     }
-
     function disableActions() {
       btnDownload.disabled = true;
+      btnDownloadSvg.disabled = true;
       btnAnalyze.disabled = true;
-      outputArea.style.backgroundColor = '#ffffff'; // reset room color
+      outputArea.style.backgroundColor = '#ffffff';
     }
 
-    // Export Logic
     function getExportElement() {
-      // qrcodejs sometimes makes a canvas, sometimes an img.
-      const canvas = outputArea.querySelector('canvas');
-      const img = outputArea.querySelector('img');
-      return canvas || img;
+      return outputArea.querySelector('canvas') || outputArea.querySelector('img') || outputArea.querySelector('svg');
     }
 
-    function downloadCode() {
-      const element = getExportElement();
-      if (!element) return;
-
+    function downloadCode(kind) {
+      const stamp = `layerbit-${typeSelect.value.toLowerCase()}-${Date.now()}`;
       const link = document.createElement('a');
-      link.download = `layerbit-synth-${typeSelect.value}-${Date.now()}.png`;
-      link.href = element.toDataURL ? element.toDataURL("image/png") : element.src;
+      if (kind === 'svg' && lastSvg) {
+        link.download = `${stamp}.svg`;
+        link.href = URL.createObjectURL(new Blob([lastSvg], { type: 'image/svg+xml' }));
+        link.click();
+        setTimeout(() => URL.revokeObjectURL(link.href), 1000);
+        return;
+      }
+      const el = getExportElement();
+      if (!el) return;
+      if (el.tagName.toLowerCase() === 'svg') {
+        // rasterise the barcode SVG for PNG export
+        const img = new Image();
+        const svgUrl = URL.createObjectURL(new Blob([el.outerHTML], { type: 'image/svg+xml' }));
+        img.onload = () => {
+          const c = document.createElement('canvas');
+          const scale = 3; // 3x for print-grade output
+          c.width = img.width * scale; c.height = img.height * scale;
+          c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+          link.download = `${stamp}.png`; link.href = c.toDataURL('image/png'); link.click();
+          URL.revokeObjectURL(svgUrl);
+        };
+        img.src = svgUrl;
+        return;
+      }
+      link.download = `${stamp}.png`;
+      link.href = el.toDataURL ? el.toDataURL('image/png') : el.src;
       link.click();
     }
 
@@ -860,7 +1052,7 @@
         outputArea.innerHTML = `
           <div class="placeholder-text" style="color: var(--accent-main);">
             <i data-lucide="shield-check" style="width: 48px; height: 48px;"></i>
-            <span>Code128 encodes raw data directly &mdash; there's no URL-redirect indirection to inspect. The printed code can still be physically swapped, which no scan-time check can catch.</span>
+            <span>A linear barcode encodes its data directly &mdash; there's no URL-redirect indirection to inspect. The printed code can still be physically swapped, which no scan-time check can catch.</span>
           </div>`;
         lucide.createIcons();
         return;
