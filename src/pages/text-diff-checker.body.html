@@ -36,6 +36,14 @@
     <label class="toggle-label">
       <input type="checkbox" id="inlineMode"> Inline View
     </label>
+    <label class="toggle-label" title="How changed lines are highlighted inside: by word, by character, or not at all">
+      Highlight
+      <select id="granularity" class="mini-select">
+        <option value="word" selected>words</option>
+        <option value="char">characters</option>
+        <option value="none">lines only</option>
+      </select>
+    </label>
     
     <button class="btn" onclick="swapInputs()"><i data-lucide="arrow-left-right"></i> Swap</button>
     <button class="btn" onclick="clearInputs()"><i data-lucide="trash-2"></i> Clear</button>
@@ -185,6 +193,7 @@
     <div class="info-panel">
       <h2><i data-lucide="git-merge"></i> Deployment Changelog</h2>
       <ul class="changelog-list">
+        <li><span class="changelog-tag">v2.3.0</span> Added a highlight granularity control for changed lines: word (default), character, or none. Character mode is what shows a one-letter identifier change; "lines only" is quieter for wholesale rewrites.</li>
         <li><span class="changelog-tag">v2.2.0</span> Added file upload and drag-and-drop to both panes.</li>
         <li><span class="changelog-tag">v2.1.0</span> Integrated Quick Testing Templates for rapid forensic evaluation.</li>
         <li><span class="changelog-tag">v2.0.0</span> Major Engine Overhaul: Integrated high-performance <code>jsdiff</code> library for exact character-level forensic highlighting.</li>
@@ -282,7 +291,11 @@
 
     // Word Diffing for modified lines
     function diffWordsInline(oldText, newText) {
-      const diffs = Diff.diffWords(oldText, newText);
+      const mode = document.getElementById('granularity').value;
+      if (mode === 'none') return { oldText: escapeHTML(oldText), newText: escapeHTML(newText) };
+      // Character granularity is the only way to see getUserId -> getUserID;
+      // word granularity is far more readable for prose. See the panel below.
+      const diffs = mode === 'char' ? Diff.diffChars(oldText, newText) : Diff.diffWords(oldText, newText);
       let outOld = "", outNew = "";
       
       diffs.forEach(part => {

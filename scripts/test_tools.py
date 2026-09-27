@@ -172,6 +172,15 @@ def _(t):
     eq(len(t.val("plainText")), len(s), "decoded length")
 
 
+@case("base64", "typical", "URL-safe toggle swaps alphabet and drops padding; stats shown")
+def _(t):
+    t.set("plainText", "hi?>")
+    eq(t.val("base64Text"), "aGk/Pg==", "standard")
+    t.click("#urlSafe")
+    eq(t.val("base64Text"), "aGk_Pg", "url-safe")
+    expect("4 bytes" in t.text("b64Stats"), f"stats: {t.text('b64Stats')}")
+
+
 # ----------------------------------------------------------------------------
 # json-validator
 # ----------------------------------------------------------------------------
@@ -216,6 +225,46 @@ def _(t):
     t.click("#btnMinify")
     out = t.text("jsonOutput")
     expect(out.startswith('[{"id":0') and out.rstrip().endswith("}]"), "minified large array wrong")
+
+
+@case("json-validator", "typical", "path query evaluates dot, bracket and length")
+def _(t):
+    t.set("jsonInput", '{"users":[{"id":1,"tags":["a","b"]},{"id":2}],"meta":{"a b":true}}')
+    t.click("#btnFormat")
+    t.set("pathInput", "$.users[0].tags[1]")
+    eq(t.text("pathResult").strip(), '"b"', "bracket path")
+    t.set("pathInput", "users.length")
+    eq(t.text("pathResult").strip(), "2", "length")
+    t.set("pathInput", 'meta["a b"]')
+    eq(t.text("pathResult").strip(), "true", "quoted key")
+    t.set("pathInput", "users[5].id")
+    expect("undefined" in t.text("pathResult"), "missing path not reported")
+
+
+@case("json-validator", "typical", "sort keys is deep and leaves arrays alone")
+def _(t):
+    t.set("jsonInput", '{"b":{"z":1,"a":[3,1,2]},"a":0}')
+    t.call("document.getElementById('sortKeys').checked = true")
+    t.click("#btnMinify")
+    eq(t.text("jsonOutput").strip(), '{"a":0,"b":{"a":[3,1,2],"z":1}}', "sorted")
+
+
+@case("json-validator", "edge", "error reports line and column and moves the caret")
+def _(t):
+    t.set("jsonInput", '{\n  "a": 1,\n  "b": [1, 2,]\n}')
+    t.click("#btnFormat")
+    msg = t.text("errorText")
+    expect("line 3" in msg and "column" in msg, f"no line/col: {msg}")
+    sel = t.call("document.getElementById('jsonInput').selectionStart")
+    expect(sel > 15, f"caret not moved: {sel}")
+
+
+@case("json-validator", "typical", "stats strip counts structure")
+def _(t):
+    t.set("jsonInput", '{"a":[1,2,{"b":null}],"c":"x"}')
+    t.click("#btnFormat")
+    st = t.text("jsonStats")
+    expect("3" in st and "keys" in st and "depth" in st and "minified" in st, f"stats wrong: {st}")
 
 
 # ----------------------------------------------------------------------------
@@ -277,6 +326,41 @@ def _(t):
     expect("role-19999" in t.text("payloadOutput"), "large payload truncated")
 
 
+@case("jwt-decoder", "typical", "claim timeline: expired token shows 'ago' and status Expired")
+def _(t):
+    import base64, time
+    h = base64.urlsafe_b64encode(b'{"alg":"HS256","typ":"JWT"}').decode().rstrip("=")
+    now = int(time.time())
+    p = base64.urlsafe_b64encode(json.dumps({"iat": now - 7200, "exp": now - 3600}).encode()).decode().rstrip("=")
+    t.set("jwtInput", f"{h}.{p}.x")
+    expect("ago" in t.text("claimTimes") and "Lifetime" in t.text("claimTimes"), f"timeline wrong: {t.text('claimTimes')}")
+    eq(t.text("statusText").strip(), "Token Expired", "status")
+
+
+@case("jwt-decoder", "edge", "nbf in the future -> Not Yet Valid; millisecond exp is flagged")
+def _(t):
+    import base64, time
+    h = base64.urlsafe_b64encode(b'{"alg":"none"}').decode().rstrip("=")
+    now = int(time.time())
+    p = base64.urlsafe_b64encode(json.dumps({"nbf": now + 3600, "exp": (now + 7200) * 1000}).encode()).decode().rstrip("=")
+    t.set("jwtInput", f"{h}.{p}.")
+    expect("Not Yet Valid" in t.text("statusText"), f"status: {t.text('statusText')}")
+    expect("milliseconds" in t.text("claimTimes"), "ms warning missing")
+
+
+@case("jwt-decoder", "typical", "signer produces a token that the verifier accepts")
+def _(t):
+    t.set("signSecret", "s3cret")
+    t.select("signAlg", "HS512")
+    t.click("#btnSign")
+    t.wait_for("() => document.getElementById('signOutput').innerText.split('.').length === 3")
+    token = t.text("signOutput").strip()
+    t.click("#btnSignLoad")
+    t.wait_for("() => /valid|verified/i.test(document.getElementById('verifyResult').innerText)")
+    expect('"HS512"' in t.text("headerOutput") and '"user-42"' in t.text("payloadOutput"), "loaded token wrong")
+    expect("Not Expired" in t.text("statusText"), "exp not set to future")
+
+
 # ----------------------------------------------------------------------------
 # regex-tester
 # ----------------------------------------------------------------------------
@@ -326,6 +410,26 @@ def _(t):
     t.set("regexInput", r"\b\d+\b")
     t.set("testInput", " ".join(str(i) for i in range(20000)))
     t.wait_for("() => /20000|20,000/.test(document.getElementById('matchCount').innerText)")
+
+
+@case("regex-tester", "typical", "s flag lets . cross newlines; timing readout renders")
+def _(t):
+    t.set("regexInput", "a.b")
+    t.set("testInput", "a\nb")
+    t.wait_for("() => /0 Matches/.test(document.getElementById('matchCount').innerText)")
+    t.click(".flag-btn[data-flag='s']")
+    t.wait_for("() => /1 Matches/.test(document.getElementById('matchCount').innerText)")
+    expect("ms on" in t.text("matchTiming"), "timing missing")
+
+
+@case("regex-tester", "typical", "u flag enables \\p{Script=Han}")
+def _(t):
+    t.set("regexInput", r"\p{Script=Han}+")
+    t.set("testInput", "abc 日本語 def")
+    t.wait(60)
+    expect("Error" in t.text("matchCount") or "0 Matches" in t.text("matchCount"), "without u, \\p should not match")
+    t.click(".flag-btn[data-flag='u']")
+    t.wait_for("() => /1 Matches/.test(document.getElementById('matchCount').innerText)")
 
 
 # ----------------------------------------------------------------------------
@@ -423,6 +527,29 @@ def _(t):
     expect('"name9999"' in out, "last row missing")
 
 
+@case("csv-to-json", "typical", "semicolon delimiter is auto-detected; tab can be forced")
+def _(t):
+    t.click("#btnModeToJSON")
+    t.set("csvInput", "id;name;city\n1;Ann;Berlin\n2;Bob;Wien")
+    t.click("#btnConvert")
+    out = json.loads(t.text("jsonOutput"))
+    eq(out[1]["city"], "Wien", "semicolon auto-detect")
+    expect("semicolon" in t.text("delimDetected"), "detected label missing")
+    t.select("delimSelect", "\t")
+    t.set("csvInput", "a\tb\n1\t2")
+    t.click("#btnConvert")
+    eq(json.loads(t.text("jsonOutput"))[0]["b"], 2, "tab forced")
+
+
+@case("csv-to-json", "edge", "one-column result with another separator is refused with a hint")
+def _(t):
+    t.click("#btnModeToJSON")
+    t.select("delimSelect", ",")
+    t.set("csvInput", "a;b\n1;2")
+    t.click("#btnConvert")
+    expect("delimiter" in t.text("errorText").lower(), f"no hint: {t.text('errorText')}")
+
+
 # ----------------------------------------------------------------------------
 # yaml-json-converter
 # ----------------------------------------------------------------------------
@@ -462,6 +589,16 @@ def _(t):
     t.set("yamlInput", "\n".join(f"key{i}: value{i}" for i in range(5000)))
     out = json.loads(t.val("jsonInput"))
     eq(out["key4999"], "value4999", "last key")
+
+
+@case("yaml-json-converter", "edge", "errors report line and column on both sides")
+def _(t):
+    t.set("yamlInput", "a: 1\nb: [1, 2\nc: 3")
+    t.wait(50)
+    expect("line" in t.text("yamlError"), f"yaml error lacks position: {t.text('yamlError')}")
+    t.set("jsonInput", '{"a": 1,\n "b": }')
+    t.wait(50)
+    expect("line 2" in t.text("jsonError"), f"json error lacks position: {t.text('jsonError')}")
 
 
 # ----------------------------------------------------------------------------
@@ -547,6 +684,21 @@ def _(t):
     t.wait_for("() => document.getElementById('outputSection').innerText.includes('LINE 4900')")
 
 
+@case("text-diff-checker", "typical", "character granularity isolates a one-letter change")
+def _(t):
+    t.set("text1", "getUserId()")
+    t.set("text2", "getUserID()")
+    t.select("granularity", "char")
+    t.call("runDiff()")
+    t.wait(150)
+    spans = t.call("Array.from(document.querySelectorAll('#rightPanel .word-added')).map(e => e.textContent)")
+    eq(spans, ["D"], "char-level added span")
+    t.select("granularity", "none")
+    t.call("runDiff()")
+    t.wait(150)
+    eq(t.count("#rightPanel .word-added"), 0, "lines-only mode still highlighted words")
+
+
 # ----------------------------------------------------------------------------
 # log-analyzer
 # ----------------------------------------------------------------------------
@@ -592,6 +744,23 @@ def _(t):
     eq(t.text("countErr").strip().replace(",", ""), "5000", "error count at scale")
 
 
+@case("log-analyzer", "typical", "DEBUG filter, regex grep and repeated-message tally")
+def _(t):
+    lines = ["2026-01-01 10:00:00 DEBUG cache miss key=%d" % i for i in range(3)] + \
+            ["2026-01-01 10:00:0%d ERROR user %d timed out after 30s" % (i, 1000 + i) for i in range(4)] + \
+            ["2026-01-01 10:00:09 INFO ok"]
+    t.set("logInput", "\n".join(lines))
+    t.call("analyzeLogs()")
+    eq(t.text("countDebug").strip(), "3", "debug count")
+    top = t.text("topMessages")
+    expect("×4" in top and "user # timed out" in top, f"tally wrong: {top!r}")
+    t.call("document.getElementById('grepRegex').checked = true")
+    t.set("searchInput", "user 100[12]", event="keyup")
+    t.wait(50)
+    vis = t.call("Array.from(document.querySelectorAll('#logOutput .log-line')).filter(l => l.style.display !== 'none').length")
+    eq(vis, 2, "regex grep visible rows")
+
+
 # ----------------------------------------------------------------------------
 # json-to-table
 # ----------------------------------------------------------------------------
@@ -635,6 +804,18 @@ def _(t):
     expect("row4999" in t.text("tableBody"), "filter lost the row")
 
 
+@case("json-to-table", "typical", "column sort is numeric and toggles direction")
+def _(t):
+    t.set("jsonInput", '[{"n":10,"s":"b"},{"n":9,"s":"a"},{"n":100,"s":"c"}]')
+    t.call("processJSON()")
+    t.click("th[data-col='n']")
+    col = t.call("Array.from(document.querySelectorAll('#tableBody tr td:first-child')).map(e => e.textContent)")
+    eq(col, ["9", "10", "100"], "numeric ascending")
+    t.click("th[data-col='n']")
+    col = t.call("Array.from(document.querySelectorAll('#tableBody tr td:first-child')).map(e => e.textContent)")
+    eq(col, ["100", "10", "9"], "numeric descending")
+
+
 # ----------------------------------------------------------------------------
 # html-escape-unescape
 # ----------------------------------------------------------------------------
@@ -665,6 +846,15 @@ def _(t):
     t.set("rawInput", "<p>a & b</p>\n" * 40000)
     esc = t.val("escapedInput")
     eq(esc.count("&lt;p&gt;"), 40000, "escape count")
+
+
+@case("html-escape-unescape", "typical", "escape profiles: essential leaves '/', non-ASCII becomes hex refs")
+def _(t):
+    t.select("escapeProfile", "essential")
+    t.set("rawInput", "a/b <c> é")
+    eq(t.val("escapedInput"), "a/b &lt;c&gt; é", "essential")
+    t.select("escapeProfile", "nonascii")
+    eq(t.val("escapedInput"), "a&#x2F;b &lt;c&gt; &#xE9;", "non-ascii")
 
 
 # ----------------------------------------------------------------------------
@@ -707,6 +897,19 @@ def _(t):
     t.select("selMin", "0")
     t.select("selHour", "12")
     expect(t.val("cronInput").startswith("0 12"), f"dropdowns did not build: {t.val('cronInput')}")
+
+
+@case("cron-generator", "typical", "next runs in a chosen zone show the UTC equivalent")
+def _(t):
+    expect(t.count("#tzSelect option") > 10, "zone list not populated")
+    t.set("cronInput", "0 9 * * *")
+    t.select("tzSelect", "Asia/Dubai")
+    t.wait(100)
+    li = t.text("nextRunsList")
+    expect("09:00" in li and "05:00" in li and "UTC" in li, f"zone conversion wrong: {li[:120]!r}")
+    t.select("tzSelect", "UTC")
+    t.wait(50)
+    expect("= " not in t.text("nextRunsList"), "UTC mode should not show an equivalent")
 
 
 # ----------------------------------------------------------------------------

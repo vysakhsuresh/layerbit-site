@@ -26,8 +26,9 @@
 
       <div class="pane">
         <div class="pane-header">
-          <div class="pane-title"><i data-lucide="binary"></i> Base64 Encoded</div>
+          <div class="pane-title"><i data-lucide="binary"></i> Base64 Encoded <span class="b64-stats" id="b64Stats"></span></div>
           <div class="header-actions">
+            <label class="b64-toggle" title="Use - and _ instead of + and /, and drop the = padding (RFC 4648 §5, as used by JWTs and URLs)"><input type="checkbox" id="urlSafe"> URL-safe</label>
             <button class="btn-action" onclick="clearContent('base64Text', 'plainText')"><i data-lucide="trash-2"></i> <span>Clear</span></button>
             <button class="btn-action" onclick="copyContent('base64Text', this)"><i data-lucide="copy"></i> <span>Copy</span></button>
           </div>
@@ -172,6 +173,7 @@
     <div class="info-panel">
       <h2><i data-lucide="git-commit"></i> Changelog</h2>
       <ul class="changelog-list">
+        <li><span class="changelog-tag">v1.4.1</span> Added a URL-safe output toggle (RFC 4648 §5 alphabet, no padding) and a live byte/character readout, so the 33% overhead is visible on the input you actually have.</li>
         <li><span class="changelog-tag">v1.4.0</span> Decoder now accepts the URL-safe alphabet (<code>-</code> and <code>_</code>), ignores line wrapping and whitespace, and tolerates missing padding, so JWT segments and copied-from-a-log strings decode directly. Encoding and decoding use <code>TextEncoder</code>/<code>TextDecoder</code> for correct UTF-8 on multi-megabyte input.</li>
         <li><span class="changelog-tag">v1.3.0</span> Added deep clipboard API integration with a safe fallback mechanism for mobile devices handling massive image strings.</li>
         <li><span class="changelog-tag">v1.2.0</span> Integrated visual asset rendering for Data URIs, allowing real-time preview of encoded images and PDF iframes.</li>
@@ -359,14 +361,22 @@
       catch (e) { return bin; }
     }
 
-    plainText.addEventListener('input', () => {
+    const urlSafe = document.getElementById('urlSafe');
+    const b64Stats = document.getElementById('b64Stats');
+    function encodePlain() {
       try {
-        base64Text.value = encodeUtf8ToBase64(plainText.value);
+        let enc = encodeUtf8ToBase64(plainText.value);
+        if (urlSafe.checked) enc = enc.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+        base64Text.value = enc;
         decodeError.classList.remove('active');
+        const bytes = new TextEncoder().encode(plainText.value).length;
+        b64Stats.textContent = bytes ? `${bytes.toLocaleString()} bytes → ${enc.length.toLocaleString()} chars` : '';
       } catch(e) {
         console.error("Encoding error", e);
       }
-    });
+    }
+    plainText.addEventListener('input', encodePlain);
+    urlSafe.addEventListener('change', encodePlain);
 
     base64Text.addEventListener('input', () => {
       const val = base64Text.value.trim();
@@ -378,8 +388,11 @@
       try {
         plainText.value = decodeBase64ToUtf8(val);
         decodeError.classList.remove('active');
+        const bytes = new TextEncoder().encode(plainText.value).length;
+        b64Stats.textContent = `${val.length.toLocaleString()} chars → ${bytes.toLocaleString()} bytes`;
       } catch (e) {
         decodeError.classList.add('active');
+        b64Stats.textContent = '';
       }
     });
 

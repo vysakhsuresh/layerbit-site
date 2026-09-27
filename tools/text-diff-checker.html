@@ -252,6 +252,11 @@
       .fab { bottom: 15px; left: 15px; width: 50px; height: 50px; }
     }
   
+    /* v2.3: granularity */
+    .mini-select { background: rgba(0,0,0,0.3); border: 1px solid var(--card-border); color: var(--text-main); border-radius: 6px; padding: 4px 8px; font-family: inherit; font-size: 0.95em; outline: none; cursor: pointer; }
+    .mini-select:focus { border-color: var(--accent-main); }
+    .mini-select option { background: #0a0c10; }
+
   </style>
 </head>
 <body>
@@ -302,6 +307,14 @@
     </label>
     <label class="toggle-label">
       <input type="checkbox" id="inlineMode"> Inline View
+    </label>
+    <label class="toggle-label" title="How changed lines are highlighted inside: by word, by character, or not at all">
+      Highlight
+      <select id="granularity" class="mini-select">
+        <option value="word" selected>words</option>
+        <option value="char">characters</option>
+        <option value="none">lines only</option>
+      </select>
     </label>
     
     <button class="btn" onclick="swapInputs()"><i data-lucide="arrow-left-right"></i> Swap</button>
@@ -452,6 +465,7 @@
     <div class="info-panel">
       <h2><i data-lucide="git-merge"></i> Deployment Changelog</h2>
       <ul class="changelog-list">
+        <li><span class="changelog-tag">v2.3.0</span> Added a highlight granularity control for changed lines: word (default), character, or none. Character mode is what shows a one-letter identifier change; "lines only" is quieter for wholesale rewrites.</li>
         <li><span class="changelog-tag">v2.2.0</span> Added file upload and drag-and-drop to both panes.</li>
         <li><span class="changelog-tag">v2.1.0</span> Integrated Quick Testing Templates for rapid forensic evaluation.</li>
         <li><span class="changelog-tag">v2.0.0</span> Major Engine Overhaul: Integrated high-performance <code>jsdiff</code> library for exact character-level forensic highlighting.</li>
@@ -560,7 +574,11 @@
 
     // Word Diffing for modified lines
     function diffWordsInline(oldText, newText) {
-      const diffs = Diff.diffWords(oldText, newText);
+      const mode = document.getElementById('granularity').value;
+      if (mode === 'none') return { oldText: escapeHTML(oldText), newText: escapeHTML(newText) };
+      // Character granularity is the only way to see getUserId -> getUserID;
+      // word granularity is far more readable for prose. See the panel below.
+      const diffs = mode === 'char' ? Diff.diffChars(oldText, newText) : Diff.diffWords(oldText, newText);
       let outOld = "", outNew = "";
       
       diffs.forEach(part => {

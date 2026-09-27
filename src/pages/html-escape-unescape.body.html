@@ -21,7 +21,13 @@
 
     <div class="pane" id="escapedPane">
       <div class="pane-header">
-        <div class="pane-title"><i data-lucide="shield-check"></i> Escaped Entities</div>
+        <div class="pane-title"><i data-lucide="shield-check"></i> Escaped Entities
+          <select id="escapeProfile" class="mini-select" title="Which characters to escape">
+            <option value="essential">essential 5 (&amp; &lt; &gt; &quot; ')</option>
+            <option value="extended" selected>extended (+ / ` =)</option>
+            <option value="nonascii">extended + non-ASCII as &amp;#x…;</option>
+          </select>
+        </div>
         <div class="btn-group">
           <input type="file" id="escapedFile" accept=".html,.htm,.txt" style="display:none;">
           <button class="btn" onclick="document.getElementById('escapedFile').click()"><i data-lucide="upload"></i> Upload</button>
@@ -141,6 +147,7 @@
     <div class="info-panel">
       <h2><i data-lucide="git-commit"></i> Changelog</h2>
       <ul class="changelog-list">
+        <li><span class="changelog-tag">v1.5.0</span> Added an escape profile: the essential five for HTML text and attributes, the extended set that also covers unquoted-attribute breakouts, or everything non-ASCII as hex references for charset-less destinations.</li>
         <li><span class="changelog-tag">v1.4.0</span> Unescaping now decodes every HTML5 named entity (all 2,231 of them), plus decimal and hex numeric references, rather than the eight the tool itself produces. <code>&amp;copy;</code>, <code>&amp;nbsp;</code> and <code>&amp;#x1F600;</code> all round-trip.</li>
         <li><span class="changelog-tag">v1.3.0</span> Added file upload and drag-and-drop to both panes.</li>
         <li><span class="changelog-tag">v1.2.0</span> Upgraded the rendering engine to provide bidirectional synchronization without infinite loop conflicts.</li>
@@ -192,10 +199,16 @@
     };
 
     function safeEscapeHTML(str) {
-      return String(str).replace(/[&<>"'`=\/]/g, function (s) {
-        return escapeMap[s];
-      });
+      const profile = document.getElementById('escapeProfile').value;
+      const re = profile === 'essential' ? /[&<>"']/g : /[&<>"'`=\/]/g;
+      let out = String(str).replace(re, s => escapeMap[s]);
+      // Numeric references for everything outside ASCII: what you want when
+      // the destination declares no charset, or for an email template that
+      // some client will re-encode on the way through.
+      if (profile === 'nonascii') out = out.replace(/[^\x00-\x7f]/gu, ch => `&#x${ch.codePointAt(0).toString(16).toUpperCase()};`);
+      return out;
     }
+    document.getElementById('escapeProfile').addEventListener('change', () => { escapedInput.value = safeEscapeHTML(rawInput.value); });
 
     // The browser's own parser knows all 2,231 HTML5 named entities plus
     // decimal and hex numeric references, including the legacy ones without a

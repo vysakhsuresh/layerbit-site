@@ -392,6 +392,7 @@
     <div class="info-panel">
       <h2><i data-lucide="git-merge"></i> Deployment Changelog</h2>
       <ul class="changelog-list">
+        <li><span class="changelog-tag">v2.1.0</span> Syntax errors now say what went wrong and where: the YAML side reports the parser's reason with line and column, the JSON side the engine message with the position resolved to line and column.</li>
         <li><span class="changelog-tag">v1.3.0</span> Added file upload, drag-and-drop, and line-number gutters to both panes.</li>
         <li><span class="changelog-tag">v1.2.0</span> Integrated interactive Quick Testing Templates for rapid validation of the bidirectional JS-YAML engine.</li>
         <li><span class="changelog-tag">v1.1.0</span> Engineered non-destructive syntax error isolation to prevent unintended data loss during edits.</li>
@@ -451,6 +452,26 @@
       jsonGutter.style.transform = `translateY(-${jsonInput.scrollTop}px)`;
     });
 
+    function escapeErr(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;'); }
+    // V8 reports either "at position N" or, for token errors, a context window
+    // like: Unexpected token '}', ..."a": 1, "b": }" is not valid JSON. Find the
+    // window in the source and the offending token nearest its centre.
+    function jsonErrorOffset(message, raw) {
+      const m = /position (\d+)/.exec(message);
+      if (m) return Number(m[1]);
+      if (/end of JSON input/i.test(message)) return raw.length;
+      const w = /Unexpected (?:token '(.)'|non-whitespace character[^,]*), (?:\.\.\.)?"(.*)"(?:\.\.\.)? is not valid JSON/s.exec(message);
+      if (!w) return -1;
+      const frag = w[2];
+      let idx = raw.indexOf(frag);
+      if (idx < 0 && frag.length > 1) idx = raw.indexOf(frag.slice(1)) - 1;
+      if (idx < 0) return -1;
+      if (!w[1]) return idx + Math.floor(frag.length / 2);
+      let best = -1, bestD = Infinity, k = -1;
+      while ((k = frag.indexOf(w[1], k + 1)) >= 0) { const d = Math.abs(k - frag.length / 2); if (d < bestD) { bestD = d; best = k; } }
+      return best >= 0 ? idx + best : idx;
+    }
+
     // YAML to JSON
     yamlInput.addEventListener("input", () => {
       if (isSyncing) return;
@@ -476,7 +497,11 @@
         yamlError.classList.remove("active");
         jsonError.classList.remove("active");
       } catch (err) {
+        // js-yaml attaches a mark with the 0-based line/column of the failure.
+        const where = err.mark ? ` — line ${err.mark.line + 1}, col ${err.mark.column + 1}` : '';
+        yamlError.innerHTML = `<i data-lucide="alert-circle"></i> ${escapeErr(err.reason || err.message)}${where}`;
         yamlError.classList.add("active");
+        if (window.lucide) lucide.createIcons();
       } finally {
         isSyncing = false;
         updateGutters();
@@ -505,7 +530,12 @@
         jsonError.classList.remove("active");
         yamlError.classList.remove("active");
       } catch (err) {
+        const pos = jsonErrorOffset(err.message, val);
+        let where = '';
+        if (pos >= 0) { const before = val.slice(0, pos); where = ` — line ${before.split('\n').length}, col ${pos - before.lastIndexOf('\n')}`; }
+        jsonError.innerHTML = `<i data-lucide="alert-circle"></i> ${escapeErr(err.message.replace(/\s*\(line \d+ column \d+\)/, '').slice(0, 90))}${where}`;
         jsonError.classList.add("active");
+        if (window.lucide) lucide.createIcons();
       } finally {
         isSyncing = false;
         updateGutters();

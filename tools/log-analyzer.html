@@ -309,6 +309,21 @@
       .fab { bottom: 20px; left: 20px; width: 50px; height: 50px; }
     }
   
+    /* v2.1: debug filter, regex grep, repeated messages */
+    .stat-debug { color: #a78bfa; background: rgba(167,139,250,0.12); border-color: rgba(167,139,250,0.3); }
+    .console-output[data-filter="DEBUG"] .log-line:not(.type-debug) { display: none; }
+    .regex-toggle { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); display: flex; align-items: center; gap: 4px; font-family: 'Fira Code', monospace; font-size: 0.75em; color: var(--text-muted); cursor: pointer; }
+    .regex-toggle input { accent-color: var(--accent-main); }
+    .search-input { padding-right: 46px; }
+    .search-input.bad { border-color: #ef4444; }
+    .top-messages { border-bottom: 1px solid var(--card-border); background: rgba(0,0,0,0.25); padding: 8px 15px; font-size: 0.78em; }
+    .top-messages:empty { display: none; }
+    .top-title { display: flex; align-items: center; gap: 6px; color: var(--text-muted); font-weight: 600; margin-bottom: 6px; }
+    .top-title i { width: 13px; }
+    .top-row { display: flex; gap: 10px; align-items: baseline; padding: 2px 0; font-family: 'Fira Code', monospace; }
+    .top-count { color: var(--accent-main); min-width: 48px; font-weight: 600; }
+    .top-msg { color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
   </style>
 </head>
 <body>
@@ -360,12 +375,15 @@
           <div class="stat-badge stat-err" id="filter-ERROR" onclick="setFilter('ERROR')">ERRORS: <span id="countErr">0</span></div>
           <div class="stat-badge stat-warn" id="filter-WARN" onclick="setFilter('WARN')">WARNS: <span id="countWarn">0</span></div>
           <div class="stat-badge stat-info" id="filter-INFO" onclick="setFilter('INFO')">INFO: <span id="countInfo">0</span></div>
+          <div class="stat-badge stat-debug" id="filter-DEBUG" onclick="setFilter('DEBUG')">DEBUG: <span id="countDebug">0</span></div>
         </div>
         <div class="search-wrapper">
           <i data-lucide="search"></i>
           <input type="text" id="searchInput" class="search-input" placeholder="Grep output..." onkeyup="grepLogs()">
+          <label class="regex-toggle" title="Treat the grep as a regular expression (case-insensitive)"><input type="checkbox" id="grepRegex" onchange="grepLogs()"> .*</label>
         </div>
       </div>
+      <div class="top-messages" id="topMessages"></div>
 
       <div class="console-output" id="logOutput" data-filter="ALL">
         <div style="padding: 20px; color: var(--text-muted); text-align: center; font-style: italic;">
@@ -477,6 +495,7 @@
     <div class="info-panel">
       <h2><i data-lucide="git-merge"></i> Deployment Methodology Changelog</h2>
       <ul class="changelog-list">
+        <li><span class="changelog-tag">v2.1.0</span> Added a DEBUG/TRACE filter with its own count, a regular-expression mode for grep, and a "most repeated messages" readout that collapses timestamps, ids, numbers and quoted values so the same fault logged a thousand times with different ids shows as one line with a count.</li>
         <li><span class="changelog-tag">v1.4.0</span> Added a Copy Filtered button alongside Export, matching the copy-to-clipboard pattern used elsewhere in the suite.</li>
         <li><span class="changelog-tag">v1.3.0</span> Added a file-size warning before loading very large dumps, and corrected the FAQ's file-size claim to match actual (non-virtualized) rendering capacity.</li>
         <li><span class="changelog-tag">v1.2.1</span> Patched multi-line stack trace grepping logic and optimized mobile performance.</li>
@@ -580,7 +599,8 @@
       const lines = rawText.split('\n');
       
       let htmlBuilder = '';
-      let cErr = 0, cWarn = 0, cInfo = 0;
+      let cErr = 0, cWarn = 0, cInfo = 0, cDebug = 0;
+      messageTally.clear();
 
       for (let i = 0; i < lines.length; i++) {
         let line = lines[i];
@@ -604,8 +624,11 @@
           cInfo++;
           safeLine = safeLine.replace(new RegExp(rxInfo.source, 'gi'), '<span class="badge-info">$&</span>');
         } else if (rxDebug.test(line)) {
+          rowClass = 'type-debug';
+          cDebug++;
           safeLine = safeLine.replace(new RegExp(rxDebug.source, 'gi'), '<span class="badge-debug">$&</span>');
         }
+        tallyMessage(line);
 
         // Highlight Timestamps
         safeLine = safeLine.replace(rxTime, '<span class="hl-timestamp">$&</span>');
@@ -620,10 +643,40 @@
       countErr.innerText = cErr;
       countWarn.innerText = cWarn;
       countInfo.innerText = cInfo;
+      document.getElementById('countDebug').innerText = cDebug;
+      renderTopMessages();
 
       // Reset Search & Filter
       setFilter('ALL');
       searchInput.value = '';
+    }
+
+    // Repeated messages, with the parts that vary (timestamps, ids, numbers,
+    // hex, quoted values) collapsed to placeholders so "user 4471 timed out"
+    // and "user 9022 timed out" count as one problem, not two.
+    const messageTally = new Map();
+    function normaliseMessage(line) {
+      return line
+        .replace(rxTime, '')
+        .replace(/\b0x[0-9a-f]+\b/gi, '0x#')
+        .replace(/\b[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\b/gi, '<uuid>')
+        .replace(/"[^"]*"/g, '"…"')
+        .replace(/\b\d+(\.\d+)?\b/g, '#')
+        .replace(/\s+/g, ' ').trim().slice(0, 160);
+    }
+    function tallyMessage(line) {
+      const key = normaliseMessage(line);
+      if (!key) return;
+      const e = messageTally.get(key) || { count: 0, sample: line.trim() };
+      e.count++; messageTally.set(key, e);
+    }
+    function renderTopMessages() {
+      const el = document.getElementById('topMessages');
+      const top = [...messageTally.entries()].filter(([, v]) => v.count > 1).sort((a, b) => b[1].count - a[1].count).slice(0, 6);
+      if (!top.length) { el.innerHTML = ''; return; }
+      el.innerHTML = `<div class="top-title"><i data-lucide="repeat"></i> Most repeated messages</div>` +
+        top.map(([k, v]) => `<div class="top-row" title="${escapeHTML(v.sample)}"><span class="top-count">×${v.count.toLocaleString()}</span><span class="top-msg">${escapeHTML(k)}</span></div>`).join('');
+      if (window.lucide) lucide.createIcons();
     }
 
     function setFilter(type) {
@@ -637,10 +690,15 @@
     function grepLogs() {
       const query = searchInput.value.toLowerCase();
       const lines = logOutput.querySelectorAll('.log-line');
+      let re = null;
+      if (document.getElementById('grepRegex').checked && query) {
+        try { re = new RegExp(searchInput.value, 'i'); searchInput.classList.remove('bad'); }
+        catch (e) { searchInput.classList.add('bad'); return; }
+      } else searchInput.classList.remove('bad');
 
       lines.forEach(line => {
         const text = line.querySelector('.line-content').innerText.toLowerCase();
-        if (text.includes(query)) {
+        if (re ? re.test(text) : text.includes(query)) {
           line.style.display = ''; // Revert to CSS data-filter logic
         } else {
           line.style.display = 'none'; // Force hide

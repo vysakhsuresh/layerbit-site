@@ -36,6 +36,7 @@
           <button class="btn" id="btnCopyPayload" onclick="copyDecoded('payload', this)"><i data-lucide="copy"></i> Copy</button>
         </div>
         <div id="payloadOutput" class="output-area"></div>
+        <div id="claimTimes" class="claim-times"></div>
       </div>
 
     </div>
@@ -64,6 +65,38 @@
     </div>
 
     <div id="verifyResult" class="verify-result"></div>
+  </div>
+
+  <div class="info-panel verify-panel">
+    <h2><i data-lucide="pen-tool"></i> Create a signed test token <span class="verify-subtitle">(HMAC via the Web Crypto API &mdash; the secret never leaves this page)</span></h2>
+    <div class="signer-grid">
+      <div class="verify-row">
+        <label for="signAlg">Algorithm</label>
+        <select id="signAlg" class="verify-input">
+          <option value="HS256">HS256</option>
+          <option value="HS384">HS384</option>
+          <option value="HS512">HS512</option>
+        </select>
+      </div>
+      <div class="verify-row">
+        <label for="signSecret">Secret</label>
+        <input type="text" id="signSecret" class="verify-input" value="your-256-bit-secret" autocomplete="off" spellcheck="false">
+      </div>
+    </div>
+    <div class="verify-row">
+      <label for="signPayload">Payload <span class="verify-hint">(JSON; <code>exp</code> and <code>iat</code> are seconds)</span></label>
+      <textarea id="signPayload" class="verify-input verify-textarea" spellcheck="false">{
+  "sub": "user-42",
+  "name": "Test User",
+  "role": "admin"
+}</textarea>
+    </div>
+    <div class="signer-actions">
+      <label class="verify-hint"><input type="checkbox" id="signAddTimes" checked> add <code>iat</code> now and <code>exp</code> in 1 hour</label>
+      <button class="btn btn-primary" id="btnSign"><i data-lucide="pen-tool"></i> Sign token</button>
+      <button class="btn" id="btnSignLoad" disabled><i data-lucide="arrow-up"></i> Load into inspector</button>
+    </div>
+    <pre class="signer-output" id="signOutput"></pre>
   </div>
 
   <!-- New Documentation Container -->
@@ -170,6 +203,7 @@
     <div class="info-panel">
       <h2><i data-lucide="git-merge"></i> Deployment Methodology Changelog</h2>
       <ul class="changelog-list">
+        <li><span class="changelog-tag">v2.2.0</span> Time claims are now read out in full: <code>iat</code>, <code>nbf</code> and <code>exp</code> as UTC dates with relative time and the token's lifetime, a "not yet valid" status when <code>nbf</code> is in the future, and a warning when a value looks like milliseconds. Added a signer that creates HS256/384/512 test tokens locally with the Web Crypto API and loads them straight into the inspector.</li>
         <li><span class="changelog-tag">v1.4.0</span> Added optional signature verification (HS256/384/512 shared secret, RS256/384/512 public key) via the Web Crypto API. Renamed the "Signature Valid (Client)" status to "Not Expired" since it only ever checked expiration, not the signature.</li>
         <li><span class="changelog-tag">v1.3.0</span> Added Copy buttons to the Header and Payload panes.</li>
         <li><span class="changelog-tag">v1.2.0</span> Integrated real-time <code>exp</code> claim verification matrix and conditional status badge rendering.</li>
@@ -346,6 +380,7 @@
         jwtBackdrop.innerHTML = "Paste your JWT string here to decode...";
         headerOutput.innerHTML = "";
         payloadOutput.innerHTML = "";
+        claimTimes.innerHTML = "";
         decodedHeaderText = '';
         decodedPayloadText = '';
         statusBadge.className = "status-badge";
@@ -390,25 +425,28 @@
         signatureB64Url = parts[2] || '';
         updateVerifyUI();
 
-        // Expiration Logic Check
-        if (payload.exp) {
-          const currentTime = Math.floor(Date.now() / 1000);
-          if (payload.exp < currentTime) {
-            statusBadge.className = "status-badge status-invalid";
-            statusText.innerText = "Token Expired";
-            statusIcon.setAttribute('data-lucide', 'shield-alert');
-          } else {
-            statusBadge.className = "status-badge status-valid";
-            statusText.innerText = "Not Expired";
-            statusIcon.setAttribute('data-lucide', 'shield-check');
-          }
-          lucide.createIcons();
+        // Time-based claims (RFC 7519 §4.1): exp, nbf and iat are NumericDate
+        // seconds. A token can be expired, not yet valid, or both malformed.
+        renderClaimTimes(payload);
+        const now = Math.floor(Date.now() / 1000);
+        if (typeof payload.exp === 'number' && payload.exp < now) {
+          statusBadge.className = "status-badge status-invalid";
+          statusText.innerText = "Token Expired";
+          statusIcon.setAttribute('data-lucide', 'shield-alert');
+        } else if (typeof payload.nbf === 'number' && payload.nbf > now) {
+          statusBadge.className = "status-badge status-invalid";
+          statusText.innerText = "Not Yet Valid (nbf)";
+          statusIcon.setAttribute('data-lucide', 'clock');
+        } else if (typeof payload.exp === 'number') {
+          statusBadge.className = "status-badge status-valid";
+          statusText.innerText = "Not Expired";
+          statusIcon.setAttribute('data-lucide', 'shield-check');
         } else {
           statusBadge.className = "status-badge status-valid";
           statusText.innerText = "No Expiration Set";
           statusIcon.setAttribute('data-lucide', 'info');
-          lucide.createIcons();
         }
+        if (window.lucide) lucide.createIcons();
 
       } catch (e) {
         statusBadge.className = "status-badge status-invalid";
@@ -421,6 +459,63 @@
         lucide.createIcons();
       }
     }
+
+    const claimTimes = document.getElementById('claimTimes');
+    function relativeTime(secs) {
+      const d = secs - Date.now() / 1000, a = Math.abs(d);
+      const u = a < 60 ? [a, 'second'] : a < 3600 ? [a / 60, 'minute'] : a < 86400 ? [a / 3600, 'hour'] : [a / 86400, 'day'];
+      const n = Math.round(u[0]);
+      return `${n} ${u[1]}${n === 1 ? '' : 's'} ${d < 0 ? 'ago' : 'from now'}`;
+    }
+    function renderClaimTimes(payload) {
+      const rows = [];
+      for (const [k, label] of [['iat', 'Issued'], ['nbf', 'Not before'], ['exp', 'Expires']]) {
+        const v = payload[k];
+        if (v === undefined) continue;
+        if (typeof v !== 'number') { rows.push(`<div class="claim-row claim-bad"><span>${label}</span><span><code>${k}</code> must be a number of seconds, got ${escapeText(JSON.stringify(v))}</span></div>`); continue; }
+        // A millisecond value is the classic mistake: Date.now() instead of /1000.
+        const ms = v > 1e11;
+        const d = new Date(ms ? v : v * 1000);
+        rows.push(`<div class="claim-row${ms ? ' claim-bad' : ''}"><span>${label}</span><span>${d.toISOString().replace('T', ' ').replace(/\.\d+Z$/, ' UTC')} · ${relativeTime(ms ? v / 1000 : v)}${ms ? ' — looks like milliseconds; RFC 7519 requires seconds' : ''}</span></div>`);
+      }
+      if (typeof payload.exp === 'number' && typeof payload.iat === 'number' && payload.exp > payload.iat) {
+        const life = payload.exp - payload.iat;
+        rows.push(`<div class="claim-row"><span>Lifetime</span><span>${life % 86400 === 0 ? life / 86400 + ' days' : life % 3600 === 0 ? life / 3600 + ' hours' : life % 60 === 0 ? life / 60 + ' minutes' : life + ' seconds'}</span></div>`);
+      }
+      claimTimes.innerHTML = rows.join('');
+    }
+    function escapeText(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;'); }
+
+    // ---- test-token signer -------------------------------------------
+    const b64url = bytes => btoa(String.fromCharCode(...new Uint8Array(bytes))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+    const b64urlText = s => b64url(new TextEncoder().encode(s));
+    async function signToken() {
+      const out = document.getElementById('signOutput');
+      const alg = document.getElementById('signAlg').value;
+      const secret = document.getElementById('signSecret').value;
+      let payload;
+      try { payload = JSON.parse(document.getElementById('signPayload').value); }
+      catch (e) { out.textContent = 'Payload is not valid JSON: ' + e.message; out.className = 'signer-output signer-bad'; return; }
+      if (document.getElementById('signAddTimes').checked) {
+        const now = Math.floor(Date.now() / 1000);
+        payload = Object.assign({}, payload, { iat: now, exp: now + 3600 });
+      }
+      const hash = { HS256: 'SHA-256', HS384: 'SHA-384', HS512: 'SHA-512' }[alg];
+      const key = await crypto.subtle.importKey('raw', new TextEncoder().encode(secret), { name: 'HMAC', hash }, false, ['sign']);
+      const signingInput = b64urlText(JSON.stringify({ alg, typ: 'JWT' })) + '.' + b64urlText(JSON.stringify(payload));
+      const sig = await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(signingInput));
+      const token = signingInput + '.' + b64url(sig);
+      out.textContent = token; out.className = 'signer-output';
+      document.getElementById('btnSignLoad').disabled = false;
+      document.getElementById('btnSignLoad').onclick = () => {
+        jwtInput.value = token; parseJWT();
+        hmacSecret.value = secret; runHmacVerify();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      };
+    }
+    document.getElementById('btnSign').addEventListener('click', () => signToken().catch(e => {
+      const out = document.getElementById('signOutput'); out.textContent = 'Signing failed: ' + e.message; out.className = 'signer-output signer-bad';
+    }));
 
     jwtInput.addEventListener('input', parseJWT);
     

@@ -149,6 +149,7 @@
     <div class="info-panel">
       <h2><i data-lucide="git-commit"></i> Changelog</h2>
       <ul class="changelog-list">
+        <li><span class="changelog-tag">v2.1.0</span> Columns sort on click (numeric where every value is a number, natural-order text otherwise; empty cells sink to the bottom), and the sort composes with the live filter and CSV export.</li>
         <li><span class="changelog-tag">v1.2.0</span> Integrated nested object flattening and robust client-side filtering via the grid toolbar.</li>
         <li><span class="changelog-tag">v1.1.0</span> Added the CSV export functionality with strict quote escaping for spreadsheet compatibility.</li>
         <li><span class="changelog-tag">v1.0.0</span> Initial release of the JSON Data Grid Viewer.</li>
@@ -286,10 +287,12 @@
       // Build Thead
       let theadHTML = "<tr>";
       headers.forEach(h => {
-        theadHTML += `<th>${escapeHTML(h)}</th>`;
+        theadHTML += `<th class="sortable" data-col="${escapeHTML(h)}" title="Click to sort">${escapeHTML(h)}<span class="sort-ind"></span></th>`;
       });
       theadHTML += "</tr>";
       tableHead.innerHTML = theadHTML;
+      sortState = { col: null, dir: 1 };
+      tableHead.querySelectorAll('th.sortable').forEach(th => th.addEventListener('click', () => sortBy(th.dataset.col)));
 
       // Build Tbody
       renderRows(data);
@@ -308,6 +311,24 @@
       });
       tableBody.innerHTML = tbodyHTML;
       rowCountMeta.innerText = `${dataSubset.length} Rows`;
+    }
+
+    // Numbers sort numerically, everything else as strings; nulls sink to the
+    // bottom in either direction so they do not hide the interesting rows.
+    let sortState = { col: null, dir: 1 };
+    function sortBy(col) {
+      sortState = { col, dir: sortState.col === col ? -sortState.dir : 1 };
+      const isNum = currentData.every(r => r[col] === null || r[col] === undefined || r[col] === '' || (typeof r[col] === 'number') || (!isNaN(r[col]) && String(r[col]).trim() !== ''));
+      currentData.sort((a, b) => {
+        const x = a[col], y = b[col];
+        const xe = x === null || x === undefined || x === '', ye = y === null || y === undefined || y === '';
+        if (xe && ye) return 0; if (xe) return 1; if (ye) return -1;
+        return (isNum ? Number(x) - Number(y) : String(x).localeCompare(String(y), undefined, { numeric: true })) * sortState.dir;
+      });
+      tableHead.querySelectorAll('th.sortable').forEach(th => {
+        th.querySelector('.sort-ind').textContent = th.dataset.col === col ? (sortState.dir === 1 ? ' ▲' : ' ▼') : '';
+      });
+      filterTable();
     }
 
     function filterTable() {

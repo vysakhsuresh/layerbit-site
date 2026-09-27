@@ -330,6 +330,12 @@
       .fab svg { width: 22px; height: 22px; }
     }
   
+    /* v1.5: time zone for next runs */
+    .tz-select { background: rgba(0,0,0,0.3); border: 1px solid var(--card-border); color: var(--text-main); border-radius: 6px; padding: 3px 8px; font-family: inherit; font-size: 1em; max-width: 260px; outline: none; cursor: pointer; }
+    .tz-select:focus { border-color: var(--accent-main); }
+    .tz-select option { background: #0a0c10; }
+    .run-utc { color: var(--accent-main); opacity: 0.85; margin-left: 6px; }
+
   </style>
 </head>
 <body>
@@ -421,7 +427,9 @@
       </button>
 
       <div class="next-runs" id="nextRuns">
-        <div class="next-runs-header"><i data-lucide="clock"></i> Next 5 Run Times <span class="next-runs-tz">(UTC — this tool assumes UTC; convert to your server's local timezone)</span></div>
+        <div class="next-runs-header"><i data-lucide="clock"></i> Next 5 Run Times
+          <label class="next-runs-tz">in <select id="tzSelect" class="tz-select"><option value="UTC">UTC</option></select></label>
+        </div>
         <ol class="next-runs-list" id="nextRunsList"></ol>
       </div>
 
@@ -550,6 +558,7 @@
     <div class="info-panel">
       <h2><i data-lucide="git-commit"></i> Changelog</h2>
       <ul class="changelog-list">
+        <li><span class="changelog-tag">v1.5.0</span> Next run times can be computed in the zone the cron daemon actually runs in — any IANA zone, with the browser's own zone offered first — and each run also shows its UTC equivalent, so a "9 am" job in Dubai is visibly 05:00 UTC. The choice is remembered.</li>
         <li><span class="changelog-tag">v1.4.0</span> Each field is range-checked before translation: <code>61 * * * *</code> is refused with the offending field and its valid range, instead of being rendered as "at 61 minutes past the hour". Month and weekday names are validated too.</li>
         <li><span class="changelog-tag">v1.3.1</span> Fixed a bug where the icon library loading asynchronously could cause a valid expression to be mislabeled as a syntax error on page load.</li>
         <li><span class="changelog-tag">v1.3.0</span> Added a Next 5 Run Times preview (UTC, clearly labeled) for any valid expression, computed entirely client-side.</li>
@@ -632,7 +641,7 @@
       return new Date(Date.UTC(year, monthIndex0 + 1, 0)).getUTCDate();
     }
 
-    function getNextRuns(cronStr, count) {
+    function getNextRuns(cronStr, count, startWall) {
       const parts = cronStr.trim().split(/\s+/);
       if (parts.length !== 5) return [];
 
@@ -645,7 +654,7 @@
       if (dow.values.has(7)) { dow.values.delete(7); dow.values.add(0); }
 
       const results = [];
-      let candidate = new Date();
+      let candidate = startWall ? new Date(startWall) : new Date();
       candidate.setUTCSeconds(0, 0);
       candidate.setUTCMinutes(candidate.getUTCMinutes() + 1);
 
@@ -691,21 +700,54 @@
       return results;
     }
 
-    function formatRunTime(date) {
-      const wd = WEEKDAY_NAMES[date.getUTCDay()];
-      const mo = MONTH_NAMES[date.getUTCMonth()];
-      const hh = String(date.getUTCHours()).padStart(2, '0');
-      const mm = String(date.getUTCMinutes()).padStart(2, '0');
-      return `${wd}, ${mo} ${date.getUTCDate()} ${date.getUTCFullYear()} · ${hh}:${mm} UTC`;
+    // A cron schedule is wall-clock time in the zone the daemon runs in. The
+    // engine above works in UTC fields, so to schedule in another zone we feed
+    // it "now" as wall-clock in that zone, treat its results as wall-clock,
+    // and convert each back to an instant using the zone's offset at that
+    // moment (looked up through Intl, which knows the DST rules).
+    const tzSelect = document.getElementById('tzSelect');
+    const localZone = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
+    (function populateZones() {
+      let zones = [];
+      try { zones = Intl.supportedValuesOf('timeZone'); } catch (e) {}
+      if (localZone !== 'UTC') tzSelect.add(new Option(`${localZone} (browser)`, localZone));
+      zones.filter(z => z !== localZone && z !== 'UTC').forEach(z => tzSelect.add(new Option(z, z)));
+      try { tzSelect.value = localStorage.getItem('layerbit-cron-tz') || 'UTC'; } catch (e) {}
+      if (!tzSelect.value) tzSelect.value = 'UTC';
+    })();
+    function zoneParts(instantMs, tz) {
+      const parts = new Intl.DateTimeFormat('en-US', { timeZone: tz, hourCycle: 'h23', year: 'numeric', month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric', second: 'numeric' }).formatToParts(new Date(instantMs));
+      const g = t => Number(parts.find(p => p.type === t).value);
+      return Date.UTC(g('year'), g('month') - 1, g('day'), g('hour') % 24, g('minute'), g('second'));
+    }
+    const zoneOffset = (instantMs, tz) => zoneParts(instantMs, tz) - instantMs;
+    function wallToInstant(wallMs, tz) {
+      let guess = wallMs - zoneOffset(wallMs, tz);
+      guess = wallMs - zoneOffset(guess, tz);
+      return guess;
+    }
+    function formatRunTime(wall, tz) {
+      const wd = WEEKDAY_NAMES[wall.getUTCDay()];
+      const mo = MONTH_NAMES[wall.getUTCMonth()];
+      const hh = String(wall.getUTCHours()).padStart(2, '0');
+      const mm = String(wall.getUTCMinutes()).padStart(2, '0');
+      const local = `${wd}, ${mo} ${wall.getUTCDate()} ${wall.getUTCFullYear()} · ${hh}:${mm}`;
+      if (tz === 'UTC') return `${local} UTC`;
+      const inst = new Date(wallToInstant(wall.getTime(), tz));
+      const u = `${String(inst.getUTCHours()).padStart(2, '0')}:${String(inst.getUTCMinutes()).padStart(2, '0')}`;
+      const dayShift = inst.getUTCDate() !== wall.getUTCDate() ? ` ${MONTH_NAMES[inst.getUTCMonth()]} ${inst.getUTCDate()}` : '';
+      return `${local} <span class="run-utc">= ${u}${dayShift} UTC</span>`;
     }
 
     function updateNextRuns(cronStr) {
       try {
-        const runs = getNextRuns(cronStr, 5);
+        const tz = tzSelect.value || 'UTC';
+        const startWall = tz === 'UTC' ? undefined : zoneParts(Date.now(), tz);
+        const runs = getNextRuns(cronStr, 5, startWall);
         if (!runs.length) {
           nextRunsList.innerHTML = `<li class="next-runs-empty">No matches found in the next few years — this expression may be impossible (e.g. Feb 31).</li>`;
         } else {
-          nextRunsList.innerHTML = runs.map(d => `<li>${formatRunTime(d)}</li>`).join('');
+          nextRunsList.innerHTML = runs.map(d => `<li>${formatRunTime(d, tz)}</li>`).join('');
         }
         nextRunsEl.style.display = 'block';
       } catch (e) {
@@ -841,6 +883,10 @@
 
     // Event Listeners
     cronInput.addEventListener('input', translateCron);
+    tzSelect.addEventListener('change', () => {
+      try { localStorage.setItem('layerbit-cron-tz', tzSelect.value); } catch (e) {}
+      if (!terminalPane.classList.contains('error') && cronInput.value.trim()) updateNextRuns(cronInput.value.trim());
+    });
 
     Object.values(selects).forEach(sel => {
       sel.addEventListener('change', buildCronFromDropdowns);
