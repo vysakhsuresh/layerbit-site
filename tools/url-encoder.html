@@ -74,7 +74,7 @@
 
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6072772587431629" crossorigin="anonymous"></script>
 
-  <script src="https://unpkg.com/lucide@1.39.0" async></script>
+  <script src="../js/vendor/lucide.min.js" async></script>
 
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet" />
   <link href="../layerbit-logo.png" rel="icon" type="image/x-icon" />
@@ -533,6 +533,7 @@
     <div class="info-panel">
       <h2><i data-lucide="git-merge"></i> Deployment Changelog</h2>
       <ul class="changelog-list">
+        <li><span class="changelog-tag">v1.4.1</span> A bare value that is not a URL (no scheme, no path structure) is now encoded as a component, so <code>&amp;</code>, <code>=</code> and <code>#</code> are percent-encoded instead of being left to change the meaning of a query string. Relative paths keep their separators as before.</li>
         <li><span class="changelog-tag">v1.4.0</span> Made the Parameter Forensics grid editable (edit a key/value and click Re-encode to rebuild the URL) and added a Batch Mode for encoding/decoding a list of URLs at once.</li>
         <li><span class="changelog-tag">v1.3.0</span> Added file upload and drag-and-drop to both panes.</li>
         <li><span class="changelog-tag">v1.2.1</span> Enhanced error handling UX. If a URI decode error occurs, the original string is preserved in the Plain Text viewer to allow for immediate debugging.</li>
@@ -756,7 +757,10 @@
         url.search = newSearch ? `?${newSearch}` : '';
         return url.toString();
       } catch (e) {
-        return encodeURI(str);
+        // Not an absolute URL. A relative path or anything with URL structure
+        // keeps its separators; a bare value ("Tom & Jerry") is a component,
+        // where '&', '=', '+' and '#' must all be encoded or they change meaning.
+        return /^[\/.]|[\/?#]/.test(str) ? encodeURI(str) : encodeURIComponent(str);
       }
     }
 

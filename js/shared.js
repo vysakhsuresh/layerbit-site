@@ -48,7 +48,10 @@ function initCookieConsent() {
     return; // storage unavailable (e.g. blocked) - don't block rendering over it
   }
 
-  const prefix = location.pathname.includes('/tools/') ? '../' : '';
+  // Depth-based rather than a '/tools/' string match, so pages in guides/ (or
+  // any future directory) link to the real privacy.html instead of a 404.
+  const depth = location.pathname.split('/').filter(Boolean).length - 1;
+  const prefix = '../'.repeat(Math.max(0, depth));
   const banner = document.createElement('div');
   banner.className = 'cookie-consent-banner';
   banner.setAttribute('role', 'region');

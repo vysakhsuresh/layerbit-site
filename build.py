@@ -125,6 +125,11 @@ def build_page(slug_file):
     body_filled = re.sub(r'[ \t]*\{\{FOOTER\}\}', lambda m: footer_s, body_filled)
 
     page = head + body_filled.rstrip("\n") + "\n</body>\n</html>\n"
+    # Final pass: per-page fields such as extra_head_libs are spliced into the
+    # head *after* its own PREFIX substitution, so a {{PREFIX}} inside them
+    # would otherwise survive into the output. Resolving it last lets those
+    # fields use root-relative asset paths that work from any directory depth.
+    page = page.replace("{{PREFIX}}", prefix)
     return page, data["file"]
 
 

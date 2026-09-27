@@ -66,8 +66,8 @@
 
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6072772587431629" crossorigin="anonymous"></script>
 
-  <script src="https://unpkg.com/lucide@1.39.0" async></script>
-  <script src="https://cdn.jsdelivr.net/npm/cronstrue@2.47.0/dist/cronstrue.min.js"></script>
+  <script src="../js/vendor/lucide.min.js" async></script>
+  <script src="../js/vendor/cronstrue.min.js"></script>
 
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Fira+Code:wght@400;500;700&display=swap" rel="stylesheet" />
   <link href="../layerbit-logo.png" rel="icon" type="image/x-icon" />
@@ -550,6 +550,7 @@
     <div class="info-panel">
       <h2><i data-lucide="git-commit"></i> Changelog</h2>
       <ul class="changelog-list">
+        <li><span class="changelog-tag">v1.4.0</span> Each field is range-checked before translation: <code>61 * * * *</code> is refused with the offending field and its valid range, instead of being rendered as "at 61 minutes past the hour". Month and weekday names are validated too.</li>
         <li><span class="changelog-tag">v1.3.1</span> Fixed a bug where the icon library loading asynchronously could cause a valid expression to be mislabeled as a syntax error on page load.</li>
         <li><span class="changelog-tag">v1.3.0</span> Added a Next 5 Run Times preview (UTC, clearly labeled) for any valid expression, computed entirely client-side.</li>
         <li><span class="changelog-tag">v1.2.0</span> Introduced the visual dropdown builder map for faster segment configuration.</li>
@@ -722,11 +723,48 @@
     }
 
     // Initialize cronstrue
+    // cronstrue is a translator, not a validator: it happily renders "61 * * * *"
+    // as "At 61 minutes past the hour". Check every numeric token against its
+    // field's range first so an impossible schedule is refused up front.
+    const CRON_FIELDS = [
+      { name: 'minute',       min: 0, max: 59 },
+      { name: 'hour',         min: 0, max: 23 },
+      { name: 'day-of-month', min: 1, max: 31 },
+      { name: 'month',        min: 1, max: 12, names: ['jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec'] },
+      { name: 'day-of-week',  min: 0, max: 7,  names: ['sun','mon','tue','wed','thu','fri','sat'] },
+    ];
+    function validateCronRanges(expr) {
+      const parts = expr.trim().split(/\s+/);
+      if (parts.length !== 5) return `Expected 5 fields, found ${parts.length}`;
+      for (let i = 0; i < 5; i++) {
+        const f = CRON_FIELDS[i];
+        for (const item of parts[i].toLowerCase().split(',')) {
+          const [range, step] = item.split('/');
+          if (step !== undefined && !/^\d+$/.test(step)) return `${f.name}: bad step "/${step}"`;
+          if (step !== undefined && Number(step) === 0) return `${f.name}: step cannot be 0`;
+          if (range === '*' || range === '?') continue;
+          for (let tok of range.split('-')) {
+            if (f.names && f.names.includes(tok)) tok = String(f.names.indexOf(tok) + f.min);
+            if (!/^\d+$/.test(tok)) return `${f.name}: unrecognised value "${tok}"`;
+            const n = Number(tok);
+            if (n < f.min || n > f.max) return `${f.name} value ${n} is out of range ${f.min}-${f.max}`;
+          }
+        }
+      }
+      return null;
+    }
+
     function translateCron() {
       const val = cronInput.value.trim();
 
       if(val.split(' ').length < 5) {
         setInvalid("Incomplete Expression");
+        return;
+      }
+
+      const rangeError = validateCronRanges(val);
+      if (rangeError) {
+        setInvalid(rangeError);
         return;
       }
 

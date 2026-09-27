@@ -66,7 +66,7 @@
 
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6072772587431629" crossorigin="anonymous"></script>
 
-  <script src="https://unpkg.com/lucide@1.39.0" async></script>
+  <script src="../js/vendor/lucide.min.js" async></script>
 
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet" />
   <link href="../layerbit-logo.png" rel="icon" type="image/x-icon" />
@@ -527,6 +527,7 @@
     <div class="info-panel">
       <h2><i data-lucide="git-commit"></i> Changelog</h2>
       <ul class="changelog-list">
+        <li><span class="changelog-tag">v1.4.0</span> Decoder now accepts the URL-safe alphabet (<code>-</code> and <code>_</code>), ignores line wrapping and whitespace, and tolerates missing padding, so JWT segments and copied-from-a-log strings decode directly. Encoding and decoding use <code>TextEncoder</code>/<code>TextDecoder</code> for correct UTF-8 on multi-megabyte input.</li>
         <li><span class="changelog-tag">v1.3.0</span> Added deep clipboard API integration with a safe fallback mechanism for mobile devices handling massive image strings.</li>
         <li><span class="changelog-tag">v1.2.0</span> Integrated visual asset rendering for Data URIs, allowing real-time preview of encoded images and PDF iframes.</li>
         <li><span class="changelog-tag">v1.1.0</span> Implemented native DOM parsing for bidirectional, real-time string synchronization.</li>
@@ -693,9 +694,40 @@
     const base64Text = document.getElementById('base64Text');
     const decodeError = document.getElementById('decodeError');
 
+    // UTF-8 <-> bytes without the deprecated unescape()/escape() pair. Bytes are
+    // turned into a binary string in chunks so a multi-megabyte input does not
+    // blow the argument limit of String.fromCharCode.apply.
+    function bytesToBinary(bytes) {
+      let s = '';
+      for (let i = 0; i < bytes.length; i += 0x8000) {
+        s += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000));
+      }
+      return s;
+    }
+    function encodeUtf8ToBase64(str) {
+      return btoa(bytesToBinary(new TextEncoder().encode(str)));
+    }
+    // Accepts standard and URL-safe alphabets, ignores whitespace/newlines (MIME
+    // wrapping, copied-from-a-log input) and tolerates missing padding, which
+    // is how JWT segments and most base64url producers emit it.
+    function normalizeBase64(val) {
+      let s = val.replace(/[\s]/g, '').replace(/-/g, '+').replace(/_/g, '/');
+      if (s.length % 4 === 1) throw new Error('length');
+      return s + '==='.slice(0, (4 - s.length % 4) % 4);
+    }
+    function decodeBase64ToUtf8(val) {
+      const bin = atob(normalizeBase64(val));
+      const bytes = new Uint8Array(bin.length);
+      for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+      // fatal:true throws on invalid UTF-8 rather than silently producing U+FFFD,
+      // so genuinely binary input is shown as-is instead of as replacement chars.
+      try { return new TextDecoder('utf-8', { fatal: true }).decode(bytes); }
+      catch (e) { return bin; }
+    }
+
     plainText.addEventListener('input', () => {
       try {
-        base64Text.value = btoa(unescape(encodeURIComponent(plainText.value)));
+        base64Text.value = encodeUtf8ToBase64(plainText.value);
         decodeError.classList.remove('active');
       } catch(e) {
         console.error("Encoding error", e);
@@ -710,12 +742,7 @@
         return;
       }
       try {
-        const decoded = atob(val);
-        try {
-          plainText.value = decodeURIComponent(escape(decoded));
-        } catch (e) {
-          plainText.value = decoded;
-        }
+        plainText.value = decodeBase64ToUtf8(val);
         decodeError.classList.remove('active');
       } catch (e) {
         decodeError.classList.add('active');

@@ -98,7 +98,7 @@
 
     .input-group label i { width: 18px; color: var(--accent-main); }
 
-    .control-pane input[type="text"], .control-pane select {
+    .control-pane input[type="text"], .control-pane textarea, .control-pane select {
       width: 100%;
       padding: 15px;
       background: rgba(0,0,0,0.3);
@@ -111,14 +111,14 @@
       transition: border 0.3s;
     }
 
-    .control-pane input[type="text"]:focus, .control-pane select:focus {
+    .control-pane input[type="text"]:focus, .control-pane textarea:focus, .control-pane select:focus {
       border-color: var(--accent-main);
     }
 
     .control-pane select option { background: #0a0c10; }
 
-    /* Optional payload controls */
-    .osint-controls {
+    /* Payload builder */
+    .payload-builder {
       margin-top: 15px;
       background: rgba(0,0,0,0.3);
       border: 1px solid var(--card-border);
@@ -470,3 +470,12 @@
       }
     }
   
+    /* v1.4: payload builder, QR options grid, live readouts */
+    .payload-builder .input-group { margin-bottom: 0; }
+    .payload-builder .input-group label { font-size: 0.85em; }
+    .qr-options { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px; }
+    .payload-meta { margin-top: 8px; font-size: 0.8em; color: var(--text-muted); min-height: 1.2em; }
+    .payload-meta.warn { color: #f59e0b; }
+    #dataInput[readonly] { opacity: 0.85; cursor: default; }
+    @media (max-width: 600px) { .qr-options { grid-template-columns: 1fr; } }
+    .control-pane textarea { resize: vertical; min-height: 58px; line-height: 1.4; }
