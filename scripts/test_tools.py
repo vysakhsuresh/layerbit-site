@@ -1028,6 +1028,381 @@ def _(t):
 
 
 # ----------------------------------------------------------------------------
+# subnet-calculator
+# ----------------------------------------------------------------------------
+@case("subnet-calculator", "minimal", "empty and bare address")
+def _(t):
+    t.set("cidrInput", "")
+    expect("Waiting" in t.text("resultGrid"), "empty state")
+    t.set("cidrInput", "8.8.8.8")
+    g = t.text("resultGrid")
+    expect("8.8.8.8/32" in g and "global unicast" in g, f"bare address: {g[:120]!r}")
+
+
+@case("subnet-calculator", "typical", "IPv4 /22 with host-form input, mask, wildcard, class")
+def _(t):
+    t.set("cidrInput", "192.168.1.37 255.255.252.0")
+    g = t.text("resultGrid")
+    for needle in ["192.168.0.0/22", "you typed a host address", "192.168.3.255", "192.168.0.1 – 192.168.3.254", "1,022", "255.255.252.0", "0.0.3.255", "private (RFC 1918)", "class C"]:
+        expect(needle in g, f"missing {needle!r} in {g[:300]!r}")
+
+
+@case("subnet-calculator", "typical", "IPv6 /48: exact size, /64 count, compression, PTR")
+def _(t):
+    t.set("cidrInput", "2001:0db8:ABCD:0000::1/48")
+    g = t.text("resultGrid")
+    for needle in ["2001:db8:abcd::/48", "1,208,925,819,614,629,174,706,176", "65,536", "documentation", "d.c.b.a.8.b.d.0.1.0.0.2.ip6.arpa"]:
+        expect(needle in g, f"missing {needle!r}")
+
+
+@case("subnet-calculator", "typical", "split, membership and supernet")
+def _(t):
+    t.set("cidrInput", "10.0.0.0/22")
+    t.select("splitSelect", "24")
+    eq(t.count("#splitTable tbody tr"), 4, "split rows")
+    expect("10.0.3.0/24" in t.text("splitTable"), "last subnet")
+    t.set("memberInput", "10.0.2.200")
+    expect("Inside" in t.text("memberResult") and "#713" in t.text("memberResult"), t.text("memberResult"))
+    t.set("memberInput", "10.0.4.1")
+    expect("Outside" in t.text("memberResult"), "outside")
+    t.set("superInput", "10.0.4.0/22")
+    expect("10.0.0.0/21" in t.text("superResult") and "exact aggregate" in t.text("superResult"), t.text("superResult"))
+    t.set("superInput", "10.0.8.0/22")
+    expect("extra addresses" in t.text("superResult"), "non-exact supernet")
+
+
+@case("subnet-calculator", "edge", "/31 and /32 host counts, bad prefix, bad mask")
+def _(t):
+    t.set("cidrInput", "10.1.1.0/31")
+    g = t.text("resultGrid")
+    expect("Usable hosts\n2" in g and "none (point-to-point" in g, f"/31: {g[:200]!r}")
+    t.set("cidrInput", "10.1.1.0/33")
+    expect("longer than the 32-bit" in t.text("errorText"), "bad prefix")
+    t.set("cidrInput", "10.1.1.0 255.255.0.255")
+    expect("not a contiguous mask" in t.text("errorText"), "bad mask")
+
+
+@case("subnet-calculator", "maximal", "split a /16 into 4,096 x /28 (show all)")
+def _(t):
+    t.set("cidrInput", "172.16.0.0/16")
+    t.click("#splitAll")
+    t.select("splitSelect", "28")
+    eq(t.count("#splitTable tbody tr"), 4096, "rows")
+    expect("172.16.255.240/28" in t.text("splitTable"), "last /28")
+
+
+# ----------------------------------------------------------------------------
+# hash-generator
+# ----------------------------------------------------------------------------
+@case("hash-generator", "minimal", "empty input hashes to the empty-string digests")
+def _(t):
+    t.set("textInput", "")
+    t.wait_for("() => document.getElementById('d-SHA-256').textContent.length === 64")
+    eq(t.text("d-SHA-256"), "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855", "sha256('')")
+    eq(t.text("d-MD5"), "d41d8cd98f00b204e9800998ecf8427e", "md5('')")
+
+
+@case("hash-generator", "typical", "known vectors for 'abc' and HMAC-SHA256")
+def _(t):
+    t.set("textInput", "abc")
+    t.wait_for("() => document.getElementById('d-SHA-1').textContent === 'a9993e364706816aba3e25717850c26c9cd0d89d'")
+    eq(t.text("d-SHA-256"), "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad", "sha256(abc)")
+    eq(t.text("d-MD5"), "900150983cd24fb0d6963f7d28e17f72", "md5(abc)")
+    t.set("hmacKey", "key")
+    t.wait_for("() => document.getElementById('d-SHA-256').textContent === '9c196e32dc0175f86f4b1cb89289d6619de6bee699e4c378e68309ed97a1a6ab'")
+    eq(t.text("d-MD5"), "d2fe98063f876b03193afb49b4979591", "hmac-md5(key, abc)")
+
+
+@case("hash-generator", "typical", "verifier matches case- and whitespace-insensitively, names the algorithm")
+def _(t):
+    t.set("textInput", "abc")
+    t.wait_for("() => document.getElementById('d-SHA-256').textContent.length === 64")
+    t.set("expectInput", "  BA7816BF8F01CFEA414140DE5DAE2223B00361A396177A9CB410FF61F20015AD\n")
+    expect("Match" in t.text("verifyResult") and "SHA-256" in t.text("verifyResult"), t.text("verifyResult"))
+    t.set("expectInput", "0" * 64)
+    expect("No match" in t.text("verifyResult") and "SHA-256" in t.text("verifyResult"), t.text("verifyResult"))
+
+
+@case("hash-generator", "edge", "hex and base64 input modes, invalid hex reported")
+def _(t):
+    t.select("inputMode", "hex")
+    t.set("textInput", "61 62 63")
+    t.wait_for("() => document.getElementById('d-MD5').textContent === '900150983cd24fb0d6963f7d28e17f72'")
+    t.set("textInput", "abz")
+    t.wait_for("() => document.getElementById('errorBanner').classList.contains('active')")
+    t.select("inputMode", "base64")
+    t.set("textInput", "YWJj")
+    t.wait_for("() => document.getElementById('d-MD5').textContent === '900150983cd24fb0d6963f7d28e17f72'")
+
+
+@case("hash-generator", "typical", "file upload hashes the file bytes")
+def _(t):
+    t.upload("fileInput", "hello.txt", "hello\n")
+    t.wait_for("() => document.getElementById('d-SHA-256').textContent === '5891b5b522d5df086d0ff0b110fbd9d21bb4fc7163af34d08286a2e846f6be03'")
+    expect("hello.txt" in t.text("inputMeta"), "file name not shown")
+
+
+@case("hash-generator", "maximal", "8 MB input hashes under budget")
+def _(t):
+    t.set("textInput", "x" * 8_000_000)
+    t.wait_for("() => document.getElementById('d-SHA-512').textContent.length === 128", 12000)
+    expect("MB" in t.text("inputMeta"), "size not reported")
+
+
+# ----------------------------------------------------------------------------
+# uuid-generator
+# ----------------------------------------------------------------------------
+UUID_RE = r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
+
+
+@case("uuid-generator", "minimal", "page loads with five v4s already generated")
+def _(t):
+    import re
+    lines = t.val("outputArea").split("\n")
+    eq(len(lines), 5, "count")
+    expect(all(re.match(UUID_RE, l) and l[14] == "4" for l in lines), f"not v4: {lines[0]}")
+    expect(len(set(lines)) == 5, "duplicates")
+
+
+@case("uuid-generator", "typical", "v7 is time-ordered and decodes to now")
+def _(t):
+    import re, time
+    t.select("kindSelect", "v7")
+    t.set("countInput", "50")
+    t.click("#btnGenerate")
+    lines = t.val("outputArea").split("\n")
+    eq(len(lines), 50, "count")
+    expect(all(l[14] == "7" for l in lines), "version nibble")
+    expect(lines == sorted(lines), "v7 ids not monotonic within a millisecond")
+    ms = int(lines[0].replace("-", "")[:12], 16)
+    expect(abs(ms / 1000 - time.time()) < 5, f"embedded time off: {ms}")
+    g = t.text("decodeGrid")
+    expect("v7" in g and "Timestamp" in g and "from now" in g or "ago" in g, "decoder")
+
+
+@case("uuid-generator", "typical", "v5 and v3 match the RFC namespace vectors")
+def _(t):
+    t.select("kindSelect", "v5")
+    t.set("nameInput", "example.com")
+    t.click("#btnGenerate")
+    t.wait_for("() => document.getElementById('outputArea').value === 'cfbff0d1-9375-5685-968c-48ce8b15ae17'")
+    t.select("kindSelect", "v3")
+    t.click("#btnGenerate")
+    t.wait_for("() => document.getElementById('outputArea').value === '9073926b-929f-31c2-abc9-fad77ae3e8eb'")
+
+
+@case("uuid-generator", "typical", "formatting options and ULID")
+def _(t):
+    import re
+    t.select("kindSelect", "v4")
+    t.set("countInput", "2")
+    t.click("#optUpper"); t.click("#optNoHyphen"); t.click("#optBraces"); t.click("#optQuote")
+    out = t.val("outputArea")
+    expect(re.match(r'^"\{[0-9A-F]{32}\}",\n"\{[0-9A-F]{32}\}"$', out), f"format: {out!r}")
+    t.click("#optUpper"); t.click("#optNoHyphen"); t.click("#optBraces"); t.click("#optQuote")
+    t.select("kindSelect", "ulid")
+    t.click("#btnGenerate")
+    lines = t.val("outputArea").split("\n")
+    expect(all(re.match(r"^[0-9A-HJKMNP-TV-Z]{26}$", l) for l in lines), f"ulid: {lines[0]}")
+
+
+@case("uuid-generator", "edge", "decoder: ULID, braced GUID, v1 timestamp, garbage")
+def _(t):
+    t.set("decodeInput", "01ARZ3NDEKTSV4RRFFQ69G5FAV")
+    g = t.text("decodeGrid")
+    expect("ULID" in g and "2016-07-30 23:54:10.259 UTC" in g, f"ulid decode: {g[:200]!r}")
+    t.set("decodeInput", "{C56A4180-65AA-42EC-A945-5FD21DEC0538}")
+    g = t.text("decodeGrid")
+    expect("c56a4180-65aa-42ec-a945-5fd21dec0538" in g and "v4" in g, "guid decode")
+    t.set("decodeInput", "6ba7b810-9dad-11d1-80b4-00c04fd430c8")
+    g = t.text("decodeGrid")
+    expect("v1" in g and "1998-02-04 22:13:53.151 UTC" in g and "00:c0:4f:d4:30:c8" in g, f"v1 decode: {g[:300]!r}")
+    t.set("decodeInput", "not-an-id")
+    expect("not a UUID or ULID" in t.text("decodeGrid"), "garbage")
+
+
+@case("uuid-generator", "maximal", "10,000 v4s, all unique, under budget")
+def _(t):
+    t.select("kindSelect", "v4")
+    t.set("countInput", "10000")
+    t.click("#btnGenerate")
+    n = t.call("new Set(document.getElementById('outputArea').value.split('\\n')).size")
+    eq(n, 10000, "unique count")
+
+
+# ----------------------------------------------------------------------------
+# timestamp-converter
+# ----------------------------------------------------------------------------
+@case("timestamp-converter", "minimal", "clock ticks and Now button fills the input")
+def _(t):
+    expect(t.text("nowSec").isdigit(), "now not shown")
+    t.click("#btnNow")
+    expect(t.val("tsInput").isdigit() and len(t.val("tsInput")) == 10, "now button")
+    expect("Epoch seconds" in t.text("resultGrid"), "result")
+
+
+@case("timestamp-converter", "typical", "seconds in Asia/Dubai: every form")
+def _(t):
+    t.select("tzSelect", "Asia/Dubai")
+    t.set("tsInput", "1727438400")
+    g = t.text("resultGrid")
+    for needle in ["1727438400000", "2024-09-27T12:00:00.000Z", "Fri, 27 Sep 2024 12:00:00 GMT", "Fri 2024-09-27 16:00:00", "+04:00", "2024-09-27T16:00:00+04:00", "2024-W39", "271 · Q3 · Fri"]:
+        expect(needle in g, f"missing {needle!r}")
+    expect("seconds (10 digits)" in t.text("parseHint"), "unit hint")
+    expect(t.count("#zoneTable tbody tr") >= 10, "zone table")
+
+
+@case("timestamp-converter", "typical", "unit detection: ms, µs, ns give the same instant")
+def _(t):
+    for v, unit in [("1727438400000", "milliseconds"), ("1727438400000000", "microseconds"), ("1727438400000000000", "nanoseconds")]:
+        t.set("tsInput", v)
+        expect(unit in t.text("parseHint"), f"{v}: {t.text('parseHint')}")
+        expect("2024-09-27T12:00:00.000Z" in t.text("resultGrid"), f"{v}: wrong instant")
+
+
+@case("timestamp-converter", "edge", "zone-less input, ISO week-year boundary, 2038 flag, RFC 2822, negative, garbage")
+def _(t):
+    t.select("tzSelect", "Asia/Dubai")
+    t.set("tsInput", "2026-09-27 15:30")
+    expect("2026-09-27T11:30:00.000Z" in t.text("resultGrid"), "zone-less read in Dubai")
+    t.set("tsInput", "2027-01-01")
+    expect("2026-W53" in t.text("resultGrid") and "week-year 2026" in t.text("resultGrid"), f"iso week: {t.text('resultGrid')[:400]}")
+    t.set("tsInput", "3000000000")
+    expect("year 2038 problem" in t.text("resultGrid"), "2038 flag")
+    t.set("tsInput", "Sat, 27 Sep 2026 12:00:00 GMT")
+    expect("Epoch seconds\n1790510400" in t.text("resultGrid"), "rfc2822")
+    t.set("tsInput", "-86400")
+    expect("1969-12-31T00:00:00.000Z" in t.text("resultGrid"), "negative epoch")
+    t.set("tsInput", "not a date")
+    expect("Could not parse" in t.text("errorText"), "garbage")
+
+
+@case("timestamp-converter", "typical", "date arithmetic clamps month ends; difference reports both directions")
+def _(t):
+    t.select("tzSelect", "UTC")
+    t.set("tsInput", "1738281600")  # 2025-01-31
+    t.set("deltaN", "1")
+    t.select("deltaUnit", "month")
+    expect("2025-02-28T00:00:00.000Z" in t.text("deltaResult"), t.text("deltaResult"))
+    t.set("diffInput", "1738368000")
+    expect("later by 1d 0h 0m 0s" in t.text("diffResult"), t.text("diffResult"))
+    t.set("diffInput", "1738195200")
+    expect("earlier by 1d" in t.text("diffResult"), t.text("diffResult"))
+
+
+# ----------------------------------------------------------------------------
+# xml-formatter
+# ----------------------------------------------------------------------------
+@case("xml-formatter", "minimal", "empty input clears everything")
+def _(t):
+    t.set("xmlInput", "")
+    t.wait(150)
+    eq(t.text("xmlOutput").strip(), "", "output")
+    expect(t.call("document.getElementById('xpathInput').disabled"), "xpath should be disabled")
+
+
+@case("xml-formatter", "typical", "pretty-print preserves text content, minify collapses, JSON view")
+def _(t):
+    t.set("xmlInput", "<a><b>text &amp; more</b><c/><!-- hi --><d>x<e>y</e></d></a>")
+    t.wait(150)
+    eq(t.text("xmlOutput"), "<a>\n  <b>text &amp; more</b>\n  <c/>\n  <!-- hi -->\n  <d>x<e>y</e></d>\n</a>", "pretty")
+    t.select("modeSelect", "minify")
+    eq(t.text("xmlOutput"), "<a><b>text &amp; more</b><c/><d>x<e>y</e></d></a>", "minify")
+    t.select("modeSelect", "json")
+    j = json.loads(t.text("xmlOutput"))
+    eq(j["a"]["b"], "text & more", "json text")
+    eq(j["a"]["d"]["#text"], "x", "json mixed text")
+
+
+@case("xml-formatter", "typical", "XPath with default namespace, attribute and count results")
+def _(t):
+    t.click("#btnSample")
+    t.wait(200)
+    expect("node set: 1 node" in t.text("xpathHint"), t.text("xpathHint"))
+    expect("Decoding a JWT" in t.text("xpathResults"), "sample result")
+    t.set("xpathInput", "count(//ns:entry)")
+    expect("number: 2" in t.text("xpathHint"), t.text("xpathHint"))
+    t.set("xpathInput", "//*[local-name()='thumbnail']/@width")
+    expect('width="1200"' in t.text("xpathResults"), "attribute result")
+    t.set("xpathInput", "//entry")
+    expect("0 nodes" in t.text("xpathHint") and "//ns:entry" in t.text("xpathHint"), "namespace tip")
+    t.set("xpathInput", "//ns:entry[1")
+    expect("not a valid XPath" in t.text("xpathHint"), "syntax error")
+
+
+@case("xml-formatter", "edge", "well-formedness errors carry line and column")
+def _(t):
+    t.set("xmlInput", "<root>\n  <a>1 &amp 2</a>\n</root>")
+    t.wait(150)
+    expect("Line 2" in t.text("errorText") and "column" in t.text("errorText"), t.text("errorText"))
+    t.set("xmlInput", "<a><b></a>")
+    t.wait(150)
+    expect("mismatch" in t.text("errorText").lower(), t.text("errorText"))
+
+
+@case("xml-formatter", "maximal", "5,000-element document formats and queries under budget")
+def _(t):
+    doc = "<items>" + "".join(f'<item id="{i}"><name>n{i}</name><qty>{i % 7}</qty></item>' for i in range(5000)) + "</items>"
+    t.set("xmlInput", doc)
+    t.wait_for("() => document.getElementById('statsStrip').innerText.includes('15,001')", 10000)
+    t.set("xpathInput", "count(//item[qty > 5])")
+    expect("number: 714" in t.text("xpathHint"), t.text("xpathHint"))
+
+
+# ----------------------------------------------------------------------------
+# unicode-inspector
+# ----------------------------------------------------------------------------
+@case("unicode-inspector", "minimal", "plain ASCII: clean findings, one row per char")
+def _(t):
+    t.set("textInput", "abc")
+    t.wait(120)
+    expect("No invisible characters" in t.text("findings"), t.text("findings"))
+    eq(t.count("#cpTable tbody tr"), 3, "rows")
+    expect("3 graphemes" in t.text("statsStrip") and "3 UTF-8 bytes" in t.text("statsStrip"), t.text("statsStrip"))
+
+
+@case("unicode-inspector", "typical", "hidden-character sample: ZWSP, NBSP, RLO, mixed script, curly quotes, NFC")
+def _(t):
+    t.click("#btnSampleInvisible")
+    t.wait(200)
+    f = t.text("findings")
+    for needle in ["ZERO WIDTH SPACE", "NO-BREAK SPACE", "RIGHT-TO-LEFT OVERRIDE", "Bidirectional control", "Latin + Cyrillic", "curly quote"]:
+        expect(needle in f, f"missing {needle!r} in findings")
+    expect("NFC" in t.text("normTable") and "differs from input" in t.text("normTable"), "normalization")
+    expect(t.count("#cpTable tbody tr.flag") >= 5, "flagged rows")
+    cleaned = t.call("cleaned()")
+    expect("​" not in cleaned and "‮" not in cleaned and " " not in cleaned and "'quoted'" in cleaned, f"cleaned: {cleaned!r}")
+
+
+@case("unicode-inspector", "typical", "emoji counts: graphemes vs code points vs units vs bytes")
+def _(t):
+    t.set("textInput", "🇦🇪")
+    t.wait(120)
+    s = t.text("statsStrip")
+    for needle in ["1 graphemes", "2 code points", "4 UTF-16 units", "8 UTF-8 bytes"]:
+        expect(needle in s, f"missing {needle!r} in {s!r}")
+    t.select("escapeSelect", "py")
+    row = t.call("document.querySelector('#cpTable tbody tr').innerText")
+    expect("\\U0001f1e6" in row, row)
+
+
+@case("unicode-inspector", "edge", "decomposed vs composed é: NFC differs, NFD already")
+def _(t):
+    t.set("textInput", "café")
+    t.wait(120)
+    n = t.text("normTable")
+    expect("NFC\t4 code points\tdiffers" in n.replace("\n", "\t") or ("4 code points" in n and "already NFD" in n), n)
+    eq(t.count("#cpTable tbody tr"), 5, "five code points")
+
+
+@case("unicode-inspector", "maximal", "50 KB of mixed text analyses under budget (table capped)")
+def _(t):
+    t.set("textInput", ("héllo wörld 日本語 🌍 " * 2500))
+    t.wait_for("() => document.getElementById('cpCount').innerText.includes('first 2000')", 10000)
+    expect("50,000" in t.text("statsStrip") or "47,500" in t.text("statsStrip") or "code points" in t.text("statsStrip"), t.text("statsStrip"))
+
+
+# ----------------------------------------------------------------------------
 # runner
 # ----------------------------------------------------------------------------
 def free_port():
@@ -1063,13 +1438,15 @@ def launch(p):
 
 
 def smoke_all_pages(page, base):
-    """Every page loads with zero uncaught errors and lucide icons rendered."""
+    """Every page loads with zero uncaught errors and lucide icons rendered,
+    and nothing overflows the viewport horizontally at phone width."""
     import glob
     fails, errs = [], []
     page.on("pageerror", lambda e: errs.append(str(e)))
     pages = sorted(glob.glob("*.html") + glob.glob("tools/*.html") + glob.glob("guides/*.html"))
     for f in pages:
         errs.clear()
+        page.set_viewport_size({"width": 1280, "height": 900})
         page.goto(f"{base}/{f}", wait_until="load")
         page.wait_for_timeout(150)
         icons_left = page.evaluate("document.querySelectorAll('i[data-lucide]').length")
@@ -1079,6 +1456,14 @@ def smoke_all_pages(page, base):
             fails.append(f"{f}: {real[0][:120]}")
         if icons_left and not svgs:
             fails.append(f"{f}: lucide icons not rendered ({icons_left} placeholders)")
+        # phone width: a horizontal scrollbar means some element is wider than
+        # the screen, which on a real phone reads as a broken layout
+        page.set_viewport_size({"width": 390, "height": 800})
+        page.wait_for_timeout(80)
+        overflow = page.evaluate("document.documentElement.scrollWidth - document.documentElement.clientWidth")
+        if overflow > 2:
+            fails.append(f"{f}: {overflow}px horizontal overflow at 390px wide")
+    page.set_viewport_size({"width": 1280, "height": 900})
     return len(pages), fails
 
 

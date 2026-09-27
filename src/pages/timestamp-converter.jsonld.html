@@ -1,0 +1,106 @@
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "SoftwareApplication",
+      "@id": "https://layerbit.co.in/tools/timestamp-converter.html#app",
+      "name": "Unix Timestamp Converter",
+      "url": "https://layerbit.co.in/tools/timestamp-converter.html",
+      "description": "Convert Unix epoch seconds or milliseconds to ISO 8601, RFC 2822 and any time zone, and back. Auto-detects units, shows relative time, week numbers, and date arithmetic. Runs locally.",
+      "applicationCategory": "UtilitiesApplication",
+      "operatingSystem": "Any (runs in the browser)",
+      "browserRequirements": "Requires JavaScript",
+      "isAccessibleForFree": true,
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "keywords": "unix timestamp converter, epoch converter, epoch to date, iso 8601, timestamp to date, time zone converter",
+      "publisher": {
+        "@id": "https://layerbit.co.in/#organization"
+      },
+      "datePublished": "2026-09-27"
+    },
+    {
+      "@type": "BreadcrumbList",
+      "@id": "https://layerbit.co.in/tools/timestamp-converter.html#breadcrumb",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://layerbit.co.in/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Tools",
+          "item": "https://layerbit.co.in/blog.html"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": "Unix Timestamp Converter",
+          "item": "https://layerbit.co.in/tools/timestamp-converter.html"
+        }
+      ]
+    },
+    {
+      "@type": "FAQPage",
+      "@id": "https://layerbit.co.in/tools/timestamp-converter.html#faq",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "How does the tool know whether my number is seconds or milliseconds?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "By its size. Current Unix time in seconds is a 10-digit number, in milliseconds 13 digits, in microseconds 16 and in nanoseconds 19. The tool picks the unit whose range contains the number and states the assumption next to the result. If a value was genuinely meant as seconds but is 13 digits long, it would represent a date tens of thousands of years away, which is almost never what anyone intended."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Why does my date come out one day earlier or later than expected?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Usually a time zone boundary. A timestamp at 23:30 UTC on the 27th is already the 28th in Dubai and still the 27th in New York. If you were converting a date-only string, note that JavaScript and many libraries interpret \"2026-09-27\" as midnight UTC, which is the evening of the 26th in the Americas. Choose the zone you actually mean in the selector, and compare the UTC and zone rows in the result."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Do Unix timestamps include leap seconds?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "No. Unix time is defined as if every day has exactly 86,400 seconds, so a leap second is absorbed by repeating or stretching a second rather than adding a count. That keeps day arithmetic simple — a day is always 86,400 — at the cost of Unix time being 27 seconds behind the atomic TAI scale as of 2026. For almost all software this is the right trade and can be ignored."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What is the year 2038 problem?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Systems that store Unix time in a signed 32-bit integer can only count up to 2,147,483,647 seconds, which is 19 January 2038 at 03:14:07 UTC. One second later the value overflows to a large negative number, which reads as December 1901. Modern operating systems use 64-bit time, but embedded firmware, older file formats and some database schemas do not. The tool marks any timestamp beyond the 32-bit range so you can see which values would be affected."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Which timestamp should I store in my database?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Store the instant in UTC, using a proper timestamp type (PostgreSQL timestamptz, an integer of epoch seconds or milliseconds) rather than a string. If you need to reproduce the wall-clock time a user saw — an appointment at 9 am in their city — store the IANA zone name alongside, not the offset, because the offset for that zone may change before the date arrives. Convert to local time only at the point of display."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Is my input sent to a server?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "No. Parsing, conversion and the time-zone table are computed in the page with JavaScript's Date and Intl APIs, which carry their own time-zone database. There is no request to any server, which you can confirm in the Network tab of your browser's developer tools, or by using the page after disconnecting from the internet."
+          }
+        }
+      ]
+    }
+  ]
+}
+  </script>

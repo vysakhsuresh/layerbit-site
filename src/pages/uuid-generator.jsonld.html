@@ -1,0 +1,106 @@
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "SoftwareApplication",
+      "@id": "https://layerbit.co.in/tools/uuid-generator.html#app",
+      "name": "UUID \u0026 ULID Generator",
+      "url": "https://layerbit.co.in/tools/uuid-generator.html",
+      "description": "Generate UUID v4, v7, v5 and ULIDs in bulk, and decode any UUID or ULID to its version, variant and embedded timestamp. Cryptographically random, generated locally in your browser.",
+      "applicationCategory": "DeveloperApplication",
+      "operatingSystem": "Any (runs in the browser)",
+      "browserRequirements": "Requires JavaScript",
+      "isAccessibleForFree": true,
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "keywords": "uuid generator, uuid v7, ulid generator, uuid decoder, uuid v5 namespace, guid generator",
+      "publisher": {
+        "@id": "https://layerbit.co.in/#organization"
+      },
+      "datePublished": "2026-09-27"
+    },
+    {
+      "@type": "BreadcrumbList",
+      "@id": "https://layerbit.co.in/tools/uuid-generator.html#breadcrumb",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://layerbit.co.in/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Tools",
+          "item": "https://layerbit.co.in/blog.html"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": "UUID \u0026 ULID Generator",
+          "item": "https://layerbit.co.in/tools/uuid-generator.html"
+        }
+      ]
+    },
+    {
+      "@type": "FAQPage",
+      "@id": "https://layerbit.co.in/tools/uuid-generator.html#faq",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "Are these UUIDs unique? Could two people get the same one?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "A v4 UUID has 122 random bits from a cryptographic generator. The chance that any two of a billion such ids collide is about 1 in 2.7 quintillion; you would need to generate roughly 2.7 quintillion ids before a duplicate became likely. Nothing is checked against a central registry, and nothing needs to be — the probability is what guarantees uniqueness. The same reasoning applies to the 74 or 80 random bits in a v7 or ULID generated within the same millisecond."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What is the difference between a UUID and a GUID?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Nothing in the value. GUID is Microsoft's name for the same 128-bit identifier, and modern GUIDs use the same RFC 4122 layout. Two historical differences remain: Microsoft tools often print them uppercase and in braces, and very old COM GUIDs used a different variant (the \"Microsoft\" or \"NCS\" variant bits), which the decoder reports if it sees one. A value produced by .NET's Guid.NewGuid() is a valid v4 UUID."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Should I use v4 or v7 for a database primary key?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "v7, for any new table. Its leading timestamp makes ids increase over time, so inserts append to the end of a B-tree index instead of splitting pages at random positions, which is the cause of the well-known write slowdown with v4 keys in MySQL and SQL Server. The only reason to prefer v4 is if revealing the row's creation time is a problem for your application, since anyone with the id can read the timestamp."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Can I extract the creation time from a UUID?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "From a v7 or a ULID, yes: the first 48 bits are a Unix millisecond timestamp and the decoder shows it. From a v1 or v6, also yes, as a count of 100-nanosecond intervals since 15 October 1582, which the decoder converts. From a v4, v3 or v5, no — those contain no time information at all, and there is no way to learn when they were made."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How does a v5 UUID work and when would I use one?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "A v5 is SHA-1(namespace UUID bytes + name bytes) with the version and variant bits overwritten, truncated to 128 bits. It is deterministic: the same namespace and name always produce the same UUID, in any language. Use it when independent systems need to agree on the id for the same real-world thing without coordinating — for example, deriving a stable id for \"example.com\" from the DNS namespace, or for a file path from the URL namespace. v3 is the same construction with MD5 and should only be used to match an existing system that requires it."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Is a ULID a valid UUID?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "No. A ULID is 128 bits like a UUID, but it is written as 26 characters of Crockford base32 with no hyphens, and its bit layout does not set the UUID version and variant fields. A UUID library will reject it. The decoder here shows the ULID's timestamp and random component, and also shows the same 128 bits rewritten in UUID form for systems that need to store it in a UUID column, but that rewritten form will decode as an unknown version unless the version bits are overwritten."
+          }
+        }
+      ]
+    }
+  ]
+}
+  </script>

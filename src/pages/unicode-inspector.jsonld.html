@@ -1,0 +1,106 @@
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "SoftwareApplication",
+      "@id": "https://layerbit.co.in/tools/unicode-inspector.html#app",
+      "name": "Unicode Inspector",
+      "url": "https://layerbit.co.in/tools/unicode-inspector.html",
+      "description": "See every code point in a string with its UTF-8 and UTF-16 encoding, find zero-width and invisible characters, compare normalization forms, detect mixed-script lookalikes, and export escapes. Runs in your browser.",
+      "applicationCategory": "DeveloperApplication",
+      "operatingSystem": "Any (runs in the browser)",
+      "browserRequirements": "Requires JavaScript",
+      "isAccessibleForFree": true,
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "keywords": "unicode inspector, code point, zero width space, invisible characters, unicode normalization, utf-8 bytes, homoglyph",
+      "publisher": {
+        "@id": "https://layerbit.co.in/#organization"
+      },
+      "datePublished": "2026-09-27"
+    },
+    {
+      "@type": "BreadcrumbList",
+      "@id": "https://layerbit.co.in/tools/unicode-inspector.html#breadcrumb",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://layerbit.co.in/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Tools",
+          "item": "https://layerbit.co.in/blog.html"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": "Unicode Inspector",
+          "item": "https://layerbit.co.in/tools/unicode-inspector.html"
+        }
+      ]
+    },
+    {
+      "@type": "FAQPage",
+      "@id": "https://layerbit.co.in/tools/unicode-inspector.html#faq",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "Why does my string comparison fail when the two strings look identical?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "One of three things is almost always the cause: an invisible character such as a zero-width space or a byte-order mark in one string; a different normalization form, where an accented letter is one code point in one string and a base letter plus combining mark in the other; or a lookalike from another script, such as a Cyrillic letter standing in for a Latin one. Paste both strings here in turn and compare the code point lists; the findings panel names the first two cases directly and the mixed-script check catches the third."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What is a zero-width space and how do I remove it?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "U+200B is a Unicode format character that takes no space on screen and exists to mark a possible line break inside a word. It enters text through copy and paste from PDFs, web pages and messaging apps. It breaks exact matching, search and parsing because it is a real character in the string. Remove it by replacing the code point: in JavaScript str.replace(/​/g, ''), or more broadly str.replace(/\\p{Cf}/gu, '') to strip every format character. The clean-copy button on this page does the same and also converts no-break spaces to ordinary spaces."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Why does JavaScript say the length is 2 for a single emoji?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Because .length counts UTF-16 code units, and any code point above U+FFFF, which includes almost all emoji, is stored as a surrogate pair of two units. A family emoji built from several people joined with zero-width joiners can be eleven code points and over twenty units while displaying as one glyph. To count what a user sees, use Intl.Segmenter with granularity grapheme; to count code points, spread the string into an array or iterate with for…of."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Should I store text as NFC or NFD?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "NFC, in almost every case. It is the composed form: an accented letter is a single code point where one exists. It is what most input methods and browsers produce, it is the W3C's recommendation for the web, and it keeps lengths and prefixes stable. Normalize once when data enters your system and store the result. Use NFKC only for loose identifier matching, since it discards distinctions like superscripts and ligatures that can be meaningful in content."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How does the mixed-script check work?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Each word is examined for which scripts its letters belong to, using Unicode script properties. A word whose letters come from more than one script — Latin and Cyrillic, or Latin and Greek — is flagged with the scripts named. Characters that are common to all scripts, such as digits and punctuation, are ignored, and Japanese text mixing Han, Hiragana and Katakana is treated as one writing system since that mixture is normal. This is a lookalike heuristic similar to the checks browsers apply to internationalized domain names, not a security decision on its own."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Is my text sent anywhere for analysis?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "No. Classification uses the Unicode data built into your browser's JavaScript engine, through regular-expression property escapes, Intl.Segmenter and String.prototype.normalize. There is no server request, which you can confirm in the Network tab of your browser's developer tools or by using the page offline. The text people inspect is often a password, a token or a customer's name, so this is not a tool that should ever upload its input."
+          }
+        }
+      ]
+    }
+  ]
+}
+  </script>

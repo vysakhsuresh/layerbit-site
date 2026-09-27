@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="See every code point in a string with its UTF-8 and UTF-16 encoding, find zero-width and invisible characters, compare normalization forms, detect mixed-script lookalikes, and export escapes. Runs in your browser." />
+  <title>Unicode Inspector: Code Points, Bytes, Invisible Characters - Layerbit</title>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-ERX8MNPPP5"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-ERX8MNPPP5');
+  </script>
+  <link rel="canonical" href="https://layerbit.co.in/tools/unicode-inspector.html" />
+  <meta name="robots" content="max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://layerbit.co.in/tools/unicode-inspector.html" />
+  <meta property="og:site_name" content="Layerbit" />
+  <meta property="og:title" content="Unicode Inspector: Code Points, Bytes, Invisible Characters - Layerbit" />
+  <meta property="og:description" content="See every code point in a string with its UTF-8 and UTF-16 encoding, find zero-width and invisible characters, compare normalization forms, detect mixed-script lookalikes, and export escapes. Runs in your browser." />
+  <meta property="og:image" content="https://layerbit.co.in/og-image.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="Layerbit - free browser-based developer tools" />
+  <meta property="og:locale" content="en" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Unicode Inspector: Code Points, Bytes, Invisible Characters - Layerbit" />
+  <meta name="twitter:description" content="See every code point in a string with its UTF-8 and UTF-16 encoding, find zero-width and invisible characters, compare normalization forms, detect mixed-script lookalikes, and export escapes. Runs in your browser." />
+  <meta name="twitter:image" content="https://layerbit.co.in/og-image.png" />
+  <meta name="twitter:image:alt" content="Layerbit - free browser-based developer tools" />
+  <meta name="theme-color" content="#0a0c10" />
+  <script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "SoftwareApplication",
+      "@id": "https://layerbit.co.in/tools/unicode-inspector.html#app",
+      "name": "Unicode Inspector",
+      "url": "https://layerbit.co.in/tools/unicode-inspector.html",
+      "description": "See every code point in a string with its UTF-8 and UTF-16 encoding, find zero-width and invisible characters, compare normalization forms, detect mixed-script lookalikes, and export escapes. Runs in your browser.",
+      "applicationCategory": "DeveloperApplication",
+      "operatingSystem": "Any (runs in the browser)",
+      "browserRequirements": "Requires JavaScript",
+      "isAccessibleForFree": true,
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "keywords": "unicode inspector, code point, zero width space, invisible characters, unicode normalization, utf-8 bytes, homoglyph",
+      "publisher": {
+        "@id": "https://layerbit.co.in/#organization"
+      },
+      "datePublished": "2026-09-27"
+    },
+    {
+      "@type": "BreadcrumbList",
+      "@id": "https://layerbit.co.in/tools/unicode-inspector.html#breadcrumb",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://layerbit.co.in/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Tools",
+          "item": "https://layerbit.co.in/blog.html"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": "Unicode Inspector",
+          "item": "https://layerbit.co.in/tools/unicode-inspector.html"
+        }
+      ]
+    },
+    {
+      "@type": "FAQPage",
+      "@id": "https://layerbit.co.in/tools/unicode-inspector.html#faq",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "Why does my string comparison fail when the two strings look identical?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "One of three things is almost always the cause: an invisible character such as a zero-width space or a byte-order mark in one string; a different normalization form, where an accented letter is one code point in one string and a base letter plus combining mark in the other; or a lookalike from another script, such as a Cyrillic letter standing in for a Latin one. Paste both strings here in turn and compare the code point lists; the findings panel names the first two cases directly and the mixed-script check catches the third."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What is a zero-width space and how do I remove it?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "U+200B is a Unicode format character that takes no space on screen and exists to mark a possible line break inside a word. It enters text through copy and paste from PDFs, web pages and messaging apps. It breaks exact matching, search and parsing because it is a real character in the string. Remove it by replacing the code point: in JavaScript str.replace(/​/g, ''), or more broadly str.replace(/\\p{Cf}/gu, '') to strip every format character. The clean-copy button on this page does the same and also converts no-break spaces to ordinary spaces."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Why does JavaScript say the length is 2 for a single emoji?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Because .length counts UTF-16 code units, and any code point above U+FFFF, which includes almost all emoji, is stored as a surrogate pair of two units. A family emoji built from several people joined with zero-width joiners can be eleven code points and over twenty units while displaying as one glyph. To count what a user sees, use Intl.Segmenter with granularity grapheme; to count code points, spread the string into an array or iterate with for…of."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Should I store text as NFC or NFD?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "NFC, in almost every case. It is the composed form: an accented letter is a single code point where one exists. It is what most input methods and browsers produce, it is the W3C's recommendation for the web, and it keeps lengths and prefixes stable. Normalize once when data enters your system and store the result. Use NFKC only for loose identifier matching, since it discards distinctions like superscripts and ligatures that can be meaningful in content."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How does the mixed-script check work?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Each word is examined for which scripts its letters belong to, using Unicode script properties. A word whose letters come from more than one script — Latin and Cyrillic, or Latin and Greek — is flagged with the scripts named. Characters that are common to all scripts, such as digits and punctuation, are ignored, and Japanese text mixing Han, Hiragana and Katakana is treated as one writing system since that mixture is normal. This is a lookalike heuristic similar to the checks browsers apply to internationalized domain names, not a security decision on its own."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Is my text sent anywhere for analysis?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "No. Classification uses the Unicode data built into your browser's JavaScript engine, through regular-expression property escapes, Intl.Segmenter and String.prototype.normalize. There is no server request, which you can confirm in the Network tab of your browser's developer tools or by using the page offline. The text people inspect is often a password, a token or a customer's name, so this is not a tool that should ever upload its input."
+          }
+        }
+      ]
+    }
+  ]
+}
+  </script>
+
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6072772587431629" crossorigin="anonymous"></script>
+
+  <script src="../js/vendor/lucide.min.js" async></script>
+
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet" />
+  <link href="../layerbit-logo.png" rel="icon" type="image/x-icon" />
+  <link rel="manifest" href="../manifest.json" />
+  <link rel="apple-touch-icon" href="../apple-touch-icon.png" />
+  <link rel="stylesheet" href="../css/base.css" />
+  <link rel="stylesheet" href="../css/tool.css" />
+
+  <style>
+
+    .muted { color: var(--text-muted); font-family: 'Space Grotesk', sans-serif; font-weight: 400; }
+    .muted-count { font-weight: 400; font-size: 0.8em; color: var(--text-muted); margin-left: 6px; }
+    .findings { display: flex; flex-direction: column; gap: 8px; }
+    .finding { display: flex; gap: 10px; align-items: flex-start; padding: 10px 12px; border-radius: 10px; font-size: 0.85em; line-height: 1.5; border: 1px solid rgba(255,255,255,0.06); background: rgba(0,0,0,0.2); color: var(--text-muted); }
+    .finding i { width: 16px; height: 16px; flex-shrink: 0; margin-top: 2px; }
+    .finding strong { color: var(--text-main); }
+    .finding.bad { border-color: rgba(239,68,68,0.35); background: rgba(239,68,68,0.08); }
+    .finding.bad i { color: #f87171; }
+    .finding.warn { border-color: rgba(245,158,11,0.35); background: rgba(245,158,11,0.07); }
+    .finding.warn i { color: #f59e0b; }
+    .finding.ok { border-color: rgba(34,197,94,0.35); background: rgba(34,197,94,0.07); }
+    .finding.ok i { color: #4ade80; }
+    .finding.info i { color: var(--accent-main); }
+    #normTable td { font-family: 'Space Grotesk', sans-serif; }
+    #normTable td.act { width: 36px; text-align: right; }
+    #cpTable td.glyph { font-size: 1.3em; text-align: center; width: 48px; }
+    #cpTable .g { display: inline-block; min-width: 1.2em; }
+    #cpTable .ghost { display: inline-block; font-family: 'Fira Code', monospace; font-size: 0.55em; padding: 1px 4px; border-radius: 4px; background: rgba(245,158,11,0.18); color: #f59e0b; border: 1px dashed rgba(245,158,11,0.5); vertical-align: middle; }
+    #cpTable .gmark { color: var(--accent-main); font-family: 'Fira Code', monospace; font-size: 0.85em; }
+    #cpTable tr.flag td { background: rgba(245,158,11,0.09); }
+    #cpTable td .muted { font-size: 0.85em; }
+    .kv-grid dd .tag, .data-table .tag { font-family: 'Space Grotesk', sans-serif; font-size: 0.78em; padding: 2px 8px; border-radius: 999px; background: rgba(56,189,248,0.12); color: var(--accent-main); border: 1px solid rgba(56,189,248,0.3); }
+    .data-table .tag.ok { background: rgba(34,197,94,0.12); color: #4ade80; border-color: rgba(34,197,94,0.35); }
+    .data-table .tag.warn { background: rgba(245,158,11,0.12); color: #f59e0b; border-color: rgba(245,158,11,0.35); }
+
+  </style>
+</head>
+<body>
+  <header>
+    <a href="../" class="brand">
+      <svg width="36" height="36" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <polygon points="32,20 54,28 32,36 10,28" stroke="#f8fafc" stroke-width="4" stroke-linejoin="round"/>
+        <polyline points="10,38 32,46 54,38" stroke="#f8fafc" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+        <polyline points="10,48 32,56 54,48" stroke="#f8fafc" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+        <rect x="50" y="10" width="10" height="10" rx="2" fill="#00f2fe" />
+      </svg>
+      Layerbit
+    </a>
+  </header>
+
+  <main class="hero">
+    <div class="hero-badge"><i data-lucide="shield-check"></i> Runs entirely in your browser</div>
+    <h1>Unicode Inspector</h1>
+    <p>See exactly what is in a string: every code point with its UTF-8 and UTF-16 bytes, zero-width and invisible characters made visible, normalization forms compared, mixed-script lookalikes flagged, and escapes for JavaScript, Python, CSS and HTML.</p>
+  </main>
+
+  <div class="ide-container">
+    <div class="pane">
+      <div class="pane-header">
+        <div class="pane-title"><i data-lucide="type"></i> Text</div>
+        <div class="btn-group">
+          <button class="btn" type="button" id="btnSampleInvisible" title="A string with zero-width and lookalike characters hidden in it">Hidden-character sample</button>
+          <button class="btn" type="button" id="btnSampleEmoji">Emoji &amp; scripts</button>
+          <button class="btn" type="button" id="btnClear"><i data-lucide="trash-2"></i></button>
+        </div>
+      </div>
+      <textarea id="textInput" class="editor" placeholder="Paste text here. Anything pasted from a PDF, a chat app, a web page or a spreadsheet is a good candidate — that is where invisible characters come from." spellcheck="false"></textarea>
+      <div class="stats-strip" id="statsStrip"></div>
+    </div>
+
+    <div class="pane">
+      <div class="pane-header">
+        <div class="pane-title"><i data-lucide="siren"></i> Findings</div>
+        <div class="btn-group">
+          <button class="btn" type="button" id="btnClean" disabled title="Remove zero-width and format characters, replace non-breaking spaces with spaces, and copy"><i data-lucide="eraser"></i> Copy cleaned text</button>
+        </div>
+      </div>
+      <div class="pane-body">
+        <div id="findings" class="findings"><div class="muted">Findings about invisible characters, mixed scripts and normalization appear here.</div></div>
+        <div class="field">
+          <label><i data-lucide="git-compare"></i> Normalization</label>
+          <table class="data-table" id="normTable"><tbody></tbody></table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="ide-container single">
+    <div class="pane">
+      <div class="pane-header">
+        <div class="pane-title"><i data-lucide="list"></i> Code points <span class="muted-count" id="cpCount"></span></div>
+        <div class="btn-group">
+          <label class="check"><input type="checkbox" id="optGraphemes" checked> group by grapheme</label>
+          <select id="escapeSelect" class="mini-select">
+            <option value="js">JavaScript \u{…}</option>
+            <option value="js16">JavaScript \uXXXX (UTF-16)</option>
+            <option value="py">Python \N / \u</option>
+            <option value="css">CSS \XXXXXX</option>
+            <option value="html">HTML &amp;#x…;</option>
+            <option value="url">URL %XX (UTF-8)</option>
+          </select>
+          <button class="btn" type="button" id="btnCopyEscaped"><i data-lucide="copy"></i> Copy escaped string</button>
+        </div>
+      </div>
+      <div class="output-area" style="padding:0; max-height: 520px;">
+        <table class="data-table" id="cpTable">
+          <thead><tr><th>#</th><th>Char</th><th>Code point</th><th>Category</th><th>Script</th><th>UTF-8</th><th>UTF-16</th><th>Escape</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="docs-container">
+    <div class="info-panel">
+      <h2><i data-lucide="book-open"></i> Why text that looks the same is not the same</h2>
+      <p>A string is a sequence of code points, and a great deal of what can go wrong with text is invisible on screen. Two strings can render identically and still fail an equality check, a database lookup, a filename match or a password comparison. This tool exists to make the difference visible: it lists every code point, shows the bytes each one becomes, and highlights the specific characters that cause trouble.</p>
+
+      <div class="use-cases-grid">
+        <div class="use-case-card">
+          <h3><i data-lucide="eye-off"></i> Zero-width and format characters</h3>
+          <p>U+200B ZERO WIDTH SPACE, U+200C/D joiners, U+2060 WORD JOINER, U+FEFF (the byte-order mark, which also appears mid-string when files are concatenated) and the bidirectional controls U+202A–U+202E and U+2066–U+2069 all render as nothing. They arrive via copy-paste from PDFs, web pages and chat apps, and they break string comparison, regexes, CSV parsing and JSON keys. The findings panel counts them, the table marks them, and the clean-copy button strips them.</p>
+        </div>
+        <div class="use-case-card">
+          <h3><i data-lucide="users"></i> Lookalikes across scripts</h3>
+          <p>Cyrillic <code>а</code> (U+0430), Greek <code>ο</code> (U+03BF) and Latin <code>a</code> and <code>o</code> are visually identical in most fonts. A username, domain or package name mixing scripts inside one word is the classic homograph attack — <code>раypal</code> with two Cyrillic letters. The tool detects a word containing letters from more than one script and names the scripts, which is the same check IDNA-aware browsers apply to domain names.</p>
+        </div>
+        <div class="use-case-card">
+          <h3><i data-lucide="combine"></i> Normalization</h3>
+          <p><code>é</code> can be one code point (U+00E9) or two (U+0065 U+0301, e plus combining acute). Both display the same; they are different strings. NFC composes, NFD decomposes, and the K forms additionally fold compatibility characters (a ligature <code>ﬁ</code> to <code>fi</code>, a full-width <code>Ａ</code> to <code>A</code>). The table shows the length of your text in each form and whether it is already normalized, and which form to store is discussed below.</p>
+        </div>
+        <div class="use-case-card">
+          <h3><i data-lucide="binary"></i> Bytes, units and graphemes</h3>
+          <p>"Length" has four answers. A single flag emoji 🇦🇪 is one grapheme (what a user sees), two code points (two regional indicators), four UTF-16 units (what JavaScript's <code>.length</code> counts) and eight UTF-8 bytes (what a database column stores). A <code>VARCHAR(10)</code> that is really 10 bytes holds one such flag and nothing else. The statistics strip shows all four counts at once.</p>
+        </div>
+      </div>
+
+      <h2><i data-lucide="database"></i> Which normalization form to store</h2>
+      <p>Normalize on input, once, and store NFC. It is the form most text arrives in, the form the W3C recommends for the web, and the form that keeps <code>é</code> as a single code point so length checks and index prefixes behave. Use NFKC only for identifiers that must be compared loosely — usernames, search keys — because it is lossy: it folds superscripts to digits and removes distinctions that are sometimes meaningful (<code>²</code> becomes <code>2</code>). Never compare strings for equality without agreeing on a form; PostgreSQL, MySQL and most languages provide a <code>normalize()</code> function, and JavaScript has <code>String.prototype.normalize()</code>, which is what this page uses.</p>
+      <p>macOS is the notable exception on the file system: HFS+ stored filenames in a variant of NFD, so a file created on a Mac and listed from Linux could have a decomposed name that does not match the composed name in your database. APFS preserves what it is given but compares normalization-insensitively. If a filename check works on one machine and fails on another, paste the name here and compare the forms.</p>
+
+      <h2><i data-lucide="shield-alert"></i> Characters worth refusing at the door</h2>
+      <table>
+        <thead><tr><th>Code point</th><th>Name</th><th>Why it matters</th></tr></thead>
+        <tbody>
+          <tr><td><code>U+200B</code></td><td>Zero width space</td><td>Invisible; splits words for search and breaks exact matching. Very common in copied text.</td></tr>
+          <tr><td><code>U+FEFF</code></td><td>Byte order mark</td><td>Legitimate as the first character of a file; anywhere else it is garbage that breaks JSON, YAML and shebang lines.</td></tr>
+          <tr><td><code>U+00A0</code></td><td>No-break space</td><td>Looks like a space, is not one to <code>split(' ')</code> or <code>trim()</code> in some languages. Word processors insert it freely.</td></tr>
+          <tr><td><code>U+202E</code></td><td>Right-to-left override</td><td>Reverses display order of what follows: <code>invoice‮fdp.exe</code> shows as <code>invoiceexe.pdf</code>. Used in file-name and source-code attacks (the "Trojan Source" class).</td></tr>
+          <tr><td><code>U+2028</code> / <code>U+2029</code></td><td>Line / paragraph separator</td><td>Valid in JSON, historically illegal inside a JavaScript string literal, so embedding JSON in a script tag could throw.</td></tr>
+          <tr><td><code>U+0000</code></td><td>Null</td><td>Terminates strings in C; many databases and file systems reject it. Its presence usually means binary data was read as text.</td></tr>
+          <tr><td><code>U+FFFD</code></td><td>Replacement character</td><td>Not a problem in itself: it is the evidence of one. It appears where a decoder met bytes that were not valid in the encoding it assumed, usually Latin-1 read as UTF-8 or the reverse.</td></tr>
+        </tbody>
+      </table>
+
+      <h2><i data-lucide="cpu"></i> How the inspection works</h2>
+      <p>The string is walked by code point (<code>for…of</code>, not by UTF-16 index), each code point is classified with Unicode property escapes in regular expressions — <code>\p{L}</code>, <code>\p{Script=Cyrillic}</code>, <code>\p{Cf}</code> and so on — and graphemes come from <code>Intl.Segmenter</code>, the browser's implementation of the Unicode grapheme cluster rules. UTF-8 bytes are produced by <code>TextEncoder</code>. Normalization uses <code>String.prototype.normalize()</code>. Everything runs locally, and the character names shown for the flagged code points come from a small table in the page rather than the full Unicode name database, which is why only the notable ones are named.</p>
+    </div>
+
+    <div class="info-panel">
+      <h2><i data-lucide="help-circle"></i> Frequently asked questions</h2>
+      <div class="faq-container">
+        <div class="faq-item">
+          <button class="faq-question">Why does my string comparison fail when the two strings look identical? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>One of three things is almost always the cause: an invisible character such as a zero-width space or a byte-order mark in one string; a different normalization form, where an accented letter is one code point in one string and a base letter plus combining mark in the other; or a lookalike from another script, such as a Cyrillic letter standing in for a Latin one. Paste both strings here in turn and compare the code point lists; the findings panel names the first two cases directly and the mixed-script check catches the third.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">What is a zero-width space and how do I remove it? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>U+200B is a Unicode format character that takes no space on screen and exists to mark a possible line break inside a word. It enters text through copy and paste from PDFs, web pages and messaging apps. It breaks exact matching, search and parsing because it is a real character in the string. Remove it by replacing the code point: in JavaScript str.replace(/​/g, ''), or more broadly str.replace(/\p{Cf}/gu, '') to strip every format character. The clean-copy button on this page does the same and also converts no-break spaces to ordinary spaces.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">Why does JavaScript say the length is 2 for a single emoji? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>Because .length counts UTF-16 code units, and any code point above U+FFFF, which includes almost all emoji, is stored as a surrogate pair of two units. A family emoji built from several people joined with zero-width joiners can be eleven code points and over twenty units while displaying as one glyph. To count what a user sees, use Intl.Segmenter with granularity grapheme; to count code points, spread the string into an array or iterate with for…of.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">Should I store text as NFC or NFD? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>NFC, in almost every case. It is the composed form: an accented letter is a single code point where one exists. It is what most input methods and browsers produce, it is the W3C's recommendation for the web, and it keeps lengths and prefixes stable. Normalize once when data enters your system and store the result. Use NFKC only for loose identifier matching, since it discards distinctions like superscripts and ligatures that can be meaningful in content.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">How does the mixed-script check work? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>Each word is examined for which scripts its letters belong to, using Unicode script properties. A word whose letters come from more than one script — Latin and Cyrillic, or Latin and Greek — is flagged with the scripts named. Characters that are common to all scripts, such as digits and punctuation, are ignored, and Japanese text mixing Han, Hiragana and Katakana is treated as one writing system since that mixture is normal. This is a lookalike heuristic similar to the checks browsers apply to internationalized domain names, not a security decision on its own.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">Is my text sent anywhere for analysis? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>No. Classification uses the Unicode data built into your browser's JavaScript engine, through regular-expression property escapes, Intl.Segmenter and String.prototype.normalize. There is no server request, which you can confirm in the Network tab of your browser's developer tools or by using the page offline. The text people inspect is often a password, a token or a customer's name, so this is not a tool that should ever upload its input.</p></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="info-panel">
+      <h2><i data-lucide="git-commit"></i> Changelog</h2>
+      <ul class="changelog-list">
+        <li><span class="changelog-tag">v1.0.0</span> Initial release: per-code-point table with category, script, UTF-8 and UTF-16 encodings, grapheme grouping, invisible and bidi-control detection with names, mixed-script word detection, NFC/NFD/NFKC/NFKD comparison, six escape formats, and a one-click cleaned copy.</li>
+      </ul>
+    </div>
+  </div>
+
+  <a id="smartBackBtn" class="fab home-fab-premium" aria-label="Command Center" title="Command Center" href="../">
+    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="filter: drop-shadow(0 0 8px rgba(56, 189, 248, 0.5));">
+      <path d="M12 2L2 7l10 5 10-5-10-5z" stroke="#38bdf8" stroke-width="2" stroke-linejoin="round" fill="rgba(56,189,248,0.2)"/>
+      <path d="M2 17l10 5 10-5M2 12l10 5 10-5" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </a>
+
+  <footer>
+    <div style="margin-bottom: 15px;">
+      &copy; 2025 - 2026 <strong>Layerbit Technologies</strong>. All rights reserved.
+    </div>
+    <div>
+      <a href="../about.html">About</a>
+      <a href="../privacy.html">Privacy Policy</a>
+      <a href="../terms.html">Terms of Service</a>
+      <a href="../blog.html">Developer Blog</a>
+      <a href="../contact.html">Contact</a>
+    </div>
+  </footer>
+
+  <script src="../js/shared.js"></script>
+
+  <script>
+    const textInput = document.getElementById('textInput');
+    const statsStrip = document.getElementById('statsStrip');
+    const findings = document.getElementById('findings');
+    const normTable = document.getElementById('normTable').querySelector('tbody');
+    const cpTable = document.getElementById('cpTable').querySelector('tbody');
+    const cpCount = document.getElementById('cpCount');
+    const optGraphemes = document.getElementById('optGraphemes');
+    const escapeSelect = document.getElementById('escapeSelect');
+    const btnClean = document.getElementById('btnClean');
+
+    // Notable code points, named because they are the ones people hunt for.
+    const NOTABLE = {
+      0x0000: 'NULL', 0x0009: 'TAB', 0x000A: 'LINE FEED', 0x000D: 'CARRIAGE RETURN', 0x001B: 'ESCAPE',
+      0x00A0: 'NO-BREAK SPACE', 0x00AD: 'SOFT HYPHEN', 0x034F: 'COMBINING GRAPHEME JOINER', 0x061C: 'ARABIC LETTER MARK',
+      0x115F: 'HANGUL CHOSEONG FILLER', 0x1160: 'HANGUL JUNGSEONG FILLER', 0x17B4: 'KHMER VOWEL INHERENT AQ', 0x17B5: 'KHMER VOWEL INHERENT AA',
+      0x180E: 'MONGOLIAN VOWEL SEPARATOR', 0x2000: 'EN QUAD', 0x2001: 'EM QUAD', 0x2002: 'EN SPACE', 0x2003: 'EM SPACE', 0x2004: 'THREE-PER-EM SPACE',
+      0x2005: 'FOUR-PER-EM SPACE', 0x2006: 'SIX-PER-EM SPACE', 0x2007: 'FIGURE SPACE', 0x2008: 'PUNCTUATION SPACE', 0x2009: 'THIN SPACE', 0x200A: 'HAIR SPACE',
+      0x200B: 'ZERO WIDTH SPACE', 0x200C: 'ZERO WIDTH NON-JOINER', 0x200D: 'ZERO WIDTH JOINER', 0x200E: 'LEFT-TO-RIGHT MARK', 0x200F: 'RIGHT-TO-LEFT MARK',
+      0x2028: 'LINE SEPARATOR', 0x2029: 'PARAGRAPH SEPARATOR', 0x202A: 'LEFT-TO-RIGHT EMBEDDING', 0x202B: 'RIGHT-TO-LEFT EMBEDDING', 0x202C: 'POP DIRECTIONAL FORMATTING',
+      0x202D: 'LEFT-TO-RIGHT OVERRIDE', 0x202E: 'RIGHT-TO-LEFT OVERRIDE', 0x202F: 'NARROW NO-BREAK SPACE', 0x205F: 'MEDIUM MATHEMATICAL SPACE', 0x2060: 'WORD JOINER',
+      0x2061: 'FUNCTION APPLICATION', 0x2062: 'INVISIBLE TIMES', 0x2063: 'INVISIBLE SEPARATOR', 0x2064: 'INVISIBLE PLUS', 0x2066: 'LEFT-TO-RIGHT ISOLATE',
+      0x2067: 'RIGHT-TO-LEFT ISOLATE', 0x2068: 'FIRST STRONG ISOLATE', 0x2069: 'POP DIRECTIONAL ISOLATE', 0x3000: 'IDEOGRAPHIC SPACE', 0x3164: 'HANGUL FILLER',
+      0xFE0E: 'VARIATION SELECTOR-15 (text)', 0xFE0F: 'VARIATION SELECTOR-16 (emoji)', 0xFEFF: 'ZERO WIDTH NO-BREAK SPACE (BOM)', 0xFFA0: 'HALFWIDTH HANGUL FILLER',
+      0xFFFC: 'OBJECT REPLACEMENT CHARACTER', 0xFFFD: 'REPLACEMENT CHARACTER', 0x1D173: 'MUSICAL SYMBOL BEGIN BEAM', 0xE0001: 'LANGUAGE TAG',
+    };
+    const CATEGORIES = [['Lu', 'uppercase letter'], ['Ll', 'lowercase letter'], ['Lt', 'titlecase letter'], ['Lm', 'modifier letter'], ['Lo', 'other letter'],
+      ['Mn', 'nonspacing mark'], ['Mc', 'spacing mark'], ['Me', 'enclosing mark'], ['Nd', 'decimal digit'], ['Nl', 'letter number'], ['No', 'other number'],
+      ['Pc', 'connector punct.'], ['Pd', 'dash punct.'], ['Ps', 'open punct.'], ['Pe', 'close punct.'], ['Pi', 'initial quote'], ['Pf', 'final quote'], ['Po', 'other punct.'],
+      ['Sm', 'math symbol'], ['Sc', 'currency symbol'], ['Sk', 'modifier symbol'], ['So', 'other symbol'], ['Zs', 'space separator'], ['Zl', 'line separator'], ['Zp', 'paragraph separator'],
+      ['Cc', 'control'], ['Cf', 'format'], ['Cs', 'surrogate'], ['Co', 'private use'], ['Cn', 'unassigned']];
+    const CAT_RE = CATEGORIES.map(([c, n]) => [new RegExp(`^\\p{${c}}$`, 'u'), c, n]);
+    const SCRIPTS = ['Latin', 'Cyrillic', 'Greek', 'Arabic', 'Hebrew', 'Devanagari', 'Bengali', 'Tamil', 'Telugu', 'Malayalam', 'Kannada', 'Gujarati', 'Gurmukhi', 'Thai', 'Han', 'Hiragana', 'Katakana', 'Hangul', 'Armenian', 'Georgian', 'Ethiopic', 'Khmer', 'Sinhala', 'Myanmar', 'Tibetan', 'Mongolian', 'Cherokee', 'Runic', 'Ogham', 'Braille'];
+    const SCRIPT_RE = SCRIPTS.map(s => [new RegExp(`^\\p{Script=${s}}$`, 'u'), s]);
+    const isInvisible = cp => /^\p{Cf}$/u.test(String.fromCodePoint(cp)) || cp === 0x00A0 || cp === 0x202F || cp === 0x3000 || cp === 0xFFFD || (cp >= 0x2000 && cp <= 0x200A) || cp === 0x180E || cp === 0x3164 || cp === 0xFFA0 || cp === 0x115F || cp === 0x1160;
+    const isBidi = cp => (cp >= 0x202A && cp <= 0x202E) || (cp >= 0x2066 && cp <= 0x2069) || cp === 0x200E || cp === 0x200F || cp === 0x061C;
+
+    function category(ch) { for (const [re, c, n] of CAT_RE) if (re.test(ch)) return [c, n]; return ['?', 'unknown']; }
+    function script(ch) { if (/^\p{Script=Common}$/u.test(ch)) return 'Common'; if (/^\p{Script=Inherited}$/u.test(ch)) return 'Inherited'; for (const [re, s] of SCRIPT_RE) if (re.test(ch)) return s; return 'Other'; }
+    const hexCp = cp => 'U+' + cp.toString(16).toUpperCase().padStart(4, '0');
+    const utf8 = ch => Array.from(new TextEncoder().encode(ch), b => b.toString(16).toUpperCase().padStart(2, '0')).join(' ');
+    const utf16 = ch => Array.from(ch, (_, i) => ch.charCodeAt(i).toString(16).toUpperCase().padStart(4, '0')).join(' ');
+    function escapeOne(ch, mode) {
+      const cp = ch.codePointAt(0);
+      switch (mode) {
+        case 'js': return cp < 0x80 && cp >= 0x20 && ch !== '\\' ? ch : `\\u{${cp.toString(16)}}`;
+        case 'js16': return cp < 0x80 && cp >= 0x20 && ch !== '\\' ? ch : Array.from(ch, (_, i) => '\\u' + ch.charCodeAt(i).toString(16).padStart(4, '0')).join('');
+        case 'py': return cp < 0x80 && cp >= 0x20 && ch !== '\\' ? ch : cp > 0xffff ? `\\U${cp.toString(16).padStart(8, '0')}` : `\\u${cp.toString(16).padStart(4, '0')}`;
+        case 'css': return cp < 0x80 && cp >= 0x20 && ch !== '\\' ? ch : `\\${cp.toString(16).toUpperCase().padStart(6, '0')}`;
+        case 'html': return cp < 0x80 && cp >= 0x20 && !'<>&"'.includes(ch) ? ch : `&#x${cp.toString(16).toUpperCase()};`;
+        case 'url': return encodeURIComponent(ch);
+      }
+    }
+    const escHtml = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    const visible = ch => { const cp = ch.codePointAt(0); if (isInvisible(cp) || cp < 0x20 || cp === 0x7f) return `<span class="ghost">${hexCp(cp).slice(2)}</span>`; return escHtml(ch); };
+
+    function analyze() {
+      const text = textInput.value;
+      if (!text) { statsStrip.innerHTML = ''; findings.innerHTML = '<div class="muted">Findings about invisible characters, mixed scripts and normalization appear here.</div>'; normTable.innerHTML = ''; cpTable.innerHTML = ''; cpCount.textContent = ''; btnClean.disabled = true; return; }
+      const cps = Array.from(text);
+      let graphemes = null;
+      try { graphemes = Array.from(new Intl.Segmenter(undefined, { granularity: 'grapheme' }).segment(text), s => s.segment); } catch (e) {}
+      const bytes = new TextEncoder().encode(text).length;
+      statsStrip.innerHTML = `<span><strong>${graphemes ? graphemes.length.toLocaleString() : '—'}</strong> graphemes</span><span><strong>${cps.length.toLocaleString()}</strong> code points</span><span><strong>${text.length.toLocaleString()}</strong> UTF-16 units</span><span><strong>${bytes.toLocaleString()}</strong> UTF-8 bytes</span><span><strong>${(text.match(/\n/g) || []).length + 1}</strong> lines</span>`;
+
+      // ---- findings ----
+      const items = [];
+      const invis = new Map(), bidi = [];
+      cps.forEach((ch, i) => { const cp = ch.codePointAt(0); if (isInvisible(cp)) { const e = invis.get(cp) || { n: 0, first: i }; e.n++; invis.set(cp, e); } if (isBidi(cp)) bidi.push(i); });
+      if (invis.size) items.push({ kind: 'bad', text: `<strong>${[...invis.values()].reduce((a, e) => a + e.n, 0)} invisible or format character${invis.size > 1 || [...invis.values()][0].n > 1 ? 's' : ''}</strong>: ` + [...invis.entries()].map(([cp, e]) => `${hexCp(cp)} ${NOTABLE[cp] || category(String.fromCodePoint(cp))[1]} ×${e.n} (first at #${e.first + 1})`).join('; ') });
+      if (bidi.length) items.push({ kind: 'bad', text: `<strong>Bidirectional control characters</strong> at position${bidi.length > 1 ? 's' : ''} ${bidi.map(i => i + 1).join(', ')} — these can reorder how text displays (the "Trojan Source" attack class).` });
+      if (text.includes('�')) items.push({ kind: 'warn', text: `<strong>U+FFFD replacement character present</strong> — a decoder met bytes invalid in the encoding it assumed; the original characters are already lost.` });
+      if (/\r\n/.test(text) && /[^\r]\n/.test(text)) items.push({ kind: 'warn', text: '<strong>Mixed line endings</strong>: both CRLF and bare LF are present.' });
+      else if (/\r\n/.test(text)) items.push({ kind: 'info', text: 'Line endings are CRLF (Windows style).' });
+      if (/[ \t]+$/m.test(text)) items.push({ kind: 'info', text: `<strong>Trailing whitespace</strong> on ${(text.match(/[ \t]+$/gm) || []).length} line(s).` });
+      // mixed scripts per word (letters only; CJK families count as one system)
+      const cjk = new Set(['Han', 'Hiragana', 'Katakana', 'Hangul']);
+      const mixed = [];
+      for (const word of text.split(/[^\p{L}\p{M}]+/u).filter(Boolean)) {
+        const set = new Set();
+        for (const ch of word) { if (/\p{L}/u.test(ch)) { const s = script(ch); if (s !== 'Common' && s !== 'Inherited') set.add(cjk.has(s) ? 'CJK' : s); } }
+        if (set.size > 1) mixed.push(`"${escHtml(word.length > 30 ? word.slice(0, 30) + '…' : word)}" (${[...set].join(' + ')})`);
+        if (mixed.length >= 8) break;
+      }
+      if (mixed.length) items.push({ kind: 'bad', text: `<strong>Mixed scripts inside a word</strong> — possible lookalike substitution: ${mixed.join(', ')}` });
+      // confusable ASCII digit/letter lookalikes commonly abused
+      const lookalikes = { 'а': 'Cyrillic а for Latin a', 'е': 'Cyrillic е for Latin e', 'о': 'Cyrillic о for Latin o', 'р': 'Cyrillic р for Latin p', 'с': 'Cyrillic с for Latin c', 'х': 'Cyrillic х for Latin x', 'ο': 'Greek ο for Latin o', 'ѕ': 'Cyrillic ѕ for Latin s', 'і': 'Cyrillic і for Latin i', 'ј': 'Cyrillic ј for Latin j', 'ẛ': 'Latin long s with dot', '‐': 'hyphen U+2010 for hyphen-minus', '‑': 'non-breaking hyphen for hyphen-minus', '–': 'en dash for hyphen-minus', '−': 'minus sign for hyphen-minus', '‘': 'curly quote for apostrophe', '’': 'curly quote for apostrophe', '“': 'curly double quote', '”': 'curly double quote', '－': 'fullwidth hyphen', 'ʼ': 'modifier apostrophe', 'ı': 'dotless i', '⁄': 'fraction slash for /', '∕': 'division slash for /', '／': 'fullwidth solidus for /' };
+      const la = new Map();
+      for (const ch of cps) if (lookalikes[ch]) la.set(ch, (la.get(ch) || 0) + 1);
+      if (la.size && /[A-Za-z]/.test(text)) items.push({ kind: 'warn', text: `<strong>Lookalike punctuation or letters</strong> mixed with ASCII: ${[...la.entries()].map(([ch, n]) => `${hexCp(ch.codePointAt(0))} ${lookalikes[ch]} ×${n}`).join('; ')}` });
+      if (!items.length) items.push({ kind: 'ok', text: 'No invisible characters, bidi controls, lookalikes or mixed-script words found.' });
+      findings.innerHTML = items.map(i => `<div class="finding ${i.kind}"><i data-lucide="${i.kind === 'ok' ? 'check-circle' : i.kind === 'bad' ? 'alert-octagon' : i.kind === 'warn' ? 'alert-triangle' : 'info'}"></i><div>${i.text}</div></div>`).join('');
+      btnClean.disabled = !(invis.size || bidi.length || la.size);
+
+      // ---- normalization ----
+      normTable.innerHTML = ['NFC', 'NFD', 'NFKC', 'NFKD'].map(f => { const n = text.normalize(f); const same = n === text; return `<tr><td class="muted">${f}</td><td>${Array.from(n).length.toLocaleString()} code points</td><td>${same ? '<span class="tag ok">already ' + f + '</span>' : '<span class="tag warn">differs from input</span>'}</td><td class="act"><button class="copy-btn" type="button" data-norm="${f}" title="Copy ${f} form"><i data-lucide="copy"></i></button></td></tr>`; }).join('');
+      normTable.querySelectorAll('[data-norm]').forEach(b => b.addEventListener('click', () => navigator.clipboard.writeText(textInput.value.normalize(b.dataset.norm))));
+
+      // ---- code point table ----
+      const mode = escapeSelect.value;
+      const rows = [];
+      let idx = 0;
+      const units = optGraphemes.checked && graphemes ? graphemes : cps;
+      const MAX = 2000;
+      for (let u = 0; u < units.length && rows.length < MAX; u++) {
+        const g = units[u], gcps = Array.from(g);
+        gcps.forEach((ch, j) => {
+          const cp = ch.codePointAt(0), [cat, catName] = category(ch), sc = script(ch);
+          const flag = isInvisible(cp) || isBidi(cp) || cp === 0xFFFD || lookalikes[ch];
+          const name = NOTABLE[cp] ? ` <span class="muted">${NOTABLE[cp]}</span>` : '';
+          rows.push(`<tr${flag ? ' class="flag"' : ''}><td class="muted">${++idx}${gcps.length > 1 ? (j === 0 ? ` <span class="gmark">┐${gcps.length}</span>` : j === gcps.length - 1 ? ' <span class="gmark">┘</span>' : ' <span class="gmark">│</span>') : ''}</td><td class="glyph">${j === 0 ? `<span class="g">${visible(g)}</span>` : ''}</td><td>${hexCp(cp)}${name}</td><td class="muted">${cat} ${catName}</td><td class="muted">${sc}</td><td>${utf8(ch)}</td><td>${utf16(ch)}</td><td>${escHtml(escapeOne(ch, mode))}</td></tr>`);
+        });
+      }
+      cpTable.innerHTML = rows.join('');
+      cpCount.textContent = rows.length >= MAX ? `first ${MAX} of ${cps.length.toLocaleString()}` : '';
+      if (window.lucide) lucide.createIcons();
+    }
+
+    function cleaned() {
+      return textInput.value.replace(/[   - 　]/g, ' ').replace(/[\p{Cf}᠎ㅤﾠᅟᅠ]/gu, '').replace(/‘|’|ʼ/g, "'").replace(/“|”/g, '"').replace(/[‐‑−－]/g, '-');
+    }
+    let t = null;
+    textInput.addEventListener('input', () => { clearTimeout(t); t = setTimeout(analyze, 60); });
+    optGraphemes.addEventListener('change', analyze);
+    escapeSelect.addEventListener('change', analyze);
+    btnClean.addEventListener('click', async () => { await navigator.clipboard.writeText(cleaned()); btnClean.innerHTML = '<i data-lucide="check"></i> Copied cleaned text'; if (window.lucide) lucide.createIcons(); setTimeout(() => { btnClean.innerHTML = '<i data-lucide="eraser"></i> Copy cleaned text'; if (window.lucide) lucide.createIcons(); }, 1500); });
+    document.getElementById('btnCopyEscaped').addEventListener('click', () => { const m = escapeSelect.value; navigator.clipboard.writeText(Array.from(textInput.value, ch => escapeOne(ch, m)).join('')); });
+    document.getElementById('btnClear').addEventListener('click', () => { textInput.value = ''; analyze(); });
+    document.getElementById('btnSampleInvisible').addEventListener('click', () => { textInput.value = 'payрal.com​ login page — invoice‮fdp.exe ‘quoted’ café vs café'; analyze(); });
+    document.getElementById('btnSampleEmoji').addEventListener('click', () => { textInput.value = '🇦🇪 Dubai · 👨‍👩‍👧 family · नमस्ते · مرحبا · 日本語テキスト · Ｆｕｌｌｗｉｄｔｈ · ﬁnal'; analyze(); });
+  </script>
+</body>
+</html>

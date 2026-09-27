@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Compute SHA-1, SHA-256, SHA-384, SHA-512 and MD5 hashes of text or files, generate HMACs with a key, and verify a checksum, entirely in your browser with the Web Crypto API." />
+  <title>Hash & HMAC Generator (SHA-256, SHA-512, MD5) - Layerbit</title>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-ERX8MNPPP5"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-ERX8MNPPP5');
+  </script>
+  <link rel="canonical" href="https://layerbit.co.in/tools/hash-generator.html" />
+  <meta name="robots" content="max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://layerbit.co.in/tools/hash-generator.html" />
+  <meta property="og:site_name" content="Layerbit" />
+  <meta property="og:title" content="Hash & HMAC Generator (SHA-256, SHA-512, MD5) - Layerbit" />
+  <meta property="og:description" content="Compute SHA-1, SHA-256, SHA-384, SHA-512 and MD5 hashes of text or files, generate HMACs with a key, and verify a checksum, entirely in your browser with the Web Crypto API." />
+  <meta property="og:image" content="https://layerbit.co.in/og-image.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="Layerbit - free browser-based developer tools" />
+  <meta property="og:locale" content="en" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Hash & HMAC Generator (SHA-256, SHA-512, MD5) - Layerbit" />
+  <meta name="twitter:description" content="Compute SHA-1, SHA-256, SHA-384, SHA-512 and MD5 hashes of text or files, generate HMACs with a key, and verify a checksum, entirely in your browser with the Web Crypto API." />
+  <meta name="twitter:image" content="https://layerbit.co.in/og-image.png" />
+  <meta name="twitter:image:alt" content="Layerbit - free browser-based developer tools" />
+  <meta name="theme-color" content="#0a0c10" />
+  <script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "SoftwareApplication",
+      "@id": "https://layerbit.co.in/tools/hash-generator.html#app",
+      "name": "Hash \u0026 HMAC Generator",
+      "url": "https://layerbit.co.in/tools/hash-generator.html",
+      "description": "Compute SHA-1, SHA-256, SHA-384, SHA-512 and MD5 hashes of text or files, generate HMACs with a key, and verify a checksum, entirely in your browser with the Web Crypto API.",
+      "applicationCategory": "SecurityApplication",
+      "operatingSystem": "Any (runs in the browser)",
+      "browserRequirements": "Requires JavaScript",
+      "isAccessibleForFree": true,
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "keywords": "sha256 generator, hash generator, hmac generator, md5 checksum, file hash, verify checksum",
+      "publisher": {
+        "@id": "https://layerbit.co.in/#organization"
+      },
+      "datePublished": "2026-09-27"
+    },
+    {
+      "@type": "BreadcrumbList",
+      "@id": "https://layerbit.co.in/tools/hash-generator.html#breadcrumb",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://layerbit.co.in/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Tools",
+          "item": "https://layerbit.co.in/blog.html"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": "Hash \u0026 HMAC Generator",
+          "item": "https://layerbit.co.in/tools/hash-generator.html"
+        }
+      ]
+    },
+    {
+      "@type": "FAQPage",
+      "@id": "https://layerbit.co.in/tools/hash-generator.html#faq",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "Is my text or file uploaded to compute the hash?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "No. Hashing is done by the Web Crypto API built into your browser, and the MD5 implementation is JavaScript in the page. There is no request to any server. You can verify this in the Network tab of your browser's developer tools, or by loading the page and then disconnecting from the internet before hashing a file."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Why does the same text give a different SHA-256 here and on my server?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Almost always the bytes differ even though the characters look the same. A trailing newline added by an editor, Windows CRLF line endings, a UTF-8 byte-order mark, or a different Unicode normalization form all change the digest. Hash the exact bytes on both sides — for a file, hash the file rather than its pasted contents; for text, check the byte count shown under the input against what your server sees."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Can I get the original text back from a hash?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "No. A hash is one-way: the digest is a fixed 256 bits regardless of input size, so infinitely many inputs map to each digest and there is no inverse function. What attackers do instead is guess: precompute digests of likely inputs (a dictionary, or every string up to eight characters) and look yours up. That is why a fast hash of a password is not protection, and why salts and slow functions exist."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What is the difference between a hash and an HMAC?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "A hash has no key: anyone can compute it, so it proves integrity against accidental change but not against a deliberate one, since an attacker who alters the message can recompute the hash too. An HMAC mixes a secret key into the computation using the RFC 2104 construction, so only a holder of the key can produce a valid tag. Use a hash to detect corruption; use an HMAC to authenticate a message from a party you share a secret with."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Why is my HMAC different from the one in the webhook header?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Three usual causes. The body you pasted is not the raw body: it was pretty-printed, re-serialised or had whitespace changed, and the HMAC covers exact bytes. The key was given to you as hex or base64 and you used the encoded string as the key instead of decoding it to bytes. Or the provider signs something other than the bare body, such as a timestamp joined to the body with a dot (Stripe) or a version prefix. Check the provider's documentation for what exactly goes into the signature."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Should I use this to hash passwords for my application?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "No. SHA-256 and its relatives are designed to be fast, which is the opposite of what password storage needs. Use Argon2id, scrypt or bcrypt through a maintained library on the server, with a per-user random salt. A fast hash of a password, even salted, can be attacked at billions of guesses per second on commodity GPUs."
+          }
+        }
+      ]
+    }
+  ]
+}
+  </script>
+
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6072772587431629" crossorigin="anonymous"></script>
+
+  <script src="../js/vendor/lucide.min.js" async></script>
+
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet" />
+  <link href="../layerbit-logo.png" rel="icon" type="image/x-icon" />
+  <link rel="manifest" href="../manifest.json" />
+  <link rel="apple-touch-icon" href="../apple-touch-icon.png" />
+  <link rel="stylesheet" href="../css/base.css" />
+  <link rel="stylesheet" href="../css/tool.css" />
+
+  <style>
+
+    .pane-body .data-table th { position: static; background: none; width: 80px; color: var(--text-muted); font-family: 'Space Grotesk', sans-serif; }
+    .pane-body .data-table td.digest { word-break: break-all; font-size: 0.82em; }
+    .pane-body .data-table td.act { width: 36px; text-align: right; }
+    .pane-body .data-table tr.match td, .pane-body .data-table tr.match th { background: rgba(34,197,94,0.08); }
+    .pane-body .data-table tr.match th { color: #4ade80; }
+    .hint { font-size: 0.78em; color: var(--text-muted); line-height: 1.5; min-height: 1em; }
+    .hint .ok { color: #4ade80; font-weight: 600; }
+    .hint .bad { color: #f87171; font-weight: 600; }
+    .muted { color: var(--text-muted); font-weight: 400; }
+    .field label .muted { font-weight: 400; }
+
+  </style>
+</head>
+<body>
+  <header>
+    <a href="../" class="brand">
+      <svg width="36" height="36" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <polygon points="32,20 54,28 32,36 10,28" stroke="#f8fafc" stroke-width="4" stroke-linejoin="round"/>
+        <polyline points="10,38 32,46 54,38" stroke="#f8fafc" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+        <polyline points="10,48 32,56 54,48" stroke="#f8fafc" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+        <rect x="50" y="10" width="10" height="10" rx="2" fill="#00f2fe" />
+      </svg>
+      Layerbit
+    </a>
+  </header>
+
+  <main class="hero">
+    <div class="hero-badge"><i data-lucide="shield-check"></i> Web Crypto API · nothing leaves your browser</div>
+    <h1>Hash &amp; HMAC Generator</h1>
+    <p>SHA-1, SHA-256, SHA-384, SHA-512 and MD5 of any text or file, keyed HMACs, and a constant-time checksum verifier — computed by your browser's own cryptography, not by a server.</p>
+  </main>
+
+  <div class="ide-container">
+    <div class="pane tall" id="inputPane">
+      <div class="pane-header">
+        <div class="pane-title"><i data-lucide="file-input"></i> Input</div>
+        <div class="btn-group">
+          <label class="check" title="Hash the text as UTF-8 bytes (default) or treat it as hex-encoded bytes"><select id="inputMode" class="mini-select"><option value="utf8">text (UTF-8)</option><option value="hex">hex bytes</option><option value="base64">base64 bytes</option></select></label>
+          <input type="file" id="fileInput" style="display:none;">
+          <button class="btn" type="button" onclick="document.getElementById('fileInput').click()"><i data-lucide="upload"></i> File</button>
+          <button class="btn" type="button" id="btnClear"><i data-lucide="trash-2"></i> Clear</button>
+        </div>
+      </div>
+      <textarea id="textInput" class="editor" placeholder="Type or paste text, or drop a file anywhere on this pane...&#10;&#10;Hashes update as you type." spellcheck="false"></textarea>
+      <div class="hint-bar" id="inputMeta">0 bytes</div>
+    </div>
+
+    <div class="pane tall">
+      <div class="pane-header">
+        <div class="pane-title"><i data-lucide="fingerprint"></i> Digests</div>
+        <div class="btn-group">
+          <label class="check"><input type="checkbox" id="outB64"> base64</label>
+          <label class="check"><input type="checkbox" id="outUpper"> UPPERCASE</label>
+        </div>
+      </div>
+      <div class="error-banner" id="errorBanner"><i data-lucide="triangle-alert"></i><span id="errorText"></span></div>
+      <div class="pane-body">
+        <div class="field">
+          <label for="hmacKey"><i data-lucide="key-round"></i> HMAC key <span class="muted">(leave empty for plain hashes)</span></label>
+          <input type="text" id="hmacKey" class="text-input" placeholder="secret key (UTF-8)" autocomplete="off" spellcheck="false">
+        </div>
+        <table class="data-table" id="digestTable">
+          <tbody>
+            <tr data-alg="MD5"><th>MD5</th><td class="digest" id="d-MD5"></td><td class="act"><button class="copy-btn" data-copy="d-MD5" type="button" title="Copy"><i data-lucide="copy"></i></button></td></tr>
+            <tr data-alg="SHA-1"><th>SHA-1</th><td class="digest" id="d-SHA-1"></td><td class="act"><button class="copy-btn" data-copy="d-SHA-1" type="button" title="Copy"><i data-lucide="copy"></i></button></td></tr>
+            <tr data-alg="SHA-256"><th>SHA-256</th><td class="digest" id="d-SHA-256"></td><td class="act"><button class="copy-btn" data-copy="d-SHA-256" type="button" title="Copy"><i data-lucide="copy"></i></button></td></tr>
+            <tr data-alg="SHA-384"><th>SHA-384</th><td class="digest" id="d-SHA-384"></td><td class="act"><button class="copy-btn" data-copy="d-SHA-384" type="button" title="Copy"><i data-lucide="copy"></i></button></td></tr>
+            <tr data-alg="SHA-512"><th>SHA-512</th><td class="digest" id="d-SHA-512"></td><td class="act"><button class="copy-btn" data-copy="d-SHA-512" type="button" title="Copy"><i data-lucide="copy"></i></button></td></tr>
+          </tbody>
+        </table>
+        <div class="field">
+          <label for="expectInput"><i data-lucide="check-check"></i> Verify against an expected checksum</label>
+          <input type="text" id="expectInput" class="text-input" placeholder="paste the hash from the download page, README or email" autocomplete="off" spellcheck="false">
+          <div class="hint" id="verifyResult"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="docs-container">
+    <div class="info-panel">
+      <h2><i data-lucide="book-open"></i> What a hash is for, and what it is not for</h2>
+      <p>A cryptographic hash turns input of any size into a fixed-size digest — 256 bits for SHA-256 — such that the same input always gives the same digest, a one-bit change anywhere gives a completely different one, and finding two inputs with the same digest is computationally infeasible. That last property is what separates a cryptographic hash from a checksum like CRC32, and it is the one MD5 and SHA-1 have lost.</p>
+
+      <div class="use-cases-grid">
+        <div class="use-case-card">
+          <h3><i data-lucide="download"></i> Verifying a download</h3>
+          <p>A release page publishes <code>sha256sum</code> values so you can confirm the file you received is the file they built. Drop the file here, paste the published digest into the verifier, and the comparison is done in the page. If the digests differ the file is corrupt or altered; if they match, you have the file the publisher hashed — which only proves anything if you trust the page you copied the digest from.</p>
+        </div>
+        <div class="use-case-card">
+          <h3><i data-lucide="webhook"></i> Webhook signatures</h3>
+          <p>Stripe, GitHub, Slack and most payment providers sign each webhook with an HMAC over the raw body using your shared secret. Paste the exact body and the secret and compare the HMAC-SHA256 here with the header they sent. The most common failure is hashing a re-serialised body rather than the raw bytes — a single reordered key or trailing newline changes everything.</p>
+        </div>
+        <div class="use-case-card">
+          <h3><i data-lucide="database"></i> Content addressing and deduplication</h3>
+          <p>Git names every object by its SHA-1 (moving to SHA-256), and object stores, package managers and build caches use a digest as the key. Hashing here lets you confirm what key a blob would receive, or check whether two files that look identical actually are.</p>
+        </div>
+        <div class="use-case-card">
+          <h3><i data-lucide="ban"></i> Not for passwords</h3>
+          <p>None of these functions is suitable for storing passwords. They are fast by design, and a GPU computes billions of SHA-256 values per second, so a leaked table of plain hashes falls to a dictionary attack in hours. Password storage needs a deliberately slow, salted, memory-hard function: Argon2id, scrypt or bcrypt. This page will not offer one, because doing it in a browser page would suggest it is fine to do it there.</p>
+        </div>
+      </div>
+
+      <h2><i data-lucide="key-round"></i> HMAC: a hash with a key</h2>
+      <p>An HMAC (RFC 2104) is a hash computed in a specific way over a secret key and a message. Anyone can compute a plain SHA-256 of a message, so a plain hash proves nothing about who sent it; an HMAC can only be produced by someone who holds the key, which turns it into an authentication tag. The construction — hash the key XOR an inner pad concatenated with the message, then hash the key XOR an outer pad concatenated with that — exists because naively hashing <code>key + message</code> is vulnerable to a length-extension attack on every Merkle–Damgård hash, SHA-256 included. Use the construction, never the naive concatenation.</p>
+      <p>When a key is entered above, every row switches from a plain digest to an HMAC with that key. The key is handled as UTF-8 text. If your integration hands you a key as hex or base64, decode it first; a key of <em>the string</em> "a1b2c3" and a key of <em>the bytes</em> 0xa1 0xb2 0xc3 produce different tags, and that mismatch is the second most common webhook signature bug.</p>
+
+      <h2><i data-lucide="alert-triangle"></i> Which algorithm, and why MD5 and SHA-1 are still here</h2>
+      <table>
+        <thead><tr><th>Algorithm</th><th>Digest</th><th>Collision resistance</th><th>Use it for</th></tr></thead>
+        <tbody>
+          <tr><td>MD5</td><td>128 bits</td><td><strong>Broken</strong> — collisions in seconds on a laptop</td><td>Matching legacy checksums, ETags, non-security dedup keys. Never for signatures or integrity against an adversary.</td></tr>
+          <tr><td>SHA-1</td><td>160 bits</td><td><strong>Broken</strong> — practical chosen-prefix collisions since 2020</td><td>Reading existing Git object ids and old certificates. Do not choose it for anything new.</td></tr>
+          <tr><td>SHA-256</td><td>256 bits</td><td>Sound</td><td>The default. Downloads, signatures, HMACs, content addressing.</td></tr>
+          <tr><td>SHA-384</td><td>384 bits</td><td>Sound; resists length extension</td><td>When a 384-bit output is mandated (some TLS suites, FIPS profiles).</td></tr>
+          <tr><td>SHA-512</td><td>512 bits</td><td>Sound</td><td>Faster than SHA-256 on 64-bit CPUs for large inputs; larger digest.</td></tr>
+        </tbody>
+      </table>
+      <p>MD5 is not provided by the Web Crypto API at all — browsers dropped it deliberately — so the value shown here comes from a small implementation of RFC 1321 included in the page and checked against the RFC's own test vectors. It is here because you will still meet MD5 in the wild: old download pages, Amazon S3 ETags for single-part uploads, database migration checksums, and UUID v3. Being able to <em>check</em> one is not the same as being allowed to <em>choose</em> one.</p>
+
+      <h2><i data-lucide="cpu"></i> How the page computes them</h2>
+      <p>The SHA family is computed by <code>crypto.subtle.digest()</code>, and HMACs by <code>crypto.subtle.sign()</code> with an imported HMAC key. Both are native browser code, which is why a 200 MB file hashes in a few seconds. A file is read into memory in full before hashing, because the Web Crypto API has no streaming digest; that puts a practical ceiling around a gigabyte depending on the device. The verifier compares digests with a fixed-time loop over the full length rather than a string equality, and treats case and surrounding whitespace as irrelevant so a checksum copied from a web page with a stray newline still matches.</p>
+    </div>
+
+    <div class="info-panel">
+      <h2><i data-lucide="help-circle"></i> Frequently asked questions</h2>
+      <div class="faq-container">
+        <div class="faq-item">
+          <button class="faq-question">Is my text or file uploaded to compute the hash? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>No. Hashing is done by the Web Crypto API built into your browser, and the MD5 implementation is JavaScript in the page. There is no request to any server. You can verify this in the Network tab of your browser's developer tools, or by loading the page and then disconnecting from the internet before hashing a file.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">Why does the same text give a different SHA-256 here and on my server? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>Almost always the bytes differ even though the characters look the same. A trailing newline added by an editor, Windows CRLF line endings, a UTF-8 byte-order mark, or a different Unicode normalization form all change the digest. Hash the exact bytes on both sides — for a file, hash the file rather than its pasted contents; for text, check the byte count shown under the input against what your server sees.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">Can I get the original text back from a hash? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>No. A hash is one-way: the digest is a fixed 256 bits regardless of input size, so infinitely many inputs map to each digest and there is no inverse function. What attackers do instead is guess: precompute digests of likely inputs (a dictionary, or every string up to eight characters) and look yours up. That is why a fast hash of a password is not protection, and why salts and slow functions exist.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">What is the difference between a hash and an HMAC? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>A hash has no key: anyone can compute it, so it proves integrity against accidental change but not against a deliberate one, since an attacker who alters the message can recompute the hash too. An HMAC mixes a secret key into the computation using the RFC 2104 construction, so only a holder of the key can produce a valid tag. Use a hash to detect corruption; use an HMAC to authenticate a message from a party you share a secret with.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">Why is my HMAC different from the one in the webhook header? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>Three usual causes. The body you pasted is not the raw body: it was pretty-printed, re-serialised or had whitespace changed, and the HMAC covers exact bytes. The key was given to you as hex or base64 and you used the encoded string as the key instead of decoding it to bytes. Or the provider signs something other than the bare body, such as a timestamp joined to the body with a dot (Stripe) or a version prefix. Check the provider's documentation for what exactly goes into the signature.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">Should I use this to hash passwords for my application? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>No. SHA-256 and its relatives are designed to be fast, which is the opposite of what password storage needs. Use Argon2id, scrypt or bcrypt through a maintained library on the server, with a per-user random salt. A fast hash of a password, even salted, can be attacked at billions of guesses per second on commodity GPUs.</p></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="info-panel">
+      <h2><i data-lucide="git-commit"></i> Changelog</h2>
+      <ul class="changelog-list">
+        <li><span class="changelog-tag">v1.0.0</span> Initial release: MD5, SHA-1, SHA-256, SHA-384, SHA-512 of text (UTF-8, hex or base64 input) and files via drag-and-drop; HMAC with a UTF-8 key; hex or base64 output; constant-time checksum verification.</li>
+      </ul>
+    </div>
+  </div>
+
+  <a id="smartBackBtn" class="fab home-fab-premium" aria-label="Command Center" title="Command Center" href="../">
+    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="filter: drop-shadow(0 0 8px rgba(56, 189, 248, 0.5));">
+      <path d="M12 2L2 7l10 5 10-5-10-5z" stroke="#38bdf8" stroke-width="2" stroke-linejoin="round" fill="rgba(56,189,248,0.2)"/>
+      <path d="M2 17l10 5 10-5M2 12l10 5 10-5" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </a>
+
+  <footer>
+    <div style="margin-bottom: 15px;">
+      &copy; 2025 - 2026 <strong>Layerbit Technologies</strong>. All rights reserved.
+    </div>
+    <div>
+      <a href="../about.html">About</a>
+      <a href="../privacy.html">Privacy Policy</a>
+      <a href="../terms.html">Terms of Service</a>
+      <a href="../blog.html">Developer Blog</a>
+      <a href="../contact.html">Contact</a>
+    </div>
+  </footer>
+
+  <script src="../js/shared.js"></script>
+  <script src="../js/md5.js"></script>
+
+  <script>
+    const textInput = document.getElementById('textInput');
+    const inputMode = document.getElementById('inputMode');
+    const inputMeta = document.getElementById('inputMeta');
+    const inputPane = document.getElementById('inputPane');
+    const fileInput = document.getElementById('fileInput');
+    const hmacKey = document.getElementById('hmacKey');
+    const outB64 = document.getElementById('outB64');
+    const outUpper = document.getElementById('outUpper');
+    const expectInput = document.getElementById('expectInput');
+    const verifyResult = document.getElementById('verifyResult');
+    const errorBanner = document.getElementById('errorBanner');
+    const errorText = document.getElementById('errorText');
+    const ALGS = ['MD5', 'SHA-1', 'SHA-256', 'SHA-384', 'SHA-512'];
+
+    let fileBytes = null, fileName = null;   // a dropped file takes precedence over the textarea
+    let lastDigests = {};                    // alg -> Uint8Array
+    let runId = 0;
+
+    function showError(msg) { errorText.textContent = msg; errorBanner.classList.add('active'); }
+    function clearError() { errorBanner.classList.remove('active'); }
+
+    // Input bytes: the file if one is loaded, else the textarea decoded per the mode.
+    function inputBytes() {
+      if (fileBytes) return fileBytes;
+      const v = textInput.value;
+      if (inputMode.value === 'utf8') return new TextEncoder().encode(v);
+      if (inputMode.value === 'hex') {
+        const h = v.replace(/\s+|0x/gi, '');
+        if (h.length % 2 || /[^0-9a-f]/i.test(h)) throw new Error('Hex input must be an even number of hex digits (whitespace is ignored).');
+        return Uint8Array.from(h.match(/../g) || [], x => parseInt(x, 16));
+      }
+      const s = v.replace(/\s+/g, '').replace(/-/g, '+').replace(/_/g, '/');
+      try { return Uint8Array.from(atob(s + '='.repeat((4 - s.length % 4) % 4)), c => c.charCodeAt(0)); }
+      catch (e) { throw new Error('Base64 input could not be decoded.'); }
+    }
+    const toHex = b => Array.from(b, x => x.toString(16).padStart(2, '0')).join('');
+    const toB64 = b => btoa(String.fromCharCode(...b));
+    function fmtBytes(n) { return n < 1024 ? `${n} bytes` : n < 1048576 ? `${(n / 1024).toFixed(1)} KB` : `${(n / 1048576).toFixed(2)} MB`; }
+
+    async function digestAll() {
+      const id = ++runId;
+      clearError();
+      let bytes;
+      try { bytes = inputBytes(); } catch (e) { showError(e.message); return; }
+      inputMeta.textContent = (fileName ? `${fileName} · ` : '') + fmtBytes(bytes.length) + (hmacKey.value ? ' · HMAC mode' : '');
+      const key = hmacKey.value ? new TextEncoder().encode(hmacKey.value) : null;
+      const results = {};
+      const t0 = performance.now();
+      for (const alg of ALGS) {
+        let out;
+        if (alg === 'MD5') {
+          out = key ? hmacMd5(key, bytes) : md5Bytes(bytes);
+        } else if (key) {
+          const k = await crypto.subtle.importKey('raw', key, { name: 'HMAC', hash: alg }, false, ['sign']);
+          out = new Uint8Array(await crypto.subtle.sign('HMAC', k, bytes));
+        } else {
+          out = new Uint8Array(await crypto.subtle.digest(alg, bytes));
+        }
+        if (id !== runId) return; // superseded by newer input
+        results[alg] = out;
+      }
+      lastDigests = results;
+      renderDigests();
+      if (bytes.length > 1048576) inputMeta.textContent += ` · hashed in ${(performance.now() - t0).toFixed(0)} ms`;
+      verify();
+    }
+    // HMAC-MD5 per RFC 2104 with a 64-byte block, for legacy systems that still use it.
+    function hmacMd5(key, msg) {
+      if (key.length > 64) key = md5Bytes(key);
+      const k = new Uint8Array(64); k.set(key);
+      const ipad = k.map(b => b ^ 0x36), opad = k.map(b => b ^ 0x5c);
+      const inner = md5Bytes(concat(ipad, msg));
+      return md5Bytes(concat(opad, inner));
+    }
+    function concat(a, b) { const out = new Uint8Array(a.length + b.length); out.set(a); out.set(b, a.length); return out; }
+
+    function renderDigests() {
+      for (const alg of ALGS) {
+        const el = document.getElementById('d-' + alg);
+        const b = lastDigests[alg];
+        if (!b) { el.textContent = ''; continue; }
+        let s = outB64.checked ? toB64(b) : toHex(b);
+        if (outUpper.checked && !outB64.checked) s = s.toUpperCase();
+        el.textContent = s;
+      }
+    }
+
+    // Constant-time compare over the longer length; case- and whitespace-insensitive
+    // so a digest copied from a web page with a stray newline still matches.
+    function verify() {
+      const raw = expectInput.value.trim();
+      verifyResult.className = 'hint';
+      if (!raw) { verifyResult.textContent = ''; ALGS.forEach(a => document.querySelector(`tr[data-alg="${a}"]`).classList.remove('match')); return; }
+      const norm = raw.replace(/\s+/g, '').toLowerCase().replace(/^0x/, '');
+      let matched = null;
+      for (const alg of ALGS) {
+        const b = lastDigests[alg]; if (!b) continue;
+        for (const cand of [toHex(b), toB64(b).toLowerCase(), toB64(b).replace(/=+$/, '').toLowerCase()]) {
+          let diff = cand.length ^ norm.length;
+          for (let i = 0; i < Math.max(cand.length, norm.length); i++) diff |= (cand.charCodeAt(i) || 0) ^ (norm.charCodeAt(i) || 0);
+          if (diff === 0) matched = alg;
+        }
+        document.querySelector(`tr[data-alg="${alg}"]`).classList.toggle('match', matched === alg);
+      }
+      if (matched) { verifyResult.innerHTML = `<span class="ok">Match</span> — the input's ${matched} digest equals the expected value.`; }
+      else {
+        const guess = { 32: 'MD5', 40: 'SHA-1', 64: 'SHA-256', 96: 'SHA-384', 128: 'SHA-512' }[norm.length];
+        verifyResult.innerHTML = `<span class="bad">No match</span>` + (guess ? ` — the expected value is ${norm.length} hex characters, which is the length of ${guess}; the input's ${guess} differs.` : ` — ${norm.length} characters is not the length of any supported digest in hex or base64.`);
+      }
+    }
+
+    // ---- file handling ----
+    async function loadFile(file) {
+      if (!file) return;
+      if (file.size > 1024 * 1024 * 1024) { showError('Files over 1 GB cannot be hashed in the browser, which needs the whole file in memory.'); return; }
+      fileName = file.name;
+      inputMeta.textContent = `reading ${file.name}…`;
+      fileBytes = new Uint8Array(await file.arrayBuffer());
+      textInput.value = ''; textInput.placeholder = `File loaded: ${file.name} (${fmtBytes(fileBytes.length)}). Clear to hash text instead.`; textInput.readOnly = true;
+      digestAll();
+    }
+    fileInput.addEventListener('change', e => loadFile(e.target.files[0]));
+    inputPane.addEventListener('dragover', e => { e.preventDefault(); inputPane.classList.add('dragover'); });
+    inputPane.addEventListener('dragleave', () => inputPane.classList.remove('dragover'));
+    inputPane.addEventListener('drop', e => { e.preventDefault(); inputPane.classList.remove('dragover'); loadFile(e.dataTransfer.files[0]); });
+    document.getElementById('btnClear').addEventListener('click', () => {
+      fileBytes = null; fileName = null; fileInput.value = ''; textInput.value = ''; textInput.readOnly = false;
+      textInput.placeholder = 'Type or paste text, or drop a file anywhere on this pane...\n\nHashes update as you type.';
+      expectInput.value = ''; digestAll();
+    });
+
+    let timer = null;
+    const debounced = () => { clearTimeout(timer); timer = setTimeout(digestAll, 60); };
+    textInput.addEventListener('input', () => { if (fileBytes) { fileBytes = null; fileName = null; textInput.readOnly = false; } debounced(); });
+    inputMode.addEventListener('change', digestAll);
+    hmacKey.addEventListener('input', debounced);
+    outB64.addEventListener('change', () => { renderDigests(); verify(); });
+    outUpper.addEventListener('change', () => { renderDigests(); verify(); });
+    expectInput.addEventListener('input', verify);
+    document.querySelectorAll('.copy-btn').forEach(b => b.addEventListener('click', async () => {
+      const t = document.getElementById(b.dataset.copy).textContent; if (!t) return;
+      await navigator.clipboard.writeText(t); b.innerHTML = '<i data-lucide="check"></i>'; if (window.lucide) lucide.createIcons();
+      setTimeout(() => { b.innerHTML = '<i data-lucide="copy"></i>'; if (window.lucide) lucide.createIcons(); }, 1200);
+    }));
+    digestAll();
+  </script>
+</body>
+</html>
