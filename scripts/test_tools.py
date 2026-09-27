@@ -1116,7 +1116,8 @@ def _(t):
 @case("hash-generator", "typical", "verifier matches case- and whitespace-insensitively, names the algorithm")
 def _(t):
     t.set("textInput", "abc")
-    t.wait_for("() => document.getElementById('d-SHA-256').textContent.length === 64")
+    # wait for abc's digest specifically: the empty-string digest is also 64 chars
+    t.wait_for("() => document.getElementById('d-SHA-256').textContent === 'ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad'")
     t.set("expectInput", "  BA7816BF8F01CFEA414140DE5DAE2223B00361A396177A9CB410FF61F20015AD\n")
     expect("Match" in t.text("verifyResult") and "SHA-256" in t.text("verifyResult"), t.text("verifyResult"))
     t.set("expectInput", "0" * 64)
@@ -1337,7 +1338,9 @@ def _(t):
     expect("Line 2" in t.text("errorText") and "column" in t.text("errorText"), t.text("errorText"))
     t.set("xmlInput", "<a><b></a>")
     t.wait(150)
-    expect("mismatch" in t.text("errorText").lower(), t.text("errorText"))
+    # libxml2 wording changed between Chromium releases: "tag mismatch" vs "Unexpected closing tag"
+    msg = t.text("errorText").lower()
+    expect(("mismatch" in msg or "closing tag" in msg) and "line 1" in msg, t.text("errorText"))
 
 
 @case("xml-formatter", "maximal", "5,000-element document formats and queries under budget")
