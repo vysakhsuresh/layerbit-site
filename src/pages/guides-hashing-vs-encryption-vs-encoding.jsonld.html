@@ -1,0 +1,119 @@
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "TechArticle",
+      "@id": "https://layerbit.co.in/guides/hashing-vs-encryption-vs-encoding.html#article",
+      "headline": "Hashing, Encryption and Encoding Are Three Different Things",
+      "name": "Hashing, Encryption and Encoding Are Three Different Things",
+      "description": "Encoding is reversible by anyone, encryption needs a key, hashing has no inverse, an HMAC proves origin, and passwords need a slow salted hash.",
+      "url": "https://layerbit.co.in/guides/hashing-vs-encryption-vs-encoding.html",
+      "mainEntityOfPage": {
+        "@type": "WebPage",
+        "@id": "https://layerbit.co.in/guides/hashing-vs-encryption-vs-encoding.html"
+      },
+      "datePublished": "2026-09-27",
+      "dateModified": "2026-09-27",
+      "inLanguage": "en",
+      "wordCount": 1761,
+      "keywords": "hashing vs encryption, encoding vs encryption, HMAC, SHA-256, password hashing, Argon2, MD5 collisions",
+      "articleSection": "Security",
+      "author": {
+        "@type": "Organization",
+        "name": "Layerbit Technologies",
+        "url": "https://layerbit.co.in/about.html"
+      },
+      "publisher": {
+        "@type": "Organization",
+        "name": "Layerbit Technologies",
+        "url": "https://layerbit.co.in/",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://layerbit.co.in/icon-512.png",
+          "width": 512,
+          "height": 512
+        }
+      },
+      "image": {
+        "@type": "ImageObject",
+        "url": "https://layerbit.co.in/og-image.png",
+        "width": 1200,
+        "height": 630
+      },
+      "isAccessibleForFree": true,
+      "proficiencyLevel": "Beginner"
+    },
+    {
+      "@type": "BreadcrumbList",
+      "@id": "https://layerbit.co.in/guides/hashing-vs-encryption-vs-encoding.html#breadcrumb",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://layerbit.co.in/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Guides",
+          "item": "https://layerbit.co.in/blog.html"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": "Hashing vs encryption vs encoding",
+          "item": "https://layerbit.co.in/guides/hashing-vs-encryption-vs-encoding.html"
+        }
+      ]
+    },
+    {
+      "@type": "FAQPage",
+      "@id": "https://layerbit.co.in/guides/hashing-vs-encryption-vs-encoding.html#faq",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "Can a hash be decrypted?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "No. A hash is not encryption: there is no key and no inverse function, and infinitely many inputs produce each digest. What attackers do instead is guess — hash candidate inputs and compare. Fast hashes make guessing cheap, which is why passwords need a deliberately slow hash with a salt rather than SHA-256."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Is Base64 a form of encryption?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "No. Base64 is an encoding: it changes how bytes are written so they survive text-only channels, and anyone can reverse it without a secret. It provides no confidentiality at all. A value that must be kept secret needs encryption with a properly managed key, regardless of how it is encoded afterwards."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Should I still use MD5 or SHA-1 for anything?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Only to interoperate with systems that already use them — checking a legacy download checksum, reading existing Git object ids, matching an ETag. Both have practical collision attacks, so neither should be chosen for signatures, certificates, integrity against an adversary, or any new design. SHA-256 is the default choice."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What is the difference between a hash and an HMAC?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "An HMAC is a hash computed with a secret key using the RFC 2104 construction. A plain hash can be recomputed by anyone, so it proves only that data was not accidentally corrupted. An HMAC can only be produced by a holder of the key, so it also proves the message came from a party you share that key with and was not deliberately altered."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Which algorithm should I use to store passwords?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Argon2id, with scrypt or bcrypt as established alternatives, applied server-side through a maintained library with a per-user random salt. These are designed to be slow and memory-intensive so that guessing is expensive. Do not use SHA-256, MD5 or any fast hash for passwords, and never encrypt passwords, since a stolen key would reveal all of them."
+          }
+        }
+      ]
+    }
+  ]
+}
+  </script>

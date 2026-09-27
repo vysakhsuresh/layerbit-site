@@ -1,32 +1,80 @@
 <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "FAQPage",
-    "mainEntity": [
-      {
-        "@type": "Question",
-        "name": "How does Layerbit secure my sensitive production logs?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "We prioritize zero-trust security architecture. The entire application operates strictly within your browser's DOM. Logs uploaded or pasted are processed locally by JavaScript. Absolutely no data is transmitted over the network, ensuring complete air-gapped security for sensitive production data."
-        }
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "SoftwareApplication",
+      "@id": "https://layerbit.co.in/tools/log-analyzer.html#app",
+      "name": "Log File Analyzer",
+      "url": "https://layerbit.co.in/tools/log-analyzer.html",
+      "description": "Paste or upload server logs and get error, warning, info and debug counts, severity filters, plain or regex grep, and the most repeated messages. Runs locally.",
+      "applicationCategory": "DeveloperApplication",
+      "operatingSystem": "Any (runs in the browser)",
+      "browserRequirements": "Requires JavaScript",
+      "isAccessibleForFree": true,
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
       },
-      {
-        "@type": "Question",
-        "name": "What log formats does the Forensic Engine support?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "Our complex Regex mapping logic automatically structures raw text from standard Nginx (access/error), Apache, Node.js, Spring Boot, and Docker containers. It targets universal markers for severities like ERROR, FATAL, WARN, INFO, NOTICE, and DEBUG, as well as common ISO/UTC timestamps."
-        }
-      },
-      {
-        "@type": "Question",
-        "name": "Why use a client-side tool instead of ELK or Splunk?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "While ELK/Splunk excel at long-term storage and aggregation, Layerbit provides instant, lightweight forensic analysis for immediate IR needs, with zero setup. It renders every line as a DOM row with no virtualization, so it's built for the single log dump you'd actually paste during an incident — comfortably tens of thousands of lines — not a multi-gigabyte archive; split a file that large first (e.g. grep the relevant window) and load that slice instead."
-        }
+      "publisher": {
+        "@id": "https://layerbit.co.in/#organization"
       }
-    ]
-  }
+    },
+    {
+      "@type": "BreadcrumbList",
+      "@id": "https://layerbit.co.in/tools/log-analyzer.html#breadcrumb",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://layerbit.co.in/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Tools",
+          "item": "https://layerbit.co.in/blog.html"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": "Log File Analyzer",
+          "item": "https://layerbit.co.in/tools/log-analyzer.html"
+        }
+      ]
+    },
+    {
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "How does Layerbit secure my sensitive production logs?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "We prioritize zero-trust security architecture. The entire application operates strictly within your browser's DOM. Logs uploaded or pasted are processed locally by JavaScript. Absolutely no data is transmitted over the network, ensuring complete air-gapped security for sensitive production data."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What log formats does the Forensic Engine support?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Our complex Regex mapping logic automatically structures raw text from standard Nginx (access/error), Apache, Node.js, Spring Boot, and Docker containers. It targets universal markers for severities like ERROR, FATAL, WARN, INFO, NOTICE, and DEBUG, as well as common ISO/UTC timestamps."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Why use a client-side tool instead of ELK or Splunk?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "While ELK/Splunk excel at long-term storage and aggregation, Layerbit provides instant, lightweight forensic analysis for immediate IR needs, with zero setup. It renders every line as a DOM row with no virtualization, so it's built for the single log dump you'd actually paste during an incident — comfortably tens of thousands of lines — not a multi-gigabyte archive; split a file that large first (e.g. grep the relevant window) and load that slice instead."
+          }
+        }
+      ],
+      "@id": "https://layerbit.co.in/tools/log-analyzer.html#faq"
+    }
+  ]
+}
   </script>

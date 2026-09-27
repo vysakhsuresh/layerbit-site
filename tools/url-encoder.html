@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="Advanced URL Encoder & Decoder. Smartly encode query parameters or raw strings in real-time. Secure client-side processing by Layerbit." />
-  <title>URL Encoder & Decoder - Layerbit</title>
+  <meta name="description" content="Percent-encode or decode URLs and query strings in your browser. Smart mode keeps URL structure, raw mode encodes everything, and a grid edits parameters." />
+  <title>URL Encoder & Decoder Online | Layerbit</title>
   <!-- Google tag (gtag.js) -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-ERX8MNPPP5"></script>
   <script>
@@ -18,58 +18,106 @@
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://layerbit.co.in/tools/url-encoder.html" />
   <meta property="og:site_name" content="Layerbit" />
-  <meta property="og:title" content="URL Encoder & Decoder - Layerbit" />
-  <meta property="og:description" content="Advanced URL Encoder & Decoder. Smartly encode query parameters or raw strings in real-time. Secure client-side processing by Layerbit." />
+  <meta property="og:title" content="URL Encoder & Decoder Online | Layerbit" />
+  <meta property="og:description" content="Percent-encode or decode URLs and query strings in your browser. Smart mode keeps URL structure, raw mode encodes everything, and a grid edits parameters." />
   <meta property="og:image" content="https://layerbit.co.in/og-image.png" />
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
   <meta property="og:image:alt" content="Layerbit - free browser-based developer tools" />
   <meta property="og:locale" content="en" />
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="URL Encoder & Decoder - Layerbit" />
-  <meta name="twitter:description" content="Advanced URL Encoder & Decoder. Smartly encode query parameters or raw strings in real-time. Secure client-side processing by Layerbit." />
+  <meta name="twitter:title" content="URL Encoder & Decoder Online | Layerbit" />
+  <meta name="twitter:description" content="Percent-encode or decode URLs and query strings in your browser. Smart mode keeps URL structure, raw mode encodes everything, and a grid edits parameters." />
   <meta name="twitter:image" content="https://layerbit.co.in/og-image.png" />
   <meta name="twitter:image:alt" content="Layerbit - free browser-based developer tools" />
   <meta name="theme-color" content="#0a0c10" />
   <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "FAQPage",
-    "mainEntity": [
-      {
-        "@type": "Question",
-        "name": "What is the technical difference between Smart and Raw mode?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "Smart Mode attempts to parse the string using the JavaScript URL API, extracting and modifying the URLSearchParams to safely encode query parameters while preserving the base protocol structure. Raw Mode bypasses URL parsing and applies a blanket encodeURIComponent() to the entire string."
-        }
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "SoftwareApplication",
+      "@id": "https://layerbit.co.in/tools/url-encoder.html#app",
+      "name": "URL Encoder / Decoder",
+      "url": "https://layerbit.co.in/tools/url-encoder.html",
+      "description": "Percent-encode or decode URLs and query strings in your browser. Smart mode keeps URL structure, raw mode encodes everything, and a grid edits parameters.",
+      "applicationCategory": "DeveloperApplication",
+      "operatingSystem": "Any (runs in the browser)",
+      "browserRequirements": "Requires JavaScript",
+      "isAccessibleForFree": true,
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
       },
-      {
-        "@type": "Question",
-        "name": "Why is client-side processing necessary?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "URLs frequently contain highly sensitive session tokens, API keys, and temporary authorization grants within their parameters. Processing this data entirely within your local browser DOM guarantees zero-trust security—your keys are never sent to or logged by our servers."
-        }
-      },
-      {
-        "@type": "Question",
-        "name": "How does Parameter Forensics work?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "When a valid URL is detected, the engine intercepts the search property of the parsed URL object. It iterates through the URLSearchParams map, automatically escaping HTML entities to prevent DOM injection, and populates an editable breakdown grid. Edit any key or value directly and click Re-encode to rebuild both the readable and percent-encoded versions of the URL from your changes."
-        }
-      },
-      {
-        "@type": "Question",
-        "name": "How does Batch Mode work?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "Batch Mode treats each line of the input as an independent item. Every non-empty line is parsed and encoded or decoded on its own — if a line is a full URL, only its query parameters are transformed (same logic as Smart Mode); otherwise the whole line is encoded or decoded as a raw string. Blank lines and line order are preserved, so you can paste a list of endpoints or tracking links and process them all in one pass."
-        }
+      "publisher": {
+        "@id": "https://layerbit.co.in/#organization"
       }
-    ]
-  }
+    },
+    {
+      "@type": "BreadcrumbList",
+      "@id": "https://layerbit.co.in/tools/url-encoder.html#breadcrumb",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://layerbit.co.in/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Tools",
+          "item": "https://layerbit.co.in/blog.html"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": "URL Encoder / Decoder",
+          "item": "https://layerbit.co.in/tools/url-encoder.html"
+        }
+      ]
+    },
+    {
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "What is the technical difference between Smart and Raw mode?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Smart Mode attempts to parse the string using the JavaScript URL API, extracting and modifying the URLSearchParams to safely encode query parameters while preserving the base protocol structure. Raw Mode bypasses URL parsing and applies a blanket encodeURIComponent() to the entire string."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Why is client-side processing necessary?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "URLs frequently contain highly sensitive session tokens, API keys, and temporary authorization grants within their parameters. Processing this data entirely within your local browser DOM guarantees zero-trust security—your keys are never sent to or logged by our servers."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How does Parameter Forensics work?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "When a valid URL is detected, the engine intercepts the search property of the parsed URL object. It iterates through the URLSearchParams map, automatically escaping HTML entities to prevent DOM injection, and populates an editable breakdown grid. Edit any key or value directly and click Re-encode to rebuild both the readable and percent-encoded versions of the URL from your changes."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How does Batch Mode work?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Batch Mode treats each line of the input as an independent item. Every non-empty line is parsed and encoded or decoded on its own — if a line is a full URL, only its query parameters are transformed (same logic as Smart Mode); otherwise the whole line is encoded or decoded as a raw string. Blank lines and line order are preserved, so you can paste a list of endpoints or tracking links and process them all in one pass."
+          }
+        }
+      ],
+      "@id": "https://layerbit.co.in/tools/url-encoder.html#faq"
+    }
+  ]
+}
   </script>
 
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6072772587431629" crossorigin="anonymous"></script>
@@ -371,7 +419,7 @@
 
   <main class="hero">
     <h1>URL Encoder / Decoder</h1>
-    <p>Instantly encode payloads or decode URL parameters in real-time.</p>
+    <p>Encode and decode URLs, query strings and parameters safely, with a parameter grid and batch mode — all client-side.</p>
   </main>
 
   <div class="mode-selector">
@@ -529,6 +577,25 @@
       <p>When a URL has a dozen query parameters, reading it as one string is the hard way. The parameter grid breaks a detected query into editable key/value rows: change a value, add a parameter, remove one, and <strong>Re-encode</strong> rebuilds both the readable and the percent-encoded forms of the URL. Batch mode takes a list of URLs, one per line, and encodes or decodes every line independently — useful for a column of tracking links pulled out of a spreadsheet.</p>
       <p>All of it happens in the page. URLs frequently carry session tokens, signed parameters and temporary authorisation grants in their query strings, so nothing you paste here is transmitted anywhere.</p>
     </div>
+
+        <div class="info-panel related-panel">
+          <h2><i data-lucide="link"></i> Related guides and tools</h2>
+          <p>Background reading on the format and failure modes behind this tool, and the tools most often used alongside it.</p>
+          <div class="use-cases-grid">
+            <div class="use-case-card">
+              <h3><i data-lucide="book-open"></i> <a href="../guides/percent-encoding-explained.html">URL percent-encoding explained</a></h3>
+              <p>%20 vs +, reserved characters, encodeURI vs encodeURIComponent.</p>
+            </div>
+            <div class="use-case-card">
+              <h3><i data-lucide="book-open"></i> <a href="../guides/base64-explained.html">Base64 explained</a></h3>
+              <p>An encoding, not encryption; the 33% overhead; base64url.</p>
+            </div>
+            <div class="use-case-card">
+              <h3><i data-lucide="wrench"></i> <a href="base64.html">Base64 Encoder & Decoder</a></h3>
+              <p>Another local tool that pairs with this one. Runs entirely in your browser.</p>
+            </div>
+          </div>
+        </div>
 
     <div class="info-panel">
       <h2><i data-lucide="git-merge"></i> Deployment Changelog</h2>

@@ -4,7 +4,11 @@
   2. JSON-LD blocks parse as valid JSON
   3. inline <script> blocks (no src=, not type=application/ld+json) are
      syntactically valid JS, checked via `node --check`
-  4. the internal link graph: every internal href resolves to a real file,
+  4. on-page SEO basics: exactly one <h1>, a canonical link, a <title>
+     of 25-62 characters and a meta description of 70-160 characters (what
+     Google displays without truncating), and no two pages sharing a title
+     or description (duplicates make pages compete with each other)
+  5. the internal link graph: every internal href resolves to a real file,
      every local script/stylesheet resolves, and every indexable page is
      reachable by clicking from index.html (a page only the sitemap knows
      about is invisible to a reader and to a content reviewer)
@@ -96,6 +100,32 @@ def check_inline_js(text, node_available):
     return errs
 
 
+def check_seo(text, f):
+    errs = []
+    # count headings in markup only: sample payloads inside <script> blocks
+    # legitimately contain literal "<h1>" strings
+    markup = re.sub(r"<script\b.*?</script>", "", text, flags=re.S)
+    h1s = re.findall(r"<h1\b", markup)
+    if len(h1s) != 1:
+        errs.append(f"expected exactly one <h1>, found {len(h1s)}")
+    if not re.search(r'<link rel="canonical"', text) and "noindex" not in text:
+        errs.append("missing canonical link")
+    t = re.search(r"<title>(.*?)</title>", text, re.S)
+    title = html_unescape(t.group(1).strip()) if t else ""
+    if not 25 <= len(title) <= 62:
+        errs.append(f"title is {len(title)} chars (want 25-62): {title!r}")
+    d = re.search(r'<meta name="description" content="([^"]*)"', text)
+    desc = html_unescape(d.group(1)) if d else ""
+    if f != "404.html" and not 70 <= len(desc) <= 160:
+        errs.append(f"meta description is {len(desc)} chars (want 70-160)")
+    return errs, title, desc
+
+
+def html_unescape(s):
+    import html
+    return html.unescape(s)
+
+
 def check_link_graph(files):
     """Site-wide: broken internal hrefs/assets and orphaned indexable pages."""
     pages = set(files)
@@ -151,9 +181,17 @@ def main():
     files = sorted(glob.glob("*.html") + glob.glob("tools/*.html")
                    + glob.glob("guides/*.html"))
     failures = []
+    seen_titles, seen_descs = {}, {}
     for f in files:
         text = open(f, encoding="utf-8").read()
-        errs = check_structure(text) + check_jsonld(text) + check_inline_js(text, node_available)
+        seo_errs, title, desc = check_seo(text, f)
+        if title in seen_titles:
+            seo_errs.append(f"duplicate title, also on {seen_titles[title]}")
+        seen_titles.setdefault(title, f)
+        if desc and desc in seen_descs:
+            seo_errs.append(f"duplicate meta description, also on {seen_descs[desc]}")
+        seen_descs.setdefault(desc, f)
+        errs = check_structure(text) + check_jsonld(text) + check_inline_js(text, node_available) + seo_errs
         if errs:
             failures.append((f, errs))
 
@@ -169,7 +207,7 @@ def main():
         print(f"\n{len(failures)} of {len(files)} page(s) failed validation.")
         sys.exit(1)
 
-    print(f"OK: {len(files)} page(s) passed structural, JSON-LD, inline-JS and link-graph validation.")
+    print(f"OK: {len(files)} page(s) passed structural, JSON-LD, inline-JS, SEO and link-graph validation.")
 
 
 if __name__ == "__main__":

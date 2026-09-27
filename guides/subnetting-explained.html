@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="How a prefix length gives you network, broadcast, host count and mask, how to read the third octet in your head, and how to lay out a VPC that can grow." />
+  <title>Subnetting Explained: Read a CIDR Block, Size a VPC | Layerbit</title>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-ERX8MNPPP5"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-ERX8MNPPP5');
+  </script>
+  <link rel="canonical" href="https://layerbit.co.in/guides/subnetting-explained.html" />
+  <meta name="robots" content="max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://layerbit.co.in/guides/subnetting-explained.html" />
+  <meta property="og:site_name" content="Layerbit" />
+  <meta property="og:title" content="Subnetting Explained: Read a CIDR Block, Size a VPC | Layerbit" />
+  <meta property="og:description" content="How a prefix length gives you network, broadcast, host count and mask, how to read the third octet in your head, and how to lay out a VPC that can grow." />
+  <meta property="og:image" content="https://layerbit.co.in/og-image.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="Layerbit - free browser-based developer tools" />
+  <meta property="og:locale" content="en" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Subnetting Explained: Read a CIDR Block, Size a VPC | Layerbit" />
+  <meta name="twitter:description" content="How a prefix length gives you network, broadcast, host count and mask, how to read the third octet in your head, and how to lay out a VPC that can grow." />
+  <meta name="twitter:image" content="https://layerbit.co.in/og-image.png" />
+  <meta name="twitter:image:alt" content="Layerbit - free browser-based developer tools" />
+  <meta name="theme-color" content="#0a0c10" />
+  <script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "TechArticle",
+      "@id": "https://layerbit.co.in/guides/subnetting-explained.html#article",
+      "headline": "Subnetting Explained: How to Read a CIDR Block and Size a Network",
+      "name": "Subnetting Explained: How to Read a CIDR Block and Size a Network",
+      "description": "How a prefix length gives you network, broadcast, host count and mask, how to read the third octet in your head, and how to lay out a VPC that can grow.",
+      "url": "https://layerbit.co.in/guides/subnetting-explained.html",
+      "mainEntityOfPage": {
+        "@type": "WebPage",
+        "@id": "https://layerbit.co.in/guides/subnetting-explained.html"
+      },
+      "datePublished": "2026-09-27",
+      "dateModified": "2026-09-27",
+      "inLanguage": "en",
+      "wordCount": 1994,
+      "keywords": "subnetting, CIDR, subnet mask, wildcard mask, VPC design, IPv6 /64, supernet",
+      "articleSection": "Networking",
+      "author": {
+        "@type": "Organization",
+        "name": "Layerbit Technologies",
+        "url": "https://layerbit.co.in/about.html"
+      },
+      "publisher": {
+        "@type": "Organization",
+        "name": "Layerbit Technologies",
+        "url": "https://layerbit.co.in/",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://layerbit.co.in/icon-512.png",
+          "width": 512,
+          "height": 512
+        }
+      },
+      "image": {
+        "@type": "ImageObject",
+        "url": "https://layerbit.co.in/og-image.png",
+        "width": 1200,
+        "height": 630
+      },
+      "isAccessibleForFree": true,
+      "proficiencyLevel": "Beginner"
+    },
+    {
+      "@type": "BreadcrumbList",
+      "@id": "https://layerbit.co.in/guides/subnetting-explained.html#breadcrumb",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://layerbit.co.in/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Guides",
+          "item": "https://layerbit.co.in/blog.html"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": "Subnetting explained",
+          "item": "https://layerbit.co.in/guides/subnetting-explained.html"
+        }
+      ]
+    },
+    {
+      "@type": "FAQPage",
+      "@id": "https://layerbit.co.in/guides/subnetting-explained.html#faq",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "How many hosts are in a /24, /26 and /28?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "A /24 has 256 addresses and 254 usable hosts; a /26 has 64 addresses and 62 usable; a /28 has 16 addresses and 14 usable. Subtract two in every case for the network and broadcast addresses. Cloud providers reserve more: AWS takes five per subnet, so a /28 there gives 11 usable addresses."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Is 10.0.5.0/22 a valid subnet?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Not as written. A /22 has a block size of 4 in the third octet, so valid network addresses have third octets of 0, 4, 8, 12 and so on. 10.0.5.0 falls inside the block 10.0.4.0/22, which is the aligned network address. Devices vary in whether they accept, normalise or reject the misaligned form, so always use the aligned one."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What is the difference between a subnet mask and a wildcard mask?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "They encode the same prefix length in opposite polarity. A subnet mask has ones in the network bits (255.255.255.0 for a /24); a wildcard mask has ones in the host bits (0.0.0.255). Cisco access lists and OSPF network statements use wildcards; nearly everything else uses subnet masks. Using one where the other is expected produces a rule that matches far too much."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What size should a VPC be?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "A /16 per VPC is the common and sensible default: 65,536 addresses is enough to carve /20 application subnets across several availability zones and still leave half the space unallocated for growth. The important constraint is not size but uniqueness — the range must not overlap any network you might later peer or VPN with, because overlap cannot be fixed without renumbering."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Why is a /64 the standard IPv6 subnet size?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Because stateless address autoconfiguration (SLAAC), which lets hosts derive their own addresses, requires a 64-bit interface identifier. A subnet longer than /64 breaks it. There is no scarcity argument for going smaller: a /64 holds 18 quintillion addresses, and a typical site allocation of /48 provides 65,536 such subnets."
+          }
+        }
+      ]
+    }
+  ]
+}
+  </script>
+
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6072772587431629" crossorigin="anonymous"></script>
+
+  <script src="../js/vendor/lucide.min.js" async></script>
+
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet" />
+  <link href="../layerbit-logo.png" rel="icon" type="image/x-icon" />
+  <link rel="manifest" href="../manifest.json" />
+  <link rel="apple-touch-icon" href="../apple-touch-icon.png" />
+  <link rel="stylesheet" href="../css/base.css" />
+  <link rel="stylesheet" href="../css/article.css" />
+
+  <style>
+
+    /* Long-form guide styling lives in css/article.css, linked from this page's head. */
+  
+  </style>
+</head>
+<body>
+  <header>
+    <a href="../" class="brand">
+      <svg width="36" height="36" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <polygon points="32,20 54,28 32,36 10,28" stroke="#f8fafc" stroke-width="4" stroke-linejoin="round"/>
+        <polyline points="10,38 32,46 54,38" stroke="#f8fafc" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+        <polyline points="10,48 32,56 54,48" stroke="#f8fafc" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+        <rect x="50" y="10" width="10" height="10" rx="2" fill="#00f2fe" />
+      </svg>
+      Layerbit
+    </a>
+  </header>
+
+  <nav class="crumbs" aria-label="Breadcrumb">
+    <a href="../">Home</a>
+    <span class="sep">/</span>
+    <a href="../blog.html">Guides</a>
+    <span class="sep">/</span>
+    <span aria-current="page">Subnetting explained</span>
+  </nav>
+
+  <article class="article">
+    <header class="article-head">
+      <span class="article-kicker">Networking</span>
+      <h1>Subnetting Explained: How to Read a CIDR Block and Size a Network</h1>
+      <p class="article-standfirst">Every network decision — a VPC layout, a firewall rule, a VPN route, a Kubernetes pod range — comes back to one number after the slash. Once you can read a prefix length without a lookup table, the rest of subnetting is arithmetic you can do in your head. This guide gets you there, then covers the mistakes that survive the arithmetic.</p>
+      <div class="article-meta">
+        <span class="byline">Layerbit Engineering</span>
+        <span><i data-lucide="calendar"></i>Published 27 September 2026</span>
+        <span><i data-lucide="clock"></i>11 min read</span>
+      </div>
+    </header>
+
+    <div class="takeaways">
+      <h2><i data-lucide="list-checks"></i> The short version</h2>
+      <ul>
+        <li>The prefix length is how many leading bits are fixed. A <code>/24</code> fixes 24 of 32 bits, leaving 8 host bits, so 2<sup>8</sup> = 256 addresses.</li>
+        <li>IPv4 loses two addresses per subnet — the network and the broadcast — so a <code>/24</code> has 254 usable hosts. IPv6 loses none.</li>
+        <li>A block must be <strong>aligned</strong>: <code>10.0.3.0/23</code> is not a valid block because 3 is odd. The calculator tells you the real network is <code>10.0.2.0/23</code>.</li>
+        <li>Plan a VPC from the outside in: pick the whole range, halve it into regions or tiers, then carve subnets — and leave gaps.</li>
+        <li>Two adjacent blocks only merge into one if the first is aligned to the bigger size. Adjacent is not the same as aggregatable.</li>
+      </ul>
+    </div>
+
+    <div class="prose">
+      <h2 id="what">What the slash number means</h2>
+      <p>An IPv4 address is 32 bits, written as four decimal octets. <code>10.0.5.130</code> is really <code>00001010 00000000 00000101 10000010</code>. CIDR notation appends a prefix length: <code>10.0.5.130/22</code> says "the first 22 bits identify the network; the remaining 10 bits identify hosts within it".</p>
+      <p>That single fact produces every other number:</p>
+      <ul>
+        <li><strong>Block size</strong> is 2<sup>(32 − prefix)</sup>. For <code>/22</code>: 2<sup>10</sup> = 1,024 addresses.</li>
+        <li><strong>The netmask</strong> is 22 ones followed by 10 zeros: <code>11111111 11111111 11111100 00000000</code> = <code>255.255.252.0</code>.</li>
+        <li><strong>The network address</strong> is the address with every host bit cleared: <code>10.0.5.130 AND 255.255.252.0</code> = <code>10.0.4.0</code>. So <code>10.0.5.130</code> lives in the block <code>10.0.4.0/22</code>, not <code>10.0.5.0/22</code> — an easy thing to get wrong.</li>
+        <li><strong>The broadcast address</strong> is every host bit set: <code>10.0.7.255</code>.</li>
+        <li><strong>Usable hosts</strong> run from <code>10.0.4.1</code> to <code>10.0.7.254</code>: 1,022 of them.</li>
+      </ul>
+      <p>The step that trips people up is the third one. <code>10.0.5.0/22</code> looks like a network address but is not one, because the 22-bit boundary falls in the middle of the third octet and 5 is not a multiple of 4. Routers and cloud consoles disagree about what to do with a misaligned block: some silently normalise it, some reject it, and some accept it and then behave strangely. Always state the aligned network.</p>
+
+      <h2 id="octet">Reading the third octet without a calculator</h2>
+      <p>For prefixes between <code>/17</code> and <code>/24</code> the boundary is in the third octet, and the block size in that octet is 2<sup>(24 − prefix)</sup>:</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Prefix</th><th>Third-octet step</th><th>Valid network values (third octet)</th><th>Addresses</th></tr></thead>
+          <tbody>
+            <tr><td><code>/24</code></td><td>1</td><td>0, 1, 2, 3, …</td><td>256</td></tr>
+            <tr><td><code>/23</code></td><td>2</td><td>0, 2, 4, 6, …</td><td>512</td></tr>
+            <tr><td><code>/22</code></td><td>4</td><td>0, 4, 8, 12, …</td><td>1,024</td></tr>
+            <tr><td><code>/21</code></td><td>8</td><td>0, 8, 16, 24, …</td><td>2,048</td></tr>
+            <tr><td><code>/20</code></td><td>16</td><td>0, 16, 32, 48, …</td><td>4,096</td></tr>
+            <tr><td><code>/19</code></td><td>32</td><td>0, 32, 64, 96, …</td><td>8,192</td></tr>
+            <tr><td><code>/18</code></td><td>64</td><td>0, 64, 128, 192</td><td>16,384</td></tr>
+            <tr><td><code>/17</code></td><td>128</td><td>0, 128</td><td>32,768</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>The same table applies to the fourth octet for <code>/25</code> to <code>/32</code> (step 128, 64, 32, 16, 8, 4, 2, 1) and to the second octet for <code>/9</code> to <code>/16</code>. Once you know the step, the network is "round the octet down to the nearest multiple of the step", and the broadcast is "next multiple minus one". <code>192.168.77.200/26</code>: step is 64 in the fourth octet, 200 rounds down to 192, so the block is <code>192.168.77.192/26</code> with broadcast <code>.255</code> and hosts <code>.193</code>–<code>.254</code>.</p>
+
+      <h2 id="wildcard">Netmask, wildcard and the ACL that matched everything</h2>
+      <p>A wildcard mask is the netmask inverted. <code>/24</code> has netmask <code>255.255.255.0</code> and wildcard <code>0.0.0.255</code>. Cisco IOS access lists, OSPF and EIGRP <code>network</code> statements take the wildcard form; almost everything else takes the netmask. The two are easy to confuse because both are four octets of mostly 255s and 0s.</p>
+      <p>The failure mode is quiet. An ACL written with <code>255.255.255.0</code> where <code>0.0.0.255</code> was meant tells the device "ignore the first three octets, match only the last" — which is very nearly "match everything". The rule appears to work in testing because the intended hosts do match; it also matches thousands of hosts that were never intended. When a permit rule is wider than it should be, nothing breaks, so nobody notices until an audit.</p>
+
+      <h2 id="special">Addresses that are not what they look like</h2>
+      <p>A block's numbers can be correct and still be the wrong block, because certain ranges have assigned meanings:</p>
+      <ul>
+        <li><strong>10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16</strong> — RFC 1918 private space. Not routable on the public internet; the default choice for anything internal.</li>
+        <li><strong>100.64.0.0/10</strong> — RFC 6598 shared address space, meant for carrier-grade NAT. Cloud providers use it for managed services and load-balancer internals. It works like private space but is not RFC 1918, and some tooling treats it as public.</li>
+        <li><strong>169.254.0.0/16</strong> — link-local. Assigned automatically when DHCP fails, and used by cloud metadata services at <code>169.254.169.254</code>. A host that "has an IP" in this range has no working network.</li>
+        <li><strong>192.0.2.0/24, 198.51.100.0/24, 203.0.113.0/24</strong> — reserved for documentation. Safe to put in a README, wrong to put in a config.</li>
+        <li><strong>224.0.0.0/4</strong> — multicast; <strong>240.0.0.0/4</strong> — reserved and unusable on most stacks.</li>
+      </ul>
+      <p>Layerbit's subnet calculator labels each of these when you enter an address in them, which is worth a glance before a range goes into a design document.</p>
+
+      <div class="tool-cta">
+        <div class="cta-copy">
+          <h3>Do the arithmetic in the browser</h3>
+          <p>The CIDR &amp; Subnet Calculator gives network, broadcast, host range, masks and the aligned block for any IPv4 or IPv6 input, splits a block into equal subnets with CSV export, and checks whether two blocks overlap or aggregate. It runs entirely locally, which matters when the input is your internal addressing plan.</p>
+        </div>
+        <a class="cta-btn" href="../tools/subnet-calculator.html"><i data-lucide="network"></i> Open Subnet Calculator</a>
+      </div>
+
+      <h2 id="vpc">Sizing a cloud network from the outside in</h2>
+      <p>The most common real-world subnetting task is laying out a VPC. The mistakes are always the same: subnets that are too small for growth, subnets that cannot be aggregated for a route or a peering, and ranges that collide with an office network or another VPC when they are later connected. A method that avoids all three:</p>
+      <ol>
+        <li><strong>Pick the whole range first, generously.</strong> A <code>/16</code> (65,536 addresses) per VPC is the usual choice. Address space is free; renumbering is not.</li>
+        <li><strong>Make it unique across everything you might ever connect.</strong> If the office uses <code>10.0.0.0/16</code> and a partner uses <code>10.1.0.0/16</code>, take <code>10.20.0.0/16</code>. Overlap is the one thing peering and VPNs cannot fix.</li>
+        <li><strong>Halve by the coarsest dimension.</strong> Split the <code>/16</code> into a public <code>/17</code> and a private <code>/17</code>, or into per-environment <code>/18</code>s. Each split is one more bit of prefix.</li>
+        <li><strong>Carve subnets per availability zone</strong> at a fixed size — a <code>/20</code> (4,096) for private application subnets, a <code>/24</code> for public load-balancer subnets — and keep the sizes uniform within a tier so the layout is predictable.</li>
+        <li><strong>Leave gaps.</strong> Allocate three AZs but reserve space for a fourth. Use half the private <code>/17</code> and keep the other half unallocated. The gap costs nothing until the day it saves a migration.</li>
+      </ol>
+      <p>Remember that cloud providers reserve addresses inside every subnet: AWS takes five (network, router, DNS, a future-use address, broadcast), so a <code>/28</code> yields 11 usable hosts rather than 14. Kubernetes and container networking are hungrier still — a node pool that assigns a <code>/24</code> of pod addresses per node exhausts a <code>/16</code> at 256 nodes, which is why cluster pod ranges are typically <code>/14</code> or larger.</p>
+
+      <h2 id="ipv6">The same ideas in IPv6</h2>
+      <p>IPv6 addresses are 128 bits written as eight hexadecimal groups, with the longest run of zero groups compressed to <code>::</code> and leading zeros dropped. <code>2001:0db8:abcd:0000:0000:0000:0000:0001</code> is written <code>2001:db8:abcd::1</code>. The prefix logic is identical; the numbers are simply larger, which is why a proper calculator needs 128-bit integer arithmetic rather than floating point.</p>
+      <p>Three conventions replace the IPv4 habits. A single LAN is always a <code>/64</code>, because stateless address autoconfiguration needs 64 bits of interface identifier. A site typically receives a <code>/48</code> (65,536 <code>/64</code>s) or a <code>/56</code> (256 of them) from its provider. And there is no broadcast address: the all-ones address in a subnet is an ordinary host. The temptation to conserve IPv6 space with <code>/120</code> subnets should be resisted — it breaks autoconfiguration and saves nothing meaningful out of 2<sup>64</sup> addresses per LAN.</p>
+
+      <h2 id="aggregate">Adjacent is not aggregatable</h2>
+      <p>Two <code>/24</code>s can be summarised into one <code>/23</code> route only if they share the first 23 bits. <code>10.0.2.0/24</code> and <code>10.0.3.0/24</code> do — their third octets are <code>00000010</code> and <code>00000011</code> — so <code>10.0.2.0/23</code> covers exactly those two. <code>10.0.3.0/24</code> and <code>10.0.4.0/24</code> are just as adjacent, but they differ in the third bit from the right, so the smallest block covering both is <code>10.0.0.0/21</code>, which also covers six other <code>/24</code>s you did not intend to advertise.</p>
+      <p>This matters when a route table, a peering connection or a firewall has a limit on entries and you want to summarise. Allocating subnets on aligned boundaries from the start — the "halve by the coarsest dimension" step above — is what makes summarisation possible later. The calculator's supernet check reports whether a covering block is an exact aggregate or spills over, so you can see the difference before a route goes live.</p>
+
+      <h2 id="closing">The number after the slash is the whole story</h2>
+      <p>Subnetting has a reputation for being fiddly because it is usually taught as a lookup table. Taught as "the prefix says how many bits are fixed", it reduces to three operations: raise two to a power, round down to a multiple, and check alignment. Everything else — masks, wildcards, host counts, aggregation — is a restatement of those. The mistakes that actually cost time are not arithmetic ones; they are the misaligned block accepted silently by one vendor and rejected by another, the ACL wildcard that matched too much, and the VPC laid out with no room to grow. All three are visible before deployment if you look.</p>
+
+      <div class="further">
+        <h2>Related guides and tools</h2>
+        <div class="further-grid">
+          <a class="further-card" href="../tools/subnet-calculator.html">
+            <strong>CIDR &amp; Subnet Calculator</strong>
+            <span>IPv4 and IPv6, splitting, membership and supernet checks, entirely local.</span>
+          </a>
+          <a class="further-card" href="unix-time-and-time-zones.html">
+            <strong>Unix time and time zones</strong>
+            <span>The other number every system disagrees about.</span>
+          </a>
+          <a class="further-card" href="../tools/timestamp-converter.html">
+            <strong>Unix Timestamp Converter</strong>
+            <span>Epoch to any zone and back.</span>
+          </a>
+        </div>
+      </div>
+
+      <h2 id="faq">Frequently asked questions</h2>
+      <div class="faq-container">
+        <div class="faq-item">
+          <button class="faq-question">How many hosts are in a /24, /26 and /28? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>A /24 has 256 addresses and 254 usable hosts; a /26 has 64 addresses and 62 usable; a /28 has 16 addresses and 14 usable. Subtract two in every case for the network and broadcast addresses. Cloud providers reserve more: AWS takes five per subnet, so a /28 there gives 11 usable addresses.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">Is 10.0.5.0/22 a valid subnet? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>Not as written. A /22 has a block size of 4 in the third octet, so valid network addresses have third octets of 0, 4, 8, 12 and so on. 10.0.5.0 falls inside the block 10.0.4.0/22, which is the aligned network address. Devices vary in whether they accept, normalise or reject the misaligned form, so always use the aligned one.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">What is the difference between a subnet mask and a wildcard mask? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>They encode the same prefix length in opposite polarity. A subnet mask has ones in the network bits (255.255.255.0 for a /24); a wildcard mask has ones in the host bits (0.0.0.255). Cisco access lists and OSPF network statements use wildcards; nearly everything else uses subnet masks. Using one where the other is expected produces a rule that matches far too much.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">What size should a VPC be? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>A /16 per VPC is the common and sensible default: 65,536 addresses is enough to carve /20 application subnets across several availability zones and still leave half the space unallocated for growth. The important constraint is not size but uniqueness — the range must not overlap any network you might later peer or VPN with, because overlap cannot be fixed without renumbering.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">Why is a /64 the standard IPv6 subnet size? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>Because stateless address autoconfiguration (SLAAC), which lets hosts derive their own addresses, requires a 64-bit interface identifier. A subnet longer than /64 breaks it. There is no scarcity argument for going smaller: a /64 holds 18 quintillion addresses, and a typical site allocation of /48 provides 65,536 such subnets.</p></div>
+        </div>
+      </div>
+    </div>
+  </article>
+
+  <a href="../" id="smartBackBtn" class="fab" aria-label="Command Center" title="Command Center">
+    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="filter: drop-shadow(0 0 8px rgba(56, 189, 248, 0.5));">
+      <path d="M12 2L2 7l10 5 10-5-10-5z" stroke="#38bdf8" stroke-width="2" stroke-linejoin="round" fill="rgba(56,189,248,0.2)"/>
+      <path d="M2 17l10 5 10-5M2 12l10 5 10-5" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </a>
+
+  <footer>
+    <div style="margin-bottom: 15px;">
+      &copy; 2025 - 2026 <strong>Layerbit Technologies</strong>. All rights reserved.
+    </div>
+    <div>
+      <a href="../about.html">About</a>
+      <a href="../privacy.html">Privacy Policy</a>
+      <a href="../terms.html">Terms of Service</a>
+      <a href="../blog.html">Developer Blog</a>
+      <a href="../contact.html">Contact</a>
+    </div>
+  </footer>
+
+  <script src="../js/shared.js"></script>
+</body>
+</html>

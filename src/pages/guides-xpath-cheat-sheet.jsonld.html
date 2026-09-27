@@ -1,0 +1,119 @@
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "TechArticle",
+      "@id": "https://layerbit.co.in/guides/xpath-cheat-sheet.html#article",
+      "headline": "XPath Cheat Sheet: Selecting Nodes, Predicates and the Namespace Trap",
+      "name": "XPath Cheat Sheet: Selecting Nodes, Predicates and the Namespace Trap",
+      "description": "XPath 1.0 syntax for real queries, the //item[2] vs (//item)[2] trap, core functions, sibling axes, and why a default namespace makes queries return nothing.",
+      "url": "https://layerbit.co.in/guides/xpath-cheat-sheet.html",
+      "mainEntityOfPage": {
+        "@type": "WebPage",
+        "@id": "https://layerbit.co.in/guides/xpath-cheat-sheet.html"
+      },
+      "datePublished": "2026-09-27",
+      "dateModified": "2026-09-27",
+      "inLanguage": "en",
+      "wordCount": 1533,
+      "keywords": "XPath cheat sheet, XPath examples, XPath namespace, XPath predicates, local-name(), XPath 1.0 functions",
+      "articleSection": "XML \u0026 Data",
+      "author": {
+        "@type": "Organization",
+        "name": "Layerbit Technologies",
+        "url": "https://layerbit.co.in/about.html"
+      },
+      "publisher": {
+        "@type": "Organization",
+        "name": "Layerbit Technologies",
+        "url": "https://layerbit.co.in/",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://layerbit.co.in/icon-512.png",
+          "width": 512,
+          "height": 512
+        }
+      },
+      "image": {
+        "@type": "ImageObject",
+        "url": "https://layerbit.co.in/og-image.png",
+        "width": 1200,
+        "height": 630
+      },
+      "isAccessibleForFree": true,
+      "proficiencyLevel": "Intermediate"
+    },
+    {
+      "@type": "BreadcrumbList",
+      "@id": "https://layerbit.co.in/guides/xpath-cheat-sheet.html#breadcrumb",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://layerbit.co.in/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Guides",
+          "item": "https://layerbit.co.in/blog.html"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": "XPath cheat sheet",
+          "item": "https://layerbit.co.in/guides/xpath-cheat-sheet.html"
+        }
+      ]
+    },
+    {
+      "@type": "FAQPage",
+      "@id": "https://layerbit.co.in/guides/xpath-cheat-sheet.html#faq",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "Why does my XPath return nothing when the element is clearly in the document?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Almost always a default namespace. When the root element declares xmlns=\"…\", every unprefixed element is in that namespace, and in XPath 1.0 an unprefixed name in a query matches only elements with no namespace. Bind a prefix to the namespace URI and use it in the query (//a:entry), or use //*[local-name()='entry'] to ignore namespaces."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What is the difference between //item[1] and (//item)[1]?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "A predicate applies to the step immediately before it. //item[1] selects the first item child of every parent, so it can return many nodes. (//item)[1] first gathers every item in the document into one set and then takes the first in document order, returning exactly one node."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Can I use regular expressions in XPath?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Only in XPath 2.0 and later, which added matches(), replace() and tokenize(). Browsers, Python's lxml default engine, Java's built-in XPath and most scraping frameworks implement XPath 1.0, where the closest tools are contains(), starts-with(), substring() and translate(). For real pattern matching, extract the text with XPath and apply a regular expression in your language."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Does XPath work on HTML as well as XML?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes. Browsers support document.evaluate() on HTML documents, and Selenium, Scrapy and similar tools use XPath on parsed HTML routinely. Element names are matched in the case the parser produced, which is lower-case in browsers, and the class attribute is a space-separated list, so test it with contains() on a padded value rather than equality."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Which XPath version do browsers support?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "XPath 1.0, through document.evaluate(). That includes all axes, predicates and the core function library, but not the sequences, regular-expression functions, or for-expressions introduced in XPath 2.0 and 3.1. A query using those fails with a syntax error rather than silently returning nothing."
+          }
+        }
+      ]
+    }
+  ]
+}
+  </script>

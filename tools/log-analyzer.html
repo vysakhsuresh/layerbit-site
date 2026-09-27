@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="Enterprise Log Analyzer & Forensics. Parse, filter, and extract server logs instantly in your browser." />
-  <title>Log Forensics Dashboard - Layerbit</title>
+  <meta name="description" content="Paste or upload server logs and get error, warning, info and debug counts, severity filters, plain or regex grep, and the most repeated messages. Runs locally." />
+  <title>Log Analyzer Online: Filter Errors & Warnings | Layerbit</title>
   <!-- Google tag (gtag.js) -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-ERX8MNPPP5"></script>
   <script>
@@ -18,50 +18,98 @@
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://layerbit.co.in/tools/log-analyzer.html" />
   <meta property="og:site_name" content="Layerbit" />
-  <meta property="og:title" content="Log Forensics Dashboard - Layerbit" />
-  <meta property="og:description" content="Enterprise Log Analyzer & Forensics. Parse, filter, and extract server logs instantly in your browser." />
+  <meta property="og:title" content="Log Analyzer Online: Filter Errors & Warnings | Layerbit" />
+  <meta property="og:description" content="Paste or upload server logs and get error, warning, info and debug counts, severity filters, plain or regex grep, and the most repeated messages. Runs locally." />
   <meta property="og:image" content="https://layerbit.co.in/og-image.png" />
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
   <meta property="og:image:alt" content="Layerbit - free browser-based developer tools" />
   <meta property="og:locale" content="en" />
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="Log Forensics Dashboard - Layerbit" />
-  <meta name="twitter:description" content="Enterprise Log Analyzer & Forensics. Parse, filter, and extract server logs instantly in your browser." />
+  <meta name="twitter:title" content="Log Analyzer Online: Filter Errors & Warnings | Layerbit" />
+  <meta name="twitter:description" content="Paste or upload server logs and get error, warning, info and debug counts, severity filters, plain or regex grep, and the most repeated messages. Runs locally." />
   <meta name="twitter:image" content="https://layerbit.co.in/og-image.png" />
   <meta name="twitter:image:alt" content="Layerbit - free browser-based developer tools" />
   <meta name="theme-color" content="#0a0c10" />
   <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "FAQPage",
-    "mainEntity": [
-      {
-        "@type": "Question",
-        "name": "How does Layerbit secure my sensitive production logs?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "We prioritize zero-trust security architecture. The entire application operates strictly within your browser's DOM. Logs uploaded or pasted are processed locally by JavaScript. Absolutely no data is transmitted over the network, ensuring complete air-gapped security for sensitive production data."
-        }
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "SoftwareApplication",
+      "@id": "https://layerbit.co.in/tools/log-analyzer.html#app",
+      "name": "Log File Analyzer",
+      "url": "https://layerbit.co.in/tools/log-analyzer.html",
+      "description": "Paste or upload server logs and get error, warning, info and debug counts, severity filters, plain or regex grep, and the most repeated messages. Runs locally.",
+      "applicationCategory": "DeveloperApplication",
+      "operatingSystem": "Any (runs in the browser)",
+      "browserRequirements": "Requires JavaScript",
+      "isAccessibleForFree": true,
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
       },
-      {
-        "@type": "Question",
-        "name": "What log formats does the Forensic Engine support?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "Our complex Regex mapping logic automatically structures raw text from standard Nginx (access/error), Apache, Node.js, Spring Boot, and Docker containers. It targets universal markers for severities like ERROR, FATAL, WARN, INFO, NOTICE, and DEBUG, as well as common ISO/UTC timestamps."
-        }
-      },
-      {
-        "@type": "Question",
-        "name": "Why use a client-side tool instead of ELK or Splunk?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "While ELK/Splunk excel at long-term storage and aggregation, Layerbit provides instant, lightweight forensic analysis for immediate IR needs, with zero setup. It renders every line as a DOM row with no virtualization, so it's built for the single log dump you'd actually paste during an incident — comfortably tens of thousands of lines — not a multi-gigabyte archive; split a file that large first (e.g. grep the relevant window) and load that slice instead."
-        }
+      "publisher": {
+        "@id": "https://layerbit.co.in/#organization"
       }
-    ]
-  }
+    },
+    {
+      "@type": "BreadcrumbList",
+      "@id": "https://layerbit.co.in/tools/log-analyzer.html#breadcrumb",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://layerbit.co.in/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Tools",
+          "item": "https://layerbit.co.in/blog.html"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": "Log File Analyzer",
+          "item": "https://layerbit.co.in/tools/log-analyzer.html"
+        }
+      ]
+    },
+    {
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "How does Layerbit secure my sensitive production logs?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "We prioritize zero-trust security architecture. The entire application operates strictly within your browser's DOM. Logs uploaded or pasted are processed locally by JavaScript. Absolutely no data is transmitted over the network, ensuring complete air-gapped security for sensitive production data."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What log formats does the Forensic Engine support?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Our complex Regex mapping logic automatically structures raw text from standard Nginx (access/error), Apache, Node.js, Spring Boot, and Docker containers. It targets universal markers for severities like ERROR, FATAL, WARN, INFO, NOTICE, and DEBUG, as well as common ISO/UTC timestamps."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Why use a client-side tool instead of ELK or Splunk?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "While ELK/Splunk excel at long-term storage and aggregation, Layerbit provides instant, lightweight forensic analysis for immediate IR needs, with zero setup. It renders every line as a DOM row with no virtualization, so it's built for the single log dump you'd actually paste during an incident — comfortably tens of thousands of lines — not a multi-gigabyte archive; split a file that large first (e.g. grep the relevant window) and load that slice instead."
+          }
+        }
+      ],
+      "@id": "https://layerbit.co.in/tools/log-analyzer.html#faq"
+    }
+  ]
+}
   </script>
 
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6072772587431629" crossorigin="anonymous"></script>
@@ -340,8 +388,8 @@
   </header>
 
   <main class="hero">
-    <h1>Log Forensics Dashboard</h1>
-    <p>Extract metrics, filter severity, and isolate critical errors in raw server logs.</p>
+    <h1>Log File Analyzer</h1>
+    <p>Parse raw server logs in your browser: count severities, filter and grep lines, and find the messages that repeat most.</p>
   </main>
 
   <div class="ide-container">
@@ -491,6 +539,25 @@
       <p>Log files are among the most sensitive artefacts a system produces, and it is worth being conscious of that before pasting one anywhere. In practice they routinely contain bearer tokens in <code>Authorization</code> headers, session identifiers, full request URLs with query parameters, email addresses, internal hostnames and IP addresses, stack traces revealing file paths and library versions, and occasionally a password that ended up in a logged request body.</p>
       <p>Which is precisely why this analyzer runs entirely in the page. Your log content is parsed and highlighted by local JavaScript and never transmitted — you can confirm that in your browser's Network tab, or work with the network disconnected entirely. Pasting a production log into a server-side analysis service is, functionally, a data disclosure.</p>
     </div>
+
+        <div class="info-panel related-panel">
+          <h2><i data-lucide="link"></i> Related guides and tools</h2>
+          <p>Background reading on the format and failure modes behind this tool, and the tools most often used alongside it.</p>
+          <div class="use-cases-grid">
+            <div class="use-case-card">
+              <h3><i data-lucide="book-open"></i> <a href="../guides/regex-catastrophic-backtracking.html">Regex catastrophic backtracking</a></h3>
+              <p>How one pattern can freeze a server, and how to rewrite it.</p>
+            </div>
+            <div class="use-case-card">
+              <h3><i data-lucide="book-open"></i> <a href="../guides/unix-time-and-time-zones.html">Unix time and time zones</a></h3>
+              <p>Instants, wall-clock times, DST, and what to store.</p>
+            </div>
+            <div class="use-case-card">
+              <h3><i data-lucide="wrench"></i> <a href="regex-tester.html">Regex Tester</a></h3>
+              <p>Another local tool that pairs with this one. Runs entirely in your browser.</p>
+            </div>
+          </div>
+        </div>
 
     <div class="info-panel">
       <h2><i data-lucide="git-merge"></i> Deployment Methodology Changelog</h2>

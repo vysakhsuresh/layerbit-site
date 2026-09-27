@@ -1,40 +1,88 @@
 <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "FAQPage",
-    "mainEntity": [
-      {
-        "@type": "Question",
-        "name": "What is the technical difference between Smart and Raw mode?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "Smart Mode attempts to parse the string using the JavaScript URL API, extracting and modifying the URLSearchParams to safely encode query parameters while preserving the base protocol structure. Raw Mode bypasses URL parsing and applies a blanket encodeURIComponent() to the entire string."
-        }
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "SoftwareApplication",
+      "@id": "https://layerbit.co.in/tools/url-encoder.html#app",
+      "name": "URL Encoder / Decoder",
+      "url": "https://layerbit.co.in/tools/url-encoder.html",
+      "description": "Percent-encode or decode URLs and query strings in your browser. Smart mode keeps URL structure, raw mode encodes everything, and a grid edits parameters.",
+      "applicationCategory": "DeveloperApplication",
+      "operatingSystem": "Any (runs in the browser)",
+      "browserRequirements": "Requires JavaScript",
+      "isAccessibleForFree": true,
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
       },
-      {
-        "@type": "Question",
-        "name": "Why is client-side processing necessary?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "URLs frequently contain highly sensitive session tokens, API keys, and temporary authorization grants within their parameters. Processing this data entirely within your local browser DOM guarantees zero-trust security—your keys are never sent to or logged by our servers."
-        }
-      },
-      {
-        "@type": "Question",
-        "name": "How does Parameter Forensics work?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "When a valid URL is detected, the engine intercepts the search property of the parsed URL object. It iterates through the URLSearchParams map, automatically escaping HTML entities to prevent DOM injection, and populates an editable breakdown grid. Edit any key or value directly and click Re-encode to rebuild both the readable and percent-encoded versions of the URL from your changes."
-        }
-      },
-      {
-        "@type": "Question",
-        "name": "How does Batch Mode work?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "Batch Mode treats each line of the input as an independent item. Every non-empty line is parsed and encoded or decoded on its own — if a line is a full URL, only its query parameters are transformed (same logic as Smart Mode); otherwise the whole line is encoded or decoded as a raw string. Blank lines and line order are preserved, so you can paste a list of endpoints or tracking links and process them all in one pass."
-        }
+      "publisher": {
+        "@id": "https://layerbit.co.in/#organization"
       }
-    ]
-  }
+    },
+    {
+      "@type": "BreadcrumbList",
+      "@id": "https://layerbit.co.in/tools/url-encoder.html#breadcrumb",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://layerbit.co.in/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Tools",
+          "item": "https://layerbit.co.in/blog.html"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": "URL Encoder / Decoder",
+          "item": "https://layerbit.co.in/tools/url-encoder.html"
+        }
+      ]
+    },
+    {
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "What is the technical difference between Smart and Raw mode?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Smart Mode attempts to parse the string using the JavaScript URL API, extracting and modifying the URLSearchParams to safely encode query parameters while preserving the base protocol structure. Raw Mode bypasses URL parsing and applies a blanket encodeURIComponent() to the entire string."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Why is client-side processing necessary?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "URLs frequently contain highly sensitive session tokens, API keys, and temporary authorization grants within their parameters. Processing this data entirely within your local browser DOM guarantees zero-trust security—your keys are never sent to or logged by our servers."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How does Parameter Forensics work?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "When a valid URL is detected, the engine intercepts the search property of the parsed URL object. It iterates through the URLSearchParams map, automatically escaping HTML entities to prevent DOM injection, and populates an editable breakdown grid. Edit any key or value directly and click Re-encode to rebuild both the readable and percent-encoded versions of the URL from your changes."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How does Batch Mode work?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Batch Mode treats each line of the input as an independent item. Every non-empty line is parsed and encoded or decoded on its own — if a line is a full URL, only its query parameters are transformed (same logic as Smart Mode); otherwise the whole line is encoded or decoded as a raw string. Blank lines and line order are preserved, so you can paste a list of endpoints or tracking links and process them all in one pass."
+          }
+        }
+      ],
+      "@id": "https://layerbit.co.in/tools/url-encoder.html#faq"
+    }
+  ]
+}
   </script>

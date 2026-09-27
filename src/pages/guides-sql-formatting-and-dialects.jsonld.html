@@ -1,0 +1,119 @@
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "TechArticle",
+      "@id": "https://layerbit.co.in/guides/sql-formatting-and-dialects.html#article",
+      "headline": "SQL Dialects Compared: Where MySQL, PostgreSQL, SQL Server and SQLite Disagree",
+      "name": "SQL Dialects Compared: Where MySQL, PostgreSQL, SQL Server and SQLite Disagree",
+      "description": "Where MySQL, PostgreSQL, SQL Server and SQLite disagree: identifier quoting, concatenation, LIMIT vs TOP, dates, booleans, and formatting as a review tool.",
+      "url": "https://layerbit.co.in/guides/sql-formatting-and-dialects.html",
+      "mainEntityOfPage": {
+        "@type": "WebPage",
+        "@id": "https://layerbit.co.in/guides/sql-formatting-and-dialects.html"
+      },
+      "datePublished": "2026-09-27",
+      "dateModified": "2026-09-27",
+      "inLanguage": "en",
+      "wordCount": 1686,
+      "keywords": "SQL dialects, MySQL vs PostgreSQL, T-SQL vs MySQL, SQL formatting, identifier quoting, LIMIT vs TOP, SQL style guide",
+      "articleSection": "Databases",
+      "author": {
+        "@type": "Organization",
+        "name": "Layerbit Technologies",
+        "url": "https://layerbit.co.in/about.html"
+      },
+      "publisher": {
+        "@type": "Organization",
+        "name": "Layerbit Technologies",
+        "url": "https://layerbit.co.in/",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://layerbit.co.in/icon-512.png",
+          "width": 512,
+          "height": 512
+        }
+      },
+      "image": {
+        "@type": "ImageObject",
+        "url": "https://layerbit.co.in/og-image.png",
+        "width": 1200,
+        "height": 630
+      },
+      "isAccessibleForFree": true,
+      "proficiencyLevel": "Intermediate"
+    },
+    {
+      "@type": "BreadcrumbList",
+      "@id": "https://layerbit.co.in/guides/sql-formatting-and-dialects.html#breadcrumb",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://layerbit.co.in/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Guides",
+          "item": "https://layerbit.co.in/blog.html"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": "SQL dialects compared",
+          "item": "https://layerbit.co.in/guides/sql-formatting-and-dialects.html"
+        }
+      ]
+    },
+    {
+      "@type": "FAQPage",
+      "@id": "https://layerbit.co.in/guides/sql-formatting-and-dialects.html#faq",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "Why does my MySQL query fail on PostgreSQL with \"column does not exist\"?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Almost always a double-quoted string. MySQL accepts \"active\" as a string literal, but standard SQL and PostgreSQL treat double quotes as an identifier, so WHERE status = \"active\" looks for a column named active. Use single quotes for every string literal and the query becomes portable."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What is the SQL Server equivalent of LIMIT?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Either SELECT TOP n for a simple cap, or ORDER BY … OFFSET m ROWS FETCH NEXT n ROWS ONLY for limit with offset (SQL Server 2012 and later). The OFFSET form requires an ORDER BY clause. The same OFFSET/FETCH syntax is the SQL standard and also works in Oracle 12c+, DB2 and PostgreSQL."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How do I concatenate strings portably across databases?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Use CONCAT(a, b), which MySQL, PostgreSQL, SQL Server, Oracle and modern SQLite all support. The || operator is standard but is a syntax error in SQL Server and means logical OR in MySQL unless PIPES_AS_CONCAT is enabled; + works only in SQL Server. Be aware that CONCAT treats NULL as an empty string in MySQL and SQL Server but returns NULL in PostgreSQL."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Are string comparisons case-sensitive in SQL?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "It depends on the engine and collation. MySQL and SQL Server use case-insensitive collations by default, so 'abc' = 'ABC' is true. PostgreSQL and SQLite compare case-sensitively, so it is false. For a portable case-insensitive match, apply LOWER() to both sides or use PostgreSQL's ILIKE, and consider a case-insensitive collation or a functional index if the query is hot."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Does formatting SQL change how it runs?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "No. Whitespace and keyword case are irrelevant to the query planner, so a formatted query executes identically to the one-line original. The benefit is entirely for people: consistent formatting makes reviews show logic changes instead of reflowed text and exposes precedence and join mistakes that hide in a single line."
+          }
+        }
+      ]
+    }
+  ]
+}
+  </script>

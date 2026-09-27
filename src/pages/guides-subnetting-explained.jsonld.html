@@ -1,0 +1,119 @@
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "TechArticle",
+      "@id": "https://layerbit.co.in/guides/subnetting-explained.html#article",
+      "headline": "Subnetting Explained: How to Read a CIDR Block and Size a Network",
+      "name": "Subnetting Explained: How to Read a CIDR Block and Size a Network",
+      "description": "How a prefix length gives you network, broadcast, host count and mask, how to read the third octet in your head, and how to lay out a VPC that can grow.",
+      "url": "https://layerbit.co.in/guides/subnetting-explained.html",
+      "mainEntityOfPage": {
+        "@type": "WebPage",
+        "@id": "https://layerbit.co.in/guides/subnetting-explained.html"
+      },
+      "datePublished": "2026-09-27",
+      "dateModified": "2026-09-27",
+      "inLanguage": "en",
+      "wordCount": 1994,
+      "keywords": "subnetting, CIDR, subnet mask, wildcard mask, VPC design, IPv6 /64, supernet",
+      "articleSection": "Networking",
+      "author": {
+        "@type": "Organization",
+        "name": "Layerbit Technologies",
+        "url": "https://layerbit.co.in/about.html"
+      },
+      "publisher": {
+        "@type": "Organization",
+        "name": "Layerbit Technologies",
+        "url": "https://layerbit.co.in/",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://layerbit.co.in/icon-512.png",
+          "width": 512,
+          "height": 512
+        }
+      },
+      "image": {
+        "@type": "ImageObject",
+        "url": "https://layerbit.co.in/og-image.png",
+        "width": 1200,
+        "height": 630
+      },
+      "isAccessibleForFree": true,
+      "proficiencyLevel": "Beginner"
+    },
+    {
+      "@type": "BreadcrumbList",
+      "@id": "https://layerbit.co.in/guides/subnetting-explained.html#breadcrumb",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://layerbit.co.in/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Guides",
+          "item": "https://layerbit.co.in/blog.html"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": "Subnetting explained",
+          "item": "https://layerbit.co.in/guides/subnetting-explained.html"
+        }
+      ]
+    },
+    {
+      "@type": "FAQPage",
+      "@id": "https://layerbit.co.in/guides/subnetting-explained.html#faq",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "How many hosts are in a /24, /26 and /28?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "A /24 has 256 addresses and 254 usable hosts; a /26 has 64 addresses and 62 usable; a /28 has 16 addresses and 14 usable. Subtract two in every case for the network and broadcast addresses. Cloud providers reserve more: AWS takes five per subnet, so a /28 there gives 11 usable addresses."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Is 10.0.5.0/22 a valid subnet?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Not as written. A /22 has a block size of 4 in the third octet, so valid network addresses have third octets of 0, 4, 8, 12 and so on. 10.0.5.0 falls inside the block 10.0.4.0/22, which is the aligned network address. Devices vary in whether they accept, normalise or reject the misaligned form, so always use the aligned one."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What is the difference between a subnet mask and a wildcard mask?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "They encode the same prefix length in opposite polarity. A subnet mask has ones in the network bits (255.255.255.0 for a /24); a wildcard mask has ones in the host bits (0.0.0.255). Cisco access lists and OSPF network statements use wildcards; nearly everything else uses subnet masks. Using one where the other is expected produces a rule that matches far too much."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What size should a VPC be?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "A /16 per VPC is the common and sensible default: 65,536 addresses is enough to carve /20 application subnets across several availability zones and still leave half the space unallocated for growth. The important constraint is not size but uniqueness — the range must not overlap any network you might later peer or VPN with, because overlap cannot be fixed without renumbering."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Why is a /64 the standard IPv6 subnet size?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Because stateless address autoconfiguration (SLAAC), which lets hosts derive their own addresses, requires a 64-bit interface identifier. A subnet longer than /64 breaks it. There is no scarcity argument for going smaller: a /64 holds 18 quintillion addresses, and a typical site allocation of /48 provides 65,536 such subnets."
+          }
+        }
+      ]
+    }
+  ]
+}
+  </script>

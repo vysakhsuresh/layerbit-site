@@ -1,8 +1,8 @@
 {{HEADER}}
 
   <main class="hero">
-    <h1>Source Code Diff Analyzer</h1>
-    <p>Perform granular, character-level version comparisons with advanced Git-style highlighting.</p>
+    <h1>Text Diff Checker</h1>
+    <p>Compare two versions of any text or code and see exactly what changed — by line, word or character — without uploading either.</p>
   </main>
 
   <div class="ide-container">
@@ -188,6 +188,25 @@
           <p><strong>Word granularity</strong> splits on whitespace, so a reflowed paragraph shows only the words that actually changed. This is what you want for documentation, translated strings, legal text and anything else written to be read by people rather than parsed by a compiler. It is a poor fit for minified code or long identifiers, where a word can be hundreds of characters long.</p>
           <p><strong>Character granularity</strong> compares individual characters. It is the only mode that will show you that <code>getUserId</code> became <code>getUserID</code>, or that a single digit changed in a long hash. It is also the noisiest: on two genuinely different paragraphs it produces a mosaic of tiny insertions and deletions that is harder to read than seeing the old and new text side by side.</p>
           <p>The practical rule is to start at line level to see the shape of the change, then narrow to word or character level on the specific lines that report a difference you cannot account for. Most useful diff views do exactly this automatically: they identify changed lines first, then highlight the changed regions inside those lines at a finer granularity. That two-stage presentation is why a good diff is readable at all — you get the structure from the coarse pass and the detail from the fine one, without drowning in either.</p>
+        </div>
+
+        <div class="info-panel related-panel">
+          <h2><i data-lucide="link"></i> Related guides and tools</h2>
+          <p>Background reading on the format and failure modes behind this tool, and the tools most often used alongside it.</p>
+          <div class="use-cases-grid">
+            <div class="use-case-card">
+              <h3><i data-lucide="book-open"></i> <a href="../guides/invisible-unicode-characters.html">Invisible Unicode characters</a></h3>
+              <p>Zero-width spaces, BOMs, bidi overrides and lookalikes.</p>
+            </div>
+            <div class="use-case-card">
+              <h3><i data-lucide="book-open"></i> <a href="../guides/csv-edge-cases.html">CSV edge cases</a></h3>
+              <p>Quotes, newlines, BOMs and the Excel semicolon dialect.</p>
+            </div>
+            <div class="use-case-card">
+              <h3><i data-lucide="wrench"></i> <a href="unicode-inspector.html">Unicode Inspector</a></h3>
+              <p>Another local tool that pairs with this one. Runs entirely in your browser.</p>
+            </div>
+          </div>
         </div>
 
     <div class="info-panel">

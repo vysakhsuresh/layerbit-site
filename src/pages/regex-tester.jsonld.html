@@ -1,40 +1,88 @@
 <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "FAQPage",
-    "mainEntity": [
-      {
-        "@type": "Question",
-        "name": "Why is client-side regex testing important?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "If you are testing patterns against proprietary application logs or databases containing PII (Personally Identifiable Information), pasting that text into an external server-side tool is a massive security risk. Layerbit evaluates your data locally within your browser, ensuring complete privacy."
-        }
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "SoftwareApplication",
+      "@id": "https://layerbit.co.in/tools/regex-tester.html#app",
+      "name": "Regex Tester",
+      "url": "https://layerbit.co.in/tools/regex-tester.html",
+      "description": "Test regular expressions with live highlighting, capture groups, replacement preview, all JavaScript flags, and an engine-time readout that flags slow patterns.",
+      "applicationCategory": "DeveloperApplication",
+      "operatingSystem": "Any (runs in the browser)",
+      "browserRequirements": "Requires JavaScript",
+      "isAccessibleForFree": true,
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
       },
-      {
-        "@type": "Question",
-        "name": "Which Regex flavor does this terminal use?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "The terminal utilizes the native JavaScript ES6+ RegExp engine executed by your local browser. This is universally compatible with standard PCRE (Perl Compatible Regular Expressions) syntaxes used in Node.js, Python, and modern web applications."
-        }
-      },
-      {
-        "@type": "Question",
-        "name": "How does the real-time highlighting work without breaking the input?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "We utilize a dual-layer DOM architecture. The transparent <textarea> captures your keystrokes while a perfectly aligned <div> sitting behind it dynamically renders the colorized output and handles scrolling synchronization. This provides a rich IDE experience."
-        }
-      },
-      {
-        "@type": "Question",
-        "name": "What syntax does the Replacement Preview support?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "The same replacement patterns JavaScript's native String.replace() understands: $1, $2, etc. for numbered capture groups, $<name> for named groups declared with (?<name>...), $& for the whole match, and $$ for a literal dollar sign. It respects whichever flags are active, so without the g flag only the first match gets replaced, same as the highlighting above it."
-        }
+      "publisher": {
+        "@id": "https://layerbit.co.in/#organization"
       }
-    ]
-  }
+    },
+    {
+      "@type": "BreadcrumbList",
+      "@id": "https://layerbit.co.in/tools/regex-tester.html#breadcrumb",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://layerbit.co.in/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Tools",
+          "item": "https://layerbit.co.in/blog.html"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": "Regex Tester",
+          "item": "https://layerbit.co.in/tools/regex-tester.html"
+        }
+      ]
+    },
+    {
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "Why is client-side regex testing important?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "If you are testing patterns against proprietary application logs or databases containing PII (Personally Identifiable Information), pasting that text into an external server-side tool is a massive security risk. Layerbit evaluates your data locally within your browser, ensuring complete privacy."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Which Regex flavor does this terminal use?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "The terminal utilizes the native JavaScript ES6+ RegExp engine executed by your local browser. This is universally compatible with standard PCRE (Perl Compatible Regular Expressions) syntaxes used in Node.js, Python, and modern web applications."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How does the real-time highlighting work without breaking the input?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "We utilize a dual-layer DOM architecture. The transparent \u003ctextarea\u003e captures your keystrokes while a perfectly aligned \u003cdiv\u003e sitting behind it dynamically renders the colorized output and handles scrolling synchronization. This provides a rich IDE experience."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What syntax does the Replacement Preview support?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "The same replacement patterns JavaScript's native String.replace() understands: $1, $2, etc. for numbered capture groups, $\u003cname\u003e for named groups declared with (?\u003cname\u003e...), $\u0026 for the whole match, and $$ for a literal dollar sign. It respects whichever flags are active, so without the g flag only the first match gets replaced, same as the highlighting above it."
+          }
+        }
+      ],
+      "@id": "https://layerbit.co.in/tools/regex-tester.html#faq"
+    }
+  ]
+}
   </script>

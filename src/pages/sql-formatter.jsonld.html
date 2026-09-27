@@ -1,32 +1,80 @@
 <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "FAQPage",
-    "mainEntity": [
-      {
-        "@type": "Question",
-        "name": "Why does Layerbit process queries client-side?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "Database queries inherently contain sensitive information, including proprietary schema designs, table structures, and business logic. Processing queries purely in your local browser prevents this critical data from being intercepted or logged on external servers."
-        }
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "SoftwareApplication",
+      "@id": "https://layerbit.co.in/tools/sql-formatter.html#app",
+      "name": "SQL Formatter \u0026 Beautifier",
+      "url": "https://layerbit.co.in/tools/sql-formatter.html",
+      "description": "Format and beautify SQL for MySQL, PostgreSQL, SQL Server, SQLite, BigQuery and more, with keyword case and indent options, or minify it. Runs in your browser.",
+      "applicationCategory": "DeveloperApplication",
+      "operatingSystem": "Any (runs in the browser)",
+      "browserRequirements": "Requires JavaScript",
+      "isAccessibleForFree": true,
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
       },
-      {
-        "@type": "Question",
-        "name": "Will minification break my query if it has comments?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "The formatter safely processes standard SQL comments. However, when using the \"Minify\" function, inline comments (--) may be stripped or reformatted to prevent them from accidentally commenting out the rest of the single-line string."
-        }
-      },
-      {
-        "@type": "Question",
-        "name": "Does this tool validate or execute the queries?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "No. This tool acts strictly as a structural formatter and syntax highlighter. It organizes the text to make it human-readable but does not connect to your database or execute the commands."
-        }
+      "publisher": {
+        "@id": "https://layerbit.co.in/#organization"
       }
-    ]
-  }
+    },
+    {
+      "@type": "BreadcrumbList",
+      "@id": "https://layerbit.co.in/tools/sql-formatter.html#breadcrumb",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://layerbit.co.in/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Tools",
+          "item": "https://layerbit.co.in/blog.html"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": "SQL Formatter \u0026 Beautifier",
+          "item": "https://layerbit.co.in/tools/sql-formatter.html"
+        }
+      ]
+    },
+    {
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "Why does Layerbit process queries client-side?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Database queries inherently contain sensitive information, including proprietary schema designs, table structures, and business logic. Processing queries purely in your local browser prevents this critical data from being intercepted or logged on external servers."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Will minification break my query if it has comments?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "The formatter safely processes standard SQL comments. However, when using the \"Minify\" function, inline comments (--) may be stripped or reformatted to prevent them from accidentally commenting out the rest of the single-line string."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Does this tool validate or execute the queries?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "No. This tool acts strictly as a structural formatter and syntax highlighter. It organizes the text to make it human-readable but does not connect to your database or execute the commands."
+          }
+        }
+      ],
+      "@id": "https://layerbit.co.in/tools/sql-formatter.html#faq"
+    }
+  ]
+}
   </script>

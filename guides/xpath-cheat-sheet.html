@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="XPath 1.0 syntax for real queries, the //item[2] vs (//item)[2] trap, core functions, sibling axes, and why a default namespace makes queries return nothing." />
+  <title>XPath Cheat Sheet: Selectors, Predicates, Namespaces</title>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-ERX8MNPPP5"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-ERX8MNPPP5');
+  </script>
+  <link rel="canonical" href="https://layerbit.co.in/guides/xpath-cheat-sheet.html" />
+  <meta name="robots" content="max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://layerbit.co.in/guides/xpath-cheat-sheet.html" />
+  <meta property="og:site_name" content="Layerbit" />
+  <meta property="og:title" content="XPath Cheat Sheet: Selectors, Predicates, Namespaces" />
+  <meta property="og:description" content="XPath 1.0 syntax for real queries, the //item[2] vs (//item)[2] trap, core functions, sibling axes, and why a default namespace makes queries return nothing." />
+  <meta property="og:image" content="https://layerbit.co.in/og-image.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="Layerbit - free browser-based developer tools" />
+  <meta property="og:locale" content="en" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="XPath Cheat Sheet: Selectors, Predicates, Namespaces" />
+  <meta name="twitter:description" content="XPath 1.0 syntax for real queries, the //item[2] vs (//item)[2] trap, core functions, sibling axes, and why a default namespace makes queries return nothing." />
+  <meta name="twitter:image" content="https://layerbit.co.in/og-image.png" />
+  <meta name="twitter:image:alt" content="Layerbit - free browser-based developer tools" />
+  <meta name="theme-color" content="#0a0c10" />
+  <script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "TechArticle",
+      "@id": "https://layerbit.co.in/guides/xpath-cheat-sheet.html#article",
+      "headline": "XPath Cheat Sheet: Selecting Nodes, Predicates and the Namespace Trap",
+      "name": "XPath Cheat Sheet: Selecting Nodes, Predicates and the Namespace Trap",
+      "description": "XPath 1.0 syntax for real queries, the //item[2] vs (//item)[2] trap, core functions, sibling axes, and why a default namespace makes queries return nothing.",
+      "url": "https://layerbit.co.in/guides/xpath-cheat-sheet.html",
+      "mainEntityOfPage": {
+        "@type": "WebPage",
+        "@id": "https://layerbit.co.in/guides/xpath-cheat-sheet.html"
+      },
+      "datePublished": "2026-09-27",
+      "dateModified": "2026-09-27",
+      "inLanguage": "en",
+      "wordCount": 1533,
+      "keywords": "XPath cheat sheet, XPath examples, XPath namespace, XPath predicates, local-name(), XPath 1.0 functions",
+      "articleSection": "XML \u0026 Data",
+      "author": {
+        "@type": "Organization",
+        "name": "Layerbit Technologies",
+        "url": "https://layerbit.co.in/about.html"
+      },
+      "publisher": {
+        "@type": "Organization",
+        "name": "Layerbit Technologies",
+        "url": "https://layerbit.co.in/",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://layerbit.co.in/icon-512.png",
+          "width": 512,
+          "height": 512
+        }
+      },
+      "image": {
+        "@type": "ImageObject",
+        "url": "https://layerbit.co.in/og-image.png",
+        "width": 1200,
+        "height": 630
+      },
+      "isAccessibleForFree": true,
+      "proficiencyLevel": "Intermediate"
+    },
+    {
+      "@type": "BreadcrumbList",
+      "@id": "https://layerbit.co.in/guides/xpath-cheat-sheet.html#breadcrumb",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://layerbit.co.in/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Guides",
+          "item": "https://layerbit.co.in/blog.html"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": "XPath cheat sheet",
+          "item": "https://layerbit.co.in/guides/xpath-cheat-sheet.html"
+        }
+      ]
+    },
+    {
+      "@type": "FAQPage",
+      "@id": "https://layerbit.co.in/guides/xpath-cheat-sheet.html#faq",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "Why does my XPath return nothing when the element is clearly in the document?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Almost always a default namespace. When the root element declares xmlns=\"…\", every unprefixed element is in that namespace, and in XPath 1.0 an unprefixed name in a query matches only elements with no namespace. Bind a prefix to the namespace URI and use it in the query (//a:entry), or use //*[local-name()='entry'] to ignore namespaces."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What is the difference between //item[1] and (//item)[1]?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "A predicate applies to the step immediately before it. //item[1] selects the first item child of every parent, so it can return many nodes. (//item)[1] first gathers every item in the document into one set and then takes the first in document order, returning exactly one node."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Can I use regular expressions in XPath?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Only in XPath 2.0 and later, which added matches(), replace() and tokenize(). Browsers, Python's lxml default engine, Java's built-in XPath and most scraping frameworks implement XPath 1.0, where the closest tools are contains(), starts-with(), substring() and translate(). For real pattern matching, extract the text with XPath and apply a regular expression in your language."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Does XPath work on HTML as well as XML?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes. Browsers support document.evaluate() on HTML documents, and Selenium, Scrapy and similar tools use XPath on parsed HTML routinely. Element names are matched in the case the parser produced, which is lower-case in browsers, and the class attribute is a space-separated list, so test it with contains() on a padded value rather than equality."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Which XPath version do browsers support?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "XPath 1.0, through document.evaluate(). That includes all axes, predicates and the core function library, but not the sequences, regular-expression functions, or for-expressions introduced in XPath 2.0 and 3.1. A query using those fails with a syntax error rather than silently returning nothing."
+          }
+        }
+      ]
+    }
+  ]
+}
+  </script>
+
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6072772587431629" crossorigin="anonymous"></script>
+
+  <script src="../js/vendor/lucide.min.js" async></script>
+
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet" />
+  <link href="../layerbit-logo.png" rel="icon" type="image/x-icon" />
+  <link rel="manifest" href="../manifest.json" />
+  <link rel="apple-touch-icon" href="../apple-touch-icon.png" />
+  <link rel="stylesheet" href="../css/base.css" />
+  <link rel="stylesheet" href="../css/article.css" />
+
+  <style>
+
+    /* Long-form guide styling lives in css/article.css, linked from this page's head. */
+  
+  </style>
+</head>
+<body>
+  <header>
+    <a href="../" class="brand">
+      <svg width="36" height="36" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <polygon points="32,20 54,28 32,36 10,28" stroke="#f8fafc" stroke-width="4" stroke-linejoin="round"/>
+        <polyline points="10,38 32,46 54,38" stroke="#f8fafc" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+        <polyline points="10,48 32,56 54,48" stroke="#f8fafc" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+        <rect x="50" y="10" width="10" height="10" rx="2" fill="#00f2fe" />
+      </svg>
+      Layerbit
+    </a>
+  </header>
+
+  <nav class="crumbs" aria-label="Breadcrumb">
+    <a href="../">Home</a>
+    <span class="sep">/</span>
+    <a href="../blog.html">Guides</a>
+    <span class="sep">/</span>
+    <span aria-current="page">XPath cheat sheet</span>
+  </nav>
+
+  <article class="article">
+    <header class="article-head">
+      <span class="article-kicker">XML &amp; Data Extraction</span>
+      <h1>XPath Cheat Sheet: Selecting Nodes, Predicates and the Namespace Trap</h1>
+      <p class="article-standfirst">XPath is the query language you already have — in every browser, every XML library, Selenium, Scrapy and most ETL tools — and most developers know just enough of it to be surprised when <code>//entry</code> returns nothing. This is the reference we wished existed: the syntax that covers 95% of real queries, the semantics that cause the other 5% of bugs, and the namespace problem explained once and for all.</p>
+      <div class="article-meta">
+        <span class="byline">Layerbit Engineering</span>
+        <span><i data-lucide="calendar"></i>Published 27 September 2026</span>
+        <span><i data-lucide="clock"></i>11 min read</span>
+      </div>
+    </header>
+
+    <div class="takeaways">
+      <h2><i data-lucide="list-checks"></i> The short version</h2>
+      <ul>
+        <li><code>/a/b</code> is a child step; <code>//b</code> is "anywhere below". <code>@x</code> is an attribute. <code>[…]</code> filters.</li>
+        <li><code>//item[2]</code> is the second item <em>within each parent</em>. <code>(//item)[2]</code> is the second item in the document. They differ constantly.</li>
+        <li>In XPath 1.0 an unprefixed name means <strong>no namespace</strong>. If the document has a default <code>xmlns</code>, every unprefixed query returns nothing. Bind a prefix, or use <code>local-name()</code>.</li>
+        <li>Browsers, Python's lxml default, Java's javax.xml and most scrapers implement <strong>XPath 1.0</strong>. Functions from 2.0 and 3.1 will not work there.</li>
+        <li>An XPath expression returns one of four things: a node set, a string, a number or a boolean. Know which one you asked for.</li>
+      </ul>
+    </div>
+
+    <div class="prose">
+      <h2 id="paths">Location paths</h2>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Expression</th><th>Selects</th></tr></thead>
+          <tbody>
+            <tr><td><code>/catalog</code></td><td>The root element, only if it is named <code>catalog</code></td></tr>
+            <tr><td><code>/catalog/book</code></td><td>Every <code>book</code> that is a direct child of the root <code>catalog</code></td></tr>
+            <tr><td><code>//book</code></td><td>Every <code>book</code> anywhere in the document</td></tr>
+            <tr><td><code>//book/title</code></td><td>The <code>title</code> children of every book</td></tr>
+            <tr><td><code>//book//title</code></td><td>Any <code>title</code> at any depth below a book</td></tr>
+            <tr><td><code>//book/@id</code></td><td>The <code>id</code> attribute nodes of every book</td></tr>
+            <tr><td><code>//book/*</code></td><td>All element children of every book</td></tr>
+            <tr><td><code>//book/text()</code></td><td>Text nodes that are direct children of a book (usually whitespace)</td></tr>
+            <tr><td><code>//book/node()</code></td><td>All child nodes: elements, text, comments</td></tr>
+            <tr><td><code>//title/..</code></td><td>The parent of every title</td></tr>
+            <tr><td><code>//@*</code></td><td>Every attribute in the document</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2 id="predicates">Predicates: filtering a step</h2>
+      <p>Square brackets after a step keep only the nodes for which the expression inside is true. The expression can be a comparison, a function call, a nested path (true if it selects at least one node), or a number, which is shorthand for a position test.</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Expression</th><th>Selects</th></tr></thead>
+          <tbody>
+            <tr><td><code>//book[@lang='en']</code></td><td>Books with a <code>lang</code> attribute equal to <code>en</code></td></tr>
+            <tr><td><code>//book[@lang]</code></td><td>Books that have a <code>lang</code> attribute at all</td></tr>
+            <tr><td><code>//book[price &gt; 30]</code></td><td>Books whose <code>price</code> child, as a number, exceeds 30</td></tr>
+            <tr><td><code>//book[title]</code></td><td>Books that have at least one <code>title</code> child</td></tr>
+            <tr><td><code>//book[not(@lang)]</code></td><td>Books with no <code>lang</code> attribute</td></tr>
+            <tr><td><code>//book[@lang='en' and price &lt; 20]</code></td><td>Both conditions</td></tr>
+            <tr><td><code>//book[1]</code></td><td>The first book child of <em>each</em> parent</td></tr>
+            <tr><td><code>//book[last()]</code></td><td>The last book child of each parent</td></tr>
+            <tr><td><code>(//book)[1]</code></td><td>The first book in document order, overall</td></tr>
+            <tr><td><code>//book[position() &lt;= 3]</code></td><td>The first three books under each parent</td></tr>
+            <tr><td><code>//book[contains(title, 'XML')]</code></td><td>Books whose title contains the text</td></tr>
+            <tr><td><code>//book[starts-with(@id, 'bk1')]</code></td><td>Attribute prefix match</td></tr>
+            <tr><td><code>//book[normalize-space(title) = 'XPath']</code></td><td>Exact match ignoring surrounding whitespace</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>The <code>//book[2]</code> versus <code>(//book)[2]</code> distinction is the one that produces "it returns three results when I asked for one". A predicate binds to the step it follows, so <code>//book[2]</code> means "for every node, its second <code>book</code> child". If three <code>author</code> elements each contain two books, you get three results. Wrapping the path in parentheses first collects all books into one set, and <em>then</em> the predicate picks the second.</p>
+
+      <h2 id="functions">Functions worth memorising</h2>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Function</th><th>Returns</th><th>Example</th></tr></thead>
+          <tbody>
+            <tr><td><code>count(ns)</code></td><td>Number of nodes</td><td><code>count(//book)</code></td></tr>
+            <tr><td><code>sum(ns)</code></td><td>Sum of numeric values</td><td><code>sum(//book/price)</code></td></tr>
+            <tr><td><code>string(x)</code></td><td>String value (text content, concatenated)</td><td><code>string(//book[1]/title)</code></td></tr>
+            <tr><td><code>contains(a, b)</code>, <code>starts-with(a, b)</code></td><td>Boolean</td><td>Substring tests; case-sensitive</td></tr>
+            <tr><td><code>substring(s, start, len)</code></td><td>String; positions start at <strong>1</strong></td><td><code>substring('2026-09-27', 1, 4)</code> → <code>2026</code></td></tr>
+            <tr><td><code>substring-before(s, sep)</code>, <code>substring-after(s, sep)</code></td><td>String</td><td>Split on a delimiter once</td></tr>
+            <tr><td><code>normalize-space(s)</code></td><td>Trimmed, inner whitespace collapsed</td><td>Use before comparing text</td></tr>
+            <tr><td><code>translate(s, from, to)</code></td><td>Character mapping</td><td><code>translate(@x, 'ABC', 'abc')</code> — the 1.0 way to lower-case</td></tr>
+            <tr><td><code>string-length(s)</code></td><td>Number</td><td></td></tr>
+            <tr><td><code>local-name(n)</code>, <code>name(n)</code>, <code>namespace-uri(n)</code></td><td>String</td><td>The namespace escape hatch, below</td></tr>
+            <tr><td><code>position()</code>, <code>last()</code></td><td>Number, within the current step</td><td></td></tr>
+            <tr><td><code>not(b)</code>, <code>boolean(x)</code>, <code>number(x)</code></td><td>Conversions</td><td></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>Note what is <em>not</em> in the list: no <code>matches()</code> for regular expressions, no <code>lower-case()</code>, no <code>string-join()</code>, no <code>for … return</code>. Those arrived in XPath 2.0, and the engines most people actually use — browsers via <code>document.evaluate</code>, Python's lxml by default, Java's built-in <code>javax.xml.xpath</code>, Selenium, Scrapy — implement 1.0. Saxon and BaseX support 3.1; if you need it, check your engine before writing the query.</p>
+
+      <div class="tool-cta">
+        <div class="cta-copy">
+          <h3>Try queries against your own XML</h3>
+          <p>Layerbit's XML Formatter &amp; XPath Tester runs XPath 1.0 through the browser's own engine, binds prefixes from the root element automatically, labels the result type, and shows each matched node with its path — and tells you outright when an unprefixed query has hit a default namespace.</p>
+        </div>
+        <a class="cta-btn" href="../tools/xml-formatter.html"><i data-lucide="file-code-2"></i> Open XPath Tester</a>
+      </div>
+
+      <h2 id="namespaces">The namespace trap, explained once</h2>
+      <p>Take an Atom feed:</p>
+      <pre><code>&lt;feed xmlns="http://www.w3.org/2005/Atom"&gt;
+  &lt;entry&gt;&lt;title&gt;Hello&lt;/title&gt;&lt;/entry&gt;
+&lt;/feed&gt;</code></pre>
+      <p>The <code>xmlns</code> on the root declares a <em>default namespace</em>: every unprefixed element in the document — <code>feed</code>, <code>entry</code>, <code>title</code> — belongs to <code>http://www.w3.org/2005/Atom</code>. Now query <code>//entry</code>. In XPath 1.0 an unprefixed name test matches elements with that local name <em>and no namespace</em>. There are none. The query returns an empty set, with no error, and nothing in the syntax hints at why.</p>
+      <p>Three ways out, in order of preference:</p>
+      <ol>
+        <li><strong>Bind a prefix and use it.</strong> Tell the engine that <code>a</code> means <code>http://www.w3.org/2005/Atom</code>, then write <code>//a:entry/a:title</code>. The prefix you choose does not have to match anything in the document; only the URI matters. Every engine has a way to do this — a namespace resolver function in the browser, a <code>namespaces=</code> dict in lxml, a <code>NamespaceContext</code> in Java.</li>
+        <li><strong>Match on local name.</strong> <code>//*[local-name()='entry']</code> ignores namespaces entirely. It is verbose, and it will also match an <code>entry</code> element from some other vocabulary, but it works when you cannot register a prefix.</li>
+        <li><strong>Match on both.</strong> <code>//*[local-name()='entry' and namespace-uri()='http://www.w3.org/2005/Atom']</code> is precise without needing a binding.</li>
+      </ol>
+      <p>The same rule applies to attributes, with one twist: unprefixed attributes are never in the default namespace. So <code>//a:link/@href</code> is correct even though <code>a:link</code> needs the prefix — an unprefixed <code>@href</code> is what the document actually contains.</p>
+
+      <h2 id="axes">Axes for when the path is not downward</h2>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Axis</th><th>Meaning</th><th>Example</th></tr></thead>
+          <tbody>
+            <tr><td><code>parent::</code></td><td>The parent (<code>..</code> is shorthand)</td><td><code>//title/parent::book</code></td></tr>
+            <tr><td><code>ancestor::</code></td><td>All ancestors</td><td><code>//title/ancestor::catalog</code></td></tr>
+            <tr><td><code>following-sibling::</code></td><td>Later siblings</td><td><code>//h2[@id='faq']/following-sibling::p[1]</code></td></tr>
+            <tr><td><code>preceding-sibling::</code></td><td>Earlier siblings</td><td><code>//price/preceding-sibling::title</code></td></tr>
+            <tr><td><code>descendant::</code></td><td>What <code>//</code> abbreviates</td><td><code>/catalog/descendant::title</code></td></tr>
+            <tr><td><code>self::</code></td><td>The node itself; useful for type tests</td><td><code>//*[self::h1 or self::h2]</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>Sibling axes are the workhorse for scraping HTML that has structure but no useful ids: "the paragraph after the heading that says Price" is <code>//h3[normalize-space()='Price']/following-sibling::p[1]</code>.</p>
+
+      <h2 id="html">XPath on HTML</h2>
+      <p>Browsers expose <code>document.evaluate()</code> on HTML documents too, and Selenium and Scrapy use XPath on HTML constantly. Two differences from XML. HTML element names are case-insensitive but the DOM stores them in a fixed case, so match what the parser produces — lower-case in an HTML document, which browsers normalise for you. And <code>class</code> is a space-separated list, so <code>[@class='card']</code> misses <code>class="card featured"</code>; the idiom is <code>[contains(concat(' ', normalize-space(@class), ' '), ' card ')]</code>, which is exactly the kind of thing CSS selectors do better. Use CSS for class and id matching and XPath when you need text content, sibling navigation or a predicate CSS cannot express.</p>
+
+      <h2 id="closing">Four result types, one mental model</h2>
+      <p>An XPath expression evaluates to a node set, a string, a number or a boolean, and confusion about which you have causes the last class of bug. <code>//book/price</code> is a node set; <code>//book/price &gt; 30</code> is a boolean that is true if <em>any</em> price exceeds 30; <code>sum(//book/price)</code> is a number; <code>string(//book/price)</code> is the first price as text. Ask yourself which you want before writing the expression, prefix your names when the document has a default namespace, and remember that a predicate binds to the step beside it. That is most of XPath, and all of the parts that go wrong.</p>
+
+      <div class="further">
+        <h2>Related guides and tools</h2>
+        <div class="further-grid">
+          <a class="further-card" href="../tools/xml-formatter.html">
+            <strong>XML Formatter &amp; XPath Tester</strong>
+            <span>XPath 1.0 with namespace binding and typed results.</span>
+          </a>
+          <a class="further-card" href="regex-catastrophic-backtracking.html">
+            <strong>Regex catastrophic backtracking</strong>
+            <span>The other query language that can quietly take forever.</span>
+          </a>
+          <a class="further-card" href="../tools/json-validator.html">
+            <strong>JSON Validator with path queries</strong>
+            <span>The JSON counterpart: <code>$.data[0].name</code>.</span>
+          </a>
+        </div>
+      </div>
+
+      <h2 id="faq">Frequently asked questions</h2>
+      <div class="faq-container">
+        <div class="faq-item">
+          <button class="faq-question">Why does my XPath return nothing when the element is clearly in the document? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>Almost always a default namespace. When the root element declares xmlns="…", every unprefixed element is in that namespace, and in XPath 1.0 an unprefixed name in a query matches only elements with no namespace. Bind a prefix to the namespace URI and use it in the query (//a:entry), or use //*[local-name()='entry'] to ignore namespaces.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">What is the difference between //item[1] and (//item)[1]? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>A predicate applies to the step immediately before it. //item[1] selects the first item child of every parent, so it can return many nodes. (//item)[1] first gathers every item in the document into one set and then takes the first in document order, returning exactly one node.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">Can I use regular expressions in XPath? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>Only in XPath 2.0 and later, which added matches(), replace() and tokenize(). Browsers, Python's lxml default engine, Java's built-in XPath and most scraping frameworks implement XPath 1.0, where the closest tools are contains(), starts-with(), substring() and translate(). For real pattern matching, extract the text with XPath and apply a regular expression in your language.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">Does XPath work on HTML as well as XML? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>Yes. Browsers support document.evaluate() on HTML documents, and Selenium, Scrapy and similar tools use XPath on parsed HTML routinely. Element names are matched in the case the parser produced, which is lower-case in browsers, and the class attribute is a space-separated list, so test it with contains() on a padded value rather than equality.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">Which XPath version do browsers support? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>XPath 1.0, through document.evaluate(). That includes all axes, predicates and the core function library, but not the sequences, regular-expression functions, or for-expressions introduced in XPath 2.0 and 3.1. A query using those fails with a syntax error rather than silently returning nothing.</p></div>
+        </div>
+      </div>
+    </div>
+  </article>
+
+  <a href="../" id="smartBackBtn" class="fab" aria-label="Command Center" title="Command Center">
+    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="filter: drop-shadow(0 0 8px rgba(56, 189, 248, 0.5));">
+      <path d="M12 2L2 7l10 5 10-5-10-5z" stroke="#38bdf8" stroke-width="2" stroke-linejoin="round" fill="rgba(56,189,248,0.2)"/>
+      <path d="M2 17l10 5 10-5M2 12l10 5 10-5" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </a>
+
+  <footer>
+    <div style="margin-bottom: 15px;">
+      &copy; 2025 - 2026 <strong>Layerbit Technologies</strong>. All rights reserved.
+    </div>
+    <div>
+      <a href="../about.html">About</a>
+      <a href="../privacy.html">Privacy Policy</a>
+      <a href="../terms.html">Terms of Service</a>
+      <a href="../blog.html">Developer Blog</a>
+      <a href="../contact.html">Contact</a>
+    </div>
+  </footer>
+
+  <script src="../js/shared.js"></script>
+</body>
+</html>

@@ -1,0 +1,119 @@
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "TechArticle",
+      "@id": "https://layerbit.co.in/guides/unix-time-and-time-zones.html#article",
+      "headline": "Unix Time, ISO 8601 and Time Zones: The Rules Behind Every Off-by-One-Day Bug",
+      "name": "Unix Time, ISO 8601 and Time Zones: The Rules Behind Every Off-by-One-Day Bug",
+      "description": "Instants vs wall-clock times, seconds vs milliseconds, why a zone is not an offset, what DST does to schedules, and what to store for events and dates.",
+      "url": "https://layerbit.co.in/guides/unix-time-and-time-zones.html",
+      "mainEntityOfPage": {
+        "@type": "WebPage",
+        "@id": "https://layerbit.co.in/guides/unix-time-and-time-zones.html"
+      },
+      "datePublished": "2026-09-27",
+      "dateModified": "2026-09-27",
+      "inLanguage": "en",
+      "wordCount": 1877,
+      "keywords": "unix timestamp, ISO 8601, time zones, UTC, daylight saving, epoch milliseconds, year 2038",
+      "articleSection": "Time \u0026 Dates",
+      "author": {
+        "@type": "Organization",
+        "name": "Layerbit Technologies",
+        "url": "https://layerbit.co.in/about.html"
+      },
+      "publisher": {
+        "@type": "Organization",
+        "name": "Layerbit Technologies",
+        "url": "https://layerbit.co.in/",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://layerbit.co.in/icon-512.png",
+          "width": 512,
+          "height": 512
+        }
+      },
+      "image": {
+        "@type": "ImageObject",
+        "url": "https://layerbit.co.in/og-image.png",
+        "width": 1200,
+        "height": 630
+      },
+      "isAccessibleForFree": true,
+      "proficiencyLevel": "Beginner"
+    },
+    {
+      "@type": "BreadcrumbList",
+      "@id": "https://layerbit.co.in/guides/unix-time-and-time-zones.html#breadcrumb",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://layerbit.co.in/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Guides",
+          "item": "https://layerbit.co.in/blog.html"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": "Unix time and time zones",
+          "item": "https://layerbit.co.in/guides/unix-time-and-time-zones.html"
+        }
+      ]
+    },
+    {
+      "@type": "FAQPage",
+      "@id": "https://layerbit.co.in/guides/unix-time-and-time-zones.html#faq",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "Does a Unix timestamp have a time zone?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "No. It counts seconds since 1970-01-01 00:00:00 UTC and identifies a single instant that is the same everywhere. A time zone only enters the picture when you convert that instant into a wall-clock date and time for display, and that conversion is where the zone must be supplied explicitly."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How do I tell whether a timestamp is in seconds or milliseconds?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Count the digits. Current Unix time is a 10-digit number in seconds and a 13-digit number in milliseconds; microseconds have 16 and nanoseconds 19. A value that converts to the year 56,000 was milliseconds read as seconds; one that converts to January 1970 was seconds read as milliseconds."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Should I store dates in UTC or local time?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Store instants — things that have happened — in UTC, and convert to local time only when displaying. Store future appointments as a wall-clock time together with the IANA zone name, because the zone's offset rules may change before the date arrives. Never store just an offset like +04:00 in place of a zone name."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Why does JavaScript treat \"2026-09-27\" as UTC but \"2026-09-27T12:00\" as local?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "A historical quirk of the ECMAScript specification: date-only ISO strings are parsed as UTC midnight, while date-time strings without a zone designator are parsed as local time. The inconsistency causes many off-by-one-day bugs. Avoid it by always including a Z or an explicit offset in any date-time string you exchange, and by treating date-only values as plain dates rather than timestamps."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What is the year 2038 problem and does it still matter?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "A signed 32-bit count of seconds overflows on 19 January 2038 at 03:14:07 UTC, wrapping to a date in 1901. Current operating systems use 64-bit time, but embedded devices, older file formats and some database columns do not, and equipment installed today may still be running then. Check any long-lived system that stores time in 32 bits."
+          }
+        }
+      ]
+    }
+  ]
+}
+  </script>

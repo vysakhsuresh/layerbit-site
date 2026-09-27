@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="Secure, real-time HTML Entity Sanitizer. Escape and unescape HTML characters bidirectionally without risky DOM injection." />
-  <title>HTML Entity Sanitizer - Layerbit</title>
+  <meta name="description" content="Escape HTML special characters to entities and decode any named or numeric entity back, with three escape profiles. Pure string replacement, nothing uploaded." />
+  <title>HTML Escape & Unescape Online | Layerbit</title>
   <!-- Google tag (gtag.js) -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-ERX8MNPPP5"></script>
   <script>
@@ -18,50 +18,98 @@
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://layerbit.co.in/tools/html-escape-unescape.html" />
   <meta property="og:site_name" content="Layerbit" />
-  <meta property="og:title" content="HTML Entity Sanitizer - Layerbit" />
-  <meta property="og:description" content="Secure, real-time HTML Entity Sanitizer. Escape and unescape HTML characters bidirectionally without risky DOM injection." />
+  <meta property="og:title" content="HTML Escape & Unescape Online | Layerbit" />
+  <meta property="og:description" content="Escape HTML special characters to entities and decode any named or numeric entity back, with three escape profiles. Pure string replacement, nothing uploaded." />
   <meta property="og:image" content="https://layerbit.co.in/og-image.png" />
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
   <meta property="og:image:alt" content="Layerbit - free browser-based developer tools" />
   <meta property="og:locale" content="en" />
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="HTML Entity Sanitizer - Layerbit" />
-  <meta name="twitter:description" content="Secure, real-time HTML Entity Sanitizer. Escape and unescape HTML characters bidirectionally without risky DOM injection." />
+  <meta name="twitter:title" content="HTML Escape & Unescape Online | Layerbit" />
+  <meta name="twitter:description" content="Escape HTML special characters to entities and decode any named or numeric entity back, with three escape profiles. Pure string replacement, nothing uploaded." />
   <meta name="twitter:image" content="https://layerbit.co.in/og-image.png" />
   <meta name="twitter:image:alt" content="Layerbit - free browser-based developer tools" />
   <meta name="theme-color" content="#0a0c10" />
   <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "FAQPage",
-    "mainEntity": [
-      {
-        "@type": "Question",
-        "name": "Why is DOM injection dangerous for sanitizing tools?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "If an online tool sets your pasted text to a live element's innerHTML in order to read the browser's parsed entities, inline event handlers (like onerror) within your text can immediately execute. Layerbit escapes with pure string replacement and unescapes through a detached textarea, whose content is RCDATA: the parser decodes character references but never creates elements from it, so nothing can run."
-        }
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "SoftwareApplication",
+      "@id": "https://layerbit.co.in/tools/html-escape-unescape.html#app",
+      "name": "HTML Escape / Unescape",
+      "url": "https://layerbit.co.in/tools/html-escape-unescape.html",
+      "description": "Escape HTML special characters to entities and decode any named or numeric entity back, with three escape profiles. Pure string replacement, nothing uploaded.",
+      "applicationCategory": "DeveloperApplication",
+      "operatingSystem": "Any (runs in the browser)",
+      "browserRequirements": "Requires JavaScript",
+      "isAccessibleForFree": true,
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
       },
-      {
-        "@type": "Question",
-        "name": "Which HTML characters are actively escaped?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "The extended profile (default) escapes ampersands (&), less than/greater than symbols (< >), double/single quotes (\" '), forward slashes (/), backticks (`), and equals signs (=). The essential profile escapes only the first five, and a third profile additionally turns every non-ASCII character into a hex reference."
-        }
-      },
-      {
-        "@type": "Question",
-        "name": "Is client-side escaping enough to secure my database?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "No. While this tool is perfect for ad-hoc preparation and debugging, enterprise applications should never trust client-side input exclusively. You must always sanitize strings on your backend server before executing SQL inserts or NoSQL document updates."
-        }
+      "publisher": {
+        "@id": "https://layerbit.co.in/#organization"
       }
-    ]
-  }
+    },
+    {
+      "@type": "BreadcrumbList",
+      "@id": "https://layerbit.co.in/tools/html-escape-unescape.html#breadcrumb",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://layerbit.co.in/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Tools",
+          "item": "https://layerbit.co.in/blog.html"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": "HTML Escape / Unescape",
+          "item": "https://layerbit.co.in/tools/html-escape-unescape.html"
+        }
+      ]
+    },
+    {
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "Why is DOM injection dangerous for sanitizing tools?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "If an online tool sets your pasted text to a live element's innerHTML in order to read the browser's parsed entities, inline event handlers (like onerror) within your text can immediately execute. Layerbit escapes with pure string replacement and unescapes through a detached textarea, whose content is RCDATA: the parser decodes character references but never creates elements from it, so nothing can run."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Which HTML characters are actively escaped?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "The extended profile (default) escapes ampersands (\u0026), less than/greater than symbols (\u003c \u003e), double/single quotes (\" '), forward slashes (/), backticks (`), and equals signs (=). The essential profile escapes only the first five, and a third profile additionally turns every non-ASCII character into a hex reference."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Is client-side escaping enough to secure my database?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "No. While this tool is perfect for ad-hoc preparation and debugging, enterprise applications should never trust client-side input exclusively. You must always sanitize strings on your backend server before executing SQL inserts or NoSQL document updates."
+          }
+        }
+      ],
+      "@id": "https://layerbit.co.in/tools/html-escape-unescape.html#faq"
+    }
+  ]
+}
   </script>
 
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6072772587431629" crossorigin="anonymous"></script>
@@ -228,8 +276,8 @@
   </header>
 
   <main class="hero">
-    <h1>HTML Entity Sanitizer</h1>
-    <p>Securely escape and unescape HTML strings bidirectionally without DOM injection.</p>
+    <h1>HTML Escape / Unescape</h1>
+    <p>Escape raw HTML for safe display and decode entities back to text, bidirectionally and in real time, entirely in your browser.</p>
   </main>
 
   <div class="ide-container">
@@ -243,7 +291,7 @@
           <button class="btn" onclick="copyContent('rawInput', this)"><i data-lucide="copy"></i> Copy</button>
         </div>
       </div>
-      <textarea id="rawInput" class="editor" placeholder='Type, paste, or drag & drop raw HTML here...&#10;&#10;<div class="header">&#10;  <h1>Welcome to Layerbit</h1>&#10;</div>' spellcheck="false"></textarea>
+      <textarea id="rawInput" class="editor" placeholder='Type, paste, or drag &amp; drop raw HTML here...&#10;&#10;&lt;div class="header"&gt;&#10;  &lt;h1&gt;Welcome to Layerbit&lt;/h1&gt;&#10;&lt;/div&gt;' spellcheck="false"></textarea>
     </div>
 
     <div class="pane" id="escapedPane">
@@ -371,6 +419,25 @@
       <h2><i data-lucide="shield-check"></i> Escaping is not sanitising</h2>
       <p>These solve different problems. <strong>Escaping</strong> renders a value as inert text, so <code>&lt;b&gt;hi&lt;/b&gt;</code> displays as those literal characters — correct for usernames, titles and comments. <strong>Sanitising</strong> parses the value as HTML and strips everything not on an allowlist while keeping the rest live — correct only when users are meant to submit formatting. If you need sanitising, use a maintained library such as DOMPurify and never a regular expression: HTML is far too irregular for pattern matching, and every hand-rolled tag stripper has been bypassed via malformed markup that browsers helpfully "correct" into something executable.</p>
     </div>
+
+        <div class="info-panel related-panel">
+          <h2><i data-lucide="link"></i> Related guides and tools</h2>
+          <p>Background reading on the format and failure modes behind this tool, and the tools most often used alongside it.</p>
+          <div class="use-cases-grid">
+            <div class="use-case-card">
+              <h3><i data-lucide="book-open"></i> <a href="../guides/html-escaping-and-xss-contexts.html">HTML escaping by context</a></h3>
+              <p>Text, attributes, JavaScript, URLs: each needs different escaping.</p>
+            </div>
+            <div class="use-case-card">
+              <h3><i data-lucide="book-open"></i> <a href="../guides/invisible-unicode-characters.html">Invisible Unicode characters</a></h3>
+              <p>Zero-width spaces, BOMs, bidi overrides and lookalikes.</p>
+            </div>
+            <div class="use-case-card">
+              <h3><i data-lucide="wrench"></i> <a href="unicode-inspector.html">Unicode Inspector</a></h3>
+              <p>Another local tool that pairs with this one. Runs entirely in your browser.</p>
+            </div>
+          </div>
+        </div>
 
     <div class="info-panel">
       <h2><i data-lucide="git-commit"></i> Changelog</h2>

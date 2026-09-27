@@ -1,32 +1,80 @@
 <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "FAQPage",
-    "mainEntity": [
-      {
-        "@type": "Question",
-        "name": "How does real-time synchronization prevent infinite loops?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "Layerbit's serializer utilizes an `isSyncing` boolean flag. When you type in the YAML editor, it locks the JSON editor from firing its own event listener until the conversion finishes. This completely eliminates feedback loops and browser crashing."
-        }
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "SoftwareApplication",
+      "@id": "https://layerbit.co.in/tools/yaml-json-converter.html#app",
+      "name": "YAML to JSON Converter",
+      "url": "https://layerbit.co.in/tools/yaml-json-converter.html",
+      "description": "Convert YAML to JSON and JSON to YAML in your browser, live in both directions, with YAML 1.2 semantics and syntax errors reported with line and column.",
+      "applicationCategory": "DeveloperApplication",
+      "operatingSystem": "Any (runs in the browser)",
+      "browserRequirements": "Requires JavaScript",
+      "isAccessibleForFree": true,
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
       },
-      {
-        "@type": "Question",
-        "name": "Why prefer YAML over JSON for configuration?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "YAML minimizes structural syntax—removing the need for brackets and quotation marks—and enforces readability through strict indentation. It also natively supports commenting, which JSON strictly forbids, making YAML the standard for human-readable DevOps configuration files."
-        }
-      },
-      {
-        "@type": "Question",
-        "name": "Is it secure for proprietary server secrets?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "Absolutely. We employ a Zero-Trust client-side processing architecture. The entire JS-YAML conversion engine runs in your browser's local memory. Your AWS keys, database passwords, and API tokens never touch an external server or log file."
-        }
+      "publisher": {
+        "@id": "https://layerbit.co.in/#organization"
       }
-    ]
-  }
+    },
+    {
+      "@type": "BreadcrumbList",
+      "@id": "https://layerbit.co.in/tools/yaml-json-converter.html#breadcrumb",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://layerbit.co.in/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Tools",
+          "item": "https://layerbit.co.in/blog.html"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": "YAML to JSON Converter",
+          "item": "https://layerbit.co.in/tools/yaml-json-converter.html"
+        }
+      ]
+    },
+    {
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "How does real-time synchronization prevent infinite loops?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Layerbit's serializer utilizes an `isSyncing` boolean flag. When you type in the YAML editor, it locks the JSON editor from firing its own event listener until the conversion finishes. This completely eliminates feedback loops and browser crashing."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Why prefer YAML over JSON for configuration?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "YAML minimizes structural syntax—removing the need for brackets and quotation marks—and enforces readability through strict indentation. It also natively supports commenting, which JSON strictly forbids, making YAML the standard for human-readable DevOps configuration files."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Is it secure for proprietary server secrets?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Absolutely. We employ a Zero-Trust client-side processing architecture. The entire JS-YAML conversion engine runs in your browser's local memory. Your AWS keys, database passwords, and API tokens never touch an external server or log file."
+          }
+        }
+      ],
+      "@id": "https://layerbit.co.in/tools/yaml-json-converter.html#faq"
+    }
+  ]
+}
   </script>

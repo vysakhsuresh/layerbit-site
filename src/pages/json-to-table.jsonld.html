@@ -1,32 +1,80 @@
 <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "FAQPage",
-    "mainEntity": [
-      {
-        "@type": "Question",
-        "name": "How does the engine handle nested objects?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "The parser utilizes a recursive flattening algorithm. If it encounters a nested object, it collapses it into a single column using dot notation (e.g., a location object containing a city property becomes a column named location.city)."
-        }
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "SoftwareApplication",
+      "@id": "https://layerbit.co.in/tools/json-to-table.html#app",
+      "name": "JSON to Table Viewer",
+      "url": "https://layerbit.co.in/tools/json-to-table.html",
+      "description": "Turn a JSON array into a sortable, filterable table in your browser. Nested objects flatten to dotted columns, ragged keys merge, and it exports to CSV.",
+      "applicationCategory": "DeveloperApplication",
+      "operatingSystem": "Any (runs in the browser)",
+      "browserRequirements": "Requires JavaScript",
+      "isAccessibleForFree": true,
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
       },
-      {
-        "@type": "Question",
-        "name": "Is there a limit to how much data I can paste?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "Because the grid operates entirely client-side, there are no artificial server limits or payload size caps. The only limitation is the amount of RAM available on your local machine to process and render the DOM elements."
-        }
-      },
-      {
-        "@type": "Question",
-        "name": "Can I export the filtered data?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "Yes. The CSV export feature intelligently respects your active search filter. If you search for a specific term and click Export CSV, only the rows currently visible on your screen will be downloaded."
-        }
+      "publisher": {
+        "@id": "https://layerbit.co.in/#organization"
       }
-    ]
-  }
+    },
+    {
+      "@type": "BreadcrumbList",
+      "@id": "https://layerbit.co.in/tools/json-to-table.html#breadcrumb",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://layerbit.co.in/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Tools",
+          "item": "https://layerbit.co.in/blog.html"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": "JSON to Table Viewer",
+          "item": "https://layerbit.co.in/tools/json-to-table.html"
+        }
+      ]
+    },
+    {
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "How does the engine handle nested objects?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "The parser utilizes a recursive flattening algorithm. If it encounters a nested object, it collapses it into a single column using dot notation (e.g., a location object containing a city property becomes a column named location.city)."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Is there a limit to how much data I can paste?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Because the grid operates entirely client-side, there are no artificial server limits or payload size caps. The only limitation is the amount of RAM available on your local machine to process and render the DOM elements."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Can I export the filtered data?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes. The CSV export feature intelligently respects your active search filter. If you search for a specific term and click Export CSV, only the rows currently visible on your screen will be downloaded."
+          }
+        }
+      ],
+      "@id": "https://layerbit.co.in/tools/json-to-table.html#faq"
+    }
+  ]
+}
   </script>

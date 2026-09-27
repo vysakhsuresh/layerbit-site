@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Encoding is reversible by anyone, encryption needs a key, hashing has no inverse, an HMAC proves origin, and passwords need a slow salted hash." />
+  <title>Hashing vs Encryption vs Encoding: The Differences | Layerbit</title>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-ERX8MNPPP5"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-ERX8MNPPP5');
+  </script>
+  <link rel="canonical" href="https://layerbit.co.in/guides/hashing-vs-encryption-vs-encoding.html" />
+  <meta name="robots" content="max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://layerbit.co.in/guides/hashing-vs-encryption-vs-encoding.html" />
+  <meta property="og:site_name" content="Layerbit" />
+  <meta property="og:title" content="Hashing vs Encryption vs Encoding: The Differences | Layerbit" />
+  <meta property="og:description" content="Encoding is reversible by anyone, encryption needs a key, hashing has no inverse, an HMAC proves origin, and passwords need a slow salted hash." />
+  <meta property="og:image" content="https://layerbit.co.in/og-image.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="Layerbit - free browser-based developer tools" />
+  <meta property="og:locale" content="en" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Hashing vs Encryption vs Encoding: The Differences | Layerbit" />
+  <meta name="twitter:description" content="Encoding is reversible by anyone, encryption needs a key, hashing has no inverse, an HMAC proves origin, and passwords need a slow salted hash." />
+  <meta name="twitter:image" content="https://layerbit.co.in/og-image.png" />
+  <meta name="twitter:image:alt" content="Layerbit - free browser-based developer tools" />
+  <meta name="theme-color" content="#0a0c10" />
+  <script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "TechArticle",
+      "@id": "https://layerbit.co.in/guides/hashing-vs-encryption-vs-encoding.html#article",
+      "headline": "Hashing, Encryption and Encoding Are Three Different Things",
+      "name": "Hashing, Encryption and Encoding Are Three Different Things",
+      "description": "Encoding is reversible by anyone, encryption needs a key, hashing has no inverse, an HMAC proves origin, and passwords need a slow salted hash.",
+      "url": "https://layerbit.co.in/guides/hashing-vs-encryption-vs-encoding.html",
+      "mainEntityOfPage": {
+        "@type": "WebPage",
+        "@id": "https://layerbit.co.in/guides/hashing-vs-encryption-vs-encoding.html"
+      },
+      "datePublished": "2026-09-27",
+      "dateModified": "2026-09-27",
+      "inLanguage": "en",
+      "wordCount": 1761,
+      "keywords": "hashing vs encryption, encoding vs encryption, HMAC, SHA-256, password hashing, Argon2, MD5 collisions",
+      "articleSection": "Security",
+      "author": {
+        "@type": "Organization",
+        "name": "Layerbit Technologies",
+        "url": "https://layerbit.co.in/about.html"
+      },
+      "publisher": {
+        "@type": "Organization",
+        "name": "Layerbit Technologies",
+        "url": "https://layerbit.co.in/",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://layerbit.co.in/icon-512.png",
+          "width": 512,
+          "height": 512
+        }
+      },
+      "image": {
+        "@type": "ImageObject",
+        "url": "https://layerbit.co.in/og-image.png",
+        "width": 1200,
+        "height": 630
+      },
+      "isAccessibleForFree": true,
+      "proficiencyLevel": "Beginner"
+    },
+    {
+      "@type": "BreadcrumbList",
+      "@id": "https://layerbit.co.in/guides/hashing-vs-encryption-vs-encoding.html#breadcrumb",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://layerbit.co.in/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Guides",
+          "item": "https://layerbit.co.in/blog.html"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": "Hashing vs encryption vs encoding",
+          "item": "https://layerbit.co.in/guides/hashing-vs-encryption-vs-encoding.html"
+        }
+      ]
+    },
+    {
+      "@type": "FAQPage",
+      "@id": "https://layerbit.co.in/guides/hashing-vs-encryption-vs-encoding.html#faq",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "Can a hash be decrypted?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "No. A hash is not encryption: there is no key and no inverse function, and infinitely many inputs produce each digest. What attackers do instead is guess — hash candidate inputs and compare. Fast hashes make guessing cheap, which is why passwords need a deliberately slow hash with a salt rather than SHA-256."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Is Base64 a form of encryption?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "No. Base64 is an encoding: it changes how bytes are written so they survive text-only channels, and anyone can reverse it without a secret. It provides no confidentiality at all. A value that must be kept secret needs encryption with a properly managed key, regardless of how it is encoded afterwards."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Should I still use MD5 or SHA-1 for anything?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Only to interoperate with systems that already use them — checking a legacy download checksum, reading existing Git object ids, matching an ETag. Both have practical collision attacks, so neither should be chosen for signatures, certificates, integrity against an adversary, or any new design. SHA-256 is the default choice."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What is the difference between a hash and an HMAC?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "An HMAC is a hash computed with a secret key using the RFC 2104 construction. A plain hash can be recomputed by anyone, so it proves only that data was not accidentally corrupted. An HMAC can only be produced by a holder of the key, so it also proves the message came from a party you share that key with and was not deliberately altered."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Which algorithm should I use to store passwords?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Argon2id, with scrypt or bcrypt as established alternatives, applied server-side through a maintained library with a per-user random salt. These are designed to be slow and memory-intensive so that guessing is expensive. Do not use SHA-256, MD5 or any fast hash for passwords, and never encrypt passwords, since a stolen key would reveal all of them."
+          }
+        }
+      ]
+    }
+  ]
+}
+  </script>
+
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6072772587431629" crossorigin="anonymous"></script>
+
+  <script src="../js/vendor/lucide.min.js" async></script>
+
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet" />
+  <link href="../layerbit-logo.png" rel="icon" type="image/x-icon" />
+  <link rel="manifest" href="../manifest.json" />
+  <link rel="apple-touch-icon" href="../apple-touch-icon.png" />
+  <link rel="stylesheet" href="../css/base.css" />
+  <link rel="stylesheet" href="../css/article.css" />
+
+  <style>
+
+    /* Long-form guide styling lives in css/article.css, linked from this page's head. */
+  
+  </style>
+</head>
+<body>
+  <header>
+    <a href="../" class="brand">
+      <svg width="36" height="36" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <polygon points="32,20 54,28 32,36 10,28" stroke="#f8fafc" stroke-width="4" stroke-linejoin="round"/>
+        <polyline points="10,38 32,46 54,38" stroke="#f8fafc" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+        <polyline points="10,48 32,56 54,48" stroke="#f8fafc" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+        <rect x="50" y="10" width="10" height="10" rx="2" fill="#00f2fe" />
+      </svg>
+      Layerbit
+    </a>
+  </header>
+
+  <nav class="crumbs" aria-label="Breadcrumb">
+    <a href="../">Home</a>
+    <span class="sep">/</span>
+    <a href="../blog.html">Guides</a>
+    <span class="sep">/</span>
+    <span aria-current="page">Hashing vs encryption vs encoding</span>
+  </nav>
+
+  <article class="article">
+    <header class="article-head">
+      <span class="article-kicker">Security Fundamentals</span>
+      <h1>Hashing, Encryption and Encoding Are Three Different Things</h1>
+      <p class="article-standfirst">They all turn one string into another string of gibberish, which is why they get confused, and why the confusion is dangerous: a password that has been "encrypted" with Base64 is not protected, a file that has been "hashed" with CRC32 is not tamper-evident, and a message that has been encrypted is not authenticated. This guide separates the three by the one question that matters — what is the operation for?</p>
+      <div class="article-meta">
+        <span class="byline">Layerbit Engineering</span>
+        <span><i data-lucide="calendar"></i>Published 27 September 2026</span>
+        <span><i data-lucide="clock"></i>10 min read</span>
+      </div>
+    </header>
+
+    <div class="takeaways">
+      <h2><i data-lucide="list-checks"></i> The short version</h2>
+      <ul>
+        <li><strong>Encoding</strong> changes representation, has no key, and is reversible by anyone. Base64, hex, URL encoding. It protects nothing.</li>
+        <li><strong>Encryption</strong> hides content, needs a key, and is reversible only with that key. AES, RSA, ChaCha20.</li>
+        <li><strong>Hashing</strong> produces a fixed-size fingerprint, has no key, and is not reversible at all. SHA-256, SHA-3, BLAKE3.</li>
+        <li>An <strong>HMAC</strong> is a hash with a key: it proves who made the message, not just that it is intact.</li>
+        <li>Passwords need none of the above directly — they need a deliberately slow, salted <strong>password hash</strong>: Argon2id, scrypt or bcrypt.</li>
+      </ul>
+    </div>
+
+    <div class="prose">
+      <h2 id="encoding">Encoding: same information, different alphabet</h2>
+      <p>Encoding exists because channels have restrictions. Email was designed for 7-bit text; JSON strings cannot carry arbitrary bytes; URLs reserve certain characters. An encoding maps data into a form the channel accepts, and anyone who knows which encoding was used — usually obvious from the output — can reverse it with no secret. Base64 turns 3 bytes into 4 characters; hex turns 1 byte into 2; percent-encoding replaces reserved characters with <code>%XX</code>.</p>
+      <p>Encoding is not obfuscation, though it is often mistaken for it. A password stored as Base64 in a config file is a password in a config file. An API key "hidden" in hex in a mobile app is one <code>xxd</code> away from plain text. If the goal is to prevent a reader from learning the content, encoding is the wrong tool by definition, because it is designed to be undone by everyone.</p>
+
+      <h2 id="encryption">Encryption: hidden from everyone without the key</h2>
+      <p>Encryption transforms data so that recovering it requires a secret. Symmetric ciphers such as AES use one key for both directions; asymmetric schemes such as RSA and elliptic-curve cryptography use a public key to encrypt and a private key to decrypt. The strength of modern encryption rests entirely on the key: the algorithms are public, scrutinised, and safe to publish. What must be secret is the key, and most real-world failures are key-management failures rather than cipher failures.</p>
+      <p>Encryption answers exactly one question — can an outsider read this? — and it is worth being precise about what it does not answer. Plain encryption does not tell you whether the ciphertext was altered in transit; an attacker who flips bits in a CBC-mode ciphertext can produce predictable changes in the decrypted output without knowing the key. That is why modern practice uses <em>authenticated</em> encryption (AES-GCM, ChaCha20-Poly1305), which combines encryption with an integrity tag, and why "just encrypt it" is rarely a complete answer.</p>
+
+      <h2 id="hashing">Hashing: a fingerprint with no way back</h2>
+      <p>A cryptographic hash function takes input of any length and produces a fixed-size digest — 256 bits for SHA-256 — with three properties: the same input always gives the same digest; it is infeasible to find an input that produces a given digest (preimage resistance); and it is infeasible to find two inputs with the same digest (collision resistance). There is no key and no inverse. Infinitely many inputs map to each 256-bit value, so "decrypting" a hash is not a hard problem, it is an ill-posed one.</p>
+      <p>That makes hashes ideal for integrity and identity. A download page publishes the SHA-256 of a release so you can confirm the file you received is the one they built. Git names every commit and blob by its hash, so the id <em>is</em> the content. Content-addressed storage deduplicates by digest. Certificate transparency logs, blockchain blocks and Merkle trees are all hashes of hashes.</p>
+      <p>Which hash matters. MD5 has been broken for collisions since 2004 — two different files with the same MD5 can be produced in seconds — and SHA-1 fell to a practical chosen-prefix collision in 2020. Both remain in the wild for legacy checksums, Git's original object ids and old certificates, which is why a tool needs to <em>compute</em> them; but nothing new should <em>choose</em> them. SHA-256 is the default; SHA-512 is faster on 64-bit hardware for large inputs; SHA-3 and BLAKE3 are sound alternatives with different performance profiles.</p>
+
+      <div class="tool-cta">
+        <div class="cta-copy">
+          <h3>Compute and verify hashes without uploading anything</h3>
+          <p>Layerbit's Hash &amp; HMAC Generator computes SHA-1, SHA-256, SHA-384, SHA-512 and MD5 of text or files, produces HMACs with a key, and verifies a pasted checksum in constant time — using the Web Crypto API in your browser, so the file or secret never leaves your machine.</p>
+        </div>
+        <a class="cta-btn" href="../tools/hash-generator.html"><i data-lucide="fingerprint"></i> Open Hash Generator</a>
+      </div>
+
+      <h2 id="hmac">HMAC: a hash that proves who sent it</h2>
+      <p>A plain hash proves integrity against accidents but not against adversaries: anyone who alters a message can recompute its hash. An HMAC (RFC 2104) folds a secret key into the hash computation, so only a holder of the key can produce a valid tag. That turns a hash into a message authentication code. It is how Stripe, GitHub, Slack and most payment providers sign webhooks: they compute HMAC-SHA256 over the raw request body with your shared secret, send the result in a header, and you recompute it and compare.</p>
+      <p>Two details cause most HMAC bugs. First, the message must be the exact bytes — a re-serialised JSON body with reordered keys or different whitespace produces a different tag, so verify the raw body before parsing it. Second, the key must be the bytes the provider means: a key given as hex or Base64 must be decoded first, because the string "a1b2c3" and the bytes <code>0xa1 0xb2 0xc3</code> are different keys. And compare tags in constant time, so response timing does not leak how many leading bytes matched.</p>
+      <p>Why a special construction instead of simply hashing <code>key + message</code>? Because every Merkle–Damgård hash — MD5, SHA-1, SHA-256 — is vulnerable to <em>length extension</em>: given <code>H(key + message)</code> and the length of the input, an attacker can compute <code>H(key + message + suffix)</code> for a suffix of their choosing without knowing the key. HMAC's nested structure closes that hole. SHA-3 is immune to length extension by design, but HMAC remains the interoperable standard.</p>
+
+      <h2 id="passwords">Passwords: none of the above, exactly</h2>
+      <p>Password storage is the case people most often get wrong by applying the right category badly. Passwords must not be encrypted, because whoever holds the decryption key — including an attacker who obtains it with the database — can recover every password. They must be hashed so that verification is possible without recovery. But a fast hash like SHA-256 is <em>too</em> good at its job: a GPU computes billions of SHA-256 values per second, so a leaked table of plain hashes falls to a dictionary of common passwords in hours.</p>
+      <p>The answer is a <strong>password hashing function</strong>, designed to be slow and memory-hungry on purpose: Argon2id (the current recommendation), scrypt, or bcrypt. Each is tuned so that one verification costs tens of milliseconds — negligible at login, ruinous at a billion guesses. Each takes a per-user random <strong>salt</strong>, so two users with the same password get different hashes and a precomputed table is useless. And each should be applied server-side through a maintained library, never assembled from primitives in application code.</p>
+
+      <h2 id="table">One table to settle arguments</h2>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Question</th><th>Encoding</th><th>Encryption</th><th>Hashing</th><th>HMAC</th><th>Password hash</th></tr></thead>
+          <tbody>
+            <tr><td>Reversible?</td><td>Yes, by anyone</td><td>Yes, with the key</td><td>No</td><td>No</td><td>No</td></tr>
+            <tr><td>Needs a key?</td><td>No</td><td>Yes</td><td>No</td><td>Yes</td><td>No (uses a salt)</td></tr>
+            <tr><td>Output size</td><td>Grows with input</td><td>≈ input size</td><td>Fixed</td><td>Fixed</td><td>Fixed</td></tr>
+            <tr><td>Speed goal</td><td>Fast</td><td>Fast</td><td>Fast</td><td>Fast</td><td>Deliberately slow</td></tr>
+            <tr><td>Proves integrity?</td><td>No</td><td>Only if authenticated</td><td>Against accidents</td><td>Against adversaries</td><td>n/a</td></tr>
+            <tr><td>Proves origin?</td><td>No</td><td>No</td><td>No</td><td>Yes (shared key)</td><td>n/a</td></tr>
+            <tr><td>Examples</td><td>Base64, hex, URL</td><td>AES-GCM, RSA, ChaCha20</td><td>SHA-256, SHA-3, BLAKE3</td><td>HMAC-SHA256</td><td>Argon2id, scrypt, bcrypt</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2 id="closing">Ask what the operation is for</h2>
+      <p>Every one of these techniques is the right answer to a specific question. Can this channel carry these bytes? Encode. Can an outsider read this? Encrypt, and authenticate it. Is this the same file the publisher built? Hash. Did the party I share a secret with send this, unmodified? HMAC. Can I check a password without being able to recover it, even after a breach? Password-hash it. Naming the question first is the whole discipline; picking the technique is then usually obvious, and the mistakes in this article all come from picking a technique before asking.</p>
+
+      <div class="further">
+        <h2>Related guides and tools</h2>
+        <div class="further-grid">
+          <a class="further-card" href="base64-explained.html">
+            <strong>Base64 explained</strong>
+            <span>The encoding most often mistaken for encryption.</span>
+          </a>
+          <a class="further-card" href="jwt-decode-vs-verify.html">
+            <strong>Decoding a JWT is not verifying it</strong>
+            <span>HMAC and signatures in the one place developers meet them daily.</span>
+          </a>
+          <a class="further-card" href="../tools/hash-generator.html">
+            <strong>Hash &amp; HMAC Generator</strong>
+            <span>SHA-2, MD5, HMAC and checksum verification, in the browser.</span>
+          </a>
+        </div>
+      </div>
+
+      <h2 id="faq">Frequently asked questions</h2>
+      <div class="faq-container">
+        <div class="faq-item">
+          <button class="faq-question">Can a hash be decrypted? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>No. A hash is not encryption: there is no key and no inverse function, and infinitely many inputs produce each digest. What attackers do instead is guess — hash candidate inputs and compare. Fast hashes make guessing cheap, which is why passwords need a deliberately slow hash with a salt rather than SHA-256.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">Is Base64 a form of encryption? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>No. Base64 is an encoding: it changes how bytes are written so they survive text-only channels, and anyone can reverse it without a secret. It provides no confidentiality at all. A value that must be kept secret needs encryption with a properly managed key, regardless of how it is encoded afterwards.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">Should I still use MD5 or SHA-1 for anything? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>Only to interoperate with systems that already use them — checking a legacy download checksum, reading existing Git object ids, matching an ETag. Both have practical collision attacks, so neither should be chosen for signatures, certificates, integrity against an adversary, or any new design. SHA-256 is the default choice.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">What is the difference between a hash and an HMAC? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>An HMAC is a hash computed with a secret key using the RFC 2104 construction. A plain hash can be recomputed by anyone, so it proves only that data was not accidentally corrupted. An HMAC can only be produced by a holder of the key, so it also proves the message came from a party you share that key with and was not deliberately altered.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">Which algorithm should I use to store passwords? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>Argon2id, with scrypt or bcrypt as established alternatives, applied server-side through a maintained library with a per-user random salt. These are designed to be slow and memory-intensive so that guessing is expensive. Do not use SHA-256, MD5 or any fast hash for passwords, and never encrypt passwords, since a stolen key would reveal all of them.</p></div>
+        </div>
+      </div>
+    </div>
+  </article>
+
+  <a href="../" id="smartBackBtn" class="fab" aria-label="Command Center" title="Command Center">
+    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="filter: drop-shadow(0 0 8px rgba(56, 189, 248, 0.5));">
+      <path d="M12 2L2 7l10 5 10-5-10-5z" stroke="#38bdf8" stroke-width="2" stroke-linejoin="round" fill="rgba(56,189,248,0.2)"/>
+      <path d="M2 17l10 5 10-5M2 12l10 5 10-5" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </a>
+
+  <footer>
+    <div style="margin-bottom: 15px;">
+      &copy; 2025 - 2026 <strong>Layerbit Technologies</strong>. All rights reserved.
+    </div>
+    <div>
+      <a href="../about.html">About</a>
+      <a href="../privacy.html">Privacy Policy</a>
+      <a href="../terms.html">Terms of Service</a>
+      <a href="../blog.html">Developer Blog</a>
+      <a href="../contact.html">Contact</a>
+    </div>
+  </footer>
+
+  <script src="../js/shared.js"></script>
+</body>
+</html>

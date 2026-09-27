@@ -1,32 +1,80 @@
 <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "FAQPage",
-    "mainEntity": [
-      {
-        "@type": "Question",
-        "name": "What is a Cron Expression?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "A cron expression is a string comprising five or six fields separated by white space that represents a set of times, normally as a schedule to execute a specific routine or script. It is the standard time-based job scheduler in Unix-like computer operating systems."
-        }
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "SoftwareApplication",
+      "@id": "https://layerbit.co.in/tools/cron-generator.html#app",
+      "name": "Cron Expression Generator",
+      "url": "https://layerbit.co.in/tools/cron-generator.html",
+      "description": "Build cron expressions with dropdowns, read them in plain English, validate every field, and preview the next five run times in any time zone.",
+      "applicationCategory": "DeveloperApplication",
+      "operatingSystem": "Any (runs in the browser)",
+      "browserRequirements": "Requires JavaScript",
+      "isAccessibleForFree": true,
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
       },
-      {
-        "@type": "Question",
-        "name": "Why did my Cron job run at the wrong time?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "The most common reason for unexpected scheduling is timezone discrepancies. By default, most cloud servers and CI/CD pipelines (like GitHub Actions) operate strictly on Coordinated Universal Time (UTC). If you schedule a job for 9:00 AM local time, you must calculate and apply the correct UTC offset in your expression."
-        }
-      },
-      {
-        "@type": "Question",
-        "name": "What is the difference between standard and non-standard syntax?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "Standard POSIX cron utilizes 5 fields (Minute, Hour, Day of Month, Month, Day of Week). Some advanced schedulers (like Quartz) utilize a 6th or 7th field for Seconds and Years. Layerbit currently generates universal 5-field syntax, which guarantees the highest compatibility across all major operating systems and cloud providers."
-        }
+      "publisher": {
+        "@id": "https://layerbit.co.in/#organization"
       }
-    ]
-  }
+    },
+    {
+      "@type": "BreadcrumbList",
+      "@id": "https://layerbit.co.in/tools/cron-generator.html#breadcrumb",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://layerbit.co.in/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Tools",
+          "item": "https://layerbit.co.in/blog.html"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": "Cron Expression Generator",
+          "item": "https://layerbit.co.in/tools/cron-generator.html"
+        }
+      ]
+    },
+    {
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "What is a Cron Expression?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "A cron expression is a string comprising five or six fields separated by white space that represents a set of times, normally as a schedule to execute a specific routine or script. It is the standard time-based job scheduler in Unix-like computer operating systems."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Why did my Cron job run at the wrong time?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "The most common reason for unexpected scheduling is timezone discrepancies. By default, most cloud servers and CI/CD pipelines (like GitHub Actions) operate strictly on Coordinated Universal Time (UTC). If you schedule a job for 9:00 AM local time, you must calculate and apply the correct UTC offset in your expression."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What is the difference between standard and non-standard syntax?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Standard POSIX cron utilizes 5 fields (Minute, Hour, Day of Month, Month, Day of Week). Some advanced schedulers (like Quartz) utilize a 6th or 7th field for Seconds and Years. Layerbit currently generates universal 5-field syntax, which guarantees the highest compatibility across all major operating systems and cloud providers."
+          }
+        }
+      ],
+      "@id": "https://layerbit.co.in/tools/cron-generator.html#faq"
+    }
+  ]
+}
   </script>
