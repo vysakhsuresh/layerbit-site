@@ -336,15 +336,20 @@
 
     <h2><i data-lucide="scan"></i> Screen capture</h2>
     <p>LayerLink uses Android's <code>MediaProjection</code> API to capture your device's screen, running inside a foreground service (permission <code>FOREGROUND_SERVICE_MEDIA_PROJECTION</code>) with a persistent notification for as long as a broadcast is live — this is what keeps the capture running and visible to you even while you're using another app. Android shows its own system permission dialog every time before capture can start, naming exactly what you're about to share, and requires this to be a foreground service specifically so the capture cannot continue silently once you leave the app.</p>
-    <p><strong>The captured video frames are streamed directly to your viewer over WebRTC and are never uploaded to, stored on, or passed through a Layerbit server.</strong> We do not record your broadcasts. We have no ability to view, retain, or replay a session after it ends, because we never receive the video in the first place — it travels peer-to-peer between your device and your viewer's browser, encrypted in transit using WebRTC's mandatory DTLS-SRTP.</p>
+    <p><strong>The captured video frames are never uploaded to or stored on a Layerbit server.</strong> We do not record your broadcasts. We have no ability to view, retain, or replay a session after it ends, because we never receive the video in the first place — it is encrypted in transit using WebRTC's mandatory DTLS-SRTP the entire way, regardless of which path below it takes.</p>
 
-    <h2><i data-lucide="cloud-cog"></i> Signaling: the one thing that touches our infrastructure</h2>
-    <p>Two devices that have never met can't establish a direct connection without some third party introducing them. LayerLink uses Google Firebase Realtime Database for exactly that introduction, and nothing else:</p>
+    <h2><i data-lucide="cloud-cog"></i> Signaling, and the two paths your video can take</h2>
+    <p>Two devices that have never met can't establish a connection without some third party introducing them. LayerLink uses Google Firebase Realtime Database for exactly that introduction, and nothing else:</p>
     <ul>
-      <li>When you start a broadcast, LayerLink writes a short-lived record under a random session ID: the WebRTC offer, and as your viewer connects, the answer and ICE candidates (network address information needed to negotiate the direct connection).</li>
+      <li>When you start a broadcast, LayerLink writes a short-lived record under a random session ID: the WebRTC offer, and as your viewer connects, the answer and ICE candidates (network address information needed to negotiate a connection).</li>
       <li>This record contains no video, no audio, and no identifying information about you — no name, no email, no device ID, no account, because the app has none of these to send.</li>
       <li><strong>The record is actively deleted from Firebase the moment you stop the broadcast</strong> — LayerLink issues an explicit delete against that session's data as part of ending the session, rather than leaving it to expire on its own.</li>
       <li>A session ID is only useful while its record exists. Anyone holding a live session's link could attempt to join it while it's active, so treat a LayerLink link like a temporary password and only share it with someone you intend to let view your screen.</li>
+    </ul>
+    <p>Firebase only ever carries that connection-negotiation data, never the video itself. The video takes one of two paths, decided automatically by the two devices' networks, not by anything LayerLink chooses:</p>
+    <ul>
+      <li><strong>Direct, peer-to-peer (the common case).</strong> Most of the time both devices can reach each other directly once they know each other's network address, and the video travels straight from broadcaster to viewer with nothing in between.</li>
+      <li><strong>Relayed through a TURN server (when a direct path isn't possible).</strong> Some network combinations — most often two devices on different mobile carriers in different countries, each behind their own carrier-grade NAT — can't reach each other directly no matter what. WebRTC's standard fallback for exactly this case is a TURN relay: LayerLink uses <a href="https://www.metered.ca/" target="_blank" rel="noopener">Metered's</a> free, public <code>openrelay.metered.ca</code> service. In this case your still-encrypted video does pass through that third party's relay server to get from one device to the other. It is not decrypted there, not logged by LayerLink, and we have no visibility into what that relay does or doesn't retain beyond its own stated purpose of relaying the connection — so if this matters to you, Metered's own policies, not ours, govern that relay.</li>
     </ul>
 
     <h2><i data-lucide="ban"></i> What the app does not do</h2>
@@ -353,7 +358,7 @@
       <li>No analytics or crash-reporting SDK. We don't know how often you open the app, how long a session runs, or what device you're using, because nothing in the app reports that anywhere.</li>
       <li>No account system, no login, no password, and nothing to reset if forgotten — there's simply nothing stored server-side tied to you.</li>
       <li>No access to your contacts, photos, files, location, microphone, or camera. LayerLink requests exactly two things beyond normal app permissions: the screen-capture permission described above, and "display over other apps," used only to show the floating Stop control while a broadcast is live so you can end a session without reopening the app.</li>
-      <li>No data sold, rented, or shared with any third party for advertising or any other purpose. Firebase, described above, is the only infrastructure the app talks to, and it carries only the transient connection-negotiation data described above.</li>
+      <li>No data sold, rented, or shared with any third party for advertising or any other purpose. Firebase and, when a direct connection isn't possible, the TURN relay — both described above — are the only infrastructure the app talks to, and neither receives anything beyond what's described there.</li>
     </ul>
 
     <h2><i data-lucide="scale"></i> Your rights over your data</h2>

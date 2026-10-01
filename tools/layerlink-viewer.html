@@ -374,6 +374,14 @@
       } catch (e) {}
     }
 
+    // Fallback for browsers that don't expose candidate.type directly: candidate SDP lines
+    // look like "candidate:<foundation> 1 udp <priority> <ip> <port> typ host ..." (or
+    // "typ srflx" / "typ relay") - this pulls out that one word.
+    function candidateTypeOf(sdp) {
+      const match = /\styp\s+(\w+)/.exec(sdp || '');
+      return match ? match[1] : 'unknown';
+    }
+
     function setStatus(state) {
       if (state === 'searching') {
         statusUI.className = 'status-indicator';
@@ -406,11 +414,21 @@
         statusUI.innerHTML = `<i data-lucide="alert-triangle"></i> Signal Lost`;
         overlayMsg.style.display = 'flex';
         videoElement.style.display = 'none';
+        // reconnectMode tells us which failure this actually was: 'blip' means the stream was
+        // genuinely live and then dropped (host ended it, or the connection died mid-session);
+        // 'connecting' means it never got through at all - almost always a NAT/firewall
+        // combination neither STUN nor the free TURN relay could cross. Leading with "the host
+        // stopped sharing" for the second case points the viewer at the wrong culprit.
+        const neverConnected = reconnectMode === 'connecting';
+        const heading = neverConnected ? "Couldn't Connect" : "Connection Dropped";
+        const body = neverConnected
+          ? "The stream never reached this browser - usually a network or firewall issue on one side blocking the connection. Ask the broadcaster to check their connection, then try again."
+          : "The host has stopped sharing, the session is invalid, or the network failed.";
         overlayMsg.innerHTML = `
           <div class="seo-content-block" style="text-align: center;">
             <i data-lucide="plug-zap" style="color: #ef4444; width: 48px; height: 48px; margin-bottom: 15px;"></i>
-            <h2 style="font-weight: 600; color: #fff; margin: 0 0 10px 0;">Connection Dropped</h2>
-            <p style="opacity: 0.7;">The host has stopped sharing, the session is invalid, or the network failed.</p>
+            <h2 style="font-weight: 600; color: #fff; margin: 0 0 10px 0;">${heading}</h2>
+            <p style="opacity: 0.7;">${body}</p>
             <button onclick="manualReconnect()" style="margin-top:20px; padding:12px 24px; background:#ef4444; color:#fff; border:none; border-radius:8px; cursor:pointer; font-family:'Space Grotesk', sans-serif; font-weight:bold; transition: 0.3s;">Reconnect</button>
           </div>
         `;
@@ -577,8 +595,13 @@
         }
       };
 
+      // Logged by type (host/srflx/relay), not just "a candidate arrived" - the one fact that
+      // actually matters when a cross-country session fails is whether a relay candidate was
+      // ever offered at all, versus the free TURN server never answering. Without this,
+      // "didn't connect" and "TURN was down" are indistinguishable in the console.
       peer.onicecandidate = e => {
         if (e.candidate) {
+          console.log('Local ICE candidate:', e.candidate.type || candidateTypeOf(e.candidate.candidate));
           conn.child("answerCandidates").push(JSON.stringify(e.candidate));
         }
       };
@@ -608,6 +631,7 @@
 
       conn.child("offerCandidates").on("child_added", snap => {
         const candidate = new RTCIceCandidate(JSON.parse(snap.val()));
+        console.log('Remote ICE candidate:', candidate.type || candidateTypeOf(candidate.candidate));
         if (hasRemoteDesc) {
           peer.addIceCandidate(candidate);
         } else {
