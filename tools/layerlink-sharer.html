@@ -490,6 +490,14 @@
       } catch (e) {}
     }
 
+    // Fallback for browsers that don't expose candidate.type directly: candidate SDP lines
+    // look like "candidate:<foundation> 1 udp <priority> <ip> <port> typ host ..." (or
+    // "typ srflx" / "typ relay") - this pulls out that one word.
+    function candidateTypeOf(sdp) {
+      const match = /\styp\s+(\w+)/.exec(sdp || '');
+      return match ? match[1] : 'unknown';
+    }
+
     function setStatus(state) {
       if (state === 'waiting') {
         statusBadge.className = 'status-badge status-waiting';
@@ -500,6 +508,14 @@
       } else if (state === 'closed') {
         statusBadge.className = 'status-badge status-idle';
         statusBadge.innerHTML = `<i data-lucide="alert-circle"></i> Viewer Disconnected`;
+      } else if (state === 'never-connected') {
+        // Distinct from 'closed' on purpose: nobody actually connected and then left here -
+        // the connection never got through at all, almost always a NAT/firewall combination
+        // neither STUN nor the free TURN relay could cross. Saying "Viewer Disconnected" for
+        // that would be actively misleading, so this gets its own copy pointing at the real
+        // cause and nudging a retry rather than implying someone was there and left.
+        statusBadge.className = 'status-badge status-idle';
+        statusBadge.innerHTML = `<i data-lucide="wifi-off"></i> Couldn't connect — check your network`;
       }
       safeCreateIcons();
     }
@@ -556,6 +572,9 @@
     const RECONNECT_GRACE_SECONDS = 20;
     let reconnectTimer = null;
     let reconnectSecondsLeft = 0;
+    // Set only on the real 'connected' transition - see setStatus('never-connected') above for
+    // why a session that never got through at all needs different copy than one that did.
+    let everConnected = false;
 
     function startReconnectCountdown() {
       clearReconnectCountdown();
@@ -565,7 +584,7 @@
         reconnectSecondsLeft -= 1;
         if (reconnectSecondsLeft <= 0) {
           clearReconnectCountdown();
-          setStatus('closed');
+          setStatus(everConnected ? 'closed' : 'never-connected');
         } else {
           updateReconnectBadge();
         }
@@ -631,6 +650,7 @@
 
         peer.onconnectionstatechange = () => {
           if (peer.connectionState === 'connected') {
+            everConnected = true;
             clearReconnectCountdown();
             setStatus('live');
           } else if (peer.connectionState === 'disconnected') {
@@ -639,7 +659,7 @@
             // The browser's own ICE agent already gave up after its own internal retries - no
             // additional grace period on top of that.
             clearReconnectCountdown();
-            setStatus('closed');
+            setStatus(everConnected ? 'closed' : 'never-connected');
           }
         };
 
@@ -650,8 +670,13 @@
 
         const conn = db.ref("sessions/" + sessionId);
 
+        // Logged by type (host/srflx/relay), not just "a candidate arrived" - the one fact that
+        // actually matters when a cross-country session fails is whether a relay candidate was
+        // ever offered at all, versus the free TURN server never answering. Without this,
+        // "didn't connect" and "TURN was down" are indistinguishable in the console.
         peer.onicecandidate = e => {
           if (e.candidate) {
+            console.log('Local ICE candidate:', e.candidate.type || candidateTypeOf(e.candidate.candidate));
             conn.child("offerCandidates").push(JSON.stringify(e.candidate));
           }
         };
@@ -680,6 +705,7 @@
 
         conn.child("answerCandidates").on("child_added", snap => {
           const candidate = new RTCIceCandidate(JSON.parse(snap.val()));
+          console.log('Remote ICE candidate:', candidate.type || candidateTypeOf(candidate.candidate));
           if (hasRemoteAnswer) {
             peer.addIceCandidate(candidate);
           } else {

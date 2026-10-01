@@ -342,7 +342,7 @@
     <h2><i data-lucide="cloud-cog"></i> LayerLink: the one exception</h2>
     <p>LayerLink screen sharing is badged <em>Cloud API</em> on the homepage because it cannot work purely locally — two browsers have no way to find each other without help. It uses WebRTC, which means:</p>
     <ul>
-      <li>The <strong>video stream travels directly between the two participants' browsers</strong> and is encrypted in transit using DTLS-SRTP, which WebRTC mandates.</li>
+      <li>The <strong>video stream is encrypted in transit using DTLS-SRTP</strong>, which WebRTC mandates, regardless of the path it takes. Most of the time it travels directly between the two participants' browsers; when a direct path isn't possible (commonly two networks that each sit behind restrictive NATs), it falls back to a TURN relay (<code>openrelay.metered.ca</code>, a free public service run by Metered) that relays the still-encrypted stream without being able to decrypt it.</li>
       <li>A <strong>signalling service</strong> (Google Firebase Realtime Database) carries only the connection negotiation data the two browsers need in order to locate each other — session descriptions and candidate network addresses. It does not carry video, and we do not record or store the contents of a session.</li>
       <li>Session identifiers are transient. Once a session ends, the identifier is spent.</li>
     </ul>
