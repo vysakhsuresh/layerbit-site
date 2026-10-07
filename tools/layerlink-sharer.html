@@ -569,7 +569,9 @@
     // Unlike the viewer page, this doesn't auto-reload - getDisplayMedia() needs
     // a direct user gesture, so the user re-clicking "Initialize Broadcast" is
     // the only way to recapture the screen anyway.
-    const RECONNECT_GRACE_SECONDS = 20;
+    // 35s matches the Android app and the viewer: a relayed path across a continent can
+    // legitimately take longer than 20s to settle.
+    const RECONNECT_GRACE_SECONDS = 35;
     let reconnectTimer = null;
     let reconnectSecondsLeft = 0;
     // Set only on the real 'connected' transition - see setStatus('never-connected') above for
@@ -604,6 +606,53 @@
       safeCreateIcons();
     }
 
+    // TURN relay config is fetched, not hardcoded. The relay this page used to carry
+    // (openrelay.metered.ca with the public "openrelayproject" login) now rejects every login,
+    // so broadcasts to viewers on networks that need a relay - most cross-country ones - never connected.
+    // One hosted file now sets the relay for this page, the web sharer and the Android app.
+    const ICE_CONFIG_URL = '/tools/layerlink-ice.json';
+    const STUN_FALLBACK = [
+      { urls: 'stun:stun.l.google.com:19302' },
+      { urls: 'stun:stun1.l.google.com:19302' }
+    ];
+
+    // Every transport worth trying for one relay host. UDP is fastest; TCP 80/443 survive
+    // networks that drop UDP; turns: on 443 is a real TLS handshake on the HTTPS port, which
+    // gets through networks that filter by protocol.
+    function relayUrls(host) {
+      const h = String(host).trim().replace(/^turns?:/, '').split(/[:?]/)[0].replace(/\/+$/, '');
+      return [
+        `turn:${h}:3478?transport=udp`,
+        `turn:${h}:3478?transport=tcp`,
+        `turn:${h}:80?transport=tcp`,
+        `turn:${h}:443?transport=tcp`,
+        `turns:${h}:443?transport=tcp`,
+        `turns:${h}:5349?transport=tcp`
+      ];
+    }
+
+    async function loadIceServers() {
+      try {
+        const ctrl = new AbortController();
+        const timer = setTimeout(() => ctrl.abort(), 5000);
+        const res = await fetch(ICE_CONFIG_URL, { cache: 'no-cache', signal: ctrl.signal });
+        clearTimeout(timer);
+        if (!res.ok) return STUN_FALLBACK;
+        const cfg = await res.json();
+        const servers = (cfg.stun || []).map(urls => ({ urls }));
+        for (const t of (cfg.turn || [])) {
+          const credential = t.credential || t.password;
+          if (!t.username || !credential) continue;
+          const urls = (t.urls && t.urls.length) ? t.urls : (t.host ? relayUrls(t.host) : null);
+          if (urls) servers.push({ urls, username: t.username, credential });
+        }
+        return servers.length ? servers : STUN_FALLBACK;
+      } catch (e) {
+        console.warn('Relay config unavailable; continuing with direct connections only.', e);
+        return STUN_FALLBACK;
+      }
+    }
+
     // Core WebRTC Logic
     async function start() {
       try {
@@ -623,27 +672,8 @@
         linkContainer.classList.add('active');
         setStatus('waiting');
 
-        const configuration = {
-          iceServers: [
-            { urls: 'stun:stun.l.google.com:19302' },
-            { urls: 'stun:stun1.l.google.com:19302' },
-            {
-              urls: 'turn:openrelay.metered.ca:80',
-              username: 'openrelayproject',
-              credential: 'openrelayproject'
-            },
-            {
-              urls: 'turn:openrelay.metered.ca:443',
-              username: 'openrelayproject',
-              credential: 'openrelayproject'
-            },
-            {
-              urls: 'turn:openrelay.metered.ca:443?transport=tcp',
-              username: 'openrelayproject',
-              credential: 'openrelayproject'
-            }
-          ]
-        };
+        const configuration = { iceServers: await loadIceServers() };
+        console.log('ICE servers:', configuration.iceServers.map(x => [].concat(x.urls).join(' ')));
 
         const peer = new RTCPeerConnection(configuration);
         localStream.getTracks().forEach(track => peer.addTrack(track, localStream));
