@@ -382,6 +382,11 @@
       return match ? match[1] : 'unknown';
     }
 
+    // Reloading is the retry: the broadcaster's app readies the same link again after a failed
+    // or ended connection, and a reloaded page that finds the old round still answered asks
+    // for a fresh one (see the rejoin request below).
+    const TRY_AGAIN_BUTTON = `<button type="button" class="sample-btn" onclick="location.reload()" style="margin-top: 18px; border-color: var(--accent-main); color: var(--accent-main);">Try again</button>`;
+
     function setStatus(state) {
       if (state === 'searching') {
         statusUI.className = 'status-indicator';
@@ -402,8 +407,8 @@
         statusUI.innerHTML = `<i data-lucide="loader" class="animate-spin"></i> Connecting...`;
         overlayMsg.innerHTML = `
           <i data-lucide="satellite-dish" style="width: 48px; height: 48px; color: var(--accent-main); animation: pulse 2s infinite;"></i>
-          <h2 style="font-weight: 600; font-size: 1.5em; margin-top: 15px;">Connecting to the broadcast</h2>
-          <p style="opacity: 0.7; margin-top: 10px;">Found it. Across countries this can take up to half a minute.</p>
+          <h2 style="font-weight: 600; font-size: 1.5em; margin-top: 15px;">${awaitingRejoin ? 'Reconnecting to the broadcast' : 'Connecting to the broadcast'}</h2>
+          <p style="opacity: 0.7; margin-top: 10px;">${awaitingRejoin ? 'Asking the broadcaster for a fresh connection.' : 'Found it. Across countries this can take up to half a minute.'}</p>
           <p id="reconnectCountdown" style="opacity: 0.55; margin-top: 14px; font-size: 0.85em;"></p>
         `;
         overlayMsg.style.display = 'flex';
@@ -423,6 +428,19 @@
           <h2 style="font-weight: 600; font-size: 1.5em; margin-top: 15px;">This broadcast has ended</h2>
           <p style="opacity: 0.7; margin-top: 10px; max-width: 34ch;">A LayerLink link only works while the broadcaster is sharing. Ask them to start a new broadcast and send you the new link.</p>
         `;
+      } else if (state === 'busy') {
+        // Asked for a fresh connection and none came: someone is already watching (the app
+        // never cuts a live viewer off for a newcomer), or the broadcaster's app predates rejoin.
+        statusUI.className = 'status-indicator';
+        statusUI.innerHTML = `<i data-lucide="users"></i> Busy`;
+        overlayMsg.style.display = 'flex';
+        videoElement.style.display = 'none';
+        overlayMsg.innerHTML = `
+          <i data-lucide="users" style="width: 48px; height: 48px; color: var(--accent-main);"></i>
+          <h2 style="font-weight: 600; font-size: 1.5em; margin-top: 15px;">Can't join right now</h2>
+          <p style="opacity: 0.7; margin-top: 10px; max-width: 36ch;">Someone else may already be watching this broadcast. If that should be you, try again in a moment, or ask the broadcaster for a new link.</p>
+          ${TRY_AGAIN_BUTTON}
+        `;
       } else if (state === 'error') {
         statusUI.className = 'status-indicator error';
         statusUI.innerHTML = `<i data-lucide="alert-triangle"></i> Signal Lost`;
@@ -436,13 +454,14 @@
         const neverConnected = reconnectMode === 'connecting';
         const heading = neverConnected ? "Couldn't Connect" : "Connection Dropped";
         const body = neverConnected
-          ? "The stream never reached this browser. One side's network blocked the connection. Ask the broadcaster to start a new broadcast and send you the new link."
-          : "The broadcast stopped, or the connection was lost and didn't come back. If they're still sharing, ask the broadcaster for a new link.";
+          ? "The stream never reached this browser. One side's network blocked the connection. Try again, and if it keeps failing, ask the broadcaster to switch between Wi-Fi and mobile data."
+          : "The connection was lost and didn't come back. If they're still sharing, try again.";
         overlayMsg.innerHTML = `
           <div class="seo-content-block" style="text-align: center;">
             <i data-lucide="plug-zap" style="color: #ef4444; width: 48px; height: 48px; margin-bottom: 15px;"></i>
             <h2 style="font-weight: 600; color: #fff; margin: 0 0 10px 0;">${heading}</h2>
             <p style="opacity: 0.7;">${body}</p>
+            ${TRY_AGAIN_BUTTON}
           </div>
         `;
       }
@@ -471,18 +490,24 @@
     // (a brief Wi-Fi blip). Either way: count down, and say plainly that it failed if it still
     // isn't connected by zero.
     //
-    // This page used to reload itself at zero. That can never work: a reload sends the
-    // broadcaster a second answer, and both the Android app and the web sharer only ever
-    // accept the first one, so the reloaded page just sat on "Searching for Host Signal" -
-    // and once the broadcaster gave up and deleted the session, it sat there forever.
+    // This page used to reload itself at zero, which sent the broadcaster a second answer it
+    // never accepted. Retrying is now the viewer's choice (Try again), and works because the
+    // Android app readies the same link again instead of ending the broadcast.
     // 35s matches the app's own grace window: a relayed path across a continent can
     // legitimately take longer than 20s to settle.
     const RECONNECT_GRACE_SECONDS = 35;
 
-    // Set once the connection has definitively failed. The broadcaster gives up on the same
-    // 35s clock and deletes the session, which this page would otherwise read a moment later
-    // as "This broadcast has ended" - replacing the message that actually says what went wrong.
+    // Set once the connection has definitively failed, so a broadcast that then ends (or an
+    // older app that deletes the session on the same 35s clock) can't replace the message
+    // that actually says what went wrong with "This broadcast has ended".
     let connectionFailed = false;
+
+    // The offer this page found already answered when it loaded - by an earlier visit of this
+    // same viewer, usually. Answering it again would go nowhere (that round is spent), so the
+    // page asks for a fresh one and waits for the offer to change.
+    let rejoinFrom = null;
+    let awaitingRejoin = false;
+    const REJOIN_WAIT_MS = 25000;
 
     let reconnectTimer = null;
     let reconnectSecondsLeft = 0;
@@ -653,7 +678,26 @@
         setStatus('ended');
       }
 
+      let rejoinTimer = null;
+
       async function connect() {
+        // One read of the whole session, so offer and answer are seen together: the app
+        // replaces both in a single update when it readies the link again.
+        try {
+          const current = (await conn.once("value")).val();
+          if (current && current.offer && current.answer) {
+            rejoinFrom = current.offer;
+            awaitingRejoin = true;
+            conn.child("rejoin").set(Math.random().toString(36).slice(2) + Date.now().toString(36));
+            setStatus('connecting');
+            rejoinTimer = setTimeout(() => {
+              if (awaitingRejoin && !connectionFailed) setStatus('busy');
+            }, REJOIN_WAIT_MS);
+          }
+        } catch (e) {
+          console.warn('Could not read the session up front; joining normally.', e);
+        }
+
         conn.child("offer").on("value", async snap => {
           if (!snap.val()) {
             if (!endedTimer) endedTimer = setTimeout(showEnded, sawOffer ? 0 : 8000);
@@ -663,8 +707,16 @@
             clearTimeout(endedTimer);
             endedTimer = null;
           }
-          if (sawOffer) return;
+          if (sawOffer || snap.val() === rejoinFrom) return;
           sawOffer = true;
+          if (awaitingRejoin) {
+            awaitingRejoin = false;
+            clearTimeout(rejoinTimer);
+            rejoinTimer = null;
+            // Everything queued so far belongs to the spent round: the app publishes a new
+            // round's candidates only after its offer.
+            candidateQueue = [];
+          }
           const offer = JSON.parse(snap.val());
           
           await peer.setRemoteDescription(offer);
