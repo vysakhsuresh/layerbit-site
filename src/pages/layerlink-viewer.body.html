@@ -208,6 +208,20 @@
         `;
         overlayMsg.style.display = 'flex';
         videoElement.style.display = 'none';
+      } else if (state === 'connecting') {
+        // The broadcaster's offer has arrived and this page has answered, so it is no longer
+        // "waiting for the broadcaster" - saying so made a slow cross-border connection look
+        // like a broadcast that never started.
+        statusUI.className = 'status-indicator';
+        statusUI.innerHTML = `<i data-lucide="loader" class="animate-spin"></i> Connecting...`;
+        overlayMsg.innerHTML = `
+          <i data-lucide="satellite-dish" style="width: 48px; height: 48px; color: var(--accent-main); animation: pulse 2s infinite;"></i>
+          <h2 style="font-weight: 600; font-size: 1.5em; margin-top: 15px;">Connecting to the broadcast</h2>
+          <p style="opacity: 0.7; margin-top: 10px;">Found it. Across countries this can take up to half a minute.</p>
+          <p id="reconnectCountdown" style="opacity: 0.55; margin-top: 14px; font-size: 0.85em;"></p>
+        `;
+        overlayMsg.style.display = 'flex';
+        videoElement.style.display = 'none';
       } else if (state === 'live') {
         statusUI.className = 'status-indicator live';
         statusUI.innerHTML = `<i data-lucide="radio"></i> LIVE`;
@@ -279,6 +293,11 @@
     // legitimately take longer than 20s to settle.
     const RECONNECT_GRACE_SECONDS = 35;
 
+    // Set once the connection has definitively failed. The broadcaster gives up on the same
+    // 35s clock and deletes the session, which this page would otherwise read a moment later
+    // as "This broadcast has ended" - replacing the message that actually says what went wrong.
+    let connectionFailed = false;
+
     let reconnectTimer = null;
     let reconnectSecondsLeft = 0;
     let reconnectMode = null; // 'connecting' | 'blip'
@@ -325,6 +344,7 @@
     }
 
     function handleReconnectTimeout() {
+      connectionFailed = true;
       setStatus('error');
     }
 
@@ -416,6 +436,7 @@
           // The browser's own ICE agent already gave up after its own internal retries - no
           // additional grace period on top of that.
           clearReconnectCountdown();
+          connectionFailed = true;
           setStatus('error');
         }
       };
@@ -441,6 +462,7 @@
       let sawOffer = false;
       let endedTimer = null;
       function showEnded() {
+        if (connectionFailed) return;
         clearReconnectCountdown();
         setStatus('ended');
       }
@@ -470,6 +492,7 @@
           conn.child("answer").set(JSON.stringify(answer));
           // Negotiation is genuinely starting now - start the countdown so a connection that
           // never completes doesn't just sit here forever with no explanation or way to recover.
+          setStatus('connecting');
           startReconnectCountdown('connecting');
         });
       }
