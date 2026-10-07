@@ -50,7 +50,7 @@
       "publisher": {
         "@id": "https://layerbit.co.in/#organization"
       },
-      "dateModified": "2026-09-22",
+      "dateModified": "2026-10-07",
       "inLanguage": "en"
     },
     {
@@ -329,7 +329,7 @@
   </main>
 
   <div class="content-panel">
-    <p><strong>Last updated: 22 September 2026.</strong> This policy covers the LayerLink Android app (package <code>com.layerbit.layerlink</code>) specifically — what it captures, what it sends anywhere, and what it doesn't. It is separate from the general <a href="/privacy.html">Layerbit website privacy policy</a>, which covers this website's own advertising, analytics and cookies; none of that applies to the app, since the app contains no advertising SDK, no analytics SDK, and sets no cookies.</p>
+    <p><strong>Last updated: 7 October 2026.</strong> This policy covers the LayerLink Android app (package <code>com.layerbit.layerlink</code>) specifically — what it captures, what it sends anywhere, and what it doesn't. It is separate from the general <a href="/privacy.html">Layerbit website privacy policy</a>, which covers this website's own advertising, analytics and cookies; none of that applies to the app, since the app contains no advertising SDK, no analytics SDK, and sets no cookies.</p>
 
     <h2><i data-lucide="monitor-smartphone"></i> What LayerLink does</h2>
     <p>LayerLink lets you broadcast your Android device's screen to a viewer's web browser in real time, over a direct peer-to-peer connection. You start a broadcast, LayerLink generates a session link, and whoever opens that link in a browser sees your screen live. There is no account, no sign-up, and no login anywhere in the app.</p>
@@ -349,7 +349,7 @@
     <p>Firebase only ever carries that connection-negotiation data, never the video itself. The video takes one of two paths, decided automatically by the two devices' networks, not by anything LayerLink chooses:</p>
     <ul>
       <li><strong>Direct, peer-to-peer (the common case).</strong> Most of the time both devices can reach each other directly once they know each other's network address, and the video travels straight from broadcaster to viewer with nothing in between.</li>
-      <li><strong>Relayed through a TURN server (when a direct path isn't possible).</strong> Some network combinations — most often two devices on different mobile carriers in different countries, each behind their own carrier-grade NAT — can't reach each other directly no matter what. WebRTC's standard fallback for exactly this case is a TURN relay: LayerLink uses <a href="https://www.metered.ca/" target="_blank" rel="noopener">Metered's</a> free, public <code>openrelay.metered.ca</code> service. In this case your still-encrypted video does pass through that third party's relay server to get from one device to the other. It is not decrypted there, not logged by LayerLink, and we have no visibility into what that relay does or doesn't retain beyond its own stated purpose of relaying the connection — so if this matters to you, Metered's own policies, not ours, govern that relay.</li>
+      <li><strong>Relayed through a TURN server (when a direct path isn't possible).</strong> Some network combinations — most often two devices on different mobile carriers in different countries, each behind their own carrier-grade NAT — can't reach each other directly no matter what. WebRTC's standard fallback for exactly this case is a TURN relay: LayerLink uses <a href="https://www.expressturn.com/" target="_blank" rel="noopener">ExpressTURN</a>, a third-party relay service. If you enter your own relay under <em>Relay server</em> in the app, that one is used instead. In this case your still-encrypted video does pass through the relay server to get from one device to the other. It is not decrypted there, not logged by LayerLink, and we have no visibility into what that relay does or doesn't retain beyond its own stated purpose of relaying the connection — so if this matters to you, the relay operator's own policies, not ours, govern that relay.</li>
     </ul>
 
     <h2><i data-lucide="ban"></i> What the app does not do</h2>

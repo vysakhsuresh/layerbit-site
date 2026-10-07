@@ -213,15 +213,15 @@
         statusUI.innerHTML = `<i data-lucide="radio"></i> LIVE`;
         overlayMsg.style.display = 'none';
         videoElement.style.display = 'block';
-      } else if (state === 'reloading') {
+      } else if (state === 'ended') {
         statusUI.className = 'status-indicator';
-        statusUI.innerHTML = `<i data-lucide="refresh-cw" class="animate-spin"></i> Reconnecting`;
+        statusUI.innerHTML = `<i data-lucide="square"></i> Ended`;
         overlayMsg.style.display = 'flex';
         videoElement.style.display = 'none';
         overlayMsg.innerHTML = `
-          <i data-lucide="refresh-cw" class="animate-spin" style="width: 48px; height: 48px; color: var(--accent-main);"></i>
-          <h2 style="font-weight: 600; font-size: 1.5em; margin-top: 15px;">Reconnecting…</h2>
-          <p style="opacity: 0.7; margin-top: 10px;">This page will refresh automatically.</p>
+          <i data-lucide="monitor-off" style="width: 48px; height: 48px; color: var(--accent-main);"></i>
+          <h2 style="font-weight: 600; font-size: 1.5em; margin-top: 15px;">This broadcast has ended</h2>
+          <p style="opacity: 0.7; margin-top: 10px; max-width: 34ch;">A LayerLink link only works while the broadcaster is sharing. Ask them to start a new broadcast and send you the new link.</p>
         `;
       } else if (state === 'error') {
         statusUI.className = 'status-indicator error';
@@ -236,14 +236,13 @@
         const neverConnected = reconnectMode === 'connecting';
         const heading = neverConnected ? "Couldn't Connect" : "Connection Dropped";
         const body = neverConnected
-          ? "The stream never reached this browser - usually a network or firewall issue on one side blocking the connection. Ask the broadcaster to check their connection, then try again."
-          : "The host has stopped sharing, the session is invalid, or the network failed.";
+          ? "The stream never reached this browser. One side's network blocked the connection. Ask the broadcaster to start a new broadcast and send you the new link."
+          : "The broadcast stopped, or the connection was lost and didn't come back. If they're still sharing, ask the broadcaster for a new link.";
         overlayMsg.innerHTML = `
           <div class="seo-content-block" style="text-align: center;">
             <i data-lucide="plug-zap" style="color: #ef4444; width: 48px; height: 48px; margin-bottom: 15px;"></i>
             <h2 style="font-weight: 600; color: #fff; margin: 0 0 10px 0;">${heading}</h2>
             <p style="opacity: 0.7;">${body}</p>
-            <button onclick="manualReconnect()" style="margin-top:20px; padding:12px 24px; background:#ef4444; color:#fff; border:none; border-radius:8px; cursor:pointer; font-family:'Space Grotesk', sans-serif; font-weight:bold; transition: 0.3s;">Reconnect</button>
           </div>
         `;
       }
@@ -266,29 +265,19 @@
 
     // FAQ Accordion Logic
 
-    // Reconnect countdown + capped auto-reload ------------------------------
-    // Handles two distinct not-yet-live moments the same way: (1) an answer was
-    // just sent and ICE hasn't connected yet, (2) a live connection just dropped
-    // and might recover on its own (a brief Wi-Fi blip). Either way: count down,
-    // and only reload the page for real if it's still not connected by zero -
-    // capped at MAX_AUTO_RELOADS so a genuinely dead link doesn't reload forever.
-    const RECONNECT_GRACE_SECONDS = 20;
-    const MAX_AUTO_RELOADS = 2;
-
-    function getReloadCount() {
-      return parseInt(sessionStorage.getItem('layerlink_reload_' + sessionId) || '0', 10);
-    }
-    function incrementReloadCount() {
-      sessionStorage.setItem('layerlink_reload_' + sessionId, String(getReloadCount() + 1));
-    }
-    function clearReloadCount() {
-      sessionStorage.removeItem('layerlink_reload_' + sessionId);
-    }
-    function manualReconnect() {
-      // A deliberate manual retry gets a fresh auto-reload budget of its own.
-      clearReloadCount();
-      location.reload();
-    }
+    // Reconnect countdown ------------------------------------------------------
+    // Handles two distinct not-yet-live moments the same way: (1) an answer was just sent and
+    // ICE hasn't connected yet, (2) a live connection just dropped and might recover on its own
+    // (a brief Wi-Fi blip). Either way: count down, and say plainly that it failed if it still
+    // isn't connected by zero.
+    //
+    // This page used to reload itself at zero. That can never work: a reload sends the
+    // broadcaster a second answer, and both the Android app and the web sharer only ever
+    // accept the first one, so the reloaded page just sat on "Searching for Host Signal" -
+    // and once the broadcaster gave up and deleted the session, it sat there forever.
+    // 35s matches the app's own grace window: a relayed path across a continent can
+    // legitimately take longer than 20s to settle.
+    const RECONNECT_GRACE_SECONDS = 35;
 
     let reconnectTimer = null;
     let reconnectSecondsLeft = 0;
@@ -331,19 +320,58 @@
         if (text) text.textContent = 'Reconnecting… (' + reconnectSecondsLeft + 's)';
       } else {
         const label = document.getElementById('reconnectCountdown');
-        if (label) label.textContent = 'Auto-retry in ' + reconnectSecondsLeft + 's…';
+        if (label) label.textContent = 'Connecting… ' + reconnectSecondsLeft + 's';
       }
     }
 
     function handleReconnectTimeout() {
-      if (getReloadCount() < MAX_AUTO_RELOADS) {
-        setStatus('reloading');
-        setTimeout(() => {
-          incrementReloadCount();
-          location.reload();
-        }, 2000);
-      } else {
-        setStatus('error');
+      setStatus('error');
+    }
+
+    // TURN relay config is fetched, not hardcoded. The relay this page used to carry
+    // (openrelay.metered.ca with the public "openrelayproject" login) now rejects every login,
+    // so viewers on networks that need a relay - most cross-country ones - never connected.
+    // One hosted file now sets the relay for this page, the web sharer and the Android app.
+    const ICE_CONFIG_URL = '/tools/layerlink-ice.json';
+    const STUN_FALLBACK = [
+      { urls: 'stun:stun.l.google.com:19302' },
+      { urls: 'stun:stun1.l.google.com:19302' }
+    ];
+
+    // Every transport worth trying for one relay host. UDP is fastest; TCP 80/443 survive
+    // networks that drop UDP; turns: on 443 is a real TLS handshake on the HTTPS port, which
+    // gets through networks that filter by protocol.
+    function relayUrls(host) {
+      const h = String(host).trim().replace(/^turns?:/, '').split(/[:?]/)[0].replace(/\/+$/, '');
+      return [
+        `turn:${h}:3478?transport=udp`,
+        `turn:${h}:3478?transport=tcp`,
+        `turn:${h}:80?transport=tcp`,
+        `turn:${h}:443?transport=tcp`,
+        `turns:${h}:443?transport=tcp`,
+        `turns:${h}:5349?transport=tcp`
+      ];
+    }
+
+    async function loadIceServers() {
+      try {
+        const ctrl = new AbortController();
+        const timer = setTimeout(() => ctrl.abort(), 5000);
+        const res = await fetch(ICE_CONFIG_URL, { cache: 'no-cache', signal: ctrl.signal });
+        clearTimeout(timer);
+        if (!res.ok) return STUN_FALLBACK;
+        const cfg = await res.json();
+        const servers = (cfg.stun || []).map(urls => ({ urls }));
+        for (const t of (cfg.turn || [])) {
+          const credential = t.credential || t.password;
+          if (!t.username || !credential) continue;
+          const urls = (t.urls && t.urls.length) ? t.urls : (t.host ? relayUrls(t.host) : null);
+          if (urls) servers.push({ urls, username: t.username, credential });
+        }
+        return servers.length ? servers : STUN_FALLBACK;
+      } catch (e) {
+        console.warn('Relay config unavailable; continuing with direct connections only.', e);
+        return STUN_FALLBACK;
       }
     }
 
@@ -356,27 +384,10 @@
       setStatus('searching');
       const conn = db.ref("sessions/" + sessionId);
 
-      const configuration = {
-        iceServers: [
-          { urls: 'stun:stun.l.google.com:19302' },
-          { urls: 'stun:stun1.l.google.com:19302' },
-          {
-            urls: 'turn:openrelay.metered.ca:80',
-            username: 'openrelayproject',
-            credential: 'openrelayproject'
-          },
-          {
-            urls: 'turn:openrelay.metered.ca:443',
-            username: 'openrelayproject',
-            credential: 'openrelayproject'
-          },
-          {
-            urls: 'turn:openrelay.metered.ca:443?transport=tcp',
-            username: 'openrelayproject',
-            credential: 'openrelayproject'
-          }
-        ]
-      };
+      // Async because the relay list is fetched first (see loadIceServers).
+      (async () => {
+      const configuration = { iceServers: await loadIceServers() };
+      console.log('ICE servers:', configuration.iceServers.map(x => [].concat(x.urls).join(' ')));
 
       const peer = new RTCPeerConnection(configuration);
       let remoteStream = new MediaStream();
@@ -423,9 +434,29 @@
       let hasRemoteDesc = false;
       let candidateQueue = [];
 
+      // The broadcaster deletes the session when it stops. No offer at this link therefore
+      // means it ended (or the link is stale), not "still starting": the app writes the offer
+      // before it ever shows the link. Wait a few seconds for an offer that's still in flight,
+      // then say so instead of "Searching for Host Signal" forever.
+      let sawOffer = false;
+      let endedTimer = null;
+      function showEnded() {
+        clearReconnectCountdown();
+        setStatus('ended');
+      }
+
       async function connect() {
         conn.child("offer").on("value", async snap => {
-          if (!snap.val()) return;
+          if (!snap.val()) {
+            if (!endedTimer) endedTimer = setTimeout(showEnded, sawOffer ? 0 : 8000);
+            return;
+          }
+          if (endedTimer) {
+            clearTimeout(endedTimer);
+            endedTimer = null;
+          }
+          if (sawOffer) return;
+          sawOffer = true;
           const offer = JSON.parse(snap.val());
           
           await peer.setRemoteDescription(offer);
@@ -454,6 +485,7 @@
       });
 
       connect();
+      })();
     }
   </script>
   <script src="../main.js"></script>
