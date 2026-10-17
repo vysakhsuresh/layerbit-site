@@ -385,8 +385,8 @@ JWT_HS256 = ("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9."
 @case("jwt-decoder", "minimal", "empty input clears outputs")
 def _(t):
     t.set("jwtInput", "")
-    expect(t.text("payloadOutput").strip() in ("", "{}") or "paste" in t.text("payloadOutput").lower(),
-           "payload output not cleared")
+    expect(t.text("payloadOutput").strip() in ("", "{}") or "paste" in t.text("payloadOutput").lower(), "payload output not cleared")
+    expect("Decode a token" in t.text("lintList"), "lint not reset")
 
 
 @case("jwt-decoder", "typical", "decodes header and payload")
@@ -400,9 +400,12 @@ def _(t):
 def _(t):
     t.set("jwtInput", JWT_HS256)
     t.set("hmacSecret", "your-256-bit-secret")
-    t.wait_for("() => /valid|verified/i.test(document.getElementById('verifyResult').innerText)")
+    t.wait_for("() => /Signature Valid/.test(document.getElementById('verifyResult').innerText)")
     t.set("hmacSecret", "wrong-secret")
-    t.wait_for("() => /invalid|fail|mismatch/i.test(document.getElementById('verifyResult').innerText)")
+    t.wait_for("() => /Signature Invalid/.test(document.getElementById('verifyResult').innerText)")
+    t.set("hmacSecret", "eW91ci0yNTYtYml0LXNlY3JldA")  # base64url of the secret
+    t.click("#secretIsB64")
+    t.wait_for("() => /Signature Valid/.test(document.getElementById('verifyResult').innerText)")
 
 
 @case("jwt-decoder", "edge", "garbage input reports an error instead of throwing")
@@ -411,6 +414,8 @@ def _(t):
     t.wait(50)
     st = t.text("statusText").lower()
     expect("invalid" in st or "error" in st or "malformed" in st, f"status did not report error: {st!r}")
+    t.set("jwtInput", "a.b")
+    expect("three dot-separated parts" in t.text("headerOutput"), t.text("headerOutput"))
 
 
 @case("jwt-decoder", "edge", "unicode claims decode correctly")
@@ -430,9 +435,10 @@ def _(t):
     p = base64.urlsafe_b64encode(json.dumps(big).encode()).decode().rstrip("=")
     t.set("jwtInput", f"{h}.{p}.sig")
     expect("role-19999" in t.text("payloadOutput"), "large payload truncated")
+    expect("will not fit in a cookie" in t.text("lintList"), "size finding missing")
 
 
-@case("jwt-decoder", "typical", "claim timeline: expired token shows 'ago' and status Expired")
+@case("jwt-decoder", "typical", "claim timeline: expired token shows 'ago', status Expired, timeline drawn")
 def _(t):
     import base64, time
     h = base64.urlsafe_b64encode(b'{"alg":"HS256","typ":"JWT"}').decode().rstrip("=")
@@ -441,6 +447,7 @@ def _(t):
     t.set("jwtInput", f"{h}.{p}.x")
     expect("ago" in t.text("claimTimes") and "Lifetime" in t.text("claimTimes"), f"timeline wrong: {t.text('claimTimes')}")
     eq(t.text("statusText").strip(), "Token Expired", "status")
+    expect(t.count("#timeline svg") == 1 and "Expired" in t.text("timeline"), "timeline svg missing")
 
 
 @case("jwt-decoder", "edge", "nbf in the future -> Not Yet Valid; millisecond exp is flagged")
@@ -454,17 +461,113 @@ def _(t):
     expect("milliseconds" in t.text("claimTimes"), "ms warning missing")
 
 
-@case("jwt-decoder", "typical", "signer produces a token that the verifier accepts")
+@case("jwt-decoder", "typical", "claims check flags risky tokens and expected iss/aud mismatches")
+def _(t):
+    t.call("loadSample('risky')")
+    t.wait(80)
+    lint = t.text("lintList")
+    expect('alg is "none"' in lint and "carries its own key" in lint and "looks sensitive" in lint and "milliseconds" in lint, lint[:400])
+    t.call("loadSample('oidc')")
+    t.wait(80)
+    t.set("expectIss", "https://other.example.com")
+    t.set("expectAud", "nope")
+    lint = t.text("lintList")
+    expect('expected "https://other.example.com"' in lint and 'does not include "nope"' in lint, lint[:400])
+    t.set("expectIss", "https://accounts.example.com")
+    expect('expected "https://other' not in t.text("lintList"), "iss finding not cleared")
+
+
+@case("jwt-decoder", "typical", "signer: HS512 token loads and verifies")
 def _(t):
     t.set("signSecret", "s3cret")
     t.select("signAlg", "HS512")
     t.click("#btnSign")
     t.wait_for("() => document.getElementById('signOutput').innerText.split('.').length === 3")
-    token = t.text("signOutput").strip()
     t.click("#btnSignLoad")
-    t.wait_for("() => /valid|verified/i.test(document.getElementById('verifyResult').innerText)")
+    t.wait_for("() => /Signature Valid/.test(document.getElementById('verifyResult').innerText)")
     expect('"HS512"' in t.text("headerOutput") and '"user-42"' in t.text("payloadOutput"), "loaded token wrong")
     expect("Not Expired" in t.text("statusText"), "exp not set to future")
+
+
+@case("jwt-decoder", "typical", "signer: generated ES256 key pair signs, verifies via PEM and via JWKS kid")
+def _(t):
+    t.select("signAlg", "ES256")
+    t.set("signKid", "test-kid")
+    t.call("generateKeys()")
+    t.wait_for("() => document.getElementById('signKey').value.includes('BEGIN PRIVATE KEY')", timeout=15000)
+    expect(t.count("#genKeys .gen-row") == 4, "key outputs missing")
+    t.click("#btnSign")
+    t.wait_for("() => document.getElementById('signOutput').innerText.startsWith('eyJ')")
+    t.click("#btnSignLoad")
+    t.wait_for("() => /Signature Valid/.test(document.getElementById('verifyResult').innerText)")
+    expect('"kid": "test-kid"' in t.text("headerOutput"), "kid missing from header")
+    t.call("document.getElementById('publicKeyPem').value = JSON.stringify(generated.jwks); runVerify()")
+    t.wait_for("() => /kid test-kid/.test(document.getElementById('verifyResult').innerText)")
+    t.call("document.getElementById('publicKeyPem').value = JSON.stringify({keys:[Object.assign({}, generated.publicJwk, {kid:'other'})]}); runVerify()")
+    t.wait_for("() => /No key with kid/.test(document.getElementById('verifyResult').innerText)")
+
+
+@case("jwt-decoder", "typical", "signer: RS256, PS256 and EdDSA round trips")
+def _(t):
+    for alg in ("RS256", "PS256", "EdDSA"):
+        t.select("signAlg", alg)
+        t.call("generateKeys()")
+        t.wait_for("() => document.getElementById('genKeys').innerText.includes('Public key')", timeout=20000)
+        t.call("document.getElementById('signOutput').textContent=''")
+        t.click("#btnSign")
+        t.wait_for("() => document.getElementById('signOutput').innerText.startsWith('eyJ')")
+        t.click("#btnSignLoad")
+        t.wait_for("() => /Signature Valid/.test(document.getElementById('verifyResult').innerText)")
+        expect(f'"{alg}"' in t.text("headerOutput"), alg)
+        t.call("document.getElementById('genKeys').innerHTML=''")
+
+
+@case("jwt-decoder", "edge", "verifier explains a private key, a certificate and a wrong curve")
+def _(t):
+    t.select("signAlg", "ES256")
+    t.call("generateKeys()")
+    t.wait_for("() => document.getElementById('signKey').value.includes('BEGIN PRIVATE KEY')", timeout=15000)
+    t.click("#btnSign")
+    t.wait_for("() => document.getElementById('signOutput').innerText.startsWith('eyJ')")
+    t.click("#btnSignLoad")
+    t.wait(200)
+    t.call("document.getElementById('publicKeyPem').value = generated.privatePem; runVerify()")
+    t.wait_for("() => /private key/.test(document.getElementById('verifyResult').innerText)")
+    t.call("document.getElementById('publicKeyPem').value = '-----BEGIN CERTIFICATE-----\\nMIIB\\n-----END CERTIFICATE-----'; runVerify()")
+    t.wait_for("() => /openssl x509/.test(document.getElementById('verifyResult').innerText)")
+
+
+@case("jwt-decoder", "typical", "JWE: encrypt with dir and A256KW, decrypt, wrong key fails")
+def _(t):
+    t.call("randomJweKey()")
+    t.call("encryptJwe()")
+    t.wait_for("() => document.getElementById('jweInput').value.split('.').length === 5", timeout=10000)
+    t.call("decryptJwe()")
+    t.wait_for("() => document.getElementById('jweOutput').innerText.includes('user-42')", timeout=10000)
+    expect("dir / A256GCM" in t.text("jweResult"), t.text("jweResult"))
+    t.select("jweAlg", "A256KW")
+    t.call("encryptJwe()")
+    t.wait_for("() => /A256KW/.test(document.getElementById('jweResult').innerText)", timeout=10000)
+    t.call("document.getElementById('jweOutput').textContent=''; decryptJwe()")
+    t.wait_for("() => document.getElementById('jweOutput').innerText.includes('user-42')", timeout=10000)
+    t.set("jweKey", "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
+    t.call("decryptJwe()")
+    t.wait_for("() => /Decryption failed/.test(document.getElementById('jweResult').innerText)", timeout=10000)
+    # pasting a JWE into the main inspector routes it to the JWE panel
+    t.call("document.getElementById('jwtInput').value = document.getElementById('jweInput').value; parseJWT()")
+    expect("Encrypted (JWE)" in t.text("statusText"), t.text("statusText"))
+
+
+@case("jwt-decoder", "typical", "share link restores the token and expected issuer")
+def _(t):
+    t.call("loadSample('oidc')")
+    t.wait(80)
+    t.set("expectIss", "https://accounts.example.com")
+    url = t.call("Layerbit.state.write(getState())")
+    t.page.goto(url, wait_until="load")
+    t.wait(300)
+    expect('"RS256"' in t.text("headerOutput"), "token not restored")
+    eq(t.val("expectIss"), "https://accounts.example.com", "expected issuer not restored")
 
 
 # ----------------------------------------------------------------------------

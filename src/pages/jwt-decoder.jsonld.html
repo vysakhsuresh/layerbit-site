@@ -5,10 +5,10 @@
     {
       "@type": "SoftwareApplication",
       "@id": "https://layerbit.co.in/tools/jwt-decoder.html#app",
-      "name": "JWT Decoder \u0026 Verifier",
+      "name": "JWT Decoder, Verifier \u0026 Signer",
       "url": "https://layerbit.co.in/tools/jwt-decoder.html",
-      "description": "Decode a JWT's header and payload, see exp, nbf and iat as dates, verify HS256 and RS256 signatures with the Web Crypto API, and mint test tokens locally.",
-      "applicationCategory": "SecurityApplication",
+      "description": "Decode JWTs, lint claims, verify HS/RS/PS/ES/EdDSA signatures with a secret, PEM, JWK or JWKS, sign tokens with generated keys and decrypt JWEs locally.",
+      "applicationCategory": "DeveloperApplication",
       "operatingSystem": "Any (runs in the browser)",
       "browserRequirements": "Requires JavaScript",
       "isAccessibleForFree": true,
@@ -19,7 +19,18 @@
       },
       "publisher": {
         "@id": "https://layerbit.co.in/#organization"
-      }
+      },
+      "featureList": [
+        "Decode header and payload with time claims as dates",
+        "Claims check with expected issuer and audience",
+        "Lifetime timeline",
+        "Verify HS, RS, PS, ES and EdDSA signatures",
+        "PEM, PKCS#1, JWK and JWKS key material with kid selection",
+        "Sign tokens with any supported algorithm",
+        "In-browser key pair generation with JWKS export",
+        "JWE decryption and test encryption",
+        "Share links and local history"
+      ]
     },
     {
       "@type": "BreadcrumbList",
@@ -40,28 +51,61 @@
         {
           "@type": "ListItem",
           "position": 3,
-          "name": "JWT Decoder \u0026 Verifier",
+          "name": "JWT Decoder",
           "item": "https://layerbit.co.in/tools/jwt-decoder.html"
         }
       ]
     },
     {
       "@type": "FAQPage",
+      "@id": "https://layerbit.co.in/tools/jwt-decoder.html#faq",
       "mainEntity": [
         {
           "@type": "Question",
           "name": "Why does Layerbit prioritize client-side decoding?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "JWTs often contain sensitive user data (PII) or critical authorization scopes. Sending these tokens to a remote server for decoding introduces a significant security risk. By performing all Base64URL decoding and JSON parsing within your browser DOM, we guarantee that your tokens are never logged, stored, or intercepted."
+            "text": "JWTs often contain personal data or authorization scopes, and the keys used to verify or sign them are the most sensitive material a service has. Sending either to a remote server for processing is a transfer you may not be allowed to make. All decoding, verification, signing and decryption here runs in your browser with the Web Crypto API, and the indicator in the header counts network requests the page makes so you can see it stays at zero."
           }
         },
         {
           "@type": "Question",
-          "name": "Does this tool verify the JWT signature?",
+          "name": "Which algorithms and key formats are supported?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "Optionally, yes. The Verify Signature panel below the decoder accepts a shared secret for HS256/384/512 tokens or a PEM public key for RS256/384/512 tokens, and checks the signature using your browser's native Web Crypto API — the secret or key never leaves your device. Other algorithms (like ES256 or none) aren't supported yet. Either way, this is a debugging aid, not a substitute for your backend's own verification on every request."
+            "text": "HS256, HS384 and HS512 with a shared secret; RS256, RS384 and RS512 and the RSA-PSS variants PS256, PS384 and PS512 with an RSA key; ES256, ES384 and ES512 with P-256, P-384 and P-521 keys; and EdDSA with Ed25519. Keys can be pasted as PEM (SPKI or PKCS#1 public keys, PKCS#8 private keys), as a single JWK, or as a JWKS document, in which case the token's kid header selects the key. Certificates and legacy PKCS#1 private keys are recognised and the message tells you the openssl command to convert them."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What does the claims check look for?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "It applies the rules a strict verifier would: the algorithm must be a signed one, the header must not carry its own key or key URL, exp must exist and be in the future, nbf must be in the past, iat must not be in the future beyond clock skew, timestamps must be seconds rather than milliseconds, the lifetime should be short, iss and aud should be present and, if you enter the expected values, must match, long-lived tokens should carry a jti, claim names that look like secrets are flagged, and the token should fit in a cookie. Each finding explains why it matters."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How does JWKS verification choose the key?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Paste the whole JWKS document, the JSON with a keys array that your identity provider publishes at its jwks_uri. The token's kid header is matched against the kid of each key; if the token has no kid, the first key is used. The selected JWK is imported for the token's algorithm and the signature is checked. This mirrors what a resource server does, so a token that verifies here will verify there with the same document."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Are generated keys safe to use in production?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "They are generated by your browser's Web Crypto implementation with proper random number generation, so cryptographically they are sound. The practical answer is still no: keys for production belong in a key management system or hardware module with access controls and rotation, not in a browser tab. Use the generated pairs for local development, test fixtures and understanding the formats."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What is the difference between a JWS and a JWE?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "A JWS, the common three-part token, is signed: anyone can read the payload, and the signature proves who issued it and that it was not altered. A JWE has five parts and is encrypted: only the holder of the recipient key can read the payload. JWE headers name two algorithms, alg for how the content key is protected and enc for how the content itself is encrypted. A signed token can be nested inside an encrypted one when both authenticity and confidentiality are required."
           }
         },
         {
@@ -69,11 +113,10 @@
           "name": "Why use JWTs instead of traditional opaque session cookies?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "JWTs are stateless and self-contained. Traditional cookies require the backend to perform a database lookup for every request to verify session data. JWTs store the session data directly in the payload, which is cryptographically signed. This allows API gateways and microservices to verify authorization instantly without hitting a central session database, significantly improving scalability."
+            "text": "JWTs are stateless and self-contained. Traditional cookies require the backend to perform a database lookup for every request to verify session data. JWTs store the session data directly in the payload, which is cryptographically signed. This allows API gateways and microservices to verify authorization instantly without hitting a central session database, significantly improving scalability — at the cost of revocation being harder, which is why lifetimes should be short."
           }
         }
-      ],
-      "@id": "https://layerbit.co.in/tools/jwt-decoder.html#faq"
+      ]
     }
   ]
 }

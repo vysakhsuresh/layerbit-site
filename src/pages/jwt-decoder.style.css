@@ -272,3 +272,45 @@
     .signer-output.signer-bad { color: #f87171; }
     select.verify-input { appearance: none; }
     @media (max-width: 700px) { .signer-grid { grid-template-columns: 1fr; } .claim-row { grid-template-columns: 1fr; gap: 2px; } }
+
+    /* v3: lint, timeline, signer keys, JWE */
+    .pane-sub { font-size: 0.8em; color: var(--text-muted); font-weight: 400; }
+    .token-foot { display: flex; align-items: center; gap: 8px; padding: 8px 14px; border-top: 1px solid var(--card-border); flex-wrap: wrap; }
+    .token-meta { font-size: 0.78em; color: var(--text-muted); margin-right: auto; }
+    .btn-group { display: flex; gap: 8px; align-items: center; }
+    .btn-inline { padding: 3px 8px; font-size: 0.78em; margin-left: 8px; display: inline-flex; vertical-align: middle; }
+    .decode-err { color: #fca5a5; font-family: 'Space Grotesk', sans-serif; font-size: 0.9em; line-height: 1.5; }
+    .decode-note { color: var(--text-muted); font-family: 'Space Grotesk', sans-serif; font-size: 0.9em; line-height: 1.5; }
+    .lint-grid, .signer-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .verify-row-note { color: var(--text-muted); font-size: 0.9em; }
+    .check-inline { display: flex; align-items: center; gap: 6px; margin-top: 8px; cursor: pointer; }
+    .check-inline input { accent-color: var(--accent-main); }
+    .lint-list { display: flex; flex-direction: column; gap: 6px; margin-top: 6px; }
+    .lint-summary { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 6px; }
+    .lint-count { font-size: 0.78em; font-weight: 600; padding: 3px 10px; border-radius: 999px; background: rgba(255,255,255,0.05); color: var(--text-muted); }
+    .lint-count.err { color: #f87171; background: rgba(239,68,68,0.12); } .lint-count.warn { color: #fbbf24; background: rgba(245,158,11,0.12); } .lint-count.info { color: var(--accent-main); background: rgba(56,189,248,0.1); }
+    .lint-item { display: grid; grid-template-columns: 18px auto 1fr; gap: 10px; align-items: start; padding: 8px 12px; border-radius: 8px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); font-size: 0.9em; line-height: 1.5; color: var(--text-muted); }
+    .lint-item i, .lint-item svg { width: 16px; height: 16px; margin-top: 2px; }
+    .lint-item code { font-family: 'Fira Code', monospace; color: #fff; background: rgba(0,0,0,0.3); padding: 1px 7px; border-radius: 5px; font-size: 0.9em; white-space: nowrap; }
+    .lint-item.error { border-color: rgba(239,68,68,0.35); } .lint-item.error i, .lint-item.error svg { color: #f87171; }
+    .lint-item.warn { border-color: rgba(245,158,11,0.35); } .lint-item.warn i, .lint-item.warn svg { color: #fbbf24; }
+    .lint-item.info i, .lint-item.info svg { color: var(--accent-main); }
+    .lint-item.ok { grid-template-columns: 18px 1fr; border-color: rgba(34,197,94,0.35); } .lint-item.ok i, .lint-item.ok svg { color: #4ade80; }
+    .timeline-wrap { margin: 14px 0 10px; }
+    .tl { width: 100%; height: 72px; display: block; }
+    .tl-axis { stroke: rgba(255,255,255,0.15); stroke-width: 2; }
+    .tl-valid { fill: rgba(34,197,94,0.25); }
+    .tl-mark { stroke: var(--accent-main); stroke-width: 2; }
+    .tl-lbl { fill: var(--text-muted); font: 11px 'Fira Code', monospace; }
+    .tl-now { stroke: #fbbf24; stroke-width: 2; stroke-dasharray: 4 3; }
+    .tl-now-lbl { fill: #fbbf24; font: 600 11px 'Space Grotesk', sans-serif; }
+    .tl-foot { font-size: 0.85em; font-weight: 600; color: var(--text-muted); }
+    .tl-foot.valid { color: #4ade80; } .tl-foot.expired, .tl-foot.not-yet-valid { color: #f87171; }
+    .gen-keys { display: flex; flex-direction: column; gap: 10px; margin-top: 10px; }
+    .gen-row { background: rgba(0,0,0,0.25); border: 1px solid var(--card-border); border-radius: 10px; padding: 10px 12px; font-size: 0.85em; }
+    .gen-row strong { color: #fff; }
+    .gen-row pre { margin: 8px 0 0; font: 12px/1.5 'Fira Code', monospace; color: var(--text-muted); white-space: pre-wrap; word-break: break-all; max-height: 180px; overflow: auto; }
+    .ttl-input { width: 64px; background: rgba(0,0,0,0.3); border: 1px solid var(--card-border); color: #fff; border-radius: 6px; padding: 3px 6px; font-family: inherit; }
+    .verify-input.mini { width: auto; padding: 6px 10px; font-size: 0.85em; }
+    .signer-actions { flex-wrap: wrap; }
+    @media (max-width: 700px) { .lint-grid, .signer-grid { grid-template-columns: 1fr; } .lint-item { grid-template-columns: 18px 1fr; } .lint-item code { grid-column: 2; } .lint-item span { grid-column: 2; } }
