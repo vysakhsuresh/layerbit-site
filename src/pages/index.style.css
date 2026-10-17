@@ -34,7 +34,8 @@
       justify-content: flex-start;
       align-items: center;
       max-width: 1200px;
-      margin: 0 auto 60px auto;
+      margin: 10px auto 60px auto; /* lines the brand up with the 60px Support button (top 30 + 30) */
+      min-height: 60px;
       /* the fixed "Support Layerbit" button sits over the header's right edge;
          keep the kernel's search and privacy pills clear of it */
       padding-right: 220px;
@@ -190,7 +191,7 @@
 }
 
 
-    .tool-badge i {
+    .tool-badge i, .tool-badge svg.lucide {
       width: 14px;
       height: 14px;
       stroke-width: 2.5px;
@@ -274,8 +275,9 @@
     /* Premium Buy Me A Coffee Button */
     .premium-bmc-btn {
       position: fixed;
-      top: 25px;
+      top: 30px;
       right: 30px;
+      height: 60px;
       z-index: 9999;
       display: flex;
       align-items: center;
@@ -284,7 +286,7 @@
       border: 1px solid rgba(255, 193, 7, 0.3);
       backdrop-filter: blur(12px);
       -webkit-backdrop-filter: blur(12px);
-      padding: 10px 18px;
+      padding: 0 22px;
       border-radius: 30px;
       color: #f8fafc;
       text-decoration: none;
@@ -298,9 +300,9 @@
       will-change: transform;
     }
 
-    .premium-bmc-btn i {
-      width: 18px;
-      height: 18px;
+    .premium-bmc-btn i, .premium-bmc-btn svg.lucide {
+      width: 22px;
+      height: 22px;
       color: #ffc107;
     }
 
@@ -334,7 +336,7 @@
       border-radius: 30px;
       height: 60px;
       width: 60px; /* Collapsed state */
-      padding: 0 16px; /* Adjusted to perfectly center the 28px icon */
+      padding: 0 17px; /* centres the 26px glyph in the 60px collapsed pill */
       cursor: pointer;
       box-shadow: 0 8px 25px rgba(0,0,0,0.5);
       transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
@@ -356,8 +358,8 @@
     }
 
     .search-pill .search-icon {
-      width: 28px;
-      height: 28px;
+      width: 26px;
+      height: 26px;
       color: var(--text-muted);
       flex-shrink: 0;
       transition: color 0.3s;
@@ -435,7 +437,7 @@
       animation: fab-bloom 3s infinite ease-in-out;
     }
 
-    .chat-fab-premium i {
+    .chat-fab-premium i, .chat-fab-premium svg.lucide {
       width: 26px;
       height: 26px;
       color: var(--accent-main);
@@ -504,6 +506,8 @@
     }
 
     .chat-fab-premium svg {
+      width: 26px;
+      height: 26px;
       transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
@@ -640,18 +644,25 @@
       
       /* Adjust Floating Elements for Mobile */
       .premium-bmc-btn {
-        top: 15px;
-        right: 15px;
-        padding: 10px;
-        font-size: 0.8em;
+        top: 20px;
+        right: 20px;
+        width: 50px;
+        height: 50px;
+        padding: 0;
+        border-radius: 50%;
+        justify-content: center;
       }
+      .premium-bmc-btn i, .premium-bmc-btn svg.lucide { width: 22px; height: 22px; }
       .premium-bmc-btn span { display: none; } /* icon only on phones: the label collided with the header pills */
-      header { padding-right: 80px; flex-wrap: wrap; row-gap: 8px; margin-bottom: 40px; }
+      header { padding-right: 80px; flex-wrap: wrap; row-gap: 8px; margin: 5px auto 40px auto; min-height: 50px; }
       
       .search-pill-wrapper {
         bottom: 20px;
         left: 20px;
       }
+      .search-pill { height: 50px; width: 50px; padding: 0 14px; }
+      .search-pill .search-icon { width: 22px; height: 22px; }
+      .search-pill .clear-icon { width: 20px; height: 20px; }
       
       .chat-fab-premium {
         bottom: 20px;
@@ -660,7 +671,7 @@
         height: 50px;
       }
       
-      .chat-fab-premium i { width: 22px; height: 22px; }
+      .chat-fab-premium i, .chat-fab-premium svg.lucide { width: 22px; height: 22px; }
       
       .fab-label { display: none; } /* Hide the text label on mobile to save space */
       
