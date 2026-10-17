@@ -5,9 +5,9 @@
     {
       "@type": "SoftwareApplication",
       "@id": "https://layerbit.co.in/tools/json-validator.html#app",
-      "name": "JSON Validator \u0026 Formatter",
+      "name": "JSON Validator, Formatter \u0026 Schema Tool",
       "url": "https://layerbit.co.in/tools/json-validator.html",
-      "description": "Validate, beautify and minify JSON in your browser. Errors show line and column, a path query pulls out any value, and a tree view expands the structure.",
+      "description": "Validate, beautify, fix and query JSON with JSONPath, validate or infer a JSON Schema, generate TypeScript, Go, C# and Rust types, export SQL and CSV.",
       "applicationCategory": "DeveloperApplication",
       "operatingSystem": "Any (runs in the browser)",
       "browserRequirements": "Requires JavaScript",
@@ -19,7 +19,19 @@
       },
       "publisher": {
         "@id": "https://layerbit.co.in/#organization"
-      }
+      },
+      "featureList": [
+        "Validate, beautify and minify with line and column errors",
+        "Fix almost-JSON with a list of changes",
+        "JSONPath queries with wildcards, recursion, slices and filters",
+        "JSON Schema validation and inference",
+        "Type generation for TypeScript, Go, C#, Kotlin, Python, Java and Rust",
+        "SQL and CSV export",
+        "NDJSON and YAML conversion",
+        "Collapsible tree view",
+        "Big-integer precision warning",
+        "Share links and local history"
+      ]
     },
     {
       "@type": "BreadcrumbList",
@@ -40,36 +52,61 @@
         {
           "@type": "ListItem",
           "position": 3,
-          "name": "JSON Validator \u0026 Formatter",
+          "name": "JSON Validator",
           "item": "https://layerbit.co.in/tools/json-validator.html"
         }
       ]
     },
     {
       "@type": "FAQPage",
+      "@id": "https://layerbit.co.in/tools/json-validator.html#faq",
       "mainEntity": [
         {
           "@type": "Question",
           "name": "Why is client-side JSON processing more secure?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "Unlike server-side validation tools that transmit your pasted data across the internet, Layerbit executes all parsing and formatting locally within your machine using native JSON.parse() capabilities. This means sensitive API keys, private user data, and proprietary system configurations remain strictly on your device."
+            "text": "Unlike server-side validation tools that transmit your pasted data across the internet, Layerbit executes all parsing and formatting locally within your machine using the browser's native JSON.parse() capabilities. Sensitive API keys, private user data and proprietary system configurations remain strictly on your device, and the header indicator shows the page has made no network request with your data."
           }
         },
         {
           "@type": "Question",
-          "name": "What are the most common JSON syntax errors?",
+          "name": "What does the Fix button change, and can I trust it?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "The standard JSON specification is incredibly strict. The most common errors that cause parsing to fail include: trailing commas at the end of objects or arrays, using single quotes (') instead of double quotes (\") for keys/strings, and unescaped special characters embedded within string values."
+            "text": "It applies a fixed list of rewrites outside of string values: it removes comments and trailing commas, converts single and smart quotes to double quotes, quotes bare keys, replaces NaN, Infinity and undefined with null, converts Python's True, False and None, strips a byte-order mark, and inserts a comma between values that sit on consecutive lines without one. Each change is listed so you can review it. It never guesses at missing brackets or reorders data; if the result still does not parse, the error position tells you what is left."
           }
         },
         {
           "@type": "Question",
-          "name": "How does JSON minification impact network performance?",
+          "name": "Which JSONPath syntax is supported?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "Minification strips out all unnecessary whitespace, line breaks, and indentation from the payload. While this makes the data unreadable to human developers, it significantly reduces the overall byte size of the file, resulting in faster network transfer speeds and lower bandwidth consumption for production API environments."
+            "text": "The root $, dotted keys, bracket keys with quotes for names containing spaces, numeric and negative indexes, wildcards with [*] or .*, recursive descent with .., slices such as [0:5], unions such as [0,2] or ['a','b'], .length on arrays and strings, and filters written as [?(@.price \u003e 10 \u0026\u0026 @.status == 'paid')] with ==, !=, \u003c, \u003e, \u003c=, \u003e=, regex matching via =~ /pattern/, negation and parentheses. Every match is returned with its exact path."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Which JSON Schema keywords does the validator understand?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "type (including integer and type arrays), properties, patternProperties, additionalProperties, propertyNames, required, dependentRequired, minProperties and maxProperties, items and prefixItems, contains, minItems, maxItems and uniqueItems, enum and const, minimum, maximum, exclusiveMinimum, exclusiveMaximum and multipleOf, minLength, maxLength, pattern and format (date-time, date, time, email, uri, uuid, ipv4, ipv6, hostname, regex), local $ref to definitions or $defs, allOf, anyOf, oneOf and not, and if, then and else. Remote $ref URLs are not fetched, because nothing on this page makes network requests."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How are optional and nullable fields decided when generating types?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "The generator walks every object in the sample. A key present in some objects of the same shape but not others becomes optional (a ? in TypeScript, omitempty in Go, Optional in Python). A value that is null in at least one place becomes nullable. A field that is sometimes an integer and sometimes a decimal becomes a floating-point type. Arrays merge the shapes of all their elements. Give it a representative sample with a few records rather than one, and the result reflects the real variation."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How does the SQL export choose column types?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Each column's values are examined across every row: all integers gives BIGINT (INTEGER in SQLite), any decimal gives DOUBLE PRECISION, booleans give BOOLEAN or TINYINT(1), ISO date strings give TIMESTAMP or DATETIME, and everything else gives TEXT or a VARCHAR sized from the longest value. A column with no nulls is marked NOT NULL. Nested objects are flattened into parent_child columns and arrays are stored as JSON text. Identifiers are converted to snake_case and quoted for the chosen dialect."
           }
         },
         {
@@ -80,8 +117,7 @@
             "text": "The Tree view renders the same parsed payload as a collapsible outline, letting you fold entire objects or arrays down to a single line and expand only the branches you need. This is especially useful for deeply nested API responses, where the plain formatted text can run to thousands of lines. Use Expand All or Collapse All to jump between a full overview and a fully drilled-in view."
           }
         }
-      ],
-      "@id": "https://layerbit.co.in/tools/json-validator.html#faq"
+      ]
     }
   ]
 }

@@ -1,133 +1,169 @@
 {{HEADER}}
 
   <main class="hero">
-    <h1>JSON Validator & Formatter</h1>
-    <p>Validate, format and minify JSON instantly, query any path, and get syntax errors with line and column — all client-side.</p>
+    <h1>JSON Validator, Formatter &amp; Schema Tool</h1>
+    <p>Validate, beautify, minify and repair JSON; query it with JSONPath; validate against or infer a JSON Schema; generate TypeScript, Go, C#, Kotlin, Python, Java or Rust types; export SQL and CSV — all client-side.</p>
   </main>
 
   <div class="ide-container">
     <div class="pane">
       <div class="pane-header">
-        <div class="pane-title"><i data-lucide="file-json-2"></i> Raw JSON Input</div>
+        <div class="pane-title"><i data-lucide="file-json-2"></i> Raw JSON Input <span class="in-meta" id="inMeta"></span></div>
         <div class="btn-group">
           <label class="toggle-wrapper" title="Sort object keys alphabetically at every level (arrays keep their order)">
             <input type="checkbox" id="sortKeys"> Sort keys
           </label>
-          <button class="btn" id="btnClear" title="Clear Input"><i data-lucide="trash-2"></i></button>
-          <button class="btn btn-primary" id="btnMinify"><i data-lucide="minimize-2"></i> Minify</button>
-          <button class="btn btn-primary" id="btnFormat"><i data-lucide="sparkles"></i> Beautify</button>
+          <select id="indentSel" class="mini-select" title="Indentation for Beautify"><option value="2">2 spaces</option><option value="4" selected>4 spaces</option><option value="tab">tab</option></select>
+          <input type="file" id="jsonFile" style="display:none;">
+          <button class="btn" type="button" onclick="document.getElementById('jsonFile').click()" title="Open a .json / .jsonl file"><i data-lucide="upload"></i></button>
+          <button class="btn" id="btnClear" type="button" title="Clear input"><i data-lucide="trash-2"></i></button>
+          <button class="btn" id="btnFix" type="button" title="Repair almost-JSON: comments, trailing commas, single quotes, bare keys, NaN"><i data-lucide="wrench"></i> Fix</button>
+          <button class="btn btn-primary" id="btnMinify" type="button"><i data-lucide="minimize-2"></i> Minify</button>
+          <button class="btn btn-primary" id="btnFormat" type="button" data-lb-primary><i data-lucide="sparkles"></i> Beautify</button>
         </div>
       </div>
       <div class="error-banner" id="errorBanner">
         <i data-lucide="triangle-alert"></i>
         <span id="errorText">Invalid JSON format.</span>
+        <button type="button" class="btn btn-fix-inline" id="btnFixInline" onclick="fixJson()"><i data-lucide="wrench"></i> Try to fix</button>
       </div>
+      <div class="notice-banner" id="noticeBanner"><i data-lucide="info"></i><span id="noticeText"></span></div>
       <textarea id="jsonInput" class="editor" placeholder='Paste your JSON payload here...&#10;&#10;{&#10;  "status": "waiting",&#10;  "data": []&#10;}' spellcheck="false"></textarea>
     </div>
 
     <div class="pane">
       <div class="pane-header">
-        <div class="pane-title"><i data-lucide="check-circle"></i> Formatted Result</div>
+        <div class="pane-title"><i data-lucide="check-circle"></i> Result</div>
         <div class="btn-group">
-          <div class="view-toggle">
-            <button class="view-tab active" id="viewTabText" onclick="setOutputView('text')">Text</button>
-            <button class="view-tab" id="viewTabTree" onclick="setOutputView('tree')">Tree</button>
+          <div class="view-toggle" role="tablist">
+            <button class="view-tab active" id="viewTabText" type="button" onclick="setOutputView('text')">Text</button>
+            <button class="view-tab" id="viewTabTree" type="button" onclick="setOutputView('tree')">Tree</button>
+            <button class="view-tab" id="viewTabQuery" type="button" onclick="setOutputView('query')">Query</button>
+            <button class="view-tab" id="viewTabSchema" type="button" onclick="setOutputView('schema')">Schema</button>
+            <button class="view-tab" id="viewTabTypes" type="button" onclick="setOutputView('types')">Types</button>
+            <button class="view-tab" id="viewTabConvert" type="button" onclick="setOutputView('convert')">Convert</button>
           </div>
-          <button class="btn" id="btnExpandAll" onclick="setAllTreeNodes(false)" title="Expand All" style="display:none;"><i data-lucide="chevrons-down"></i></button>
-          <button class="btn" id="btnCollapseAll" onclick="setAllTreeNodes(true)" title="Collapse All" style="display:none;"><i data-lucide="chevrons-up"></i></button>
-          <button class="btn" id="btnDownload"><i data-lucide="download"></i> Download</button>
-          <button class="btn" id="btnCopy"><i data-lucide="copy"></i> Copy to Clipboard</button>
+          <button class="btn" id="btnExpandAll" type="button" onclick="setAllTreeNodes(false)" title="Expand All" style="display:none;"><i data-lucide="chevrons-down"></i></button>
+          <button class="btn" id="btnCollapseAll" type="button" onclick="setAllTreeNodes(true)" title="Collapse All" style="display:none;"><i data-lucide="chevrons-up"></i></button>
+          <button class="btn" id="btnDownload" type="button" title="Download the current result"><i data-lucide="download"></i></button>
+          <button class="btn" id="btnCopy" type="button"><i data-lucide="copy"></i> Copy</button>
+          <button class="btn lb-send" type="button" data-lb-send="jsonOutput" data-lb-kind="json" title="Send the formatted JSON to another tool"><i data-lucide="send"></i></button>
         </div>
       </div>
       <div class="tool-strip">
         <div class="json-stats" id="jsonStats"></div>
+      </div>
+
+      <!-- text -->
+      <div id="jsonOutput" class="output-area"></div>
+      <!-- tree -->
+      <div id="jsonTree" class="output-area json-tree" style="display:none;"></div>
+      <!-- query -->
+      <div id="viewQuery" class="output-area view-panel" style="display:none;">
         <div class="path-row">
-          <label for="pathInput"><i data-lucide="route"></i> Query</label>
-          <input type="text" id="pathInput" placeholder="$.data[0].name  ·  users.length  ·  settings[&quot;theme&quot;]" autocomplete="off" spellcheck="false" disabled>
+          <label for="pathInput"><i data-lucide="route"></i> JSONPath</label>
+          <input type="text" id="pathInput" placeholder="$.data[*].name  ·  $..id  ·  $.items[?(@.price > 10 && @.inStock)]  ·  users.length" autocomplete="off" spellcheck="false" disabled>
+        </div>
+        <div class="path-hints">
+          <button type="button" class="hint-btn" onclick="setPath('$[*]')">$[*]</button>
+          <button type="button" class="hint-btn" onclick="setPath('$..id')">$..id</button>
+          <button type="button" class="hint-btn" onclick="setPath('$.data[0:3]')">$.data[0:3]</button>
+          <button type="button" class="hint-btn" onclick="setPath('$.data[?(@.inStock == true)]')">[?(@.inStock == true)]</button>
+          <button type="button" class="hint-btn" onclick="setPath('$.data[-1]')">$.data[-1]</button>
+          <span class="path-count" id="pathCount"></span>
         </div>
         <pre class="path-result" id="pathResult"></pre>
+        <div class="path-list" id="pathList"></div>
       </div>
-      <div id="jsonOutput" class="output-area"></div>
-      <div id="jsonTree" class="output-area json-tree" style="display:none;"></div>
+      <!-- schema -->
+      <div id="viewSchema" class="output-area view-panel" style="display:none;">
+        <div class="schema-bar">
+          <button type="button" class="btn" id="btnInfer" onclick="inferSchema()"><i data-lucide="sparkles"></i> Infer schema from document</button>
+          <label class="toggle-wrapper"><input type="checkbox" id="inferClosed"> additionalProperties: false</label>
+          <label class="toggle-wrapper"><input type="checkbox" id="inferRanges"> min/max for numbers</label>
+          <button type="button" class="btn btn-primary" id="btnValidate" onclick="validateSchema()"><i data-lucide="shield-check"></i> Validate document</button>
+        </div>
+        <textarea id="schemaInput" class="editor schema-editor" spellcheck="false" placeholder='Paste a JSON Schema (draft-07 / 2020-12) here, or click "Infer schema from document"...'></textarea>
+        <div class="schema-result" id="schemaResult"></div>
+      </div>
+      <!-- types -->
+      <div id="viewTypes" class="output-area view-panel" style="display:none;">
+        <div class="schema-bar">
+          <label class="toggle-wrapper">Language
+            <select id="typeLang" class="mini-select"><option value="typescript">TypeScript</option><option value="go">Go</option><option value="csharp">C#</option><option value="kotlin">Kotlin</option><option value="python">Python</option><option value="java">Java</option><option value="rust">Rust</option></select>
+          </label>
+          <label class="toggle-wrapper">Root name <input type="text" id="typeName" class="mini-input" value="Root" size="10"></label>
+        </div>
+        <pre class="code-out" id="typesOut"></pre>
+      </div>
+      <!-- convert -->
+      <div id="viewConvert" class="output-area view-panel" style="display:none;">
+        <div class="schema-bar">
+          <label class="toggle-wrapper">Target
+            <select id="convTarget" class="mini-select"><option value="sql">SQL (CREATE + INSERT)</option><option value="csv">CSV (flattened)</option><option value="ndjson">NDJSON (one object per line)</option><option value="yaml">YAML</option><option value="string">JSON as a string literal</option><option value="unescape">Decode a JSON string literal</option></select>
+          </label>
+          <label class="toggle-wrapper" id="sqlOpts">Dialect
+            <select id="sqlDialect" class="mini-select"><option value="postgres">PostgreSQL</option><option value="mysql">MySQL</option><option value="sqlite">SQLite</option></select>
+            Table <input type="text" id="sqlTable" class="mini-input" value="data" size="10">
+          </label>
+        </div>
+        <div class="conv-note" id="convNote"></div>
+        <pre class="code-out" id="convOut"></pre>
+      </div>
     </div>
   </div>
 
-  <!-- Rejuvenated SEO & Content Depth Section -->
   <div class="docs-container">
-    
     <div class="info-panel">
-      <h2><i data-lucide="book-open"></i> Technical Documentation & Use Cases</h2>
-      <p>This utility provides immediate syntax validation and formatting for JSON payloads. Engineered for developers handling API responses, configuration files, and webhooks, it strictly parses standard JSON architecture. Zero server calls are made—everything operates entirely within your browser environment.</p>
-      
+      <h2><i data-lucide="book-open"></i> Everything a JSON document needs, in one place</h2>
+      <p>Formatting is where JSON work starts, not where it ends. The same payload gets queried for one value, checked against a contract, turned into types for the code that consumes it, and loaded into a table. Each of those is a tab on the result pane, and each runs on the parsed document already in your browser.</p>
       <div class="use-cases-grid">
         <div class="use-case-card">
-          <h3><i data-lucide="server"></i> REST API Debugging</h3>
-          <p>Modern microservices often return massive, minified JSON responses. Paste raw third-party API outputs here to instantly format the payload, trace nested array structures, and verify data types before mapping them to your application models.</p>
+          <h3><i data-lucide="wrench"></i> Fix almost-JSON</h3>
+          <p>Comments, trailing commas, single quotes, bare keys, <code>NaN</code>, Python's <code>True</code>/<code>None</code>, smart quotes from a document, a byte-order mark — the usual reasons a parser rejects something that is obviously meant as JSON. The Fix button rewrites exactly those and tells you what it changed, so you can judge whether the result is what the author meant.</p>
         </div>
         <div class="use-case-card">
-          <h3><i data-lucide="database"></i> Database Seed Configuration</h3>
-          <p>Prevent fatal runtime errors by validating NoSQL document structures (like MongoDB objects) or complex JSON configuration files before executing automated seed operations or large-scale database migrations.</p>
+          <h3><i data-lucide="route"></i> JSONPath queries</h3>
+          <p>Not just dotted paths: wildcards, recursive descent (<code>$..id</code>), negative indexes, slices, unions and filter expressions such as <code>$.orders[?(@.total &gt; 100 &amp;&amp; @.status == "paid")]</code>. Every match is listed with its full path, which is what you paste into the code that reads it.</p>
         </div>
         <div class="use-case-card">
-          <h3><i data-lucide="webhook"></i> CI/CD Pipeline Webhooks</h3>
-          <p>Automated deployment webhooks demand absolute syntax compliance. Catch invisible formatting errors, trailing commas, or missing quotation marks instantly before triggering your GitHub Actions or Jenkins pipelines.</p>
+          <h3><i data-lucide="shield-check"></i> JSON Schema, both ways</h3>
+          <p>Paste a schema and validate the document against it with errors by path and keyword — type, required, enum, format, pattern, ranges, <code>$ref</code>, <code>oneOf</code>, <code>if/then</code>. Or infer a schema from the document: types, required keys, nullable fields, formats such as <code>date-time</code> and <code>email</code>, and enums for repeated string values.</p>
+        </div>
+        <div class="use-case-card">
+          <h3><i data-lucide="code-2"></i> Types for seven languages</h3>
+          <p>TypeScript interfaces, Go structs with tags, C# classes with <code>JsonPropertyName</code>, Kotlin data classes, Python dataclasses, Java records and Rust serde structs — inferred from a sample, with optional fields where a key is sometimes missing and nullable types where a value is sometimes null.</p>
+        </div>
+        <div class="use-case-card">
+          <h3><i data-lucide="database"></i> SQL and CSV export</h3>
+          <p>An array of objects becomes a <code>CREATE TABLE</code> with inferred column types and batched <code>INSERT</code>s for PostgreSQL, MySQL or SQLite, nested objects flattened into <code>parent_child</code> columns. Or a CSV with the same flattening, ready for a spreadsheet.</p>
+        </div>
+        <div class="use-case-card">
+          <h3><i data-lucide="list"></i> NDJSON and big documents</h3>
+          <p>Log exports and streaming APIs produce one JSON object per line. Those are detected and parsed line by line, with per-line error reporting, and can be converted to an array or back. Documents of tens of megabytes format in well under a second; the tree view keeps them navigable.</p>
         </div>
       </div>
     </div>
 
     <div class="info-panel">
       <h2><i data-lucide="file-code"></i> Quick Testing Templates</h2>
-      <p>Need to test the validator? Click any of the standard JSON architectures below to load them directly into the editor for instant formatting and minification testing.</p>
+      <p>Click a template to load it. The broken one shows the error position and the Fix button; the API response is the one to try Query, Schema, Types and SQL on.</p>
       <div>
-        <button class="sample-btn" onclick="loadSample('config')">appsettings.json Mock</button>
-        <button class="sample-btn" onclick="loadSample('api')">REST API Response</button>
-        <button class="sample-btn" onclick="loadSample('error')">Syntax Error Example</button>
-      </div>
-    </div>
-
-    <div class="info-panel">
-      <h2><i data-lucide="help-circle"></i> Frequently Asked Questions</h2>
-      <div class="faq-container">
-        
-        <div class="faq-item">
-          <button class="faq-question">Why is client-side JSON processing more secure? <i data-lucide="chevron-down"></i></button>
-          <div class="faq-answer">
-            <p>Unlike server-side validation tools that transmit your pasted data across the internet, Layerbit executes all parsing and formatting locally within your machine using native <code>JSON.parse()</code> capabilities. This means sensitive API keys, private user data, and proprietary system configurations remain strictly on your device.</p>
-          </div>
-        </div>
-
-        <div class="faq-item">
-          <button class="faq-question">What are the most common JSON syntax errors? <i data-lucide="chevron-down"></i></button>
-          <div class="faq-answer">
-            <p>The standard JSON specification is incredibly strict. The most common errors that cause parsing to fail include: trailing commas at the end of objects or arrays, using single quotes (<code>'</code>) instead of double quotes (<code>"</code>) for keys/strings, and unescaped special characters embedded within string values.</p>
-          </div>
-        </div>
-
-        <div class="faq-item">
-          <button class="faq-question">How does JSON minification impact network performance? <i data-lucide="chevron-down"></i></button>
-          <div class="faq-answer">
-            <p>Minification strips out all unnecessary whitespace, line breaks, and indentation from the payload. While this makes the data unreadable to human developers, it significantly reduces the overall byte size of the file, resulting in faster network transfer speeds and lower bandwidth consumption for production API environments.</p>
-          </div>
-        </div>
-
-        <div class="faq-item">
-          <button class="faq-question">What does the Tree view offer over the raw text output? <i data-lucide="chevron-down"></i></button>
-          <div class="faq-answer">
-            <p>The Tree view renders the same parsed payload as a collapsible outline, letting you fold entire objects or arrays down to a single line and expand only the branches you need. This is especially useful for deeply nested API responses, where the plain formatted text can run to thousands of lines. Use Expand All or Collapse All to jump between a full overview and a fully drilled-in view.</p>
-          </div>
-        </div>
-
+        <button class="sample-btn" type="button" onclick="loadSample('config')">appsettings.json mock</button>
+        <button class="sample-btn" type="button" onclick="loadSample('api')">REST API response</button>
+        <button class="sample-btn" type="button" onclick="loadSample('error')">Syntax error example</button>
+        <button class="sample-btn" type="button" onclick="loadSample('almost')">Almost-JSON (comments, quotes, commas)</button>
+        <button class="sample-btn" type="button" onclick="loadSample('ndjson')">NDJSON log lines</button>
       </div>
     </div>
 
     <div class="info-panel">
       <h2><i data-lucide="microscope"></i> What "valid JSON" actually means</h2>
       <p>JSON is specified by RFC 8259, and the grammar is deliberately tiny — six structural characters, four literals, strings, and numbers. That small surface is why it won, and it is also why so much of what people write is <em>almost</em> JSON. This validator uses the browser's native <code>JSON.parse()</code>, so what passes here is exactly what will pass in your runtime, not a looser approximation of it.</p>
-
       <div class="use-cases-grid">
         <div class="use-case-card">
           <h3><i data-lucide="x-circle"></i> Trailing commas</h3>
-          <p><code>{"a": 1,}</code> is invalid. JavaScript object literals allow a trailing comma and JSON does not, which is why hand-edited config files break after someone deletes the last entry. This is the single most common parse failure.</p>
+          <p><code>{"a": 1,}</code> is invalid. JavaScript object literals allow a trailing comma and JSON does not, which is why hand-edited config files break after someone deletes the last entry. This is the single most common parse failure, and the first thing Fix removes.</p>
         </div>
         <div class="use-case-card">
           <h3><i data-lucide="quote"></i> Single quotes</h3>
@@ -150,7 +186,6 @@
           <p><code>01</code>, <code>+1</code> and <code>.5</code> are all invalid numbers. JSON requires <code>1</code>, <code>1</code> and <code>0.5</code>. Hex literals such as <code>0xFF</code> are invalid too.</p>
         </div>
       </div>
-
       <h2><i data-lucide="alert-triangle"></i> The precision problem nobody warns you about</h2>
       <p>JSON numbers have no specified size limit, but JavaScript parses them into IEEE 754 doubles, which hold integers exactly only up to 2<sup>53</sup> − 1. Beyond that, parsing silently loses precision:</p>
       <ul>
@@ -158,48 +193,103 @@
         <li>Twitter/X snowflake IDs, Discord IDs and many database bigint primary keys exceed this range routinely.</li>
         <li>No error is raised. The number simply changes, and you find out when a lookup by ID misses.</li>
       </ul>
-      <p>This is why mature APIs serialise large identifiers as <strong>strings</strong>. If you control the producer, do the same. If you do not, parse with a library that supports BigInt rather than the native parser. Note that this validator will report such a document as perfectly valid — because it is. The document is fine; the round trip through a double is what loses information.</p>
-
+      <p>This is why mature APIs serialise large identifiers as <strong>strings</strong>. If you control the producer, do the same. If you do not, parse with a library that supports BigInt rather than the native parser. This page scans the raw text for integers beyond that range and warns you above the input — the document is valid; the round trip through a double is what loses information.</p>
+      <h2><i data-lucide="shield-check"></i> Schema validation, briefly</h2>
+      <p>A JSON Schema is a contract: it says which keys must exist, what type each value has, which strings are dates or emails, what a status field may contain. Validating a payload against it before you process it turns a vague runtime failure three functions deep into a precise message at the boundary — <code>$.orders[2].total: expected number, got string</code>. The validator here covers draft-07 and the 2020-12 keywords most schemas use: <code>type</code>, <code>properties</code>, <code>required</code>, <code>additionalProperties</code>, <code>items</code>, <code>enum</code>, <code>const</code>, <code>format</code>, <code>pattern</code>, numeric and length bounds, <code>uniqueItems</code>, local <code>$ref</code>, <code>allOf</code>/<code>anyOf</code>/<code>oneOf</code>/<code>not</code>, and <code>if</code>/<code>then</code>/<code>else</code>.</p>
+      <p>Inferring a schema from a sample is the fast way to get one. The inference marks a key as required only if every object in the sample has it, types a field as nullable only if a null was actually seen, and proposes an enum only when a string field repeats a small set of values. Treat the result as a draft: it describes the sample you gave it, not every document the producer might emit.</p>
       <h2><i data-lucide="git-compare"></i> Minify, beautify, and what each is for</h2>
-      <p>Both operations preserve the data exactly and change only the whitespace, but they serve opposite purposes. Beautifying with four-space indentation is for reading, reviewing and diffing — a formatted file produces line-level diffs a human can review, whereas a minified one produces a single enormous changed line. Minifying strips every unnecessary byte for transmission and storage.</p>
-      <p>One caveat worth knowing: neither operation guarantees key order is meaningful. RFC 8259 defines an object as an <em>unordered</em> collection, so while <code>JSON.parse</code> and <code>JSON.stringify</code> happen to preserve insertion order in practice, you should never rely on ordering as data. If order matters, use an array.</p>
-      <p>The tree view is the third way to read the same document: collapse the branches you do not care about and the shape of a deeply nested API response becomes obvious in a way that 4,000 formatted lines never will.</p>
-
-      <h2><i data-lucide="shield-check"></i> Why this runs in your browser</h2>
-      <p>API responses are exactly the kind of thing that contains bearer tokens, customer email addresses, internal identifiers and occasionally a password reset link. Pasting that into a server-side formatter means handing it to infrastructure you cannot inspect. Everything here happens in the page: <code>JSON.parse</code>, the syntax highlighting and the tree rendering are all local JavaScript. Open your browser's Network tab while you work and you will see nothing leave — or disconnect entirely and keep formatting.</p>
+      <p>Both operations preserve the data exactly and change only the whitespace, but they serve opposite purposes. Beautifying is for reading, reviewing and diffing — a formatted file produces line-level diffs a human can review, whereas a minified one produces a single enormous changed line. Minifying strips every unnecessary byte for transmission and storage.</p>
+      <p>One caveat worth knowing: neither operation guarantees key order is meaningful. RFC 8259 defines an object as an <em>unordered</em> collection, so while <code>JSON.parse</code> and <code>JSON.stringify</code> happen to preserve insertion order in practice, you should never rely on ordering as data. If order matters, use an array. If you want a canonical form for comparison, enable Sort keys — or send both documents to the <a href="text-diff-checker.html">diff tool</a>, whose structural mode ignores order entirely.</p>
+      <h2><i data-lucide="lock"></i> Why this runs in your browser</h2>
+      <p>API responses are exactly the kind of thing that contains bearer tokens, customer email addresses, internal identifiers and occasionally a password reset link. Pasting that into a server-side formatter means handing it to infrastructure you cannot inspect. Everything here happens in the page: parsing, repair, queries, schema validation, type generation and SQL export are all local JavaScript. The indicator in the header counts network requests the page makes; it stays at zero while you work.</p>
     </div>
 
-        <div class="info-panel related-panel">
-          <h2><i data-lucide="link"></i> Related guides and tools</h2>
-          <p>Background reading on the format and failure modes behind this tool, and the tools most often used alongside it.</p>
-          <div class="use-cases-grid">
-            <div class="use-case-card">
-              <h3><i data-lucide="book-open"></i> <a href="../guides/json-syntax-errors-explained.html">JSON syntax errors explained</a></h3>
-              <p>What 'Unexpected token' means and the seven usual causes.</p>
-            </div>
-            <div class="use-case-card">
-              <h3><i data-lucide="book-open"></i> <a href="../guides/yaml-gotchas.html">YAML gotchas</a></h3>
-              <p>The Norway problem and the other traps in config files.</p>
-            </div>
-            <div class="use-case-card">
-              <h3><i data-lucide="wrench"></i> <a href="json-to-table.html">JSON to Table Viewer</a></h3>
-              <p>Another local tool that pairs with this one. Runs entirely in your browser.</p>
-            </div>
+    <div class="info-panel">
+      <h2><i data-lucide="help-circle"></i> Frequently Asked Questions</h2>
+      <div class="faq-container">
+        <div class="faq-item">
+          <button class="faq-question">Why is client-side JSON processing more secure? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer">
+            <p>Unlike server-side validation tools that transmit your pasted data across the internet, Layerbit executes all parsing and formatting locally within your machine using the browser's native JSON.parse() capabilities. Sensitive API keys, private user data and proprietary system configurations remain strictly on your device, and the header indicator shows the page has made no network request with your data.</p>
           </div>
         </div>
+        <div class="faq-item">
+          <button class="faq-question">What does the Fix button change, and can I trust it? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer">
+            <p>It applies a fixed list of rewrites outside of string values: it removes comments and trailing commas, converts single and smart quotes to double quotes, quotes bare keys, replaces NaN, Infinity and undefined with null, converts Python's True, False and None, strips a byte-order mark, and inserts a comma between values that sit on consecutive lines without one. Each change is listed so you can review it. It never guesses at missing brackets or reorders data; if the result still does not parse, the error position tells you what is left.</p>
+          </div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">Which JSONPath syntax is supported? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer">
+            <p>The root $, dotted keys, bracket keys with quotes for names containing spaces, numeric and negative indexes, wildcards with [*] or .*, recursive descent with .., slices such as [0:5], unions such as [0,2] or ['a','b'], .length on arrays and strings, and filters written as [?(@.price &gt; 10 &amp;&amp; @.status == 'paid')] with ==, !=, &lt;, &gt;, &lt;=, &gt;=, regex matching via =~ /pattern/, negation and parentheses. Every match is returned with its exact path.</p>
+          </div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">Which JSON Schema keywords does the validator understand? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer">
+            <p>type (including integer and type arrays), properties, patternProperties, additionalProperties, propertyNames, required, dependentRequired, minProperties and maxProperties, items and prefixItems, contains, minItems, maxItems and uniqueItems, enum and const, minimum, maximum, exclusiveMinimum, exclusiveMaximum and multipleOf, minLength, maxLength, pattern and format (date-time, date, time, email, uri, uuid, ipv4, ipv6, hostname, regex), local $ref to definitions or $defs, allOf, anyOf, oneOf and not, and if, then and else. Remote $ref URLs are not fetched, because nothing on this page makes network requests.</p>
+          </div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">How are optional and nullable fields decided when generating types? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer">
+            <p>The generator walks every object in the sample. A key present in some objects of the same shape but not others becomes optional (a ? in TypeScript, omitempty in Go, Optional in Python). A value that is null in at least one place becomes nullable. A field that is sometimes an integer and sometimes a decimal becomes a floating-point type. Arrays merge the shapes of all their elements. Give it a representative sample with a few records rather than one, and the result reflects the real variation.</p>
+          </div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">How does the SQL export choose column types? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer">
+            <p>Each column's values are examined across every row: all integers gives BIGINT (INTEGER in SQLite), any decimal gives DOUBLE PRECISION, booleans give BOOLEAN or TINYINT(1), ISO date strings give TIMESTAMP or DATETIME, and everything else gives TEXT or a VARCHAR sized from the longest value. A column with no nulls is marked NOT NULL. Nested objects are flattened into parent_child columns and arrays are stored as JSON text. Identifiers are converted to snake_case and quoted for the chosen dialect.</p>
+          </div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">What does the Tree view offer over the raw text output? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer">
+            <p>The Tree view renders the same parsed payload as a collapsible outline, letting you fold entire objects or arrays down to a single line and expand only the branches you need. This is especially useful for deeply nested API responses, where the plain formatted text can run to thousands of lines. Use Expand All or Collapse All to jump between a full overview and a fully drilled-in view.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="info-panel related-panel">
+      <h2><i data-lucide="link"></i> Related guides and tools</h2>
+      <p>Background reading on the format and failure modes behind this tool, and the tools most often used alongside it.</p>
+      <div class="use-cases-grid">
+        <div class="use-case-card">
+          <h3><i data-lucide="book-open"></i> <a href="../guides/json-syntax-errors-explained.html">JSON syntax errors explained</a></h3>
+          <p>What 'Unexpected token' means and the seven usual causes.</p>
+        </div>
+        <div class="use-case-card">
+          <h3><i data-lucide="book-open"></i> <a href="../guides/yaml-gotchas.html">YAML gotchas</a></h3>
+          <p>The Norway problem and the other traps in config files.</p>
+        </div>
+        <div class="use-case-card">
+          <h3><i data-lucide="wrench"></i> <a href="json-to-table.html">JSON to Table Viewer</a></h3>
+          <p>Sort, filter and export an array of records as a table.</p>
+        </div>
+        <div class="use-case-card">
+          <h3><i data-lucide="wrench"></i> <a href="text-diff-checker.html">Diff &amp; Merge Tool</a></h3>
+          <p>Compare two JSON documents structurally, ignoring key order.</p>
+        </div>
+        <div class="use-case-card">
+          <h3><i data-lucide="wrench"></i> <a href="yaml-json-converter.html">YAML to JSON Converter</a></h3>
+          <p>Round-trip configuration between the two formats.</p>
+        </div>
+      </div>
+    </div>
 
     <div class="info-panel">
       <h2><i data-lucide="git-commit"></i> Changelog</h2>
       <ul class="changelog-list">
-        <li><span class="changelog-tag">v2.1.0</span> Added a path query box (<code>$.data[0].name</code>, <code>users.length</code>, bracket keys) that evaluates against the parsed document as you type; a structure readout (keys, objects, arrays, depth, size in and minified); an optional deep key sort; and syntax errors now report line and column and move the caret to the offending character.</li>
-        <li><span class="changelog-tag">v1.4.0</span> Added a collapsible Tree view alongside the raw text output, with Expand All / Collapse All controls for quickly navigating deeply nested payloads.</li>
-        <li><span class="changelog-tag">v1.3.0</span> Added a Download button next to Copy to Clipboard, matching every other converter in the suite.</li>
+        <li><span class="changelog-tag">v3.0.0</span> Added Fix for almost-JSON with a list of changes made, full JSONPath (wildcards, recursive descent, slices, unions, filters) with every match and its path, JSON Schema validation and inference, type generation for TypeScript, Go, C#, Kotlin, Python, Java and Rust, SQL and CSV export with flattening, NDJSON detection and conversion, YAML output, string-literal escape and decode, a big-integer precision warning, indentation choice, file open, and share links.</li>
+        <li><span class="changelog-tag">v2.1.0</span> Added a path query box, a structure readout, an optional deep key sort, and syntax errors with line and column that move the caret to the offending character.</li>
+        <li><span class="changelog-tag">v1.4.0</span> Added a collapsible Tree view alongside the raw text output, with Expand All / Collapse All controls.</li>
+        <li><span class="changelog-tag">v1.3.0</span> Added a Download button next to Copy to Clipboard.</li>
         <li><span class="changelog-tag">v1.2.0</span> Optimized syntax highlighting engine to prevent browser lock-ups when rendering heavily nested arrays over 5MB.</li>
-        <li><span class="changelog-tag">v1.1.5</span> Adjusted dark theme contrast ratios for better accessibility and added deep clipboard integration for instant payload copying.</li>
         <li><span class="changelog-tag">v1.0.0</span> Initial release of the secure client-side JSON processor.</li>
       </ul>
     </div>
-
   </div>
 
   <a href="../" id="smartBackBtn" class="fab" aria-label="Command Center" title="Command Center">
@@ -212,332 +302,254 @@
   {{FOOTER}}
 
   <script src="../js/shared.js"></script>
-
+  <script src="../js/engines/json.js"></script>
 
   <script>
-        // Elements
-    const jsonInput = document.getElementById('jsonInput');
-    const jsonOutput = document.getElementById('jsonOutput');
-    const jsonTree = document.getElementById('jsonTree');
-    const errorBanner = document.getElementById('errorBanner');
-    const errorText = document.getElementById('errorText');
-    const btnFormat = document.getElementById('btnFormat');
-    const btnMinify = document.getElementById('btnMinify');
-    const btnClear = document.getElementById('btnClear');
-    const btnCopy = document.getElementById('btnCopy');
-    const btnDownload = document.getElementById('btnDownload');
-    const viewTabText = document.getElementById('viewTabText');
-    const viewTabTree = document.getElementById('viewTabTree');
-    const btnExpandAll = document.getElementById('btnExpandAll');
-    const btnCollapseAll = document.getElementById('btnCollapseAll');
+    const $ = id => document.getElementById(id);
+    const icons = () => { if (window.lucide) lucide.createIcons(); };
+    const J = LBJson;
+    const jsonInput = $('jsonInput'), jsonOutput = $('jsonOutput'), jsonTree = $('jsonTree'), errorBanner = $('errorBanner'), errorText = $('errorText');
+    const sortKeys = $('sortKeys'), jsonStats = $('jsonStats'), pathInput = $('pathInput'), pathResult = $('pathResult');
+    let outputView = 'text', lastParsed = null, lastAction = 'format', lastResultText = '', isNdjson = false;
 
-    const sortKeys = document.getElementById('sortKeys');
-    const jsonStats = document.getElementById('jsonStats');
-    const pathInput = document.getElementById('pathInput');
-    const pathResult = document.getElementById('pathResult');
-
-    let outputView = 'text'; // 'text' or 'tree'
-    let lastParsed = null; // the most recently parsed JSON value, for the tree view
-    let lastAction = 'format';
-
-    // Syntax Highlighter Logic
+    const escapeHTMLText = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
     function syntaxHighlight(jsonStr) {
-      jsonStr = jsonStr.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-      return jsonStr.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, function (match) {
+      jsonStr = escapeHTMLText(jsonStr);
+      return jsonStr.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, m => {
         let cls = 'syn-number';
-        if (/^"/.test(match)) {
-          if (/:$/.test(match)) {
-            cls = 'syn-key';
-          } else {
-            cls = 'syn-string';
-          }
-        } else if (/true|false/.test(match)) {
-          cls = 'syn-boolean';
-        } else if (/null/.test(match)) {
-          cls = 'syn-null';
-        }
-        return '<span class="' + cls + '">' + match + '</span>';
+        if (/^"/.test(m)) cls = /:$/.test(m) ? 'syn-key' : 'syn-string'; else if (/true|false/.test(m)) cls = 'syn-boolean'; else if (/null/.test(m)) cls = 'syn-null';
+        return `<span class="${cls}">${m}</span>`;
       });
     }
 
-    // Collapsible Tree View Logic
+    // ------------------------------------------------------------ tree
     let treeNodeSeq = 0;
-
     function formatScalar(val) {
       if (val === null) return `<span class="syn-null">null</span>`;
       if (typeof val === 'boolean') return `<span class="syn-boolean">${val}</span>`;
       if (typeof val === 'number') return `<span class="syn-number">${val}</span>`;
       return `<span class="syn-string">"${escapeHTMLText(String(val))}"</span>`;
     }
-
-    function escapeHTMLText(str) {
-      return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-    }
-
-    // Builds the HTML for one tree node (and, recursively, its children)
-    function buildTreeNode(key, value, isLast, depth) {
+    function buildTreeNode(key, value, isLast, depth, path) {
       const indent = `padding-left:${depth * 18}px`;
       const keyHTML = key !== null ? `<span class="syn-key">"${escapeHTMLText(String(key))}"</span><span class="tree-punct">: </span>` : '';
       const comma = isLast ? '' : '<span class="tree-punct">,</span>';
-
       if (value !== null && typeof value === 'object') {
         const isArray = Array.isArray(value);
         const entries = isArray ? value.map((v, i) => [i, v]) : Object.entries(value);
-        const openBr = isArray ? '[' : '{';
-        const closeBr = isArray ? ']' : '}';
-
-        if (entries.length === 0) {
-          return `<div class="tree-row tree-leaf" style="${indent}">${keyHTML}<span class="tree-punct">${openBr}${closeBr}</span>${comma}</div>`;
-        }
-
-        const count = entries.length;
-        const label = `${count} ${isArray ? (count === 1 ? 'item' : 'items') : (count === 1 ? 'key' : 'keys')}`;
+        const openBr = isArray ? '[' : '{', closeBr = isArray ? ']' : '}';
+        if (entries.length === 0) return `<div class="tree-row tree-leaf" style="${indent}" data-path="${escapeHTMLText(path)}">${keyHTML}<span class="tree-punct">${openBr}${closeBr}</span>${comma}</div>`;
+        const count = entries.length, label = `${count} ${isArray ? (count === 1 ? 'item' : 'items') : (count === 1 ? 'key' : 'keys')}`;
         const id = 'tnode-' + (treeNodeSeq++);
-        const childrenHTML = entries
-          .map(([k, v], i) => buildTreeNode(isArray ? null : k, v, i === entries.length - 1, depth + 1))
-          .join('');
-
-        return `
-          <div class="tree-node" id="${id}">
-            <div class="tree-row tree-toggle" style="${indent}" onclick="toggleTreeNode('${id}')">
-              <i data-lucide="chevron-down" class="tree-caret"></i>${keyHTML}<span class="tree-punct">${openBr}</span><span class="tree-summary">${label}</span><span class="tree-punct tree-inline-close">${closeBr}${comma}</span>
-            </div>
-            <div class="tree-children">${childrenHTML}</div>
-            <div class="tree-row tree-close-line" style="${indent}"><span class="tree-punct">${closeBr}${comma}</span></div>
-          </div>
-        `;
+        const childrenHTML = entries.map(([k, v], i) => buildTreeNode(isArray ? null : k, v, i === entries.length - 1, depth + 1, isArray ? `${path}[${k}]` : /^[A-Za-z_$][\w$]*$/.test(k) ? `${path}.${k}` : `${path}['${k}']`)).join('');
+        return `<div class="tree-node" id="${id}"><div class="tree-row tree-toggle" style="${indent}" data-path="${escapeHTMLText(path)}" onclick="toggleTreeNode('${id}')"><i data-lucide="chevron-down" class="tree-caret"></i>${keyHTML}<span class="tree-punct">${openBr}</span><span class="tree-summary">${label}</span><span class="tree-punct tree-inline-close">${closeBr}${comma}</span></div><div class="tree-children">${childrenHTML}</div><div class="tree-row tree-close-line" style="${indent}"><span class="tree-punct">${closeBr}${comma}</span></div></div>`;
       }
-
-      return `<div class="tree-row tree-leaf" style="${indent}">${keyHTML}${formatScalar(value)}${comma}</div>`;
+      return `<div class="tree-row tree-leaf" style="${indent}" data-path="${escapeHTMLText(path)}" title="${escapeHTMLText(path)} — click to copy the path">${keyHTML}${formatScalar(value)}${comma}</div>`;
     }
-
     function renderTree(parsed) {
       treeNodeSeq = 0;
-      jsonTree.innerHTML = buildTreeNode(null, parsed, true, 0);
-      if (window.lucide) lucide.createIcons();
+      if (J.stats(parsed).primitives > 60000) { jsonTree.innerHTML = '<div class="tree-note">This document has more than 60,000 values; the tree view is skipped to keep the page responsive. Use the Query tab to drill in.</div>'; return; }
+      jsonTree.innerHTML = buildTreeNode(null, parsed, true, 0, '$');
+      icons();
     }
-
-    function toggleTreeNode(id) {
-      const el = document.getElementById(id);
-      if (el) el.classList.toggle('collapsed');
-    }
-
-    function setAllTreeNodes(collapsed) {
-      jsonTree.querySelectorAll('.tree-node').forEach(el => el.classList.toggle('collapsed', collapsed));
-    }
+    jsonTree.addEventListener('click', e => { const leaf = e.target.closest('.tree-leaf'); if (leaf && leaf.dataset.path) Layerbit.copy(leaf.dataset.path).then(() => Layerbit.toast('Copied path ' + leaf.dataset.path)); });
+    function toggleTreeNode(id) { const el = $(id); if (el) el.classList.toggle('collapsed'); }
+    function setAllTreeNodes(collapsed) { jsonTree.querySelectorAll('.tree-node').forEach(el => el.classList.toggle('collapsed', collapsed)); }
 
     function setOutputView(view) {
       outputView = view;
-      const isTree = view === 'tree';
-      viewTabText.classList.toggle('active', !isTree);
-      viewTabTree.classList.toggle('active', isTree);
-      jsonOutput.style.display = isTree ? 'none' : '';
-      jsonTree.style.display = isTree ? '' : 'none';
-      btnExpandAll.style.display = isTree ? '' : 'none';
-      btnCollapseAll.style.display = isTree ? '' : 'none';
+      ['text', 'tree', 'query', 'schema', 'types', 'convert'].forEach(v => $('viewTab' + v[0].toUpperCase() + v.slice(1)).classList.toggle('active', v === view));
+      jsonOutput.style.display = view === 'text' ? '' : 'none';
+      jsonTree.style.display = view === 'tree' ? '' : 'none';
+      $('viewQuery').style.display = view === 'query' ? '' : 'none';
+      $('viewSchema').style.display = view === 'schema' ? '' : 'none';
+      $('viewTypes').style.display = view === 'types' ? '' : 'none';
+      $('viewConvert').style.display = view === 'convert' ? '' : 'none';
+      $('btnExpandAll').style.display = view === 'tree' ? '' : 'none';
+      $('btnCollapseAll').style.display = view === 'tree' ? '' : 'none';
+      if (view === 'types') renderTypes();
+      if (view === 'convert') renderConvert();
+      if (view === 'query') pathInput.focus();
     }
 
-    // Core Process Logic
+    // ------------------------------------------------------------ core
+    function indentArg() { const v = $('indentSel').value; return v === 'tab' ? '\t' : +v; }
     function processJSON(action) {
       const raw = jsonInput.value.trim();
-      errorBanner.classList.remove('active');
-      jsonOutput.innerHTML = '';
-      jsonTree.innerHTML = '';
-      lastParsed = null;
-
-      if (!raw) return;
-
-      try {
-        let parsed = JSON.parse(raw);
-        if (sortKeys.checked) parsed = sortKeysDeep(parsed);
-        let resultStr = "";
-
-        if (action === 'format') {
-          resultStr = JSON.stringify(parsed, null, 4);
-        } else if (action === 'minify') {
-          resultStr = JSON.stringify(parsed);
-        }
-
-        jsonOutput.innerHTML = syntaxHighlight(resultStr);
-        lastParsed = parsed;
-        renderTree(parsed);
-        renderStats(parsed, raw);
-        pathInput.disabled = false;
-        runPathQuery();
-
-      } catch (err) {
-        errorText.textContent = `Invalid JSON: ${describeJsonError(err.message, raw)}`;
-        errorBanner.classList.add('active');
-        jsonStats.textContent = '';
-        pathInput.disabled = true;
-        pathResult.textContent = '';
-      }
-    }
-
-    // Recursively sort object keys; arrays keep their order because in JSON
-    // array order is data, object key order is not.
-    function sortKeysDeep(v) {
-      if (Array.isArray(v)) return v.map(sortKeysDeep);
-      if (v && typeof v === 'object') {
-        return Object.keys(v).sort().reduce((o, k) => { o[k] = sortKeysDeep(v[k]); return o; }, {});
-      }
-      return v;
-    }
-
-    // Engines report "at position N"; a line/column is what a human can use,
-    // and moving the caret there saves hunting through a minified payload.
-    function describeJsonError(message, raw) {
-      let pos = -1;
-      const m = /position (\d+)/.exec(message);
-      if (m) pos = Number(m[1]);
-      else if (/end of JSON input/i.test(message)) pos = raw.length;
-      else {
-        // Newer V8 messages carry a context window instead of an offset:
-        //   Unexpected token ']', ..."b": [1, 2,] }" is not valid JSON
-        // Locate the window in the source, then the offending token nearest
-        // the window's centre (the window is cut around the failure point).
-        const w = /Unexpected (?:token '(.)'|(non-whitespace character)[^,]*), (?:\.\.\.)?"(.*)"(?:\.\.\.)? is not valid JSON/s.exec(message);
-        if (w) {
-          const frag = w[3];
-          let idx = raw.indexOf(frag);
-          if (idx < 0 && frag.length > 1) idx = raw.indexOf(frag.slice(1)) - 1;
-          if (idx >= 0) {
-            const tok = w[1];
-            if (tok) {
-              let best = -1, bestD = Infinity, k = -1;
-              while ((k = frag.indexOf(tok, k + 1)) >= 0) { const d = Math.abs(k - frag.length / 2); if (d < bestD) { bestD = d; best = k; } }
-              pos = best >= 0 ? idx + best : idx;
-            } else pos = idx + Math.floor(frag.length / 2);
-          }
+      errorBanner.classList.remove('active'); $('noticeBanner').classList.remove('active');
+      jsonOutput.innerHTML = ''; jsonTree.innerHTML = ''; lastParsed = null; lastResultText = ''; isNdjson = false;
+      $('inMeta').textContent = raw ? Layerbit.fmtBytes(new Blob([raw]).size) : '';
+      if (!raw) { jsonStats.textContent = ''; pathInput.disabled = true; return; }
+      let parsed;
+      try { parsed = JSON.parse(raw); }
+      catch (err) {
+        if (J.looksNdjson(raw)) {
+          const r = J.parseNdjson(raw);
+          parsed = r.values; isNdjson = true;
+          notice(`NDJSON detected: ${r.values.length.toLocaleString()} objects parsed line by line${r.errors.length ? `, ${r.errors.length} line${r.errors.length > 1 ? 's' : ''} skipped (first: line ${r.errors[0].line}: ${r.errors[0].message})` : ''}. Shown as an array.`);
+        } else {
+          const e = J.locateError(err.message, raw);
+          errorText.textContent = `Invalid JSON: ${e.message}${e.pos >= 0 ? ` — line ${e.line}, column ${e.col}` : ''}`;
+          if (e.pos >= 0) { try { jsonInput.setSelectionRange(e.pos, Math.min(e.pos + 1, raw.length)); } catch (x) {} }
+          errorBanner.classList.add('active'); jsonStats.textContent = ''; pathInput.disabled = true; pathResult.textContent = ''; $('pathList').innerHTML = '';
+          return;
         }
       }
-      if (pos < 0) return message;
-      const before = raw.slice(0, pos);
-      const line = before.split('\n').length;
-      const col = pos - before.lastIndexOf('\n');
-      try { jsonInput.setSelectionRange(pos, Math.min(pos + 1, raw.length)); } catch (e) {}
-      return `${message.replace(/\s*\(line \d+ column \d+\)/, '')} — line ${line}, column ${col}`;
+      if (sortKeys.checked) parsed = J.sortKeysDeep(parsed);
+      lastResultText = action === 'minify' ? JSON.stringify(parsed) : JSON.stringify(parsed, null, indentArg());
+      jsonOutput.innerHTML = lastResultText.length > 3000000 ? escapeHTMLText(lastResultText) : syntaxHighlight(lastResultText);
+      lastParsed = parsed;
+      renderTree(parsed);
+      renderStats(parsed, raw);
+      pathInput.disabled = false;
+      runPathQuery();
+      if (outputView === 'types') renderTypes();
+      if (outputView === 'convert') renderConvert();
+      const big = J.bigIntWarnings(raw);
+      if (big.length && !isNdjson) notice(`Precision warning: ${big.length} integer${big.length > 1 ? 's' : ''} beyond 2^53 (e.g. ${big[0]}) ${big.length > 1 ? 'are' : 'is'} silently rounded by every JavaScript parser. Serialise such ids as strings.`);
+      Layerbit.history.push('json-validator', getState(), `${J.typeOf(parsed)} · ${Layerbit.fmtBytes(raw.length)}`);
     }
-
+    function notice(msg) { $('noticeText').textContent = msg; $('noticeBanner').classList.add('active'); }
     function renderStats(value, raw) {
-      let objects = 0, arrays = 0, keys = 0, primitives = 0, depth = 0;
-      (function walk(v, d) {
-        depth = Math.max(depth, d);
-        if (Array.isArray(v)) { arrays++; v.forEach(x => walk(x, d + 1)); }
-        else if (v && typeof v === 'object') { objects++; const ks = Object.keys(v); keys += ks.length; ks.forEach(k => walk(v[k], d + 1)); }
-        else primitives++;
-      })(value, 1);
-      const bytes = n => n < 1024 ? `${n} B` : n < 1048576 ? `${(n / 1024).toFixed(1)} KB` : `${(n / 1048576).toFixed(2)} MB`;
-      const minified = new TextEncoder().encode(JSON.stringify(value)).length;
-      const original = new TextEncoder().encode(raw).length;
-      jsonStats.innerHTML = `<span><strong>${keys.toLocaleString()}</strong> keys</span><span><strong>${objects.toLocaleString()}</strong> objects</span><span><strong>${arrays.toLocaleString()}</strong> arrays</span><span><strong>${primitives.toLocaleString()}</strong> values</span><span>depth <strong>${depth}</strong></span><span>${bytes(original)} in, <strong>${bytes(minified)}</strong> minified</span>`;
+      const s = J.stats(value, raw), b = Layerbit.fmtBytes;
+      jsonStats.innerHTML = `<span><strong>${s.keys.toLocaleString()}</strong> keys</span><span><strong>${s.objects.toLocaleString()}</strong> objects</span><span><strong>${s.arrays.toLocaleString()}</strong> arrays</span><span><strong>${s.primitives.toLocaleString()}</strong> values</span><span>depth <strong>${s.depth}</strong></span><span>${b(s.bytesIn)} in, <strong>${b(s.bytesMin)}</strong> minified, ${b(s.bytesPretty)} pretty</span>`;
     }
 
-    // A small path language: $ or bare start, .key, ["key"], ['key'], [index],
-    // and .length on arrays and strings. Covers what people actually type
-    // when tracing a value in an API response, without a JSONPath library.
-    function evaluatePath(root, path) {
-      let p = path.trim();
-      if (p.startsWith('$')) p = p.slice(1);
-      const re = /\.?([A-Za-z_$][\w$-]*)|\[(\d+)\]|\["((?:[^"\\]|\\.)*)"\]|\['((?:[^'\\]|\\.)*)'\]/g;
-      let cur = root, m, consumed = 0;
-      while ((m = re.exec(p)) !== null) {
-        if (m.index !== consumed) throw new Error(`unexpected "${p.slice(consumed, m.index)}"`);
-        consumed = re.lastIndex;
-        const key = m[1] !== undefined ? m[1] : m[2] !== undefined ? Number(m[2]) : (m[3] !== undefined ? m[3] : m[4]).replace(/\\(.)/g, '$1');
-        if (cur === null || cur === undefined) return undefined;
-        if (typeof key === 'number' && !Array.isArray(cur)) return undefined;
-        cur = cur[key];
-      }
-      if (consumed !== p.length) throw new Error(`unexpected "${p.slice(consumed)}"`);
-      return cur;
+    // ------------------------------------------------------------ fix
+    function fixJson() {
+      const raw = jsonInput.value;
+      if (!raw.trim()) return;
+      const r = J.repair(raw);
+      try { JSON.parse(r.text); }
+      catch (e) { const loc = J.locateError(e.message, r.text); Layerbit.toast(`Still invalid after ${r.fixes.length} fix${r.fixes.length === 1 ? '' : 'es'}: ${loc.message}${loc.pos >= 0 ? ' at line ' + loc.line : ''}`, 'warn'); jsonInput.value = r.text; processJSON(lastAction); return; }
+      jsonInput.value = r.text;
+      processJSON(lastAction);
+      notice(r.fixes.length ? `Fixed: ${r.fixes.join('; ')}.` : 'Nothing needed fixing.');
     }
+
+    // ------------------------------------------------------------ query
+    function setPath(p) { pathInput.value = p; runPathQuery(); setOutputView('query'); }
     function runPathQuery() {
       const q = pathInput.value.trim();
-      if (!q || lastParsed === null) { pathResult.textContent = ''; pathResult.className = 'path-result'; return; }
+      const list = $('pathList'), cnt = $('pathCount');
+      if (!q || lastParsed === null) { pathResult.textContent = ''; pathResult.className = 'path-result'; list.innerHTML = ''; cnt.textContent = ''; return; }
       try {
-        const v = evaluatePath(lastParsed, q);
-        if (v === undefined) { pathResult.textContent = 'undefined — nothing at that path'; pathResult.className = 'path-result path-miss'; return; }
-        const s = JSON.stringify(v, null, 2);
-        pathResult.innerHTML = syntaxHighlight(s.length > 4000 ? s.slice(0, 4000) + '\n… (truncated)' : s);
+        const res = J.query(lastParsed, q);
+        if (!res.length) { pathResult.textContent = 'No match — undefined at that path'; pathResult.className = 'path-result path-miss'; list.innerHTML = ''; cnt.textContent = '0 matches'; return; }
         pathResult.className = 'path-result';
-      } catch (e) {
-        pathResult.textContent = `Bad path: ${e.message}`;
-        pathResult.className = 'path-result path-miss';
-      }
+        if (res.length === 1) { const s = JSON.stringify(res[0].value, null, 2); pathResult.innerHTML = syntaxHighlight(s.length > 4000 ? s.slice(0, 4000) + '\n… (truncated)' : s); list.innerHTML = ''; cnt.textContent = `1 match · ${escapeHTMLText(res[0].path)}`; }
+        else {
+          pathResult.textContent = '';
+          cnt.textContent = `${res.length.toLocaleString()} matches`;
+          list.innerHTML = res.slice(0, 200).map(r => { const s = JSON.stringify(r.value); return `<div class="path-item"><span class="path-path" title="Click to copy" onclick="Layerbit.copy(this.textContent).then(()=>Layerbit.toast('Copied path'))">${escapeHTMLText(r.path)}</span><span class="path-val">${syntaxHighlight(s.length > 160 ? s.slice(0, 157) + '…' : s)}</span></div>`; }).join('') + (res.length > 200 ? `<div class="tree-note">First 200 of ${res.length} shown. Copy results gives all of them.</div>` : '') + `<div class="path-actions"><button type="button" class="btn" onclick="copyQuery()"><i data-lucide="copy"></i> Copy results as JSON array</button></div>`;
+          icons();
+        }
+      } catch (e) { pathResult.textContent = `Bad path: ${e.message}`; pathResult.className = 'path-result path-miss'; list.innerHTML = ''; cnt.textContent = ''; }
     }
+    function copyQuery() { const res = J.query(lastParsed, pathInput.value.trim()); Layerbit.copy(JSON.stringify(res.map(r => r.value), null, 2)).then(() => Layerbit.toast(`Copied ${res.length} values`)); }
     pathInput.addEventListener('input', runPathQuery);
+
+    // ------------------------------------------------------------ schema
+    function inferSchema() {
+      if (lastParsed === null) { Layerbit.toast('Beautify a document first'); return; }
+      const s = J.inferSchema(lastParsed, { closed: $('inferClosed').checked, ranges: $('inferRanges').checked, title: 'Root' });
+      $('schemaInput').value = JSON.stringify(s, null, 2);
+      $('schemaResult').innerHTML = `<div class="schema-ok"><i data-lucide="sparkles"></i> Schema inferred from the document: ${Object.keys(s.properties || (s.items && s.items.properties) || {}).length} top-level properties. Edit it, then validate.</div>`;
+      icons();
+    }
+    function validateSchema() {
+      if (lastParsed === null) { Layerbit.toast('Beautify a document first'); return; }
+      let schema;
+      try { schema = JSON.parse($('schemaInput').value); } catch (e) { $('schemaResult').innerHTML = `<div class="schema-bad"><i data-lucide="x-circle"></i> The schema itself is not valid JSON: ${escapeHTMLText(e.message)}</div>`; icons(); return; }
+      let errs;
+      try { errs = J.validate(schema, lastParsed); } catch (e) { $('schemaResult').innerHTML = `<div class="schema-bad"><i data-lucide="x-circle"></i> ${escapeHTMLText(e.message)}</div>`; icons(); return; }
+      if (!errs.length) $('schemaResult').innerHTML = `<div class="schema-ok"><i data-lucide="check-circle-2"></i> Valid: the document satisfies the schema.</div>`;
+      else $('schemaResult').innerHTML = `<div class="schema-bad"><i data-lucide="x-circle"></i> ${errs.length} violation${errs.length > 1 ? 's' : ''}</div><table class="err-table"><thead><tr><th>Path</th><th>Keyword</th><th>Problem</th></tr></thead><tbody>${errs.slice(0, 300).map(e => `<tr><td class="t-path" onclick="setPath(${JSON.stringify(e.path)})" title="Query this path">${escapeHTMLText(e.path)}</td><td><code>${escapeHTMLText(e.keyword)}</code></td><td>${escapeHTMLText(e.message)}</td></tr>`).join('')}</tbody></table>`;
+      icons();
+    }
+
+    // ------------------------------------------------------------ types / convert
+    function renderTypes() {
+      if (lastParsed === null) { $('typesOut').textContent = '// Beautify a document first.'; return; }
+      try { $('typesOut').textContent = J.genTypes(lastParsed, $('typeLang').value, $('typeName').value || 'Root'); } catch (e) { $('typesOut').textContent = '// ' + e.message; }
+    }
+    $('typeLang').addEventListener('change', renderTypes); $('typeName').addEventListener('input', renderTypes);
+    function renderConvert() {
+      const target = $('convTarget').value;
+      $('sqlOpts').style.display = target === 'sql' ? '' : 'none';
+      const out = $('convOut'), note = $('convNote');
+      if (target === 'unescape') { const raw = jsonInput.value.trim(); try { const s = JSON.parse(raw); if (typeof s !== 'string') throw new Error('input is not a JSON string literal'); out.textContent = s; note.textContent = 'The input was read as a JSON string literal and decoded.'; } catch (e) { out.textContent = ''; note.textContent = 'Paste a JSON string literal (in double quotes, with \\n and \\" escapes) as the input to decode it. ' + e.message; } return; }
+      if (lastParsed === null) { out.textContent = ''; note.textContent = 'Beautify a document first.'; return; }
+      try {
+        if (target === 'sql') { const r = J.toSql(lastParsed, { table: $('sqlTable').value || 'data', dialect: $('sqlDialect').value }); out.textContent = r.sql; note.textContent = `${r.rows} row${r.rows === 1 ? '' : 's'}, ${r.columns.length} columns: ${r.columns.join(', ')}`; }
+        else if (target === 'csv') { const rc = J.rowsOf(lastParsed); out.textContent = J.toCsv(lastParsed); note.textContent = `${rc.rows.length} rows, ${rc.cols.length} columns. Nested objects are flattened; arrays are kept as JSON text.`; }
+        else if (target === 'ndjson') { const arr = Array.isArray(lastParsed) ? lastParsed : [lastParsed]; out.textContent = arr.map(x => JSON.stringify(x)).join('\n') + '\n'; note.textContent = `${arr.length} line${arr.length === 1 ? '' : 's'}.`; }
+        else if (target === 'yaml') { out.textContent = toYaml(lastParsed, 0); note.textContent = 'Block-style YAML; strings that YAML would reinterpret (yes, no, on, off, numbers, dates) are quoted.'; }
+        else if (target === 'string') { out.textContent = JSON.stringify(lastResultText || JSON.stringify(lastParsed)); note.textContent = 'The formatted JSON escaped as a single JSON string literal, for embedding in another JSON document or a config value.'; }
+      } catch (e) { out.textContent = ''; note.textContent = e.message; }
+    }
+    ['convTarget', 'sqlDialect'].forEach(id => $(id).addEventListener('change', renderConvert)); $('sqlTable').addEventListener('input', renderConvert);
+    function toYaml(v, ind) {
+      const pad = '  '.repeat(ind);
+      const scalar = x => x === null ? 'null' : typeof x === 'string' ? (/^(true|false|yes|no|on|off|null|~|y|n|-?\d[\d_.eE+-]*|0x[0-9a-f]+|\d{4}-\d{2}-\d{2}.*)$/i.test(x) || /[:#{}\[\],&*?|<>=!%@`'"\\]/.test(x) || /^\s|\s$/.test(x) || x === '' || x.includes('\n') ? JSON.stringify(x) : x) : String(x);
+      if (Array.isArray(v)) return v.length ? v.map(x => pad + '- ' + (x && typeof x === 'object' ? toYaml(x, ind + 1).trimStart() : scalar(x))).join('\n') : pad + '[]';
+      if (v && typeof v === 'object') { const keys = Object.keys(v); return keys.length ? keys.map(k => { const val = v[k]; const key = /^[A-Za-z_][\w-]*$/.test(k) ? k : JSON.stringify(k); return val && typeof val === 'object' && (Array.isArray(val) ? val.length : Object.keys(val).length) ? `${pad}${key}:\n${toYaml(val, ind + 1)}` : `${pad}${key}: ${val && typeof val === 'object' ? (Array.isArray(val) ? '[]' : '{}') : scalar(val)}`; }).join('\n') : pad + '{}'; }
+      return pad + scalar(v);
+    }
+
+    // ------------------------------------------------------------ buttons
+    $('btnFormat').addEventListener('click', () => processJSON(lastAction = 'format'));
+    $('btnMinify').addEventListener('click', () => processJSON(lastAction = 'minify'));
+    $('btnFix').addEventListener('click', fixJson);
+    $('indentSel').addEventListener('change', () => { if (jsonInput.value.trim()) processJSON(lastAction); });
     sortKeys.addEventListener('change', () => { if (jsonInput.value.trim()) processJSON(lastAction); });
-
-    // Event Listeners
-    btnFormat.addEventListener('click', () => processJSON(lastAction = 'format'));
-    btnMinify.addEventListener('click', () => processJSON(lastAction = 'minify'));
-    
-    btnClear.addEventListener('click', () => {
-      jsonInput.value = '';
-      jsonOutput.innerHTML = '';
-      jsonTree.innerHTML = '';
-      lastParsed = null;
-      errorBanner.classList.remove('active');
-      jsonStats.textContent = '';
-      pathInput.value = ''; pathInput.disabled = true; pathResult.textContent = '';
+    $('btnClear').addEventListener('click', () => { jsonInput.value = ''; jsonOutput.innerHTML = ''; jsonTree.innerHTML = ''; lastParsed = null; lastResultText = ''; errorBanner.classList.remove('active'); $('noticeBanner').classList.remove('active'); jsonStats.textContent = ''; $('inMeta').textContent = ''; pathInput.value = ''; pathInput.disabled = true; pathResult.textContent = ''; $('pathList').innerHTML = ''; $('schemaResult').innerHTML = ''; $('typesOut').textContent = ''; $('convOut').textContent = ''; Layerbit.state.clear(); });
+    function currentText() {
+      if (outputView === 'types') return $('typesOut').textContent;
+      if (outputView === 'convert') return $('convOut').textContent;
+      if (outputView === 'schema') return $('schemaInput').value;
+      if (outputView === 'query') return pathResult.textContent || (lastParsed !== null && pathInput.value ? JSON.stringify(J.query(lastParsed, pathInput.value).map(r => r.value), null, 2) : '');
+      return jsonOutput.textContent;
+    }
+    $('btnCopy').addEventListener('click', () => {
+      const text = currentText(); if (!text) return;
+      Layerbit.copy(text).then(() => { const b = $('btnCopy'); b.innerHTML = '<i data-lucide="check"></i> Copied'; icons(); setTimeout(() => { b.innerHTML = '<i data-lucide="copy"></i> Copy'; icons(); }, 1500); });
     });
-
-    btnCopy.addEventListener('click', () => {
-      // Use textContent (not innerText) since jsonOutput may be display:none while
-      // the Tree view is active -- innerText returns "" for unrendered elements.
-      const text = jsonOutput.textContent;
-      if(!text) return;
-
-      navigator.clipboard.writeText(text).then(() => {
-        const originalText = btnCopy.innerHTML;
-        btnCopy.innerHTML = '<i data-lucide="check"></i> Copied!';
-        if (window.lucide) lucide.createIcons();
-        setTimeout(() => {
-          btnCopy.innerHTML = '<i data-lucide="copy"></i> Copy to Clipboard';
-          if (window.lucide) lucide.createIcons();
-        }, 2000);
-      });
+    $('btnDownload').addEventListener('click', () => {
+      const text = currentText(); if (!text) return;
+      const ext = outputView === 'types' ? { typescript: 'ts', go: 'go', csharp: 'cs', kotlin: 'kt', python: 'py', java: 'java', rust: 'rs' }[$('typeLang').value] : outputView === 'convert' ? { sql: 'sql', csv: 'csv', ndjson: 'jsonl', yaml: 'yaml', string: 'txt', unescape: 'txt' }[$('convTarget').value] : outputView === 'schema' ? 'schema.json' : 'json';
+      const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([text], { type: 'text/plain;charset=utf-8' })); a.download = `layerbit-${Date.now()}.${ext}`; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 500);
     });
+    $('jsonFile').addEventListener('change', e => { const f = e.target.files[0]; if (f) Layerbit.readFile(f).then(t => { jsonInput.value = t; processJSON('format'); }); });
+    Layerbit.onDrop(files => Layerbit.readFile(files[0]).then(t => { jsonInput.value = t; processJSON('format'); Layerbit.toast('Loaded ' + files[0].name); }));
+    jsonInput.addEventListener('keydown', e => { if (e.key === 'Tab') { e.preventDefault(); const s = jsonInput.selectionStart, en = jsonInput.selectionEnd; jsonInput.value = jsonInput.value.slice(0, s) + '  ' + jsonInput.value.slice(en); jsonInput.selectionStart = jsonInput.selectionEnd = s + 2; } });
 
-    btnDownload.addEventListener('click', () => {
-      const text = jsonOutput.textContent;
-      if (!text) return;
+    // ------------------------------------------------------------ state
+    function getState() { return { input: jsonInput.value, action: lastAction, sort: sortKeys.checked, indent: $('indentSel').value, path: pathInput.value || undefined, schema: $('schemaInput').value || undefined, view: outputView }; }
+    function setState(s) {
+      if (!s) return;
+      if (typeof s.input === 'string') jsonInput.value = s.input;
+      if (s.sort !== undefined) sortKeys.checked = !!s.sort;
+      if (s.indent) $('indentSel').value = s.indent;
+      if (s.schema) $('schemaInput').value = s.schema;
+      if (s.path) pathInput.value = s.path;
+      if (jsonInput.value.trim()) processJSON(s.action || 'format');
+      if (s.view && s.view !== 'text') setOutputView(s.view);
+    }
+    Layerbit.register({ slug: 'json-validator', getState, setState, run: () => processJSON(lastAction), input: (text) => { jsonInput.value = text; processJSON('format'); } });
 
-      const blob = new Blob([text], { type: "application/json;charset=utf-8;" });
-      const link = document.createElement("a");
-      link.href = URL.createObjectURL(blob);
-      link.download = `layerbit-${Date.now()}.json`;
-      link.click();
-    });
-
-    // FAQ Accordion Logic
-    
-    // Sample Loader Logic
+    // ------------------------------------------------------------ samples
     function loadSample(type) {
       const samples = {
-        // Raw, minified string so the before/after contrast is massive
         config: `{"Logging":{"LogLevel":{"Default":"Information","Microsoft.AspNetCore":"Warning"}},"AllowedHosts":"*","ConnectionStrings":{"DefaultConnection":"Server=localhost;Database=master;User Id=sa;Password=Secret;"}}`,
-        
-        // Raw, minified API payload
-        api: `{"status":200,"message":"Data retrieved successfully","data":[{"id":101,"name":"Quantum CPU","inStock":true,"price":499.99,"tags":["hardware","computing"]}],"metadata":{"timestamp":"2026-08-04T17:22:33Z","page":1}}`,
-        
-        // Formatted with an intentional error
-        error: `{\n  "name": "John Doe",\n  "age": 35,\n  "isActive": true,\n  "settings": {\n    "theme": "dark",\n    "notifications": false\n  },  <-- Notice this trailing comma!\n}`
+        api: `{"status":200,"message":"Data retrieved successfully","data":[{"id":101,"name":"Quantum CPU","inStock":true,"price":499.99,"tags":["hardware","computing"],"createdAt":"2026-08-04T17:22:33Z","category":"hardware"},{"id":102,"name":"Flux Capacitor","inStock":false,"price":1299.5,"tags":["hardware"],"createdAt":"2026-08-05T09:10:00Z","category":"hardware","discount":null},{"id":103,"name":"Cloud Credits","inStock":true,"price":49,"tags":[],"createdAt":"2026-08-06T12:00:00Z","category":"services","discount":0.1},{"id":104,"name":"Support Plan","inStock":true,"price":199,"tags":["services","support"],"createdAt":"2026-08-07T08:30:00Z","category":"services"}],"metadata":{"timestamp":"2026-08-04T17:22:33Z","page":1,"total":4}}`,
+        error: `{\n  "name": "John Doe",\n  "age": 35,\n  "isActive": true,\n  "settings": {\n    "theme": "dark",\n    "notifications": false\n  },  <-- Notice this trailing comma!\n}`,
+        almost: `// appsettings copied from a chat\n{\n  name: 'Layerbit',\n  'region': "me-central-1",\n  replicas: 3,\n  ratio: NaN,\n  enabled: True,\n  tags: ['a', 'b',],\n  \u201cnote\u201d: \u2018it\u2019s fine\u2019, /* keep */\n}`,
+        ndjson: `{"ts":"2026-10-17T09:12:01Z","level":"INFO","msg":"Service started","port":8080}\n{"ts":"2026-10-17T09:12:04Z","level":"WARN","msg":"Cache miss ratio high","ratio":0.42}\n{"ts":"2026-10-17T09:12:09Z","level":"ERROR","msg":"Upstream timeout","upstream":"billing","ms":5000}\n{"ts":"2026-10-17T09:12:10Z","level":"INFO","msg":"Retry succeeded","upstream":"billing","ms":210}`
       };
-      
-      jsonInput.value = samples[type];
-      jsonOutput.innerHTML = '';
-      errorBanner.classList.remove('active');
-      
-      // Auto-format valid ones
-      if(type !== 'error') {
-        processJSON('format');
-      } else {
-        processJSON('format'); // Triggers the error banner naturally
-      }
-      
-      // Scroll to top to see action
+      jsonInput.value = samples[type]; jsonOutput.innerHTML = ''; errorBanner.classList.remove('active');
+      processJSON('format');
+      if (type === 'api') { pathInput.value = '$.data[?(@.inStock == true)].name'; runPathQuery(); }
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   </script>

@@ -192,7 +192,7 @@ def _(t):
     expect(not t.visible("#errorBanner"), "error banner shown for empty input")
 
 
-@case("json-validator", "typical", "format and minify")
+@case("json-validator", "typical", "format, minify and indentation choice")
 def _(t):
     t.set("jsonInput", '{"a":1,"b":[true,null,"x"]}')
     t.click("#btnFormat")
@@ -200,6 +200,9 @@ def _(t):
     expect('"a": 1' in out and '"b": [' in out, f"formatted output wrong: {out[:80]}")
     t.click("#btnMinify")
     eq(t.text("jsonOutput").strip(), '{"a":1,"b":[true,null,"x"]}', "minified")
+    t.select("indentSel", "2")
+    t.click("#btnFormat")
+    expect('\n  "a": 1' in t.text("jsonOutput"), "2-space indent not applied")
 
 
 @case("json-validator", "edge", "syntax error is reported with position, not thrown")
@@ -210,12 +213,13 @@ def _(t):
     expect("Invalid JSON" in t.text("errorText"), "error text missing")
 
 
-@case("json-validator", "edge", "tree view renders nested nodes")
+@case("json-validator", "edge", "tree view renders nested nodes and copies a path on click")
 def _(t):
     t.set("jsonInput", '{"users":[{"id":1,"tags":["a","b"]},{"id":2}]}')
     t.click("#btnFormat")
     t.click("#viewTabTree")
     expect(t.count("#jsonTree .tree-row") >= 5, "tree rows not rendered")
+    eq(t.call("document.querySelectorAll('#jsonTree .tree-leaf')[0].dataset.path"), "$.users[0].id", "leaf path")
 
 
 @case("json-validator", "maximal", "20,000-object array formats under budget")
@@ -239,6 +243,22 @@ def _(t):
     eq(t.text("pathResult").strip(), "true", "quoted key")
     t.set("pathInput", "users[5].id")
     expect("undefined" in t.text("pathResult"), "missing path not reported")
+
+
+@case("json-validator", "typical", "JSONPath wildcards, recursion and filters list every match with its path")
+def _(t):
+    t.call("loadSample('api')")
+    t.wait(100)
+    t.call("setOutputView('query')")
+    eq(t.text("pathCount"), "3 matches", "filter count")
+    paths = t.call("[...document.querySelectorAll('#pathList .path-path')].map(e=>e.textContent)")
+    eq(paths, ["$.data[0].name", "$.data[2].name", "$.data[3].name"], "filter paths")
+    t.set("pathInput", "$..id")
+    eq(t.text("pathCount"), "4 matches", "recursive descent")
+    t.set("pathInput", "$.data[-1].name")
+    eq(t.text("pathResult").strip(), '"Support Plan"', "negative index")
+    t.set("pathInput", "$.data[?(@.price >")
+    expect("Bad path" in t.text("pathResult"), "bad filter not reported")
 
 
 @case("json-validator", "typical", "sort keys is deep and leaves arrays alone")
@@ -265,6 +285,92 @@ def _(t):
     t.click("#btnFormat")
     st = t.text("jsonStats")
     expect("3" in st and "keys" in st and "depth" in st and "minified" in st, f"stats wrong: {st}")
+
+
+@case("json-validator", "edge", "Fix repairs comments, quotes, bare keys, commas and NaN and lists the changes")
+def _(t):
+    t.call("loadSample('almost')")
+    t.wait(80)
+    expect(t.visible("#errorBanner"), "sample should start invalid")
+    t.click("#btnFix")
+    t.wait(100)
+    expect(not t.visible("#errorBanner"), "still invalid after fix: " + t.text("errorText"))
+    note = t.text("noticeText")
+    expect("trailing comma" in note and "bare key" in note and "comment" in note, note)
+    expect('"ratio": null' in t.text("jsonOutput") and '"enabled": true' in t.text("jsonOutput"), t.text("jsonOutput")[:200])
+
+
+@case("json-validator", "edge", "NDJSON is detected and parsed line by line; big integers warn")
+def _(t):
+    t.call("loadSample('ndjson')")
+    t.wait(80)
+    expect("NDJSON detected: 4 objects" in t.text("noticeText"), t.text("noticeText"))
+    expect(t.text("jsonOutput").lstrip().startswith("["), "not shown as array")
+    t.set("jsonInput", '{"id": 9007199254740993}')
+    t.click("#btnFormat")
+    expect("Precision warning" in t.text("noticeText"), t.text("noticeText"))
+
+
+@case("json-validator", "typical", "schema: infer then validate passes; a wrong schema lists violations by path")
+def _(t):
+    t.call("loadSample('api')")
+    t.wait(80)
+    t.call("setOutputView('schema'); inferSchema()")
+    expect('"format": "date-time"' in t.val("schemaInput") and '"required"' in t.val("schemaInput"), t.val("schemaInput")[:300])
+    t.call("validateSchema()")
+    expect("Valid" in t.text("schemaResult"), t.text("schemaResult"))
+    t.set("schemaInput", '{"type":"object","required":["nope"],"properties":{"status":{"type":"string"},"data":{"type":"array","maxItems":2}}}')
+    t.call("validateSchema()")
+    rows = t.call("[...document.querySelectorAll('#schemaResult tbody tr')].map(r=>r.children[0].textContent+':'+r.children[1].textContent)")
+    eq(sorted(rows), ["$.data:maxItems", "$.status:type", "$:required"], str(rows))
+    t.set("schemaInput", "{not json")
+    t.call("validateSchema()")
+    expect("not valid JSON" in t.text("schemaResult"), t.text("schemaResult"))
+
+
+@case("json-validator", "typical", "types tab generates TypeScript and Go from the sample")
+def _(t):
+    t.call("loadSample('api')")
+    t.wait(80)
+    t.call("setOutputView('types')")
+    ts = t.text("typesOut")
+    expect("export interface Root {" in ts and "data: Datum[];" in ts and "discount?: number | null;" in ts, ts[:400])
+    t.select("typeLang", "go")
+    expect('`json:"inStock"`' in t.text("typesOut"), t.text("typesOut")[:300])
+    t.set("typeName", "Catalog")
+    expect("type Catalog struct" in t.text("typesOut"), "root name not applied")
+
+
+@case("json-validator", "typical", "convert tab: SQL, CSV, NDJSON, YAML and string literal")
+def _(t):
+    t.call("loadSample('api')")
+    t.wait(80)
+    t.call("setOutputView('convert')")
+    sql = t.text("convOut")
+    expect('CREATE TABLE "data"' in sql and 'INSERT INTO "data"' in sql and "'Quantum CPU'" in sql, sql[:300])
+    t.select("sqlDialect", "mysql")
+    expect("`data`" in t.text("convOut"), "mysql quoting")
+    t.select("convTarget", "csv")
+    expect(t.text("convOut").startswith("id,name,inStock,price,tags,createdAt,category,discount"), t.text("convOut")[:100])
+    t.select("convTarget", "ndjson")
+    eq(len([l for l in t.text("convOut").split("\n") if l.strip()]), 1, "object -> one ndjson line")
+    t.select("convTarget", "yaml")
+    expect(t.text("convOut").startswith("status: 200\nmessage: Data retrieved successfully\ndata:\n  - id: 101"), t.text("convOut")[:120])
+    t.select("convTarget", "string")
+    expect(t.text("convOut").startswith('"{'), "string literal")
+
+
+@case("json-validator", "typical", "share link restores input, options, path and view")
+def _(t):
+    t.call("loadSample('api')")
+    t.wait(80)
+    t.call("setOutputView('query')")
+    url = t.call("Layerbit.state.write(getState())")
+    t.page.goto(url, wait_until="load")
+    t.wait(300)
+    eq(t.val("pathInput"), "$.data[?(@.inStock == true)].name", "path restored")
+    eq(t.text("pathCount"), "3 matches", "query re-run")
+    expect(t.visible("#viewQuery"), "view not restored")
 
 
 # ----------------------------------------------------------------------------
