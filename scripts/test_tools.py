@@ -1406,6 +1406,77 @@ def _(t):
 
 
 # ----------------------------------------------------------------------------
+# kernel (js/kernel.js): palette, share links, send-to, history, drop, privacy
+# ----------------------------------------------------------------------------
+@case("base64", "typical", "kernel: header pills, palette search and keyboard navigation")
+def _(t):
+    pills = t.call("[...document.querySelectorAll('.lb-header-tools .lb-pill')].map(e=>e.textContent.trim())")
+    expect(any("Search" in p for p in pills) and any("Local" in p for p in pills), f"pills: {pills}")
+    t.page.keyboard.press("Control+k")
+    t.wait(80)
+    expect(t.visible("#lbPalette"), "palette did not open")
+    t.page.keyboard.type("jwt")
+    t.wait(80)
+    first = t.call("document.querySelector('#lbPalette .lb-pal-item.active .lb-pal-title').textContent")
+    expect("JWT" in first, f"first result: {first}")
+    t.page.keyboard.press("Escape")
+    expect(not t.visible("#lbPalette"), "palette did not close")
+
+
+@case("base64", "typical", "kernel: share link round-trips input through the #fragment")
+def _(t):
+    t.set("plainText", "Hello share — ünïcode 🌍")
+    t.page.context.grant_permissions(["clipboard-read", "clipboard-write"])
+    url = t.call("Layerbit.state.share()")
+    expect("#s=z:" in url or "#s=j:" in url, f"bad share url: {url}")
+    t.page.goto(url, wait_until="load")
+    t.wait(200)
+    eq(t.val("plainText"), "Hello share — ünïcode 🌍", "restored input")
+    expect(t.val("base64Text"), "tool did not run on restored input")
+
+
+@case("base64", "typical", "kernel: send-to hands text to another tool")
+def _(t):
+    t.call("Layerbit.sendTo('{\"a\":1}', 'json')")
+    t.wait(80)
+    t.call("[...document.querySelectorAll('#lbPalette .lb-pal-item')].find(e=>e.textContent.includes('JSON Validator')).click()")
+    t.page.wait_for_load_state("load")
+    t.wait(300)
+    expect("json-validator.html" in t.page.url, f"landed on {t.page.url}")
+    eq(t.val("jsonInput"), '{"a":1}', "input handed over")
+
+
+@case("base64", "typical", "kernel: history push/list/drawer and clear")
+def _(t):
+    t.call("Layerbit.history.push('base64', {input:'abc'}, 'first run')")
+    t.wait(150)
+    labels = t.call("Layerbit.history.list('base64', 5).then(r=>r.map(x=>x.label))")
+    expect("first run" in labels, f"history: {labels}")
+    t.click("#lbHistoryBtn")
+    t.wait(150)
+    expect(t.count("#lbHistList .lb-pal-item") >= 1, "drawer empty")
+    t.call("Layerbit.history.clear()")
+    t.wait(150)
+    eq(t.call("Layerbit.history.list('base64', 5).then(r=>r.length)"), 0, "cleared")
+
+
+@case("base64", "edge", "kernel: dropping a file anywhere loads the first textarea")
+def _(t):
+    t.call("""() => { const dt = new DataTransfer(); dt.items.add(new File(['dropped text'], 'x.txt', {type:'text/plain'}));
+      document.querySelector('main').dispatchEvent(new DragEvent('drop', {bubbles:true, cancelable:true, dataTransfer: dt})); }""")
+    t.wait(200)
+    eq(t.val("plainText"), "dropped text", "dropped file content")
+
+
+@case("base64", "edge", "kernel: privacy pill counts a page-made network request")
+def _(t):
+    expect("nothing sent" in t.text("lbPrivacyPill"), t.text("lbPrivacyPill"))
+    t.call("fetch('https://example.invalid/x').catch(()=>{})")
+    t.wait(100)
+    expect("1 network request" in t.text("lbPrivacyPill"), t.text("lbPrivacyPill"))
+
+
+# ----------------------------------------------------------------------------
 # runner
 # ----------------------------------------------------------------------------
 def free_port():

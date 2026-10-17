@@ -121,6 +121,24 @@ def check_seo(text, f):
     return errs, title, desc
 
 
+def check_registry():
+    """js/kernel.js lists every tool and guide for the command palette and the
+    send-to menu; a page missing there is unreachable from the palette, and a
+    stale entry is a broken link."""
+    errs = []
+    k = open("js/kernel.js", encoding="utf-8").read()
+    tools = set(re.findall(r"^\s+\['([a-z0-9-]+)', ['\"]", k, re.M))
+    pages = {os.path.basename(f)[:-5] for f in glob.glob("tools/*.html")}
+    guides = {os.path.basename(f)[:-5] for f in glob.glob("guides/*.html")}
+    for p in sorted(pages - tools):
+        errs.append(f"tools/{p}.html is not in the kernel registry")
+    for g in sorted(guides - tools):
+        errs.append(f"guides/{g}.html is not in the kernel registry")
+    for t in sorted(tools - pages - guides):
+        errs.append(f"kernel registry entry '{t}' has no page")
+    return errs
+
+
 def html_unescape(s):
     import html
     return html.unescape(s)
@@ -195,7 +213,7 @@ def main():
         if errs:
             failures.append((f, errs))
 
-    graph_errs = check_link_graph(files)
+    graph_errs = check_link_graph(files) + check_registry()
     if graph_errs:
         failures.append(("(site-wide link graph)", graph_errs))
 
