@@ -1871,6 +1871,122 @@ def _(t):
 
 
 # ----------------------------------------------------------------------------
+# flow
+# ----------------------------------------------------------------------------
+@case("flow", "minimal", "empty input and no steps: output mirrors input, no error")
+def _(t):
+    expect(t.count("#opList .op-item") >= 60, "operation list not rendered")
+    expect(t.count("#presetButtons .sample-btn") >= 8, "presets missing")
+    t.set("flowInput", "")
+    t.wait(250)
+    expect(not t.visible("#errorBanner"), "error on empty input")
+    expect("Paste something" in t.text("magicBar"), t.text("magicBar"))
+
+
+@case("flow", "typical", "magic suggests Base64 decode and the chip adds a working step")
+def _(t):
+    t.set("flowInput", "SGVsbG8gd29ybGQh")
+    t.wait(250)
+    chips = t.call("[...document.querySelectorAll('.magic-chip')].map(e=>e.firstChild.textContent)")
+    expect(chips and chips[0] == "Base64 decode", str(chips))
+    t.click(".magic-chip")
+    t.wait_for("() => document.getElementById('flowOutput').innerText === 'Hello world!'")
+    eq(t.count("#recipeList .step"), 1, "step count")
+
+
+@case("flow", "typical", "presets run end to end: JWT from a log line, gzip payload, CSV pick")
+def _(t):
+    t.call("loadPreset('jwt-from-log')")
+    t.wait_for("() => document.getElementById('flowOutput').innerText.includes('John Doe')", timeout=8000)
+    eq(t.count("#recipeList .step"), 4, "jwt preset steps")
+    t.call("loadPreset('gzip-payload')")
+    t.wait_for("() => document.getElementById('flowOutput').innerText.includes('order.created')", timeout=8000)
+    t.call("loadPreset('csv-pick')")
+    t.wait_for("() => document.getElementById('flowOutput').innerText.includes('B-2')", timeout=8000)
+    expect("A-1" not in t.text("flowOutput"), "filter did not apply")
+
+
+@case("flow", "edge", "a failing step reports on its card, later steps are skipped, fixing resumes")
+def _(t):
+    t.call("loadPreset('csv-pick')")
+    t.wait_for("() => document.getElementById('flowOutput').innerText.includes('B-2')", timeout=8000)
+    t.call("setArg(1,'path','$[?(@.qty >')")
+    t.wait(400)
+    expect(t.visible("#errorBanner") and "Step 2" in t.text("errorText"), t.text("errorText"))
+    expect(t.count("#recipeList .step.err") == 1, "step not marked")
+    t.call("setArg(1,'path','$[*].sku')")
+    t.wait(400)
+    expect(not t.visible("#errorBanner") and "C-3" in t.text("flowOutput"), "did not resume")
+
+
+@case("flow", "typical", "search + Enter adds a step; move, disable and remove steps")
+def _(t):
+    t.call("loadPreset('csv-pick')")
+    t.wait_for("() => document.getElementById('flowOutput').innerText.includes('B-2')", timeout=8000)
+    t.call("setArg(1,'path','$[*].sku')")
+    t.page.focus("#opSearch")
+    t.page.keyboard.type("sort")
+    t.page.keyboard.press("Enter")
+    t.wait(400)
+    eq(t.count("#recipeList .step"), 3, "step added via search")
+    t.call("moveStep(2,-1)")
+    t.wait(300)
+    expect(t.visible("#errorBanner"), "moving sort before the query should break the query")
+    t.call("moveStep(1,1); toggleStep(2)")
+    t.wait(300)
+    expect(not t.visible("#errorBanner") and t.count("#recipeList .step.off") == 1, "toggle failed")
+    t.call("removeStep(2)")
+    t.wait(300)
+    eq(t.count("#recipeList .step"), 2, "remove failed")
+
+
+@case("flow", "typical", "lazily loaded libraries: YAML, MD5 and SQL steps")
+def _(t):
+    t.call("clearRecipe(); document.getElementById('flowInput').value='a: 1\\nb: [x, y]'; onInput(); addStep('yaml-to-json', {indent:'minify'})")
+    t.wait_for("() => document.getElementById('flowOutput').innerText === '{\"a\":1,\"b\":[\"x\",\"y\"]}'", timeout=8000)
+    t.call("clearRecipe(); document.getElementById('flowInput').value='abc'; onInput(); addStep('md5')")
+    t.wait_for("() => document.getElementById('flowOutput').innerText === '900150983cd24fb0d6963f7d28e17f72'", timeout=8000)
+    t.call("clearRecipe(); document.getElementById('flowInput').value='select a from b where c=1'; onInput(); addStep('sql-format')")
+    t.wait_for("() => document.getElementById('flowOutput').innerText.includes('\\n')", timeout=8000)
+
+
+@case("flow", "typical", "hashing and AES round trip inside one recipe")
+def _(t):
+    t.call("clearRecipe(); document.getElementById('flowInput').value='secret note'; onInput(); addStep('aes-encrypt', {password:'pw'}); addStep('aes-decrypt', {password:'pw'})")
+    t.wait_for("() => document.getElementById('flowOutput').innerText === 'secret note'", timeout=8000)
+    t.call("setArg(1,'password','nope')")
+    t.wait_for("() => /wrong password/.test(document.getElementById('errorText').innerText)", timeout=8000)
+    t.call("clearRecipe(); addStep('sha256', {format:'hex'})")
+    t.wait_for("() => document.getElementById('flowOutput').innerText.length === 64", timeout=8000)
+
+
+@case("flow", "typical", "share link restores input and recipe; recipe JSON copy/import round trip")
+def _(t):
+    t.call("loadPreset('clean-list')")
+    t.wait(400)
+    url = t.call("Layerbit.state.write(getState())")
+    t.page.goto(url, wait_until="load")
+    t.wait(600)
+    eq(t.text("flowOutput"), "server-1\nserver-2\nserver-10", "restored output")
+    eq(t.count("#recipeList .step"), 4, "restored steps")
+    r = t.call("LBFlow.serialize(steps)")
+    t.call("clearRecipe()")
+    t.call(f"steps = LBFlow.parse({json.dumps(r)}).map(s => Object.assign(s, {{enabled: true}})); renderRecipe(); runAll()")
+    t.wait(400)
+    eq(t.count("#recipeList .step"), 4, "imported steps")
+
+
+@case("flow", "maximal", "50,000-line input through trim, unique and sort under budget")
+def _(t):
+    big = "\n".join(f"  host-{i % 5000}  " for i in range(50000))
+    t.call("clearRecipe()")
+    t.set("flowInput", big)
+    t.call("addStep('trim'); addStep('unique-lines'); addStep('sort-lines', {mode:'natural', icase:true})")
+    t.wait_for("() => document.getElementById('flowOutput').innerText.startsWith('host-0\\nhost-1\\nhost-2')", timeout=10000)
+    expect("5,000 chars" not in t.text("outMeta") and "chars" in t.text("outMeta"), t.text("outMeta"))
+
+
+# ----------------------------------------------------------------------------
 # kernel (js/kernel.js): palette, share links, send-to, history, drop, privacy
 # ----------------------------------------------------------------------------
 @case("base64", "typical", "kernel: header pills, palette search and keyboard navigation")

@@ -30,6 +30,7 @@
     ['text-diff-checker', 'Text Diff & Merge', 'diff compare merge patch three-way structural', ['text', 'json', 'csv']],
     ['regex-tester', 'Regex Tester & Debugger', 'regex regular expression match replace explain redos', ['text']],
     ['jwt-decoder', 'JWT Decoder, Verifier & Signer', 'jwt token sign verify jwk jwe claims', ['jwt', 'text']],
+    ['flow', 'Flow: chain operations into a recipe', 'pipeline recipe chain decode transform hash magic cyberchef', ['text', 'json', 'csv', 'base64', 'jwt', 'url']],
     ['sql-formatter', 'SQL Formatter', 'sql format beautify mysql postgres tsql', ['sql', 'text']],
     ['base64', 'Base64 Encoder & Decoder', 'base64 encode decode file', ['text', 'base64']],
     ['url-encoder', 'URL Encoder & Decoder', 'url percent encoding query string', ['text', 'url']],
