@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="Compare two texts or files side by side or inline with line, word or character highlighting, whitespace ignoring and change navigation. Runs in your browser." />
-  <title>Text Diff Checker Online: Compare Two Files | Layerbit</title>
+  <meta name="description" content="Compare two texts, code files, JSON, CSV or zip folders, merge changes hunk by hunk, resolve three-way merges and apply unified patches. Runs in your browser." />
+  <title>Text Diff Checker & Merge Tool: Compare Files | Layerbit</title>
   <!-- Google tag (gtag.js) -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-ERX8MNPPP5"></script>
   <script>
@@ -18,16 +18,16 @@
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://layerbit.co.in/tools/text-diff-checker.html" />
   <meta property="og:site_name" content="Layerbit" />
-  <meta property="og:title" content="Text Diff Checker Online: Compare Two Files | Layerbit" />
-  <meta property="og:description" content="Compare two texts or files side by side or inline with line, word or character highlighting, whitespace ignoring and change navigation. Runs in your browser." />
+  <meta property="og:title" content="Text Diff Checker & Merge Tool: Compare Files | Layerbit" />
+  <meta property="og:description" content="Compare two texts, code files, JSON, CSV or zip folders, merge changes hunk by hunk, resolve three-way merges and apply unified patches. Runs in your browser." />
   <meta property="og:image" content="https://layerbit.co.in/og-image.png" />
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
   <meta property="og:image:alt" content="Layerbit - free browser-based developer tools" />
   <meta property="og:locale" content="en" />
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="Text Diff Checker Online: Compare Two Files | Layerbit" />
-  <meta name="twitter:description" content="Compare two texts or files side by side or inline with line, word or character highlighting, whitespace ignoring and change navigation. Runs in your browser." />
+  <meta name="twitter:title" content="Text Diff Checker & Merge Tool: Compare Files | Layerbit" />
+  <meta name="twitter:description" content="Compare two texts, code files, JSON, CSV or zip folders, merge changes hunk by hunk, resolve three-way merges and apply unified patches. Runs in your browser." />
   <meta name="twitter:image" content="https://layerbit.co.in/og-image.png" />
   <meta name="twitter:image:alt" content="Layerbit - free browser-based developer tools" />
   <meta name="theme-color" content="#0a0c10" />
@@ -38,9 +38,9 @@
     {
       "@type": "SoftwareApplication",
       "@id": "https://layerbit.co.in/tools/text-diff-checker.html#app",
-      "name": "Text Diff Checker",
+      "name": "Text Diff Checker \u0026 Merge Tool",
       "url": "https://layerbit.co.in/tools/text-diff-checker.html",
-      "description": "Compare two texts or files side by side or inline with line, word or character highlighting, whitespace ignoring and change navigation. Runs in your browser.",
+      "description": "Compare two texts, code files, JSON, CSV or zip folders, merge changes hunk by hunk, resolve three-way merges and apply unified patches. Runs in your browser.",
       "applicationCategory": "DeveloperApplication",
       "operatingSystem": "Any (runs in the browser)",
       "browserRequirements": "Requires JavaScript",
@@ -52,7 +52,19 @@
       },
       "publisher": {
         "@id": "https://layerbit.co.in/#organization"
-      }
+      },
+      "featureList": [
+        "Line diff with word or character highlights",
+        "Side-by-side and unified views with context folding",
+        "Syntax highlighting for 14 languages",
+        "Hunk-by-hunk merge with editable result",
+        "Three-way merge with conflict resolution",
+        "Structural JSON and YAML diff by path",
+        "Keyed CSV and Excel cell diff",
+        "Apply and export unified patches",
+        "Zip folder comparison",
+        "Share links and local history"
+      ]
     },
     {
       "@type": "BreadcrumbList",
@@ -80,25 +92,81 @@
     },
     {
       "@type": "FAQPage",
+      "@id": "https://layerbit.co.in/tools/text-diff-checker.html#faq",
       "mainEntity": [
         {
           "@type": "Question",
-          "name": "How does Word-Level highlighting work?",
+          "name": "How does word-level highlighting work?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "Unlike basic diff checkers that only show if an entire line was replaced, Layerbit runs a secondary pass on modified lines. If a line is removed and immediately replaced, the engine diffs the characters within those specific lines to highlight the exact insertion or deletion."
+            "text": "The engine first runs a line-level diff to find which lines changed. Where a block of removed lines is immediately followed by a block of added lines, it pairs them up and runs a second diff inside each pair at word or character granularity, highlighting only the parts that actually differ. Lines that were purely added or removed are shown whole."
           }
         },
         {
           "@type": "Question",
-          "name": "What does the \"Ignore Whitespace\" toggle do?",
+          "name": "What do \"Ignore whitespace\" and the other normalisation options do?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "When code is reformatted by a linter, the indentation changes can create massive false-positive diffs. Toggling this feature forces the engine to ignore tabs, spaces, and line breaks, isolating only the actual logic changes."
+            "text": "They change how lines are compared, not how they are displayed. Ignore whitespace collapses every run of spaces and tabs to one space and trims the ends, so a reformatted file shows only logic changes. Ignore case compares lower-cased lines. Trim trailing ignores whitespace at the end of a line only. Ignore blank lines lets empty lines match anywhere. Line endings (CRLF vs LF) are always normalised. The original text is still shown in full in the result."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How do I merge two files, not just compare them?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Run a text comparison, then use the controls above each change block: Keep original, Accept change, or Both. The Merged result pane below the diff updates as you decide, starting from the modified text with every change accepted. You can also edit the merged text directly, copy it, download it, send it to another tool, or load it back as the new original to continue from there."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "When should I use the three-way merge instead?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "When two people (or two branches) edited the same file independently and you have the version they both started from. A two-way diff cannot tell which side changed a line; with the base it can, so non-overlapping edits from both sides merge automatically and only genuine overlaps become conflicts. The output uses Git's conflict markers with diff3-style base sections, and each conflict can be resolved in place with ours, theirs, or both."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What is a structural diff and when is it better than a text diff?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "A structural diff parses both documents and compares the resulting values. Two JSON files with the same data but different key order, indentation or quoting show no difference, and the changes that do exist are reported by path, like $.server.port changed from 8080 to 443. Use it for configuration files, API responses and anything machine-generated. Use the text diff when formatting itself matters, such as reviewing a hand-edited file."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How does the spreadsheet comparison match rows?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "By a key column you choose from the header row, such as an id, SKU or email. Rows with the same key are compared cell by cell regardless of where they appear, so a re-sorted or filtered export shows only real changes. Rows whose key exists on one side only are reported as added or removed, and columns that appear or disappear are listed separately. If the file has no natural key, match by row order instead."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Is the patch output compatible with git apply and patch?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes. The export is a standard unified diff with --- and +++ headers and @@ hunk ranges, which git apply, patch -p0 and every code review tool accept. The Apply a patch mode reads the same format back, including patches produced by git diff, and uses context matching with a fuzz fallback when line numbers have drifted."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Is anything uploaded when I compare files or zip folders?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "No. Files are read with the browser's FileReader, zip archives are unpacked with the browser's own DecompressionStream, and every algorithm on this page is JavaScript running in the tab. The privacy indicator in the header counts any network request the page makes; it stays at zero while you work. Closing the tab discards everything unless you chose to save a run to the local history."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How large a file can it handle?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Tens of thousands of lines compare in well under a second; the limit is rendering, not diffing. For files over about 20,000 lines, set Context to 3 or 5 lines so only the changed regions are rendered, and prefer word over character highlighting. The structural and table modes handle documents of several megabytes. Share links are capped at roughly 60 KB of compressed input; larger comparisons can be exported as a patch or HTML report instead."
           }
         }
-      ],
-      "@id": "https://layerbit.co.in/tools/text-diff-checker.html#faq"
+      ]
     }
   ]
 }
@@ -107,6 +175,7 @@
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6072772587431629" crossorigin="anonymous"></script>
 
   <script src="../js/vendor/lucide.min.js" async></script>
+  <script src="../js/kernel.js"></script>
   <!-- High-Performance Diff Engine -->
   <script src="../js/vendor/diff.min.js"></script>
 
@@ -115,6 +184,7 @@
   <link rel="manifest" href="../manifest.json" />
   <link rel="apple-touch-icon" href="../apple-touch-icon.png" />
   <link rel="stylesheet" href="../css/base.css" />
+  <link rel="stylesheet" href="../css/tool.css" />
 
   <style>
 
@@ -300,10 +370,96 @@
       .fab { bottom: 15px; left: 15px; width: 50px; height: 50px; }
     }
   
-    /* v2.3: granularity */
-    .mini-select { background: rgba(0,0,0,0.3); border: 1px solid var(--card-border); color: var(--text-main); border-radius: 6px; padding: 4px 8px; font-family: inherit; font-size: 0.95em; outline: none; cursor: pointer; }
-    .mini-select:focus { border-color: var(--accent-main); }
+
+    /* v3: modes, merge, structural, table, three-way, zip */
+    .mode-tabs { max-width: 1400px; width: 100%; margin: 0 auto 20px; display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+    .mode-tab { background: rgba(255,255,255,0.04); border: 1px solid var(--card-border); color: var(--text-muted); padding: 9px 16px; border-radius: 999px; font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: 0.9em; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; transition: 0.2s; }
+    .mode-tab i, .mode-tab svg { width: 15px; height: 15px; }
+    .mode-tab:hover { color: #fff; border-color: rgba(255,255,255,0.2); }
+    .mode-tab.active { background: rgba(56,189,248,0.12); border-color: var(--accent-main); color: #fff; }
+    .ide-container.three-col { grid-template-columns: 1fr 1fr 1fr; }
+    .ide-container.single { grid-template-columns: 1fr; }
+    .lang-chip { font-size: 0.72em; font-weight: 600; color: var(--accent-main); background: rgba(56,189,248,0.12); border: 1px solid rgba(56,189,248,0.3); padding: 2px 8px; border-radius: 999px; margin-left: 6px; font-family: 'Fira Code', monospace; }
+    .lang-chip:empty { display: none; }
+    .pane-meta { font-size: 0.78em; color: var(--text-muted); font-weight: 500; white-space: nowrap; }
+    .pane-header { flex-wrap: wrap; gap: 10px; }
+    .action-bar { flex-direction: column; align-items: center; gap: 12px; }
+    .opt-group { display: flex; flex-wrap: wrap; gap: 10px 16px; justify-content: center; align-items: center; }
+    .mini-select, .mini-input { background: rgba(0,0,0,0.3); border: 1px solid var(--card-border); color: var(--text-main); border-radius: 6px; padding: 4px 8px; font-family: inherit; font-size: 0.95em; outline: none; }
+    .mini-select { cursor: pointer; }
+    .mini-select:focus, .mini-input:focus { border-color: var(--accent-main); }
     .mini-select option { background: #0a0c10; }
+    .btn-primary { padding: 10px 26px; }
+
+    .result-pane { min-height: 200px; }
+    .result-header { align-items: center; }
+    .stats-strip { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 0.8em; color: var(--text-muted); font-weight: 500; }
+    .stats-strip span { white-space: nowrap; }
+    .st-add { color: var(--diff-add-text); } .st-del { color: var(--diff-sub-text); } .st-mod { color: #fbbf24; }
+    .st-lang { font-family: 'Fira Code', monospace; color: var(--accent-main); }
+    .hunk-counter { font-size: 0.85em; color: var(--text-muted); min-width: 52px; text-align: center; font-family: 'Fira Code', monospace; }
+    .error-banner { display: none; background: rgba(239,68,68,0.12); border-bottom: 1px solid rgba(239,68,68,0.35); color: #fecaca; padding: 10px 20px; font-size: 0.9em; align-items: flex-start; gap: 10px; }
+    .error-banner.active { display: flex; }
+    .error-banner i, .error-banner svg { color: #f87171; width: 18px; flex-shrink: 0; margin-top: 2px; }
+
+    .split-wrap { display: grid; grid-template-columns: 1fr 1fr; gap: 0; }
+    .split-wrap .diff-output { border-right: 1px solid var(--card-border); }
+    .split-wrap .diff-output:last-child { border-right: none; }
+    .diff-output { height: 560px; max-height: 70vh; }
+    .diff-output:focus { outline: 2px solid var(--accent-main); outline-offset: -2px; }
+    .diff-output.unified .diff-num { width: 84px; text-align: center; padding: 0; display: flex; }
+    .diff-output.unified .diff-num span { flex: 1; border-right: 1px solid var(--card-border); }
+    .diff-text { padding-right: 10px; }
+    .hunk-anchor { height: 0; }
+    .hunk-bar, .hunk-bar-spacer { display: flex; align-items: center; gap: 6px; padding: 4px 10px; background: rgba(56,189,248,0.06); border-top: 1px solid rgba(56,189,248,0.2); border-bottom: 1px solid rgba(56,189,248,0.2); min-height: 30px; font-family: 'Space Grotesk', sans-serif; }
+    .hunk-bar.current { background: rgba(56,189,248,0.16); }
+    .hunk-label { font-size: 0.75em; color: var(--accent-main); font-weight: 600; margin-right: 6px; white-space: nowrap; }
+    .hb { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.12); color: var(--text-muted); font: 600 0.72em 'Space Grotesk', sans-serif; padding: 3px 9px; border-radius: 6px; cursor: pointer; white-space: nowrap; }
+    .hb:hover { color: #fff; border-color: rgba(255,255,255,0.3); }
+    .hb.on { background: rgba(56,189,248,0.2); border-color: var(--accent-main); color: #fff; }
+    .diff-skip { color: var(--text-muted); font-size: 0.85em; padding: 5px 12px; background: rgba(255,255,255,0.03); border-top: 1px dashed var(--card-border); border-bottom: 1px dashed var(--card-border); cursor: pointer; display: flex; align-items: center; gap: 6px; font-family: 'Space Grotesk', sans-serif; }
+    .diff-skip:hover { color: #fff; }
+    .diff-skip i, .diff-skip svg { width: 14px; height: 14px; }
+    .diff-identical { display: flex; align-items: center; gap: 8px; color: var(--diff-add-text); padding: 14px 16px; font-family: 'Space Grotesk', sans-serif; }
+    .diff-identical i, .diff-identical svg { width: 18px; height: 18px; }
+    .diff-empty { padding: 20px; color: var(--text-muted); font-family: 'Space Grotesk', sans-serif; }
+    .ws { opacity: 0.35; }
+    .tk-kw { color: #38bdf8; } .tk-str { color: #a7f3d0; } .tk-num { color: #fdba74; } .tk-cmt { color: #64748b; font-style: italic; } .tk-key { color: #c084fc; } .tk-tag { color: #f472b6; } .tk-attr { color: #fdba74; } .tk-fn { color: #f472b6; } .tk-prop { color: #38bdf8; } .tk-ins { color: var(--diff-add-text); } .tk-del { color: var(--diff-sub-text); }
+    .line-removed .diff-text, .line-added .diff-text { color: var(--text-main); }
+    .word-removed, .word-added { color: #fff; }
+
+    .struct-output { max-height: 70vh; overflow: auto; padding: 6px 0 14px; }
+    .data-table { width: 100%; border-collapse: collapse; font-size: 0.85em; }
+    .data-table th, .data-table td { text-align: left; padding: 8px 12px; border-bottom: 1px solid rgba(255,255,255,0.06); vertical-align: top; }
+    .data-table th { color: var(--accent-main); font-weight: 600; position: sticky; top: 0; background: rgba(10,12,16,0.97); white-space: nowrap; font-family: 'Space Grotesk', sans-serif; }
+    .data-table td { font-family: 'Fira Code', monospace; color: var(--text-main); word-break: break-word; }
+    .t-path { color: var(--accent-main); white-space: nowrap; }
+    .t-added { color: var(--diff-add-text); } .t-removed { color: var(--diff-sub-text); } .t-changed { color: #fbbf24; } .t-type { color: #c084fc; } .t-same { color: var(--text-muted); }
+    .cell-old { color: var(--diff-sub-text); text-decoration: line-through; } .cell-new { color: var(--diff-add-text); }
+    .muted { color: var(--text-muted); }
+    .t-h { font-size: 0.9em; padding: 14px 12px 6px; color: #fff; font-family: 'Space Grotesk', sans-serif; }
+    .struct-foot { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; padding: 14px 12px 0; font-size: 0.85em; }
+    .zip-pane { min-height: 160px; }
+    .zip-drop { flex: 1; display: flex; align-items: center; justify-content: center; gap: 10px; color: var(--text-muted); padding: 30px 20px; text-align: center; font-size: 0.95em; }
+    .zip-drop i, .zip-drop svg { width: 26px; height: 26px; color: var(--accent-main); flex-shrink: 0; }
+    .zip-table .btn { padding: 4px 10px; font-size: 0.8em; }
+
+    .three-output { max-height: 70vh; overflow: auto; padding: 10px 14px; font-family: 'Fira Code', monospace; font-size: 13px; line-height: 1.55; }
+    .three-chunk { white-space: pre-wrap; word-break: break-all; border-left: 3px solid rgba(255,255,255,0.08); padding: 4px 12px; margin: 4px 0; border-radius: 0 8px 8px 0; position: relative; }
+    .three-chunk.eq { color: var(--text-muted); }
+    .three-chunk.ours { border-left-color: var(--diff-sub-text); background: rgba(239,68,68,0.08); }
+    .three-chunk.theirs { border-left-color: var(--diff-add-text); background: rgba(34,197,94,0.08); }
+    .three-chunk.both { border-left-color: var(--accent-main); background: rgba(56,189,248,0.08); }
+    .three-chunk.conflict { border-left-color: #ef4444; background: rgba(239,68,68,0.06); padding: 8px 12px; }
+    .three-chunk.conflict.resolved { border-left-color: #fbbf24; background: rgba(245,158,11,0.06); }
+    .three-side { padding: 6px 10px; margin: 6px 0; border-radius: 6px; background: rgba(0,0,0,0.25); }
+    .three-side.ours { box-shadow: inset 3px 0 0 var(--diff-sub-text); } .three-side.theirs { box-shadow: inset 3px 0 0 var(--diff-add-text); } .three-side.base { box-shadow: inset 3px 0 0 var(--text-muted); }
+    .three-tag { display: inline-block; font: 600 0.7em 'Space Grotesk', sans-serif; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-muted); margin-right: 8px; }
+    .cb { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-bottom: 6px; font-family: 'Space Grotesk', sans-serif; white-space: normal; }
+
+    @media (max-width: 1100px) { .ide-container.three-col { grid-template-columns: 1fr; } }
+    @media (max-width: 900px) { .split-wrap { grid-template-columns: 1fr; } .split-wrap .diff-output { border-right: none; border-bottom: 1px solid var(--card-border); height: 360px; } .result-header { flex-direction: column; align-items: flex-start; } }
+    @media (max-width: 480px) { .mode-tab { padding: 8px 12px; font-size: 0.82em; } .opt-group { gap: 8px 12px; } .action-bar .btn, .action-bar .btn-primary { width: auto; } .hunk-bar-spacer { display: none; } }
 
   </style>
 </head>
@@ -321,154 +477,256 @@
   </header>
 
   <main class="hero">
-    <h1>Text Diff Checker</h1>
-    <p>Compare two versions of any text or code and see exactly what changed — by line, word or character — without uploading either.</p>
+    <h1>Text Diff Checker &amp; Merge Tool</h1>
+    <p>Compare two texts, code files, JSON documents, spreadsheets or whole zip folders; merge changes hunk by hunk; resolve three-way merges; apply and export unified patches. Every byte stays in your browser.</p>
   </main>
 
-  <div class="ide-container">
+  <div class="mode-tabs" id="modeTabs" role="tablist" aria-label="Comparison mode">
+    <button type="button" class="mode-tab active" data-mode="text" role="tab" aria-selected="true"><i data-lucide="file-diff"></i> Text &amp; code</button>
+    <button type="button" class="mode-tab" data-mode="three" role="tab" aria-selected="false"><i data-lucide="git-merge"></i> Three-way merge</button>
+    <button type="button" class="mode-tab" data-mode="struct" role="tab" aria-selected="false"><i data-lucide="braces"></i> JSON / YAML structure</button>
+    <button type="button" class="mode-tab" data-mode="table" role="tab" aria-selected="false"><i data-lucide="table"></i> CSV / spreadsheet cells</button>
+    <button type="button" class="mode-tab" data-mode="patch" role="tab" aria-selected="false"><i data-lucide="file-plus-2"></i> Apply a patch</button>
+    <button type="button" class="mode-tab" data-mode="zip" role="tab" aria-selected="false"><i data-lucide="folder-git-2"></i> Folders (.zip)</button>
+  </div>
+
+  <!-- Two-sided inputs: text, struct and table modes share them -->
+  <div class="ide-container mode-only" data-for="text struct table" id="twoSided">
     <div class="pane" id="text1Pane">
       <div class="pane-header">
-        <div class="pane-title title-red"><i data-lucide="file-minus"></i> Original Text</div>
+        <div class="pane-title title-red"><i data-lucide="file-minus"></i> Original <span class="lang-chip" id="lang1"></span></div>
         <div class="btn-group">
-          <input type="file" id="text1File" accept=".txt" style="display:none;">
-          <button class="btn" onclick="document.getElementById('text1File').click()"><i data-lucide="upload"></i> Upload</button>
+          <span class="pane-meta" id="meta1"></span>
+          <input type="file" id="text1File" style="display:none;">
+          <button class="btn" type="button" onclick="document.getElementById('text1File').click()"><i data-lucide="upload"></i> Open file</button>
         </div>
       </div>
-      <textarea id="text1" class="editor" placeholder="Paste, type, or drag & drop the original code or text block here..."></textarea>
+      <textarea id="text1" class="editor" spellcheck="false" placeholder="Paste, type, or drop the original text, code, JSON or CSV here..."></textarea>
     </div>
 
     <div class="pane" id="text2Pane">
       <div class="pane-header">
-        <div class="pane-title title-green"><i data-lucide="file-plus"></i> Modified Text</div>
+        <div class="pane-title title-green"><i data-lucide="file-plus"></i> Modified <span class="lang-chip" id="lang2"></span></div>
         <div class="btn-group">
-          <input type="file" id="text2File" accept=".txt" style="display:none;">
-          <button class="btn" onclick="document.getElementById('text2File').click()"><i data-lucide="upload"></i> Upload</button>
+          <span class="pane-meta" id="meta2"></span>
+          <input type="file" id="text2File" style="display:none;">
+          <button class="btn" type="button" onclick="document.getElementById('text2File').click()"><i data-lucide="upload"></i> Open file</button>
         </div>
       </div>
-      <textarea id="text2" class="editor" placeholder="Paste, type, or drag & drop the modified code or text block here..."></textarea>
+      <textarea id="text2" class="editor" spellcheck="false" placeholder="Paste, type, or drop the modified version here..."></textarea>
     </div>
   </div>
 
-  <div class="action-bar">
-    <label class="toggle-label">
-      <input type="checkbox" id="ignoreWhitespace"> Ignore Whitespace
-    </label>
-    <label class="toggle-label">
-      <input type="checkbox" id="inlineMode"> Inline View
-    </label>
-    <label class="toggle-label" title="How changed lines are highlighted inside: by word, by character, or not at all">
-      Highlight
-      <select id="granularity" class="mini-select">
-        <option value="word" selected>words</option>
-        <option value="char">characters</option>
-        <option value="none">lines only</option>
-      </select>
-    </label>
-    
-    <button class="btn" onclick="swapInputs()"><i data-lucide="arrow-left-right"></i> Swap</button>
-    <button class="btn" onclick="clearInputs()"><i data-lucide="trash-2"></i> Clear</button>
-    <button class="btn btn-primary" onclick="runDiff()"><i data-lucide="search"></i> Analyze Diff</button>
+  <!-- Three-way inputs -->
+  <div class="ide-container three-col mode-only" data-for="three" style="display:none;">
+    <div class="pane">
+      <div class="pane-header"><div class="pane-title"><i data-lucide="git-commit-horizontal"></i> Base (common ancestor)</div>
+        <div class="btn-group"><input type="file" id="baseFile" style="display:none;"><button class="btn" type="button" onclick="document.getElementById('baseFile').click()"><i data-lucide="upload"></i> Open</button></div></div>
+      <textarea id="baseText" class="editor" spellcheck="false" placeholder="The version both sides started from..."></textarea>
+    </div>
+    <div class="pane">
+      <div class="pane-header"><div class="pane-title title-red"><i data-lucide="user"></i> Ours</div>
+        <div class="btn-group"><input type="file" id="oursFile" style="display:none;"><button class="btn" type="button" onclick="document.getElementById('oursFile').click()"><i data-lucide="upload"></i> Open</button></div></div>
+      <textarea id="oursText" class="editor" spellcheck="false" placeholder="Your version..."></textarea>
+    </div>
+    <div class="pane">
+      <div class="pane-header"><div class="pane-title title-green"><i data-lucide="users"></i> Theirs</div>
+        <div class="btn-group"><input type="file" id="theirsFile" style="display:none;"><button class="btn" type="button" onclick="document.getElementById('theirsFile').click()"><i data-lucide="upload"></i> Open</button></div></div>
+      <textarea id="theirsText" class="editor" spellcheck="false" placeholder="The other version..."></textarea>
+    </div>
   </div>
 
-  <div class="ide-container" id="outputSection" style="display: none;">
-    
-    <!-- Split View Containers -->
-    <div class="pane split-pane">
-      <div class="pane-header">
-        <div class="pane-title"><i data-lucide="file-output"></i> Original Result</div>
-        <div class="btn-group diff-nav">
-          <button class="btn" onclick="navDiff(-1)" title="Previous Change"><i data-lucide="chevron-up"></i></button>
-          <button class="btn" onclick="navDiff(1)" title="Next Change"><i data-lucide="chevron-down"></i></button>
+  <!-- Patch inputs -->
+  <div class="ide-container mode-only" data-for="patch" style="display:none;">
+    <div class="pane">
+      <div class="pane-header"><div class="pane-title"><i data-lucide="file-text"></i> Original file</div>
+        <div class="btn-group"><input type="file" id="patchOrigFile" style="display:none;"><button class="btn" type="button" onclick="document.getElementById('patchOrigFile').click()"><i data-lucide="upload"></i> Open</button></div></div>
+      <textarea id="patchOriginal" class="editor" spellcheck="false" placeholder="The file the patch was made against..."></textarea>
+    </div>
+    <div class="pane">
+      <div class="pane-header"><div class="pane-title"><i data-lucide="file-plus-2"></i> Unified diff / .patch</div>
+        <div class="btn-group"><input type="file" id="patchFile" style="display:none;"><button class="btn" type="button" onclick="document.getElementById('patchFile').click()"><i data-lucide="upload"></i> Open</button></div></div>
+      <textarea id="patchText" class="editor" spellcheck="false" placeholder="--- a/file&#10;+++ b/file&#10;@@ -1,3 +1,3 @@&#10; context&#10;-old line&#10;+new line"></textarea>
+    </div>
+  </div>
+
+  <!-- Zip inputs -->
+  <div class="ide-container mode-only" data-for="zip" style="display:none;">
+    <div class="pane zip-pane" id="zipAPane">
+      <div class="pane-header"><div class="pane-title title-red"><i data-lucide="folder-archive"></i> Folder A (.zip)</div>
+        <div class="btn-group"><input type="file" id="zipAFile" accept=".zip,application/zip" style="display:none;"><button class="btn" type="button" onclick="document.getElementById('zipAFile').click()"><i data-lucide="upload"></i> Choose zip</button></div></div>
+      <div class="zip-drop" id="zipAInfo"><i data-lucide="folder-input"></i><span>Drop a .zip of the first folder here</span></div>
+    </div>
+    <div class="pane zip-pane" id="zipBPane">
+      <div class="pane-header"><div class="pane-title title-green"><i data-lucide="folder-archive"></i> Folder B (.zip)</div>
+        <div class="btn-group"><input type="file" id="zipBFile" accept=".zip,application/zip" style="display:none;"><button class="btn" type="button" onclick="document.getElementById('zipBFile').click()"><i data-lucide="upload"></i> Choose zip</button></div></div>
+      <div class="zip-drop" id="zipBInfo"><i data-lucide="folder-input"></i><span>Drop a .zip of the second folder here</span></div>
+    </div>
+  </div>
+
+  <div class="action-bar" id="actionBar">
+    <div class="opt-group mode-only" data-for="text three patch">
+      <label class="toggle-label" title="Collapse runs of spaces and tabs and ignore leading/trailing whitespace"><input type="checkbox" id="ignoreWhitespace"> Ignore whitespace</label>
+      <label class="toggle-label" title="Compare case-insensitively"><input type="checkbox" id="ignoreCase"> Ignore case</label>
+      <label class="toggle-label" title="Ignore spaces and tabs at the end of a line"><input type="checkbox" id="trimTrailing"> Trim trailing</label>
+      <label class="toggle-label" title="Let blank lines match freely"><input type="checkbox" id="ignoreBlank"> Ignore blank lines</label>
+    </div>
+    <div class="opt-group mode-only" data-for="text patch zip">
+      <label class="toggle-label">Highlight
+        <select id="granularity" class="mini-select"><option value="word" selected>words</option><option value="char">characters</option><option value="none">lines only</option></select>
+      </label>
+      <label class="toggle-label">View
+        <select id="viewMode" class="mini-select"><option value="split" selected>side by side</option><option value="unified">unified</option></select>
+      </label>
+      <label class="toggle-label" title="Hide unchanged lines beyond this many around each change">Context
+        <select id="contextLines" class="mini-select"><option value="all" selected>all lines</option><option value="3">3 lines</option><option value="5">5 lines</option><option value="10">10 lines</option></select>
+      </label>
+      <label class="toggle-label">Syntax
+        <select id="syntaxMode" class="mini-select"><option value="auto" selected>auto</option><option value="text">none</option><option value="json">JSON</option><option value="js">JS / TS</option><option value="py">Python</option><option value="sql">SQL</option><option value="yaml">YAML</option><option value="xml">XML / HTML</option><option value="css">CSS</option><option value="go">Go</option><option value="java">Java / Kotlin</option><option value="cs">C#</option><option value="sh">Shell</option><option value="rs">Rust</option><option value="ini">INI / .env</option></select>
+      </label>
+      <label class="toggle-label" title="Render spaces as · and tabs as →"><input type="checkbox" id="showWs"> Show whitespace</label>
+    </div>
+    <div class="opt-group mode-only" data-for="struct" style="display:none;">
+      <label class="toggle-label">Arrays
+        <select id="arrMode" class="mini-select"><option value="index" selected>by position</option><option value="set">as sets (order ignored)</option><option value="key">by key field</option></select>
+      </label>
+      <label class="toggle-label" id="keyFieldLabel" style="display:none;">Key field <input type="text" id="keyField" class="mini-input" value="id" size="8"></label>
+    </div>
+    <div class="opt-group mode-only" data-for="table" style="display:none;">
+      <label class="toggle-label">Match rows by
+        <select id="keyCol" class="mini-select"><option value="-1">row order</option></select>
+      </label>
+    </div>
+    <div class="opt-group">
+      <button class="btn mode-only" data-for="text struct table" type="button" onclick="swapInputs()"><i data-lucide="arrow-left-right"></i> Swap</button>
+      <button class="btn" type="button" onclick="clearInputs()"><i data-lucide="trash-2"></i> Clear</button>
+      <button class="btn btn-primary" type="button" id="btnRun" data-lb-primary onclick="run()"><i data-lucide="search"></i> <span id="btnRunLabel">Compare</span></button>
+    </div>
+  </div>
+
+  <div class="ide-container single" id="outputSection" style="display:none;">
+    <div class="pane result-pane">
+      <div class="pane-header result-header">
+        <div class="pane-title"><i data-lucide="file-output"></i> <span id="resultTitle">Result</span></div>
+        <div class="stats-strip" id="diffStats"></div>
+        <div class="btn-group">
+          <span class="btn-group mode-only" data-for="text patch zip" id="navGroup">
+            <button class="btn" type="button" onclick="navDiff(-1)" title="Previous change (p)"><i data-lucide="chevron-up"></i></button>
+            <span class="hunk-counter" id="hunkCounter">0 / 0</span>
+            <button class="btn" type="button" onclick="navDiff(1)" title="Next change (n)"><i data-lucide="chevron-down"></i></button>
+          </span>
+          <span class="btn-group mode-only" data-for="text zip" id="mergeGroup">
+            <button class="btn" type="button" id="btnAllLeft" onclick="mergeAll('left')" title="Reject every change: merged result equals the original"><i data-lucide="chevrons-left"></i> Keep all original</button>
+            <button class="btn" type="button" id="btnAllRight" onclick="mergeAll('right')" title="Accept every change: merged result equals the modified text"><i data-lucide="chevrons-right"></i> Accept all changes</button>
+          </span>
+          <span class="btn-group">
+            <button class="btn" type="button" id="btnPatch" onclick="copyPatch()" title="Copy a unified diff (git apply / patch -p0 compatible)"><i data-lucide="copy"></i> Copy patch</button>
+            <button class="btn" type="button" id="btnPatchDl" onclick="downloadPatch()" title="Download as .patch"><i data-lucide="download"></i> .patch</button>
+            <button class="btn" type="button" id="btnReport" onclick="downloadReport()" title="Download a standalone HTML report of this comparison"><i data-lucide="file-code-2"></i> HTML report</button>
+          </span>
         </div>
       </div>
-      <div id="leftPanel" class="diff-output"></div>
-    </div>
+      <div class="error-banner" id="errorBanner"><i data-lucide="alert-triangle"></i><span id="errorText"></span></div>
 
-    <div class="pane split-pane">
-      <div class="pane-header">
-        <div class="pane-title"><i data-lucide="file-output"></i> Modified Result</div>
+      <!-- text / patch / zip-file views -->
+      <div class="split-wrap" id="splitWrap">
+        <div id="leftPanel" class="diff-output" tabindex="0" aria-label="Original with removals"></div>
+        <div id="rightPanel" class="diff-output" tabindex="0" aria-label="Modified with additions"></div>
       </div>
-      <div id="rightPanel" class="diff-output"></div>
-    </div>
+      <div id="inlinePanel" class="diff-output unified" style="display:none;" tabindex="0" aria-label="Unified diff"></div>
 
-    <!-- Inline View Container -->
-    <div class="pane inline-pane" style="display: none;">
+      <!-- structural view -->
+      <div id="structPanel" class="struct-output" style="display:none;"></div>
+      <!-- table view -->
+      <div id="tablePanel" class="struct-output" style="display:none;"></div>
+      <!-- three-way view -->
+      <div id="threePanel" class="three-output" style="display:none;"></div>
+      <!-- zip view -->
+      <div id="zipPanel" class="struct-output" style="display:none;"></div>
+    </div>
+  </div>
+
+  <div class="ide-container single" id="mergedSection" style="display:none;">
+    <div class="pane">
       <div class="pane-header">
-        <div class="pane-title"><i data-lucide="file-output"></i> Unified Result</div>
-        <div class="btn-group diff-nav">
-          <button class="btn" onclick="navDiff(-1)" title="Previous Change"><i data-lucide="chevron-up"></i></button>
-          <button class="btn" onclick="navDiff(1)" title="Next Change"><i data-lucide="chevron-down"></i></button>
+        <div class="pane-title"><i data-lucide="git-merge"></i> <span id="mergedTitle">Merged result</span> <span class="lang-chip" id="mergedMeta"></span></div>
+        <div class="btn-group">
+          <button class="btn" type="button" onclick="copyText('mergedText')"><i data-lucide="copy"></i> Copy</button>
+          <button class="btn" type="button" onclick="downloadMerged()"><i data-lucide="download"></i> Download</button>
+          <button class="btn" type="button" onclick="useMergedAsOriginal()" title="Load the merged text into the Original pane to continue from it"><i data-lucide="corner-left-up"></i> Use as original</button>
+          <button class="btn lb-send" type="button" data-lb-send="mergedText" data-lb-kind="text"><i data-lucide="send"></i> Send to…</button>
         </div>
       </div>
-      <div id="inlinePanel" class="diff-output"></div>
+      <textarea id="mergedText" class="editor" spellcheck="false"></textarea>
     </div>
   </div>
 
   <div class="docs-container">
     <div class="info-panel">
-      <h2><i data-lucide="info"></i> Version Control Forensics</h2>
-      <p>Layerbit’s Diff Analyzer implements advanced algorithmic mapping to extract exact character and word-level modifications. It is engineered to handle configuration files, raw source code, and extensive text blocks safely.</p>
-      
+      <h2><i data-lucide="info"></i> Six comparisons, one page, nothing uploaded</h2>
+      <p>Most diff sites do one thing: a line diff of two pasted texts. Real comparison work is messier than that — a merge that needs a third version, a JSON file whose keys were reordered, a spreadsheet export where one cell changed in ten thousand, a patch file someone emailed, two copies of a project folder. This page handles each of those with the right algorithm instead of forcing everything through a line diff.</p>
       <div class="use-cases-grid">
         <div class="use-case-card">
-          <h3><i data-lucide="code-2"></i> Code Review</h3>
-          <p>Easily spot minor typo fixes, variable name changes, and formatting shifts without having to manually scan line by line. The word-level highlights isolate the exact character changes.</p>
+          <h3><i data-lucide="file-diff"></i> Text &amp; code</h3>
+          <p>Line diff with word- or character-level highlights inside changed lines, syntax colouring for 14 languages, side-by-side or unified layout, context folding, and <strong>hunk-by-hunk merge</strong>: keep the original or accept the change for each block, then copy, download or send the merged text onward.</p>
         </div>
         <div class="use-case-card">
-          <h3><i data-lucide="file-json"></i> Config Verification</h3>
-          <p>Compare massive JSON payloads, environment variable files, or server configurations to track down breaking changes before deploying to production.</p>
+          <h3><i data-lucide="git-merge"></i> Three-way merge</h3>
+          <p>Give it the base version and two edited copies and it merges them the way <code>git merge</code> does: non-overlapping changes from both sides are combined automatically, overlapping ones become conflicts you resolve with a click — ours, theirs or both.</p>
         </div>
         <div class="use-case-card">
-          <h3><i data-lucide="eye-off"></i> Secure Auditing</h3>
-          <p>Air-Gapped Security: Your code never leaves your computer. The engine runs 100% locally in your browser's memory, ensuring proprietary algorithms stay private.</p>
+          <h3><i data-lucide="braces"></i> JSON / YAML structure</h3>
+          <p>Compares parsed values, not text. Key order, indentation and quoting style are ignored; what you get is a list of paths — <code>$.config.timeout</code> changed from 30 to 60, <code>$.features[2]</code> added — with arrays matched by position, as sets, or by an id field.</p>
+        </div>
+        <div class="use-case-card">
+          <h3><i data-lucide="table"></i> CSV / spreadsheet cells</h3>
+          <p>Rows are matched by a key column you choose, so a re-sorted export does not show as "everything changed". The result is the list of rows added, removed, and changed, with the exact cells that differ. Excel files are read locally too.</p>
+        </div>
+        <div class="use-case-card">
+          <h3><i data-lucide="file-plus-2"></i> Apply a patch</h3>
+          <p>Paste a unified diff and the file it was made against; the patch is applied with context matching (and a fuzz fallback if line numbers drifted) and the result is shown as a diff so you can see exactly what it did before you trust it.</p>
+        </div>
+        <div class="use-case-card">
+          <h3><i data-lucide="folder-git-2"></i> Folders (.zip)</h3>
+          <p>Drop two zip archives — two releases, a backup and a live copy — and get the file-level picture: added, removed, identical, and modified files, each modified file one click from a full text diff. The archives are unpacked in memory in your browser.</p>
         </div>
       </div>
     </div>
 
     <div class="info-panel">
-      <h2><i data-lucide="flask-conical"></i> Quick Testing Templates</h2>
-      <p>Test the diff engine instantly. Click the templates below to load sample comparisons and watch how the word-level highlighting and whitespace filtering perform.</p>
+      <h2><i data-lucide="flask-conical"></i> Try it with a sample</h2>
+      <p>Each sample switches to the right mode and runs. They are small enough to read in full, so you can check the output against your own expectation.</p>
       <div>
-        <button class="sample-btn" onclick="loadSample('code')">Code Refactoring</button>
-        <button class="sample-btn" onclick="loadSample('json')">JSON Config Update</button>
-        <button class="sample-btn" onclick="loadSample('whitespace')">Whitespace Formatting</button>
+        <button class="sample-btn" type="button" onclick="loadSample('code')">Code refactor</button>
+        <button class="sample-btn" type="button" onclick="loadSample('json')">JSON structural diff</button>
+        <button class="sample-btn" type="button" onclick="loadSample('yaml')">YAML with reordered keys</button>
+        <button class="sample-btn" type="button" onclick="loadSample('csv')">CSV keyed by id</button>
+        <button class="sample-btn" type="button" onclick="loadSample('three')">Three-way merge with a conflict</button>
+        <button class="sample-btn" type="button" onclick="loadSample('patch')">Apply a patch</button>
+        <button class="sample-btn" type="button" onclick="loadSample('whitespace')">Whitespace-only change</button>
       </div>
     </div>
 
     <div class="info-panel">
-      <h2><i data-lucide="help-circle"></i> Engineering FAQ</h2>
-      <div class="faq-container">
-        
-        <div class="faq-item">
-          <button class="faq-question">How does Word-Level highlighting work? <i data-lucide="chevron-down"></i></button>
-          <div class="faq-answer">
-            <p>Unlike basic diff checkers that only show if an entire line was replaced, Layerbit runs a secondary pass on modified lines. If a line is removed and immediately replaced, the engine diffs the characters within those specific lines to highlight the exact insertion or deletion.</p>
-          </div>
-        </div>
-
-        <div class="faq-item">
-          <button class="faq-question">What does the "Ignore Whitespace" toggle do? <i data-lucide="chevron-down"></i></button>
-          <div class="faq-answer">
-            <p>When code is reformatted by a linter, the indentation changes can create massive false-positive diffs. Toggling this feature forces the engine to ignore tabs, spaces, and line breaks, isolating only the actual logic changes.</p>
-          </div>
-        </div>
-
-      </div>
+      <h2><i data-lucide="git-merge"></i> How the merge works</h2>
+      <p>A diff is a list of <em>hunks</em> — contiguous blocks where the two sides disagree. The merged result starts as the modified text; above each hunk you choose <strong>Keep original</strong> to revert that block, <strong>Accept change</strong> to keep it, or <strong>Both</strong> to include the original lines followed by the modified ones. The merged text updates live, is editable, and can be sent to any other tool.</p>
+      <p>This is the same operation a code review tool performs when you "accept" or "reject" a suggestion, and the same one you do by hand when reconciling a config file someone edited on the server against the one in the repository. Doing it with explicit per-hunk decisions is faster and less error-prone than copy-pasting lines between two editors, and the exported <code>.patch</code> is a record of exactly what was changed.</p>
+      <h2><i data-lucide="git-branch"></i> Three-way merge, in one paragraph</h2>
+      <p>With only two versions, a tool cannot know which side changed a line — it only knows the lines differ. With a third version, the common ancestor, it can: a line that differs from the base on one side and matches the base on the other was changed by that one side, and the change is taken. If both sides changed the same region differently, neither can be preferred automatically, and that is a conflict. The output uses the same <code>&lt;&lt;&lt;&lt;&lt;&lt;&lt; ours</code> / <code>=======</code> / <code>&gt;&gt;&gt;&gt;&gt;&gt;&gt; theirs</code> markers as Git (plus the base in <code>|||||||</code> diff3 style), so it drops straight into any editor that understands them — or resolve each conflict here with one click.</p>
     </div>
 
     <div class="info-panel">
       <h2><i data-lucide="microscope"></i> What a diff is actually computing</h2>
       <p>Comparing two blocks of text is not a character-by-character scan. A diff algorithm looks for the <em>longest common subsequence</em> — the largest set of lines appearing in both versions in the same order — and everything outside that becomes an addition or a deletion. That framing explains most of the behaviour people find surprising.</p>
       <p>It is why moving a block of code often shows as a large deletion plus a large insertion rather than "moved": a line-based diff has no concept of movement, only of presence and position. And it is why inserting one line near the top can shift how everything below it aligns, if the algorithm finds a cheaper way to match the remaining text.</p>
-
       <div class="use-cases-grid">
         <div class="use-case-card">
           <h3><i data-lucide="eye-off"></i> Invisible differences</h3>
-          <p>The hardest diffs are the ones you cannot see: a trailing space, a tab where the rest of the file uses spaces, a non-breaking space pasted from a document, or a zero-width character from a web page. The text looks identical and the comparison disagrees — which is the diff being right.</p>
+          <p>The hardest diffs are the ones you cannot see: a trailing space, a tab where the rest of the file uses spaces, a non-breaking space pasted from a document, or a zero-width character from a web page. Turn on <strong>Show whitespace</strong> to render spaces and tabs visibly, and the <a href="unicode-inspector.html">Unicode Inspector</a> for anything stranger.</p>
         </div>
         <div class="use-case-card">
           <h3><i data-lucide="corner-down-left"></i> Line endings</h3>
-          <p>Windows uses CRLF, Unix LF. A file that has crossed platforms without normalisation differs on <em>every</em> line while looking unchanged. This is the classic "the whole file is modified but I only edited one line" report.</p>
+          <p>Windows uses CRLF, Unix LF. A file that has crossed platforms without normalisation differs on <em>every</em> line while looking unchanged. Line endings are normalised before comparing here, so that case shows as "no changes" rather than a wall of red.</p>
         </div>
         <div class="use-case-card">
           <h3><i data-lucide="type"></i> Unicode that looks the same</h3>
@@ -481,58 +739,113 @@
       <ul>
         <li><strong>Configuration drift.</strong> Comparing the config actually running on a server against what the repository says should be there — the single most common source of "works on staging, fails in production".</li>
         <li><strong>Environment variable sets.</strong> Two <code>.env</code> files where one key differs, or one is missing entirely.</li>
-        <li><strong>API responses before and after a change.</strong> Confirming that a refactor altered only what you expected, especially with both sides formatted consistently first.</li>
-        <li><strong>Content and copy review.</strong> Finding what changed between two versions of a document when nobody tracked changes.</li>
-        <li><strong>Log comparison.</strong> A successful run against a failing one, to isolate where the behaviour diverges.</li>
+        <li><strong>API responses before and after a change.</strong> Confirming that a refactor altered only what you expected — use the structural mode so formatting differences vanish.</li>
+        <li><strong>Content and copy review.</strong> Finding what changed between two versions of a document when nobody tracked changes. Word granularity is the readable choice for prose.</li>
+        <li><strong>Log comparison.</strong> A successful run against a failing one, to isolate where the behaviour diverges. Ignore-whitespace plus context folding keeps it readable.</li>
       </ul>
-      <p>One practical tip for structured data: normalise before diffing. Two JSON documents that are semantically identical but formatted differently will diff as completely different text. Format both with the same tool first — then the diff shows genuine changes rather than whitespace.</p>
-
-      <h2><i data-lucide="lock"></i> Runs in your browser</h2>
-      <p>The two things you most often need to compare are a production config and a proposed one, which means connection strings, credentials and internal hostnames. Comparison here is local JavaScript: neither side is transmitted anywhere, so you can diff a live config against a candidate without that config leaving your machine.</p>
     </div>
 
-        <div class="info-panel">
-          <h2><i data-lucide="alert-triangle"></i> Why two files that look identical still differ</h2>
-          <p>The most frustrating diff is the one that reports a change you cannot see. Almost always the difference is a character that renders as nothing, or as the same thing your editor renders something else as. Four causes account for nearly all of these.</p>
-          <p><strong>Line endings.</strong> Windows terminates a line with <code>CRLF</code> (carriage return plus line feed), Unix and macOS with a bare <code>LF</code>. A file that has travelled through a Windows editor, a zip archive, or a checkout with Git's <code>core.autocrlf</code> enabled can differ from its counterpart on every single line while looking identical on screen. If a diff marks the entire file as changed, check the line endings before you check anything else.</p>
-          <p><strong>Trailing whitespace.</strong> A space or tab at the end of a line is invisible in most editors and significant to a byte-for-byte comparison. It is also the change most often introduced accidentally, because pressing space before a newline leaves no visual trace. Use the ignore-whitespace toggle to confirm that this is the only difference, then remove the whitespace rather than leaving the toggle on permanently — it will hide a real change eventually.</p>
-          <p><strong>Unicode normalisation.</strong> The character <code>é</code> can be stored as a single code point (U+00E9) or as <code>e</code> followed by a combining acute accent (U+0065 U+0301). Both render identically in every font. They are different byte sequences, so they are a difference. macOS filesystems have historically preferred the decomposed form, which is why filenames with accents copied from a Mac can mismatch a list generated on Linux.</p>
-          <p><strong>Invisible and look-alike characters.</strong> A zero-width space (U+200B), a non-breaking space (U+00A0) pasted from a web page or a word processor, a byte-order mark at the start of the file (U+FEFF), or a Cyrillic <code>а</code> standing in for a Latin <code>a</code> all produce a change with no visible cause. The BOM case is particularly common: it is three bytes prepended to a UTF-8 file by some Windows tools, and it breaks shebang lines, YAML documents and JSON parsers while remaining completely invisible in an editor.</p>
-          <p>When a difference refuses to explain itself, the fastest resolution is to stop looking at the rendered text and look at the bytes. <code>cat -A file</code> on Linux marks line endings with <code>$</code> and tabs with <code>^I</code>; <code>xxd file | head</code> shows you the raw hex, including a leading <code>efbbbf</code> BOM. Once you know which character it is, the fix is usually a single editor setting away.</p>
-        </div>
+    <div class="info-panel">
+      <h2><i data-lucide="alert-triangle"></i> Why two files that look identical still differ</h2>
+      <p>The most frustrating diff is the one that reports a change you cannot see. Almost always the difference is a character that renders as nothing, or as the same thing your editor renders something else as. Four causes account for nearly all of these.</p>
+      <p><strong>Line endings.</strong> Windows terminates a line with <code>CRLF</code> (carriage return plus line feed), Unix and macOS with a bare <code>LF</code>. A file that has travelled through a Windows editor, a zip archive, or a checkout with Git's <code>core.autocrlf</code> enabled can differ from its counterpart on every single line while looking identical on screen. This tool ignores the difference by default; if a diff elsewhere marks an entire file as changed, check the line endings before you check anything else.</p>
+      <p><strong>Trailing whitespace.</strong> A space or tab at the end of a line is invisible in most editors and significant to a byte-for-byte comparison. It is also the change most often introduced accidentally, because pressing space before a newline leaves no visual trace. Use the <strong>Trim trailing</strong> option to confirm that this is the only difference, then remove the whitespace rather than leaving the option on permanently — it will hide a real change eventually.</p>
+      <p><strong>Unicode normalisation.</strong> The character <code>é</code> can be stored as a single code point (U+00E9) or as <code>e</code> followed by a combining acute accent (U+0065 U+0301). Both render identically in every font. They are different byte sequences, so they are a difference. macOS filesystems have historically preferred the decomposed form, which is why filenames with accents copied from a Mac can mismatch a list generated on Linux.</p>
+      <p><strong>Invisible and look-alike characters.</strong> A zero-width space (U+200B), a non-breaking space (U+00A0) pasted from a web page or a word processor, a byte-order mark at the start of the file (U+FEFF), or a Cyrillic <code>а</code> standing in for a Latin <code>a</code> all produce a change with no visible cause. The BOM case is particularly common: it is three bytes prepended to a UTF-8 file by some Windows tools, and it breaks shebang lines, YAML documents and JSON parsers while remaining completely invisible in an editor.</p>
+      <p>When a difference refuses to explain itself, the fastest resolution is to stop looking at the rendered text and look at the bytes. <code>cat -A file</code> on Linux marks line endings with <code>$</code> and tabs with <code>^I</code>; <code>xxd file | head</code> shows you the raw hex, including a leading <code>efbbbf</code> BOM. Once you know which character it is, the fix is usually a single editor setting away.</p>
+    </div>
 
-        <div class="info-panel">
-          <h2><i data-lucide="git-compare"></i> Line diff, word diff, character diff</h2>
-          <p>The same two inputs can produce three very different-looking comparisons depending on the granularity the algorithm works at, and choosing the wrong one is why a diff is sometimes unreadable.</p>
-          <p><strong>Line granularity</strong> treats each line as one indivisible unit: a line either matches or it does not. This is what <code>git diff</code> and code review tools show by default, and it is the right default for source code, where a line is roughly a statement and changing part of a line means the whole line needs re-reading. Its weakness is prose. Reflow a paragraph so the words wrap differently and a line diff reports every line as changed even though only one word moved.</p>
-          <p><strong>Word granularity</strong> splits on whitespace, so a reflowed paragraph shows only the words that actually changed. This is what you want for documentation, translated strings, legal text and anything else written to be read by people rather than parsed by a compiler. It is a poor fit for minified code or long identifiers, where a word can be hundreds of characters long.</p>
-          <p><strong>Character granularity</strong> compares individual characters. It is the only mode that will show you that <code>getUserId</code> became <code>getUserID</code>, or that a single digit changed in a long hash. It is also the noisiest: on two genuinely different paragraphs it produces a mosaic of tiny insertions and deletions that is harder to read than seeing the old and new text side by side.</p>
-          <p>The practical rule is to start at line level to see the shape of the change, then narrow to word or character level on the specific lines that report a difference you cannot account for. Most useful diff views do exactly this automatically: they identify changed lines first, then highlight the changed regions inside those lines at a finer granularity. That two-stage presentation is why a good diff is readable at all — you get the structure from the coarse pass and the detail from the fine one, without drowning in either.</p>
-        </div>
+    <div class="info-panel">
+      <h2><i data-lucide="git-compare"></i> Line diff, word diff, character diff</h2>
+      <p>The same two inputs can produce three very different-looking comparisons depending on the granularity the algorithm works at, and choosing the wrong one is why a diff is sometimes unreadable.</p>
+      <p><strong>Line granularity</strong> treats each line as one indivisible unit: a line either matches or it does not. This is what <code>git diff</code> and code review tools show by default, and it is the right default for source code, where a line is roughly a statement and changing part of a line means the whole line needs re-reading. Its weakness is prose. Reflow a paragraph so the words wrap differently and a line diff reports every line as changed even though only one word moved.</p>
+      <p><strong>Word granularity</strong> splits on whitespace, so a reflowed paragraph shows only the words that actually changed. This is what you want for documentation, translated strings, legal text and anything else written to be read by people rather than parsed by a compiler. It is a poor fit for minified code or long identifiers, where a word can be hundreds of characters long.</p>
+      <p><strong>Character granularity</strong> compares individual characters. It is the only mode that will show you that <code>getUserId</code> became <code>getUserID</code>, or that a single digit changed in a long hash. It is also the noisiest: on two genuinely different paragraphs it produces a mosaic of tiny insertions and deletions that is harder to read than seeing the old and new text side by side.</p>
+      <p>The practical rule is to start at line level to see the shape of the change, then narrow to word or character level on the specific lines that report a difference you cannot account for. This page does exactly that: changed lines are identified first, then the changed regions inside those lines are highlighted at the granularity you pick. That two-stage presentation is why a good diff is readable at all — you get the structure from the coarse pass and the detail from the fine one, without drowning in either.</p>
+    </div>
 
-        <div class="info-panel related-panel">
-          <h2><i data-lucide="link"></i> Related guides and tools</h2>
-          <p>Background reading on the format and failure modes behind this tool, and the tools most often used alongside it.</p>
-          <div class="use-cases-grid">
-            <div class="use-case-card">
-              <h3><i data-lucide="book-open"></i> <a href="../guides/invisible-unicode-characters.html">Invisible Unicode characters</a></h3>
-              <p>Zero-width spaces, BOMs, bidi overrides and lookalikes.</p>
-            </div>
-            <div class="use-case-card">
-              <h3><i data-lucide="book-open"></i> <a href="../guides/csv-edge-cases.html">CSV edge cases</a></h3>
-              <p>Quotes, newlines, BOMs and the Excel semicolon dialect.</p>
-            </div>
-            <div class="use-case-card">
-              <h3><i data-lucide="wrench"></i> <a href="unicode-inspector.html">Unicode Inspector</a></h3>
-              <p>Another local tool that pairs with this one. Runs entirely in your browser.</p>
-            </div>
-          </div>
+    <div class="info-panel">
+      <h2><i data-lucide="help-circle"></i> Engineering FAQ</h2>
+      <div class="faq-container">
+        <div class="faq-item">
+          <button class="faq-question">How does word-level highlighting work? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>The engine first runs a line-level diff to find which lines changed. Where a block of removed lines is immediately followed by a block of added lines, it pairs them up and runs a second diff inside each pair at word or character granularity, highlighting only the parts that actually differ. Lines that were purely added or removed are shown whole.</p></div>
         </div>
+        <div class="faq-item">
+          <button class="faq-question">What do "Ignore whitespace" and the other normalisation options do? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>They change how lines are compared, not how they are displayed. Ignore whitespace collapses every run of spaces and tabs to one space and trims the ends, so a reformatted file shows only logic changes. Ignore case compares lower-cased lines. Trim trailing ignores whitespace at the end of a line only. Ignore blank lines lets empty lines match anywhere. Line endings (CRLF vs LF) are always normalised. The original text is still shown in full in the result.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">How do I merge two files, not just compare them? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>Run a text comparison, then use the controls above each change block: Keep original, Accept change, or Both. The Merged result pane below the diff updates as you decide, starting from the modified text with every change accepted. You can also edit the merged text directly, copy it, download it, send it to another tool, or load it back as the new original to continue from there.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">When should I use the three-way merge instead? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>When two people (or two branches) edited the same file independently and you have the version they both started from. A two-way diff cannot tell which side changed a line; with the base it can, so non-overlapping edits from both sides merge automatically and only genuine overlaps become conflicts. The output uses Git's conflict markers with diff3-style base sections, and each conflict can be resolved in place with ours, theirs, or both.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">What is a structural diff and when is it better than a text diff? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>A structural diff parses both documents and compares the resulting values. Two JSON files with the same data but different key order, indentation or quoting show no difference, and the changes that do exist are reported by path, like $.server.port changed from 8080 to 443. Use it for configuration files, API responses and anything machine-generated. Use the text diff when formatting itself matters, such as reviewing a hand-edited file.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">How does the spreadsheet comparison match rows? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>By a key column you choose from the header row, such as an id, SKU or email. Rows with the same key are compared cell by cell regardless of where they appear, so a re-sorted or filtered export shows only real changes. Rows whose key exists on one side only are reported as added or removed, and columns that appear or disappear are listed separately. If the file has no natural key, match by row order instead.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">Is the patch output compatible with git apply and patch? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>Yes. The export is a standard unified diff with --- and +++ headers and @@ hunk ranges, which git apply, patch -p0 and every code review tool accept. The Apply a patch mode reads the same format back, including patches produced by git diff, and uses context matching with a fuzz fallback when line numbers have drifted.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">Is anything uploaded when I compare files or zip folders? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>No. Files are read with the browser's FileReader, zip archives are unpacked with the browser's own DecompressionStream, and every algorithm on this page is JavaScript running in the tab. The privacy indicator in the header counts any network request the page makes; it stays at zero while you work. Closing the tab discards everything unless you chose to save a run to the local history.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">How large a file can it handle? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>Tens of thousands of lines compare in well under a second; the limit is rendering, not diffing. For files over about 20,000 lines, set Context to 3 or 5 lines so only the changed regions are rendered, and prefer word over character highlighting. The structural and table modes handle documents of several megabytes. Share links are capped at roughly 60 KB of compressed input; larger comparisons can be exported as a patch or HTML report instead.</p></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="info-panel related-panel">
+      <h2><i data-lucide="link"></i> Related guides and tools</h2>
+      <p>Background reading on the format and failure modes behind this tool, and the tools most often used alongside it.</p>
+      <div class="use-cases-grid">
+        <div class="use-case-card">
+          <h3><i data-lucide="book-open"></i> <a href="../guides/invisible-unicode-characters.html">Invisible Unicode characters</a></h3>
+          <p>Zero-width spaces, BOMs, bidi overrides and lookalikes.</p>
+        </div>
+        <div class="use-case-card">
+          <h3><i data-lucide="book-open"></i> <a href="../guides/three-way-merge-explained.html">Three-way merge explained</a></h3>
+          <p>Why the base version makes merging automatic, and what a conflict is.</p>
+        </div>
+        <div class="use-case-card">
+          <h3><i data-lucide="book-open"></i> <a href="../guides/csv-edge-cases.html">CSV edge cases</a></h3>
+          <p>Quotes, newlines, BOMs and the Excel semicolon dialect.</p>
+        </div>
+        <div class="use-case-card">
+          <h3><i data-lucide="book-open"></i> <a href="../guides/json-syntax-errors-explained.html">JSON syntax errors explained</a></h3>
+          <p>Why a structural diff refuses a file, and how to fix it.</p>
+        </div>
+        <div class="use-case-card">
+          <h3><i data-lucide="wrench"></i> <a href="json-validator.html">JSON Validator &amp; Formatter</a></h3>
+          <p>Format both sides consistently before a text diff.</p>
+        </div>
+        <div class="use-case-card">
+          <h3><i data-lucide="wrench"></i> <a href="unicode-inspector.html">Unicode Inspector</a></h3>
+          <p>Find the invisible character behind a diff you cannot see.</p>
+        </div>
+        <div class="use-case-card">
+          <h3><i data-lucide="wrench"></i> <a href="csv-to-json.html">CSV to JSON Converter</a></h3>
+          <p>Turn a spreadsheet export into structured data.</p>
+        </div>
+      </div>
+    </div>
 
     <div class="info-panel">
       <h2><i data-lucide="git-merge"></i> Deployment Changelog</h2>
       <ul class="changelog-list">
-        <li><span class="changelog-tag">v2.3.0</span> Added a highlight granularity control for changed lines: word (default), character, or none. Character mode is what shows a one-letter identifier change; "lines only" is quieter for wholesale rewrites.</li>
+        <li><span class="changelog-tag">v3.0.0</span> Rebuilt as a merge tool: hunk-by-hunk merge with a live editable result, three-way merge with conflict resolution, structural JSON/YAML diff, keyed CSV and Excel cell diff, apply-a-patch mode, zip folder comparison, syntax highlighting for 14 languages, context folding, unified patch and HTML report export, show-whitespace, ignore-case/trailing/blank options, keyboard navigation and share links.</li>
+        <li><span class="changelog-tag">v2.3.0</span> Added a highlight granularity control for changed lines: word (default), character, or none.</li>
         <li><span class="changelog-tag">v2.2.0</span> Added file upload and drag-and-drop to both panes.</li>
         <li><span class="changelog-tag">v2.1.0</span> Integrated Quick Testing Templates for rapid forensic evaluation.</li>
         <li><span class="changelog-tag">v2.0.0</span> Major Engine Overhaul: Integrated high-performance <code>jsdiff</code> library for exact character-level forensic highlighting.</li>
@@ -564,271 +877,470 @@
   </footer>
 
   <script src="../js/shared.js"></script>
-
+  <script src="../js/engines/diff.js"></script>
 
   <script>
-        // Elements
-    const text1 = document.getElementById("text1");
-    const text2 = document.getElementById("text2");
-    const leftPanel = document.getElementById("leftPanel");
-    const rightPanel = document.getElementById("rightPanel");
-    const inlinePanel = document.getElementById("inlinePanel");
-    const outputSection = document.getElementById("outputSection");
-    const inlineModeToggle = document.getElementById("inlineMode");
-    const ignoreWhitespaceToggle = document.getElementById("ignoreWhitespace");
+    // ------------------------------------------------------------ state
+    const $ = id => document.getElementById(id);
+    const icons = () => { if (window.lucide) lucide.createIcons(); };
+    const E = LBDiff;
+    let mode = 'text';
+    let names = { a: 'original', b: 'modified' };
+    let last = null;            // last text diff: {rows, hunks, stats, a, b, lang}
+    let decisions = [];         // per hunk: 'left' | 'right' | 'both'
+    let currentHunk = -1;
+    let three = null;           // last three-way result
+    let zips = { a: null, b: null };
+    let tableRowsCache = { a: null, b: null };
 
-    // Arrays to store diff node offsets for navigation
-    let diffNodesLeft = [];
-    let diffNodesRight = [];
-    let diffNodesInline = [];
-    let currentDiffIndex = -1;
+    const MODE_LABEL = { text: 'Compare', three: 'Merge', struct: 'Compare structure', table: 'Compare rows', patch: 'Apply patch', zip: 'Compare folders' };
 
-    function escapeHTML(str) {
-      if(!str) return '';
-      return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    function setMode(m) {
+      mode = m;
+      document.querySelectorAll('#modeTabs .mode-tab').forEach(b => { const on = b.dataset.mode === m; b.classList.toggle('active', on); b.setAttribute('aria-selected', on ? 'true' : 'false'); });
+      document.querySelectorAll('.mode-only').forEach(el => { el.style.display = el.dataset.for.split(' ').includes(m) ? '' : 'none'; });
+      $('btnRunLabel').textContent = MODE_LABEL[m];
+      $('outputSection').style.display = 'none';
+      $('mergedSection').style.display = 'none';
+      if (m === 'table') refreshKeyColumns();
+      $('text1').placeholder = m === 'struct' ? 'Paste the original JSON or YAML...' : m === 'table' ? 'Paste the original CSV / TSV, or open a .csv / .xlsx file...' : 'Paste, type, or drop the original text, code, JSON or CSV here...';
+      $('text2').placeholder = m === 'struct' ? 'Paste the modified JSON or YAML...' : m === 'table' ? 'Paste the modified CSV / TSV, or open a .csv / .xlsx file...' : 'Paste, type, or drop the modified version here...';
     }
+    document.querySelectorAll('#modeTabs .mode-tab').forEach(b => b.addEventListener('click', () => setMode(b.dataset.mode)));
+    $('arrMode').addEventListener('change', () => { $('keyFieldLabel').style.display = $('arrMode').value === 'key' ? '' : 'none'; });
 
-    function swapInputs() {
-      const temp = text1.value;
-      text1.value = text2.value;
-      text2.value = temp;
+    // ------------------------------------------------------------ inputs
+    function updateMeta() {
+      [['text1', 'meta1', 'lang1'], ['text2', 'meta2', 'lang2']].forEach(([t, m, l]) => {
+        const v = $(t).value;
+        const lines = v ? E.splitLines(v).length + (v.endsWith('\n') ? 0 : 0) : 0;
+        $(m).textContent = v ? `${lines.toLocaleString()} lines · ${Layerbit ? Layerbit.fmtBytes(new Blob([v]).size) : v.length}` : '';
+        $(l).textContent = v && mode === 'text' ? E.detectLang(v, t === 'text1' ? names.a : names.b) : '';
+      });
     }
+    ['text1', 'text2'].forEach(id => $(id).addEventListener('input', updateMeta));
 
-    function clearInputs() {
-      text1.value = "";
-      text2.value = "";
-      outputSection.style.display = "none";
-    }
-
-    // File Upload / Drag & Drop
-    function loadFileInto(input, file) {
+    function loadFileInto(id, file, nameKey) {
       if (!file) return;
-      const reader = new FileReader();
-      reader.onload = (e) => { input.value = e.target.result; };
-      reader.readAsText(file);
+      if (/\.xlsx?$/i.test(file.name)) { loadWorkbook(id, file); if (nameKey) names[nameKey] = file.name; return; }
+      Layerbit.readFile(file).then(text => { $(id).value = text; if (nameKey) names[nameKey] = file.name; $(id).dispatchEvent(new Event('input')); if (mode === 'table') refreshKeyColumns(); });
     }
-
-    document.getElementById('text1File').addEventListener('change', (e) => loadFileInto(text1, e.target.files[0]));
-    document.getElementById('text2File').addEventListener('change', (e) => loadFileInto(text2, e.target.files[0]));
-
-    [{ pane: 'text1Pane', input: text1 }, { pane: 'text2Pane', input: text2 }].forEach(({ pane, input }) => {
-      const paneEl = document.getElementById(pane);
-      paneEl.addEventListener('dragover', (e) => { e.preventDefault(); paneEl.classList.add('dragover'); });
-      paneEl.addEventListener('dragleave', () => paneEl.classList.remove('dragover'));
-      paneEl.addEventListener('drop', (e) => {
-        e.preventDefault();
-        paneEl.classList.remove('dragover');
-        if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-          loadFileInto(input, e.dataTransfer.files[0]);
-        }
+    [['text1File', 'text1', 'a'], ['text2File', 'text2', 'b'], ['baseFile', 'baseText'], ['oursFile', 'oursText'], ['theirsFile', 'theirsText'], ['patchOrigFile', 'patchOriginal', 'a'], ['patchFile', 'patchText']]
+      .forEach(([f, t, k]) => $(f).addEventListener('change', e => loadFileInto(t, e.target.files[0], k)));
+    document.querySelectorAll('.pane').forEach(pane => {
+      const ta = pane.querySelector('textarea');
+      if (!ta) return;
+      pane.addEventListener('dragover', e => { e.preventDefault(); pane.classList.add('dragover'); });
+      pane.addEventListener('dragleave', () => pane.classList.remove('dragover'));
+      pane.addEventListener('drop', e => {
+        e.preventDefault(); pane.classList.remove('dragover');
+        const f = e.dataTransfer.files && e.dataTransfer.files[0];
+        if (f) loadFileInto(ta.id, f, ta.id === 'text1' || ta.id === 'patchOriginal' ? 'a' : ta.id === 'text2' ? 'b' : null);
       });
     });
+    // Kernel drop fallback: a file dropped outside a pane goes to whichever side is empty.
+    Layerbit.onDrop(files => {
+      if (mode === 'zip') { loadZip(zips.a ? 'b' : 'a', files[0]); if (files[1]) loadZip('b', files[1]); return; }
+      const target = mode === 'three' ? ($('baseText').value ? ($('oursText').value ? 'theirsText' : 'oursText') : 'baseText') : mode === 'patch' ? ($('patchOriginal').value ? 'patchText' : 'patchOriginal') : ($('text1').value ? 'text2' : 'text1');
+      loadFileInto(target, files[0], target === 'text1' ? 'a' : target === 'text2' ? 'b' : null);
+      if (files[1] && target === 'text1') loadFileInto('text2', files[1], 'b');
+    });
 
-    // Line Creators
-    function createSplitLine(type, text, lineNum, isHighlight = false) {
-      const numHTML = lineNum !== '' ? `<div class="diff-num">${lineNum}</div>` : `<div class="diff-num"></div>`;
-      const diffClass = isHighlight ? `has-diff diff-${type}` : '';
-      const textHTML = `<div class="diff-text">${text === '' ? '&nbsp;' : text}</div>`;
-      return `<div class="diff-line line-${type} ${diffClass}">${numHTML}${textHTML}</div>`;
-    }
-
-    function createInlineLine(type, text, leftNum, rightNum, isHighlight = false) {
-      const numHTML = `<div class="diff-num"><span>${leftNum}</span><span>${rightNum}</span></div>`;
-      const diffClass = isHighlight ? `has-diff diff-${type}` : '';
-      const textHTML = `<div class="diff-text">${text === '' ? '&nbsp;' : text}</div>`;
-      return `<div class="diff-line line-${type} ${diffClass}">${numHTML}${textHTML}</div>`;
-    }
-
-    // Word Diffing for modified lines
-    function diffWordsInline(oldText, newText) {
-      const mode = document.getElementById('granularity').value;
-      if (mode === 'none') return { oldText: escapeHTML(oldText), newText: escapeHTML(newText) };
-      // Character granularity is the only way to see getUserId -> getUserID;
-      // word granularity is far more readable for prose. See the panel below.
-      const diffs = mode === 'char' ? Diff.diffChars(oldText, newText) : Diff.diffWords(oldText, newText);
-      let outOld = "", outNew = "";
-      
-      diffs.forEach(part => {
-        const val = escapeHTML(part.value);
-        if (part.added) {
-          outNew += `<span class="word-added">${val}</span>`;
-        } else if (part.removed) {
-          outOld += `<span class="word-removed">${val}</span>`;
-        } else {
-          outOld += val;
-          outNew += val;
-        }
+    // Excel: SheetJS is loaded only when an .xlsx is actually opened (900 KB).
+    function loadWorkbook(id, file) {
+      const go = () => file.arrayBuffer().then(buf => {
+        const wb = XLSX.read(buf, { type: 'array' });
+        const ws = wb.Sheets[wb.SheetNames[0]];
+        $(id).value = XLSX.utils.sheet_to_csv(ws);
+        $(id).dispatchEvent(new Event('input'));
+        if (mode !== 'table') setMode('table'); else refreshKeyColumns();
+        Layerbit.toast(`Loaded sheet "${wb.SheetNames[0]}" from ${file.name}`);
       });
-      return { oldText: outOld, newText: outNew };
+      if (window.XLSX) return go();
+      const s = document.createElement('script'); s.src = '../js/vendor/xlsx.full.min.js'; s.onload = go; s.onerror = () => showError('Could not load the spreadsheet reader.'); document.head.appendChild(s);
     }
 
-    function runDiff() {
-      outputSection.style.display = "grid";
-      const isInline = inlineModeToggle.checked;
-      const ignoreWs = ignoreWhitespaceToggle.checked;
-
-      // Handle UI Mode Toggling
-      if (isInline) {
-        outputSection.classList.add("inline-mode");
-        document.querySelectorAll(".split-pane").forEach(el => el.style.display = "none");
-        document.querySelector(".inline-pane").style.display = "flex";
-      } else {
-        outputSection.classList.remove("inline-mode");
-        document.querySelectorAll(".split-pane").forEach(el => el.style.display = "flex");
-        document.querySelector(".inline-pane").style.display = "none";
-      }
-
-      // Run jsDiff
-      const diff = Diff.diffLines(text1.value, text2.value, { ignoreWhitespace: ignoreWs });
-
-      let leftHTML = "";
-      let rightHTML = "";
-      let inlineHTML = "";
-      
-      let leftLine = 1;
-      let rightLine = 1;
-
-      // Pre-process for modified lines (removed followed immediately by added)
-      for (let i = 0; i < diff.length; i++) {
-        const part = diff[i];
-        const nextPart = diff[i+1];
-        
-        const lines = part.value.replace(/\n$/, '').split('\n');
-
-        if (part.removed && nextPart && nextPart.added && part.count === nextPart.count) {
-          // It's a direct modification of lines, let's do word-level highlights
-          const nextLines = nextPart.value.replace(/\n$/, '').split('\n');
-          
-          for (let k = 0; k < lines.length; k++) {
-            const wordDiffs = diffWordsInline(lines[k], nextLines[k] || '');
-            
-            leftHTML += createSplitLine('removed', wordDiffs.oldText, leftLine++, true);
-            rightHTML += createSplitLine('added', wordDiffs.newText, rightLine++, true);
-            
-            inlineHTML += createInlineLine('removed', wordDiffs.oldText, leftLine - 1, '', true);
-            inlineHTML += createInlineLine('added', wordDiffs.newText, '', rightLine - 1, true);
-          }
-          i++; // Skip the next part since we processed it
-        } 
-        else if (part.removed) {
-          lines.forEach(l => {
-            leftHTML += createSplitLine('removed', escapeHTML(l), leftLine++, true);
-            rightHTML += createSplitLine('blank', '', '');
-            inlineHTML += createInlineLine('removed', escapeHTML(l), leftLine - 1, '', true);
-          });
-        } 
-        else if (part.added) {
-          lines.forEach(l => {
-            leftHTML += createSplitLine('blank', '', '');
-            rightHTML += createSplitLine('added', escapeHTML(l), rightLine++, true);
-            inlineHTML += createInlineLine('added', escapeHTML(l), '', rightLine - 1, true);
-          });
-        } 
-        else {
-          // Unchanged
-          lines.forEach(l => {
-            leftHTML += createSplitLine('match', escapeHTML(l), leftLine);
-            rightHTML += createSplitLine('match', escapeHTML(l), rightLine);
-            inlineHTML += createInlineLine('match', escapeHTML(l), leftLine, rightLine);
-            leftLine++; rightLine++;
-          });
-        }
-      }
-
-      leftPanel.innerHTML = leftHTML;
-      rightPanel.innerHTML = rightHTML;
-      inlinePanel.innerHTML = inlineHTML;
-
-      // Setup Navigation Forensics
-      setTimeout(buildNavigation, 100);
-      
-      outputSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    function swapInputs() { const t = $('text1').value; $('text1').value = $('text2').value; $('text2').value = t; const n = names.a; names.a = names.b; names.b = n; updateMeta(); if ($('outputSection').style.display !== 'none') run(); }
+    function clearInputs() {
+      ['text1', 'text2', 'baseText', 'oursText', 'theirsText', 'patchOriginal', 'patchText', 'mergedText'].forEach(id => $(id).value = '');
+      names = { a: 'original', b: 'modified' }; zips = { a: null, b: null };
+      $('zipAInfo').innerHTML = '<i data-lucide="folder-input"></i><span>Drop a .zip of the first folder here</span>'; $('zipBInfo').innerHTML = '<i data-lucide="folder-input"></i><span>Drop a .zip of the second folder here</span>';
+      $('outputSection').style.display = 'none'; $('mergedSection').style.display = 'none'; updateMeta(); Layerbit.state.clear(); icons();
+    }
+    function showError(msg) { $('errorBanner').classList.add('active'); $('errorText').textContent = msg; $('outputSection').style.display = 'grid'; }
+    function clearError() { $('errorBanner').classList.remove('active'); }
+    function showPanel(which) {
+      $('splitWrap').style.display = which === 'split' ? '' : 'none';
+      $('inlinePanel').style.display = which === 'unified' ? '' : 'none';
+      ['structPanel', 'tablePanel', 'threePanel', 'zipPanel'].forEach(p => $(p).style.display = which === p ? '' : 'none');
+    }
+    function opts() {
+      return { ignoreWhitespace: $('ignoreWhitespace').checked, ignoreCase: $('ignoreCase').checked, trimTrailing: $('trimTrailing').checked, ignoreBlank: $('ignoreBlank').checked, granularity: $('granularity').value };
     }
 
-    // Diff Navigation Logic
-    function buildNavigation() {
-      diffNodesLeft = Array.from(leftPanel.querySelectorAll('.has-diff'));
-      diffNodesRight = Array.from(rightPanel.querySelectorAll('.has-diff'));
-      diffNodesInline = Array.from(inlinePanel.querySelectorAll('.has-diff'));
-      currentDiffIndex = -1;
+    // ------------------------------------------------------------ run
+    function run() {
+      clearError();
+      try {
+        if (mode === 'text') runText($('text1').value, $('text2').value, names.a, names.b);
+        else if (mode === 'three') runThree();
+        else if (mode === 'struct') runStruct();
+        else if (mode === 'table') runTable();
+        else if (mode === 'patch') runPatch();
+        else if (mode === 'zip') runZip();
+      } catch (e) { showError(e.message || String(e)); }
+      $('outputSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
 
-    function navDiff(direction) {
-      const isInline = inlineModeToggle.checked;
-      const targetNodes = isInline ? diffNodesInline : diffNodesRight; // Right is primary for split
-      const scrollPanel = isInline ? inlinePanel : rightPanel;
-      
-      if (targetNodes.length === 0) return;
-
-      currentDiffIndex += direction;
-      
-      if (currentDiffIndex >= targetNodes.length) currentDiffIndex = 0;
-      if (currentDiffIndex < 0) currentDiffIndex = targetNodes.length - 1;
-
-      const node = targetNodes[currentDiffIndex];
-      if (node) {
-        // Scroll into view within the div
-        scrollPanel.scrollTop = node.offsetTop - scrollPanel.offsetTop - 50;
-      }
+    // ---- text
+    function runText(a, b, nameA, nameB, title) {
+      const o = opts();
+      const res = E.lineDiff(a, b, o);
+      const lang = $('syntaxMode').value === 'auto' ? E.detectLang(a || b, nameA !== 'original' ? nameA : nameB !== 'modified' ? nameB : '') : $('syntaxMode').value;
+      last = Object.assign(res, { a, b, nameA, nameB, lang });
+      decisions = res.hunks.map(() => 'right');
+      currentHunk = -1;
+      $('resultTitle').textContent = title || (nameA !== 'original' || nameB !== 'modified' ? `${nameA} → ${nameB}` : 'Comparison');
+      $('outputSection').style.display = 'grid';
+      renderText();
+      renderMerged();
+      $('mergedSection').style.display = res.hunks.length ? 'grid' : 'none';
+      Layerbit.history.push('text-diff-checker', getState(), `${nameA} → ${nameB}: +${res.stats.added + res.stats.modified} −${res.stats.removed + res.stats.modified}`);
     }
-
-    // Synchronized Scrolling Logic
-    let isSyncingLeftScroll = false;
-    let isSyncingRightScroll = false;
-
-    leftPanel.addEventListener('scroll', function(e) {
-      if (!isSyncingLeftScroll) {
-        isSyncingRightScroll = true;
-        rightPanel.scrollTop = this.scrollTop;
-        rightPanel.scrollLeft = this.scrollLeft;
-      }
-      isSyncingLeftScroll = false;
+    function renderText() {
+      const { rows, hunks, stats, lang } = last;
+      const ctx = $('contextLines').value === 'all' ? null : +$('contextLines').value;
+      const view = $('viewMode').value;
+      const showWs = $('showWs').checked;
+      const shown = ctx == null ? rows : E.foldContext(rows, ctx);
+      $('diffStats').innerHTML = `<span class="st-add">+${(stats.added + stats.modified).toLocaleString()}</span><span class="st-del">−${(stats.removed + stats.modified).toLocaleString()}</span><span>${hunks.length} change block${hunks.length === 1 ? '' : 's'}</span><span>${stats.similarity}% similar</span><span class="st-lang">${E.esc(lang)}</span>`;
+      $('hunkCounter').textContent = `${currentHunk + 1} / ${hunks.length}`;
+      // index row -> hunk
+      const rowHunk = new Map(); hunks.forEach((h, i) => { for (let r = h.start; r < h.end; r++) rowHunk.set(r, i); });
+      const rowIndex = new Map(); rows.forEach((r, i) => rowIndex.set(r, i));
+      let L = '', R = '', U = '', lastHunk = -1;
+      const hunkBar = i => `<div class="hunk-bar" data-hunk="${i}"><span class="hunk-label">Change ${i + 1}</span>` +
+        `<button type="button" class="hb ${decisions[i] === 'left' ? 'on' : ''}" onclick="decide(${i},'left')" title="Revert this block to the original">Keep original</button>` +
+        `<button type="button" class="hb ${decisions[i] === 'right' ? 'on' : ''}" onclick="decide(${i},'right')" title="Keep the modified version of this block">Accept change</button>` +
+        `<button type="button" class="hb ${decisions[i] === 'both' ? 'on' : ''}" onclick="decide(${i},'both')" title="Keep original lines followed by modified lines">Both</button></div>`;
+      shown.forEach(row => {
+        if (row.type === 'skip') { const s = `<div class="diff-skip" onclick="expandSkip(${row.from},${row.to})" title="Show these lines"><i data-lucide="unfold-vertical"></i> ${row.count.toLocaleString()} unchanged lines</div>`; L += s; R += s; U += s; lastHunk = -1; return; }
+        const ri = rowIndex.get(row), hi = rowHunk.has(ri) ? rowHunk.get(ri) : -1;
+        if (hi >= 0 && hi !== lastHunk) { const hb = hunkBar(hi); L += `<div class="hunk-anchor" id="hL${hi}"></div>${hb}`; R += `<div class="hunk-anchor" id="hR${hi}"></div><div class="hunk-bar-spacer"></div>`; U += `<div class="hunk-anchor" id="hU${hi}"></div>${hb}`; }
+        lastHunk = hi;
+        const lh = row.l ? E.renderLine(row.l.text, row.l.segs, lang, showWs) : '';
+        const rh = row.r ? E.renderLine(row.r.text, row.r.segs, lang, showWs) : '';
+        const lt = row.type === 'eq' ? 'match' : row.type === 'ins' ? 'blank' : 'removed';
+        const rt = row.type === 'eq' ? 'match' : row.type === 'del' ? 'blank' : 'added';
+        L += `<div class="diff-line line-${lt}${lt !== 'match' && lt !== 'blank' ? ' has-diff' : ''}"><div class="diff-num">${row.l ? row.l.n : ''}</div><div class="diff-text">${row.l ? lh : '&nbsp;'}</div></div>`;
+        R += `<div class="diff-line line-${rt}${rt !== 'match' && rt !== 'blank' ? ' has-diff' : ''}"><div class="diff-num">${row.r ? row.r.n : ''}</div><div class="diff-text">${row.r ? rh : '&nbsp;'}</div></div>`;
+        if (row.type === 'eq') U += `<div class="diff-line line-match"><div class="diff-num"><span>${row.l.n}</span><span>${row.r.n}</span></div><div class="diff-text">${lh}</div></div>`;
+        else { if (row.l) U += `<div class="diff-line line-removed has-diff"><div class="diff-num"><span>${row.l.n}</span><span></span></div><div class="diff-text">${lh}</div></div>`; if (row.r) U += `<div class="diff-line line-added has-diff"><div class="diff-num"><span></span><span>${row.r.n}</span></div><div class="diff-text">${rh}</div></div>`; }
+      });
+      if (!rows.length) { L = R = U = '<div class="diff-empty">Both inputs are empty.</div>'; }
+      else if (!hunks.length) { const s = '<div class="diff-identical"><i data-lucide="check-circle-2"></i> No differences with the current options.</div>'; L = s + L; R = R; U = s + U; }
+      $('leftPanel').innerHTML = L; $('rightPanel').innerHTML = R; $('inlinePanel').innerHTML = U;
+      showPanel(view === 'unified' ? 'unified' : 'split');
+      icons();
+    }
+    function expandSkip(from, to) { $('contextLines').value = 'all'; renderText(); }
+    function decide(i, d) { decisions[i] = d; renderText(); renderMerged(); }
+    function mergeAll(d) { decisions = decisions.map(() => d); renderText(); renderMerged(); }
+    function mergedText() {
+      if (!last) return '';
+      const { rows, hunks } = last; const out = []; let r = 0;
+      hunks.forEach((h, i) => {
+        for (; r < h.start; r++) out.push(rows[r].l.text);
+        const left = [], right = [];
+        for (let k = h.start; k < h.end; k++) { if (rows[k].l) left.push(rows[k].l.text); if (rows[k].r) right.push(rows[k].r.text); }
+        const d = decisions[i];
+        if (d === 'left') out.push(...left); else if (d === 'both') out.push(...left, ...right); else out.push(...right);
+        r = h.end;
+      });
+      for (; r < rows.length; r++) out.push((rows[r].l || rows[r].r).text);
+      const nl = (last.b.endsWith('\n') || last.a.endsWith('\n')) && out.length ? '\n' : '';
+      return out.join('\n') + nl;
+    }
+    function renderMerged() {
+      if (!last) return;
+      $('mergedText').value = mergedText();
+      const n = decisions.filter(d => d === 'left').length, both = decisions.filter(d => d === 'both').length;
+      $('mergedTitle').textContent = 'Merged result';
+      $('mergedMeta').textContent = `${decisions.length - n - both} accepted · ${n} reverted · ${both} both`;
+    }
+    function useMergedAsOriginal() { $('text1').value = $('mergedText').value; names.a = 'merged'; updateMeta(); setMode('text'); run(); }
+    function navDiff(dir) {
+      if (!last || !last.hunks.length) return;
+      currentHunk = (currentHunk + dir + last.hunks.length) % last.hunks.length;
+      $('hunkCounter').textContent = `${currentHunk + 1} / ${last.hunks.length}`;
+      const unified = $('viewMode').value === 'unified';
+      const id = (unified ? 'hU' : 'hR') + currentHunk;
+      const panel = unified ? $('inlinePanel') : $('rightPanel');
+      const a = $(id); if (!a) { $('contextLines').value = 'all'; renderText(); return navDiff(0); }
+      panel.scrollTop = a.offsetTop - 40;
+      if (!unified) $('leftPanel').scrollTop = panel.scrollTop;
+      document.querySelectorAll('.hunk-bar.current').forEach(x => x.classList.remove('current'));
+      document.querySelectorAll(`.hunk-bar[data-hunk="${currentHunk}"]`).forEach(x => x.classList.add('current'));
+    }
+    document.addEventListener('keydown', e => {
+      if (e.target.tagName === 'TEXTAREA' || e.target.tagName === 'INPUT' || e.ctrlKey || e.metaKey || e.altKey) return;
+      if (e.key === 'n' || e.key === 'j') navDiff(1); else if (e.key === 'p' || e.key === 'k') navDiff(-1);
     });
+    // sync scroll
+    let syncing = false;
+    [['leftPanel', 'rightPanel'], ['rightPanel', 'leftPanel']].forEach(([a, b]) => $(a).addEventListener('scroll', function () { if (syncing) return; syncing = true; $(b).scrollTop = this.scrollTop; $(b).scrollLeft = this.scrollLeft; syncing = false; }));
+    ['viewMode', 'contextLines', 'showWs', 'syntaxMode'].forEach(id => $(id).addEventListener('change', () => { if (last && (mode === 'text' || mode === 'zip' || mode === 'patch') && $('outputSection').style.display !== 'none') { if (id === 'syntaxMode') last.lang = $('syntaxMode').value === 'auto' ? E.detectLang(last.a || last.b, last.nameA) : $('syntaxMode').value; renderText(); } }));
 
-    rightPanel.addEventListener('scroll', function(e) {
-      if (!isSyncingRightScroll) {
-        isSyncingLeftScroll = true;
-        leftPanel.scrollTop = this.scrollTop;
-        leftPanel.scrollLeft = this.scrollLeft;
+    // ---- patch export / report
+    function patchText() {
+      if (mode === 'patch' && last) return E.unifiedPatch(last.a, last.b, last.nameA, last.nameB);
+      if (mode === 'three' && three) return E.unifiedPatch($('baseText').value, $('mergedText').value, 'base', 'merged');
+      if (!last) return '';
+      return E.unifiedPatch(last.a, last.b, last.nameA, last.nameB);
+    }
+    function copyPatch() {
+      if (mode === 'struct' || mode === 'table') { const t = $(mode === 'struct' ? 'structPanel' : 'tablePanel').innerText; Layerbit.copy(t).then(() => Layerbit.toast('Report copied as text')); return; }
+      const p = patchText(); if (!p) { Layerbit.toast('Run a comparison first'); return; }
+      Layerbit.copy(p).then(() => Layerbit.toast('Unified patch copied'));
+    }
+    function download(name, text, type) { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([text], { type: type || 'text/plain' })); a.download = name; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 500); }
+    function downloadPatch() { const p = patchText(); if (!p) { Layerbit.toast('Run a comparison first'); return; } download((last && last.nameB !== 'modified' ? last.nameB : 'changes') + '.patch', p); }
+    function downloadMerged() { download(mode === 'three' ? 'merged.txt' : (last && last.nameB !== 'modified' ? 'merged-' + last.nameB : 'merged.txt'), $('mergedText').value); }
+    function copyText(id) { Layerbit.copy($(id).value).then(() => Layerbit.toast('Copied')); }
+    function downloadReport() {
+      const panel = $('outputSection').querySelector('.result-pane');
+      const body = mode === 'text' || mode === 'patch' || mode === 'zip' ? ($('viewMode').value === 'unified' ? $('inlinePanel').outerHTML : $('splitWrap').outerHTML) : mode === 'struct' ? $('structPanel').outerHTML : mode === 'table' ? $('tablePanel').outerHTML : $('threePanel').outerHTML;
+      const css = `body{font-family:system-ui,sans-serif;background:#0a0c10;color:#f8fafc;margin:0;padding:24px}h1{font-size:1.2em}.meta{color:#94a3b8;font-size:.9em;margin-bottom:16px}.split-wrap{display:grid;grid-template-columns:1fr 1fr;gap:12px}.diff-output{font-family:ui-monospace,Menlo,monospace;font-size:12px;line-height:1.5;background:rgba(0,0,0,.4);border:1px solid #222;border-radius:8px;overflow:auto;max-height:none}.diff-line{display:flex}.diff-num{width:48px;flex-shrink:0;text-align:right;padding-right:8px;color:#94a3b8;border-right:1px solid #222;user-select:none}.unified .diff-num{width:80px;display:flex}.unified .diff-num span{flex:1}.diff-text{padding-left:8px;white-space:pre-wrap;word-break:break-all;flex:1}.line-removed{background:rgba(239,68,68,.15)}.line-added{background:rgba(34,197,94,.15)}.word-removed{background:rgba(239,68,68,.45);text-decoration:line-through}.word-added{background:rgba(34,197,94,.45)}.hunk-bar,.hunk-bar-spacer,.hunk-anchor{display:none}.diff-skip{color:#94a3b8;padding:4px 12px;background:rgba(255,255,255,.03)}.tk-kw{color:#38bdf8}.tk-str{color:#a7f3d0}.tk-num{color:#fdba74}.tk-cmt{color:#64748b;font-style:italic}.tk-key{color:#c084fc}.tk-tag{color:#f472b6}.tk-attr{color:#fdba74}.tk-fn{color:#f472b6}.tk-prop{color:#38bdf8}table{border-collapse:collapse;width:100%;font-size:.9em}th,td{text-align:left;padding:6px 10px;border-bottom:1px solid #222;vertical-align:top;font-family:ui-monospace,monospace}th{color:#38bdf8}.t-added{color:#4ade80}.t-removed{color:#f87171}.t-changed{color:#fbbf24}.t-type{color:#c084fc}.cell-old{color:#f87171;text-decoration:line-through}.cell-new{color:#4ade80}.three-chunk{border-left:3px solid #333;padding:4px 10px;margin:4px 0;white-space:pre-wrap;font-family:ui-monospace,monospace;font-size:12px}.three-chunk.conflict{border-color:#ef4444}.three-chunk.ours{border-color:#f87171}.three-chunk.theirs{border-color:#4ade80}.three-chunk .cb{display:none}.ws{opacity:.4}`;
+      const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Layerbit diff report</title><style>${css}</style></head><body><h1>Comparison report</h1><div class="meta">${E.esc($('resultTitle').textContent)} · ${E.esc($('diffStats').innerText.replace(/\n/g, ' · '))} · generated ${new Date().toISOString()} with layerbit.co.in/tools/text-diff-checker.html</div>${body}</body></html>`;
+      download('diff-report.html', html, 'text/html');
+    }
+
+    // ---- three-way
+    function runThree() {
+      const base = $('baseText').value, ours = $('oursText').value, theirs = $('theirsText').value;
+      if (!base && !ours && !theirs) { showError('Paste the base version and the two edited versions.'); return; }
+      three = E.diff3(base, ours, theirs, opts());
+      three.resolutions = three.chunks.map(() => null);
+      $('resultTitle').textContent = 'Three-way merge';
+      $('outputSection').style.display = 'grid';
+      renderThree();
+      $('mergedSection').style.display = 'grid';
+      Layerbit.history.push('text-diff-checker', getState(), `3-way merge: ${three.conflicts} conflict${three.conflicts === 1 ? '' : 's'}`);
+    }
+    function renderThree() {
+      const unresolved = three.chunks.filter((c, i) => c.type === 'conflict' && !three.resolutions[i]).length;
+      $('diffStats').innerHTML = `<span class="${unresolved ? 'st-del' : 'st-add'}">${three.conflicts} conflict${three.conflicts === 1 ? '' : 's'}${three.conflicts ? `, ${unresolved} unresolved` : ''}</span><span>${three.chunks.filter(c => c.type === 'ours').length} from ours</span><span>${three.chunks.filter(c => c.type === 'theirs').length} from theirs</span><span>${three.chunks.filter(c => c.type === 'both').length} identical on both</span>`;
+      const lines = arr => arr.length ? arr.map(l => E.esc(l)).join('\n') : '<span class="muted">(no lines)</span>';
+      let html = '', ci = 0;
+      three.chunks.forEach((c, i) => {
+        if (c.type === 'eq') html += `<div class="three-chunk eq">${lines(c.lines)}</div>`;
+        else if (c.type === 'conflict') {
+          ci++;
+          const r = three.resolutions[i];
+          html += `<div class="three-chunk conflict ${r ? 'resolved' : ''}" id="conf${i}"><div class="cb"><span class="hunk-label">Conflict ${ci}${r ? ' · resolved: ' + r : ''}</span>` +
+            `<button type="button" class="hb ${r === 'ours' ? 'on' : ''}" onclick="resolve(${i},'ours')">Use ours</button><button type="button" class="hb ${r === 'theirs' ? 'on' : ''}" onclick="resolve(${i},'theirs')">Use theirs</button><button type="button" class="hb ${r === 'both' ? 'on' : ''}" onclick="resolve(${i},'both')">Both</button><button type="button" class="hb ${r === 'base' ? 'on' : ''}" onclick="resolve(${i},'base')">Base</button></div>` +
+            `<div class="three-side ours"><span class="three-tag">ours</span>${lines(c.ours)}</div><div class="three-side base"><span class="three-tag">base</span>${lines(c.base)}</div><div class="three-side theirs"><span class="three-tag">theirs</span>${lines(c.theirs)}</div></div>`;
+        } else html += `<div class="three-chunk ${c.type}"><span class="three-tag">${c.type === 'both' ? 'both sides' : 'from ' + c.type}</span>${lines(c.lines)}</div>`;
+      });
+      $('threePanel').innerHTML = html || '<div class="diff-empty">Nothing to merge.</div>';
+      showPanel('threePanel');
+      const out = [];
+      three.chunks.forEach((c, i) => {
+        if (c.type === 'conflict') {
+          const r = three.resolutions[i];
+          if (r === 'ours') out.push(...c.ours); else if (r === 'theirs') out.push(...c.theirs); else if (r === 'both') out.push(...c.ours, ...c.theirs); else if (r === 'base') out.push(...c.base);
+          else { out.push('<<<<<<< ours', ...c.ours, '||||||| base', ...c.base, '=======', ...c.theirs, '>>>>>>> theirs'); }
+        } else out.push(...c.lines);
+      });
+      $('mergedText').value = out.join('\n') + (out.length ? '\n' : '');
+      $('mergedTitle').textContent = 'Merged result';
+      $('mergedMeta').textContent = unresolved ? `${unresolved} conflict marker block${unresolved === 1 ? '' : 's'} remain` : 'clean';
+      icons();
+    }
+    function resolve(i, how) { three.resolutions[i] = how; renderThree(); }
+
+    // ---- structural
+    function parseDoc(text, label) {
+      const t = text.trim();
+      if (!t) throw new Error(`${label} is empty.`);
+      try { return JSON.parse(t); } catch (je) {
+        if (window.jsyaml) { try { return jsyaml.load(t); } catch (ye) { throw new Error(`${label} is neither valid JSON (${je.message}) nor valid YAML (${ye.message}).`); } }
+        if (/^[\[{"]/.test(t)) throw new Error(`${label}: ${je.message}`);
+        return new Promise((res, rej) => { const s = document.createElement('script'); s.src = '../js/vendor/js-yaml.min.js'; s.onload = () => { try { res(jsyaml.load(t)); } catch (ye) { rej(new Error(`${label} is neither valid JSON nor valid YAML (${ye.message}).`)); } }; s.onerror = () => rej(new Error('Could not load the YAML parser.')); document.head.appendChild(s); });
       }
-      isSyncingRightScroll = false;
-    });
+    }
+    function runStruct() {
+      Promise.all([parseDoc($('text1').value, 'Original'), parseDoc($('text2').value, 'Modified')]).then(([a, b]) => {
+        const o = { arrays: $('arrMode').value, keyField: $('keyField').value.trim() || 'id' };
+        const d = E.structuralDiff(a, b, o);
+        const fmt = v => v === undefined ? '' : E.esc(JSON.stringify(v).length > 120 ? JSON.stringify(v).slice(0, 117) + '…' : JSON.stringify(v));
+        const counts = { added: 0, removed: 0, changed: 0, type: 0 }; d.forEach(x => counts[x.type]++);
+        $('resultTitle').textContent = 'Structural comparison';
+        $('diffStats').innerHTML = `<span class="st-add">+${counts.added} added</span><span class="st-del">−${counts.removed} removed</span><span class="st-mod">~${counts.changed} changed</span><span>${counts.type} type changes</span>`;
+        $('structPanel').innerHTML = d.length ? `<table class="data-table"><thead><tr><th>Path</th><th>Change</th><th>Original</th><th>Modified</th></tr></thead><tbody>` +
+          d.map(x => `<tr class="t-row"><td class="t-path">${E.esc(x.path)}</td><td class="t-${x.type}">${x.type === 'type' ? `type ${x.oldType} → ${x.newType}` : x.type}</td><td class="cell-old">${fmt(x.old)}</td><td class="cell-new">${fmt(x.new)}</td></tr>`).join('') + '</tbody></table>' +
+          `<div class="struct-foot"><button type="button" class="btn" onclick="structAsText()"><i data-lucide="file-diff"></i> Show as normalised text diff</button><span class="muted">Both documents re-serialised with sorted keys and 2-space indentation, then compared line by line.</span></div>`
+          : '<div class="diff-identical"><i data-lucide="check-circle-2"></i> Semantically identical: same keys, same values. Formatting and key order may differ.</div>';
+        last = null; three = null; window._structDocs = [a, b];
+        $('outputSection').style.display = 'grid'; $('mergedSection').style.display = 'none';
+        showPanel('structPanel'); icons();
+        Layerbit.history.push('text-diff-checker', getState(), `structural: ${d.length} change${d.length === 1 ? '' : 's'}`);
+      }).catch(e => showError(e.message));
+    }
+    function structAsText() { const [a, b] = window._structDocs; $('text1').value = E.canonicalJson(a); $('text2').value = E.canonicalJson(b); names = { a: 'original.json', b: 'modified.json' }; updateMeta(); setMode('text'); run(); }
 
-    // FAQ Accordion Logic
-    
-    // Sample Loader Logic
+    // ---- table
+    function refreshKeyColumns() {
+      const sel = $('keyCol'), prev = sel.value;
+      const rows = E.parseCsv($('text1').value || $('text2').value);
+      const hdr = rows[0] || [];
+      sel.innerHTML = '<option value="-1">row order</option>' + hdr.map((h, i) => `<option value="${i}">${E.esc(h || '(column ' + (i + 1) + ')')}</option>`).join('');
+      // prefer an id-like column
+      const guess = hdr.findIndex(h => /^(id|_id|key|sku|code|email|uuid|guid|ref|no\.?|number)$/i.test(String(h).trim()));
+      sel.value = prev !== '-1' && +prev < hdr.length ? prev : guess >= 0 ? String(guess) : (hdr.length ? '0' : '-1');
+    }
+    function runTable() {
+      const A = E.parseCsv($('text1').value), B = E.parseCsv($('text2').value);
+      if (!A.length || !B.length) { showError('Both sides need at least a header row.'); return; }
+      const key = +$('keyCol').value;
+      const r = E.tableDiff(A, B, key);
+      const cell = v => E.esc(v == null ? '' : String(v));
+      $('resultTitle').textContent = `Row comparison${r.keyName ? ' keyed by ' + r.keyName : ' by row order'}`;
+      $('diffStats').innerHTML = `<span class="st-add">+${r.added.length} rows</span><span class="st-del">−${r.removed.length} rows</span><span class="st-mod">~${r.changed.length} changed</span><span>${r.unchanged} unchanged</span>${r.colsAdded.length ? `<span class="st-add">columns added: ${E.esc(r.colsAdded.join(', '))}</span>` : ''}${r.colsRemoved.length ? `<span class="st-del">columns removed: ${E.esc(r.colsRemoved.join(', '))}</span>` : ''}`;
+      let html = '';
+      if (r.changed.length) html += `<h3 class="t-h">Changed rows</h3><table class="data-table"><thead><tr>${r.keyName ? '' : '<th>#</th>'}${r.columns.map(c => `<th${c === r.keyName ? ' class="t-path"' : ''}>${cell(c)}</th>`).join('')}</tr></thead><tbody>` +
+        r.changed.map(x => `<tr>${r.keyName ? '' : `<td class="t-path">${cell(x.key)}</td>`}${r.columns.map(c => { const ch = x.cells.find(k => k.col === c); return ch ? `<td><span class="cell-old">${cell(ch.old) || '∅'}</span> <span class="cell-new">${cell(ch.new) || '∅'}</span></td>` : `<td class="muted">${cell(x.row[c])}</td>`; }).join('')}</tr>`).join('') + '</tbody></table>';
+      if (r.added.length) html += `<h3 class="t-h t-added">Added rows</h3><table class="data-table"><thead><tr>${r.keyName ? '' : '<th>#</th>'}${r.columns.map(c => `<th${c === r.keyName ? ' class="t-path"' : ''}>${cell(c)}</th>`).join('')}</tr></thead><tbody>` + r.added.map(x => `<tr>${r.keyName ? '' : `<td class="t-path">${cell(x.key)}</td>`}${r.columns.map(c => `<td class="cell-new">${cell(x.row[c])}</td>`).join('')}</tr>`).join('') + '</tbody></table>';
+      if (r.removed.length) html += `<h3 class="t-h t-removed">Removed rows</h3><table class="data-table"><thead><tr>${r.keyName ? '' : '<th>#</th>'}${r.columns.map(c => `<th${c === r.keyName ? ' class="t-path"' : ''}>${cell(c)}</th>`).join('')}</tr></thead><tbody>` + r.removed.map(x => `<tr>${r.keyName ? '' : `<td class="t-path">${cell(x.key)}</td>`}${r.columns.map(c => `<td class="cell-old">${cell(x.row[c])}</td>`).join('')}</tr>`).join('') + '</tbody></table>';
+      if (!html) html = '<div class="diff-identical"><i data-lucide="check-circle-2"></i> Every row matches cell for cell.</div>';
+      $('tablePanel').innerHTML = html;
+      last = null; three = null;
+      $('outputSection').style.display = 'grid'; $('mergedSection').style.display = 'none';
+      showPanel('tablePanel'); icons();
+      Layerbit.history.push('text-diff-checker', getState(), `rows: +${r.added.length} −${r.removed.length} ~${r.changed.length}`);
+    }
+
+    // ---- patch
+    function runPatch() {
+      const orig = $('patchOriginal').value, patch = $('patchText').value;
+      if (!patch.trim()) { showError('Paste a unified diff.'); return; }
+      const r = E.applyPatch(orig, patch);
+      if (!r.ok) { showError(r.error); return; }
+      runText(orig, r.text, names.a !== 'original' ? names.a : 'original', 'patched', `Patch applied: ${r.hunks} hunk${r.hunks === 1 ? '' : 's'}${r.fuzzy ? ' (with fuzz: context lines had moved)' : ''}`);
+      $('mergedTitle').textContent = 'Patched file';
+      $('mergedSection').style.display = 'grid';
+      if (r.fuzzy) Layerbit.toast('Applied with fuzz: some context lines had moved. Check the result.', 'warn');
+    }
+
+    // ---- zip
+    function loadZip(side, file) {
+      if (!file) return;
+      file.arrayBuffer().then(buf => {
+        const entries = E.readZip(buf);
+        zips[side] = { name: file.name, entries, map: new Map(entries.map(e => [e.name.replace(/^[^/]+\//, ''), e])) };
+        $(side === 'a' ? 'zipAInfo' : 'zipBInfo').innerHTML = `<i data-lucide="folder-check"></i><span><strong>${E.esc(file.name)}</strong> · ${entries.length} files · ${Layerbit.fmtBytes(buf.byteLength)}</span>`;
+        icons();
+        if (zips.a && zips.b) run();
+      }).catch(e => showError(`${file.name}: ${e.message}`));
+    }
+    $('zipAFile').addEventListener('change', e => loadZip('a', e.target.files[0]));
+    $('zipBFile').addEventListener('change', e => loadZip('b', e.target.files[0]));
+    [['zipAPane', 'a'], ['zipBPane', 'b']].forEach(([id, side]) => { const p = $(id); p.addEventListener('dragover', e => { e.preventDefault(); p.classList.add('dragover'); }); p.addEventListener('dragleave', () => p.classList.remove('dragover')); p.addEventListener('drop', e => { e.preventDefault(); p.classList.remove('dragover'); loadZip(side, e.dataTransfer.files[0]); }); });
+    async function runZip() {
+      if (!zips.a || !zips.b) { showError('Choose or drop two zip archives.'); return; }
+      const namesAll = new Set([...zips.a.map.keys(), ...zips.b.map.keys()]);
+      const rows = [];
+      for (const n of [...namesAll].sort()) {
+        const ea = zips.a.map.get(n), eb = zips.b.map.get(n);
+        if (!ea) rows.push({ n, s: 'added', size: eb.size }); else if (!eb) rows.push({ n, s: 'removed', size: ea.size });
+        else if (ea.crc === eb.crc && ea.size === eb.size) rows.push({ n, s: 'same', size: ea.size });
+        else rows.push({ n, s: 'modified', size: eb.size, da: ea.size, db: eb.size });
+      }
+      const c = { added: 0, removed: 0, modified: 0, same: 0 }; rows.forEach(r => c[r.s]++);
+      $('resultTitle').textContent = `${zips.a.name} vs ${zips.b.name}`;
+      $('diffStats').innerHTML = `<span class="st-add">+${c.added} added</span><span class="st-del">−${c.removed} removed</span><span class="st-mod">~${c.modified} modified</span><span>${c.same} identical</span>`;
+      $('zipPanel').innerHTML = `<table class="data-table zip-table"><thead><tr><th>File</th><th>Status</th><th>Size</th><th></th></tr></thead><tbody>` + rows.map((r, i) => `<tr class="z-${r.s}"><td class="t-path">${E.esc(r.n)}</td><td class="t-${r.s === 'modified' ? 'changed' : r.s}">${r.s}${r.s === 'modified' ? ` (${Layerbit.fmtBytes(r.da)} → ${Layerbit.fmtBytes(r.db)})` : ''}</td><td class="muted">${Layerbit.fmtBytes(r.size)}</td><td>${r.s === 'modified' ? `<button type="button" class="btn" onclick="zipOpen(${i})"><i data-lucide="file-diff"></i> Diff</button>` : r.s !== 'same' ? `<button type="button" class="btn" onclick="zipView(${i})"><i data-lucide="eye"></i> View</button>` : ''}</td></tr>`).join('') + '</tbody></table>';
+      window._zipRows = rows;
+      last = null; three = null;
+      $('outputSection').style.display = 'grid'; $('mergedSection').style.display = 'none';
+      showPanel('zipPanel'); icons();
+    }
+    async function zipOpen(i) {
+      const r = window._zipRows[i];
+      try {
+        const [a, b] = await Promise.all([zips.a.map.get(r.n).read(), zips.b.map.get(r.n).read()]);
+        if (!E.isProbablyText(a) || !E.isProbablyText(b)) { Layerbit.toast(`${r.n} is binary; sizes and checksums differ but there is no text to show.`, 'warn'); return; }
+        const td = new TextDecoder();
+        $('text1').value = td.decode(a); $('text2').value = td.decode(b); names = { a: r.n, b: r.n }; updateMeta();
+        setMode('text'); run();
+      } catch (e) { showError(e.message); }
+    }
+    async function zipView(i) {
+      const r = window._zipRows[i]; const z = r.s === 'added' ? zips.b : zips.a;
+      const u = await z.map.get(r.n).read();
+      if (!E.isProbablyText(u)) { Layerbit.toast(`${r.n} is binary.`, 'warn'); return; }
+      $('text1').value = r.s === 'added' ? '' : new TextDecoder().decode(u); $('text2').value = r.s === 'added' ? new TextDecoder().decode(u) : ''; names = { a: r.n, b: r.n }; updateMeta(); setMode('text'); run();
+    }
+
+    // ------------------------------------------------------------ share / history state
+    function getState() {
+      const s = { mode, opts: Object.assign(opts(), { view: $('viewMode').value, ctx: $('contextLines').value, syntax: $('syntaxMode').value, arr: $('arrMode').value, keyField: $('keyField').value, keyCol: $('keyCol').value }), names };
+      if (mode === 'three') { s.base = $('baseText').value; s.ours = $('oursText').value; s.theirs = $('theirsText').value; }
+      else if (mode === 'patch') { s.a = $('patchOriginal').value; s.patch = $('patchText').value; }
+      else { s.a = $('text1').value; s.b = $('text2').value; }
+      return s;
+    }
+    function setState(s) {
+      if (!s) return;
+      if (typeof s.input === 'string') { $('text1').value = s.input; setMode('text'); updateMeta(); return; }
+      if (s.opts) { $('ignoreWhitespace').checked = !!s.opts.ignoreWhitespace; $('ignoreCase').checked = !!s.opts.ignoreCase; $('trimTrailing').checked = !!s.opts.trimTrailing; $('ignoreBlank').checked = !!s.opts.ignoreBlank; if (s.opts.granularity) $('granularity').value = s.opts.granularity; if (s.opts.view) $('viewMode').value = s.opts.view; if (s.opts.ctx) $('contextLines').value = s.opts.ctx; if (s.opts.syntax) $('syntaxMode').value = s.opts.syntax; if (s.opts.arr) $('arrMode').value = s.opts.arr; if (s.opts.keyField) $('keyField').value = s.opts.keyField; }
+      if (s.names) names = s.names;
+      setMode(s.mode || 'text');
+      if (s.mode === 'three') { $('baseText').value = s.base || ''; $('oursText').value = s.ours || ''; $('theirsText').value = s.theirs || ''; }
+      else if (s.mode === 'patch') { $('patchOriginal').value = s.a || ''; $('patchText').value = s.patch || ''; }
+      else { $('text1').value = s.a || ''; $('text2').value = s.b || ''; }
+      updateMeta();
+      if (s.mode === 'table') { refreshKeyColumns(); if (s.opts && s.opts.keyCol) $('keyCol').value = s.opts.keyCol; }
+      $('keyFieldLabel').style.display = $('arrMode').value === 'key' ? '' : 'none';
+      if ((s.a || s.base || s.b) && s.mode !== 'zip') run();
+    }
+    Layerbit.register({ slug: 'text-diff-checker', getState, setState, run, input: (text, name) => { const t = $('text1').value ? 'text2' : 'text1'; $(t).value = text; if (name) names[t === 'text1' ? 'a' : 'b'] = name; updateMeta(); } });
+
+    // ------------------------------------------------------------ samples
     function loadSample(type) {
-      const samples = {
-        code: {
-          t1: "function calculateTotal(price, tax) {\n  let total = price + tax;\n  console.log('The total is: ' + total);\n  return total;\n}",
-          t2: "function calculateTotal(basePrice, taxRate) {\n  let finalTotal = basePrice + taxRate;\n  console.warn('The final total is: ' + finalTotal);\n  return finalTotal;\n}"
-        },
-        json: {
-          t1: '{\n  "server": "api.layerbit.co.in",\n  "port": 8080,\n  "timeout": 3000,\n  "features": {\n    "logging": true,\n    "auth": false\n  }\n}',
-          t2: '{\n  "server": "api.layerbit.co.in",\n  "port": 443,\n  "timeout": 5000,\n  "retry": 3,\n  "features": {\n    "logging": true,\n    "auth": true,\n    "ssl": true\n  }\n}'
-        },
-        whitespace: {
-          t1: "const user = {\nname: 'Admin',\nrole: 'Superuser'\n};",
-          t2: "const user = {\n    name: 'Admin',\n    role: 'Superuser'\n};"
-        }
+      const S = {
+        code: ['text', "function calculateTotal(price, tax) {\n  let total = price + tax;\n  console.log('The total is: ' + total);\n  return total;\n}\n\nmodule.exports = { calculateTotal };\n", "function calculateTotal(basePrice, taxRate) {\n  const finalTotal = basePrice * (1 + taxRate);\n  console.warn('The final total is: ' + finalTotal);\n  return finalTotal;\n}\n\nfunction round2(n) { return Math.round(n * 100) / 100; }\n\nmodule.exports = { calculateTotal, round2 };\n"],
+        json: ['struct', '{\n  "server": "api.layerbit.co.in",\n  "port": 8080,\n  "timeout": 3000,\n  "features": {\n    "logging": true,\n    "auth": false\n  },\n  "hosts": ["a", "b"]\n}', '{\n  "features": {\n    "auth": true,\n    "logging": true,\n    "ssl": true\n  },\n  "port": "443",\n  "retry": 3,\n  "server": "api.layerbit.co.in",\n  "timeout": 5000,\n  "hosts": ["a", "b", "c"]\n}'],
+        yaml: ['struct', 'app:\n  name: layerbit\n  replicas: 2\n  env:\n    LOG_LEVEL: info\n    REGION: me-central-1\n', 'app:\n  env:\n    REGION: me-central-1\n    LOG_LEVEL: debug\n  name: layerbit\n  replicas: 3\n'],
+        csv: ['table', 'id,name,qty,price\n1,Widget,5,9.99\n2,Gadget,6,19.50\n3,Doohickey,7,4.25\n', 'id,name,qty,price,supplier\n3,Doohickey,7,4.25,ACME\n1,Widget,9,9.99,ACME\n4,Sprocket,1,2.00,Globex\n'],
+        whitespace: ['text', "const user = {\nname: 'Admin',\nrole: 'Superuser'\n};", "const user = {\n    name: 'Admin',\n    role: 'Superuser'\n};"],
       };
-
-      if (samples[type]) {
-        text1.value = samples[type].t1;
-        text2.value = samples[type].t2;
-        
-        // Setup specific UI toggles based on the test case
-        const wsToggle = document.getElementById("ignoreWhitespace");
-        if (type === 'whitespace') {
-            wsToggle.checked = true;
-        } else {
-            wsToggle.checked = false;
-        }
-
-        runDiff();
+      if (type === 'three') {
+        setMode('three');
+        $('baseText').value = 'title: Release notes\nversion: 1.4.0\nauthor: ops\n\n- Fixed login timeout\n- Updated dependencies\n';
+        $('oursText').value = 'title: Release notes\nversion: 1.5.0\nauthor: ops\n\n- Fixed login timeout\n- Updated dependencies\n- Added audit log export\n';
+        $('theirsText').value = 'title: Release notes\nversion: 1.4.1\nauthor: platform team\n\n- Fixed login timeout\n- Updated dependencies\n';
+        run(); return;
       }
+      if (type === 'patch') {
+        setMode('patch');
+        $('patchOriginal').value = 'server {\n  listen 80;\n  server_name layerbit.co.in;\n  root /var/www/html;\n}\n';
+        $('patchText').value = '--- nginx.conf\n+++ nginx.conf\n@@ -1,5 +1,7 @@\n server {\n-  listen 80;\n+  listen 443 ssl;\n+  ssl_certificate /etc/ssl/layerbit.pem;\n   server_name layerbit.co.in;\n   root /var/www/html;\n+  gzip on;\n }\n';
+        names.a = 'nginx.conf';
+        run(); return;
+      }
+      const [m, a, b] = S[type];
+      setMode(m);
+      $('text1').value = a; $('text2').value = b; names = { a: type === 'json' ? 'config.json' : type === 'yaml' ? 'values.yaml' : type === 'csv' ? 'stock.csv' : 'original', b: type === 'json' ? 'config.json' : type === 'yaml' ? 'values.yaml' : type === 'csv' ? 'stock.csv' : 'modified' };
+      $('ignoreWhitespace').checked = type === 'whitespace';
+      if (type === 'json') { $('arrMode').value = 'index'; }
+      updateMeta();
+      if (m === 'table') refreshKeyColumns();
+      run();
     }
-
+    // legacy name used by older share links / tests
+    function runDiff() { setMode('text'); run(); }
+    updateMeta();
   </script>
 <script src="../main.js"></script>
 </body>

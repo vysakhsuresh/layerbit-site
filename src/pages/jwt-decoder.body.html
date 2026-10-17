@@ -1,12 +1,11 @@
 {{HEADER}}
 
   <main class="hero">
-    <h1>JWT Decoder &amp; Verifier</h1>
-    <p>Decode JSON Web Tokens, read the time claims as real dates, and verify signatures in your browser — the token never leaves the page.</p>
+    <h1>JWT Decoder, Verifier &amp; Signer</h1>
+    <p>Decode any JSON Web Token, lint its claims, see its lifetime on a timeline, verify HS/RS/PS/ES/EdDSA signatures with a secret, PEM, JWK or JWKS, mint signed test tokens with generated keys, and decrypt JWEs — the token and your keys never leave the page.</p>
   </main>
 
   <div class="ide-container">
-    
     <div class="pane">
       <div class="pane-header">
         <div class="pane-title"><i data-lucide="key-round"></i> Encoded Token</div>
@@ -16,169 +15,234 @@
       </div>
       <div class="editor-wrapper">
         <div id="jwtBackdrop">Paste your JWT string here to decode...</div>
-        <textarea id="jwtInput" spellcheck="false"></textarea>
+        <textarea id="jwtInput" spellcheck="false" aria-label="Encoded token"></textarea>
+      </div>
+      <div class="token-foot">
+        <span class="token-meta" id="tokenMeta"></span>
+        <button type="button" class="btn" onclick="clearToken()"><i data-lucide="trash-2"></i> Clear</button>
+        <button type="button" class="btn" onclick="copyText(document.getElementById('jwtInput').value, 'Token copied')"><i data-lucide="copy"></i> Copy token</button>
       </div>
     </div>
 
     <div class="pane output-split">
-      
       <div class="split-half">
         <div class="pane-header">
-          <div class="pane-title title-red"><i data-lucide="file-code"></i> Header <span style="font-size: 0.8em; color: var(--text-muted); font-weight: 400;">(Algorithm & Type)</span></div>
-          <button class="btn" id="btnCopyHeader" onclick="copyDecoded('header', this)"><i data-lucide="copy"></i> Copy</button>
+          <div class="pane-title title-red"><i data-lucide="file-code"></i> Header <span class="pane-sub">(Algorithm &amp; Type)</span></div>
+          <button class="btn" type="button" id="btnCopyHeader" onclick="copyDecoded('header', this)"><i data-lucide="copy"></i> Copy</button>
         </div>
         <div id="headerOutput" class="output-area"></div>
       </div>
-
       <div class="split-half">
         <div class="pane-header">
-          <div class="pane-title title-purple"><i data-lucide="database"></i> Payload <span style="font-size: 0.8em; color: var(--text-muted); font-weight: 400;">(Data & Claims)</span></div>
-          <button class="btn" id="btnCopyPayload" onclick="copyDecoded('payload', this)"><i data-lucide="copy"></i> Copy</button>
+          <div class="pane-title title-purple"><i data-lucide="database"></i> Payload <span class="pane-sub">(Data &amp; Claims)</span></div>
+          <div class="btn-group">
+            <button class="btn" type="button" id="btnCopyPayload" onclick="copyDecoded('payload', this)"><i data-lucide="copy"></i> Copy</button>
+            <button class="btn lb-send" type="button" data-lb-send="payloadOutput" data-lb-kind="json" title="Send the payload JSON to another tool"><i data-lucide="send"></i></button>
+          </div>
         </div>
         <div id="payloadOutput" class="output-area"></div>
         <div id="claimTimes" class="claim-times"></div>
       </div>
-
     </div>
+  </div>
 
+  <div class="info-panel verify-panel" id="lintPanel">
+    <h2><i data-lucide="list-checks"></i> Claims check <span class="verify-subtitle">(what a careful verifier would say about this token)</span></h2>
+    <div class="lint-grid">
+      <div class="verify-row"><label for="expectIss">Expected issuer <span class="verify-hint">(optional)</span></label><input type="text" id="expectIss" class="verify-input" placeholder="https://auth.example.com/" autocomplete="off" spellcheck="false"></div>
+      <div class="verify-row"><label for="expectAud">Expected audience <span class="verify-hint">(optional)</span></label><input type="text" id="expectAud" class="verify-input" placeholder="api://my-service" autocomplete="off" spellcheck="false"></div>
+    </div>
+    <div class="timeline-wrap" id="timeline"></div>
+    <div id="lintList" class="lint-list"><p class="verify-row-note">Decode a token to see the checks.</p></div>
   </div>
 
   <div class="info-panel verify-panel">
-    <h2><i data-lucide="shield-check"></i> Verify Signature <span class="verify-subtitle">(optional &mdash; runs entirely in your browser via the Web Crypto API, nothing is sent anywhere)</span></h2>
-
-    <div id="verifyNoToken" class="verify-row">
-      <p>Decode a token above to verify its signature.</p>
-    </div>
-
-    <div id="verifyUnsupported" class="verify-row" style="display:none;">
-      <p>Signature verification for <strong id="unsupportedAlg"></strong> isn't implemented here yet &mdash; only HS256/384/512 (shared secret) and RS256/384/512 (public key) are supported.</p>
-    </div>
-
+    <h2><i data-lucide="shield-check"></i> Verify Signature <span class="verify-subtitle">(runs in your browser via the Web Crypto API; the key stays here)</span></h2>
+    <div id="verifyNoToken" class="verify-row"><p>Decode a token above to verify its signature.</p></div>
+    <div id="verifyUnsupported" class="verify-row" style="display:none;"><p>Signature verification for <strong id="unsupportedAlg"></strong> is not available. Supported: HS256/384/512, RS256/384/512, PS256/384/512, ES256/384/512 and EdDSA (Ed25519).</p></div>
     <div id="verifyHS256" class="verify-row" style="display:none;">
-      <label for="hmacSecret">Shared Secret</label>
+      <label for="hmacSecret">Shared secret <span class="verify-hint">(the raw secret string, or a JWK with "k")</span></label>
       <input type="text" id="hmacSecret" class="verify-input" placeholder="your-256-bit-secret" autocomplete="off" spellcheck="false">
+      <label class="verify-hint check-inline"><input type="checkbox" id="secretIsB64"> the secret is base64url-encoded (decode it before use)</label>
     </div>
-
     <div id="verifyRS256" class="verify-row" style="display:none;">
-      <label for="publicKeyPem">Public Key <span class="verify-hint">(PEM, SPKI format)</span></label>
-      <textarea id="publicKeyPem" class="verify-input verify-textarea" placeholder="-----BEGIN PUBLIC KEY-----&#10;...&#10;-----END PUBLIC KEY-----" spellcheck="false"></textarea>
+      <label for="publicKeyPem">Public key <span class="verify-hint">(PEM SPKI or PKCS#1, a JWK, or a whole JWKS — the kid header picks the key)</span></label>
+      <textarea id="publicKeyPem" class="verify-input verify-textarea" placeholder="-----BEGIN PUBLIC KEY-----&#10;...&#10;-----END PUBLIC KEY-----&#10;&#10;or {&quot;keys&quot;:[{&quot;kty&quot;:&quot;RSA&quot;,&quot;kid&quot;:&quot;...&quot;,&quot;n&quot;:&quot;...&quot;,&quot;e&quot;:&quot;AQAB&quot;}]}" spellcheck="false"></textarea>
     </div>
-
     <div id="verifyResult" class="verify-result"></div>
   </div>
 
   <div class="info-panel verify-panel">
-    <h2><i data-lucide="pen-tool"></i> Create a signed test token <span class="verify-subtitle">(HMAC via the Web Crypto API &mdash; the secret never leaves this page)</span></h2>
+    <h2><i data-lucide="pen-tool"></i> Create a signed token <span class="verify-subtitle">(any supported algorithm; generate a key pair here or paste your own private key)</span></h2>
     <div class="signer-grid">
       <div class="verify-row">
         <label for="signAlg">Algorithm</label>
         <select id="signAlg" class="verify-input">
-          <option value="HS256">HS256</option>
-          <option value="HS384">HS384</option>
-          <option value="HS512">HS512</option>
+          <optgroup label="HMAC (shared secret)"><option value="HS256">HS256</option><option value="HS384">HS384</option><option value="HS512">HS512</option></optgroup>
+          <optgroup label="RSA PKCS#1 v1.5"><option value="RS256">RS256</option><option value="RS384">RS384</option><option value="RS512">RS512</option></optgroup>
+          <optgroup label="RSA-PSS"><option value="PS256">PS256</option><option value="PS384">PS384</option><option value="PS512">PS512</option></optgroup>
+          <optgroup label="ECDSA"><option value="ES256">ES256 (P-256)</option><option value="ES384">ES384 (P-384)</option><option value="ES512">ES512 (P-521)</option></optgroup>
+          <optgroup label="EdDSA"><option value="EdDSA">EdDSA (Ed25519)</option></optgroup>
         </select>
       </div>
-      <div class="verify-row">
+      <div class="verify-row" id="signSecretRow">
         <label for="signSecret">Secret</label>
         <input type="text" id="signSecret" class="verify-input" value="your-256-bit-secret" autocomplete="off" spellcheck="false">
       </div>
+      <div class="verify-row" id="signKidRow">
+        <label for="signKid">kid header <span class="verify-hint">(optional)</span></label>
+        <input type="text" id="signKid" class="verify-input" placeholder="key-2026-10" autocomplete="off" spellcheck="false">
+      </div>
+    </div>
+    <div class="verify-row" id="signKeyRow" style="display:none;">
+      <label for="signKey">Private key <span class="verify-hint">(PEM PKCS#8 or a private JWK)</span> <button type="button" class="btn btn-inline" id="btnGenKey" onclick="generateKeys()"><i data-lucide="key"></i> Generate a key pair</button></label>
+      <textarea id="signKey" class="verify-input verify-textarea" placeholder="-----BEGIN PRIVATE KEY-----&#10;...&#10;-----END PRIVATE KEY-----" spellcheck="false"></textarea>
+      <div id="genKeys" class="gen-keys"></div>
     </div>
     <div class="verify-row">
       <label for="signPayload">Payload <span class="verify-hint">(JSON; <code>exp</code> and <code>iat</code> are seconds)</span></label>
       <textarea id="signPayload" class="verify-input verify-textarea" spellcheck="false">{
   "sub": "user-42",
   "name": "Test User",
-  "role": "admin"
+  "role": "admin",
+  "iss": "https://auth.layerbit.co.in/",
+  "aud": "api://orders"
 }</textarea>
     </div>
     <div class="signer-actions">
-      <label class="verify-hint"><input type="checkbox" id="signAddTimes" checked> add <code>iat</code> now and <code>exp</code> in 1 hour</label>
-      <button class="btn btn-primary" id="btnSign"><i data-lucide="pen-tool"></i> Sign token</button>
-      <button class="btn" id="btnSignLoad" disabled><i data-lucide="arrow-up"></i> Load into inspector</button>
+      <label class="verify-hint"><input type="checkbox" id="signAddTimes" checked> add <code>iat</code> now and <code>exp</code> in <input type="number" id="signTtl" class="ttl-input" value="60" min="1" max="52560000"> minutes</label>
+      <button class="btn btn-primary" type="button" id="btnSign" data-lb-primary><i data-lucide="pen-tool"></i> Sign token</button>
+      <button class="btn" type="button" id="btnSignLoad" disabled><i data-lucide="arrow-up"></i> Load into inspector</button>
+      <button class="btn" type="button" id="btnSignCopy" disabled onclick="copyText(document.getElementById('signOutput').textContent, 'Token copied')"><i data-lucide="copy"></i> Copy</button>
     </div>
     <pre class="signer-output" id="signOutput"></pre>
   </div>
 
-  <!-- New Documentation Container -->
+  <div class="info-panel verify-panel">
+    <h2><i data-lucide="lock-keyhole"></i> Encrypted tokens (JWE) <span class="verify-subtitle">(decrypt a five-part token with the recipient key; or encrypt a test payload)</span></h2>
+    <div class="signer-grid">
+      <div class="verify-row">
+        <label for="jweInput">JWE token <span class="verify-hint">(five dot-separated parts)</span></label>
+        <textarea id="jweInput" class="verify-input verify-textarea" placeholder="eyJhbGciOiJkaXIiLCJlbmMiOiJBMjU2R0NNIn0..iv.ciphertext.tag" spellcheck="false"></textarea>
+      </div>
+      <div class="verify-row">
+        <label for="jweKey">Key <span class="verify-hint">(secret or base64url key for dir/A*KW, password for PBES2, private PEM/JWK for RSA-OAEP and ECDH-ES)</span></label>
+        <textarea id="jweKey" class="verify-input verify-textarea" placeholder="base64url 256-bit key, password, or -----BEGIN PRIVATE KEY-----" spellcheck="false"></textarea>
+      </div>
+    </div>
+    <div class="signer-actions">
+      <button class="btn btn-primary" type="button" id="btnDecrypt" onclick="decryptJwe()"><i data-lucide="unlock"></i> Decrypt</button>
+      <span class="verify-hint">Encrypt the signer payload above as a test:</span>
+      <select id="jweAlg" class="verify-input mini"><option value="dir">dir + A256GCM</option><option value="A256KW">A256KW + A256GCM</option><option value="A128KW">A128KW + A128GCM</option><option value="RSA-OAEP-256">RSA-OAEP-256 + A256GCM</option></select>
+      <button class="btn" type="button" id="btnEncrypt" onclick="encryptJwe()"><i data-lucide="lock"></i> Encrypt</button>
+      <button class="btn" type="button" onclick="randomJweKey()" title="Generate a random 256-bit key as base64url"><i data-lucide="dice-5"></i> Random key</button>
+    </div>
+    <div id="jweResult" class="verify-result"></div>
+    <pre class="signer-output" id="jweOutput"></pre>
+  </div>
+
   <div class="docs-container">
     <div class="info-panel">
-      <h2><i data-lucide="shield-check"></i> Zero-Trust Security Architecture</h2>
-      <p>Layerbit’s JWT Inspector is engineered specifically for security-conscious developers. We utilize native client-side cryptography and base64url parsing, ensuring your sensitive authentication strings never leave your local machine.</p>
-      
+      <h2><i data-lucide="shield-check"></i> Built for the whole token lifecycle</h2>
+      <p>Most JWT sites decode. This page decodes, then does the things you actually need next: it reads the claims the way a strict verifier would, shows the lifetime on a timeline, checks the signature with whatever key material you have, mints tokens with freshly generated keys for tests, and opens encrypted tokens.</p>
       <div class="use-cases-grid">
         <div class="use-case-card">
-          <h3><i data-lucide="lock"></i> OAuth/OIDC Debugging</h3>
-          <p>Instantly decode tokens generated by identity providers like Auth0, AWS Cognito, or Keycloak to verify scopes, permissions, and user identifiers (<code>sub</code>) during integration.</p>
+          <h3><i data-lucide="list-checks"></i> Claims check</h3>
+          <p>Expired or not-yet-valid, lifetime too long, timestamps in milliseconds, <code>alg: none</code>, a key or key URL carried in the header, missing <code>typ</code>, <code>kid</code>, <code>iss</code>, <code>aud</code> or <code>jti</code>, sensitive-looking claim names, and cookie-size limits — each with the reason it matters. Enter the issuer and audience you expect and mismatches are flagged too.</p>
         </div>
         <div class="use-case-card">
-          <h3><i data-lucide="timer"></i> Session Auditing</h3>
-          <p>Quickly calculate precisely when a session expires by inspecting the <code>exp</code> (Expiration Time) and <code>iat</code> (Issued At) claims, essential for troubleshooting premature logouts.</p>
+          <h3><i data-lucide="shield-check"></i> Verify with any key material</h3>
+          <p>HS256/384/512 with a secret (raw or base64url), RS and PS with a PEM public key in SPKI or PKCS#1 form, ES256/384/512 and EdDSA with PEM or JWK, and a whole JWKS document from which the token's <code>kid</code> selects the key — the way a real resource server does it.</p>
         </div>
         <div class="use-case-card">
-          <h3><i data-lucide="alert-triangle"></i> Security Forensics</h3>
-          <p>Safely inspect suspicious or malformed tokens found in application logs without risking server-side Base64 decoding vulnerabilities or accidentally executing malicious logic.</p>
+          <h3><i data-lucide="pen-tool"></i> Sign with generated keys</h3>
+          <p>Pick any of the thirteen algorithms, generate a key pair in the browser, and get the private key, public key, JWK and a ready JWKS document. The signed token loads straight into the inspector and verifies against the public half, so you have a complete fixture for an integration test in seconds.</p>
+        </div>
+        <div class="use-case-card">
+          <h3><i data-lucide="lock-keyhole"></i> JWE</h3>
+          <p>Decrypt five-part tokens using <code>dir</code>, AES key wrap, RSA-OAEP, PBES2 password-based keys or ECDH-ES, with AES-GCM or AES-CBC-HMAC content encryption. Encrypt a test payload the same way to see what your consumers will receive.</p>
         </div>
       </div>
     </div>
 
     <div class="info-panel">
       <h2><i data-lucide="flask-conical"></i> Quick Testing Templates</h2>
-      <p>Test the decoding and validation logic instantly. Click the templates below to load sample JWT payloads directly into the workspace.</p>
+      <p>Click a template to load it. The last two are there to show what the claims check catches.</p>
       <div>
-        <button class="sample-btn" onclick="loadSample('valid')">Valid Token</button>
-        <button class="sample-btn" onclick="loadSample('expired')">Expired Token</button>
-        <button class="sample-btn" onclick="loadSample('malformed')">Malformed Token</button>
+        <button class="sample-btn" type="button" onclick="loadSample('valid')">Valid token</button>
+        <button class="sample-btn" type="button" onclick="loadSample('expired')">Expired token</button>
+        <button class="sample-btn" type="button" onclick="loadSample('malformed')">Malformed token</button>
+        <button class="sample-btn" type="button" onclick="loadSample('risky')">Risky token (alg none, jku, ms timestamps)</button>
+        <button class="sample-btn" type="button" onclick="loadSample('oidc')">OIDC id_token (RS256, kid)</button>
       </div>
     </div>
 
     <div class="info-panel">
       <h2><i data-lucide="help-circle"></i> Frequently Asked Questions</h2>
       <div class="faq-container">
-        
         <div class="faq-item">
           <button class="faq-question">Why does Layerbit prioritize client-side decoding? <i data-lucide="chevron-down"></i></button>
           <div class="faq-answer">
-            <p>JWTs often contain sensitive user data (PII) or critical authorization scopes. Sending these tokens to a remote server for decoding introduces a significant security risk. By performing all Base64URL decoding and JSON parsing within your browser DOM, we guarantee that your tokens are never logged, stored, or intercepted.</p>
+            <p>JWTs often contain personal data or authorization scopes, and the keys used to verify or sign them are the most sensitive material a service has. Sending either to a remote server for processing is a transfer you may not be allowed to make. All decoding, verification, signing and decryption here runs in your browser with the Web Crypto API, and the indicator in the header counts network requests the page makes so you can see it stays at zero.</p>
           </div>
         </div>
-
         <div class="faq-item">
-          <button class="faq-question">Does this tool verify the JWT signature? <i data-lucide="chevron-down"></i></button>
+          <button class="faq-question">Which algorithms and key formats are supported? <i data-lucide="chevron-down"></i></button>
           <div class="faq-answer">
-            <p>Optionally, yes. The Verify Signature panel below the decoder accepts a shared secret for HS256/384/512 tokens or a PEM public key for RS256/384/512 tokens, and checks the signature using your browser's native Web Crypto API &mdash; the secret or key never leaves your device. Other algorithms (like ES256 or none) aren't supported yet. Either way, this is a debugging aid, not a substitute for your backend's own verification on every request.</p>
+            <p>HS256, HS384 and HS512 with a shared secret; RS256, RS384 and RS512 and the RSA-PSS variants PS256, PS384 and PS512 with an RSA key; ES256, ES384 and ES512 with P-256, P-384 and P-521 keys; and EdDSA with Ed25519. Keys can be pasted as PEM (SPKI or PKCS#1 public keys, PKCS#8 private keys), as a single JWK, or as a JWKS document, in which case the token's kid header selects the key. Certificates and legacy PKCS#1 private keys are recognised and the message tells you the openssl command to convert them.</p>
           </div>
         </div>
-
+        <div class="faq-item">
+          <button class="faq-question">What does the claims check look for? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer">
+            <p>It applies the rules a strict verifier would: the algorithm must be a signed one, the header must not carry its own key or key URL, exp must exist and be in the future, nbf must be in the past, iat must not be in the future beyond clock skew, timestamps must be seconds rather than milliseconds, the lifetime should be short, iss and aud should be present and, if you enter the expected values, must match, long-lived tokens should carry a jti, claim names that look like secrets are flagged, and the token should fit in a cookie. Each finding explains why it matters.</p>
+          </div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">How does JWKS verification choose the key? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer">
+            <p>Paste the whole JWKS document, the JSON with a keys array that your identity provider publishes at its jwks_uri. The token's kid header is matched against the kid of each key; if the token has no kid, the first key is used. The selected JWK is imported for the token's algorithm and the signature is checked. This mirrors what a resource server does, so a token that verifies here will verify there with the same document.</p>
+          </div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">Are generated keys safe to use in production? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer">
+            <p>They are generated by your browser's Web Crypto implementation with proper random number generation, so cryptographically they are sound. The practical answer is still no: keys for production belong in a key management system or hardware module with access controls and rotation, not in a browser tab. Use the generated pairs for local development, test fixtures and understanding the formats.</p>
+          </div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">What is the difference between a JWS and a JWE? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer">
+            <p>A JWS, the common three-part token, is signed: anyone can read the payload, and the signature proves who issued it and that it was not altered. A JWE has five parts and is encrypted: only the holder of the recipient key can read the payload. JWE headers name two algorithms, alg for how the content key is protected and enc for how the content itself is encrypted. A signed token can be nested inside an encrypted one when both authenticity and confidentiality are required.</p>
+          </div>
+        </div>
         <div class="faq-item">
           <button class="faq-question">Why use JWTs instead of traditional opaque session cookies? <i data-lucide="chevron-down"></i></button>
           <div class="faq-answer">
-            <p>JWTs are stateless and self-contained. Traditional cookies require the backend to perform a database lookup for every request to verify session data. JWTs store the session data directly in the payload, which is cryptographically signed. This allows API gateways and microservices to verify authorization instantly without hitting a central session database, significantly improving scalability.</p>
+            <p>JWTs are stateless and self-contained. Traditional cookies require the backend to perform a database lookup for every request to verify session data. JWTs store the session data directly in the payload, which is cryptographically signed. This allows API gateways and microservices to verify authorization instantly without hitting a central session database, significantly improving scalability — at the cost of revocation being harder, which is why lifetimes should be short.</p>
           </div>
         </div>
-
       </div>
     </div>
 
     <div class="info-panel">
       <h2><i data-lucide="microscope"></i> Reading a token versus trusting one</h2>
       <p>Decoding a JWT requires no key and no permission — the header and payload are Base64url, which is an encoding rather than a lock. That means two things at once: this tool can show you every claim in any token you hold, and so can anybody else who gets hold of it. A JWT payload is a postcard, not an envelope.</p>
-      <p>Verification is the separate operation that actually matters. It recomputes the signature with a key <em>you</em> supply and proves the token was issued by the holder of that key and has not been altered since. This tool does both, and keeps them visibly distinct, because conflating them is the root of most JWT vulnerabilities. Our guide on <a href="../guides/jwt-decode-vs-verify.html">decoding versus verifying</a> covers the attacks in detail.</p>
-
+      <p>Verification is the separate operation that actually matters. It recomputes the signature with a key <em>you</em> supply and proves the token was issued by the holder of that key and has not been altered since. This tool does both, and keeps them visibly distinct, because conflating them is the root of most JWT vulnerabilities. Our guide on <a href="../guides/jwt-decode-vs-verify.html">decoding versus verifying</a> covers the failure modes in detail.</p>
       <div class="use-cases-grid">
         <div class="use-case-card">
           <h3><i data-lucide="ban"></i> <code>alg: none</code></h3>
-          <p>RFC 7518 defines an algorithm meaning "unsigned". An attacker rewrites the payload, sets <code>alg</code> to <code>none</code>, drops the signature, and any server that reads the algorithm from the token accepts it.</p>
+          <p>RFC 7518 defines an algorithm meaning "unsigned". A verifier that reads the algorithm from the token and honours "none" accepts any payload at all. Verifiers must use an explicit allowlist of algorithms and never accept unsigned tokens.</p>
         </div>
         <div class="use-case-card">
-          <h3><i data-lucide="shuffle"></i> RS256 &rarr; HS256 confusion</h3>
-          <p>A server expecting RSA verifies with a public key. Send an HS256 token signed with those public key bytes as the HMAC secret and, if the library trusts the header, it validates. The public key was never secret.</p>
+          <h3><i data-lucide="shuffle"></i> Algorithm confusion</h3>
+          <p>A verifier configured for RSA that lets the token's header switch it to HMAC will treat the public key as a shared secret. The fix is the same: pin the algorithm in the verifier's configuration, not the token.</p>
         </div>
         <div class="use-case-card">
           <h3><i data-lucide="clock"></i> Seconds, not milliseconds</h3>
-          <p><code>exp</code>, <code>nbf</code> and <code>iat</code> are seconds since the epoch. <code>Date.now()</code> returns milliseconds. Multiply by a thousand too many and your tokens never expire — a silent hole nobody notices.</p>
+          <p><code>exp</code>, <code>nbf</code> and <code>iat</code> are seconds since the epoch. <code>Date.now()</code> returns milliseconds. Multiply by a thousand too many and your tokens never expire — a silent hole nobody notices until the claims check points at it.</p>
         </div>
       </div>
-
       <h2><i data-lucide="check-circle"></i> What a complete validation involves</h2>
       <p>A valid signature is the first check, not the only one. Before a request reaches your business logic, all of the following should hold:</p>
       <ul>
@@ -188,45 +252,59 @@
         <li><strong><code>aud</code></strong> including this specific service, so a token minted for another service cannot be replayed here.</li>
         <li><strong><code>exp</code></strong> in the future and <strong><code>nbf</code></strong> in the past, with 30–60 seconds of clock leeway.</li>
         <li><strong><code>sub</code></strong> resolving to a principal that still exists and is still permitted.</li>
-        <li><strong>Token type</strong> as expected — a refresh token must never be accepted where an access token belongs.</li>
+        <li><strong>Token type</strong> as expected — a refresh token must never be accepted where an access token belongs; RFC 9068 recommends <code>typ: at+jwt</code> for access tokens.</li>
       </ul>
-      <p>The first two defeat forgery. The middle ones defeat misuse of genuine tokens. The last defeats replay of tokens that were legitimate once. Skipping any tier leaves a whole category of attack open, which is why "we check the signature" is a beginning rather than an answer.</p>
-
+      <p>The first two defeat forgery. The middle ones defeat misuse of genuine tokens. The last defeats replay of tokens that were legitimate once. Skipping any tier leaves a whole category of attack open, which is why "we check the signature" is a beginning rather than an answer. The claims check above walks exactly this list.</p>
       <h2><i data-lucide="key-round"></i> How local verification works here</h2>
-      <p>Signature verification uses the browser's built-in <a href="https://developer.mozilla.org/en-US/docs/Web/API/Web_Crypto_API" target="_blank" rel="noopener">Web Crypto API</a> — <code>crypto.subtle.importKey</code> followed by <code>crypto.subtle.verify</code> — which is the same vetted cryptographic implementation your browser uses for TLS. HMAC algorithms (HS256/384/512) take your shared secret; RSA algorithms (RS256/384/512) take the public key in PEM form.</p>
+      <p>Signature verification uses the browser's built-in <a href="https://developer.mozilla.org/en-US/docs/Web/API/Web_Crypto_API" target="_blank" rel="noopener">Web Crypto API</a> — <code>crypto.subtle.importKey</code> followed by <code>crypto.subtle.verify</code> — which is the same vetted cryptographic implementation your browser uses for TLS. HMAC algorithms take your shared secret; RSA, ECDSA and EdDSA take the public key in PEM or JWK form, or a JWKS from which the <code>kid</code> picks the key.</p>
       <p>Because it runs in the page, your secret never travels anywhere. That distinction matters more here than almost anywhere else on this site: an online JWT tool that verifies server-side requires you to upload your signing secret to a third party, which is precisely the thing a signing secret must never do. If you can paste a production HMAC secret into a web page at all, it should be one that cannot leave it.</p>
-
       <h2><i data-lucide="shield-off"></i> What tokens should not contain</h2>
-      <p>Since anyone holding a token can read it, treat the payload as public. Internal user identifiers, email addresses, subscription tiers and role names are all commonly placed there and all readable by the bearer. That is usually acceptable — but a password, an API key for another service, or a personal detail you are legally obliged to protect is not. If contents genuinely must be hidden from the bearer, you need JWE (encrypted tokens) or, far more often, an opaque random session identifier that means nothing outside your own database.</p>
+      <p>Since anyone holding a token can read it, treat the payload as public. Internal user identifiers, email addresses, subscription tiers and role names are all commonly placed there and all readable by the bearer. That is usually acceptable — but a password, an API key for another service, or a personal detail you are legally obliged to protect is not. If contents genuinely must be hidden from the bearer, you need JWE (encrypted tokens), which this page can produce and open, or, far more often, an opaque random session identifier that means nothing outside your own database.</p>
     </div>
 
-        <div class="info-panel related-panel">
-          <h2><i data-lucide="link"></i> Related guides and tools</h2>
-          <p>Background reading on the format and failure modes behind this tool, and the tools most often used alongside it.</p>
-          <div class="use-cases-grid">
-            <div class="use-case-card">
-              <h3><i data-lucide="book-open"></i> <a href="../guides/jwt-decode-vs-verify.html">Decoding a JWT is not verifying it</a></h3>
-              <p>What signature verification actually checks.</p>
-            </div>
-            <div class="use-case-card">
-              <h3><i data-lucide="book-open"></i> <a href="../guides/hashing-vs-encryption-vs-encoding.html">Hashing vs encryption vs encoding</a></h3>
-              <p>Three different operations, one question to tell them apart.</p>
-            </div>
-            <div class="use-case-card">
-              <h3><i data-lucide="wrench"></i> <a href="hash-generator.html">Hash & HMAC Generator</a></h3>
-              <p>Another local tool that pairs with this one. Runs entirely in your browser.</p>
-            </div>
-          </div>
+    <div class="info-panel related-panel">
+      <h2><i data-lucide="link"></i> Related guides and tools</h2>
+      <p>Background reading on the format and failure modes behind this tool, and the tools most often used alongside it.</p>
+      <div class="use-cases-grid">
+        <div class="use-case-card">
+          <h3><i data-lucide="book-open"></i> <a href="../guides/jwt-decode-vs-verify.html">Decoding a JWT is not verifying it</a></h3>
+          <p>What signature verification actually checks.</p>
         </div>
+        <div class="use-case-card">
+          <h3><i data-lucide="book-open"></i> <a href="../guides/jwt-signing-algorithms-compared.html">JWT signing algorithms compared</a></h3>
+          <p>HS256, RS256, PS256, ES256 and EdDSA: which to choose and why.</p>
+        </div>
+        <div class="use-case-card">
+          <h3><i data-lucide="book-open"></i> <a href="../guides/hashing-vs-encryption-vs-encoding.html">Hashing vs encryption vs encoding</a></h3>
+          <p>Three different operations, one question to tell them apart.</p>
+        </div>
+        <div class="use-case-card">
+          <h3><i data-lucide="book-open"></i> <a href="../guides/unix-time-and-time-zones.html">Unix time and time zones</a></h3>
+          <p>Why exp is a number of seconds, and what goes wrong when it is not.</p>
+        </div>
+        <div class="use-case-card">
+          <h3><i data-lucide="wrench"></i> <a href="hash-generator.html">Hash &amp; HMAC Generator</a></h3>
+          <p>Compute the HMAC a signed token carries, by hand.</p>
+        </div>
+        <div class="use-case-card">
+          <h3><i data-lucide="wrench"></i> <a href="timestamp-converter.html">Unix Timestamp Converter</a></h3>
+          <p>Turn an exp claim into a date, or a date into a claim.</p>
+        </div>
+        <div class="use-case-card">
+          <h3><i data-lucide="wrench"></i> <a href="base64.html">Base64 Encoder &amp; Decoder</a></h3>
+          <p>The base64url encoding every token part uses.</p>
+        </div>
+      </div>
+    </div>
 
     <div class="info-panel">
       <h2><i data-lucide="git-merge"></i> Deployment Methodology Changelog</h2>
       <ul class="changelog-list">
-        <li><span class="changelog-tag">v2.2.0</span> Time claims are now read out in full: <code>iat</code>, <code>nbf</code> and <code>exp</code> as UTC dates with relative time and the token's lifetime, a "not yet valid" status when <code>nbf</code> is in the future, and a warning when a value looks like milliseconds. Added a signer that creates HS256/384/512 test tokens locally with the Web Crypto API and loads them straight into the inspector.</li>
-        <li><span class="changelog-tag">v1.4.0</span> Added optional signature verification (HS256/384/512 shared secret, RS256/384/512 public key) via the Web Crypto API. Renamed the "Signature Valid (Client)" status to "Not Expired" since it only ever checked expiration, not the signature.</li>
+        <li><span class="changelog-tag">v3.0.0</span> Added a claims check with expected issuer and audience, a lifetime timeline, verification for PS256/384/512, ES256/384/512 and EdDSA with PEM, PKCS#1, JWK and JWKS key material (kid selection), a signer for all thirteen algorithms with in-browser key-pair generation and JWKS export, configurable token lifetime and kid, JWE decryption (dir, A*KW, RSA-OAEP, PBES2, ECDH-ES; AES-GCM and AES-CBC-HMAC) and test encryption, share links and local history.</li>
+        <li><span class="changelog-tag">v2.2.0</span> Time claims are now read out in full: <code>iat</code>, <code>nbf</code> and <code>exp</code> as UTC dates with relative time and the token's lifetime, a "not yet valid" status when <code>nbf</code> is in the future, and a warning when a value looks like milliseconds. Added a signer that creates HS256/384/512 test tokens locally.</li>
+        <li><span class="changelog-tag">v1.4.0</span> Added optional signature verification (HS256/384/512 shared secret, RS256/384/512 public key) via the Web Crypto API.</li>
         <li><span class="changelog-tag">v1.3.0</span> Added Copy buttons to the Header and Payload panes.</li>
         <li><span class="changelog-tag">v1.2.0</span> Integrated real-time <code>exp</code> claim verification matrix and conditional status badge rendering.</li>
-        <li><span class="changelog-tag">v1.1.0</span> Optimized Base64URL parsing logic for high-performance decoding on mobile browsers.</li>
         <li><span class="changelog-tag">v1.0.0</span> Initial deployment of the client-side zero-knowledge JWT Inspector.</li>
       </ul>
     </div>
@@ -242,326 +320,223 @@
   {{FOOTER}}
 
   <script src="../js/shared.js"></script>
-
+  <script src="../js/engines/jwt.js"></script>
 
   <script>
-        const jwtInput = document.getElementById('jwtInput');
-    const jwtBackdrop = document.getElementById('jwtBackdrop');
-    const headerOutput = document.getElementById('headerOutput');
-    const payloadOutput = document.getElementById('payloadOutput');
-    const statusBadge = document.getElementById('statusBadge');
-    const statusIcon = document.getElementById('statusIcon');
-    const statusText = document.getElementById('statusText');
+    const $ = id => document.getElementById(id);
+    const icons = () => { if (window.lucide) lucide.createIcons(); };
+    const W = LBJwt;
+    const jwtInput = $('jwtInput'), jwtBackdrop = $('jwtBackdrop'), headerOutput = $('headerOutput'), payloadOutput = $('payloadOutput');
+    const statusBadge = $('statusBadge'), statusIcon = $('statusIcon'), statusText = $('statusText'), claimTimes = $('claimTimes');
+    const hmacSecret = $('hmacSecret'), publicKeyPem = $('publicKeyPem'), verifyResult = $('verifyResult');
+    let decodedHeaderText = '', decodedPayloadText = '', current = null, sigAlg = null, generated = null;
 
-    // Plain (non-highlighted) decoded text, kept in sync with the last
-    // successful parse so Copy grabs clean JSON, not the rendered markup
-    let decodedHeaderText = '';
-    let decodedPayloadText = '';
-
-    // Signature verification state - the exact bytes that were signed
-    // (undecoded base64url header.payload) and the algorithm/signature to
-    // check them against, kept in sync with the last successful parse
-    const hmacSecret = document.getElementById('hmacSecret');
-    const publicKeyPem = document.getElementById('publicKeyPem');
-    const verifyResult = document.getElementById('verifyResult');
-    let sigAlg = null;
-    let signingInput = '';
-    let signatureB64Url = '';
-
-    function base64UrlToBytes(b64url) {
-      const b64 = b64url.replace(/-/g, '+').replace(/_/g, '/');
-      const pad = b64.length % 4;
-      const padded = pad ? b64 + '='.repeat(4 - pad) : b64;
-      const raw = atob(padded);
-      const arr = new Uint8Array(raw.length);
-      for (let i = 0; i < raw.length; i++) arr[i] = raw.charCodeAt(i);
-      return arr;
-    }
-
-    function pemToBytes(pem) {
-      const b64 = pem.replace(/-----BEGIN [^-]+-----/, '').replace(/-----END [^-]+-----/, '').replace(/\s+/g, '');
-      const raw = atob(b64);
-      const arr = new Uint8Array(raw.length);
-      for (let i = 0; i < raw.length; i++) arr[i] = raw.charCodeAt(i);
-      return arr;
-    }
-
-    function showVerifyResult(state, message) {
-      const icon = state === 'valid' ? 'shield-check' : state === 'invalid' ? 'shield-x' : 'triangle-alert';
-      const cls = state === 'valid' ? 'verify-ok' : state === 'invalid' ? 'verify-fail' : 'verify-error';
-      verifyResult.innerHTML = `<span class="verify-badge ${cls}"><i data-lucide="${icon}"></i> ${message}</span>`;
-      lucide.createIcons();
-    }
-
-    async function runHmacVerify() {
-      const secret = hmacSecret.value;
-      if (!secret) { verifyResult.innerHTML = ''; return; }
-      if (!window.crypto || !window.crypto.subtle) {
-        showVerifyResult('error', 'Web Crypto API unavailable (requires a secure context/HTTPS)');
-        return;
-      }
-      try {
-        const hashName = { HS256: 'SHA-256', HS384: 'SHA-384', HS512: 'SHA-512' }[sigAlg];
-        const key = await crypto.subtle.importKey('raw', new TextEncoder().encode(secret), { name: 'HMAC', hash: hashName }, false, ['verify']);
-        const valid = await crypto.subtle.verify('HMAC', key, base64UrlToBytes(signatureB64Url), new TextEncoder().encode(signingInput));
-        showVerifyResult(valid ? 'valid' : 'invalid', valid ? 'Signature Valid' : 'Signature Invalid');
-      } catch (e) {
-        showVerifyResult('error', 'Verification error: ' + e.message);
-      }
-    }
-
-    async function runRsaVerify() {
-      const pem = publicKeyPem.value.trim();
-      if (!pem) { verifyResult.innerHTML = ''; return; }
-      if (!window.crypto || !window.crypto.subtle) {
-        showVerifyResult('error', 'Web Crypto API unavailable (requires a secure context/HTTPS)');
-        return;
-      }
-      try {
-        const hashName = { RS256: 'SHA-256', RS384: 'SHA-384', RS512: 'SHA-512' }[sigAlg];
-        const key = await crypto.subtle.importKey('spki', pemToBytes(pem), { name: 'RSASSA-PKCS1-v1_5', hash: hashName }, false, ['verify']);
-        const valid = await crypto.subtle.verify('RSASSA-PKCS1-v1_5', key, base64UrlToBytes(signatureB64Url), new TextEncoder().encode(signingInput));
-        showVerifyResult(valid ? 'valid' : 'invalid', valid ? 'Signature Valid' : 'Signature Invalid');
-      } catch (e) {
-        showVerifyResult('error', 'Could not verify — check the key is a valid PEM SPKI public key (' + e.message + ')');
-      }
-    }
-
-    function updateVerifyUI() {
-      document.getElementById('verifyHS256').style.display = 'none';
-      document.getElementById('verifyRS256').style.display = 'none';
-      document.getElementById('verifyUnsupported').style.display = 'none';
-      document.getElementById('verifyNoToken').style.display = 'none';
-      verifyResult.innerHTML = '';
-
-      if (!sigAlg) {
-        document.getElementById('verifyNoToken').style.display = 'block';
-        return;
-      }
-      if (/^HS(256|384|512)$/.test(sigAlg)) {
-        document.getElementById('verifyHS256').style.display = 'block';
-        if (hmacSecret.value) runHmacVerify();
-      } else if (/^RS(256|384|512)$/.test(sigAlg)) {
-        document.getElementById('verifyRS256').style.display = 'block';
-        if (publicKeyPem.value.trim()) runRsaVerify();
-      } else {
-        document.getElementById('unsupportedAlg').textContent = sigAlg;
-        document.getElementById('verifyUnsupported').style.display = 'block';
-      }
-    }
-
-    hmacSecret.addEventListener('input', runHmacVerify);
-    publicKeyPem.addEventListener('input', runRsaVerify);
-
-    function copyDecoded(which, btnElement) {
-      const text = which === 'header' ? decodedHeaderText : decodedPayloadText;
-      if (!text) return;
-
-      navigator.clipboard.writeText(text).then(() => {
-        const originalText = btnElement.innerHTML;
-        btnElement.innerHTML = '<i data-lucide="check"></i> Copied!';
-        lucide.createIcons();
-        setTimeout(() => {
-          btnElement.innerHTML = originalText;
-          lucide.createIcons();
-        }, 2000);
-      });
-    }
-
-    // Syntax Highlighter for JSON output
+    const esc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
     function syntaxHighlight(jsonStr) {
-      jsonStr = jsonStr.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-      return jsonStr.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, function (match) {
-        let cls = 'syn-number';
-        if (/^"/.test(match)) {
-          if (/:$/.test(match)) { cls = 'syn-key'; } 
-          else { cls = 'syn-string'; }
-        } else if (/true|false/.test(match)) { cls = 'syn-boolean'; } 
-        else if (/null/.test(match)) { cls = 'syn-null'; }
-        return '<span class="' + cls + '">' + match + '</span>';
+      return esc(jsonStr).replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, m => {
+        let cls = 'syn-number'; if (/^"/.test(m)) cls = /:$/.test(m) ? 'syn-key' : 'syn-string'; else if (/true|false/.test(m)) cls = 'syn-boolean'; else if (/null/.test(m)) cls = 'syn-null';
+        return `<span class="${cls}">${m}</span>`;
       });
     }
-
-    // Base64URL Decode
-    function decodeBase64Url(str) {
-      str = str.replace(/-/g, '+').replace(/_/g, '/');
-      const pad = str.length % 4;
-      if (pad) { str += '='.repeat(4 - pad); }
-      return decodeURIComponent(atob(str).split('').map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join(''));
+    function copyText(text, msg) { if (!text) return; Layerbit.copy(text).then(() => Layerbit.toast(msg || 'Copied')); }
+    function copyDecoded(which, btn) {
+      const text = which === 'header' ? decodedHeaderText : decodedPayloadText; if (!text) return;
+      Layerbit.copy(text).then(() => { const o = btn.innerHTML; btn.innerHTML = '<i data-lucide="check"></i> Copied!'; icons(); setTimeout(() => { btn.innerHTML = o; icons(); }, 1500); });
     }
+    function setStatus(cls, icon, text) { statusBadge.className = 'status-badge ' + cls; statusIcon.setAttribute('data-lucide', icon); statusText.innerText = text; icons(); }
 
-    // Main Parse Logic
+    // ------------------------------------------------------------ decode
     function parseJWT() {
       const token = jwtInput.value.trim();
-      
-      // Update Backdrop colors
+      $('tokenMeta').textContent = token ? `${token.length.toLocaleString()} chars` : '';
       if (!token) {
-        jwtBackdrop.innerHTML = "Paste your JWT string here to decode...";
-        headerOutput.innerHTML = "";
-        payloadOutput.innerHTML = "";
-        claimTimes.innerHTML = "";
-        decodedHeaderText = '';
-        decodedPayloadText = '';
-        statusBadge.className = "status-badge";
-        sigAlg = null;
-        updateVerifyUI();
-        return;
+        jwtBackdrop.innerHTML = 'Paste your JWT string here to decode...'; headerOutput.innerHTML = ''; payloadOutput.innerHTML = ''; claimTimes.innerHTML = '';
+        decodedHeaderText = decodedPayloadText = ''; statusBadge.className = 'status-badge'; statusText.innerText = 'Awaiting Token'; current = null; sigAlg = null;
+        updateVerifyUI(); renderLint(); return;
       }
-
-      const parts = token.split('.');
-      
-      // Colorize input backdrop
-      let coloredInput = "";
-      if(parts[0]) coloredInput += `<span class="jwt-h">${parts[0]}</span>`;
-      if(parts.length > 1) coloredInput += `.<span class="jwt-p">${parts[1]}</span>`;
-      if(parts.length > 2) coloredInput += `.<span class="jwt-s">${parts[2]}</span>`;
-      jwtBackdrop.innerHTML = coloredInput;
-
-      // Ensure proper length before attempting parse
-      if (parts.length < 2) {
-        statusBadge.className = "status-badge status-invalid";
-        statusText.innerText = "Invalid JWT Format";
-        decodedHeaderText = '';
-        decodedPayloadText = '';
-        sigAlg = null;
-        updateVerifyUI();
-        return;
+      const d = W.decode(token); current = d;
+      const parts = d.parts;
+      let colored = '';
+      if (d.kind === 'jwe') colored = parts.map((p, i) => `<span class="${['jwt-h', 'jwt-s', 'jwt-p', 'jwt-p', 'jwt-s'][i]}">${esc(p)}</span>`).join('.');
+      else { if (parts[0]) colored += `<span class="jwt-h">${esc(parts[0])}</span>`; if (parts.length > 1) colored += `.<span class="jwt-p">${esc(parts[1])}</span>`; if (parts.length > 2) colored += `.<span class="jwt-s">${esc(parts.slice(2).join('.'))}</span>`; }
+      jwtBackdrop.innerHTML = colored;
+      if (d.error && !d.header) {
+        setStatus('status-invalid', 'triangle-alert', parts.length < 2 || parts.length === 4 || parts.length > 5 ? 'Invalid JWT Format' : 'Decoding Error');
+        headerOutput.innerHTML = `<span class="decode-err">${esc(d.error)}</span>`; payloadOutput.innerHTML = ''; claimTimes.innerHTML = '';
+        decodedHeaderText = decodedPayloadText = ''; sigAlg = null; updateVerifyUI(); renderLint(); return;
       }
-
-      try {
-        const header = JSON.parse(decodeBase64Url(parts[0]));
-        const payload = JSON.parse(decodeBase64Url(parts[1]));
-
-        // Output JSON
-        decodedHeaderText = JSON.stringify(header, null, 4);
-        decodedPayloadText = JSON.stringify(payload, null, 4);
-        headerOutput.innerHTML = syntaxHighlight(decodedHeaderText);
-        payloadOutput.innerHTML = syntaxHighlight(decodedPayloadText);
-
-        // Signature verification state - only meaningful with all 3 parts
-        sigAlg = (parts.length > 2 && header.alg) ? header.alg : null;
-        signingInput = parts[0] + '.' + parts[1];
-        signatureB64Url = parts[2] || '';
-        updateVerifyUI();
-
-        // Time-based claims (RFC 7519 §4.1): exp, nbf and iat are NumericDate
-        // seconds. A token can be expired, not yet valid, or both malformed.
-        renderClaimTimes(payload);
-        const now = Math.floor(Date.now() / 1000);
-        if (typeof payload.exp === 'number' && payload.exp < now) {
-          statusBadge.className = "status-badge status-invalid";
-          statusText.innerText = "Token Expired";
-          statusIcon.setAttribute('data-lucide', 'shield-alert');
-        } else if (typeof payload.nbf === 'number' && payload.nbf > now) {
-          statusBadge.className = "status-badge status-invalid";
-          statusText.innerText = "Not Yet Valid (nbf)";
-          statusIcon.setAttribute('data-lucide', 'clock');
-        } else if (typeof payload.exp === 'number') {
-          statusBadge.className = "status-badge status-valid";
-          statusText.innerText = "Not Expired";
-          statusIcon.setAttribute('data-lucide', 'shield-check');
-        } else {
-          statusBadge.className = "status-badge status-valid";
-          statusText.innerText = "No Expiration Set";
-          statusIcon.setAttribute('data-lucide', 'info');
-        }
-        if (window.lucide) lucide.createIcons();
-
-      } catch (e) {
-        statusBadge.className = "status-badge status-invalid";
-        statusText.innerText = "Decoding Error";
-        statusIcon.setAttribute('data-lucide', 'triangle-alert');
-        decodedHeaderText = '';
-        decodedPayloadText = '';
-        sigAlg = null;
-        updateVerifyUI();
-        lucide.createIcons();
+      decodedHeaderText = JSON.stringify(d.header, null, 4);
+      headerOutput.innerHTML = syntaxHighlight(decodedHeaderText);
+      if (d.kind === 'jwe') {
+        decodedPayloadText = ''; payloadOutput.innerHTML = '<span class="decode-note">Encrypted token: the payload is ciphertext. Use the JWE panel below with the recipient key to decrypt it.</span>'; claimTimes.innerHTML = '';
+        setStatus('status-valid', 'lock-keyhole', 'Encrypted (JWE)'); sigAlg = null; updateVerifyUI(); renderLint();
+        $('jweInput').value = token; return;
       }
+      if (d.error) { setStatus('status-invalid', 'triangle-alert', 'Decoding Error'); payloadOutput.innerHTML = `<span class="decode-err">${esc(d.error)}</span>`; decodedPayloadText = ''; sigAlg = null; updateVerifyUI(); renderLint(); return; }
+      decodedPayloadText = JSON.stringify(d.payload, null, 4);
+      payloadOutput.innerHTML = syntaxHighlight(decodedPayloadText);
+      sigAlg = d.header.alg || null;
+      updateVerifyUI();
+      renderClaimTimes(d.payload);
+      const tl = W.timeline(d.payload);
+      if (tl.state === 'expired') setStatus('status-invalid', 'shield-alert', 'Token Expired');
+      else if (tl.state === 'not-yet-valid') setStatus('status-invalid', 'clock', 'Not Yet Valid (nbf)');
+      else if (tl.state === 'valid') setStatus('status-valid', 'shield-check', 'Not Expired');
+      else setStatus('status-valid', 'info', 'No Expiration Set');
+      renderLint();
+      Layerbit.history.push('jwt-decoder', getState(), `${d.header.alg || '?'} · ${d.payload.sub || d.payload.iss || 'token'}`);
     }
-
-    const claimTimes = document.getElementById('claimTimes');
-    function relativeTime(secs) {
-      const d = secs - Date.now() / 1000, a = Math.abs(d);
-      const u = a < 60 ? [a, 'second'] : a < 3600 ? [a / 60, 'minute'] : a < 86400 ? [a / 3600, 'hour'] : [a / 86400, 'day'];
-      const n = Math.round(u[0]);
-      return `${n} ${u[1]}${n === 1 ? '' : 's'} ${d < 0 ? 'ago' : 'from now'}`;
-    }
+    function relativeTime(secs) { const d = secs - Date.now() / 1000; return `${W.human(d)} ${d < 0 ? 'ago' : 'from now'}`; }
     function renderClaimTimes(payload) {
       const rows = [];
       for (const [k, label] of [['iat', 'Issued'], ['nbf', 'Not before'], ['exp', 'Expires']]) {
-        const v = payload[k];
-        if (v === undefined) continue;
-        if (typeof v !== 'number') { rows.push(`<div class="claim-row claim-bad"><span>${label}</span><span><code>${k}</code> must be a number of seconds, got ${escapeText(JSON.stringify(v))}</span></div>`); continue; }
-        // A millisecond value is the classic mistake: Date.now() instead of /1000.
-        const ms = v > 1e11;
-        const d = new Date(ms ? v : v * 1000);
-        rows.push(`<div class="claim-row${ms ? ' claim-bad' : ''}"><span>${label}</span><span>${d.toISOString().replace('T', ' ').replace(/\.\d+Z$/, ' UTC')} · ${relativeTime(ms ? v / 1000 : v)}${ms ? ' — looks like milliseconds; RFC 7519 requires seconds' : ''}</span></div>`);
+        const v = payload[k]; if (v === undefined) continue;
+        if (typeof v !== 'number') { rows.push(`<div class="claim-row claim-bad"><span>${label}</span><span><code>${k}</code> must be a number of seconds, got ${esc(JSON.stringify(v))}</span></div>`); continue; }
+        const ms = v > 1e11, d = new Date(ms ? v : v * 1000);
+        rows.push(`<div class="claim-row${ms ? ' claim-bad' : ''}"><span>${label}</span><span>${isNaN(d) ? 'invalid date' : d.toISOString().replace('T', ' ').replace(/\.\d+Z$/, ' UTC')} · ${relativeTime(ms ? v / 1000 : v)}${ms ? ' — looks like milliseconds; RFC 7519 requires seconds' : ''}</span></div>`);
       }
-      if (typeof payload.exp === 'number' && typeof payload.iat === 'number' && payload.exp > payload.iat) {
-        const life = payload.exp - payload.iat;
-        rows.push(`<div class="claim-row"><span>Lifetime</span><span>${life % 86400 === 0 ? life / 86400 + ' days' : life % 3600 === 0 ? life / 3600 + ' hours' : life % 60 === 0 ? life / 60 + ' minutes' : life + ' seconds'}</span></div>`);
-      }
+      if (typeof payload.exp === 'number' && typeof payload.iat === 'number' && payload.exp > payload.iat) rows.push(`<div class="claim-row"><span>Lifetime</span><span>${W.human(payload.exp - payload.iat)}</span></div>`);
       claimTimes.innerHTML = rows.join('');
     }
-    function escapeText(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;'); }
 
-    // ---- test-token signer -------------------------------------------
-    const b64url = bytes => btoa(String.fromCharCode(...new Uint8Array(bytes))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
-    const b64urlText = s => b64url(new TextEncoder().encode(s));
-    async function signToken() {
-      const out = document.getElementById('signOutput');
-      const alg = document.getElementById('signAlg').value;
-      const secret = document.getElementById('signSecret').value;
-      let payload;
-      try { payload = JSON.parse(document.getElementById('signPayload').value); }
-      catch (e) { out.textContent = 'Payload is not valid JSON: ' + e.message; out.className = 'signer-output signer-bad'; return; }
-      if (document.getElementById('signAddTimes').checked) {
-        const now = Math.floor(Date.now() / 1000);
-        payload = Object.assign({}, payload, { iat: now, exp: now + 3600 });
-      }
-      const hash = { HS256: 'SHA-256', HS384: 'SHA-384', HS512: 'SHA-512' }[alg];
-      const key = await crypto.subtle.importKey('raw', new TextEncoder().encode(secret), { name: 'HMAC', hash }, false, ['sign']);
-      const signingInput = b64urlText(JSON.stringify({ alg, typ: 'JWT' })) + '.' + b64urlText(JSON.stringify(payload));
-      const sig = await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(signingInput));
-      const token = signingInput + '.' + b64url(sig);
-      out.textContent = token; out.className = 'signer-output';
-      document.getElementById('btnSignLoad').disabled = false;
-      document.getElementById('btnSignLoad').onclick = () => {
-        jwtInput.value = token; parseJWT();
-        hmacSecret.value = secret; runHmacVerify();
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-      };
+    // ------------------------------------------------------------ lint + timeline
+    function renderLint() {
+      const list = $('lintList'), tlw = $('timeline');
+      if (!current) { list.innerHTML = '<p class="verify-row-note">Decode a token to see the checks.</p>'; tlw.innerHTML = ''; return; }
+      const findings = W.lint(current, { iss: $('expectIss').value.trim() || undefined, aud: $('expectAud').value.trim() || undefined });
+      const counts = { error: 0, warn: 0, info: 0 }; findings.forEach(f => counts[f.level]++);
+      list.innerHTML = (findings.length ? `<div class="lint-summary"><span class="lint-count err">${counts.error} problem${counts.error === 1 ? '' : 's'}</span><span class="lint-count warn">${counts.warn} warning${counts.warn === 1 ? '' : 's'}</span><span class="lint-count info">${counts.info} note${counts.info === 1 ? '' : 's'}</span></div>` : '') +
+        (findings.length ? findings.map(f => `<div class="lint-item ${f.level}"><i data-lucide="${f.level === 'error' ? 'x-octagon' : f.level === 'warn' ? 'alert-triangle' : 'info'}"></i><code>${esc(f.claim)}</code><span>${esc(f.message)}</span></div>`).join('') : '<div class="lint-item ok"><i data-lucide="check-circle-2"></i><span>No findings: the structure and claims look the way a strict verifier wants them.</span></div>');
+      if (current.payload) renderTimeline(current.payload); else tlw.innerHTML = '';
+      icons();
     }
-    document.getElementById('btnSign').addEventListener('click', () => signToken().catch(e => {
-      const out = document.getElementById('signOutput'); out.textContent = 'Signing failed: ' + e.message; out.className = 'signer-output signer-bad';
-    }));
+    function renderTimeline(p) {
+      const t = W.timeline(p); const w = 800, h = 64;
+      if (t.iat === null && t.nbf === null && t.exp === null) { $('timeline').innerHTML = '<p class="verify-row-note">No time claims (iat, nbf, exp) to draw.</p>'; return; }
+      const x = v => 30 + t.pos(v) * (w - 60);
+      const fmt = v => new Date(v * 1000).toISOString().replace('T', ' ').replace(/\.\d+Z$/, 'Z');
+      let s = `<svg viewBox="0 0 ${w} ${h}" class="tl" preserveAspectRatio="none" aria-label="Token timeline"><line x1="30" y1="32" x2="${w - 30}" y2="32" class="tl-axis"/>`;
+      const vs = t.nbf !== null ? t.nbf : t.iat, ve = t.exp;
+      if (vs !== null && ve !== null && ve > vs) s += `<rect x="${x(vs)}" y="24" width="${Math.max(2, x(ve) - x(vs))}" height="16" class="tl-valid"/>`;
+      const anchor = px => px < 110 ? 'start' : px > w - 110 ? 'end' : 'middle';
+      const rows = { 12: [], 60: [] };
+      [['iat', t.iat], ['nbf', t.nbf], ['exp', t.exp]].forEach(([k, v], i) => { if (v === null) return; const y = i % 2 ? 60 : 12; rows[y].push(x(v)); s += `<line x1="${x(v)}" y1="18" x2="${x(v)}" y2="46" class="tl-mark"/><text x="${x(v)}" y="${y}" text-anchor="${anchor(x(v))}" class="tl-lbl">${k} · ${fmt(v)}</text>`; });
+      const dist = y => Math.min.apply(null, rows[y].map(px => Math.abs(px - x(t.now))).concat([Infinity]));
+      const nowY = dist(60) >= dist(12) ? 60 : 12;
+      s += `<line x1="${x(t.now)}" y1="14" x2="${x(t.now)}" y2="50" class="tl-now"/><text x="${x(t.now)}" y="${nowY}" text-anchor="${anchor(x(t.now))}" class="tl-now-lbl">now</text></svg>`;
+      const state = { expired: `Expired ${W.human(-t.remaining)} ago`, 'not-yet-valid': `Becomes valid in ${W.human(t.nbf - t.now)}`, valid: `Valid for another ${W.human(t.remaining)}`, 'no-expiry': 'No expiry' }[t.state];
+      $('timeline').innerHTML = s + `<div class="tl-foot ${t.state}">${state}${t.lifetime !== null ? ` · lifetime ${W.human(t.lifetime)}` : ''}</div>`;
+    }
+    ['expectIss', 'expectAud'].forEach(id => $(id).addEventListener('input', renderLint));
 
+    // ------------------------------------------------------------ verify
+    function showVerifyResult(state, message) {
+      const icon = state === 'valid' ? 'shield-check' : state === 'invalid' ? 'shield-x' : 'triangle-alert';
+      const cls = state === 'valid' ? 'verify-ok' : state === 'invalid' ? 'verify-fail' : 'verify-error';
+      verifyResult.innerHTML = `<span class="verify-badge ${cls}"><i data-lucide="${icon}"></i> ${esc(message)}</span>`; icons();
+    }
+    let verifySeq = 0;
+    function runVerify() {
+      if (!current || current.kind !== 'jws' || !sigAlg) return;
+      const isHmac = /^HS/.test(sigAlg);
+      let material = isHmac ? hmacSecret.value : publicKeyPem.value.trim();
+      if (!material) { verifyResult.innerHTML = ''; return; }
+      if (isHmac && $('secretIsB64').checked && !/^\s*\{/.test(material)) { try { material = { kty: 'oct', k: material.trim() }; } catch (e) { showVerifyResult('error', 'Secret is not base64url'); return; } }
+      const seq = ++verifySeq;
+      W.verify(current, material).then(r => { if (seq !== verifySeq) return; showVerifyResult(r.valid ? 'valid' : (/wrong key|does not match|altered/.test(r.reason) ? 'invalid' : 'error'), (r.valid ? 'Signature Valid' : /does not match/.test(r.reason) ? 'Signature Invalid' : 'Could not verify') + ` — ${r.reason}${r.kid ? ' (kid ' + r.kid + ')' : ''}`); });
+    }
+    function updateVerifyUI() {
+      ['verifyHS256', 'verifyRS256', 'verifyUnsupported', 'verifyNoToken'].forEach(id => $(id).style.display = 'none');
+      verifyResult.innerHTML = '';
+      if (!sigAlg) { $('verifyNoToken').style.display = 'block'; return; }
+      if (/^HS(256|384|512)$/.test(sigAlg)) { $('verifyHS256').style.display = 'block'; if (hmacSecret.value) runVerify(); }
+      else if (W.ALG[sigAlg]) { $('verifyRS256').style.display = 'block'; if (publicKeyPem.value.trim()) runVerify(); }
+      else { $('unsupportedAlg').textContent = sigAlg; $('verifyUnsupported').style.display = 'block'; }
+    }
+    hmacSecret.addEventListener('input', runVerify); publicKeyPem.addEventListener('input', runVerify); $('secretIsB64').addEventListener('change', runVerify);
+
+    // ------------------------------------------------------------ signer
+    function signerAlgChanged() { const hs = /^HS/.test($('signAlg').value); $('signSecretRow').style.display = hs ? '' : 'none'; $('signKeyRow').style.display = hs ? 'none' : ''; }
+    $('signAlg').addEventListener('change', signerAlgChanged);
+    async function generateKeys() {
+      const alg = $('signAlg').value, btn = $('btnGenKey');
+      btn.disabled = true; btn.innerHTML = '<i data-lucide="loader"></i> Generating…'; icons();
+      try {
+        generated = await W.generateKey(alg, { kid: $('signKid').value.trim() || undefined });
+        $('signKey').value = generated.privatePem; if (!$('signKid').value) $('signKid').value = generated.kid;
+        $('genKeys').innerHTML = `<div class="gen-row"><strong>Public key (PEM)</strong><button type="button" class="btn btn-inline" onclick="copyText(generated.publicPem,'Public key copied')"><i data-lucide="copy"></i></button><button type="button" class="btn btn-inline" onclick="document.getElementById('publicKeyPem').value=generated.publicPem; runVerify(); Layerbit.toast('Public key loaded into the verifier')"><i data-lucide="arrow-up"></i> Use in verifier</button><pre>${esc(generated.publicPem)}</pre></div>` +
+          `<div class="gen-row"><strong>Public JWK</strong><button type="button" class="btn btn-inline" onclick="copyText(JSON.stringify(generated.publicJwk,null,2),'JWK copied')"><i data-lucide="copy"></i></button><pre>${esc(JSON.stringify(generated.publicJwk, null, 2))}</pre></div>` +
+          `<div class="gen-row"><strong>JWKS document</strong><button type="button" class="btn btn-inline" onclick="copyText(JSON.stringify(generated.jwks,null,2),'JWKS copied')"><i data-lucide="copy"></i></button><button type="button" class="btn btn-inline" onclick="document.getElementById('publicKeyPem').value=JSON.stringify(generated.jwks,null,2); runVerify(); Layerbit.toast('JWKS loaded into the verifier')"><i data-lucide="arrow-up"></i> Use in verifier</button><pre>${esc(JSON.stringify(generated.jwks, null, 2))}</pre></div>` +
+          `<div class="gen-row"><strong>Private JWK</strong><button type="button" class="btn btn-inline" onclick="copyText(JSON.stringify(generated.privateJwk,null,2),'Private JWK copied')"><i data-lucide="copy"></i></button></div>`;
+        Layerbit.toast(`${alg} key pair generated in your browser`);
+      } catch (e) { Layerbit.toast('Key generation failed: ' + e.message, 'warn'); }
+      btn.disabled = false; btn.innerHTML = '<i data-lucide="key"></i> Generate a key pair'; icons();
+    }
+    async function signToken() {
+      const out = $('signOutput'), alg = $('signAlg').value;
+      let payload;
+      try { payload = JSON.parse($('signPayload').value); } catch (e) { out.textContent = 'Payload is not valid JSON: ' + e.message; out.className = 'signer-output signer-bad'; return; }
+      if ($('signAddTimes').checked) { const now = Math.floor(Date.now() / 1000); payload = Object.assign({}, payload, { iat: now, exp: now + 60 * (+$('signTtl').value || 60) }); }
+      const header = { alg, typ: 'JWT' }; if ($('signKid').value.trim()) header.kid = $('signKid').value.trim();
+      const material = /^HS/.test(alg) ? $('signSecret').value : $('signKey').value.trim();
+      if (!material) { out.textContent = /^HS/.test(alg) ? 'Enter a secret.' : 'Paste a private key or generate a key pair.'; out.className = 'signer-output signer-bad'; return; }
+      try {
+        const token = await W.sign(header, payload, material);
+        out.textContent = token; out.className = 'signer-output';
+        $('btnSignLoad').disabled = false; $('btnSignCopy').disabled = false;
+        $('btnSignLoad').onclick = () => {
+          jwtInput.value = token; parseJWT();
+          if (/^HS/.test(alg)) { hmacSecret.value = $('signSecret').value; $('secretIsB64').checked = false; }
+          else if (generated && generated.alg === alg && $('signKey').value.trim() === generated.privatePem) publicKeyPem.value = generated.publicPem;
+          runVerify(); window.scrollTo({ top: 0, behavior: 'smooth' });
+        };
+      } catch (e) { out.textContent = 'Signing failed: ' + e.message; out.className = 'signer-output signer-bad'; }
+    }
+    $('btnSign').addEventListener('click', signToken);
+
+    // ------------------------------------------------------------ JWE
+    function jweMsg(cls, msg) { $('jweResult').innerHTML = `<span class="verify-badge ${cls}"><i data-lucide="${cls === 'verify-ok' ? 'unlock' : 'triangle-alert'}"></i> ${esc(msg)}</span>`; icons(); }
+    async function decryptJwe() {
+      const tok = $('jweInput').value.trim(), key = $('jweKey').value.trim(); $('jweOutput').textContent = '';
+      if (!tok) { jweMsg('verify-error', 'Paste a JWE token'); return; } if (!key) { jweMsg('verify-error', 'Enter the recipient key'); return; }
+      try { const r = await W.decryptJwe(tok, key); jweMsg('verify-ok', `Decrypted (${r.header.alg} / ${r.header.enc})`); $('jweOutput').textContent = r.json !== null ? JSON.stringify(r.json, null, 2) : r.plaintext; }
+      catch (e) { jweMsg('verify-fail', 'Decryption failed: ' + e.message); }
+    }
+    async function encryptJwe() {
+      const alg = $('jweAlg').value; let key = $('jweKey').value.trim(); $('jweOutput').textContent = '';
+      let payload; try { payload = JSON.parse($('signPayload').value); } catch (e) { jweMsg('verify-error', 'The signer payload is not valid JSON'); return; }
+      if (!key) { if (alg === 'RSA-OAEP-256') { jweMsg('verify-error', 'Paste the recipient RSA public key (PEM or JWK), or generate an RS256 key pair above and use its public key'); return; } randomJweKey(alg === 'A128KW' ? 16 : 32); key = $('jweKey').value; }
+      try { const enc = alg === 'A128KW' ? 'A128GCM' : 'A256GCM'; const tok = await W.encryptJwe(payload, alg, enc, key); $('jweInput').value = tok; jweMsg('verify-ok', `Encrypted with ${alg} / ${enc}: ${tok.length} characters. Decrypt it with the same key.`); }
+      catch (e) { jweMsg('verify-fail', 'Encryption failed: ' + e.message); }
+    }
+    function randomJweKey(bytes) { const b = new Uint8Array(bytes || 32); crypto.getRandomValues(b); $('jweKey').value = W.b64uEncode(b); Layerbit.toast(`Random ${(bytes || 32) * 8}-bit key generated (base64url)`); }
+
+    // ------------------------------------------------------------ misc
     jwtInput.addEventListener('input', parseJWT);
-    
-    // Sync Scroll between invisible textarea and colored backdrop
-    jwtInput.addEventListener('scroll', function() {
-      jwtBackdrop.scrollTop = this.scrollTop;
-    });
+    jwtInput.addEventListener('scroll', function () { jwtBackdrop.scrollTop = this.scrollTop; });
+    function clearToken() { jwtInput.value = ''; parseJWT(); Layerbit.state.clear(); }
+    Layerbit.onDrop(files => Layerbit.readFile(files[0]).then(t => { jwtInput.value = t.trim(); parseJWT(); }));
+    function getState() { return { input: jwtInput.value, iss: $('expectIss').value || undefined, aud: $('expectAud').value || undefined }; }
+    function setState(s) { if (!s) return; if (s.iss) $('expectIss').value = s.iss; if (s.aud) $('expectAud').value = s.aud; if (typeof s.input === 'string') { jwtInput.value = s.input.trim(); parseJWT(); } }
+    Layerbit.register({ slug: 'jwt-decoder', getState, setState, run: parseJWT, input: (text) => { jwtInput.value = text.trim(); parseJWT(); } });
 
-    // FAQ Accordion Logic
-    
-    // Sample Loader Logic
     function loadSample(type) {
-      const currentTime = Math.floor(Date.now() / 1000);
-      const expiredTime = currentTime - 3600; // 1 hour ago
-      const validTime = currentTime + 3600; // 1 hour from now
-
+      const now = Math.floor(Date.now() / 1000);
+      const mk = (h, p) => W.b64uText(JSON.stringify(h)) + '.' + W.b64uText(JSON.stringify(p)) + '.';
       const samples = {
-        valid: `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.${btoa(JSON.stringify({sub: "1234567890", name: "Layerbit Admin", iat: currentTime, exp: validTime}))}.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c`,
-        expired: `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.${btoa(JSON.stringify({sub: "9876543210", name: "Expired User", iat: expiredTime - 3600, exp: expiredTime}))}.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c`,
-        malformed: "this.isnot.ajwt.string"
+        valid: `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.${W.b64uText(JSON.stringify({ sub: '1234567890', name: 'Layerbit Admin', iss: 'https://auth.layerbit.co.in/', aud: 'api://orders', iat: now, exp: now + 3600, jti: 'c1f0e2' }))}.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c`,
+        expired: `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.${W.b64uText(JSON.stringify({ sub: '9876543210', name: 'Expired User', iat: now - 7200, exp: now - 3600 }))}.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c`,
+        malformed: 'this.isnot.ajwt.string',
+        risky: mk({ alg: 'none', jku: 'https://keys.example.net/jwks.json' }, { sub: 'u1', password: 'hunter2', iat: now * 1000, exp: (now + 86400 * 400) * 1000 }),
+        oidc: mk({ alg: 'RS256', typ: 'JWT', kid: '2026-10-key-1' }, { iss: 'https://accounts.example.com', sub: '110169484474386276334', aud: '407408718192.apps.example.com', email: 'user@example.com', email_verified: true, iat: now - 60, exp: now + 3540, nonce: '0394852-3190485-2490358' }) + 'c2lnbmF0dXJlLXBsYWNlaG9sZGVy'
       };
-      
-      jwtInput.value = samples[type];
-      parseJWT(); // Trigger update manually
-      
-      // Scroll back to top to see result
+      if (type === 'valid' || type === 'expired') {
+        // sign the sample for real so the verifier shows a valid signature with the demo secret
+        const [h, pl] = samples[type].split('.');
+        W.sign(JSON.parse(new TextDecoder().decode(W.b64uDecode(h))), JSON.parse(new TextDecoder().decode(W.b64uDecode(pl))), 'your-256-bit-secret').then(tok => { jwtInput.value = tok; hmacSecret.value = 'your-256-bit-secret'; $('secretIsB64').checked = false; parseJWT(); });
+      } else { jwtInput.value = samples[type]; parseJWT(); }
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
+    signerAlgChanged();
   </script>
 <script src="../main.js"></script>

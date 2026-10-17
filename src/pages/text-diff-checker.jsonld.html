@@ -5,9 +5,9 @@
     {
       "@type": "SoftwareApplication",
       "@id": "https://layerbit.co.in/tools/text-diff-checker.html#app",
-      "name": "Text Diff Checker",
+      "name": "Text Diff Checker \u0026 Merge Tool",
       "url": "https://layerbit.co.in/tools/text-diff-checker.html",
-      "description": "Compare two texts or files side by side or inline with line, word or character highlighting, whitespace ignoring and change navigation. Runs in your browser.",
+      "description": "Compare two texts, code files, JSON, CSV or zip folders, merge changes hunk by hunk, resolve three-way merges and apply unified patches. Runs in your browser.",
       "applicationCategory": "DeveloperApplication",
       "operatingSystem": "Any (runs in the browser)",
       "browserRequirements": "Requires JavaScript",
@@ -19,7 +19,19 @@
       },
       "publisher": {
         "@id": "https://layerbit.co.in/#organization"
-      }
+      },
+      "featureList": [
+        "Line diff with word or character highlights",
+        "Side-by-side and unified views with context folding",
+        "Syntax highlighting for 14 languages",
+        "Hunk-by-hunk merge with editable result",
+        "Three-way merge with conflict resolution",
+        "Structural JSON and YAML diff by path",
+        "Keyed CSV and Excel cell diff",
+        "Apply and export unified patches",
+        "Zip folder comparison",
+        "Share links and local history"
+      ]
     },
     {
       "@type": "BreadcrumbList",
@@ -47,25 +59,81 @@
     },
     {
       "@type": "FAQPage",
+      "@id": "https://layerbit.co.in/tools/text-diff-checker.html#faq",
       "mainEntity": [
         {
           "@type": "Question",
-          "name": "How does Word-Level highlighting work?",
+          "name": "How does word-level highlighting work?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "Unlike basic diff checkers that only show if an entire line was replaced, Layerbit runs a secondary pass on modified lines. If a line is removed and immediately replaced, the engine diffs the characters within those specific lines to highlight the exact insertion or deletion."
+            "text": "The engine first runs a line-level diff to find which lines changed. Where a block of removed lines is immediately followed by a block of added lines, it pairs them up and runs a second diff inside each pair at word or character granularity, highlighting only the parts that actually differ. Lines that were purely added or removed are shown whole."
           }
         },
         {
           "@type": "Question",
-          "name": "What does the \"Ignore Whitespace\" toggle do?",
+          "name": "What do \"Ignore whitespace\" and the other normalisation options do?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "When code is reformatted by a linter, the indentation changes can create massive false-positive diffs. Toggling this feature forces the engine to ignore tabs, spaces, and line breaks, isolating only the actual logic changes."
+            "text": "They change how lines are compared, not how they are displayed. Ignore whitespace collapses every run of spaces and tabs to one space and trims the ends, so a reformatted file shows only logic changes. Ignore case compares lower-cased lines. Trim trailing ignores whitespace at the end of a line only. Ignore blank lines lets empty lines match anywhere. Line endings (CRLF vs LF) are always normalised. The original text is still shown in full in the result."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How do I merge two files, not just compare them?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Run a text comparison, then use the controls above each change block: Keep original, Accept change, or Both. The Merged result pane below the diff updates as you decide, starting from the modified text with every change accepted. You can also edit the merged text directly, copy it, download it, send it to another tool, or load it back as the new original to continue from there."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "When should I use the three-way merge instead?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "When two people (or two branches) edited the same file independently and you have the version they both started from. A two-way diff cannot tell which side changed a line; with the base it can, so non-overlapping edits from both sides merge automatically and only genuine overlaps become conflicts. The output uses Git's conflict markers with diff3-style base sections, and each conflict can be resolved in place with ours, theirs, or both."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What is a structural diff and when is it better than a text diff?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "A structural diff parses both documents and compares the resulting values. Two JSON files with the same data but different key order, indentation or quoting show no difference, and the changes that do exist are reported by path, like $.server.port changed from 8080 to 443. Use it for configuration files, API responses and anything machine-generated. Use the text diff when formatting itself matters, such as reviewing a hand-edited file."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How does the spreadsheet comparison match rows?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "By a key column you choose from the header row, such as an id, SKU or email. Rows with the same key are compared cell by cell regardless of where they appear, so a re-sorted or filtered export shows only real changes. Rows whose key exists on one side only are reported as added or removed, and columns that appear or disappear are listed separately. If the file has no natural key, match by row order instead."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Is the patch output compatible with git apply and patch?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes. The export is a standard unified diff with --- and +++ headers and @@ hunk ranges, which git apply, patch -p0 and every code review tool accept. The Apply a patch mode reads the same format back, including patches produced by git diff, and uses context matching with a fuzz fallback when line numbers have drifted."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Is anything uploaded when I compare files or zip folders?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "No. Files are read with the browser's FileReader, zip archives are unpacked with the browser's own DecompressionStream, and every algorithm on this page is JavaScript running in the tab. The privacy indicator in the header counts any network request the page makes; it stays at zero while you work. Closing the tab discards everything unless you chose to save a run to the local history."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How large a file can it handle?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Tens of thousands of lines compare in well under a second; the limit is rendering, not diffing. For files over about 20,000 lines, set Context to 3 or 5 lines so only the changed regions are rendered, and prefer word over character highlighting. The structural and table modes handle documents of several megabytes. Share links are capped at roughly 60 KB of compressed input; larger comparisons can be exported as a patch or HTML report instead."
           }
         }
-      ],
-      "@id": "https://layerbit.co.in/tools/text-diff-checker.html#faq"
+      ]
     }
   ]
 }

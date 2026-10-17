@@ -1,0 +1,121 @@
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "SoftwareApplication",
+      "@id": "https://layerbit.co.in/tools/flow.html#app",
+      "name": "Flow: Chain Developer Operations Into a Recipe",
+      "url": "https://layerbit.co.in/tools/flow.html",
+      "description": "Chain 74 operations into one recipe: Base64, gzip, JWT, JSON and JSONPath, CSV, YAML, hashes, regex, URLs, timestamps and AES. Magic detection and share links.",
+      "applicationCategory": "DeveloperApplication",
+      "operatingSystem": "Any (runs in the browser)",
+      "browserRequirements": "Requires JavaScript",
+      "isAccessibleForFree": true,
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "publisher": {
+        "@id": "https://layerbit.co.in/#organization"
+      },
+      "featureList": [
+        "74 chainable operations",
+        "Per-step previews and errors",
+        "Magic detection of pasted input",
+        "Preset recipes",
+        "Recipe copy, import and share links",
+        "JSONPath, CSV, YAML, gzip, JWT, hashes, AES-GCM",
+        "File input and send-to"
+      ]
+    },
+    {
+      "@type": "BreadcrumbList",
+      "@id": "https://layerbit.co.in/tools/flow.html#breadcrumb",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://layerbit.co.in/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Tools",
+          "item": "https://layerbit.co.in/blog.html"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": "Flow",
+          "item": "https://layerbit.co.in/tools/flow.html"
+        }
+      ]
+    },
+    {
+      "@type": "FAQPage",
+      "@id": "https://layerbit.co.in/tools/flow.html#faq",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "What is a recipe and how do I share one?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "A recipe is the ordered list of steps with their arguments, stored as a small JSON document you can copy from the Recipe pane and paste back with the import button. The Share link button in the header goes further: it compresses the recipe and the current input into the URL fragment, which browsers never send to a server, so opening the link reproduces the whole session on the other person's machine without anything having been uploaded."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How does the magic detection decide what I pasted?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "By structure, not by guessing at meaning: three base64url segments beginning with eyJ are a JWT; Base64 beginning with H4sI is gzip; percent signs followed by hex digits mean URL encoding; ampersand-named entities mean HTML; a 10-digit number near the present is a Unix timestamp; consistent comma or tab counts across lines mean CSV; valid JSON is offered formatting and a JSONPath query. Each suggestion is scored and the best few are shown. It only suggests; nothing runs until you click."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Can a step read binary data or files?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Steps pass text between them. Decoders that produce bytes which are not valid text show them as hexadecimal, and the hex decode and Base64 decode steps accept that back, so binary can be carried through a chain in hex form. Files opened with the upload button are read as UTF-8 text; for hashing large binary files use the hash generator, which streams the file through Web Crypto."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Which JSONPath syntax does the query step support?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "The same engine as the JSON tool: $.a.b, bracket keys, numeric and negative indexes, [*] wildcards, .. recursive descent, slices such as [0:5], unions, .length, and filters such as [?(@.qty \u003e 5 \u0026\u0026 @.status == 'paid')] with comparison, regex matching and boolean operators. One match is output as its value, several as a JSON array."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Is anything I paste sent anywhere?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "No. The operations are JavaScript functions in this page, hashing and encryption use the browser's Web Crypto API, and compression uses the browser's built-in CompressionStream. The header indicator counts network requests made by the page's own code and stays at zero. The optional history is stored in your browser's own database and can be cleared from the command palette."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How is this different from CyberChef?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "CyberChef is a large, security-analysis-oriented toolkit with hundreds of operations and a correspondingly dense interface. Flow covers the operations developers reach for daily — encodings, hashes, JSON, CSV, YAML, text cleanup, URLs, timestamps — with per-step previews, magic suggestions, presets for common jobs, and recipes that share as links. If you need cipher cryptanalysis or forensic file carving, CyberChef is the right tool; if you need to get a JSON payload out of a Base64 blob and pick one field, this page is faster."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Can I run a recipe on many inputs at once?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Most text operations are line-aware: hash each line, filter lines, sort, unique, cut column, number conversion, timestamp conversion and IP conversion all work on every line of the input independently. Paste a list, build the recipe once, and every line is processed. For per-file batch work on a pattern, the regex tester's batch mode is the complement."
+          }
+        }
+      ]
+    }
+  ]
+}
+  </script>

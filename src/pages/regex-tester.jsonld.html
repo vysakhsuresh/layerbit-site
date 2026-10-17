@@ -5,7 +5,7 @@
     {
       "@type": "SoftwareApplication",
       "@id": "https://layerbit.co.in/tools/regex-tester.html#app",
-      "name": "Regex Tester",
+      "name": "Regex Tester \u0026 Debugger",
       "url": "https://layerbit.co.in/tools/regex-tester.html",
       "description": "Test regular expressions with live highlighting, capture groups, replacement preview, all JavaScript flags, and an engine-time readout that flags slow patterns.",
       "applicationCategory": "DeveloperApplication",
@@ -19,7 +19,19 @@
       },
       "publisher": {
         "@id": "https://layerbit.co.in/#organization"
-      }
+      },
+      "featureList": [
+        "Live match highlighting with capture groups",
+        "Token-by-token explanation",
+        "Railroad diagram with SVG export",
+        "Catastrophic backtracking analysis and growth measurement",
+        "Unit tests saved in share links",
+        "Code generation for 10 languages",
+        "Whole-file batch testing",
+        "Pattern synthesis from examples",
+        "Replacement preview",
+        "Quick reference"
+      ]
     },
     {
       "@type": "BreadcrumbList",
@@ -47,21 +59,22 @@
     },
     {
       "@type": "FAQPage",
+      "@id": "https://layerbit.co.in/tools/regex-tester.html#faq",
       "mainEntity": [
         {
           "@type": "Question",
-          "name": "Why is client-side regex testing important?",
+          "name": "Which regex flavour does this tool use?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "If you are testing patterns against proprietary application logs or databases containing PII (Personally Identifiable Information), pasting that text into an external server-side tool is a massive security risk. Layerbit evaluates your data locally within your browser, ensuring complete privacy."
+            "text": "The native JavaScript (ECMAScript) engine in your browser, which covers lookbehind, named groups, Unicode property escapes and the v flag in current Chrome, Firefox and Safari. The Code tab converts flags and syntax for Python, Go, Java, C#, PHP, Ruby, Rust and the shell tools, and lists any feature the target engine lacks, so a pattern that works here is carried over correctly or you learn why it cannot be."
           }
         },
         {
           "@type": "Question",
-          "name": "Which Regex flavor does this terminal use?",
+          "name": "How does the catastrophic-backtracking check work?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "The terminal utilizes the native JavaScript ES6+ RegExp engine executed by your local browser. This is universally compatible with standard PCRE (Perl Compatible Regular Expressions) syntaxes used in Node.js, Python, and modern web applications."
+            "text": "The pattern is parsed into a tree and scanned for three shapes: an unbounded repeat containing another unbounded repeat, alternatives under a repeat whose first characters overlap, and two adjacent repeats that can accept the same characters. Each finding shows the fragment and a safer rewrite. The growth measurement then runs the pattern on your test string at one, two, four and eight times its length and reports how the time grows: roughly doubling is linear and fine, quadrupling or worse means the ambiguity is real."
           }
         },
         {
@@ -69,7 +82,7 @@
           "name": "How does the real-time highlighting work without breaking the input?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "We utilize a dual-layer DOM architecture. The transparent \u003ctextarea\u003e captures your keystrokes while a perfectly aligned \u003cdiv\u003e sitting behind it dynamically renders the colorized output and handles scrolling synchronization. This provides a rich IDE experience."
+            "text": "A transparent textarea captures your keystrokes while a perfectly aligned layer behind it renders the colourised matches and mirrors the scroll position. Alternate matches use two shades so adjacent matches stay distinguishable, and the match list below shows every capture group with its index range."
           }
         },
         {
@@ -77,11 +90,34 @@
           "name": "What syntax does the Replacement Preview support?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "The same replacement patterns JavaScript's native String.replace() understands: $1, $2, etc. for numbered capture groups, $\u003cname\u003e for named groups declared with (?\u003cname\u003e...), $\u0026 for the whole match, and $$ for a literal dollar sign. It respects whichever flags are active, so without the g flag only the first match gets replaced, same as the highlighting above it."
+            "text": "The same replacement patterns JavaScript's native String.replace() understands: $1, $2 and so on for numbered capture groups, $\u003cname\u003e for named groups, $\u0026 for the whole match, $` and $' for the text before and after it, and $$ for a literal dollar sign. It respects whichever flags are active, so without the g flag only the first match is replaced, the same as the highlighting above it."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Where are the unit tests stored?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "In the page, and in the share link when you copy one: the pattern, flags, test string and the full test table are compressed into the URL fragment, which browsers never send to a server. Paste the link into a code review or a ticket and the reader gets the pattern with its expectations and can run them. Nothing is stored on Layerbit's side; the optional history lives in your browser's own storage."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How good is the pattern generator?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "It is a rule-based synthesiser, not a language model. It splits each positive example into runs of digits, letters, whitespace and punctuation, checks whether all examples share the same sequence, and builds patterns from that shape with exact, loose and unanchored variants, then scores each candidate against your negative examples. For structured strings such as invoice numbers, SKUs, dates, keys and identifiers it produces a usable pattern immediately; for free text it gives you a starting point to edit."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Why is client-side regex testing important?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "If you are testing patterns against proprietary application logs or databases containing personal information, pasting that text into a server-side tool is a data transfer you may not be allowed to make. Everything here, including the batch file mode, runs in your browser, and the header indicator counts the network requests the page makes so you can see that it stays at zero."
           }
         }
-      ],
-      "@id": "https://layerbit.co.in/tools/regex-tester.html#faq"
+      ]
     }
   ]
 }

@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Why a merge needs the common ancestor, the four cases that decide each line, when a conflict happens, how to read diff3 markers and the four honest resolutions." />
+  <title>Three-Way Merge Explained: Base, Conflicts and Markers</title>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-ERX8MNPPP5"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-ERX8MNPPP5');
+  </script>
+  <link rel="canonical" href="https://layerbit.co.in/guides/three-way-merge-explained.html" />
+  <meta name="robots" content="max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://layerbit.co.in/guides/three-way-merge-explained.html" />
+  <meta property="og:site_name" content="Layerbit" />
+  <meta property="og:title" content="Three-Way Merge Explained: Base, Conflicts and Markers" />
+  <meta property="og:description" content="Why a merge needs the common ancestor, the four cases that decide each line, when a conflict happens, how to read diff3 markers and the four honest resolutions." />
+  <meta property="og:image" content="https://layerbit.co.in/og-image.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="Layerbit - free browser-based developer tools" />
+  <meta property="og:locale" content="en" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Three-Way Merge Explained: Base, Conflicts and Markers" />
+  <meta name="twitter:description" content="Why a merge needs the common ancestor, the four cases that decide each line, when a conflict happens, how to read diff3 markers and the four honest resolutions." />
+  <meta name="twitter:image" content="https://layerbit.co.in/og-image.png" />
+  <meta name="twitter:image:alt" content="Layerbit - free browser-based developer tools" />
+  <meta name="theme-color" content="#0a0c10" />
+  <script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "TechArticle",
+      "@id": "https://layerbit.co.in/guides/three-way-merge-explained.html#article",
+      "headline": "Three-Way Merge Explained: Why Git Needs the Base Version and What a Conflict Really Is",
+      "name": "Three-Way Merge Explained: Why Git Needs the Base Version and What a Conflict Really Is",
+      "description": "Why a merge needs the common ancestor, the four cases that decide each line, when a conflict happens, how to read diff3 markers and the four honest resolutions.",
+      "url": "https://layerbit.co.in/guides/three-way-merge-explained.html",
+      "mainEntityOfPage": {
+        "@type": "WebPage",
+        "@id": "https://layerbit.co.in/guides/three-way-merge-explained.html"
+      },
+      "datePublished": "2026-10-17",
+      "dateModified": "2026-10-17",
+      "inLanguage": "en",
+      "wordCount": 1773,
+      "keywords": "three-way merge, git merge conflict, diff3, conflict markers, merge base, rebase conflicts, rerere, merge tool",
+      "articleSection": "Version Control",
+      "author": {
+        "@type": "Organization",
+        "name": "Layerbit Technologies",
+        "url": "https://layerbit.co.in/about.html"
+      },
+      "publisher": {
+        "@type": "Organization",
+        "name": "Layerbit Technologies",
+        "url": "https://layerbit.co.in/",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://layerbit.co.in/icon-512.png",
+          "width": 512,
+          "height": 512
+        }
+      },
+      "image": {
+        "@type": "ImageObject",
+        "url": "https://layerbit.co.in/og-image.png",
+        "width": 1200,
+        "height": 630
+      },
+      "isAccessibleForFree": true,
+      "proficiencyLevel": "Beginner"
+    },
+    {
+      "@type": "BreadcrumbList",
+      "@id": "https://layerbit.co.in/guides/three-way-merge-explained.html#breadcrumb",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://layerbit.co.in/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Guides",
+          "item": "https://layerbit.co.in/blog.html"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": "Three-way merge explained",
+          "item": "https://layerbit.co.in/guides/three-way-merge-explained.html"
+        }
+      ]
+    },
+    {
+      "@type": "FAQPage",
+      "@id": "https://layerbit.co.in/guides/three-way-merge-explained.html#faq",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "Why does Git say there is a conflict when we edited different lines?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Because the two changed regions were adjacent or overlapping once context is included. When one hunk ends where the next begins, the merge cannot determine the order in which to place them, so it asks. Adding content at the same end of a file is the most common case: both additions are kept with the Both option and the order is your decision."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What do the \u003c\u003c\u003c\u003c\u003c\u003c\u003c, ======= and \u003e\u003e\u003e\u003e\u003e\u003e\u003e markers mean?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "They fence off the two competing versions of a conflicting region: the lines between the first marker and ======= are the current branch's version, and the lines between ======= and the last marker are the incoming version. With the diff3 conflict style a ||||||| section between them shows the original text both sides changed. Resolving means replacing the whole block, markers included, with the text you want."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Should I resolve with ours, theirs, or both?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Look at the base. If both sides changed the same value to different values, one of them is the intended one and you pick it. If both sides added different things at the same place, both are usually wanted and the order is the only question. If both sides tried to do the same job in different ways, revert to the base and reimplement once. Read what each side was trying to achieve rather than which text looks tidier."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Can a merge succeed and still break the code?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes. A clean merge only guarantees that no text region was edited differently by both sides. Changes in separate files or separate functions that depend on each other — a rename on one branch and a new use of the old name on the other — merge cleanly and fail at build or run time. Treat the merge result as new code and run the tests on it."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What is the difference between a merge and a rebase conflict?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Mechanically none: both are three-way merges. A merge does it once with the branch tips and their common ancestor. A rebase does it once per commit, with the base moving each time, which is why the same conflict can reappear on consecutive commits. Git's rerere feature records each resolution and replays it when the identical conflict returns."
+          }
+        }
+      ]
+    }
+  ]
+}
+  </script>
+
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6072772587431629" crossorigin="anonymous"></script>
+
+  <script src="../js/vendor/lucide.min.js" async></script>
+  <script src="../js/kernel.js"></script>
+
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet" />
+  <link href="../layerbit-logo.png" rel="icon" type="image/x-icon" />
+  <link rel="manifest" href="../manifest.json" />
+  <link rel="apple-touch-icon" href="../apple-touch-icon.png" />
+  <link rel="stylesheet" href="../css/base.css" />
+  <link rel="stylesheet" href="../css/article.css" />
+
+  <style>
+
+    /* Long-form guide styling lives in css/article.css, linked from this page's head. */
+  
+  </style>
+</head>
+<body>
+  <header>
+    <a href="../" class="brand">
+      <svg width="36" height="36" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <polygon points="32,20 54,28 32,36 10,28" stroke="#f8fafc" stroke-width="4" stroke-linejoin="round"/>
+        <polyline points="10,38 32,46 54,38" stroke="#f8fafc" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+        <polyline points="10,48 32,56 54,48" stroke="#f8fafc" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+        <rect x="50" y="10" width="10" height="10" rx="2" fill="#00f2fe" />
+      </svg>
+      Layerbit
+    </a>
+  </header>
+
+  <nav class="crumbs" aria-label="Breadcrumb">
+    <a href="../">Home</a>
+    <span class="sep">/</span>
+    <a href="../blog.html">Guides</a>
+    <span class="sep">/</span>
+    <span aria-current="page">Three-way merge explained</span>
+  </nav>
+
+  <article class="article">
+    <header class="article-head">
+      <span class="article-kicker">Version Control</span>
+      <h1>Three-Way Merge Explained: Why Git Needs the Base Version and What a Conflict Really Is</h1>
+      <p class="article-standfirst">Two people edit the same file. Combining their work looks like it should need only the two results, yet every serious merge tool insists on a third input: the version both started from. This guide explains why that base is the whole trick, how a three-way merge decides what to keep, exactly when it gives up and declares a conflict, and how to read and resolve the markers it leaves behind.</p>
+      <div class="article-meta">
+        <span class="byline">Layerbit Engineering</span>
+        <span><i data-lucide="calendar"></i>Published 17 October 2026</span>
+        <span><i data-lucide="clock"></i>10 min read</span>
+      </div>
+    </header>
+
+    <div class="takeaways">
+      <h2><i data-lucide="list-checks"></i> The short version</h2>
+      <ul>
+        <li>A two-way diff shows <em>that</em> two versions differ. It cannot tell which side changed, so it cannot merge automatically.</li>
+        <li>With the common ancestor, each line falls into one of four cases: unchanged, changed by one side, changed identically by both, or changed differently by both. Only the last is a conflict.</li>
+        <li>Conflict markers <code>&lt;&lt;&lt;&lt;&lt;&lt;&lt;</code>, <code>=======</code>, <code>&gt;&gt;&gt;&gt;&gt;&gt;&gt;</code> wrap the two competing versions; the <code>diff3</code> style adds the base between <code>|||||||</code> and <code>=======</code>, and is worth switching on.</li>
+        <li>"Clean merge" means <em>no textual overlap</em>, not "the code works". Two non-overlapping edits can still be semantically wrong together.</li>
+        <li>Rebase runs the same three-way merge once per commit, with a different base each time; that is why rebase conflicts feel repetitive.</li>
+      </ul>
+    </div>
+
+    <div class="prose">
+      <h2 id="two-way">Why two versions are not enough</h2>
+      <p>Take a configuration file with a line <code>timeout = 30</code>. Your copy says <code>timeout = 60</code>; your colleague's says <code>timeout = 30</code>. A tool holding only those two copies sees a difference and nothing else. Did you raise the timeout, or did your colleague lower it? Each interpretation leads to a different merge result, and the two copies alone cannot distinguish them.</p>
+      <p>Now add the version you both started from: <code>timeout = 30</code>. Your copy differs from the base; your colleague's does not. You changed it; they left it alone; the merge should take your value. The base turns an ambiguous difference into an attributable change, and attribution is what lets the merge be automatic.</p>
+
+      <h2 id="cases">The four cases, line by line</h2>
+      <p>A three-way merge runs two diffs — base against <em>ours</em> and base against <em>theirs</em> — and walks through the base aligning the two sets of changes. For each region of the base there are four possibilities:</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Ours vs base</th><th>Theirs vs base</th><th>Result</th></tr></thead>
+          <tbody>
+            <tr><td>unchanged</td><td>unchanged</td><td>base (everyone agrees)</td></tr>
+            <tr><td>changed</td><td>unchanged</td><td>ours (only we touched it)</td></tr>
+            <tr><td>unchanged</td><td>changed</td><td>theirs (only they touched it)</td></tr>
+            <tr><td>changed</td><td>changed, identically</td><td>the shared change (both made the same edit)</td></tr>
+            <tr><td>changed</td><td>changed, differently</td><td><strong>conflict</strong> — the tool cannot choose</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>The fourth row surprises people: if both sides applied the same fix, the merge takes it once and does not complain. That is why cherry-picking the same commit onto two branches and merging them later is usually painless.</p>
+      <p>The fifth row is the only one that stops the process. Note what it does and does not require. It requires that both sides changed the <em>same region</em> of the base — overlapping or adjacent hunks — in different ways. It does not care what the changes mean. Two edits to the same line are a conflict even if they are compatible; two edits to different functions are not a conflict even if together they break the build.</p>
+
+      <h2 id="adjacent">Adjacent hunks and why "I didn't touch that line" is not a defence</h2>
+      <p>Hunks are regions of change plus a little context. When your hunk ends on line 40 and theirs begins on line 41, the diff algorithm cannot safely say the regions are independent: the boundary itself moved, and placing both changes requires deciding an order. Git treats touching hunks as conflicting. This is the source of most "but we edited different things" conflicts — one person added a function at the end of a file, the other added a different one at the same end, and the tool, quite reasonably, does not know which should come first.</p>
+
+      <h2 id="markers">Reading conflict markers</h2>
+      <p>When a conflict is found, the merge writes both versions into the file:</p>
+      <pre><code>&lt;&lt;&lt;&lt;&lt;&lt;&lt; HEAD
+timeout = 60
+=======
+timeout = 15
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; feature/faster-retries</code></pre>
+      <p>Everything between <code>&lt;&lt;&lt;&lt;&lt;&lt;&lt;</code> and <code>=======</code> is ours; everything between <code>=======</code> and <code>&gt;&gt;&gt;&gt;&gt;&gt;&gt;</code> is theirs. What this layout omits is the base — what the line said before either of you changed it — and without it you are back to the two-way guessing problem. Git's <code>diff3</code> conflict style adds it:</p>
+      <pre><code>&lt;&lt;&lt;&lt;&lt;&lt;&lt; HEAD
+timeout = 60
+||||||| base
+timeout = 30
+=======
+timeout = 15
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; feature/faster-retries</code></pre>
+      <p>Now the intent is legible: we doubled the timeout, they halved it. That is a decision for a person — perhaps the retry logic they wrote makes the shorter timeout correct — but at least it is the right decision being made. Enable it once with <code>git config --global merge.conflictStyle diff3</code> (or <code>zdiff3</code> in Git 2.35+, which trims lines common to both sides out of the markers). Most engineers who try it do not go back.</p>
+
+      <h2 id="resolve">Resolving: four honest options</h2>
+      <p>For each conflict there are exactly four outcomes, and a good merge tool offers them as buttons rather than making you edit markers by hand:</p>
+      <ul>
+        <li><strong>Ours</strong> — keep our version, discard theirs.</li>
+        <li><strong>Theirs</strong> — the reverse.</li>
+        <li><strong>Both</strong> — keep ours followed by theirs. Correct more often than it sounds: two functions added at the same place, two entries appended to a list, two import lines.</li>
+        <li><strong>Base</strong> — revert the region to the common ancestor, discarding both edits. Rare, but it is the right answer when both changes were attempts at the same thing and a third approach is coming.</li>
+      </ul>
+      <p>Anything else — combining half of one side with half of the other, or writing new code — is a fifth option: editing. It is sometimes necessary and always the one to double-check, because the merged result then contains lines that appeared in neither branch and were never reviewed.</p>
+
+      <h2 id="clean">"Merged cleanly" is a textual claim</h2>
+      <p>A clean merge means no region of the base was changed differently by both sides. It says nothing about whether the combination makes sense. The canonical example: one branch renames a function, the other adds a new call to it under the old name, in a different file. Neither hunk overlaps; the merge is clean; the build fails. Static languages catch this at compile time, dynamic ones at run time, and a configuration file never catches it at all. The merge commit deserves the same tests as any other commit — more, since it is the first time the two sets of changes have existed together.</p>
+
+      <h2 id="rebase">Rebase is a merge in a loop</h2>
+      <p>Rebasing a branch replays each of its commits on top of a new base. Each replay is a three-way merge: base is the commit's original parent, ours is the new tip, theirs is the commit's own change. The conflicts you resolve during a rebase can recur on the next commit because the base moves one step each time and the same region is touched again. Git's <code>rerere</code> ("reuse recorded resolution") records how you resolved a conflict and reapplies it when the identical conflict reappears — switch it on with <code>git config --global rerere.enabled true</code> and long rebases become far less tedious.</p>
+
+      <h2 id="beyond-git">Three-way merge outside version control</h2>
+      <p>The algorithm has nothing to do with Git in particular. It applies wherever two parties edit a shared starting point: two engineers editing the same server config by hand, two translators working on the same strings file, two versions of a document that each diverged from a sent copy. In all of these you usually still have the original — the file as deployed, the file as sent — and with it the merge is mostly automatic. Without it you are reduced to reading both versions side by side and guessing at intent, which is exactly the two-way problem the base was invented to solve.</p>
+
+      <div class="tool-cta">
+        <div>
+          <strong>Run a three-way merge in your browser</strong>
+          <span>Paste the base and the two edited versions into the diff tool's three-way mode: non-overlapping changes merge automatically, conflicts show ours, base and theirs, and each resolves with one click.</span>
+        </div>
+        <a class="btn-cta" href="../tools/text-diff-checker.html">Open the diff &amp; merge tool <i data-lucide="arrow-right"></i></a>
+      </div>
+
+      <div class="further">
+        <h2>Related guides and tools</h2>
+        <div class="further-grid">
+          <a class="further-card" href="invisible-unicode-characters.html">
+            <strong>Invisible Unicode characters</strong>
+            <span>When a merge conflict exists but you cannot see the difference.</span>
+          </a>
+          <a class="further-card" href="json-syntax-errors-explained.html">
+            <strong>JSON syntax errors explained</strong>
+            <span>A clean merge of two JSON edits can still leave a trailing comma.</span>
+          </a>
+          <a class="further-card" href="../tools/json-validator.html">
+            <strong>JSON Validator</strong>
+            <span>Check a merged configuration before it ships.</span>
+          </a>
+        </div>
+      </div>
+
+      <h2 id="faq">Frequently asked questions</h2>
+      <div class="faq-container">
+        <div class="faq-item">
+          <button class="faq-question">Why does Git say there is a conflict when we edited different lines? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>Because the two changed regions were adjacent or overlapping once context is included. When one hunk ends where the next begins, the merge cannot determine the order in which to place them, so it asks. Adding content at the same end of a file is the most common case: both additions are kept with the Both option and the order is your decision.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">What do the &lt;&lt;&lt;&lt;&lt;&lt;&lt;, ======= and &gt;&gt;&gt;&gt;&gt;&gt;&gt; markers mean? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>They fence off the two competing versions of a conflicting region: the lines between the first marker and ======= are the current branch's version, and the lines between ======= and the last marker are the incoming version. With the diff3 conflict style a ||||||| section between them shows the original text both sides changed. Resolving means replacing the whole block, markers included, with the text you want.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">Should I resolve with ours, theirs, or both? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>Look at the base. If both sides changed the same value to different values, one of them is the intended one and you pick it. If both sides added different things at the same place, both are usually wanted and the order is the only question. If both sides tried to do the same job in different ways, revert to the base and reimplement once. Read what each side was trying to achieve rather than which text looks tidier.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">Can a merge succeed and still break the code? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>Yes. A clean merge only guarantees that no text region was edited differently by both sides. Changes in separate files or separate functions that depend on each other — a rename on one branch and a new use of the old name on the other — merge cleanly and fail at build or run time. Treat the merge result as new code and run the tests on it.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">What is the difference between a merge and a rebase conflict? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>Mechanically none: both are three-way merges. A merge does it once with the branch tips and their common ancestor. A rebase does it once per commit, with the base moving each time, which is why the same conflict can reappear on consecutive commits. Git's rerere feature records each resolution and replays it when the identical conflict returns.</p></div>
+        </div>
+      </div>
+    </div>
+  </article>
+
+  <a href="../" id="smartBackBtn" class="fab" aria-label="Command Center" title="Command Center">
+    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="filter: drop-shadow(0 0 8px rgba(56, 189, 248, 0.5));">
+      <path d="M12 2L2 7l10 5 10-5-10-5z" stroke="#38bdf8" stroke-width="2" stroke-linejoin="round" fill="rgba(56,189,248,0.2)"/>
+      <path d="M2 17l10 5 10-5M2 12l10 5 10-5" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </a>
+
+  <footer>
+    <div style="margin-bottom: 15px;">
+      &copy; 2025 - 2026 <strong>Layerbit Technologies</strong>. All rights reserved.
+    </div>
+    <div>
+      <a href="../about.html">About</a>
+      <a href="../privacy.html">Privacy Policy</a>
+      <a href="../terms.html">Terms of Service</a>
+      <a href="../blog.html">Developer Blog</a>
+      <a href="../contact.html">Contact</a>
+    </div>
+  </footer>
+
+  <script src="../js/shared.js"></script>
+</body>
+</html>

@@ -1,0 +1,154 @@
+{{HEADER}}
+
+  <nav class="crumbs" aria-label="Breadcrumb">
+    <a href="../">Home</a>
+    <span class="sep">/</span>
+    <a href="../blog.html">Guides</a>
+    <span class="sep">/</span>
+    <span aria-current="page">JWT signing algorithms compared</span>
+  </nav>
+
+  <article class="article">
+    <header class="article-head">
+      <span class="article-kicker">Security</span>
+      <h1>JWT Signing Algorithms Compared: HS256, RS256, PS256, ES256 and EdDSA</h1>
+      <p class="article-standfirst">The <code>alg</code> header is a three-to-five-letter decision that determines who can mint tokens, who can verify them, how big they are, how fast verification runs and which mistakes your verifier can make. This guide compares the algorithms the JOSE registry actually sees in production, explains the key formats each one uses, and gives a straightforward rule for choosing.</p>
+      <div class="article-meta">
+        <span class="byline">Layerbit Engineering</span>
+        <span><i data-lucide="calendar"></i>Published 17 October 2026</span>
+        <span><i data-lucide="clock"></i>12 min read</span>
+      </div>
+    </header>
+
+    <div class="takeaways">
+      <h2><i data-lucide="list-checks"></i> The short version</h2>
+      <ul>
+        <li><strong>HS256</strong> is symmetric: the same secret signs and verifies, so every verifier can also forge. Fine inside one service; wrong across trust boundaries.</li>
+        <li><strong>RS256</strong> is the asymmetric default of the identity world: a private key signs, a public key (published as a JWKS) verifies. Large signatures, universal support.</li>
+        <li><strong>ES256</strong> gives equivalent security to RS256 with 64-byte signatures and far faster signing; verification is slower than RSA. Signatures are raw <code>r||s</code>, not DER.</li>
+        <li><strong>EdDSA</strong> (Ed25519) is the modern choice: tiny keys, tiny signatures, fast both ways, no nonce to get wrong. Support is now broad but not yet universal.</li>
+        <li>Whatever you choose, the verifier must <em>pin</em> the algorithm. The token's <code>alg</code> header is a claim by the sender, not an instruction to the receiver.</li>
+      </ul>
+    </div>
+
+    <div class="prose">
+      <h2 id="what">What the signature is actually over</h2>
+      <p>A JWS signature covers the string <code>base64url(header) + "." + base64url(payload)</code>. Not the decoded JSON — the exact encoded bytes. This is why re-serialising a payload with different whitespace or key order invalidates the signature even though the data is "the same", and why a verifier must check the signature against the token as received, before parsing anything. The algorithm named in <code>alg</code> determines how those bytes are signed; the <code>kid</code> header, if present, says which key.</p>
+
+      <h2 id="table">The algorithms side by side</h2>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>alg</th><th>Kind</th><th>Signing key</th><th>Verification key</th><th>Signature size</th><th>Notes</th></tr></thead>
+          <tbody>
+            <tr><td><code>HS256/384/512</code></td><td>HMAC</td><td>shared secret</td><td>same secret</td><td>32 / 48 / 64 bytes</td><td>Fastest. Anyone who can verify can forge.</td></tr>
+            <tr><td><code>RS256/384/512</code></td><td>RSA PKCS#1 v1.5</td><td>RSA private (2048+)</td><td>RSA public</td><td>256 bytes at 2048-bit</td><td>The identity-provider default. Deterministic.</td></tr>
+            <tr><td><code>PS256/384/512</code></td><td>RSA-PSS</td><td>RSA private</td><td>RSA public</td><td>256 bytes at 2048-bit</td><td>Randomised padding; preferred by newer standards over RS*.</td></tr>
+            <tr><td><code>ES256/384/512</code></td><td>ECDSA</td><td>EC private (P-256 / P-384 / P-521)</td><td>EC public</td><td>64 / 96 / 132 bytes</td><td>Small, fast signing. Needs a good random nonce per signature.</td></tr>
+            <tr><td><code>EdDSA</code></td><td>Ed25519 (or Ed448)</td><td>32-byte private</td><td>32-byte public</td><td>64 bytes</td><td>Deterministic, fast, misuse-resistant. RFC 8037.</td></tr>
+            <tr><td><code>none</code></td><td>—</td><td>—</td><td>—</td><td>0</td><td>Unsigned. Must be rejected by every verifier.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2 id="hmac">HMAC: shared secrets and their blast radius</h2>
+      <p>HS256 computes HMAC-SHA-256 over the signing input with a secret. It is simple, fast and has no key format to get wrong — the secret is a byte string. Its property that matters is symmetry: verifying requires the secret, and holding the secret means being able to sign. A token verified by five microservices with HS256 has five services that could each mint a token for any user. A compromise of the least important of them compromises the whole scheme.</p>
+      <p>The secret also needs to be as strong as the hash. RFC 7518 requires at least 256 bits of key for HS256; a human-memorable passphrase is far weaker than that and can be recovered offline by anyone holding a single token. Generate the secret from a cryptographic random source, store it in a secrets manager, and never let it be a word.</p>
+      <p>Where HS256 is right: a single service issuing and verifying its own session tokens, or a tightly coupled pair that already share a secret for another reason.</p>
+
+      <h2 id="rsa">RSA: RS256 and PS256</h2>
+      <p>RS256 signs with an RSA private key and verifies with the corresponding public key. The public key can be published — identity providers expose it at a <code>jwks_uri</code> — so any number of services can verify without being able to forge. That asymmetry is why nearly every OAuth 2.0 and OpenID Connect deployment uses it.</p>
+      <p>The costs are size and speed. A 2048-bit RSA signature is 256 bytes, which base64url-encodes to 342 characters, so an RS256 token is routinely over a kilobyte before the payload is counted. Signing is slow (milliseconds); verification is fast, which suits the common pattern of one issuer and many verifiers. Keys below 2048 bits are no longer acceptable; 3072 or 4096 are reasonable for long-lived keys.</p>
+      <p>PS256 is RSA with PSS padding instead of PKCS#1 v1.5. PSS has a security proof and randomised padding; v1.5 has decades of deployment and a history of padding-oracle issues in <em>encryption</em> (not signing). Both are fine in practice for signatures. New specifications tend to prefer PS256; existing ecosystems overwhelmingly use RS256. If your verifier library offers both and you are starting fresh, PS256 is the slightly more conservative choice.</p>
+
+      <h2 id="ecdsa">ECDSA: ES256 and the signature format trap</h2>
+      <p>ES256 signs with a P-256 elliptic-curve key. A 256-bit EC key gives roughly the strength of a 3072-bit RSA key, with 64-byte signatures and sub-millisecond signing. Verification is slower than RSA's, which is the one place RSA keeps an edge. Tokens are much smaller; keys are much smaller.</p>
+      <p>Two things bite. First, ECDSA needs a fresh, unpredictable nonce for every signature. A repeated or biased nonce leaks the private key — this is how a well-known games console was broken — so the signing library must use a sound random source or the deterministic nonce construction of RFC 6979. Use a maintained library; do not implement it.</p>
+      <p>Second, the signature format. JWS mandates the raw concatenation <code>r || s</code>, each padded to the curve size: exactly 64 bytes for P-256. OpenSSL and most crypto APIs produce DER-encoded ECDSA signatures, which are 70 to 72 bytes and begin with <code>0x30</code>. A token carrying a DER signature will fail verification everywhere, and the error message rarely explains why. If your ES256 tokens "never verify", check the signature length first.</p>
+
+      <h2 id="eddsa">EdDSA: Ed25519</h2>
+      <p>Ed25519 is a signature scheme on the Edwards form of Curve25519. It is deterministic (no nonce to generate, so no nonce to get wrong), fast in both directions, resistant to several implementation pitfalls that affect ECDSA, and uses 32-byte keys and 64-byte signatures. In JOSE it is <code>alg: EdDSA</code> with an OKP key type and <code>crv: Ed25519</code>, specified in RFC 8037.</p>
+      <p>The only argument against it is reach. Browser Web Crypto gained Ed25519 in 2024–2025, major JWT libraries support it, and most identity providers can issue with it, but some older gateways and hardware security modules cannot verify it. If every verifier in your system is under your control and up to date, EdDSA is the best choice available. If a third party must verify your tokens, confirm their support before committing.</p>
+
+      <h2 id="keys">Key formats you will meet</h2>
+      <ul>
+        <li><strong>PEM</strong> — Base64 DER between <code>-----BEGIN … -----</code> lines. Public keys should be SPKI (<code>BEGIN PUBLIC KEY</code>); private keys PKCS#8 (<code>BEGIN PRIVATE KEY</code>). The older <code>BEGIN RSA PRIVATE KEY</code> and <code>BEGIN EC PRIVATE KEY</code> forms are PKCS#1 and SEC1, which some APIs, including browser Web Crypto, do not accept; convert with <code>openssl pkcs8 -topk8 -nocrypt</code>.</li>
+        <li><strong>JWK</strong> — the key as JSON: <code>{"kty":"RSA","n":"…","e":"AQAB"}</code> or <code>{"kty":"EC","crv":"P-256","x":"…","y":"…"}</code> or <code>{"kty":"OKP","crv":"Ed25519","x":"…"}</code>. Private keys add <code>d</code> (and the CRT parameters for RSA).</li>
+        <li><strong>JWKS</strong> — <code>{"keys":[ …JWKs… ]}</code>, each with a <code>kid</code>. The verifier fetches it once, caches it, and selects the key matching the token's <code>kid</code>. Publishing two keys for a while is how rotation works without downtime.</li>
+        <li><strong>X.509 certificate</strong> — contains a public key but is not one. Extract it with <code>openssl x509 -pubkey -noout</code> before use.</li>
+      </ul>
+
+      <h2 id="verifier">What every verifier must do regardless of algorithm</h2>
+      <p>The algorithm protects the token only if the verifier is strict about which algorithm it accepts. Configure the verifier with an explicit list — <code>algorithms: ["RS256"]</code> — rather than letting it read <code>alg</code> from the token and dispatch. A verifier that dispatches on the header can be steered: a token marked <code>none</code> is accepted without a signature, and a token marked <code>HS256</code> is checked with HMAC using whatever key material the verifier holds, which for an RSA deployment is the public key. Modern libraries refuse both by default; older ones and hand-rolled verifiers do not.</p>
+      <p>Then select the key from configuration, never from the token: <code>jwk</code>, <code>jku</code> and <code>x5u</code> headers are informational at best. Then check <code>exp</code>, <code>nbf</code>, <code>iss</code> and <code>aud</code>. The signature proves who issued the token; the claims decide whether it is for you, now.</p>
+
+      <h2 id="choose">Choosing</h2>
+      <ul>
+        <li>One service, its own sessions, no other verifier: <strong>HS256</strong> with a 256-bit random secret.</li>
+        <li>Identity provider with many relying parties, or any token crossing a trust boundary: <strong>RS256</strong> for compatibility, <strong>PS256</strong> if starting fresh and every verifier supports it.</li>
+        <li>Token size or signing throughput matters (mobile, IoT, high-volume issuance): <strong>ES256</strong>.</li>
+        <li>All verifiers are yours and current: <strong>EdDSA</strong>.</li>
+        <li>Never: <strong>none</strong>, HS256 with a passphrase, RSA under 2048 bits, or a verifier that trusts the header.</li>
+      </ul>
+
+      <div class="tool-cta">
+        <div>
+          <strong>Try every algorithm in your browser</strong>
+          <span>The JWT tool signs with HS, RS, PS, ES and EdDSA, generates key pairs with PEM, JWK and JWKS output, verifies against a pasted key or JWKS, and lints the claims — with nothing sent anywhere.</span>
+        </div>
+        <a class="btn-cta" href="../tools/jwt-decoder.html">Open the JWT tool <i data-lucide="arrow-right"></i></a>
+      </div>
+
+      <div class="further">
+        <h2>Related guides and tools</h2>
+        <div class="further-grid">
+          <a class="further-card" href="jwt-decode-vs-verify.html">
+            <strong>Decoding a JWT is not verifying it</strong>
+            <span>What a signature check proves and what the claims must add.</span>
+          </a>
+          <a class="further-card" href="hashing-vs-encryption-vs-encoding.html">
+            <strong>Hashing vs encryption vs encoding</strong>
+            <span>Why an HMAC is a hash with a key, and why Base64 protects nothing.</span>
+          </a>
+          <a class="further-card" href="../tools/hash-generator.html">
+            <strong>Hash &amp; HMAC Generator</strong>
+            <span>Compute the HMAC behind an HS256 signature by hand.</span>
+          </a>
+        </div>
+      </div>
+
+      <h2 id="faq">Frequently asked questions</h2>
+      <div class="faq-container">
+        <div class="faq-item">
+          <button class="faq-question">Should I use HS256 or RS256? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>Use HS256 only when the same service both issues and verifies the token, because the shared secret lets every verifier forge tokens. The moment a second service needs to verify, switch to an asymmetric algorithm: RS256 for the broadest compatibility, ES256 for smaller tokens, EdDSA if all your verifiers are modern. The secret for HS256 must be at least 256 random bits, never a passphrase.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">Why do my ES256 tokens fail to verify? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>Most often because the signature is DER-encoded. JWS requires the raw r and s values concatenated, exactly 64 bytes for P-256, whereas OpenSSL and many crypto APIs emit a DER structure of 70 to 72 bytes starting with 0x30. Convert to the raw form before base64url-encoding. The second common cause is a key on the wrong curve: ES256 requires P-256, ES384 P-384 and ES512 P-521.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">Is EdDSA safe to use for JWTs now? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>Yes, and it is arguably the best-designed option: deterministic signatures, no nonce to mismanage, small keys and fast operations. The only consideration is support. Current browsers, major JWT libraries and most identity providers handle it; some older API gateways and hardware modules do not. Confirm every verifier in the path supports alg EdDSA with an OKP Ed25519 key before adopting it.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">What is the difference between RS256 and PS256? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>Both use RSA keys; they differ in padding. RS256 uses PKCS#1 v1.5, deterministic and universally supported. PS256 uses PSS, which is randomised and has a formal security proof. For signatures both are considered secure. New specifications lean towards PS256; the installed base is overwhelmingly RS256. Either is a reasonable choice, and the keys are interchangeable.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">Why must the verifier pin the algorithm instead of reading it from the token? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>Because the header is written by whoever made the token. If the verifier does whatever the header says, a token can declare itself unsigned, or declare an HMAC algorithm so that the verifier's public key is used as the HMAC secret. A verifier configured with an explicit allowlist of algorithms and its own key material ignores the header's suggestion, which closes both problems.</p></div>
+        </div>
+      </div>
+    </div>
+  </article>
+
+  <a href="../" id="smartBackBtn" class="fab" aria-label="Command Center" title="Command Center">
+    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="filter: drop-shadow(0 0 8px rgba(56, 189, 248, 0.5));">
+      <path d="M12 2L2 7l10 5 10-5-10-5z" stroke="#38bdf8" stroke-width="2" stroke-linejoin="round" fill="rgba(56,189,248,0.2)"/>
+      <path d="M2 17l10 5 10-5M2 12l10 5 10-5" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </a>
+
+  {{FOOTER}}
+
+  <script src="../js/shared.js"></script>

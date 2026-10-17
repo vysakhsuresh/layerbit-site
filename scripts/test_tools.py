@@ -192,7 +192,7 @@ def _(t):
     expect(not t.visible("#errorBanner"), "error banner shown for empty input")
 
 
-@case("json-validator", "typical", "format and minify")
+@case("json-validator", "typical", "format, minify and indentation choice")
 def _(t):
     t.set("jsonInput", '{"a":1,"b":[true,null,"x"]}')
     t.click("#btnFormat")
@@ -200,6 +200,9 @@ def _(t):
     expect('"a": 1' in out and '"b": [' in out, f"formatted output wrong: {out[:80]}")
     t.click("#btnMinify")
     eq(t.text("jsonOutput").strip(), '{"a":1,"b":[true,null,"x"]}', "minified")
+    t.select("indentSel", "2")
+    t.click("#btnFormat")
+    expect('\n  "a": 1' in t.text("jsonOutput"), "2-space indent not applied")
 
 
 @case("json-validator", "edge", "syntax error is reported with position, not thrown")
@@ -210,12 +213,13 @@ def _(t):
     expect("Invalid JSON" in t.text("errorText"), "error text missing")
 
 
-@case("json-validator", "edge", "tree view renders nested nodes")
+@case("json-validator", "edge", "tree view renders nested nodes and copies a path on click")
 def _(t):
     t.set("jsonInput", '{"users":[{"id":1,"tags":["a","b"]},{"id":2}]}')
     t.click("#btnFormat")
     t.click("#viewTabTree")
     expect(t.count("#jsonTree .tree-row") >= 5, "tree rows not rendered")
+    eq(t.call("document.querySelectorAll('#jsonTree .tree-leaf')[0].dataset.path"), "$.users[0].id", "leaf path")
 
 
 @case("json-validator", "maximal", "20,000-object array formats under budget")
@@ -239,6 +243,22 @@ def _(t):
     eq(t.text("pathResult").strip(), "true", "quoted key")
     t.set("pathInput", "users[5].id")
     expect("undefined" in t.text("pathResult"), "missing path not reported")
+
+
+@case("json-validator", "typical", "JSONPath wildcards, recursion and filters list every match with its path")
+def _(t):
+    t.call("loadSample('api')")
+    t.wait(100)
+    t.call("setOutputView('query')")
+    eq(t.text("pathCount"), "3 matches", "filter count")
+    paths = t.call("[...document.querySelectorAll('#pathList .path-path')].map(e=>e.textContent)")
+    eq(paths, ["$.data[0].name", "$.data[2].name", "$.data[3].name"], "filter paths")
+    t.set("pathInput", "$..id")
+    eq(t.text("pathCount"), "4 matches", "recursive descent")
+    t.set("pathInput", "$.data[-1].name")
+    eq(t.text("pathResult").strip(), '"Support Plan"', "negative index")
+    t.set("pathInput", "$.data[?(@.price >")
+    expect("Bad path" in t.text("pathResult"), "bad filter not reported")
 
 
 @case("json-validator", "typical", "sort keys is deep and leaves arrays alone")
@@ -267,6 +287,92 @@ def _(t):
     expect("3" in st and "keys" in st and "depth" in st and "minified" in st, f"stats wrong: {st}")
 
 
+@case("json-validator", "edge", "Fix repairs comments, quotes, bare keys, commas and NaN and lists the changes")
+def _(t):
+    t.call("loadSample('almost')")
+    t.wait(80)
+    expect(t.visible("#errorBanner"), "sample should start invalid")
+    t.click("#btnFix")
+    t.wait(100)
+    expect(not t.visible("#errorBanner"), "still invalid after fix: " + t.text("errorText"))
+    note = t.text("noticeText")
+    expect("trailing comma" in note and "bare key" in note and "comment" in note, note)
+    expect('"ratio": null' in t.text("jsonOutput") and '"enabled": true' in t.text("jsonOutput"), t.text("jsonOutput")[:200])
+
+
+@case("json-validator", "edge", "NDJSON is detected and parsed line by line; big integers warn")
+def _(t):
+    t.call("loadSample('ndjson')")
+    t.wait(80)
+    expect("NDJSON detected: 4 objects" in t.text("noticeText"), t.text("noticeText"))
+    expect(t.text("jsonOutput").lstrip().startswith("["), "not shown as array")
+    t.set("jsonInput", '{"id": 9007199254740993}')
+    t.click("#btnFormat")
+    expect("Precision warning" in t.text("noticeText"), t.text("noticeText"))
+
+
+@case("json-validator", "typical", "schema: infer then validate passes; a wrong schema lists violations by path")
+def _(t):
+    t.call("loadSample('api')")
+    t.wait(80)
+    t.call("setOutputView('schema'); inferSchema()")
+    expect('"format": "date-time"' in t.val("schemaInput") and '"required"' in t.val("schemaInput"), t.val("schemaInput")[:300])
+    t.call("validateSchema()")
+    expect("Valid" in t.text("schemaResult"), t.text("schemaResult"))
+    t.set("schemaInput", '{"type":"object","required":["nope"],"properties":{"status":{"type":"string"},"data":{"type":"array","maxItems":2}}}')
+    t.call("validateSchema()")
+    rows = t.call("[...document.querySelectorAll('#schemaResult tbody tr')].map(r=>r.children[0].textContent+':'+r.children[1].textContent)")
+    eq(sorted(rows), ["$.data:maxItems", "$.status:type", "$:required"], str(rows))
+    t.set("schemaInput", "{not json")
+    t.call("validateSchema()")
+    expect("not valid JSON" in t.text("schemaResult"), t.text("schemaResult"))
+
+
+@case("json-validator", "typical", "types tab generates TypeScript and Go from the sample")
+def _(t):
+    t.call("loadSample('api')")
+    t.wait(80)
+    t.call("setOutputView('types')")
+    ts = t.text("typesOut")
+    expect("export interface Root {" in ts and "data: Datum[];" in ts and "discount?: number | null;" in ts, ts[:400])
+    t.select("typeLang", "go")
+    expect('`json:"inStock"`' in t.text("typesOut"), t.text("typesOut")[:300])
+    t.set("typeName", "Catalog")
+    expect("type Catalog struct" in t.text("typesOut"), "root name not applied")
+
+
+@case("json-validator", "typical", "convert tab: SQL, CSV, NDJSON, YAML and string literal")
+def _(t):
+    t.call("loadSample('api')")
+    t.wait(80)
+    t.call("setOutputView('convert')")
+    sql = t.text("convOut")
+    expect('CREATE TABLE "data"' in sql and 'INSERT INTO "data"' in sql and "'Quantum CPU'" in sql, sql[:300])
+    t.select("sqlDialect", "mysql")
+    expect("`data`" in t.text("convOut"), "mysql quoting")
+    t.select("convTarget", "csv")
+    expect(t.text("convOut").startswith("id,name,inStock,price,tags,createdAt,category,discount"), t.text("convOut")[:100])
+    t.select("convTarget", "ndjson")
+    eq(len([l for l in t.text("convOut").split("\n") if l.strip()]), 1, "object -> one ndjson line")
+    t.select("convTarget", "yaml")
+    expect(t.text("convOut").startswith("status: 200\nmessage: Data retrieved successfully\ndata:\n  - id: 101"), t.text("convOut")[:120])
+    t.select("convTarget", "string")
+    expect(t.text("convOut").startswith('"{'), "string literal")
+
+
+@case("json-validator", "typical", "share link restores input, options, path and view")
+def _(t):
+    t.call("loadSample('api')")
+    t.wait(80)
+    t.call("setOutputView('query')")
+    url = t.call("Layerbit.state.write(getState())")
+    t.page.goto(url, wait_until="load")
+    t.wait(300)
+    eq(t.val("pathInput"), "$.data[?(@.inStock == true)].name", "path restored")
+    eq(t.text("pathCount"), "3 matches", "query re-run")
+    expect(t.visible("#viewQuery"), "view not restored")
+
+
 # ----------------------------------------------------------------------------
 # jwt-decoder
 # ----------------------------------------------------------------------------
@@ -279,8 +385,8 @@ JWT_HS256 = ("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9."
 @case("jwt-decoder", "minimal", "empty input clears outputs")
 def _(t):
     t.set("jwtInput", "")
-    expect(t.text("payloadOutput").strip() in ("", "{}") or "paste" in t.text("payloadOutput").lower(),
-           "payload output not cleared")
+    expect(t.text("payloadOutput").strip() in ("", "{}") or "paste" in t.text("payloadOutput").lower(), "payload output not cleared")
+    expect("Decode a token" in t.text("lintList"), "lint not reset")
 
 
 @case("jwt-decoder", "typical", "decodes header and payload")
@@ -294,9 +400,12 @@ def _(t):
 def _(t):
     t.set("jwtInput", JWT_HS256)
     t.set("hmacSecret", "your-256-bit-secret")
-    t.wait_for("() => /valid|verified/i.test(document.getElementById('verifyResult').innerText)")
+    t.wait_for("() => /Signature Valid/.test(document.getElementById('verifyResult').innerText)")
     t.set("hmacSecret", "wrong-secret")
-    t.wait_for("() => /invalid|fail|mismatch/i.test(document.getElementById('verifyResult').innerText)")
+    t.wait_for("() => /Signature Invalid/.test(document.getElementById('verifyResult').innerText)")
+    t.set("hmacSecret", "eW91ci0yNTYtYml0LXNlY3JldA")  # base64url of the secret
+    t.click("#secretIsB64")
+    t.wait_for("() => /Signature Valid/.test(document.getElementById('verifyResult').innerText)")
 
 
 @case("jwt-decoder", "edge", "garbage input reports an error instead of throwing")
@@ -305,6 +414,8 @@ def _(t):
     t.wait(50)
     st = t.text("statusText").lower()
     expect("invalid" in st or "error" in st or "malformed" in st, f"status did not report error: {st!r}")
+    t.set("jwtInput", "a.b")
+    expect("three dot-separated parts" in t.text("headerOutput"), t.text("headerOutput"))
 
 
 @case("jwt-decoder", "edge", "unicode claims decode correctly")
@@ -324,9 +435,10 @@ def _(t):
     p = base64.urlsafe_b64encode(json.dumps(big).encode()).decode().rstrip("=")
     t.set("jwtInput", f"{h}.{p}.sig")
     expect("role-19999" in t.text("payloadOutput"), "large payload truncated")
+    expect("will not fit in a cookie" in t.text("lintList"), "size finding missing")
 
 
-@case("jwt-decoder", "typical", "claim timeline: expired token shows 'ago' and status Expired")
+@case("jwt-decoder", "typical", "claim timeline: expired token shows 'ago', status Expired, timeline drawn")
 def _(t):
     import base64, time
     h = base64.urlsafe_b64encode(b'{"alg":"HS256","typ":"JWT"}').decode().rstrip("=")
@@ -335,6 +447,7 @@ def _(t):
     t.set("jwtInput", f"{h}.{p}.x")
     expect("ago" in t.text("claimTimes") and "Lifetime" in t.text("claimTimes"), f"timeline wrong: {t.text('claimTimes')}")
     eq(t.text("statusText").strip(), "Token Expired", "status")
+    expect(t.count("#timeline svg") == 1 and "Expired" in t.text("timeline"), "timeline svg missing")
 
 
 @case("jwt-decoder", "edge", "nbf in the future -> Not Yet Valid; millisecond exp is flagged")
@@ -348,17 +461,113 @@ def _(t):
     expect("milliseconds" in t.text("claimTimes"), "ms warning missing")
 
 
-@case("jwt-decoder", "typical", "signer produces a token that the verifier accepts")
+@case("jwt-decoder", "typical", "claims check flags risky tokens and expected iss/aud mismatches")
+def _(t):
+    t.call("loadSample('risky')")
+    t.wait(80)
+    lint = t.text("lintList")
+    expect('alg is "none"' in lint and "carries its own key" in lint and "looks sensitive" in lint and "milliseconds" in lint, lint[:400])
+    t.call("loadSample('oidc')")
+    t.wait(80)
+    t.set("expectIss", "https://other.example.com")
+    t.set("expectAud", "nope")
+    lint = t.text("lintList")
+    expect('expected "https://other.example.com"' in lint and 'does not include "nope"' in lint, lint[:400])
+    t.set("expectIss", "https://accounts.example.com")
+    expect('expected "https://other' not in t.text("lintList"), "iss finding not cleared")
+
+
+@case("jwt-decoder", "typical", "signer: HS512 token loads and verifies")
 def _(t):
     t.set("signSecret", "s3cret")
     t.select("signAlg", "HS512")
     t.click("#btnSign")
     t.wait_for("() => document.getElementById('signOutput').innerText.split('.').length === 3")
-    token = t.text("signOutput").strip()
     t.click("#btnSignLoad")
-    t.wait_for("() => /valid|verified/i.test(document.getElementById('verifyResult').innerText)")
+    t.wait_for("() => /Signature Valid/.test(document.getElementById('verifyResult').innerText)")
     expect('"HS512"' in t.text("headerOutput") and '"user-42"' in t.text("payloadOutput"), "loaded token wrong")
     expect("Not Expired" in t.text("statusText"), "exp not set to future")
+
+
+@case("jwt-decoder", "typical", "signer: generated ES256 key pair signs, verifies via PEM and via JWKS kid")
+def _(t):
+    t.select("signAlg", "ES256")
+    t.set("signKid", "test-kid")
+    t.call("generateKeys()")
+    t.wait_for("() => document.getElementById('signKey').value.includes('BEGIN PRIVATE KEY')", timeout=15000)
+    expect(t.count("#genKeys .gen-row") == 4, "key outputs missing")
+    t.click("#btnSign")
+    t.wait_for("() => document.getElementById('signOutput').innerText.startsWith('eyJ')")
+    t.click("#btnSignLoad")
+    t.wait_for("() => /Signature Valid/.test(document.getElementById('verifyResult').innerText)")
+    expect('"kid": "test-kid"' in t.text("headerOutput"), "kid missing from header")
+    t.call("document.getElementById('publicKeyPem').value = JSON.stringify(generated.jwks); runVerify()")
+    t.wait_for("() => /kid test-kid/.test(document.getElementById('verifyResult').innerText)")
+    t.call("document.getElementById('publicKeyPem').value = JSON.stringify({keys:[Object.assign({}, generated.publicJwk, {kid:'other'})]}); runVerify()")
+    t.wait_for("() => /No key with kid/.test(document.getElementById('verifyResult').innerText)")
+
+
+@case("jwt-decoder", "typical", "signer: RS256, PS256 and EdDSA round trips")
+def _(t):
+    for alg in ("RS256", "PS256", "EdDSA"):
+        t.select("signAlg", alg)
+        t.call("generateKeys()")
+        t.wait_for("() => document.getElementById('genKeys').innerText.includes('Public key')", timeout=20000)
+        t.call("document.getElementById('signOutput').textContent=''")
+        t.click("#btnSign")
+        t.wait_for("() => document.getElementById('signOutput').innerText.startsWith('eyJ')")
+        t.click("#btnSignLoad")
+        t.wait_for("() => /Signature Valid/.test(document.getElementById('verifyResult').innerText)")
+        expect(f'"{alg}"' in t.text("headerOutput"), alg)
+        t.call("document.getElementById('genKeys').innerHTML=''")
+
+
+@case("jwt-decoder", "edge", "verifier explains a private key, a certificate and a wrong curve")
+def _(t):
+    t.select("signAlg", "ES256")
+    t.call("generateKeys()")
+    t.wait_for("() => document.getElementById('signKey').value.includes('BEGIN PRIVATE KEY')", timeout=15000)
+    t.click("#btnSign")
+    t.wait_for("() => document.getElementById('signOutput').innerText.startsWith('eyJ')")
+    t.click("#btnSignLoad")
+    t.wait(200)
+    t.call("document.getElementById('publicKeyPem').value = generated.privatePem; runVerify()")
+    t.wait_for("() => /private key/.test(document.getElementById('verifyResult').innerText)")
+    t.call("document.getElementById('publicKeyPem').value = '-----BEGIN CERTIFICATE-----\\nMIIB\\n-----END CERTIFICATE-----'; runVerify()")
+    t.wait_for("() => /openssl x509/.test(document.getElementById('verifyResult').innerText)")
+
+
+@case("jwt-decoder", "typical", "JWE: encrypt with dir and A256KW, decrypt, wrong key fails")
+def _(t):
+    t.call("randomJweKey()")
+    t.call("encryptJwe()")
+    t.wait_for("() => document.getElementById('jweInput').value.split('.').length === 5", timeout=10000)
+    t.call("decryptJwe()")
+    t.wait_for("() => document.getElementById('jweOutput').innerText.includes('user-42')", timeout=10000)
+    expect("dir / A256GCM" in t.text("jweResult"), t.text("jweResult"))
+    t.select("jweAlg", "A256KW")
+    t.call("encryptJwe()")
+    t.wait_for("() => /A256KW/.test(document.getElementById('jweResult').innerText)", timeout=10000)
+    t.call("document.getElementById('jweOutput').textContent=''; decryptJwe()")
+    t.wait_for("() => document.getElementById('jweOutput').innerText.includes('user-42')", timeout=10000)
+    t.set("jweKey", "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
+    t.call("decryptJwe()")
+    t.wait_for("() => /Decryption failed/.test(document.getElementById('jweResult').innerText)", timeout=10000)
+    # pasting a JWE into the main inspector routes it to the JWE panel
+    t.call("document.getElementById('jwtInput').value = document.getElementById('jweInput').value; parseJWT()")
+    expect("Encrypted (JWE)" in t.text("statusText"), t.text("statusText"))
+
+
+@case("jwt-decoder", "typical", "share link restores the token and expected issuer")
+def _(t):
+    t.call("loadSample('oidc')")
+    t.wait(80)
+    t.set("expectIss", "https://accounts.example.com")
+    url = t.call("Layerbit.state.write(getState())")
+    t.page.goto(url, wait_until="load")
+    t.wait(300)
+    expect('"RS256"' in t.text("headerOutput"), "token not restored")
+    eq(t.val("expectIss"), "https://accounts.example.com", "expected issuer not restored")
 
 
 # ----------------------------------------------------------------------------
@@ -369,47 +578,44 @@ def _(t):
     t.set("regexInput", "")
     t.set("testInput", "abc")
     expect(not t.visible("#errorText"), "error shown for empty pattern")
+    expect("0 Matches" in t.text("matchCount"), t.text("matchCount"))
 
 
-@case("regex-tester", "typical", "counts matches and shows groups")
+@case("regex-tester", "typical", "counts matches, shows groups, alternates highlight colours")
 def _(t):
     t.set("regexInput", r"(\w+)@(\w+)\.com")
     t.set("testInput", "a@x.com, b@y.com and c@z.org")
-    t.wait_for("() => /2/.test(document.getElementById('matchCount').innerText)")
+    t.wait_for("() => /2 Matches/.test(document.getElementById('matchCount').innerText)")
     expect("x" in t.text("matchesGrid") and "y" in t.text("matchesGrid"), "groups not rendered")
+    eq(t.count("#testBackdrop .hl-match"), 2, "highlights")
+    eq(t.count("#testBackdrop .hl-match.alt"), 1, "alternate colour")
 
 
-@case("regex-tester", "typical", "replace preview honours $1")
+@case("regex-tester", "typical", "replace preview honours $1 and $<name>")
 def _(t):
-    t.set("regexInput", r"(\d{4})-(\d{2})-(\d{2})")
+    t.set("regexInput", r"(?<y>\d{4})-(\d{2})-(\d{2})")
     t.set("testInput", "2026-09-27")
-    t.set("replaceInput", "$3/$2/$1")
+    t.set("replaceInput", "$3/$2/$<y>")
     t.wait_for("() => document.getElementById('replaceOutput').innerText.includes('27/09/2026')")
 
 
-@case("regex-tester", "edge", "invalid pattern reports error, no throw")
+@case("regex-tester", "edge", "invalid pattern reports error, no throw; explain shows parse error")
 def _(t):
     t.set("regexInput", "(unclosed")
     t.set("testInput", "x")
     t.wait(50)
-    expect(t.visible("#errorText") or t.visible("#errorMsg"), "invalid regex not reported")
+    expect(t.visible("#errorText"), "invalid regex not reported")
+    expect("Cannot parse" in t.text("explainTree"), t.text("explainTree"))
 
 
-@case("regex-tester", "edge", "unicode property escapes with u flag")
+@case("regex-tester", "edge", "unicode property escapes need the u flag")
 def _(t):
-    t.set("regexInput", r"\p{L}+")
-    t.click(".flag-btn[data-flag='u']") if t.count(".flag-btn[data-flag='u']") else None
-    t.set("testInput", "héllo 日本")
-    t.wait(100)
-    mc = t.text("matchCount")
-    expect(any(ch.isdigit() for ch in mc), f"no match count: {mc!r}")
-
-
-@case("regex-tester", "maximal", "100k-char subject with many matches under budget")
-def _(t):
-    t.set("regexInput", r"\b\d+\b")
-    t.set("testInput", " ".join(str(i) for i in range(20000)))
-    t.wait_for("() => /20000|20,000/.test(document.getElementById('matchCount').innerText)")
+    t.set("regexInput", r"\p{Script=Han}+")
+    t.set("testInput", "abc 日本語 def")
+    t.wait(60)
+    expect("Error" in t.text("matchCount") or "0 Matches" in t.text("matchCount"), "without u, \\p should not match")
+    t.click(".flag-btn[data-flag='u']")
+    t.wait_for("() => /1 Match/.test(document.getElementById('matchCount').innerText)")
 
 
 @case("regex-tester", "typical", "s flag lets . cross newlines; timing readout renders")
@@ -418,18 +624,112 @@ def _(t):
     t.set("testInput", "a\nb")
     t.wait_for("() => /0 Matches/.test(document.getElementById('matchCount').innerText)")
     t.click(".flag-btn[data-flag='s']")
-    t.wait_for("() => /1 Matches/.test(document.getElementById('matchCount').innerText)")
+    t.wait_for("() => /1 Match/.test(document.getElementById('matchCount').innerText)")
     expect("ms on" in t.text("matchTiming"), "timing missing")
 
 
-@case("regex-tester", "typical", "u flag enables \\p{Script=Han}")
+@case("regex-tester", "typical", "explain tree and railroad diagram render for groups and quantifiers")
 def _(t):
-    t.set("regexInput", r"\p{Script=Han}+")
-    t.set("testInput", "abc 日本語 def")
+    t.set("regexInput", r"^(?<year>\d{4})-(?:jan|feb)+$")
     t.wait(60)
-    expect("Error" in t.text("matchCount") or "0 Matches" in t.text("matchCount"), "without u, \\p should not match")
-    t.click(".flag-btn[data-flag='u']")
-    t.wait_for("() => /1 Matches/.test(document.getElementById('matchCount').innerText)")
+    labels = t.call("[...document.querySelectorAll('#explainTree .ex-label')].map(e=>e.textContent)")
+    expect("Named group <year>" in labels and "Alternation" in labels, str(labels))
+    expect("exactly 4 times" in t.text("explainTree"), "quantifier description missing")
+    expect(t.count("#railroad svg") == 1 and t.count("#railroad .rr-term") >= 6, "railroad not rendered")
+
+
+@case("regex-tester", "typical", "safety analysis flags nested quantifiers and clears for safe patterns")
+def _(t):
+    t.set("regexInput", r"^(a+)+$")
+    t.wait(60)
+    eq(t.text("safetyBadge"), "1", "badge")
+    expect("Exponential risk" in t.text("safetyReport") and "Nested unbounded quantifier" in t.text("safetyReport"), t.text("safetyReport")[:200])
+    t.set("regexInput", r"^\d+-\w+$")
+    t.wait(60)
+    expect("No catastrophic-backtracking shape" in t.text("safetyReport"), t.text("safetyReport")[:120])
+
+
+@case("regex-tester", "edge", "growth measurement runs in a worker and confirms an exponential pattern")
+def _(t):
+    t.call("loadSample('redos')")
+    t.wait(100)
+    t.call("stressTest()")
+    t.wait_for("() => document.getElementById('stressResult').innerText.includes('Adversarial')", timeout=30000)
+    verdicts = t.call("[...document.querySelectorAll('#stressResult .finding strong')].map(e=>e.textContent)")
+    expect(any("Confirmed" in v for v in verdicts), str(verdicts))
+
+
+@case("regex-tester", "typical", "unit tests: add, evaluate, from-matches, group checks, badge")
+def _(t):
+    t.call("loadSample('log')")
+    t.wait(100)
+    eq(t.text("testsSummary"), "· 2/2 passing", "sample tests")
+    t.call("updateTest(0,'value','WARN'); runUnitTests()")
+    t.wait(50)
+    eq(t.text("testsSummary"), "· 1/2 passing", "group value check")
+    expect("group was" in t.text("testsBody"), t.text("testsBody")[:200])
+    t.call("loadSample('dateFormat')")
+    t.wait(100)
+    t.call("addTestsFromMatches()")
+    t.wait(50)
+    eq(t.text("testsSummary"), "· 3/3 passing", "tests from matches")
+    eq(t.text("testsBadge"), "3/3", "badge")
+
+
+@case("regex-tester", "typical", "code generation translates flags and warns about engine gaps")
+def _(t):
+    t.set("regexInput", r"(?<=x)(?<y>\d+)")
+    t.click(".flag-btn[data-flag='i']")
+    t.call("showTab('code')")
+    t.select("codeLang", "python")
+    expect("(?P<y>" in t.text("codeOut") and "re.IGNORECASE" in t.text("codeOut"), t.text("codeOut"))
+    t.select("codeLang", "go")
+    expect("lookbehind" in t.text("codeCaveats"), t.text("codeCaveats"))
+    t.select("codeLang", "csharp")
+    expect("RegexOptions.IgnoreCase" in t.text("codeOut"), t.text("codeOut"))
+
+
+@case("regex-tester", "typical", "pattern synthesis from examples yields a passing candidate")
+def _(t):
+    t.set("posExamples", "INV-2026-0042\nINV-2025-1187")
+    t.set("negExamples", "INV2026-0042\ninv-2026-0042")
+    t.call("synth()")
+    t.wait(50)
+    expect(t.count("#synthResult tbody tr.pass") >= 1, "no passing candidate")
+    t.call("useCandidate(0)")
+    t.wait(100)
+    expect(t.val("regexInput").startswith("^INV"), t.val("regexInput"))
+    eq(t.text("testsSummary"), "· 4/4 passing", "candidate tests")
+
+
+@case("regex-tester", "typical", "batch file: per-line matching with counts and download")
+def _(t):
+    t.set("regexInput", "ERROR")
+    t.page.set_input_files("#batchFile", {"name": "app.log", "mimeType": "text/plain",
+                                           "buffer": "\n".join(("line %d ERROR x" if i % 3 == 0 else "line %d ok") % i for i in range(300)).encode()})
+    t.wait_for("() => document.getElementById('batchResult').innerText.includes('matching')")
+    expect("100 matching" in t.text("batchResult") and "300 lines" in t.text("batchResult"), t.text("batchResult")[:200])
+    expect(t.visible("#btnBatchDl"), "download button hidden")
+
+
+@case("regex-tester", "typical", "share link restores pattern, flags, text and tests")
+def _(t):
+    t.call("loadSample('log')")
+    t.wait(100)
+    url = t.call("Layerbit.state.write(getState())")
+    t.page.goto(url, wait_until="load")
+    t.wait(300)
+    expect(t.val("regexInput").startswith("^(?<ts>"), "pattern not restored")
+    expect(t.call("document.querySelector('.flag-btn[data-flag=m]').classList.contains('active')"), "flags not restored")
+    eq(t.text("testsSummary"), "· 2/2 passing", "tests not restored")
+
+
+@case("regex-tester", "maximal", "100k-char subject with 20,000 matches under budget")
+def _(t):
+    t.set("regexInput", r"\b\d+\b")
+    t.set("testInput", " ".join(str(i) for i in range(20000)))
+    t.wait_for("() => /20,000 Matches|20000 Matches/.test(document.getElementById('matchCount').innerText)")
+    expect("first 500" in t.text("matchesNote"), t.text("matchesNote"))
 
 
 # ----------------------------------------------------------------------------
@@ -645,43 +945,74 @@ def _(t):
 # ----------------------------------------------------------------------------
 # text-diff-checker
 # ----------------------------------------------------------------------------
-@case("text-diff-checker", "minimal", "identical inputs -> no changes")
+@case("text-diff-checker", "minimal", "identical inputs -> no changes, no merge pane")
 def _(t):
     t.set("text1", "same")
     t.set("text2", "same")
-    t.call("runDiff()")
-    t.wait(150)
-    expect(t.count(".line-added, .added, .diff-add") == 0, "identical text produced additions")
+    t.call("run()")
+    t.wait(100)
+    expect(t.count("#rightPanel .line-added") == 0, "identical text produced additions")
+    expect("No differences" in t.text("leftPanel"), "identical notice missing")
+    expect(not t.visible("#mergedSection"), "merge pane shown with nothing to merge")
 
 
-@case("text-diff-checker", "typical", "one changed line is highlighted")
+@case("text-diff-checker", "minimal", "both empty -> empty notice, no error")
+def _(t):
+    t.call("run()")
+    t.wait(50)
+    expect("empty" in t.text("leftPanel"), t.text("leftPanel"))
+
+
+@case("text-diff-checker", "typical", "one changed line is highlighted with stats and a hunk bar")
 def _(t):
     t.set("text1", "a\nb\nc")
     t.set("text2", "a\nB\nc")
-    t.call("runDiff()")
-    t.wait(150)
-    body = t.text("outputSection")
-    expect("B" in body and "b" in body, "changed line not shown")
+    t.call("run()")
+    t.wait(100)
+    expect(t.count("#rightPanel .line-added") == 1 and t.count("#leftPanel .line-removed") == 1, "changed line not shown")
+    expect("1 change block" in t.text("diffStats"), t.text("diffStats"))
+    expect(t.count("#leftPanel .hunk-bar") == 1, "hunk bar missing")
 
 
-@case("text-diff-checker", "edge", "ignore-whitespace hides trailing-space-only changes")
+@case("text-diff-checker", "typical", "merge: per-hunk decisions and accept/keep all")
 def _(t):
-    t.set("text1", "x = 1")
-    t.set("text2", "x = 1   ")
-    t.call("document.getElementById('ignoreWhitespace').checked = true")
-    t.call("runDiff()")
+    t.call("loadSample('code')")
     t.wait(150)
-    expect(t.count(".line-added, .line-removed, .added, .removed") == 0, "whitespace-only change not ignored")
+    eq(t.val("mergedText"), t.val("text2"), "merged starts as modified")
+    t.call("decide(0,'left')")
+    expect("calculateTotal(price, tax)" in t.val("mergedText"), "hunk 0 not reverted")
+    expect("1 reverted" in t.text("mergedMeta"), t.text("mergedMeta"))
+    t.call("mergeAll('left')")
+    eq(t.val("mergedText"), t.val("text1"), "keep all original")
+    t.call("decide(1,'both')")
+    m = t.val("mergedText")
+    expect("module.exports = { calculateTotal };" in m and "round2" in m, "both did not include both sides")
 
 
-@case("text-diff-checker", "maximal", "5,000-line files under budget")
+@case("text-diff-checker", "typical", "syntax highlighting, unified view, context folding, show whitespace")
 def _(t):
-    a = "\n".join(f"line {i}" for i in range(5000))
-    b = "\n".join(f"line {i}" if i % 100 else f"LINE {i}" for i in range(5000))
-    t.set("text1", a)
-    t.set("text2", b)
-    t.call("runDiff()")
-    t.wait_for("() => document.getElementById('outputSection').innerText.includes('LINE 4900')")
+    t.call("loadSample('code')")
+    t.wait(150)
+    expect(t.count("#rightPanel .tk-kw") > 0, "no syntax tokens")
+    expect("js" in t.text("diffStats"), "language not detected")
+    t.select("viewMode", "unified")
+    t.wait(50)
+    expect(t.visible("#inlinePanel") and not t.visible("#splitWrap"), "unified view not shown")
+    t.select("viewMode", "split")
+    a = "\n".join(f"line {i}" for i in range(60))
+    b = a.replace("line 30", "LINE 30")
+    t.set("text1", a); t.set("text2", b)
+    t.select("contextLines", "3")
+    t.call("run()")
+    t.wait(100)
+    expect(t.count("#rightPanel .diff-skip") == 2, f"expected 2 folds, got {t.count('#rightPanel .diff-skip')}")
+    expect(t.count("#rightPanel .diff-line") <= 10, "context folding did not reduce rows")
+    t.call("expandSkip()")
+    t.wait(50)
+    expect(t.count("#rightPanel .diff-line") >= 60, "expand did not restore rows")
+    t.click("#showWs")
+    t.wait(50)
+    expect(t.count("#rightPanel .ws") > 0, "whitespace markers missing")
 
 
 @case("text-diff-checker", "typical", "character granularity isolates a one-letter change")
@@ -689,14 +1020,148 @@ def _(t):
     t.set("text1", "getUserId()")
     t.set("text2", "getUserID()")
     t.select("granularity", "char")
-    t.call("runDiff()")
-    t.wait(150)
+    t.call("run()")
+    t.wait(100)
     spans = t.call("Array.from(document.querySelectorAll('#rightPanel .word-added')).map(e => e.textContent)")
     eq(spans, ["D"], "char-level added span")
     t.select("granularity", "none")
-    t.call("runDiff()")
-    t.wait(150)
+    t.call("run()")
+    t.wait(100)
     eq(t.count("#rightPanel .word-added"), 0, "lines-only mode still highlighted words")
+
+
+@case("text-diff-checker", "edge", "normalisation options: whitespace, case, trailing, blank, CRLF")
+def _(t):
+    t.set("text1", "x = 1\r\nY\r\n")
+    t.set("text2", "x = 1\ny\n")
+    t.call("run()"); t.wait(60)
+    expect("1 change block" in t.text("diffStats"), "case change not detected: " + t.text("diffStats"))
+    t.click("#ignoreCase"); t.call("run()"); t.wait(60)
+    expect("0 change blocks" in t.text("diffStats"), "ignore case / CRLF failed: " + t.text("diffStats"))
+    t.set("text1", "a  b   "); t.set("text2", "a b")
+    t.call("run()"); t.wait(60)
+    expect("1 change block" in t.text("diffStats"), "whitespace change not detected")
+    t.click("#ignoreWhitespace"); t.call("run()"); t.wait(60)
+    expect("0 change blocks" in t.text("diffStats"), "ignore whitespace failed")
+
+
+@case("text-diff-checker", "typical", "patch export is a unified diff that re-applies cleanly")
+def _(t):
+    t.set("text1", "one\ntwo\nthree\n"); t.set("text2", "one\n2\nthree\nfour\n")
+    t.call("run()"); t.wait(60)
+    p = t.call("patchText()")
+    expect(p.startswith("--- original\n+++ modified\n@@"), p[:60])
+    t.call("setMode('patch')")
+    t.set("patchOriginal", "one\ntwo\nthree\n"); t.set("patchText", p)
+    t.call("run()"); t.wait(100)
+    expect("1 hunk" in t.text("resultTitle"), t.text("resultTitle"))
+    eq(t.val("mergedText"), "one\n2\nthree\nfour\n", "patched result")
+
+
+@case("text-diff-checker", "edge", "patch that does not apply reports an error instead of throwing")
+def _(t):
+    t.call("loadSample('patch')"); t.wait(100)
+    expect("listen 443 ssl" in t.val("mergedText"), "sample patch not applied")
+    t.set("patchOriginal", "totally different file\n")
+    t.call("run()"); t.wait(60)
+    expect(t.visible("#errorBanner") and "does not apply" in t.text("errorText"), t.text("errorText"))
+    t.set("patchText", "garbage"); t.call("run()"); t.wait(60)
+    expect("No hunks" in t.text("errorText"), t.text("errorText"))
+
+
+@case("text-diff-checker", "typical", "three-way merge: auto-merge, conflict markers, click resolution")
+def _(t):
+    t.call("loadSample('three')"); t.wait(150)
+    expect("1 conflict" in t.text("diffStats"), t.text("diffStats"))
+    m = t.val("mergedText")
+    expect("<<<<<<< ours" in m and "||||||| base" in m and ">>>>>>> theirs" in m, "markers missing")
+    expect("- Added audit log export" in m, "non-conflicting change from ours not merged")
+    t.click("#threePanel .three-chunk.conflict .hb:nth-child(3)")  # Use theirs
+    t.wait(60)
+    m = t.val("mergedText")
+    expect("<<<<<<<" not in m and "author: platform team" in m, "resolution not applied: " + m[:120])
+    eq(t.text("mergedMeta"), "clean", "meta after resolve")
+
+
+@case("text-diff-checker", "typical", "structural diff ignores key order and reports paths")
+def _(t):
+    t.call("loadSample('json')"); t.wait(150)
+    rows = t.call("[...document.querySelectorAll('#structPanel tbody tr')].map(r=>r.children[0].textContent+':'+r.children[1].textContent)")
+    expect("$.port:type number → string" in rows and "$.features.ssl:added" in rows and "$.timeout:changed" in rows, str(rows))
+    t.set("text1", '{"a":1,"b":[1,2]}'); t.set("text2", '{"b":[1,2],"a":1}')
+    t.call("run()"); t.wait(60)
+    expect("Semantically identical" in t.text("structPanel"), t.text("structPanel"))
+
+
+@case("text-diff-checker", "edge", "structural diff: YAML input, keyed arrays, invalid input")
+def _(t):
+    t.call("loadSample('yaml')"); t.wait(400)
+    rows = t.call("[...document.querySelectorAll('#structPanel tbody tr')].map(r=>r.children[0].textContent)")
+    eq(rows, ["$.app.env.LOG_LEVEL", "$.app.replicas"], "yaml paths")
+    t.set("text1", '{"u":[{"id":1,"n":"a"},{"id":2,"n":"b"}]}'); t.set("text2", '{"u":[{"id":2,"n":"B"},{"id":3,"n":"c"}]}')
+    t.select("arrMode", "key"); t.call("run()"); t.wait(60)
+    rows = t.call("[...document.querySelectorAll('#structPanel tbody tr')].map(r=>r.children[0].textContent+':'+r.children[1].textContent)")
+    eq(sorted(rows), ["$.u[id=1]:removed", "$.u[id=2].n:changed", "$.u[id=3]:added"], "keyed arrays")
+    t.set("text2", '{"u": [1, 2,}'); t.call("run()"); t.wait(60)
+    expect(t.visible("#errorBanner") and "Modified" in t.text("errorText"), t.text("errorText"))
+
+
+@case("text-diff-checker", "typical", "table diff keyed by id: added, removed, changed cells, new column")
+def _(t):
+    t.call("loadSample('csv')"); t.wait(150)
+    s = t.text("diffStats")
+    expect("+1 rows" in s and "−1 rows" in s and "~2 changed" in s and "supplier" in s, s)
+    expect("Sprocket" in t.text("tablePanel") and "Gadget" in t.text("tablePanel"), "rows missing")
+    heads = t.call("[...document.querySelectorAll('#tablePanel table:first-of-type th')].map(e=>e.textContent)")
+    eq(heads, ["id", "name", "qty", "price", "supplier"], "header once, key not duplicated")
+    t.select("keyCol", "-1"); t.call("run()"); t.wait(60)
+    expect("by row order" in t.text("resultTitle"), t.text("resultTitle"))
+
+
+@case("text-diff-checker", "typical", "zip folder diff lists added/removed/modified and opens a file diff")
+def _(t):
+    t.call("""() => {
+      function crc32(u8){let c,crc=0xFFFFFFFF;for(let i=0;i<u8.length;i++){c=(crc^u8[i])&0xFF;for(let k=0;k<8;k++)c=c&1?(c>>>1)^0xEDB88320:c>>>1;crc=(crc>>>8)^c;}return (crc^0xFFFFFFFF)>>>0;}
+      function zip(files){const enc=new TextEncoder();const parts=[];const cd=[];let off=0;
+        for(const [name,text] of files){const n=enc.encode(name),d=enc.encode(text),crc=crc32(d);
+          const lh=new DataView(new ArrayBuffer(30));lh.setUint32(0,0x04034b50,true);lh.setUint32(14,crc,true);lh.setUint32(18,d.length,true);lh.setUint32(22,d.length,true);lh.setUint16(26,n.length,true);
+          parts.push(new Uint8Array(lh.buffer),n,d);
+          const c=new DataView(new ArrayBuffer(46));c.setUint32(0,0x02014b50,true);c.setUint32(16,crc,true);c.setUint32(20,d.length,true);c.setUint32(24,d.length,true);c.setUint16(28,n.length,true);c.setUint32(42,off,true);
+          cd.push(new Uint8Array(c.buffer),n); off+=30+n.length+d.length;}
+        const cdLen=cd.reduce((a,x)=>a+x.length,0);const e=new DataView(new ArrayBuffer(22));e.setUint32(0,0x06054b50,true);e.setUint16(8,files.length,true);e.setUint16(10,files.length,true);e.setUint32(12,cdLen,true);e.setUint32(16,off,true);
+        return new Blob([...parts,...cd,new Uint8Array(e.buffer)]);}
+      window._zipA=new File([zip([['proj/a.txt','hello\\nworld\\n'],['proj/same.txt','same'],['proj/gone.txt','bye']])],'v1.zip');
+      window._zipB=new File([zip([['proj/a.txt','hello\\nthere\\n'],['proj/same.txt','same'],['proj/new.txt','hi']])],'v2.zip');
+      setMode('zip'); loadZip('a', window._zipA); loadZip('b', window._zipB); }""")
+    t.wait_for("() => document.getElementById('zipPanel').innerText.includes('new.txt')")
+    rows = t.call("[...document.querySelectorAll('#zipPanel tbody tr')].map(r=>r.children[0].textContent+':'+r.children[1].textContent.split(' ')[0])")
+    eq(rows, ["a.txt:modified", "gone.txt:removed", "new.txt:added", "same.txt:same"], "zip rows")
+    t.call("zipOpen(0)")
+    t.wait_for("() => document.getElementById('resultTitle').textContent.includes('a.txt')")
+    eq(t.call("[...document.querySelectorAll('#rightPanel .word-added')].map(e=>e.textContent)"), ["there"], "file diff from zip")
+
+
+@case("text-diff-checker", "typical", "share link restores mode, inputs and options and re-runs")
+def _(t):
+    t.call("loadSample('code')"); t.wait(100)
+    t.click("#ignoreCase")
+    url = t.call("Layerbit.state.write(getState())")
+    t.page.goto(url, wait_until="load"); t.wait(400)
+    expect(t.call("document.getElementById('ignoreCase').checked"), "option not restored")
+    expect("2 change blocks" in t.text("diffStats"), "did not re-run: " + t.text("diffStats"))
+
+
+@case("text-diff-checker", "maximal", "20,000-line files with folding render under budget")
+def _(t):
+    a = "\n".join(f"line {i} = value_{i};" for i in range(20000))
+    b = "\n".join((f"line {i} = value_{i};" if i % 500 else f"LINE {i} = changed_{i};") for i in range(20000))
+    t.set("text1", a); t.set("text2", b)
+    t.select("contextLines", "3")
+    t.call("run()")
+    t.wait_for("() => document.getElementById('diffStats').innerText.includes('40 change blocks')")
+    expect(t.count("#rightPanel .diff-line") < 400, "folding not applied")
+    t.call("navDiff(1)")
+    eq(t.text("hunkCounter"), "1 / 40", "navigation counter")
 
 
 # ----------------------------------------------------------------------------
@@ -1403,6 +1868,193 @@ def _(t):
     t.set("textInput", ("héllo wörld 日本語 🌍 " * 2500))
     t.wait_for("() => document.getElementById('cpCount').innerText.includes('first 2000')", 10000)
     expect("50,000" in t.text("statsStrip") or "47,500" in t.text("statsStrip") or "code points" in t.text("statsStrip"), t.text("statsStrip"))
+
+
+# ----------------------------------------------------------------------------
+# flow
+# ----------------------------------------------------------------------------
+@case("flow", "minimal", "empty input and no steps: output mirrors input, no error")
+def _(t):
+    expect(t.count("#opList .op-item") >= 60, "operation list not rendered")
+    expect(t.count("#presetButtons .sample-btn") >= 8, "presets missing")
+    t.set("flowInput", "")
+    t.wait(250)
+    expect(not t.visible("#errorBanner"), "error on empty input")
+    expect("Paste something" in t.text("magicBar"), t.text("magicBar"))
+
+
+@case("flow", "typical", "magic suggests Base64 decode and the chip adds a working step")
+def _(t):
+    t.set("flowInput", "SGVsbG8gd29ybGQh")
+    t.wait(250)
+    chips = t.call("[...document.querySelectorAll('.magic-chip')].map(e=>e.firstChild.textContent)")
+    expect(chips and chips[0] == "Base64 decode", str(chips))
+    t.click(".magic-chip")
+    t.wait_for("() => document.getElementById('flowOutput').innerText === 'Hello world!'")
+    eq(t.count("#recipeList .step"), 1, "step count")
+
+
+@case("flow", "typical", "presets run end to end: JWT from a log line, gzip payload, CSV pick")
+def _(t):
+    t.call("loadPreset('jwt-from-log')")
+    t.wait_for("() => document.getElementById('flowOutput').innerText.includes('John Doe')", timeout=8000)
+    eq(t.count("#recipeList .step"), 4, "jwt preset steps")
+    t.call("loadPreset('gzip-payload')")
+    t.wait_for("() => document.getElementById('flowOutput').innerText.includes('order.created')", timeout=8000)
+    t.call("loadPreset('csv-pick')")
+    t.wait_for("() => document.getElementById('flowOutput').innerText.includes('B-2')", timeout=8000)
+    expect("A-1" not in t.text("flowOutput"), "filter did not apply")
+
+
+@case("flow", "edge", "a failing step reports on its card, later steps are skipped, fixing resumes")
+def _(t):
+    t.call("loadPreset('csv-pick')")
+    t.wait_for("() => document.getElementById('flowOutput').innerText.includes('B-2')", timeout=8000)
+    t.call("setArg(1,'path','$[?(@.qty >')")
+    t.wait(400)
+    expect(t.visible("#errorBanner") and "Step 2" in t.text("errorText"), t.text("errorText"))
+    expect(t.count("#recipeList .step.err") == 1, "step not marked")
+    t.call("setArg(1,'path','$[*].sku')")
+    t.wait(400)
+    expect(not t.visible("#errorBanner") and "C-3" in t.text("flowOutput"), "did not resume")
+
+
+@case("flow", "typical", "search + Enter adds a step; move, disable and remove steps")
+def _(t):
+    t.call("loadPreset('csv-pick')")
+    t.wait_for("() => document.getElementById('flowOutput').innerText.includes('B-2')", timeout=8000)
+    t.call("setArg(1,'path','$[*].sku')")
+    t.page.focus("#opSearch")
+    t.page.keyboard.type("sort")
+    t.page.keyboard.press("Enter")
+    t.wait(400)
+    eq(t.count("#recipeList .step"), 3, "step added via search")
+    t.call("moveStep(2,-1)")
+    t.wait(300)
+    expect(t.visible("#errorBanner"), "moving sort before the query should break the query")
+    t.call("moveStep(1,1); toggleStep(2)")
+    t.wait(300)
+    expect(not t.visible("#errorBanner") and t.count("#recipeList .step.off") == 1, "toggle failed")
+    t.call("removeStep(2)")
+    t.wait(300)
+    eq(t.count("#recipeList .step"), 2, "remove failed")
+
+
+@case("flow", "typical", "lazily loaded libraries: YAML, MD5 and SQL steps")
+def _(t):
+    t.call("clearRecipe(); document.getElementById('flowInput').value='a: 1\\nb: [x, y]'; onInput(); addStep('yaml-to-json', {indent:'minify'})")
+    t.wait_for("() => document.getElementById('flowOutput').innerText === '{\"a\":1,\"b\":[\"x\",\"y\"]}'", timeout=8000)
+    t.call("clearRecipe(); document.getElementById('flowInput').value='abc'; onInput(); addStep('md5')")
+    t.wait_for("() => document.getElementById('flowOutput').innerText === '900150983cd24fb0d6963f7d28e17f72'", timeout=8000)
+    t.call("clearRecipe(); document.getElementById('flowInput').value='select a from b where c=1'; onInput(); addStep('sql-format')")
+    t.wait_for("() => document.getElementById('flowOutput').innerText.includes('\\n')", timeout=8000)
+
+
+@case("flow", "typical", "hashing and AES round trip inside one recipe")
+def _(t):
+    t.call("clearRecipe(); document.getElementById('flowInput').value='secret note'; onInput(); addStep('aes-encrypt', {password:'pw'}); addStep('aes-decrypt', {password:'pw'})")
+    t.wait_for("() => document.getElementById('flowOutput').innerText === 'secret note'", timeout=8000)
+    t.call("setArg(1,'password','nope')")
+    t.wait_for("() => /wrong password/.test(document.getElementById('errorText').innerText)", timeout=8000)
+    t.call("clearRecipe(); addStep('sha256', {format:'hex'})")
+    t.wait_for("() => document.getElementById('flowOutput').innerText.length === 64", timeout=8000)
+
+
+@case("flow", "typical", "share link restores input and recipe; recipe JSON copy/import round trip")
+def _(t):
+    t.call("loadPreset('clean-list')")
+    t.wait(400)
+    url = t.call("Layerbit.state.write(getState())")
+    t.page.goto(url, wait_until="load")
+    t.wait(600)
+    eq(t.text("flowOutput"), "server-1\nserver-2\nserver-10", "restored output")
+    eq(t.count("#recipeList .step"), 4, "restored steps")
+    r = t.call("LBFlow.serialize(steps)")
+    t.call("clearRecipe()")
+    t.call(f"steps = LBFlow.parse({json.dumps(r)}).map(s => Object.assign(s, {{enabled: true}})); renderRecipe(); runAll()")
+    t.wait(400)
+    eq(t.count("#recipeList .step"), 4, "imported steps")
+
+
+@case("flow", "maximal", "50,000-line input through trim, unique and sort under budget")
+def _(t):
+    big = "\n".join(f"  host-{i % 5000}  " for i in range(50000))
+    t.call("clearRecipe()")
+    t.set("flowInput", big)
+    t.call("addStep('trim'); addStep('unique-lines'); addStep('sort-lines', {mode:'natural', icase:true})")
+    t.wait_for("() => document.getElementById('flowOutput').innerText.startsWith('host-0\\nhost-1\\nhost-2')", timeout=10000)
+    expect("5,000 chars" not in t.text("outMeta") and "chars" in t.text("outMeta"), t.text("outMeta"))
+
+
+# ----------------------------------------------------------------------------
+# kernel (js/kernel.js): palette, share links, send-to, history, drop, privacy
+# ----------------------------------------------------------------------------
+@case("base64", "typical", "kernel: header pills, palette search and keyboard navigation")
+def _(t):
+    pills = t.call("[...document.querySelectorAll('.lb-header-tools .lb-pill')].map(e=>e.textContent.trim())")
+    expect(any("Search" in p for p in pills) and any("Local" in p for p in pills), f"pills: {pills}")
+    t.page.keyboard.press("Control+k")
+    t.wait(80)
+    expect(t.visible("#lbPalette"), "palette did not open")
+    t.page.keyboard.type("jwt")
+    t.wait(80)
+    first = t.call("document.querySelector('#lbPalette .lb-pal-item.active .lb-pal-title').textContent")
+    expect("JWT" in first, f"first result: {first}")
+    t.page.keyboard.press("Escape")
+    expect(not t.visible("#lbPalette"), "palette did not close")
+
+
+@case("base64", "typical", "kernel: share link round-trips input through the #fragment")
+def _(t):
+    t.set("plainText", "Hello share — ünïcode 🌍")
+    t.page.context.grant_permissions(["clipboard-read", "clipboard-write"])
+    url = t.call("Layerbit.state.share()")
+    expect("#s=z:" in url or "#s=j:" in url, f"bad share url: {url}")
+    t.page.goto(url, wait_until="load")
+    t.wait(200)
+    eq(t.val("plainText"), "Hello share — ünïcode 🌍", "restored input")
+    expect(t.val("base64Text"), "tool did not run on restored input")
+
+
+@case("base64", "typical", "kernel: send-to hands text to another tool")
+def _(t):
+    t.call("Layerbit.sendTo('{\"a\":1}', 'json')")
+    t.wait(80)
+    t.call("[...document.querySelectorAll('#lbPalette .lb-pal-item')].find(e=>e.textContent.includes('JSON Validator')).click()")
+    t.page.wait_for_load_state("load")
+    t.wait(300)
+    expect("json-validator.html" in t.page.url, f"landed on {t.page.url}")
+    eq(t.val("jsonInput"), '{"a":1}', "input handed over")
+
+
+@case("base64", "typical", "kernel: history push/list/drawer and clear")
+def _(t):
+    t.call("Layerbit.history.push('base64', {input:'abc'}, 'first run')")
+    t.wait(150)
+    labels = t.call("Layerbit.history.list('base64', 5).then(r=>r.map(x=>x.label))")
+    expect("first run" in labels, f"history: {labels}")
+    t.click("#lbHistoryBtn")
+    t.wait(150)
+    expect(t.count("#lbHistList .lb-pal-item") >= 1, "drawer empty")
+    t.call("Layerbit.history.clear()")
+    t.wait(150)
+    eq(t.call("Layerbit.history.list('base64', 5).then(r=>r.length)"), 0, "cleared")
+
+
+@case("base64", "edge", "kernel: dropping a file anywhere loads the first textarea")
+def _(t):
+    t.call("""() => { const dt = new DataTransfer(); dt.items.add(new File(['dropped text'], 'x.txt', {type:'text/plain'}));
+      document.querySelector('main').dispatchEvent(new DragEvent('drop', {bubbles:true, cancelable:true, dataTransfer: dt})); }""")
+    t.wait(200)
+    eq(t.val("plainText"), "dropped text", "dropped file content")
+
+
+@case("base64", "edge", "kernel: privacy pill counts a page-made network request")
+def _(t):
+    expect("nothing sent" in t.text("lbPrivacyPill"), t.text("lbPrivacyPill"))
+    t.call("fetch('https://example.invalid/x').catch(()=>{})")
+    t.wait(100)
+    expect("1 network request" in t.text("lbPrivacyPill"), t.text("lbPrivacyPill"))
 
 
 # ----------------------------------------------------------------------------

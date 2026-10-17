@@ -1,0 +1,184 @@
+{{HEADER}}
+
+  <nav class="crumbs" aria-label="Breadcrumb">
+    <a href="../">Home</a>
+    <span class="sep">/</span>
+    <a href="../blog.html">Guides</a>
+    <span class="sep">/</span>
+    <span aria-current="page">JSONPath cheat sheet</span>
+  </nav>
+
+  <article class="article">
+    <header class="article-head">
+      <span class="article-kicker">Data Formats</span>
+      <h1>JSONPath Cheat Sheet: Wildcards, Recursive Descent, Slices and Filters</h1>
+      <p class="article-standfirst">JSONPath is the query language for reaching into a JSON document — the thing you type when you want "every order total over 100" out of an API response without writing a loop. It is small, it is everywhere (jq-like tools, Kubernetes, AWS, Postman, test frameworks), and its edges are inconsistently implemented. This sheet covers the syntax that works the same everywhere, the parts that differ, and the questions each expression is answering.</p>
+      <div class="article-meta">
+        <span class="byline">Layerbit Engineering</span>
+        <span><i data-lucide="calendar"></i>Published 17 October 2026</span>
+        <span><i data-lucide="clock"></i>9 min read</span>
+      </div>
+    </header>
+
+    <div class="takeaways">
+      <h2><i data-lucide="list-checks"></i> The short version</h2>
+      <ul>
+        <li><code>$</code> is the root. <code>.key</code> and <code>['key']</code> step into an object; <code>[n]</code> into an array; <code>[*]</code> or <code>.*</code> into every child.</li>
+        <li><code>..key</code> searches at every depth — the single most useful operator and the easiest to over-use.</li>
+        <li><code>[start:end]</code> slices like Python (end exclusive, negatives from the end); <code>[?(…)]</code> filters with a predicate on <code>@</code>, the current element.</li>
+        <li>A query returns a <em>list</em> of matches, even when there is one. A query that matches nothing returns an empty list, not an error.</li>
+        <li>Filter syntax, regex support and function calls vary between implementations. RFC 9535 (2024) standardises the core; check your tool against it.</li>
+      </ul>
+    </div>
+
+    <div class="prose">
+      <h2 id="document">The document used below</h2>
+      <pre><code>{
+  "store": {
+    "books": [
+      { "title": "Sapiens",   "price": 12.5, "tags": ["history"],           "stock": 4 },
+      { "title": "Dune",      "price": 9.99, "tags": ["sf", "classic"],     "stock": 0 },
+      { "title": "Refactoring", "price": 38, "tags": ["software"],          "stock": 2, "isbn": "978-0134757599" }
+    ],
+    "bicycle": { "color": "red", "price": 199 }
+  },
+  "updated": "2026-10-17"
+}</code></pre>
+
+      <h2 id="basics">Navigation</h2>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Expression</th><th>Result</th><th>Notes</th></tr></thead>
+          <tbody>
+            <tr><td><code>$</code></td><td>the whole document</td><td>Every path starts here; many tools let you omit it.</td></tr>
+            <tr><td><code>$.updated</code></td><td><code>"2026-10-17"</code></td><td>Dot notation for a plain key.</td></tr>
+            <tr><td><code>$['store']['bicycle']</code></td><td>the bicycle object</td><td>Bracket notation; required for keys with spaces, dots or dashes.</td></tr>
+            <tr><td><code>$.store.books[0]</code></td><td>Sapiens</td><td>Arrays are zero-indexed.</td></tr>
+            <tr><td><code>$.store.books[-1]</code></td><td>Refactoring</td><td>Negative indexes count from the end.</td></tr>
+            <tr><td><code>$.store.books[*].title</code></td><td>all three titles</td><td><code>[*]</code> fans out over every element; the rest of the path applies to each.</td></tr>
+            <tr><td><code>$.store.*</code></td><td>the books array and the bicycle</td><td>Wildcard over an object's values.</td></tr>
+            <tr><td><code>$.store.books.length</code></td><td><code>3</code></td><td>Non-standard but widely supported convenience.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2 id="descent">Recursive descent</h2>
+      <p><code>..</code> means "at any depth below here". <code>$..price</code> returns <code>[12.5, 9.99, 38, 199]</code> — the books' prices and the bicycle's, because it does not care where <code>price</code> sits. <code>$..books[0]</code> finds the <code>books</code> array wherever it is and takes the first element. <code>$..*</code> returns every value in the document, which is occasionally what you want and usually a sign you should narrow the path.</p>
+      <p>Recursive descent is a search, and on a large document it visits every node. In a one-off query that cost is irrelevant; in a filter applied to every message on a queue it is not. Prefer an explicit path when you know the structure, and <code>..</code> when the structure varies or is unknown.</p>
+
+      <h2 id="slices">Slices and unions</h2>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Expression</th><th>Result</th></tr></thead>
+          <tbody>
+            <tr><td><code>$.store.books[0:2]</code></td><td>first two books (end is exclusive)</td></tr>
+            <tr><td><code>$.store.books[1:]</code></td><td>everything from the second onward</td></tr>
+            <tr><td><code>$.store.books[:-1]</code></td><td>all but the last</td></tr>
+            <tr><td><code>$.store.books[::2]</code></td><td>every other book (step 2)</td></tr>
+            <tr><td><code>$.store.books[0,2]</code></td><td>first and third</td></tr>
+            <tr><td><code>$.store.bicycle['color','price']</code></td><td>two keys from one object</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>Slices follow Python's rules exactly — <code>[a:b]</code> is elements a through b−1 — which is the convention the specification adopted, and the one most implementations get right. Unions of keys are supported less consistently than unions of indexes.</p>
+
+      <h2 id="filters">Filters</h2>
+      <p>A filter <code>[?(expr)]</code> keeps the elements for which the expression is true. Inside the expression, <code>@</code> is the element being tested.</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Expression</th><th>Result</th></tr></thead>
+          <tbody>
+            <tr><td><code>$.store.books[?(@.price &lt; 20)].title</code></td><td>Sapiens, Dune</td></tr>
+            <tr><td><code>$.store.books[?(@.stock == 0)]</code></td><td>Dune</td></tr>
+            <tr><td><code>$.store.books[?(@.isbn)]</code></td><td>Refactoring — existence test, no comparison</td></tr>
+            <tr><td><code>$.store.books[?(@.price &gt; 10 &amp;&amp; @.stock &gt; 0)].title</code></td><td>Sapiens, Refactoring</td></tr>
+            <tr><td><code>$.store.books[?(@.title == 'Dune' || @.title == 'Sapiens')]</code></td><td>two books</td></tr>
+            <tr><td><code>$.store.books[?(!@.stock)]</code></td><td>Dune (stock is 0, which is falsy)</td></tr>
+            <tr><td><code>$.store.books[?(@.title =~ /^[DS]/)]</code></td><td>Sapiens, Dune — regex match, where supported</td></tr>
+            <tr><td><code>$..[?(@.price &gt; 100)]</code></td><td>the bicycle — filter combined with descent</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>Comparison operators are <code>==</code>, <code>!=</code>, <code>&lt;</code>, <code>&lt;=</code>, <code>&gt;</code>, <code>&gt;=</code>; logical ones <code>&amp;&amp;</code>, <code>||</code>, <code>!</code>; and parentheses group. String literals take single or double quotes. Comparing a string to a number is false, not an error, in most implementations — <code>@.price &gt; "10"</code> silently matches nothing.</p>
+      <p>Two filter idioms are worth memorising. <strong>Existence</strong>: <code>[?(@.key)]</code> keeps elements that have the key with a truthy value; to keep elements that have the key even when it is <code>0</code>, <code>false</code> or <code>null</code>, the RFC form is <code>[?@.key]</code> and some tools offer <code>[?(@.key != null)]</code>. <strong>Membership</strong>: there is no portable "value in list"; write the alternatives out with <code>||</code>, or use the <code>in</code> operator where your tool provides it.</p>
+
+      <h2 id="results">What comes back</h2>
+      <p>A JSONPath query always produces a list of matches — the <em>nodelist</em> in RFC terms — because wildcards, descent and filters can match any number of nodes. <code>$.updated</code> yields <code>["2026-10-17"]</code>, a one-element list, not the bare string. Tools differ in how they present this: some unwrap single results, some always show the list. Both are fine as long as your code does not assume a single value from a path that could match several.</p>
+      <p>A path that matches nothing yields an empty list. It is not an error, which is convenient in scripts and a trap in tests: an assertion that <code>$.data[0].id</code> equals <code>42</code> may fail with "expected 42, got undefined" when the real problem is that <code>data</code> was renamed. Asserting on the match count first catches that.</p>
+      <p>Implementations that report <strong>paths</strong> alongside values — <code>$['store']['books'][1]['title']</code> for Dune — are the ones to prefer for exploration, because the normalised path is what you paste into code.</p>
+
+      <h2 id="differences">Where implementations disagree</h2>
+      <ul>
+        <li><strong>Regex in filters</strong> (<code>=~</code>) is an extension; the RFC uses a <code>match()</code> / <code>search()</code> function instead.</li>
+        <li><strong>Function calls</strong> such as <code>length()</code>, <code>min()</code>, <code>avg()</code> exist in Jayway (Java) and the RFC's function extensions, not in most JavaScript libraries.</li>
+        <li><strong>Script expressions</strong> <code>[(@.length-1)]</code> from the original 2007 proposal are deprecated and widely unsupported; use <code>[-1]</code>.</li>
+        <li><strong>Bracket keys</strong>: single quotes are universal; double quotes are RFC-standard but older tools reject them.</li>
+        <li><strong>Deep wildcards</strong> on scalars: <code>$.updated.*</code> on a string returns nothing in some tools and errors in others.</li>
+      </ul>
+      <p>If a query must run in two places — a test suite and a Kubernetes <code>-o jsonpath</code>, say — stay inside the navigation, descent, slice and comparison subset, which behaves the same everywhere.</p>
+
+      <h2 id="vs">JSONPath, jq and JSON Pointer</h2>
+      <p>Three things get confused. <strong>JSON Pointer</strong> (RFC 6901, <code>/store/books/0/title</code>) addresses exactly one location and cannot wildcard or filter; it is what JSON Patch and JSON Schema's <code>$ref</code> use. <strong>JSONPath</strong> selects any number of nodes with wildcards and predicates, and stops there. <strong>jq</strong> is a full programming language with its own selection syntax (<code>.store.books[] | select(.price &lt; 20) | .title</code>) plus transformation, arithmetic, string formatting and control flow. For "get me these values", JSONPath is the smallest tool that does the job; the moment you need to reshape the output, you want jq or code.</p>
+
+      <div class="tool-cta">
+        <div>
+          <strong>Run these queries on your own document</strong>
+          <span>The JSON tool's Query tab evaluates JSONPath with wildcards, descent, slices, unions and filters, listing every match with its normalised path — in your browser, nothing uploaded.</span>
+        </div>
+        <a class="btn-cta" href="../tools/json-validator.html">Open the JSON tool <i data-lucide="arrow-right"></i></a>
+      </div>
+
+      <div class="further">
+        <h2>Related guides and tools</h2>
+        <div class="further-grid">
+          <a class="further-card" href="json-schema-validation-explained.html">
+            <strong>JSON Schema validation explained</strong>
+            <span>Describe the document once; query it with confidence.</span>
+          </a>
+          <a class="further-card" href="xpath-cheat-sheet.html">
+            <strong>XPath cheat sheet</strong>
+            <span>The same ideas for XML, with namespaces to trip over.</span>
+          </a>
+          <a class="further-card" href="../tools/flow.html">
+            <strong>Flow</strong>
+            <span>Decode, format and query in one chained recipe.</span>
+          </a>
+        </div>
+      </div>
+
+      <h2 id="faq">Frequently asked questions</h2>
+      <div class="faq-container">
+        <div class="faq-item">
+          <button class="faq-question">What is the difference between $.key and $..key? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>$.key reads the key directly under the root and nothing else. $..key searches every object at every depth and returns each key it finds, so on a document with nested records it can return many values from different places. Use the explicit path when you know where the value lives; use descent when the structure varies or you want every occurrence.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">How do I filter an array by a field value? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>Append a filter in square brackets with a predicate on @, the current element: $.items[?(@.status == 'paid')] keeps the elements whose status is paid, and you can continue the path after it, as in $.items[?(@.status == 'paid')].total. Combine conditions with &amp;&amp; and ||, negate with !, and group with parentheses.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">Why does my query return a list when I expect one value? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>Because JSONPath always returns the set of matching nodes; a path that can only match once still returns a one-element list. Some tools unwrap single results for display. In code, take the first element explicitly, and check the count when the path could legitimately match zero or many nodes.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">Can I use regular expressions in a JSONPath filter? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>In many implementations, with the =~ operator and a /pattern/ literal, as in [?(@.email =~ /@example\.com$/)]. It is an extension rather than part of the original proposal; RFC 9535 provides match() and search() functions instead. If portability matters, filter on exact values and do pattern matching in the surrounding code.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">Is JSONPath the same as jq? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>No. JSONPath selects nodes and stops; jq is a programming language that selects, transforms, computes and formats, with its own syntax. For extracting values, JSONPath is simpler and is built into many tools such as kubectl, Postman and test frameworks. For reshaping JSON into a new structure, jq or ordinary code is the right instrument.</p></div>
+        </div>
+      </div>
+    </div>
+  </article>
+
+  <a href="../" id="smartBackBtn" class="fab" aria-label="Command Center" title="Command Center">
+    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="filter: drop-shadow(0 0 8px rgba(56, 189, 248, 0.5));">
+      <path d="M12 2L2 7l10 5 10-5-10-5z" stroke="#38bdf8" stroke-width="2" stroke-linejoin="round" fill="rgba(56,189,248,0.2)"/>
+      <path d="M2 17l10 5 10-5M2 12l10 5 10-5" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </a>
+
+  {{FOOTER}}
+
+  <script src="../js/shared.js"></script>

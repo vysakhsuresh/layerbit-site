@@ -1,0 +1,419 @@
+{{HEADER}}
+
+  <main class="hero">
+    <div class="hero-badge"><i data-lucide="shield-check"></i> Runs entirely in your browser</div>
+    <h1>Flow: Chain Developer Operations Into a Recipe</h1>
+    <p>Decode, transform, hash, filter and convert text by stacking steps — Base64 → gunzip → JSON → JSONPath, or CSV → JSON → filter → Markdown table. Seventy-four operations, instant magic detection of what you pasted, and recipes you can share as a link.</p>
+  </main>
+
+  <div class="ide-container flow-grid">
+    <!-- Input -->
+    <div class="pane">
+      <div class="pane-header">
+        <div class="pane-title"><i data-lucide="log-in"></i> Input <span class="pane-meta" id="inMeta"></span></div>
+        <div class="btn-group">
+          <input type="file" id="flowFile" style="display:none;">
+          <button class="btn" type="button" onclick="document.getElementById('flowFile').click()" title="Open a file as the input"><i data-lucide="upload"></i></button>
+          <button class="btn" type="button" id="btnClearInput" onclick="clearInput()" title="Clear input"><i data-lucide="trash-2"></i></button>
+        </div>
+      </div>
+      <textarea id="flowInput" class="editor" spellcheck="false" placeholder="Paste anything: a Base64 blob, a JWT, a log line, CSV, JSON, a URL...&#10;&#10;Magic suggestions appear below as you type."></textarea>
+      <div class="magic-bar" id="magicBar"><span class="magic-label"><i data-lucide="wand-2"></i> Magic</span><span class="magic-empty">Paste something and the likely next steps appear here.</span></div>
+    </div>
+
+    <!-- Recipe -->
+    <div class="pane recipe-pane">
+      <div class="pane-header">
+        <div class="pane-title"><i data-lucide="git-commit-vertical"></i> Recipe <span class="pane-meta" id="recipeMeta"></span></div>
+        <div class="btn-group">
+          <select id="presetSel" class="mini-select" aria-label="Load a preset recipe"><option value="">Presets…</option></select>
+          <button class="btn" type="button" onclick="copyRecipe()" title="Copy the recipe as JSON"><i data-lucide="copy"></i></button>
+          <button class="btn" type="button" onclick="importRecipe()" title="Paste a recipe JSON"><i data-lucide="clipboard-paste"></i></button>
+          <button class="btn" type="button" onclick="clearRecipe()" title="Remove all steps"><i data-lucide="trash-2"></i></button>
+          <button class="btn btn-primary" type="button" id="btnRun" data-lb-primary onclick="runAll()"><i data-lucide="play"></i> Run</button>
+        </div>
+      </div>
+      <div class="recipe-body">
+        <div id="recipeList" class="recipe-list"><div class="recipe-empty"><i data-lucide="arrow-down"></i> Add a step from the list below, pick a preset, or click a magic suggestion.</div></div>
+        <div class="op-picker">
+          <input type="text" id="opSearch" class="text-input" placeholder="Search operations: base64, jwt, sort, hash, csv, aes…" autocomplete="off" spellcheck="false" aria-label="Search operations">
+          <div id="opList" class="op-list"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Output -->
+    <div class="pane">
+      <div class="pane-header">
+        <div class="pane-title"><i data-lucide="log-out"></i> Output <span class="pane-meta" id="outMeta"></span></div>
+        <div class="btn-group">
+          <button class="btn" type="button" onclick="useAsInput()" title="Replace the input with this output and clear the recipe"><i data-lucide="corner-left-up"></i></button>
+          <button class="btn" type="button" onclick="downloadOut()" title="Download"><i data-lucide="download"></i></button>
+          <button class="btn" type="button" onclick="Layerbit.copy(document.getElementById('flowOutput').textContent).then(()=>Layerbit.toast('Output copied'))" title="Copy"><i data-lucide="copy"></i></button>
+          <button class="btn lb-send" type="button" data-lb-send="flowOutput" data-lb-kind="text" title="Send to another tool"><i data-lucide="send"></i></button>
+        </div>
+      </div>
+      <div class="error-banner" id="errorBanner"><i data-lucide="triangle-alert"></i><span id="errorText"></span></div>
+      <pre id="flowOutput" class="output-area flow-out"></pre>
+    </div>
+  </div>
+
+  <div class="docs-container">
+    <div class="info-panel">
+      <h2><i data-lucide="info"></i> One recipe instead of five tabs</h2>
+      <p>Most developer-tool sites make you decode in one tab, paste into another to format, and into a third to query. Flow keeps the data in one place and lets you stack the operations: every step reads the previous step's output, shows its own result inline, and reports an error without disturbing the steps above it. Change an argument and the whole chain re-runs.</p>
+      <div class="use-cases-grid">
+        <div class="use-case-card">
+          <h3><i data-lucide="wand-2"></i> Magic detection</h3>
+          <p>Paste something and Flow guesses what it is — a JWT, gzip inside Base64, percent-encoding, HTML entities, a Unix timestamp, CSV, YAML, a URL, a defanged indicator — and offers the step that opens it. Click the chip and keep going: after a Base64 decode that reveals JSON, the next suggestion is to format or query it.</p>
+        </div>
+        <div class="use-case-card">
+          <h3><i data-lucide="link"></i> Recipes that travel</h3>
+          <p>A recipe is a small JSON document. Copy it, paste it, or share a link that carries both the recipe and the input in the URL fragment — nothing is stored on a server, and the person who opens the link sees the same chain and the same result.</p>
+        </div>
+        <div class="use-case-card">
+          <h3><i data-lucide="layers"></i> Seventy-four operations</h3>
+          <p>Encoding (Base64, hex, Base32, URL, HTML, Unicode, binary, ROT-N, gzip, JWT), hashing (MD5, SHA family, HMAC, CRC32, per-line digests), text (case, trim, find and replace, extract, filter, sort, unique, cut, wrap, slugify, strip HTML, count), data (JSON format and JSONPath, YAML, CSV, flatten, SQL and XML formatting, Markdown tables), time, numbers, network (URL parse, query strings, defang, IP conversion, extraction) and password-based AES-GCM encryption.</p>
+        </div>
+        <div class="use-case-card">
+          <h3><i data-lucide="shield-check"></i> Local by construction</h3>
+          <p>Every operation is JavaScript in this page, with hashing and encryption done by the browser's Web Crypto API. The input you paste, the keys you type into an HMAC or AES step and the output never leave the tab. The privacy indicator in the header counts network requests the page makes; it stays at zero while you work.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="info-panel">
+      <h2><i data-lucide="flask-conical"></i> Preset recipes</h2>
+      <p>Each preset loads a sample input and a recipe that solves a real, recurring problem. Run one, then edit a step or add your own.</p>
+      <div id="presetButtons"></div>
+    </div>
+
+    <div class="info-panel">
+      <h2><i data-lucide="list"></i> Every operation</h2>
+      <p>Operations take text in and produce text out, so any step can follow any other. Arguments are small and explicit — a delimiter, a regex, a hash name, a password — and every argument is stored in the recipe.</p>
+            <table class="ops-table"><thead><tr><th>Group</th><th>Operation</th><th>What it does</th><th>Arguments</th></tr></thead><tbody>
+        <tr><th scope="rowgroup" rowspan="22">Encoding</th><td><code>Base64 encode</code></td><td>UTF-8 text to Base64 (standard or URL-safe alphabet).</td><td>URL-safe (no padding)</td></tr>
+        <tr><td><code>Base64 decode</code></td><td>Base64 or base64url to text. Binary results are shown as a hex dump.</td><td>—</td></tr>
+        <tr><td><code>Hex encode</code></td><td>UTF-8 bytes as lowercase hexadecimal.</td><td>Separator</td></tr>
+        <tr><td><code>Hex decode</code></td><td>Hexadecimal (with or without separators, 0x) to text.</td><td>—</td></tr>
+        <tr><td><code>Base32 encode</code></td><td>RFC 4648 Base32.</td><td>—</td></tr>
+        <tr><td><code>Base32 decode</code></td><td>RFC 4648 Base32 to text.</td><td>—</td></tr>
+        <tr><td><code>URL encode</code></td><td>Percent-encode for a query component, or only characters a full URL cannot contain.</td><td>Mode</td></tr>
+        <tr><td><code>URL decode</code></td><td>Percent-decoding; + becomes a space in form mode.</td><td>+ is a space</td></tr>
+        <tr><td><code>HTML escape</code></td><td>Escape &amp;, &lt;, &gt;, " and ' as entities.</td><td>—</td></tr>
+        <tr><td><code>HTML unescape</code></td><td>Decode named, decimal and hex entities.</td><td>—</td></tr>
+        <tr><td><code>Unicode escape</code></td><td>Non-ASCII characters as \uXXXX (surrogate pairs for astral code points).</td><td>—</td></tr>
+        <tr><td><code>Unicode unescape</code></td><td>Turn \uXXXX, \u{X}, \xXX and \n style escapes back into characters.</td><td>—</td></tr>
+        <tr><td><code>Escape as JSON string</code></td><td>Wrap the text in a JSON string literal.</td><td>—</td></tr>
+        <tr><td><code>Unescape JSON string</code></td><td>Parse a JSON string literal (quotes optional) back to text.</td><td>—</td></tr>
+        <tr><td><code>Binary encode</code></td><td>Each byte as 8 bits.</td><td>—</td></tr>
+        <tr><td><code>Binary decode</code></td><td>Groups of 8 bits to text.</td><td>—</td></tr>
+        <tr><td><code>To char codes</code></td><td>Unicode code points of each character.</td><td>Base</td></tr>
+        <tr><td><code>From char codes</code></td><td>Decimal or U+hex code points to text.</td><td>—</td></tr>
+        <tr><td><code>ROT13 / ROT-N</code></td><td>Rotate letters by N (13 is its own inverse).</td><td>Rotate by</td></tr>
+        <tr><td><code>Gzip compress</code></td><td>Gzip the text and emit Base64 (what many APIs and log shippers carry).</td><td>Algorithm</td></tr>
+        <tr><td><code>Gzip decompress</code></td><td>Base64 (or hex) of gzip/deflate data back to text.</td><td>Algorithm</td></tr>
+        <tr><td><code>JWT decode</code></td><td>Header and payload of a JSON Web Token as JSON (no verification).</td><td>—</td></tr>
+        <tr><th scope="rowgroup" rowspan="8">Hashing</th><td><code>MD5</code></td><td>MD5 digest (legacy checksums only).</td><td>Output</td></tr>
+        <tr><td><code>SHA-1</code></td><td>SHA-1 digest of the UTF-8 bytes.</td><td>Output</td></tr>
+        <tr><td><code>SHA-256</code></td><td>SHA-256 digest of the UTF-8 bytes.</td><td>Output</td></tr>
+        <tr><td><code>SHA-384</code></td><td>SHA-384 digest of the UTF-8 bytes.</td><td>Output</td></tr>
+        <tr><td><code>SHA-512</code></td><td>SHA-512 digest of the UTF-8 bytes.</td><td>Output</td></tr>
+        <tr><td><code>HMAC</code></td><td>Keyed hash with a secret.</td><td>Hash, Key, Output</td></tr>
+        <tr><td><code>CRC32</code></td><td>CRC-32 checksum (as used by zip and PNG).</td><td>—</td></tr>
+        <tr><td><code>Hash each line</code></td><td>One SHA-256 (or other) digest per line, tab-separated.</td><td>Hash</td></tr>
+        <tr><th scope="rowgroup" rowspan="20">Text</th><td><code>Change case</code></td><td>Upper, lower, title, sentence, camelCase, snake_case, kebab-case, CONSTANT.</td><td>To</td></tr>
+        <tr><td><code>Trim</code></td><td>Remove leading/trailing whitespace from the whole text or each line.</td><td>Mode</td></tr>
+        <tr><td><code>Find &amp; replace</code></td><td>Literal or regular-expression replace with $1 groups.</td><td>Find, Replace with, Regex, Flags</td></tr>
+        <tr><td><code>Extract matches</code></td><td>Every regex match (or a group) on its own line.</td><td>Regex, Group (0 = whole match), Unique only</td></tr>
+        <tr><td><code>Filter lines</code></td><td>Keep or drop lines matching a pattern.</td><td>Pattern, Mode, Regex, Ignore case</td></tr>
+        <tr><td><code>Sort lines</code></td><td>Alphabetical, natural (numbers in order), numeric, by length, or shuffle.</td><td>Order, Ignore case</td></tr>
+        <tr><td><code>Unique lines</code></td><td>Remove duplicate lines (optionally with counts).</td><td>Prefix counts, Ignore case</td></tr>
+        <tr><td><code>Remove empty lines</code></td><td>Drop blank (or whitespace-only) lines.</td><td>—</td></tr>
+        <tr><td><code>Number lines</code></td><td>Prefix each line with its number.</td><td>Start at, Separator</td></tr>
+        <tr><td><code>Head / tail</code></td><td>Keep the first or last N lines.</td><td>Keep, Lines</td></tr>
+        <tr><td><code>Reverse</code></td><td>Reverse characters, or the order of lines.</td><td>Mode</td></tr>
+        <tr><td><code>Split / join</code></td><td>Split on a delimiter into lines, or join lines with a delimiter.</td><td>Mode, Delimiter</td></tr>
+        <tr><td><code>Cut column</code></td><td>Pick one column from delimited lines (like cut -d -f).</td><td>Delimiter, Column (1-based, negative from end)</td></tr>
+        <tr><td><code>Wrap / truncate</code></td><td>Wrap long lines at a width, or cut each line to a length.</td><td>Mode, Width</td></tr>
+        <tr><td><code>Slugify</code></td><td>URL slug: lowercase ASCII with hyphens, diacritics stripped.</td><td>—</td></tr>
+        <tr><td><code>Strip diacritics</code></td><td>café → cafe, using Unicode decomposition.</td><td>—</td></tr>
+        <tr><td><code>Strip HTML tags</code></td><td>Remove tags and decode entities, keeping the text.</td><td>—</td></tr>
+        <tr><td><code>Count</code></td><td>Characters, words, lines, bytes and the most frequent words — as a report.</td><td>—</td></tr>
+        <tr><td><code>Pad lines</code></td><td>Pad each line to a width on the left or right.</td><td>Side, Width, Character</td></tr>
+        <tr><td><code>Prefix / suffix lines</code></td><td>Add text before and after every line (e.g. quotes and commas for SQL IN lists).</td><td>Prefix, Suffix</td></tr>
+        <tr><th scope="rowgroup" rowspan="10">Data</th><td><code>JSON format</code></td><td>Pretty-print (or minify / sort keys).</td><td>Indent, Sort keys</td></tr>
+        <tr><td><code>JSON query (JSONPath)</code></td><td>Pick values out of a document: $.a.b, $[*].id, $..name, $[?(@.x &gt; 1)].</td><td>Path</td></tr>
+        <tr><td><code>JSON → YAML</code></td><td>Render JSON as block-style YAML.</td><td>—</td></tr>
+        <tr><td><code>YAML → JSON</code></td><td>Parse YAML (safe schema) to JSON.</td><td>Indent</td></tr>
+        <tr><td><code>CSV → JSON</code></td><td>Rows become objects keyed by the header (numbers and booleans typed).</td><td>Delimiter, Type numbers/booleans</td></tr>
+        <tr><td><code>JSON → CSV</code></td><td>An array of objects (nested keys flattened with dots) to CSV.</td><td>Delimiter</td></tr>
+        <tr><td><code>JSON flatten</code></td><td>Nested object to one level with dotted keys (or back).</td><td>Mode</td></tr>
+        <tr><td><code>SQL format</code></td><td>Format SQL for a dialect.</td><td>Dialect</td></tr>
+        <tr><td><code>XML format</code></td><td>Indent XML (or minify).</td><td>Mode</td></tr>
+        <tr><td><code>Markdown table</code></td><td>CSV or JSON array into a Markdown table.</td><td>—</td></tr>
+        <tr><th scope="rowgroup" rowspan="3">Time</th><td><code>Unix time → date</code></td><td>Seconds or milliseconds since the epoch to ISO 8601 (each number on its own line).</td><td>Zone</td></tr>
+        <tr><td><code>Date → Unix time</code></td><td>Any date the browser can parse to epoch seconds.</td><td>Unit</td></tr>
+        <tr><td><code>Current time</code></td><td>Replace the input with the current time in several forms.</td><td>—</td></tr>
+        <tr><th scope="rowgroup" rowspan="3">Numbers</th><td><code>Number base</code></td><td>Convert integers between decimal, hex, binary, octal (one per line).</td><td>From, To</td></tr>
+        <tr><td><code>Bytes → human</code></td><td>1536 → 1.5 KiB, one per line.</td><td>Units</td></tr>
+        <tr><td><code>Sum / statistics</code></td><td>Sum, average, min, max, count of the numbers found.</td><td>—</td></tr>
+        <tr><th scope="rowgroup" rowspan="5">Network</th><td><code>URL parse</code></td><td>Scheme, host, port, path, query parameters and fragment as JSON.</td><td>—</td></tr>
+        <tr><td><code>Query string ↔ JSON</code></td><td>a=1&amp;b=2 to JSON and back.</td><td>Mode</td></tr>
+        <tr><td><code>Defang / refang URLs</code></td><td>hxxp://example[.]com style, so links in reports cannot be clicked, and back.</td><td>Mode</td></tr>
+        <tr><td><code>IP ↔ integer / hex</code></td><td>IPv4 dotted quad to integer or hex and back, one per line.</td><td>To</td></tr>
+        <tr><td><code>Extract URLs / IPs / emails</code></td><td>Pull every URL, IPv4 address or email out of free text.</td><td>Extract, Unique only</td></tr>
+        <tr><th scope="rowgroup" rowspan="3">Crypto</th><td><code>AES-GCM encrypt</code></td><td>Encrypt with a password (PBKDF2-SHA256, 310k iterations). Output is base64: salt·iv·ciphertext.</td><td>Password</td></tr>
+        <tr><td><code>AES-GCM decrypt</code></td><td>Decrypt output of the encrypt step with the same password.</td><td>Password</td></tr>
+        <tr><td><code>Random</code></td><td>Replace the input with random bytes, a UUID, or a password.</td><td>Kind, Length / count</td></tr>
+      </tbody></table>
+    </div>
+
+    <div class="info-panel">
+      <h2><i data-lucide="microscope"></i> Why chaining beats single-purpose tools</h2>
+      <p>Real payloads are layered. A webhook body is JSON inside Base64 inside a URL parameter; a log line contains a token that contains a JSON payload; a CSV export needs cleaning before it can be queried. Doing that with one-shot tools means copying intermediate results between pages, and the copying is where mistakes happen — a trailing newline, a lost character, the wrong field. A recipe removes the copying: the intermediate values are shown but never retyped.</p>
+      <p>The model is the one Unix pipes introduced fifty years ago, with the addition that every stage is visible. <code>base64 -d | gunzip | jq .payload</code> is a Flow recipe with three steps, except you can see what came out of <code>gunzip</code> before <code>jq</code> complained about it.</p>
+      <h2><i data-lucide="git-branch"></i> How errors are handled</h2>
+      <p>A step that fails — invalid Base64, a regex that does not compile, JSON that does not parse — reports the reason on its own card and the chain stops there; the steps after it are marked as skipped rather than run against garbage. Fix the argument or the input and the chain resumes. Operations that decode binary data show a hex dump when the result is not text, so a decode that "worked" but produced bytes is not mistaken for a decode that produced a string.</p>
+      <h2><i data-lucide="lock"></i> The encryption step, honestly described</h2>
+      <p>AES-GCM encrypt derives a 256-bit key from your password with PBKDF2-SHA256 at 310,000 iterations and a random salt, encrypts with a random nonce, and packs salt, nonce and ciphertext into one Base64 string. Decrypt reverses it and fails loudly on a wrong password or altered data, because GCM authenticates what it encrypts. It is a sound way to protect a note or a config snippet you are about to paste somewhere; it is not a replacement for a secrets manager, and the strength of the result is the strength of the password you chose.</p>
+    </div>
+
+    <div class="info-panel">
+      <h2><i data-lucide="help-circle"></i> Frequently Asked Questions</h2>
+      <div class="faq-container">
+        <div class="faq-item">
+          <button class="faq-question">What is a recipe and how do I share one? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>A recipe is the ordered list of steps with their arguments, stored as a small JSON document you can copy from the Recipe pane and paste back with the import button. The Share link button in the header goes further: it compresses the recipe and the current input into the URL fragment, which browsers never send to a server, so opening the link reproduces the whole session on the other person's machine without anything having been uploaded.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">How does the magic detection decide what I pasted? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>By structure, not by guessing at meaning: three base64url segments beginning with eyJ are a JWT; Base64 beginning with H4sI is gzip; percent signs followed by hex digits mean URL encoding; ampersand-named entities mean HTML; a 10-digit number near the present is a Unix timestamp; consistent comma or tab counts across lines mean CSV; valid JSON is offered formatting and a JSONPath query. Each suggestion is scored and the best few are shown. It only suggests; nothing runs until you click.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">Can a step read binary data or files? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>Steps pass text between them. Decoders that produce bytes which are not valid text show them as hexadecimal, and the hex decode and Base64 decode steps accept that back, so binary can be carried through a chain in hex form. Files opened with the upload button are read as UTF-8 text; for hashing large binary files use the hash generator, which streams the file through Web Crypto.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">Which JSONPath syntax does the query step support? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>The same engine as the JSON tool: $.a.b, bracket keys, numeric and negative indexes, [*] wildcards, .. recursive descent, slices such as [0:5], unions, .length, and filters such as [?(@.qty &gt; 5 &amp;&amp; @.status == 'paid')] with comparison, regex matching and boolean operators. One match is output as its value, several as a JSON array.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">Is anything I paste sent anywhere? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>No. The operations are JavaScript functions in this page, hashing and encryption use the browser's Web Crypto API, and compression uses the browser's built-in CompressionStream. The header indicator counts network requests made by the page's own code and stays at zero. The optional history is stored in your browser's own database and can be cleared from the command palette.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">How is this different from CyberChef? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>CyberChef is a large, security-analysis-oriented toolkit with hundreds of operations and a correspondingly dense interface. Flow covers the operations developers reach for daily — encodings, hashes, JSON, CSV, YAML, text cleanup, URLs, timestamps — with per-step previews, magic suggestions, presets for common jobs, and recipes that share as links. If you need cipher cryptanalysis or forensic file carving, CyberChef is the right tool; if you need to get a JSON payload out of a Base64 blob and pick one field, this page is faster.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">Can I run a recipe on many inputs at once? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>Most text operations are line-aware: hash each line, filter lines, sort, unique, cut column, number conversion, timestamp conversion and IP conversion all work on every line of the input independently. Paste a list, build the recipe once, and every line is processed. For per-file batch work on a pattern, the regex tester's batch mode is the complement.</p></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="info-panel related-panel">
+      <h2><i data-lucide="link"></i> Related guides and tools</h2>
+      <p>Background reading on the formats these operations handle, and the single-purpose tools that go deeper on each.</p>
+      <div class="use-cases-grid">
+        <div class="use-case-card">
+          <h3><i data-lucide="book-open"></i> <a href="../guides/base64-explained.html">What Base64 actually does</a></h3>
+          <p>Why it is an encoding, not encryption, and where the padding comes from.</p>
+        </div>
+        <div class="use-case-card">
+          <h3><i data-lucide="book-open"></i> <a href="../guides/hashing-vs-encryption-vs-encoding.html">Hashing vs encryption vs encoding</a></h3>
+          <p>The three operations this page offers, told apart.</p>
+        </div>
+        <div class="use-case-card">
+          <h3><i data-lucide="book-open"></i> <a href="../guides/percent-encoding-explained.html">URL encoding explained</a></h3>
+          <p>Why a space is sometimes %20 and sometimes +.</p>
+        </div>
+        <div class="use-case-card">
+          <h3><i data-lucide="wrench"></i> <a href="json-validator.html">JSON Validator &amp; Schema Tool</a></h3>
+          <p>Deeper JSON work: schema, types, SQL export.</p>
+        </div>
+        <div class="use-case-card">
+          <h3><i data-lucide="wrench"></i> <a href="jwt-decoder.html">JWT Decoder &amp; Verifier</a></h3>
+          <p>Verify the token Flow decoded.</p>
+        </div>
+        <div class="use-case-card">
+          <h3><i data-lucide="wrench"></i> <a href="hash-generator.html">Hash &amp; HMAC Generator</a></h3>
+          <p>Hash files and verify checksums.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="info-panel">
+      <h2><i data-lucide="git-merge"></i> Changelog</h2>
+      <ul class="changelog-list">
+        <li><span class="changelog-tag">v1.0.0</span> Initial release: 74 chainable operations across encoding, hashing, text, data, time, numbers, network and crypto; per-step previews and errors; magic detection; nine preset recipes; recipe copy, import and share links; file input; send-to and history integration.</li>
+      </ul>
+    </div>
+  </div>
+
+  <a href="../" id="smartBackBtn" class="fab" aria-label="Command Center" title="Command Center">
+    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="filter: drop-shadow(0 0 8px rgba(56, 189, 248, 0.5));">
+      <path d="M12 2L2 7l10 5 10-5-10-5z" stroke="#38bdf8" stroke-width="2" stroke-linejoin="round" fill="rgba(56,189,248,0.2)"/>
+      <path d="M2 17l10 5 10-5M2 12l10 5 10-5" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </a>
+
+  {{FOOTER}}
+
+  <script src="../js/shared.js"></script>
+  <script src="../js/engines/flow.js"></script>
+
+  <script>
+    const $ = id => document.getElementById(id);
+    const icons = () => { if (window.lucide) lucide.createIcons(); };
+    const F = LBFlow;
+    const esc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    let steps = [];          // [{op, args, enabled}]
+    let results = [];
+    let runTimer = null, runSeq = 0;
+
+    // Lazy libraries: scripts are fetched only when a step needs them.
+    const LIB_SRC = { md5: '../js/md5.js', LBJson: '../js/engines/json.js', jsyaml: '../js/vendor/js-yaml.min.js', sqlFormatter: '../js/vendor/sql-formatter.min.js' };
+    const libPromises = {};
+    F.libs.ensure = name => {
+      if (window[name]) return Promise.resolve(window[name]);
+      if (!libPromises[name]) libPromises[name] = new Promise((res, rej) => { const s = document.createElement('script'); s.src = LIB_SRC[name]; s.onload = () => res(window[name]); s.onerror = () => rej(new Error('Could not load ' + name)); document.head.appendChild(s); });
+      return libPromises[name];
+    };
+
+    // ------------------------------------------------------------ op picker
+    const GROUPS = []; F.OPS.forEach(o => { if (GROUPS.indexOf(o.group) < 0) GROUPS.push(o.group); });
+    function renderOpList(q) {
+      q = (q || '').toLowerCase().trim();
+      const list = $('opList');
+      let html = '';
+      GROUPS.forEach(g => {
+        const ops = F.OPS.filter(o => o.group === g && (!q || (o.name + ' ' + o.id + ' ' + o.desc).toLowerCase().includes(q)));
+        if (!ops.length) return;
+        html += `<div class="op-group">${esc(g)}</div>` + ops.map(o => `<button type="button" class="op-item" data-op="${o.id}" title="${esc(o.desc)}"><span>${esc(o.name)}</span><i data-lucide="plus"></i></button>`).join('');
+      });
+      list.innerHTML = html || '<div class="op-group">No operation matches.</div>';
+      list.querySelectorAll('.op-item').forEach(b => b.addEventListener('click', () => addStep(b.dataset.op)));
+      icons();
+    }
+    $('opSearch').addEventListener('input', () => renderOpList($('opSearch').value));
+    $('opSearch').addEventListener('keydown', e => { if (e.key === 'Enter') { const first = $('opList').querySelector('.op-item'); if (first) { addStep(first.dataset.op); $('opSearch').value = ''; renderOpList(''); } } });
+
+    // ------------------------------------------------------------ recipe
+    function addStep(opId, args, atIndex) {
+      const o = F.BY_ID[opId]; if (!o) return;
+      const st = { op: opId, args: Object.assign(F.defaults(o), args || {}), enabled: true };
+      if (atIndex === undefined) steps.push(st); else steps.splice(atIndex, 0, st);
+      renderRecipe(); scheduleRun();
+    }
+    function removeStep(i) { steps.splice(i, 1); renderRecipe(); scheduleRun(); }
+    function moveStep(i, d) { const j = i + d; if (i < 0 || i >= steps.length || j < 0 || j >= steps.length) return; const t = steps[i]; steps[i] = steps[j]; steps[j] = t; renderRecipe(); scheduleRun(); }
+    function toggleStep(i) { steps[i].enabled = !steps[i].enabled; renderRecipe(); scheduleRun(); }
+    function setArg(i, key, value) { steps[i].args[key] = value; scheduleRun(); }
+    function clearRecipe() { steps = []; results = []; renderRecipe(); renderOutput(); }
+    function argControl(i, a, val) {
+      const id = `arg-${i}-${a.key}`;
+      if (a.type === 'select') return `<label class="arg"><span>${esc(a.label)}</span><select class="mini-select" id="${id}" onchange="setArg(${i}, '${a.key}', this.value)">${a.options.map(o => `<option value="${esc(o)}"${String(o) === String(val) ? ' selected' : ''}>${esc(o)}</option>`).join('')}</select></label>`;
+      if (a.type === 'bool') return `<label class="arg check"><input type="checkbox" id="${id}" ${val ? 'checked' : ''} onchange="setArg(${i}, '${a.key}', this.checked)"><span>${esc(a.label)}</span></label>`;
+      if (a.type === 'number') return `<label class="arg"><span>${esc(a.label)}</span><input type="number" class="mini-input" id="${id}" value="${esc(val)}" oninput="setArg(${i}, '${a.key}', this.value)"></label>`;
+      return `<label class="arg grow"><span>${esc(a.label)}</span><input type="text" class="mini-input" id="${id}" value="${esc(val === undefined ? '' : val)}" spellcheck="false" autocomplete="off" oninput="setArg(${i}, '${a.key}', this.value)"></label>`;
+    }
+    function renderRecipe() {
+      const list = $('recipeList');
+      $('recipeMeta').textContent = steps.length ? `${steps.length} step${steps.length === 1 ? '' : 's'}` : '';
+      if (!steps.length) { list.innerHTML = '<div class="recipe-empty"><i data-lucide="arrow-down"></i> Add a step from the list below, pick a preset, or click a magic suggestion.</div>'; icons(); return; }
+      list.innerHTML = steps.map((st, i) => {
+        const o = F.BY_ID[st.op], r = results[i];
+        const status = !st.enabled ? '<span class="step-status muted">disabled</span>' : r ? (r.error ? `<span class="step-status bad">${esc(r.error)}</span>` : r.skipped ? '<span class="step-status muted">skipped</span>' : `<span class="step-status ok">${r.output.length.toLocaleString()} chars · ${r.ms} ms</span>`) : '';
+        const preview = r && !r.error && !r.skipped && st.enabled ? `<div class="step-preview" title="Output of this step">${esc(r.output.slice(0, 220))}${r.output.length > 220 ? '…' : ''}</div>` : '';
+        return `<div class="step${st.enabled ? '' : ' off'}${r && r.error ? ' err' : ''}" data-i="${i}">
+          <div class="step-head"><span class="step-n">${i + 1}</span><strong>${esc(o.name)}</strong>${status}
+            <span class="step-btns"><button type="button" class="hb" onclick="moveStep(${i},-1)" title="Move up">↑</button><button type="button" class="hb" onclick="moveStep(${i},1)" title="Move down">↓</button><button type="button" class="hb" onclick="toggleStep(${i})" title="${st.enabled ? 'Disable' : 'Enable'}">${st.enabled ? '⏸' : '▶'}</button><button type="button" class="hb" onclick="removeStep(${i})" title="Remove">✕</button></span></div>
+          ${o.args.length ? `<div class="step-args">${o.args.map(a => argControl(i, a, st.args[a.key])).join('')}</div>` : ''}
+          ${preview}</div>`;
+      }).join('');
+      icons();
+    }
+
+    // ------------------------------------------------------------ run
+    function scheduleRun() { clearTimeout(runTimer); runTimer = setTimeout(runAll, 150); }
+    function runAll() {
+      const input = $('flowInput').value;
+      const active = steps.map((s, i) => ({ s, i })).filter(x => x.s.enabled);
+      const seq = ++runSeq;
+      $('btnRun').classList.add('running');
+      return F.run(active.map(x => ({ op: x.s.op, args: x.s.args })), input).then(res => {
+        if (seq !== runSeq) return;
+        results = []; active.forEach((x, k) => { results[x.i] = res[k]; });
+        renderRecipe(); renderOutput();
+        $('btnRun').classList.remove('running');
+        if (steps.length && input) Layerbit.history.push('flow', getState(), steps.map(s => F.BY_ID[s.op].name).join(' → ').slice(0, 100));
+      });
+    }
+    function finalResult() { for (let i = steps.length - 1; i >= 0; i--) if (steps[i].enabled && results[i]) return results[i]; return null; }
+    function renderOutput() {
+      const out = $('flowOutput'), eb = $('errorBanner');
+      const r = finalResult();
+      eb.classList.remove('active');
+      if (!steps.filter(s => s.enabled).length) { out.textContent = $('flowInput').value; $('outMeta').textContent = steps.length ? 'no enabled steps: output = input' : 'no steps: output = input'; return; }
+      if (!r) { out.textContent = ''; $('outMeta').textContent = ''; return; }
+      if (r.error || r.skipped) { const bad = results.find(x => x && x.error); eb.classList.add('active'); $('errorText').textContent = bad ? `Step ${results.indexOf(bad) + 1} (${F.BY_ID[bad.op].name}): ${bad.error}` : 'A step failed.'; const lastOk = results.filter(x => x && !x.error && !x.skipped).pop(); out.textContent = lastOk ? lastOk.output : ''; $('outMeta').textContent = lastOk ? 'showing the last successful step' : ''; return; }
+      out.textContent = r.output;
+      const totalMs = results.reduce((a, x) => a + (x && x.ms || 0), 0);
+      $('outMeta').textContent = `${r.output.length.toLocaleString()} chars · ${Layerbit.fmtBytes(new Blob([r.output]).size)} · ${totalMs} ms`;
+    }
+    function useAsInput() { const r = finalResult(); if (!r || r.error) return; $('flowInput').value = r.output; steps = []; results = []; renderRecipe(); onInput(); }
+    function downloadOut() { const t = $('flowOutput').textContent; if (!t) return; const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([t])); a.download = 'flow-output.txt'; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 500); }
+
+    // ------------------------------------------------------------ input + magic
+    function onInput() {
+      const v = $('flowInput').value;
+      $('inMeta').textContent = v ? `${v.length.toLocaleString()} chars` : '';
+      renderMagic(v);
+      scheduleRun();
+    }
+    function renderMagic(v) {
+      const bar = $('magicBar');
+      // suggestions are computed on what the *last enabled step* produced, so after a decode they point to the next move
+      const base = finalResult() && !finalResult().error && steps.filter(s => s.enabled).length ? finalResult().output : v;
+      const sug = F.detect(base).slice(0, 5);
+      bar.innerHTML = '<span class="magic-label"><i data-lucide="wand-2"></i> Magic</span>' + (sug.length ? sug.map((s, k) => `<button type="button" class="magic-chip" data-k="${k}" title="${esc(s.reason)}">${esc(F.BY_ID[s.op].name)}<small>${esc(s.reason)}</small></button>`).join('') : `<span class="magic-empty">${v ? 'Nothing obvious — pick an operation below.' : 'Paste something and the likely next steps appear here.'}</span>`);
+      bar.querySelectorAll('.magic-chip').forEach(b => b.addEventListener('click', () => { const s = sug[+b.dataset.k]; addStep(s.op, s.args); }));
+      icons();
+    }
+    $('flowInput').addEventListener('input', onInput);
+    $('flowFile').addEventListener('change', e => { const f = e.target.files[0]; if (f) Layerbit.readFile(f).then(t => { $('flowInput').value = t; onInput(); }); });
+    Layerbit.onDrop(files => Layerbit.readFile(files[0]).then(t => { $('flowInput').value = t; onInput(); Layerbit.toast('Loaded ' + files[0].name); }));
+    function clearInput() { $('flowInput').value = ''; onInput(); }
+    // re-run magic after each run so it reflects the latest output
+    const _renderOutput = renderOutput; renderOutput = function () { _renderOutput(); renderMagic($('flowInput').value); };
+
+    // ------------------------------------------------------------ recipes & presets
+    function copyRecipe() { if (!steps.length) { Layerbit.toast('No steps yet'); return; } Layerbit.copy(F.serialize(steps)).then(() => Layerbit.toast('Recipe JSON copied')); }
+    function importRecipe() {
+      const txt = prompt('Paste a recipe JSON ({"v":1,"steps":[…]})'); if (!txt) return;
+      try { steps = F.parse(txt).map(s => Object.assign(s, { enabled: true })); renderRecipe(); scheduleRun(); Layerbit.toast(`Imported ${steps.length} steps`); } catch (e) { Layerbit.toast(e.message, 'warn'); }
+    }
+    function loadPreset(id) {
+      const p = F.PRESETS.find(x => x.id === id); if (!p) return;
+      $('flowInput').value = p.sample; steps = p.steps.map(s => ({ op: s.op, args: Object.assign(F.defaults(F.BY_ID[s.op]), s.args), enabled: true }));
+      renderRecipe(); onInput(); $('presetSel').value = '';
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+    $('presetSel').innerHTML = '<option value="">Presets…</option>' + F.PRESETS.map(p => `<option value="${p.id}">${esc(p.name)}</option>`).join('');
+    $('presetSel').addEventListener('change', () => { if ($('presetSel').value) loadPreset($('presetSel').value); });
+    $('presetButtons').innerHTML = F.PRESETS.map(p => `<button type="button" class="sample-btn" onclick="loadPreset('${p.id}')" title="${esc(p.desc)}">${esc(p.name)}</button>`).join('');
+
+    // ------------------------------------------------------------ state
+    function getState() { return { input: $('flowInput').value, recipe: steps.map(s => ({ op: s.op, args: s.args, enabled: s.enabled })) }; }
+    function setState(s) {
+      if (!s) return;
+      if (typeof s.input === 'string') $('flowInput').value = s.input;
+      if (Array.isArray(s.recipe)) { try { steps = s.recipe.filter(x => F.BY_ID[x.op]).map(x => ({ op: x.op, args: Object.assign(F.defaults(F.BY_ID[x.op]), x.args || {}), enabled: x.enabled !== false })); } catch (e) { steps = []; } }
+      renderRecipe(); onInput();
+    }
+    Layerbit.register({ slug: 'flow', getState, setState, run: runAll, input: (text) => { $('flowInput').value = text; onInput(); } });
+    renderOpList(''); renderRecipe(); renderOutput();
+  </script>
+<script src="../main.js"></script>

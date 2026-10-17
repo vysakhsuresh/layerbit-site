@@ -1,0 +1,119 @@
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "TechArticle",
+      "@id": "https://layerbit.co.in/guides/json-schema-validation-explained.html#article",
+      "headline": "JSON Schema Validation Explained: The Keywords That Matter and the Ones That Bite",
+      "name": "JSON Schema Validation Explained: The Keywords That Matter and the Ones That Bite",
+      "description": "How JSON Schema constraints combine, why properties requires nothing, the integer and format traps, oneOf versus anyOf, and what $ref really does.",
+      "url": "https://layerbit.co.in/guides/json-schema-validation-explained.html",
+      "mainEntityOfPage": {
+        "@type": "WebPage",
+        "@id": "https://layerbit.co.in/guides/json-schema-validation-explained.html"
+      },
+      "datePublished": "2026-10-17",
+      "dateModified": "2026-10-17",
+      "inLanguage": "en",
+      "wordCount": 2070,
+      "keywords": "JSON Schema, JSON Schema validation, required vs properties, additionalProperties, oneOf anyOf, $ref, draft-07, 2020-12, schema inference",
+      "articleSection": "Data Formats",
+      "author": {
+        "@type": "Organization",
+        "name": "Layerbit Technologies",
+        "url": "https://layerbit.co.in/about.html"
+      },
+      "publisher": {
+        "@type": "Organization",
+        "name": "Layerbit Technologies",
+        "url": "https://layerbit.co.in/",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://layerbit.co.in/icon-512.png",
+          "width": 512,
+          "height": 512
+        }
+      },
+      "image": {
+        "@type": "ImageObject",
+        "url": "https://layerbit.co.in/og-image.png",
+        "width": 1200,
+        "height": 630
+      },
+      "isAccessibleForFree": true,
+      "proficiencyLevel": "Intermediate"
+    },
+    {
+      "@type": "BreadcrumbList",
+      "@id": "https://layerbit.co.in/guides/json-schema-validation-explained.html#breadcrumb",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://layerbit.co.in/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Guides",
+          "item": "https://layerbit.co.in/blog.html"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": "JSON Schema validation explained",
+          "item": "https://layerbit.co.in/guides/json-schema-validation-explained.html"
+        }
+      ]
+    },
+    {
+      "@type": "FAQPage",
+      "@id": "https://layerbit.co.in/guides/json-schema-validation-explained.html#faq",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "Does \"properties\" make a key required?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "No. properties only constrains a key's value when the key is present. To require a key, list it in the required array. To reject keys you did not describe, set additionalProperties to false. The three keywords are independent and most real schemas need all three."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Why does my \"pattern\" accept strings it should reject?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Because pattern is unanchored: it succeeds if the regex matches anywhere in the string. A pattern of [0-9]{3} accepts \"abc123\". Anchor it with ^ and $ to constrain the whole value. This mistake fails open, so it does not show up in tests that only use valid data."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Is \"format\": \"email\" actually enforced?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Not by default in most validators. The specification treats format as an annotation unless the validator is configured to assert it, and the popular libraries each need a plugin or flag. If an email, date or URI shape matters to your application, add a pattern alongside the format or enable format assertion explicitly and test that an invalid value is rejected."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What is the difference between oneOf and anyOf?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "anyOf passes when at least one branch matches. oneOf passes only when exactly one does, so a value matching two branches is invalid. Use oneOf only when branches are mutually exclusive, typically by requiring a discriminator key with a distinct const in each branch; otherwise anyOf is both safer and faster."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Which draft should I write new schemas in?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Draft 2020-12 if every validator in your pipeline supports it, since it has the clearest array and $ref semantics and is what OpenAPI 3.1 uses. Draft-07 remains the most widely supported and is a sound choice when an older validator is involved. Whichever you pick, declare it in $schema so tools do not guess, and avoid relying on behaviour that differs between the two: tuple items and $ref with siblings."
+          }
+        }
+      ]
+    }
+  ]
+}
+  </script>
