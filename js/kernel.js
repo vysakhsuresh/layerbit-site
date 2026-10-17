@@ -464,7 +464,7 @@
     if (!pill) return;
     var cloud = SLUG && /^layerlink-/.test(SLUG);
     if (netCount === 0) { pill.className = 'lb-pill lb-pill-ok'; pill.innerHTML = '<i data-lucide="shield-check"></i><span>Local · nothing sent</span>'; pill.title = 'This page has made no request carrying your data. Ads and analytics are counted separately and disclosed in the privacy policy.'; }
-    else { pill.className = 'lb-pill ' + (cloud ? 'lb-pill-info' : 'lb-pill-warn'); pill.innerHTML = '<i data-lucide="' + (cloud ? 'cloud' : 'alert-triangle') + '"></i><span>' + netCount + ' network request' + (netCount > 1 ? 's' : '') + '</span>'; pill.title = (cloud ? 'This tool uses a cloud service by design. ' : '') + 'Requests: ' + netLog.slice(-5).join(', '); }
+    else { pill.className = 'lb-pill lb-pill-info'; pill.innerHTML = '<i data-lucide="cloud"></i><span>' + netCount + ' network request' + (netCount > 1 ? 's' : '') + '</span>'; pill.title = 'Requests made by this page: ' + netLog.slice(-5).join(', '); }
     icons();
   }
 
@@ -479,8 +479,13 @@
       box.appendChild(el('button', { type: 'button', class: 'lb-pill lb-pill-btn', id: 'lbShareBtn', title: 'Copy a link that carries your input in the #fragment (never sent to a server)', html: '<i data-lucide="link"></i><span>Share link</span>', onclick: function () { state.share(); } }));
       box.appendChild(el('button', { type: 'button', class: 'lb-pill lb-pill-btn', id: 'lbHistoryBtn', title: 'Runs saved on this device (Ctrl+H)', html: '<i data-lucide="history"></i><span>History</span>', onclick: function () { openHistory(); } }));
     }
-    pill = el('div', { class: 'lb-pill lb-pill-ok', id: 'lbPrivacyPill', role: 'status' });
-    box.appendChild(pill);
+    // The privacy indicator belongs on local tool pages only: the homepage and
+    // LayerLink pages talk to the visitor counter / signalling service by design,
+    // and the service pages have nothing to indicate.
+    if (SLUG && !/^layerlink-|^(api-automation|app-development|custom-scripts|erp-development|portfolio-design|static-sites)$/.test(SLUG)) {
+      pill = el('div', { class: 'lb-pill lb-pill-ok', id: 'lbPrivacyPill', role: 'status' });
+      box.appendChild(pill);
+    }
     header.appendChild(box);
     renderPill();
     icons();
