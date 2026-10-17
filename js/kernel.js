@@ -472,6 +472,9 @@
   function installHeader() {
     var header = document.querySelector('body > header, header');
     if (!header) return;
+    // The homepage has its own search (bottom-left pill) and the Support button
+    // top-right, so it gets no header pills; Ctrl+K still opens the palette.
+    if (/^\/(index\.html)?$/.test(location.pathname)) return;
     var box = el('div', { class: 'lb-header-tools' });
     var sb = el('button', { type: 'button', class: 'lb-pill lb-pill-btn', id: 'lbPaletteBtn', 'aria-label': 'Search tools (Ctrl+K)', title: 'Search every tool and guide (Ctrl+K)', html: '<i data-lucide="search"></i><span>Search</span><kbd>Ctrl K</kbd>', onclick: function () { openPalette('search'); } });
     box.appendChild(sb);
