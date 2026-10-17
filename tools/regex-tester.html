@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="Test regular expressions with live highlighting, capture groups, replacement preview, all JavaScript flags, and an engine-time readout that flags slow patterns." />
-  <title>Regex Tester Online (JavaScript, Live Match) | Layerbit</title>
+  <meta name="description" content="Test regex with live highlighting, token explanation, railroad diagram, ReDoS check, unit tests, code for 10 languages and patterns inferred from examples." />
+  <title>Regex Tester & Debugger Online: Explain, Test, Generate</title>
   <!-- Google tag (gtag.js) -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-ERX8MNPPP5"></script>
   <script>
@@ -18,16 +18,16 @@
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://layerbit.co.in/tools/regex-tester.html" />
   <meta property="og:site_name" content="Layerbit" />
-  <meta property="og:title" content="Regex Tester Online (JavaScript, Live Match) | Layerbit" />
-  <meta property="og:description" content="Test regular expressions with live highlighting, capture groups, replacement preview, all JavaScript flags, and an engine-time readout that flags slow patterns." />
+  <meta property="og:title" content="Regex Tester & Debugger Online: Explain, Test, Generate" />
+  <meta property="og:description" content="Test regex with live highlighting, token explanation, railroad diagram, ReDoS check, unit tests, code for 10 languages and patterns inferred from examples." />
   <meta property="og:image" content="https://layerbit.co.in/og-image.png" />
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
   <meta property="og:image:alt" content="Layerbit - free browser-based developer tools" />
   <meta property="og:locale" content="en" />
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="Regex Tester Online (JavaScript, Live Match) | Layerbit" />
-  <meta name="twitter:description" content="Test regular expressions with live highlighting, capture groups, replacement preview, all JavaScript flags, and an engine-time readout that flags slow patterns." />
+  <meta name="twitter:title" content="Regex Tester & Debugger Online: Explain, Test, Generate" />
+  <meta name="twitter:description" content="Test regex with live highlighting, token explanation, railroad diagram, ReDoS check, unit tests, code for 10 languages and patterns inferred from examples." />
   <meta name="twitter:image" content="https://layerbit.co.in/og-image.png" />
   <meta name="twitter:image:alt" content="Layerbit - free browser-based developer tools" />
   <meta name="theme-color" content="#0a0c10" />
@@ -38,7 +38,7 @@
     {
       "@type": "SoftwareApplication",
       "@id": "https://layerbit.co.in/tools/regex-tester.html#app",
-      "name": "Regex Tester",
+      "name": "Regex Tester \u0026 Debugger",
       "url": "https://layerbit.co.in/tools/regex-tester.html",
       "description": "Test regular expressions with live highlighting, capture groups, replacement preview, all JavaScript flags, and an engine-time readout that flags slow patterns.",
       "applicationCategory": "DeveloperApplication",
@@ -52,7 +52,19 @@
       },
       "publisher": {
         "@id": "https://layerbit.co.in/#organization"
-      }
+      },
+      "featureList": [
+        "Live match highlighting with capture groups",
+        "Token-by-token explanation",
+        "Railroad diagram with SVG export",
+        "Catastrophic backtracking analysis and growth measurement",
+        "Unit tests saved in share links",
+        "Code generation for 10 languages",
+        "Whole-file batch testing",
+        "Pattern synthesis from examples",
+        "Replacement preview",
+        "Quick reference"
+      ]
     },
     {
       "@type": "BreadcrumbList",
@@ -80,21 +92,22 @@
     },
     {
       "@type": "FAQPage",
+      "@id": "https://layerbit.co.in/tools/regex-tester.html#faq",
       "mainEntity": [
         {
           "@type": "Question",
-          "name": "Why is client-side regex testing important?",
+          "name": "Which regex flavour does this tool use?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "If you are testing patterns against proprietary application logs or databases containing PII (Personally Identifiable Information), pasting that text into an external server-side tool is a massive security risk. Layerbit evaluates your data locally within your browser, ensuring complete privacy."
+            "text": "The native JavaScript (ECMAScript) engine in your browser, which covers lookbehind, named groups, Unicode property escapes and the v flag in current Chrome, Firefox and Safari. The Code tab converts flags and syntax for Python, Go, Java, C#, PHP, Ruby, Rust and the shell tools, and lists any feature the target engine lacks, so a pattern that works here is carried over correctly or you learn why it cannot be."
           }
         },
         {
           "@type": "Question",
-          "name": "Which Regex flavor does this terminal use?",
+          "name": "How does the catastrophic-backtracking check work?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "The terminal utilizes the native JavaScript ES6+ RegExp engine executed by your local browser. This is universally compatible with standard PCRE (Perl Compatible Regular Expressions) syntaxes used in Node.js, Python, and modern web applications."
+            "text": "The pattern is parsed into a tree and scanned for three shapes: an unbounded repeat containing another unbounded repeat, alternatives under a repeat whose first characters overlap, and two adjacent repeats that can accept the same characters. Each finding shows the fragment and a safer rewrite. The growth measurement then runs the pattern on your test string at one, two, four and eight times its length and reports how the time grows: roughly doubling is linear and fine, quadrupling or worse means the ambiguity is real."
           }
         },
         {
@@ -102,7 +115,7 @@
           "name": "How does the real-time highlighting work without breaking the input?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "We utilize a dual-layer DOM architecture. The transparent \u003ctextarea\u003e captures your keystrokes while a perfectly aligned \u003cdiv\u003e sitting behind it dynamically renders the colorized output and handles scrolling synchronization. This provides a rich IDE experience."
+            "text": "A transparent textarea captures your keystrokes while a perfectly aligned layer behind it renders the colourised matches and mirrors the scroll position. Alternate matches use two shades so adjacent matches stay distinguishable, and the match list below shows every capture group with its index range."
           }
         },
         {
@@ -110,11 +123,34 @@
           "name": "What syntax does the Replacement Preview support?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "The same replacement patterns JavaScript's native String.replace() understands: $1, $2, etc. for numbered capture groups, $\u003cname\u003e for named groups declared with (?\u003cname\u003e...), $\u0026 for the whole match, and $$ for a literal dollar sign. It respects whichever flags are active, so without the g flag only the first match gets replaced, same as the highlighting above it."
+            "text": "The same replacement patterns JavaScript's native String.replace() understands: $1, $2 and so on for numbered capture groups, $\u003cname\u003e for named groups, $\u0026 for the whole match, $` and $' for the text before and after it, and $$ for a literal dollar sign. It respects whichever flags are active, so without the g flag only the first match is replaced, the same as the highlighting above it."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Where are the unit tests stored?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "In the page, and in the share link when you copy one: the pattern, flags, test string and the full test table are compressed into the URL fragment, which browsers never send to a server. Paste the link into a code review or a ticket and the reader gets the pattern with its expectations and can run them. Nothing is stored on Layerbit's side; the optional history lives in your browser's own storage."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How good is the pattern generator?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "It is a rule-based synthesiser, not a language model. It splits each positive example into runs of digits, letters, whitespace and punctuation, checks whether all examples share the same sequence, and builds patterns from that shape with exact, loose and unanchored variants, then scores each candidate against your negative examples. For structured strings such as invoice numbers, SKUs, dates, keys and identifiers it produces a usable pattern immediately; for free text it gives you a starting point to edit."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Why is client-side regex testing important?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "If you are testing patterns against proprietary application logs or databases containing personal information, pasting that text into a server-side tool is a data transfer you may not be allowed to make. Everything here, including the batch file mode, runs in your browser, and the header indicator counts the network requests the page makes so you can see that it stays at zero."
           }
         }
-      ],
-      "@id": "https://layerbit.co.in/tools/regex-tester.html#faq"
+      ]
     }
   ]
 }
@@ -529,6 +565,98 @@
     .match-timing.slow { color: #f59e0b; }
     .match-timing a { color: inherit; text-decoration: underline; }
 
+    /* v3: debugger tabs */
+    .flavor-chip { font: 600 0.75em 'Fira Code', monospace; color: var(--accent-main); background: rgba(56,189,248,0.1); border: 1px solid rgba(56,189,248,0.3); padding: 3px 10px; border-radius: 999px; }
+    .pane-meta { font-size: 0.8em; color: var(--text-muted); font-weight: 500; }
+    .editor-foot { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; padding: 10px 20px; border-top: 1px solid var(--card-border); }
+    .editor-foot .btn { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 6px 12px; border-radius: 8px; font: 600 0.85em 'Space Grotesk', sans-serif; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
+    .editor-foot .btn i, .editor-foot .btn svg { width: 14px; height: 14px; }
+    .muted-note { font-size: 0.85em; color: var(--text-muted); line-height: 1.6; }
+    .muted-note.err { color: #fca5a5; }
+    .muted { color: var(--text-muted); }
+    .hl-match.alt { background: rgba(192,132,252,0.25); border-bottom-color: #c084fc; }
+    .rx-tabs { display: flex; flex-wrap: wrap; gap: 6px; }
+    .rx-tab { background: rgba(255,255,255,0.04); border: 1px solid var(--card-border); color: var(--text-muted); padding: 8px 14px; border-radius: 999px; font: 600 0.85em 'Space Grotesk', sans-serif; cursor: pointer; display: inline-flex; align-items: center; gap: 7px; transition: 0.2s; }
+    .rx-tab i, .rx-tab svg { width: 14px; height: 14px; }
+    .rx-tab:hover { color: #fff; }
+    .rx-tab.active { background: rgba(56,189,248,0.12); border-color: var(--accent-main); color: #fff; }
+    .tab-badge { font-size: 0.8em; padding: 1px 7px; border-radius: 999px; background: rgba(255,255,255,0.08); }
+    .tab-badge:empty { display: none; }
+    .tab-badge.ok { background: rgba(34,197,94,0.2); color: #4ade80; } .tab-badge.warn { background: rgba(245,158,11,0.2); color: #fbbf24; } .tab-badge.bad { background: rgba(239,68,68,0.2); color: #f87171; }
+    .rx-panel { display: none; flex-direction: column; gap: 20px; }
+    .rx-panel.active { display: flex; }
+    .panel-body { padding: 18px 20px; }
+    .btn { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 6px 12px; border-radius: 8px; font: 600 0.85em 'Space Grotesk', sans-serif; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: 0.2s; }
+    .btn:hover { background: rgba(255,255,255,0.1); }
+    .btn i, .btn svg { width: 14px; height: 14px; }
+    .btn-primary { background: var(--neon-gradient); color: #000; border: none; }
+    .btn-group { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+    .mini-select { background: rgba(0,0,0,0.3); border: 1px solid var(--card-border); color: var(--text-main); border-radius: 6px; padding: 5px 8px; font-family: inherit; font-size: 0.9em; outline: none; cursor: pointer; }
+    .mini-select option { background: #0a0c10; }
+    .matches-foot { display: flex; flex-wrap: wrap; gap: 8px; padding: 0 20px 18px; }
+    .explain-tree, .explain-tree ul { list-style: none; margin: 0; padding-left: 0; }
+    .explain-tree ul { margin-left: 18px; border-left: 1px dashed rgba(255,255,255,0.12); padding-left: 14px; margin-top: 4px; }
+    .explain-tree li { margin: 6px 0; line-height: 1.5; }
+    .ex-label { font-family: 'Fira Code', monospace; color: var(--accent-main); background: rgba(56,189,248,0.08); border: 1px solid rgba(56,189,248,0.2); padding: 1px 7px; border-radius: 5px; margin-right: 8px; font-size: 0.9em; }
+    .ex-desc { color: var(--text-muted); font-size: 0.92em; }
+    .railroad-wrap { overflow: auto; }
+    .railroad line, .railroad path { stroke: #94a3b8; stroke-width: 2; }
+    .rr rect { fill: #141620; stroke: #38bdf8; stroke-width: 1.5; }
+    .rr-term rect { fill: #0f2733; stroke: #4ade80; }
+    .rr-class rect { stroke: #c084fc; }
+    .rr-anchor rect { fill: #1a1e2d; stroke: #fbbf24; }
+    .rr text { fill: #f8fafc; font: 13px 'Fira Code', monospace; }
+    .rr-group rect { fill: none; stroke: #38bdf8; stroke-dasharray: 4 3; opacity: 0.6; }
+    .rr-group text { fill: #38bdf8; font: 11px 'Space Grotesk', sans-serif; }
+    .rr-look rect { stroke: #fbbf24; }
+    .rr-q { fill: #94a3b8; font: 11px 'Space Grotesk', sans-serif; }
+    .rr-end { fill: #38bdf8; }
+    .safe-ok { display: flex; gap: 12px; align-items: flex-start; color: var(--text-muted); line-height: 1.6; }
+    .safe-ok i, .safe-ok svg { color: #4ade80; width: 22px; height: 22px; flex-shrink: 0; margin-top: 2px; }
+    .safe-ok strong { color: #fff; }
+    .safe-ok p { margin: 4px 0 0; }
+    .finding { border: 1px solid rgba(239,68,68,0.35); background: rgba(239,68,68,0.07); border-radius: 10px; padding: 12px 14px; margin-bottom: 10px; line-height: 1.55; }
+    .finding.medium { border-color: rgba(245,158,11,0.4); background: rgba(245,158,11,0.07); }
+    .finding.ok { border-color: rgba(34,197,94,0.4); background: rgba(34,197,94,0.07); }
+    .finding-head { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 4px; color: #fff; }
+    .finding-head i, .finding-head svg { width: 18px; height: 18px; color: #f87171; }
+    .finding.medium .finding-head i, .finding.medium .finding-head svg { color: #fbbf24; }
+    .finding.ok .finding-head i, .finding.ok .finding-head svg { color: #4ade80; }
+    .finding code { font-family: 'Fira Code', monospace; background: rgba(0,0,0,0.3); padding: 2px 7px; border-radius: 5px; color: #fff; }
+    .finding p { margin: 4px 0; color: var(--text-muted); font-size: 0.92em; }
+    .finding .advice { color: var(--text-main); }
+    .stress { border-top: 1px solid var(--card-border); }
+    .tests-table { width: 100%; border-collapse: collapse; font-size: 0.88em; }
+    .tests-table th, .tests-table td { text-align: left; padding: 7px 8px; border-bottom: 1px solid rgba(255,255,255,0.06); vertical-align: middle; }
+    .tests-table th { color: var(--accent-main); font-weight: 600; white-space: nowrap; }
+    .tests-table td code { font-family: 'Fira Code', monospace; color: #fff; }
+    .tests-table tr.pass td.t-res { color: #4ade80; } .tests-table tr.fail td.t-res { color: #f87171; }
+    .tests-table tr.pass td:first-child { box-shadow: inset 3px 0 0 #4ade80; } .tests-table tr.fail td:first-child { box-shadow: inset 3px 0 0 #f87171; }
+    .t-res i, .t-res svg { width: 14px; height: 14px; vertical-align: -2px; }
+    .t-in { width: 100%; min-width: 120px; background: rgba(0,0,0,0.3); border: 1px solid var(--card-border); color: #fff; border-radius: 6px; padding: 6px 8px; font: 0.95em 'Fira Code', monospace; outline: none; }
+    .t-in.short { min-width: 70px; width: 90px; }
+    .t-in:focus { border-color: var(--accent-main); }
+    .hb { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.12); color: var(--text-muted); font: 600 0.8em 'Space Grotesk', sans-serif; padding: 4px 9px; border-radius: 6px; cursor: pointer; }
+    .hb:hover { color: #fff; }
+    .code-out { background: rgba(0,0,0,0.35); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 14px 16px; overflow: auto; font: 0.88em/1.55 'Fira Code', monospace; color: var(--text-main); white-space: pre; margin: 0 0 12px; }
+    .caveat { display: flex; gap: 8px; align-items: flex-start; color: #fbbf24; font-size: 0.88em; margin: 6px 0; line-height: 1.5; }
+    .caveat i, .caveat svg { width: 15px; height: 15px; flex-shrink: 0; margin-top: 2px; }
+    .stats-strip { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 0.85em; color: var(--text-muted); margin-bottom: 14px; }
+    .stats-strip strong { color: #fff; } .st-ok { color: #4ade80; }
+    .synth-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px; }
+    .synth-grid label { display: block; font-size: 0.8em; font-weight: 600; color: var(--text-muted); margin-bottom: 6px; }
+    .synth-ta { width: 100%; height: 130px; background: rgba(0,0,0,0.3); border: 1px solid var(--card-border); color: #fff; border-radius: 10px; padding: 10px 12px; font: 0.92em/1.5 'Fira Code', monospace; resize: vertical; outline: none; }
+    .synth-ta:focus { border-color: var(--accent-main); }
+    .synth-table td code { word-break: break-all; }
+    .ref-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 18px 28px; }
+    .ref-table { width: 100%; border-collapse: collapse; font-size: 0.86em; }
+    .ref-table caption { text-align: left; color: var(--accent-main); font-weight: 600; padding-bottom: 6px; font-size: 0.95em; }
+    .ref-table td { padding: 5px 6px; border-bottom: 1px solid rgba(255,255,255,0.05); color: var(--text-muted); vertical-align: top; }
+    .ref-table td:first-child { white-space: nowrap; width: 46%; }
+    .ref-table code { font-family: 'Fira Code', monospace; color: #fff; background: rgba(0,0,0,0.3); padding: 1px 5px; border-radius: 4px; }
+    @media (max-width: 700px) { .synth-grid { grid-template-columns: 1fr; } .regex-control { flex-direction: column; } .flags-container { flex-wrap: wrap; } .flag-btn { padding: 8px 12px; } .tests-table { display: block; overflow-x: auto; } }
+    .probe-h { color: #fff; font-size: 0.95em; margin: 16px 0 6px; }
+
   </style>
 </head>
 <body>
@@ -545,149 +673,261 @@
   </header>
 
   <main class="hero">
-    <h1>Regex Tester</h1>
-    <p>Debug JavaScript regular expressions with live match highlighting, capture-group breakdown, replacement preview and timing — entirely in your browser.</p>
+    <h1>Regex Tester &amp; Debugger</h1>
+    <p>Live matching, a plain-English explanation of every token, a railroad diagram, a catastrophic-backtracking check, saved unit tests, code for ten languages, and a pattern generator that learns from your examples — all in your browser.</p>
   </main>
 
   <div class="app-container">
-    
     <div class="pane" id="mainPane">
       <div class="pane-header">
         <div class="pane-title"><i data-lucide="regex"></i> Expression Editor</div>
+        <div class="btn-group">
+          <span class="flavor-chip" title="Patterns run on your browser's native ECMAScript engine. The Code tab translates flags and syntax for other languages.">JavaScript / ECMAScript</span>
+        </div>
       </div>
-
       <div class="regex-control">
         <div class="regex-wrapper">
           <div class="regex-delimiter">/</div>
-          <input type="text" id="regexInput" class="regex-input" placeholder="\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b" autocomplete="off" spellcheck="false" />
+          <input type="text" id="regexInput" class="regex-input" placeholder="\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b" autocomplete="off" spellcheck="false" aria-label="Regular expression" />
           <div class="regex-delimiter">/</div>
         </div>
-        <div class="flags-container">
-          <button class="flag-btn active" data-flag="g" title="Global (Match all occurrences)">g</button>
-          <button class="flag-btn" data-flag="i" title="Case Insensitive">i</button>
-          <button class="flag-btn" data-flag="m" title="Multiline">m</button>
-          <button class="flag-btn" data-flag="s" title="dotAll (. also matches newlines)">s</button>
-          <button class="flag-btn" data-flag="u" title="Unicode (\p{..} classes, astral code points)">u</button>
-          <button class="flag-btn" data-flag="y" title="Sticky (match only at lastIndex)">y</button>
+        <div class="flags-container" role="group" aria-label="Flags">
+          <button type="button" class="flag-btn active" data-flag="g" title="Global (match all occurrences)">g</button>
+          <button type="button" class="flag-btn" data-flag="i" title="Case insensitive">i</button>
+          <button type="button" class="flag-btn" data-flag="m" title="Multiline: ^ and $ match at line breaks">m</button>
+          <button type="button" class="flag-btn" data-flag="s" title="dotAll: . also matches newlines">s</button>
+          <button type="button" class="flag-btn" data-flag="u" title="Unicode: \p{..} classes, astral code points">u</button>
+          <button type="button" class="flag-btn" data-flag="y" title="Sticky: match only at lastIndex">y</button>
         </div>
       </div>
-
       <div id="errorText" class="error-text"><i data-lucide="triangle-alert"></i> <span id="errorMsg">Invalid regular expression</span></div>
-
       <div class="telemetry-bar">
-        <span>Test String</span>
+        <span>Test String <span class="pane-meta" id="testMeta"></span></span>
         <span class="match-timing" id="matchTiming" title="Time spent by the regex engine on this input"></span>
         <span class="match-count" id="matchCount"><i data-lucide="check-circle" style="width:14px;"></i> 0 Matches</span>
       </div>
-
       <div class="editor-wrapper">
         <div class="gutter" id="testGutterWrap" aria-hidden="true"><div class="gutter-inner" id="testGutter">1</div></div>
         <div id="testBackdrop" class="test-backdrop">Paste your test data here to see match highlights...</div>
-        <textarea id="testInput" class="test-input" spellcheck="false"></textarea>
+        <textarea id="testInput" class="test-input" spellcheck="false" aria-label="Test string"></textarea>
+      </div>
+      <div class="editor-foot">
+        <input type="file" id="testFile" style="display:none;">
+        <button type="button" class="btn" onclick="document.getElementById('testFile').click()"><i data-lucide="upload"></i> Open file as test string</button>
+        <button type="button" class="btn" onclick="clearAll()"><i data-lucide="trash-2"></i> Clear</button>
+        <span class="muted-note">Ctrl+Enter re-runs · the privacy pill above counts network requests: it stays at zero</span>
       </div>
     </div>
 
-    <div class="breakdown-pane" id="breakdownPane">
-      <div class="breakdown-title"><i data-lucide="crosshair"></i> Forensics Extraction</div>
-      <div class="matches-grid" id="matchesGrid">
-        </div>
+    <div class="rx-tabs" id="rxTabs" role="tablist">
+      <button type="button" class="rx-tab active" data-tab="matches" role="tab"><i data-lucide="crosshair"></i> Matches</button>
+      <button type="button" class="rx-tab" data-tab="explain" role="tab"><i data-lucide="list-tree"></i> Explain</button>
+      <button type="button" class="rx-tab" data-tab="diagram" role="tab"><i data-lucide="route"></i> Diagram</button>
+      <button type="button" class="rx-tab" data-tab="safety" role="tab"><i data-lucide="shield-alert"></i> Safety <span class="tab-badge" id="safetyBadge"></span></button>
+      <button type="button" class="rx-tab" data-tab="tests" role="tab"><i data-lucide="flask-conical"></i> Tests <span class="tab-badge" id="testsBadge"></span></button>
+      <button type="button" class="rx-tab" data-tab="code" role="tab"><i data-lucide="code-2"></i> Code</button>
+      <button type="button" class="rx-tab" data-tab="batch" role="tab"><i data-lucide="file-search"></i> Batch file</button>
+      <button type="button" class="rx-tab" data-tab="synth" role="tab"><i data-lucide="wand-2"></i> From examples</button>
+      <button type="button" class="rx-tab" data-tab="ref" role="tab"><i data-lucide="book-open"></i> Reference</button>
     </div>
 
-    <div class="pane" id="replacePane">
-      <div class="pane-header">
-        <div class="pane-title"><i data-lucide="replace"></i> Replacement Preview</div>
-      </div>
-      <div class="replace-body">
-        <div class="replace-row">
-          <label for="replaceInput">Replace matches with <span class="replace-hint">($1, $2, $&lt;name&gt;, $&amp; supported)</span></label>
-          <input type="text" id="replaceInput" class="replace-input" placeholder="e.g. $2-$1, [REDACTED], or $&lt;year&gt;-$&lt;month&gt;" autocomplete="off" spellcheck="false" />
+    <!-- Matches -->
+    <div class="rx-panel active" id="tab-matches">
+      <div class="breakdown-pane" id="breakdownPane">
+        <div class="breakdown-title"><i data-lucide="crosshair"></i> Matches and capture groups <span class="pane-meta" id="matchesNote"></span></div>
+        <div class="matches-grid" id="matchesGrid"></div>
+        <div class="matches-foot" id="matchesFoot" style="display:none;">
+          <button type="button" class="btn" onclick="copyMatches('matches')"><i data-lucide="copy"></i> Copy matches</button>
+          <button type="button" class="btn" onclick="copyMatches('csv')"><i data-lucide="table"></i> Copy as CSV (groups as columns)</button>
+          <button type="button" class="btn" onclick="copyMatches('json')"><i data-lucide="braces"></i> Copy as JSON</button>
         </div>
-        <div class="replace-row" id="replaceOutputRow" style="display:none;">
-          <label>Result</label>
-          <pre class="replace-output" id="replaceOutput"></pre>
+      </div>
+      <div class="pane" id="replacePane">
+        <div class="pane-header">
+          <div class="pane-title"><i data-lucide="replace"></i> Replacement Preview</div>
+          <div class="btn-group">
+            <button type="button" class="btn lb-send" data-lb-send="replaceOutput" data-lb-kind="text"><i data-lucide="send"></i> Send result to…</button>
+          </div>
+        </div>
+        <div class="replace-body">
+          <div class="replace-row">
+            <label for="replaceInput">Replace matches with <span class="replace-hint">($1, $2, $&lt;name&gt;, $&amp;, $` and $' supported)</span></label>
+            <input type="text" id="replaceInput" class="replace-input" placeholder="e.g. $2-$1, [REDACTED], or $&lt;year&gt;-$&lt;month&gt;" autocomplete="off" spellcheck="false" />
+          </div>
+          <div class="replace-row" id="replaceOutputRow" style="display:none;">
+            <label>Result</label>
+            <pre class="replace-output" id="replaceOutput"></pre>
+          </div>
         </div>
       </div>
     </div>
 
+    <!-- Explain -->
+    <div class="rx-panel" id="tab-explain">
+      <div class="pane">
+        <div class="pane-header"><div class="pane-title"><i data-lucide="list-tree"></i> What each part of the pattern does</div></div>
+        <div class="panel-body" id="explainTree"><p class="muted-note">Type a pattern above to see it explained token by token.</p></div>
+      </div>
+    </div>
+
+    <!-- Diagram -->
+    <div class="rx-panel" id="tab-diagram">
+      <div class="pane">
+        <div class="pane-header"><div class="pane-title"><i data-lucide="route"></i> Railroad diagram</div>
+          <div class="btn-group"><button type="button" class="btn" onclick="downloadSvg()"><i data-lucide="download"></i> Download SVG</button></div></div>
+        <div class="panel-body railroad-wrap" id="railroad"><p class="muted-note">The diagram shows every path a string can take through the pattern: follow a line from the left circle to the right circle.</p></div>
+      </div>
+    </div>
+
+    <!-- Safety -->
+    <div class="rx-panel" id="tab-safety">
+      <div class="pane">
+        <div class="pane-header"><div class="pane-title"><i data-lucide="shield-alert"></i> Catastrophic backtracking check</div>
+          <div class="btn-group"><button type="button" class="btn" id="btnStress" onclick="stressTest()"><i data-lucide="gauge"></i> Measure growth on this input</button></div></div>
+        <div class="panel-body" id="safetyReport"><p class="muted-note">Static analysis of the pattern structure: nested unbounded repeats, overlapping alternatives under a repeat, and adjacent repeats that accept the same characters — the three shapes behind nearly every regex denial-of-service.</p></div>
+        <div class="panel-body stress" id="stressResult" style="display:none;"></div>
+      </div>
+    </div>
+
+    <!-- Tests -->
+    <div class="rx-panel" id="tab-tests">
+      <div class="pane">
+        <div class="pane-header"><div class="pane-title"><i data-lucide="flask-conical"></i> Unit tests <span class="pane-meta" id="testsSummary"></span></div>
+          <div class="btn-group">
+            <button type="button" class="btn" id="btnAddTest" onclick="addTest()"><i data-lucide="plus"></i> Add test</button>
+            <button type="button" class="btn" onclick="addTestsFromMatches()" title="One 'should match' test per current match"><i data-lucide="list-plus"></i> From current matches</button>
+            <button type="button" class="btn btn-primary" id="btnRunTests" onclick="runUnitTests()"><i data-lucide="play"></i> Run</button>
+          </div></div>
+        <div class="panel-body">
+          <p class="muted-note">Tests live in the share link, so a reviewer gets the pattern and its expectations together. "Whole string" requires the match to cover the entire input; a group check compares a numbered or named group with an expected value.</p>
+          <table class="tests-table" id="testsTable"><thead><tr><th>Input</th><th>Expect</th><th>Group</th><th>Value</th><th>Result</th><th></th></tr></thead><tbody id="testsBody"></tbody></table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Code -->
+    <div class="rx-panel" id="tab-code">
+      <div class="pane">
+        <div class="pane-header"><div class="pane-title"><i data-lucide="code-2"></i> Code generator</div>
+          <div class="btn-group">
+            <select id="codeLang" class="mini-select" aria-label="Language">
+              <option value="javascript">JavaScript</option><option value="typescript">TypeScript</option><option value="python">Python</option><option value="go">Go</option><option value="java">Java</option><option value="csharp">C#</option><option value="php">PHP</option><option value="ruby">Ruby</option><option value="rust">Rust</option><option value="shell">grep / sed</option>
+            </select>
+            <button type="button" class="btn" onclick="Layerbit.copy(document.getElementById('codeOut').textContent).then(()=>Layerbit.toast('Snippet copied'))"><i data-lucide="copy"></i> Copy</button>
+          </div></div>
+        <div class="panel-body">
+          <pre class="code-out" id="codeOut"></pre>
+          <div class="caveats" id="codeCaveats"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Batch -->
+    <div class="rx-panel" id="tab-batch">
+      <div class="pane">
+        <div class="pane-header"><div class="pane-title"><i data-lucide="file-search"></i> Test against a whole file</div>
+          <div class="btn-group">
+            <input type="file" id="batchFile" style="display:none;">
+            <button type="button" class="btn" onclick="document.getElementById('batchFile').click()"><i data-lucide="upload"></i> Choose file</button>
+            <button type="button" class="btn" id="btnBatchDl" onclick="downloadBatch()" style="display:none;"><i data-lucide="download"></i> Download matching lines</button>
+          </div></div>
+        <div class="panel-body" id="batchResult"><p class="muted-note">Drop a log, CSV or any text file here. Each line is tested separately; you get the count of matching lines, the first matches, and a download of only the lines that matched. Files up to about 50 MB are fine.</p></div>
+      </div>
+    </div>
+
+    <!-- From examples -->
+    <div class="rx-panel" id="tab-synth">
+      <div class="pane">
+        <div class="pane-header"><div class="pane-title"><i data-lucide="wand-2"></i> Generate a pattern from examples</div>
+          <div class="btn-group"><button type="button" class="btn btn-primary" id="btnSynth" onclick="synth()"><i data-lucide="sparkles"></i> Suggest patterns</button></div></div>
+        <div class="panel-body">
+          <p class="muted-note">Paste strings that should match and strings that should not, one per line. The generator finds the shape the positive examples share (runs of digits, letters, separators), keeps literal parts they all have in common, and ranks candidates by how many examples each gets right. It is rule-based and runs locally; it is good at identifiers, codes, dates and keys, less good at free text.</p>
+          <div class="synth-grid">
+            <div><label for="posExamples">Should match</label><textarea id="posExamples" class="synth-ta" spellcheck="false" placeholder="INV-2026-0042&#10;INV-2025-1187"></textarea></div>
+            <div><label for="negExamples">Should not match</label><textarea id="negExamples" class="synth-ta" spellcheck="false" placeholder="INV2026-0042&#10;inv-2026-0042"></textarea></div>
+          </div>
+          <div id="synthResult"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Reference -->
+    <div class="rx-panel" id="tab-ref">
+      <div class="pane">
+        <div class="pane-header"><div class="pane-title"><i data-lucide="book-open"></i> Quick reference (JavaScript flavour)</div></div>
+        <div class="panel-body ref-grid">
+          <table class="ref-table"><caption>Characters</caption><tbody>
+            <tr><td><code>.</code></td><td>any char except newline (<code>s</code>: any)</td></tr><tr><td><code>\d \w \s</code></td><td>digit · word char · whitespace</td></tr><tr><td><code>\D \W \S</code></td><td>their negations</td></tr><tr><td><code>[abc] [^abc]</code></td><td>one of · none of</td></tr><tr><td><code>[a-z0-9]</code></td><td>ranges</td></tr><tr><td><code>\p{L} \p{Script=Han}</code></td><td>Unicode property (needs <code>u</code>)</td></tr><tr><td><code>\t \n \r \xHH \uHHHH \u{H…}</code></td><td>escapes</td></tr>
+          </tbody></table>
+          <table class="ref-table"><caption>Quantifiers</caption><tbody>
+            <tr><td><code>* + ?</code></td><td>0+ · 1+ · 0 or 1</td></tr><tr><td><code>{n} {n,} {n,m}</code></td><td>exact · at least · range</td></tr><tr><td><code>*? +? ?? {n,m}?</code></td><td>lazy versions</td></tr>
+          </tbody></table>
+          <table class="ref-table"><caption>Groups &amp; references</caption><tbody>
+            <tr><td><code>(…)</code></td><td>capture group</td></tr><tr><td><code>(?:…)</code></td><td>non-capturing</td></tr><tr><td><code>(?&lt;name&gt;…)</code></td><td>named group</td></tr><tr><td><code>\1 \k&lt;name&gt;</code></td><td>backreference</td></tr><tr><td><code>a|b</code></td><td>alternation</td></tr><tr><td><code>(?i:…) (?-i:…)</code></td><td>inline modifiers (ES2025)</td></tr>
+          </tbody></table>
+          <table class="ref-table"><caption>Anchors &amp; lookaround</caption><tbody>
+            <tr><td><code>^ $</code></td><td>start · end (line with <code>m</code>)</td></tr><tr><td><code>\b \B</code></td><td>word boundary · not</td></tr><tr><td><code>(?=…) (?!…)</code></td><td>lookahead · negative</td></tr><tr><td><code>(?&lt;=…) (?&lt;!…)</code></td><td>lookbehind · negative</td></tr>
+          </tbody></table>
+          <table class="ref-table"><caption>Replacement</caption><tbody>
+            <tr><td><code>$1 $&lt;name&gt;</code></td><td>group</td></tr><tr><td><code>$&amp;</code></td><td>whole match</td></tr><tr><td><code>$` $'</code></td><td>text before · after</td></tr><tr><td><code>$$</code></td><td>literal $</td></tr>
+          </tbody></table>
+          <table class="ref-table"><caption>Flags</caption><tbody>
+            <tr><td><code>g</code></td><td>all matches</td></tr><tr><td><code>i</code></td><td>ignore case</td></tr><tr><td><code>m</code></td><td>multiline anchors</td></tr><tr><td><code>s</code></td><td>dot matches newline</td></tr><tr><td><code>u</code></td><td>Unicode mode</td></tr><tr><td><code>y</code></td><td>sticky</td></tr><tr><td><code>d</code></td><td>group indices</td></tr><tr><td><code>v</code></td><td>set notation (ES2024)</td></tr>
+          </tbody></table>
+        </div>
+      </div>
+    </div>
   </div>
 
   <div class="docs-container">
     <div class="info-panel">
-      <h2><i data-lucide="terminal-square"></i> Regex Engine Specifications</h2>
-      <p>Layerbit's Debugging Terminal runs a high-performance JavaScript RegExp engine locally in your DOM. It provides instant visual feedback without sending sensitive log data or proprietary algorithms over a network.</p>
-      <ul>
-        <li><i data-lucide="check"></i> <strong>Real-Time Highlighting:</strong> The dual-layer editor safely colorizes matches as you type without breaking textarea functionality.</li>
-        <li><i data-lucide="check"></i> <strong>Forensics Extraction:</strong> Captures and isolates exact match data, including index positioning, allowing you to debug complex payloads instantly.</li>
-        <li><i data-lucide="check"></i> <strong>Hardware Toggles:</strong> Enable Global (<code>g</code>), Case Insensitive (<code>i</code>), and Multiline (<code>m</code>) flags with physical UI buttons rather than manual string injection.</li>
-      </ul>
-      
+      <h2><i data-lucide="terminal-square"></i> A debugger, not just a tester</h2>
+      <p>A regex tester tells you whether a pattern matches. A debugger tells you <em>why</em>, what it will do on the inputs you have not tried yet, and how to carry it into the language it will actually run in. The tabs above are that difference.</p>
       <div class="use-cases-grid">
         <div class="use-case-card">
-          <h3><i data-lucide="file-search"></i> Log Parsing & Data Extraction</h3>
-          <p>Instantly extract IPs, email addresses, or UUIDs from massive raw text logs utilizing the global extraction grid to isolate specific data points.</p>
+          <h3><i data-lucide="list-tree"></i> Explain and diagram</h3>
+          <p>The pattern is parsed into a tree and every token described in plain English — what a character class contains, how greedy a quantifier is, which group number a capture gets. The railroad diagram draws the same tree as paths, which is the fastest way to spot an alternation that swallows more than intended.</p>
         </div>
         <div class="use-case-card">
-          <h3><i data-lucide="shield-check"></i> Input Validation Testing</h3>
-          <p>Debug the strictness of your password complexity, email formatting, or phone number validation patterns before deploying them to your backend servers.</p>
+          <h3><i data-lucide="shield-alert"></i> Safety analysis</h3>
+          <p>Nested unbounded repeats like <code>(a+)+</code>, overlapping alternatives under a repeat like <code>(\w|\d)*</code>, and adjacent repeats that accept the same characters are flagged with the exact fragment and a rewrite. The growth test then measures engine time as the input doubles, which is the empirical confirmation.</p>
         </div>
         <div class="use-case-card">
-          <h3><i data-lucide="replace"></i> Search & Replace Planning</h3>
-          <p>Test complex capture groups visually to ensure your regex string manipulation logic targets the exact strings required for backend sanitization.</p>
+          <h3><i data-lucide="flask-conical"></i> Tests that travel</h3>
+          <p>Unit tests — should match, should not, whole-string, group equals — live in the share link alongside the pattern, so the person reviewing your change can run them, and the person editing the pattern next year can see what it was meant to accept.</p>
+        </div>
+        <div class="use-case-card">
+          <h3><i data-lucide="code-2"></i> Code for ten languages</h3>
+          <p>Flags become <code>re.IGNORECASE</code>, <code>RegexOptions.Multiline</code> or <code>(?im)</code>; named groups become <code>(?P&lt;name&gt;)</code> where needed; and anything the target engine cannot do — lookbehind in Go, backreferences in Rust — is called out before you paste it.</p>
+        </div>
+        <div class="use-case-card">
+          <h3><i data-lucide="file-search"></i> Whole-file batch runs</h3>
+          <p>Drop a log or export and test every line. You get the number of lines that matched, the first few with their captures, and a download of only the matching lines — the quick filter you would otherwise write a script for.</p>
+        </div>
+        <div class="use-case-card">
+          <h3><i data-lucide="wand-2"></i> Patterns from examples</h3>
+          <p>Give it a handful of strings that should match and a few that should not; it infers the shared shape, keeps literal parts in common, and ranks candidates by the examples they get right. A starting point you then refine with the tests tab.</p>
         </div>
       </div>
     </div>
 
     <div class="info-panel">
       <h2><i data-lucide="flask-conical"></i> Quick Testing Templates</h2>
-      <p>Click the templates below to load predefined regular expressions and test strings into the terminal instantly.</p>
+      <p>Click a template to load a pattern and test string. The last one is deliberately dangerous: open the Safety tab after loading it.</p>
       <div>
-        <button class="sample-btn" onclick="loadSample('email')">Email Extraction</button>
-        <button class="sample-btn" onclick="loadSample('ipv4')">IPv4 Finder</button>
-        <button class="sample-btn" onclick="loadSample('jwt')">JWT Matcher</button>
-        <button class="sample-btn" onclick="loadSample('dateFormat')">Date Reformat (Named Groups)</button>
-      </div>
-    </div>
-
-    <div class="info-panel">
-      <h2><i data-lucide="help-circle"></i> Technical FAQ</h2>
-      <div class="faq-container">
-        
-        <div class="faq-item">
-          <button class="faq-question">Why is client-side regex testing important? <i data-lucide="chevron-down"></i></button>
-          <div class="faq-answer">
-            <p>If you are testing patterns against proprietary application logs or databases containing PII (Personally Identifiable Information), pasting that text into an external server-side tool is a massive security risk. Layerbit evaluates your data locally within your browser, ensuring complete privacy.</p>
-          </div>
-        </div>
-
-        <div class="faq-item">
-          <button class="faq-question">Which Regex flavor does this terminal use? <i data-lucide="chevron-down"></i></button>
-          <div class="faq-answer">
-            <p>The terminal utilizes the native JavaScript ES6+ RegExp engine executed by your local browser. This is universally compatible with standard PCRE (Perl Compatible Regular Expressions) syntaxes used in Node.js, Python, and modern web applications.</p>
-          </div>
-        </div>
-
-        <div class="faq-item">
-          <button class="faq-question">How does the real-time highlighting work without breaking the input? <i data-lucide="chevron-down"></i></button>
-          <div class="faq-answer">
-            <p>We utilize a dual-layer DOM architecture. The transparent <code>&lt;textarea&gt;</code> captures your keystrokes while a perfectly aligned <code>&lt;div&gt;</code> sitting behind it dynamically renders the colorized output and handles scrolling synchronization. This provides a rich IDE experience.</p>
-          </div>
-        </div>
-
-        <div class="faq-item">
-          <button class="faq-question">What syntax does the Replacement Preview support? <i data-lucide="chevron-down"></i></button>
-          <div class="faq-answer">
-            <p>The same replacement patterns JavaScript's native <code>String.replace()</code> understands: <code>$1</code>, <code>$2</code>, etc. for numbered capture groups, <code>$&lt;name&gt;</code> for named groups declared with <code>(?&lt;name&gt;...)</code>, <code>$&amp;</code> for the whole match, and <code>$$</code> for a literal dollar sign. It respects whichever flags are active, so without the <code>g</code> flag only the first match gets replaced, same as the highlighting above it.</p>
-          </div>
-        </div>
-
+        <button type="button" class="sample-btn" onclick="loadSample('email')">Email extraction</button>
+        <button type="button" class="sample-btn" onclick="loadSample('ipv4')">IPv4 finder</button>
+        <button type="button" class="sample-btn" onclick="loadSample('jwt')">JWT matcher</button>
+        <button type="button" class="sample-btn" onclick="loadSample('dateFormat')">Date reformat (named groups)</button>
+        <button type="button" class="sample-btn" onclick="loadSample('log')">Log line parser</button>
+        <button type="button" class="sample-btn" onclick="loadSample('redos')">Catastrophic pattern</button>
       </div>
     </div>
 
     <div class="info-panel">
       <h2><i data-lucide="microscope"></i> Test the failing case, not just the passing one</h2>
       <p>Most regex bugs are not "the pattern does not match" — they are "the pattern matches slightly more than intended", or "the pattern takes four minutes on one particular input". Both are invisible if you only ever test with an example that works.</p>
-      <p>The second category is worth taking seriously. Backtracking engines — JavaScript, Python's <code>re</code>, Java, .NET, PCRE — can take exponential time when a pattern is ambiguous, meaning there is more than one way to divide the same input between its parts. A pattern like <code>^(a+)+$</code> tested against thirty <code>a</code>s followed by one <code>X</code> takes roughly a second; at forty characters it is about fifteen minutes. Our guide on <a href="../guides/regex-catastrophic-backtracking.html">catastrophic backtracking</a> explains the mechanism and the fixes.</p>
-
+      <p>The second category is worth taking seriously. Backtracking engines — JavaScript, Python's <code>re</code>, Java, .NET, PCRE — can take exponential time when a pattern is ambiguous, meaning there is more than one way to divide the same input between its parts. A pattern like <code>^(a+)+$</code> tested against thirty <code>a</code>s followed by one <code>X</code> takes roughly a second; at forty characters it is about fifteen minutes. Our guide on <a href="../guides/regex-catastrophic-backtracking.html">catastrophic backtracking</a> explains the mechanism and the fixes; the Safety tab applies those rules to your pattern automatically.</p>
       <div class="use-cases-grid">
         <div class="use-case-card">
           <h3><i data-lucide="layers"></i> Nested quantifiers</h3>
@@ -702,7 +942,6 @@
           <p><code>(\w+\s?)+$</code> appears in countless "validate a full name" patterns and is polynomial. Make the separator mandatory between tokens instead: <code>^\w+(\s\w+)*$</code>.</p>
         </div>
       </div>
-
       <h2><i data-lucide="target"></i> Flags change the answer, not just the search</h2>
       <p>Three flags cause most of the confusion when a pattern behaves differently than expected:</p>
       <ul>
@@ -710,43 +949,94 @@
         <li><strong><code>m</code> (multiline)</strong> — changes <code>^</code> and <code>$</code> to match at line boundaries rather than only at string boundaries. Without it, <code>$</code> anchors to the very end of the input.</li>
         <li><strong><code>s</code> (dotAll)</strong> — makes <code>.</code> match newlines, which it otherwise does not. This is why a pattern that works on one line silently fails across a wrapped block of text.</li>
       </ul>
-      <p>Capture groups are the other common source of surprise: <code>(...)</code> captures and is numbered left to right by opening parenthesis, <code>(?:...)</code> groups without capturing, and <code>(?&lt;name&gt;...)</code> captures by name. Adding a group in the middle of a pattern renumbers everything after it, which quietly breaks any code indexing matches positionally. Named groups avoid that entirely.</p>
-
+      <p>Capture groups are the other common source of surprise: <code>(...)</code> captures and is numbered left to right by opening parenthesis, <code>(?:...)</code> groups without capturing, and <code>(?&lt;name&gt;...)</code> captures by name. Adding a group in the middle of a pattern renumbers everything after it, which quietly breaks any code indexing matches positionally. Named groups avoid that entirely — and the Explain tab shows you every group's number at a glance.</p>
       <h2><i data-lucide="replace"></i> The replacement preview</h2>
       <p>Substitutions have their own hazards. <code>$1</code> inserts the first capture group, <code>$&amp;</code> the whole match, and <code>$$</code> a literal dollar sign — so a replacement containing a currency amount needs escaping. Previewing the result against real input is faster than reasoning about it, especially when the replacement references groups whose numbering you have just changed.</p>
-
+      <h2><i data-lucide="languages"></i> One pattern, several engines</h2>
+      <p>Regular expressions are not one language. JavaScript, PCRE (PHP, grep -P), Python, Java, .NET, Go's RE2 and Rust's regex crate agree on the core — classes, quantifiers, groups, anchors — and disagree at the edges. Go and Rust guarantee linear time by refusing lookaround and backreferences entirely. Python spells named groups <code>(?P&lt;name&gt;…)</code>. Ruby's <code>^</code> is always a line anchor. POSIX <code>sed</code> has no <code>\d</code>. The Code tab translates what it can and names what it cannot, which is the part that otherwise costs an afternoon.</p>
       <h2><i data-lucide="lock"></i> Local, which matters for this tool</h2>
-      <p>Regex work often involves the exact data you are trying to extract from: log lines with tokens in them, customer records, email addresses, sample payloads from a bug report. Matching here runs in the page using the browser's own <code>RegExp</code> engine, so the behaviour you see is the behaviour your JavaScript will have, and nothing you paste is transmitted.</p>
+      <p>The text people test patterns against is usually the real thing: production logs, customer exports, source code. All matching here is done by the JavaScript engine in your browser tab; nothing is posted anywhere. The files you drop in the batch tab are read with the browser's FileReader and never leave your machine.</p>
     </div>
 
-        <div class="info-panel related-panel">
-          <h2><i data-lucide="link"></i> Related guides and tools</h2>
-          <p>Background reading on the format and failure modes behind this tool, and the tools most often used alongside it.</p>
-          <div class="use-cases-grid">
-            <div class="use-case-card">
-              <h3><i data-lucide="book-open"></i> <a href="../guides/regex-catastrophic-backtracking.html">Regex catastrophic backtracking</a></h3>
-              <p>How one pattern can freeze a server, and how to rewrite it.</p>
-            </div>
-            <div class="use-case-card">
-              <h3><i data-lucide="book-open"></i> <a href="../guides/xpath-cheat-sheet.html">XPath cheat sheet</a></h3>
-              <p>Selectors, predicates, functions and the namespace trap.</p>
-            </div>
-            <div class="use-case-card">
-              <h3><i data-lucide="wrench"></i> <a href="log-analyzer.html">Log File Analyzer</a></h3>
-              <p>Another local tool that pairs with this one. Runs entirely in your browser.</p>
-            </div>
+    <div class="info-panel">
+      <h2><i data-lucide="help-circle"></i> Technical FAQ</h2>
+      <div class="faq-container">
+        <div class="faq-item">
+          <button class="faq-question">Which regex flavour does this tool use? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer">
+            <p>The native JavaScript (ECMAScript) engine in your browser, which covers lookbehind, named groups, Unicode property escapes and the v flag in current Chrome, Firefox and Safari. The Code tab converts flags and syntax for Python, Go, Java, C#, PHP, Ruby, Rust and the shell tools, and lists any feature the target engine lacks, so a pattern that works here is carried over correctly or you learn why it cannot be.</p>
           </div>
         </div>
+        <div class="faq-item">
+          <button class="faq-question">How does the catastrophic-backtracking check work? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer">
+            <p>The pattern is parsed into a tree and scanned for three shapes: an unbounded repeat containing another unbounded repeat, alternatives under a repeat whose first characters overlap, and two adjacent repeats that can accept the same characters. Each finding shows the fragment and a safer rewrite. The growth measurement then runs the pattern on your test string at one, two, four and eight times its length and reports how the time grows: roughly doubling is linear and fine, quadrupling or worse means the ambiguity is real.</p>
+          </div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">How does the real-time highlighting work without breaking the input? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer">
+            <p>A transparent textarea captures your keystrokes while a perfectly aligned layer behind it renders the colourised matches and mirrors the scroll position. Alternate matches use two shades so adjacent matches stay distinguishable, and the match list below shows every capture group with its index range.</p>
+          </div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">What syntax does the Replacement Preview support? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer">
+            <p>The same replacement patterns JavaScript's native String.replace() understands: $1, $2 and so on for numbered capture groups, $&lt;name&gt; for named groups, $&amp; for the whole match, $` and $' for the text before and after it, and $$ for a literal dollar sign. It respects whichever flags are active, so without the g flag only the first match is replaced, the same as the highlighting above it.</p>
+          </div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">Where are the unit tests stored? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer">
+            <p>In the page, and in the share link when you copy one: the pattern, flags, test string and the full test table are compressed into the URL fragment, which browsers never send to a server. Paste the link into a code review or a ticket and the reader gets the pattern with its expectations and can run them. Nothing is stored on Layerbit's side; the optional history lives in your browser's own storage.</p>
+          </div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">How good is the pattern generator? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer">
+            <p>It is a rule-based synthesiser, not a language model. It splits each positive example into runs of digits, letters, whitespace and punctuation, checks whether all examples share the same sequence, and builds patterns from that shape with exact, loose and unanchored variants, then scores each candidate against your negative examples. For structured strings such as invoice numbers, SKUs, dates, keys and identifiers it produces a usable pattern immediately; for free text it gives you a starting point to edit.</p>
+          </div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">Why is client-side regex testing important? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer">
+            <p>If you are testing patterns against proprietary application logs or databases containing personal information, pasting that text into a server-side tool is a data transfer you may not be allowed to make. Everything here, including the batch file mode, runs in your browser, and the header indicator counts the network requests the page makes so you can see that it stays at zero.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="info-panel related-panel">
+      <h2><i data-lucide="link"></i> Related guides and tools</h2>
+      <p>Background reading on the format and failure modes behind this tool, and the tools most often used alongside it.</p>
+      <div class="use-cases-grid">
+        <div class="use-case-card">
+          <h3><i data-lucide="book-open"></i> <a href="../guides/regex-catastrophic-backtracking.html">Regex catastrophic backtracking</a></h3>
+          <p>How one expression can freeze a server, and the rewrites that fix it.</p>
+        </div>
+        <div class="use-case-card">
+          <h3><i data-lucide="book-open"></i> <a href="../guides/invisible-unicode-characters.html">Invisible Unicode characters</a></h3>
+          <p>Why a pattern that should match does not: zero-width characters and lookalikes.</p>
+        </div>
+        <div class="use-case-card">
+          <h3><i data-lucide="wrench"></i> <a href="log-analyzer.html">Log Analyzer</a></h3>
+          <p>Filter and group log lines before writing the pattern.</p>
+        </div>
+        <div class="use-case-card">
+          <h3><i data-lucide="wrench"></i> <a href="unicode-inspector.html">Unicode Inspector</a></h3>
+          <p>See the exact code points your pattern is matching against.</p>
+        </div>
+      </div>
+    </div>
 
     <div class="info-panel">
       <h2><i data-lucide="git-merge"></i> Deployment Changelog</h2>
       <ul class="changelog-list">
-        <li><span class="changelog-tag">v2.1.0</span> Added the <code>s</code>, <code>u</code> and <code>y</code> flags, and an engine-time readout beside the match count. A pattern that takes more than 50&nbsp;ms on the current input is flagged, with a link to the backtracking guide, because that growth curve is the earliest warning of a ReDoS-prone expression.</li>
-        <li><span class="changelog-tag">v1.4.0</span> Added a numbered + named capture-group breakdown per match, and a live Replacement Preview panel supporting $1/$&lt;name&gt;/$&amp; substitution syntax.</li>
-        <li><span class="changelog-tag">v1.3.0</span> Added a line-number gutter to the test string editor (long lines now scroll horizontally instead of wrapping, to keep line numbers accurate).</li>
-        <li><span class="changelog-tag">v1.2.0</span> Added interactive Quick Testing Templates and expanded the forensic documentation panel.</li>
-        <li><span class="changelog-tag">v1.1.0</span> Integrated real-time telemetry matching and the visual Forensics Extraction grid.</li>
-        <li><span class="changelog-tag">v1.0.0</span> Initial release of the Regex Debugging Terminal featuring the dual-layer highlighting editor.</li>
+        <li><span class="changelog-tag">v3.0.0</span> Rebuilt as a debugger: token-by-token explanation, railroad diagram with SVG export, static catastrophic-backtracking analysis plus a growth measurement, saved unit tests that travel in share links, code generation for ten languages with engine caveats, whole-file batch testing with download, pattern synthesis from examples, a quick reference, match export as text/CSV/JSON, and alternating match colours.</li>
+        <li><span class="changelog-tag">v2.4.0</span> Added an engine-time readout that flags slow patterns, and a line-number gutter.</li>
+        <li><span class="changelog-tag">v2.3.0</span> Added the s, u and y flags and the replacement preview with named-group support.</li>
+        <li><span class="changelog-tag">v2.2.0</span> Match list shows numbered and named capture groups with index ranges.</li>
+        <li><span class="changelog-tag">v2.0.0</span> Dual-layer live highlighting editor.</li>
       </ul>
     </div>
   </div>
@@ -772,275 +1062,300 @@
   </footer>
 
   <script src="../js/shared.js"></script>
-
+  <script src="../js/engines/regex.js"></script>
 
   <script>
-        const regexInput = document.getElementById("regexInput");
-    const testInput = document.getElementById("testInput");
-    const testBackdrop = document.getElementById("testBackdrop");
-    const testGutter = document.getElementById("testGutter");
-    const mainPane = document.getElementById("mainPane");
-    const errorText = document.getElementById("errorText");
-    const errorMsg = document.getElementById("errorMsg");
-    const matchCount = document.getElementById("matchCount");
-    const breakdownPane = document.getElementById("breakdownPane");
-    const matchesGrid = document.getElementById("matchesGrid");
-    const replaceInput = document.getElementById("replaceInput");
-    const replaceOutputRow = document.getElementById("replaceOutputRow");
-    const replaceOutput = document.getElementById("replaceOutput");
-
+    const $ = id => document.getElementById(id);
+    const icons = () => { if (window.lucide) lucide.createIcons(); };
+    const R = LBRegex;
+    const regexInput = $("regexInput"), testInput = $("testInput"), testBackdrop = $("testBackdrop"), testGutter = $("testGutter");
+    const mainPane = $("mainPane"), errorText = $("errorText"), errorMsg = $("errorMsg"), matchCount = $("matchCount");
+    const breakdownPane = $("breakdownPane"), matchesGrid = $("matchesGrid"), replaceInput = $("replaceInput"), replaceOutputRow = $("replaceOutputRow"), replaceOutput = $("replaceOutput");
+    const matchTiming = $('matchTiming');
     let currentFlags = ['g'];
+    let lastMatches = [];       // [{m, index, groups}]
+    let tests = [];             // [{input, expect, group, value}]
+    let batch = null;           // {name, lines, matching}
+    let activeTab = 'matches';
 
-    // Flag Toggle Logic
+    // ------------------------------------------------------------ tabs
+    function showTab(name) {
+      activeTab = name;
+      document.querySelectorAll('.rx-tab').forEach(b => b.classList.toggle('active', b.dataset.tab === name));
+      document.querySelectorAll('.rx-panel').forEach(p => p.classList.toggle('active', p.id === 'tab-' + name));
+      if (name === 'code') renderCode();
+      if (name === 'tests') renderTests();
+    }
+    document.querySelectorAll('.rx-tab').forEach(b => b.addEventListener('click', () => showTab(b.dataset.tab)));
+
+    // ------------------------------------------------------------ flags
     document.querySelectorAll('.flag-btn').forEach(btn => {
       btn.addEventListener('click', (e) => {
-        const flag = e.target.getAttribute('data-flag');
-        if (currentFlags.includes(flag)) {
-          currentFlags = currentFlags.filter(f => f !== flag);
-          e.target.classList.remove('active');
-        } else {
-          currentFlags.push(flag);
-          e.target.classList.add('active');
-        }
+        const flag = e.currentTarget.getAttribute('data-flag');
+        if (currentFlags.includes(flag)) { currentFlags = currentFlags.filter(f => f !== flag); e.currentTarget.classList.remove('active'); }
+        else { currentFlags.push(flag); e.currentTarget.classList.add('active'); }
         processRegex();
       });
     });
+    function setFlags(list) { currentFlags = list.slice(); document.querySelectorAll('.flag-btn').forEach(btn => btn.classList.toggle('active', currentFlags.includes(btn.getAttribute('data-flag')))); }
+    function flagsStr() { return currentFlags.join(''); }
 
-    // Engine time is the practical detector for catastrophic backtracking: a
-    // pattern that takes tens of milliseconds on a few KB will take minutes
-    // on a few MB, and the growth is what matters, not the absolute number.
-    const matchTiming = document.getElementById('matchTiming');
     function renderTiming(ms, chars) {
       const slow = ms > 50;
       matchTiming.className = 'match-timing' + (slow ? ' slow' : '');
-      matchTiming.innerHTML = `${ms < 1 ? ms.toFixed(2) : ms.toFixed(1)} ms on ${chars.toLocaleString()} chars` +
-        (slow ? ` &middot; slow for this size &mdash; see <a href="../guides/regex-catastrophic-backtracking.html">why patterns backtrack</a>` : '');
+      matchTiming.innerHTML = `${ms < 1 ? ms.toFixed(2) : ms.toFixed(1)} ms on ${chars.toLocaleString()} chars` + (slow ? ` &middot; slow for this size &mdash; open the <a href="#" onclick="showTab('safety');return false;">Safety tab</a>` : '');
     }
-
-    // Escape HTML to prevent injection in the highlighter
-    function escapeHTML(str) {
-      return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-    }
-
-    // Line-number gutter, synced to the test string textarea
+    const escapeHTML = s => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
     function updateTestGutter() {
       const count = testInput.value.length ? testInput.value.split('\n').length : 1;
       testGutter.textContent = Array.from({ length: count }, (_, i) => i + 1).join('\n');
+      $('testMeta').textContent = testInput.value ? `· ${count.toLocaleString()} lines, ${testInput.value.length.toLocaleString()} chars` : '';
     }
 
+    // ------------------------------------------------------------ main processing
     function processRegex() {
       updateTestGutter();
-      const pattern = regexInput.value;
-      const text = testInput.value;
-
-      // Reset state
-      mainPane.classList.remove("error");
-      errorText.classList.remove("active");
-      
-      if (!text) {
-        testBackdrop.innerHTML = "Paste your test data here to see match highlights...";
-        matchCount.innerHTML = `<i data-lucide="check-circle" style="width:14px;"></i> 0 Matches`;
-        breakdownPane.classList.remove("active");
-        replaceOutputRow.style.display = 'none';
-        lucide.createIcons();
-        return;
-      }
-
+      const pattern = regexInput.value, text = testInput.value;
+      mainPane.classList.remove("error"); errorText.classList.remove("active");
+      lastMatches = [];
+      renderStructure(pattern);
       if (!pattern) {
-        testBackdrop.innerHTML = escapeHTML(text);
-        matchCount.innerHTML = `<i data-lucide="check-circle" style="width:14px;"></i> 0 Matches`;
-        breakdownPane.classList.remove("active");
-        replaceOutputRow.style.display = 'none';
-        lucide.createIcons();
-        return;
+        testBackdrop.innerHTML = text ? escapeHTML(text) : "Paste your test data here to see match highlights...";
+        matchCount.innerHTML = `<i data-lucide="check-circle" style="width:14px;"></i> 0 Matches`; matchTiming.textContent = '';
+        breakdownPane.classList.remove("active"); $('matchesFoot').style.display = 'none'; replaceOutputRow.style.display = 'none'; icons(); return;
       }
+      let regex;
+      try { regex = new RegExp(pattern, flagsStr()); }
+      catch (err) { mainPane.classList.add("error"); errorMsg.innerText = err.message; errorText.classList.add("active"); testBackdrop.innerHTML = text ? escapeHTML(text) : ''; matchCount.innerHTML = `<i data-lucide="x-circle" style="width:14px; color:var(--error-color);"></i> Error`; breakdownPane.classList.remove("active"); replaceOutputRow.style.display = 'none'; icons(); return; }
+      if (!text) { testBackdrop.innerHTML = "Paste your test data here to see match highlights..."; matchCount.innerHTML = `<i data-lucide="check-circle" style="width:14px;"></i> 0 Matches`; breakdownPane.classList.remove("active"); $('matchesFoot').style.display = 'none'; replaceOutputRow.style.display = 'none'; icons(); return; }
 
-      try {
-        const flagsStr = currentFlags.join('');
-        const regex = new RegExp(pattern, flagsStr);
-        const t0 = performance.now();
-        
-        let match;
-        let count = 0;
-        let breakdownHTML = '';
-        
-        // Ensure global flag is present if we are doing matchAll replacement trick
-        // If 'g' is off, we only highlight the first match.
-        const isGlobal = currentFlags.includes('g');
-        
-        // Highlight logic
-        let highlightedText = escapeHTML(text);
-        
-        if(isGlobal) {
-            highlightedText = text.replace(regex, (m) => `<span class="hl-match">${escapeHTML(m)}</span>`);
-        } else {
-            // Re-apply RegExp without global to find first match
-            const singleMatch = text.match(regex);
-            if(singleMatch) {
-               const idx = singleMatch.index;
-               const len = singleMatch[0].length;
-               const before = escapeHTML(text.substring(0, idx));
-               const theMatch = `<span class="hl-match">${escapeHTML(singleMatch[0])}</span>`;
-               const after = escapeHTML(text.substring(idx + len));
-               highlightedText = before + theMatch + after;
-            } else {
-               highlightedText = escapeHTML(text);
-            }
-        }
-        
-        // Render Backdrop
-        testBackdrop.innerHTML = highlightedText;
-
-        // Forensics Logic - append 'd' (hasIndices) so captured groups get
-        // their own index range too, when the browser supports it; if not,
-        // fall back to matching without it rather than breaking entirely
-        const forensicsFlags = isGlobal ? flagsStr : flagsStr + 'g';
-        let tempRegex;
-        try {
-          tempRegex = new RegExp(pattern, forensicsFlags.includes('d') ? forensicsFlags : forensicsFlags + 'd');
-        } catch (e) {
-          tempRegex = new RegExp(pattern, forensicsFlags);
-        }
-        while ((match = tempRegex.exec(text)) !== null) {
-          count++;
-          breakdownHTML += `
-            <div class="match-item">
-              <div class="match-val">${escapeHTML(match[0])}</div>
-              <div class="match-meta">Match ${count} — Index Position: [${match.index} - ${match.index + match[0].length}]</div>
-              ${renderGroups(match)}
-            </div>
-          `;
-          if (!isGlobal) break; // If not global, only extract first match
-        }
-
-        // Update UI
-        matchCount.innerHTML = `<i data-lucide="check-circle" style="width:14px;"></i> ${count} Matches`;
-        renderTiming(performance.now() - t0, text.length);
-
-        if (count > 0) {
-          matchesGrid.innerHTML = breakdownHTML;
-          breakdownPane.classList.add("active");
-        } else {
-          breakdownPane.classList.remove("active");
-        }
-
-        lucide.createIcons();
-        updateReplacePreview(pattern, flagsStr, text);
-
-      } catch (err) {
-        // Syntax Error
-        mainPane.classList.add("error");
-        errorMsg.innerText = err.message;
-        errorText.classList.add("active");
-        testBackdrop.innerHTML = escapeHTML(text); // Remove highlights
-        matchCount.innerHTML = `<i data-lucide="x-circle" style="width:14px; color:var(--error-color);"></i> Error`;
-        breakdownPane.classList.remove("active");
-        replaceOutputRow.style.display = 'none';
-        lucide.createIcons();
+      const isGlobal = currentFlags.includes('g');
+      const f = flagsStr().replace('g', '').replace('y', '') + 'g' + (flagsStr().includes('d') ? '' : 'd');
+      let scan; try { scan = new RegExp(pattern, f); } catch (e) { scan = new RegExp(pattern, flagsStr().replace('y', '') + (isGlobal ? '' : 'g')); }
+      if (currentFlags.includes('y')) { scan = new RegExp(pattern, flagsStr().includes('g') ? flagsStr() : flagsStr() + 'g'); }
+      const t0 = performance.now();
+      let m, html = '', pos = 0, count = 0, cap = 50000;
+      while ((m = scan.exec(text)) !== null) {
+        count++;
+        if (count <= cap) lastMatches.push({ m: Array.from(m), index: m.index, groups: m.groups ? Object.assign({}, m.groups) : null, indices: m.indices || null });
+        html += escapeHTML(text.slice(pos, m.index)) + `<span class="hl-match${count % 2 ? '' : ' alt'}" data-i="${count - 1}">${escapeHTML(m[0])}</span>`;
+        pos = m.index + m[0].length;
+        if (m[0] === '') { if (scan.lastIndex >= text.length) break; html += escapeHTML(text[scan.lastIndex] || ''); pos = scan.lastIndex + 1; scan.lastIndex++; }
+        if (!isGlobal) break;
       }
+      html += escapeHTML(text.slice(pos));
+      const ms = performance.now() - t0;
+      testBackdrop.innerHTML = html;
+      matchCount.innerHTML = `<i data-lucide="check-circle" style="width:14px;"></i> ${count.toLocaleString()} Match${count === 1 ? '' : 'es'}`;
+      renderTiming(ms, text.length);
+      renderMatches(count);
+      icons();
+      updateReplacePreview(pattern, text);
+      if (activeTab === 'code') renderCode();
+      if (tests.length) runUnitTests(true);
+      Layerbit.history.push('regex-tester', getState(), `/${pattern.slice(0, 40)}/${flagsStr()} · ${count} match${count === 1 ? '' : 'es'}`);
     }
 
-    // Numbered + named capture-group breakdown for one match
-    function renderGroups(match) {
+    function renderMatches(count) {
+      if (!count) { breakdownPane.classList.remove("active"); $('matchesFoot').style.display = 'none'; return; }
+      const shown = lastMatches.slice(0, 500);
+      $('matchesNote').textContent = count > 500 ? `· showing the first 500 of ${count.toLocaleString()}` : '';
+      matchesGrid.innerHTML = shown.map((x, k) => `<div class="match-item"><div class="match-val">${escapeHTML(x.m[0]) || '<em>(empty match)</em>'}</div><div class="match-meta">Match ${k + 1} — index ${x.index}–${x.index + x.m[0].length}</div>${renderGroups(x)}</div>`).join('');
+      breakdownPane.classList.add("active"); $('matchesFoot').style.display = '';
+    }
+    function renderGroups(x) {
       const rows = [];
-      for (let gi = 1; gi < match.length; gi++) {
-        const val = match[gi];
-        const range = (match.indices && match.indices[gi]) ? ` <span class="group-range">[${match.indices[gi][0]}-${match.indices[gi][1]}]</span>` : '';
-        const valHTML = val === undefined ? '<em>did not participate</em>' : escapeHTML(val);
-        rows.push(`<div class="group-row"><span class="group-label">$${gi}</span><span class="group-val">${valHTML}</span>${range}</div>`);
+      for (let gi = 1; gi < x.m.length; gi++) {
+        const val = x.m[gi];
+        const range = (x.indices && x.indices[gi]) ? ` <span class="group-range">[${x.indices[gi][0]}-${x.indices[gi][1]}]</span>` : '';
+        rows.push(`<div class="group-row"><span class="group-label">$${gi}</span><span class="group-val">${val === undefined ? '<em>did not participate</em>' : escapeHTML(val)}</span>${range}</div>`);
       }
-      if (match.groups) {
-        for (const name in match.groups) {
-          const val = match.groups[name];
-          const valHTML = val === undefined ? '<em>did not participate</em>' : escapeHTML(val);
-          rows.push(`<div class="group-row"><span class="group-label">$&lt;${escapeHTML(name)}&gt;</span><span class="group-val">${valHTML}</span></div>`);
-        }
-      }
+      if (x.groups) for (const name in x.groups) { const val = x.groups[name]; rows.push(`<div class="group-row"><span class="group-label">$&lt;${escapeHTML(name)}&gt;</span><span class="group-val">${val === undefined ? '<em>did not participate</em>' : escapeHTML(val)}</span></div>`); }
       return rows.length ? `<div class="match-groups">${rows.join('')}</div>` : '';
     }
-
-    // Replacement preview - mirrors the same global/first-only semantics
-    // the match highlighting above already uses
-    function updateReplacePreview(pattern, flagsStr, text) {
-      const replacement = replaceInput.value;
-      if (!replacement) {
-        replaceOutputRow.style.display = 'none';
-        return;
-      }
-      try {
-        const regex = new RegExp(pattern, flagsStr);
-        replaceOutput.textContent = text.replace(regex, replacement);
-        replaceOutputRow.style.display = 'block';
-      } catch (e) {
-        replaceOutputRow.style.display = 'none';
-      }
+    function copyMatches(kind) {
+      let out;
+      if (kind === 'matches') out = lastMatches.map(x => x.m[0]).join('\n');
+      else if (kind === 'json') out = JSON.stringify(lastMatches.map(x => ({ match: x.m[0], index: x.index, groups: x.m.slice(1), named: x.groups })), null, 2);
+      else { const n = lastMatches.length ? lastMatches[0].m.length : 1; const q = v => '"' + String(v === undefined ? '' : v).replace(/"/g, '""') + '"'; out = ['match', ...Array.from({ length: n - 1 }, (_, i) => 'group' + (i + 1))].map(q).join(',') + '\n' + lastMatches.map(x => x.m.map(q).join(',')).join('\n'); }
+      Layerbit.copy(out).then(() => Layerbit.toast(`Copied ${lastMatches.length} match${lastMatches.length === 1 ? '' : 'es'}`));
     }
+    function updateReplacePreview(pattern, text) {
+      const replacement = replaceInput.value;
+      if (!replacement) { replaceOutputRow.style.display = 'none'; return; }
+      try { replaceOutput.textContent = text.replace(new RegExp(pattern, flagsStr()), replacement); replaceOutputRow.style.display = 'block'; }
+      catch (e) { replaceOutputRow.style.display = 'none'; }
+    }
+    replaceInput.addEventListener('input', () => { if (regexInput.value && testInput.value && !errorText.classList.contains('active')) updateReplacePreview(regexInput.value, testInput.value); });
 
-    replaceInput.addEventListener('input', () => {
-      if (regexInput.value && testInput.value && !errorText.classList.contains('active')) {
-        updateReplacePreview(regexInput.value, currentFlags.join(''), testInput.value);
-      }
-    });
-
-    // Sync scroll
-    testInput.addEventListener('scroll', function() {
-      testBackdrop.scrollTop = this.scrollTop;
-      testGutter.style.transform = `translateY(-${this.scrollTop}px)`;
-    });
-
-    // Listeners
-    regexInput.addEventListener('input', processRegex);
-    testInput.addEventListener('input', processRegex);
-
-    // FAQ Accordion Logic
-    
-    // Sample Loader Logic
-    function loadSample(type) {
-      const samples = {
-        email: {
-          regex: '[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}',
-          test: 'Contact our support team at support@layerbit.co.in or reach out to sales at enterprise-sales@layerbit.co.in for licensing information.',
-          flags: ['g', 'i']
-        },
-        ipv4: {
-          regex: '\\b(?:[0-9]{1,3}\\.){3}[0-9]{1,3}\\b',
-          test: '2026-08-06 20:56:50 [WARN] Unauthorized access attempt detected from 192.168.1.105.\n2026-08-06 20:56:55 [INFO] Successful login from 10.0.0.1.',
-          flags: ['g']
-        },
-        jwt: {
-          regex: 'eyJ[A-Za-z0-9-_]+\\.[A-Za-z0-9-_]+\\.[A-Za-z0-9-_]+',
-          test: 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkxheWVyYml0IFVzZXIiLCJpYXQiOjE1MTYyMzkwMjJ9.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c',
-          flags: ['g'],
-          replace: ''
-        },
-        dateFormat: {
-          regex: '(?<year>\\d{4})-(?<month>\\d{2})-(?<day>\\d{2})',
-          test: 'Invoice #4471 issued 2026-03-14, due 2026-04-13. Last payment recorded 2026-02-01.',
-          flags: ['g'],
-          replace: '$<day>/$<month>/$<year>'
+    // ------------------------------------------------------------ explain / diagram / safety
+    let ast = null;
+    function renderStructure(pattern) {
+      ast = null;
+      if (!pattern) { $('explainTree').innerHTML = '<p class="muted-note">Type a pattern above to see it explained token by token.</p>'; $('railroad').innerHTML = '<p class="muted-note">The diagram shows every path a string can take through the pattern.</p>'; $('safetyReport').innerHTML = '<p class="muted-note">Static analysis of the pattern structure appears here.</p>'; $('safetyBadge').textContent = ''; $('safetyBadge').className = 'tab-badge'; return; }
+      try { ast = R.parse(pattern, flagsStr()); }
+      catch (e) { const msg = `<p class="muted-note err">Cannot parse: ${escapeHTML(e.message)}</p>`; $('explainTree').innerHTML = msg; $('railroad').innerHTML = msg; $('safetyReport').innerHTML = msg; return; }
+      $('explainTree').innerHTML = `<ul class="explain-tree">${treeHtml(R.explain(ast))}</ul>` + (ast.groupCount ? `<p class="muted-note">${ast.groupCount} capture group${ast.groupCount === 1 ? '' : 's'}${ast.names.length ? ' · named: ' + ast.names.map(escapeHTML).join(', ') : ''}</p>` : '');
+      $('railroad').innerHTML = R.railroad(ast);
+      const a = R.analyze(ast, pattern);
+      $('safetyBadge').textContent = a.findings.length ? String(a.findings.length) : '';
+      $('safetyBadge').className = 'tab-badge ' + (a.severity === 'high' ? 'bad' : a.severity === 'medium' ? 'warn' : '');
+      if (!a.findings.length) $('safetyReport').innerHTML = `<div class="safe-ok"><i data-lucide="shield-check"></i><div><strong>No catastrophic-backtracking shape found.</strong><p>No nested unbounded repeats, no overlapping alternatives under a repeat, no adjacent repeats sharing characters. Linear-ish time is likely; the growth measurement confirms it on your input.${a.unanchored && /[*+]/.test(pattern) ? ' The pattern is unanchored, so on a non-matching input the engine retries at every position — still linear per attempt, but anchor it with ^ if you mean to validate a whole string.' : ''}</p></div></div>`;
+      else $('safetyReport').innerHTML = a.findings.map(f => `<div class="finding ${f.severity}"><div class="finding-head"><i data-lucide="${f.severity === 'high' ? 'alert-octagon' : 'alert-triangle'}"></i><strong>${f.severity === 'high' ? 'Exponential risk' : 'Polynomial risk'}</strong><code>${escapeHTML(f.at)}</code></div><p>${escapeHTML(f.msg)}</p><p class="advice">${escapeHTML(f.advice)}</p></div>`).join('');
+      icons();
+    }
+    function treeHtml(nodes) { return nodes.map(n => `<li><span class="ex-label">${escapeHTML(n.label)}</span>${n.desc ? `<span class="ex-desc">${escapeHTML(n.desc)}</span>` : ''}${n.children && n.children.length ? `<ul>${treeHtml(n.children)}</ul>` : ''}</li>`).join(''); }
+    function downloadSvg() {
+      const svg = $('railroad').querySelector('svg'); if (!svg) { Layerbit.toast('Nothing to download yet'); return; }
+      const css = `<style>.railroad line,.railroad path{stroke:#94a3b8;stroke-width:2}.rr rect{fill:#141620;stroke:#38bdf8;stroke-width:1.5}.rr-term rect{fill:#0f2733;stroke:#4ade80}.rr-class rect{stroke:#c084fc}.rr-anchor rect{fill:#1a1e2d;stroke:#fbbf24}.rr text{fill:#f8fafc;font:13px ui-monospace,Menlo,monospace}.rr-group rect{fill:none;stroke:#38bdf8;stroke-dasharray:4 3;opacity:.6}.rr-group text{fill:#38bdf8;font:11px sans-serif}.rr-look rect{stroke:#fbbf24}.rr-q{fill:#94a3b8;font:11px sans-serif}.rr-end{fill:#38bdf8}svg{background:#0a0c10}</style>`;
+      const out = svg.outerHTML.replace('>', '>' + css);
+      const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([out], { type: 'image/svg+xml' })); a.download = 'regex-railroad.svg'; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 500);
+    }
+    // Growth measurement in a Worker so a genuinely catastrophic pattern cannot freeze the tab.
+    let stressWorker = null;
+    function stressTest() {
+      const pattern = regexInput.value, text = testInput.value || 'aaaaaaaaaaaaaaaaaaaa!';
+      if (!pattern) { Layerbit.toast('Enter a pattern first'); return; }
+      const out = $('stressResult'); out.style.display = ''; out.innerHTML = '<p class="muted-note">Measuring on 1×, 2×, 4× and 8× the test string (each run capped at 2 s)…</p>';
+      if (stressWorker) stressWorker.terminate();
+      const src = `self.onmessage = e => { const {pattern, flags, text} = e.data; const re = new RegExp(pattern, flags.replace('y','')); const out = []; for (const k of [1,2,4,8]) { const s = text.repeat(k); const t0 = performance.now(); let n = 0; if (flags.includes('g')) { re.lastIndex = 0; while (re.exec(s)) { n++; if (re.lastIndex === 0) break; if (performance.now() - t0 > 2000) break; } } else re.test(s); out.push({k, ms: performance.now() - t0, n}); self.postMessage({progress: out.slice()}); if (out[out.length-1].ms > 2000) break; } const probes = []; if (e.data.adversarial) { for (const seed of ['a', '1', 'ab ', 'a-']) { const series = []; for (const n of [8, 12, 16, 20, 24]) { const s = seed.repeat(n) + '!'; const t0 = performance.now(); re.lastIndex = 0; re.test(s); series.push({ n: s.length, ms: performance.now() - t0 }); if (series[series.length - 1].ms > 2000) break; } probes.push({ seed, series }); if (series[series.length - 1].ms > 2000) break; } } self.postMessage({done: out, probes}); };`;
+      stressWorker = new Worker(URL.createObjectURL(new Blob([src], { type: 'text/javascript' })));
+      const timer = setTimeout(() => { stressWorker.terminate(); out.innerHTML += '<div class="finding high"><div class="finding-head"><i data-lucide="alert-octagon"></i><strong>Timed out</strong></div><p>The engine did not finish within the cap. On an input this small that is catastrophic backtracking in practice, whatever the static analysis said.</p></div>'; icons(); }, 12000);
+      stressWorker.onmessage = e => {
+        if (e.data.progress) out.innerHTML = '<p class="muted-note">Measuring…</p>' + growthTable(e.data.progress);
+        if (e.data.done) {
+          clearTimeout(timer);
+          const r = e.data.done, ratios = [];
+          for (let i = 1; i < r.length; i++) if (r[i - 1].ms > 0.05) ratios.push(r[i].ms / r[i - 1].ms);
+          const worst = ratios.length ? Math.max(...ratios) : 1;
+          const timedOut = r[r.length - 1].ms > 2000;
+          const verdict = timedOut ? ['high', 'Catastrophic: a run exceeded the 2 s cap.'] : worst > 3.2 ? ['high', `Superlinear: time grew ${worst.toFixed(1)}× when the input doubled. That is the signature of backtracking ambiguity.`] : worst > 2.4 ? ['medium', `Slightly superlinear (${worst.toFixed(1)}× per doubling). Watch it on larger inputs.`] : ['ok', `Linear: time roughly ${ratios.length ? worst.toFixed(1) : '1.0'}× per doubling of the input, which is what a healthy pattern does.`];
+          let probeHtml = '';
+          if (e.data.probes && e.data.probes.length) {
+            const worstP = e.data.probes.map(p => { const s = p.series; const last = s[s.length - 1]; const ratio = s.length > 1 && s[s.length - 2].ms > 0.05 ? last.ms / s[s.length - 2].ms : 1; return { p, last, ratio }; }).sort((a, b) => b.last.ms - a.last.ms)[0];
+            const blew = worstP.last.ms > 2000, expo = worstP.ratio > 6;
+            probeHtml = `<h4 class="probe-h">Adversarial probe</h4><p class="muted-note">Because the static analysis found a risky shape, the pattern was also run on crafted inputs: a repeated seed followed by a character that forces failure. Seed ${escapeHTML(JSON.stringify(worstP.p.seed))}:</p><table class="tests-table"><thead><tr><th>Length</th><th>Engine time</th></tr></thead><tbody>${worstP.p.series.map(x => `<tr><td>${x.n} chars</td><td>${x.ms > 2000 ? '> 2 s (stopped)' : x.ms.toFixed(2) + ' ms'}</td></tr>`).join('')}</tbody></table><div class="finding ${blew || expo ? 'high' : 'ok'}"><div class="finding-head"><i data-lucide="${blew || expo ? 'alert-octagon' : 'check-circle-2'}"></i><strong>${blew ? 'Confirmed catastrophic: a 2-second cap was hit on a ' + worstP.last.n + '-character input.' : expo ? 'Confirmed exponential: ' + worstP.ratio.toFixed(0) + '× more time for 4 more characters.' : 'The crafted inputs did not trigger it, but the shape is still risky on other inputs.'}</strong></div></div>`;
+          }
+          out.innerHTML = growthTable(r) + `<div class="finding ${verdict[0] === 'ok' ? 'ok' : verdict[0]}"><div class="finding-head"><i data-lucide="${verdict[0] === 'ok' ? 'check-circle-2' : 'alert-triangle'}"></i><strong>${verdict[1]}</strong></div><p class="muted-note">Measured on your current test string; a pattern can be linear on one input and exponential on another, so test with the longest, nastiest input you expect in production.</p></div>` + probeHtml;
+          icons();
         }
       };
+      stressWorker.postMessage({ pattern, flags: flagsStr(), text, adversarial: !!(ast && R.analyze(ast, pattern).findings.length) });
+    }
+    function growthTable(r) { return `<table class="tests-table"><thead><tr><th>Input size</th><th>Engine time</th><th>Matches</th><th>Growth</th></tr></thead><tbody>${r.map((x, i) => `<tr><td>${x.k}× (${(x.k * (testInput.value || 'a'.repeat(21)).length).toLocaleString()} chars)</td><td>${x.ms.toFixed(2)} ms</td><td>${x.n}</td><td>${i ? (r[i - 1].ms > 0.05 ? (x.ms / r[i - 1].ms).toFixed(2) + '×' : '—') : ''}</td></tr>`).join('')}</tbody></table>`; }
 
-      if (samples[type]) {
-        regexInput.value = samples[type].regex;
-        testInput.value = samples[type].test;
-        replaceInput.value = samples[type].replace || '';
-
-        // Reset and apply flags
-        currentFlags = samples[type].flags;
-        document.querySelectorAll('.flag-btn').forEach(btn => {
-          if (currentFlags.includes(btn.getAttribute('data-flag'))) {
-            btn.classList.add('active');
-          } else {
-            btn.classList.remove('active');
-          }
-        });
-
-        processRegex();
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-      }
+    // ------------------------------------------------------------ unit tests
+    function addTest(t) { tests.push(t || { input: testInput.value.split('\n')[0] || '', expect: 'match', group: '', value: '' }); renderTests(); showTab('tests'); }
+    function addTestsFromMatches() {
+      if (!lastMatches.length) { Layerbit.toast('No matches to turn into tests'); return; }
+      lastMatches.slice(0, 20).forEach(x => tests.push({ input: x.m[0], expect: 'full', group: '', value: '' }));
+      renderTests(); runUnitTests(); showTab('tests');
+    }
+    function removeTest(i) { tests.splice(i, 1); renderTests(); runUnitTests(true); }
+    function updateTest(i, k, v) { tests[i][k] = v; runUnitTests(true); }
+    function renderTests(results) {
+      const body = $('testsBody');
+      body.innerHTML = tests.map((t, i) => {
+        const r = results && results[i];
+        return `<tr class="${r ? (r.ok ? 'pass' : 'fail') : ''}"><td><input type="text" class="t-in" value="${escapeHTML(t.input).replace(/"/g, '&quot;')}" oninput="updateTest(${i},'input',this.value)" aria-label="Test input"></td>` +
+          `<td><select class="mini-select" onchange="updateTest(${i},'expect',this.value)"><option value="match"${t.expect === 'match' ? ' selected' : ''}>should match</option><option value="full"${t.expect === 'full' ? ' selected' : ''}>whole string</option><option value="nomatch"${t.expect === 'nomatch' ? ' selected' : ''}>should not match</option></select></td>` +
+          `<td><input type="text" class="t-in short" value="${escapeHTML(t.group || '')}" placeholder="1 or name" oninput="updateTest(${i},'group',this.value)" aria-label="Group"></td><td><input type="text" class="t-in" value="${escapeHTML(t.value || '').replace(/"/g, '&quot;')}" placeholder="expected group value" oninput="updateTest(${i},'value',this.value)" aria-label="Expected value"></td>` +
+          `<td class="t-res">${r ? (r.ok ? '<i data-lucide="check"></i> pass' : `<i data-lucide="x"></i> ${r.error ? escapeHTML(r.error) : r.matched ? (t.expect === 'nomatch' ? 'matched ' + escapeHTML(JSON.stringify(r.detail)) : t.group ? 'group was ' + escapeHTML(JSON.stringify(r.detail)) : 'partial: ' + escapeHTML(JSON.stringify(r.detail))) : 'no match'}`) : ''}</td>` +
+          `<td><button type="button" class="hb" onclick="removeTest(${i})" title="Remove">✕</button></td></tr>`;
+      }).join('') || '<tr><td colspan="6" class="muted-note">No tests yet. Add one, or generate them from the current matches.</td></tr>';
+      icons();
+    }
+    function runUnitTests(quiet) {
+      if (!tests.length) { $('testsSummary').textContent = ''; $('testsBadge').textContent = ''; $('testsBadge').className = 'tab-badge'; return; }
+      const results = R.runTests(regexInput.value, flagsStr(), tests);
+      const pass = results.filter(r => r.ok).length;
+      $('testsSummary').textContent = `· ${pass}/${results.length} passing`;
+      $('testsBadge').textContent = `${pass}/${results.length}`; $('testsBadge').className = 'tab-badge ' + (pass === results.length ? 'ok' : 'bad');
+      if (!quiet || activeTab === 'tests') { const focused = document.activeElement; const keep = focused && focused.classList.contains('t-in') ? [Array.from(document.querySelectorAll('.t-in')).indexOf(focused), focused.selectionStart] : null; renderTests(results); if (keep) { const el = document.querySelectorAll('.t-in')[keep[0]]; if (el) { el.focus(); el.setSelectionRange(keep[1], keep[1]); } } }
+      return results;
     }
 
+    // ------------------------------------------------------------ code
+    function renderCode() {
+      const r = R.codegen(regexInput.value || 'pattern', flagsStr(), $('codeLang').value, testInput.value.split('\n')[0]);
+      $('codeOut').textContent = r.code;
+      $('codeCaveats').innerHTML = r.caveats.map(c => `<div class="caveat"><i data-lucide="alert-triangle"></i>${escapeHTML(c)}</div>`).join('');
+      icons();
+    }
+    $('codeLang').addEventListener('change', renderCode);
+
+    // ------------------------------------------------------------ batch
+    function runBatchFile(file) {
+      if (!file) return;
+      if (!regexInput.value) { Layerbit.toast('Enter a pattern first, then choose the file'); return; }
+      Layerbit.readFile(file).then(text => {
+        let re; try { re = new RegExp(regexInput.value, flagsStr().replace('g', '').replace('y', '')); } catch (e) { $('batchResult').innerHTML = `<p class="muted-note err">${escapeHTML(e.message)}</p>`; return; }
+        const t0 = performance.now();
+        const lines = text.split(/\r?\n/); if (lines[lines.length - 1] === '') lines.pop();
+        const matching = [], first = [];
+        for (let i = 0; i < lines.length; i++) { const m = re.exec(lines[i]); if (m) { matching.push(i); if (first.length < 25) first.push({ i, m }); } }
+        batch = { name: file.name, lines, matching };
+        const ms = performance.now() - t0;
+        $('batchResult').innerHTML = `<div class="stats-strip"><span><strong>${escapeHTML(file.name)}</strong> · ${Layerbit.fmtBytes(file.size)}</span><span>${lines.length.toLocaleString()} lines</span><span class="st-ok">${matching.length.toLocaleString()} matching (${lines.length ? (100 * matching.length / lines.length).toFixed(1) : 0}%)</span><span>${(lines.length - matching.length).toLocaleString()} not matching</span><span>${ms.toFixed(0)} ms</span></div>` +
+          (first.length ? `<table class="tests-table"><thead><tr><th>Line</th><th>Match</th><th>Groups</th><th>Line text</th></tr></thead><tbody>${first.map(x => `<tr><td>${x.i + 1}</td><td><code>${escapeHTML(x.m[0])}</code></td><td>${x.m.slice(1).map(g => escapeHTML(g === undefined ? '∅' : g)).join(' · ')}</td><td class="muted">${escapeHTML(lines[x.i].slice(0, 160))}</td></tr>`).join('')}</tbody></table>${matching.length > 25 ? `<p class="muted-note">First 25 of ${matching.length.toLocaleString()} matching lines shown.</p>` : ''}` : '<p class="muted-note">No line matched.</p>');
+        $('btnBatchDl').style.display = matching.length ? '' : 'none';
+        showTab('batch');
+      });
+    }
+    function downloadBatch() { if (!batch) return; const out = batch.matching.map(i => batch.lines[i]).join('\n') + '\n'; const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([out])); a.download = 'matching-' + batch.name; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 500); }
+    $('batchFile').addEventListener('change', e => runBatchFile(e.target.files[0]));
+    $('testFile').addEventListener('change', e => { const f = e.target.files[0]; if (f) Layerbit.readFile(f).then(t => { testInput.value = t; processRegex(); }); });
+    Layerbit.onDrop(files => { if (activeTab === 'batch') runBatchFile(files[0]); else Layerbit.readFile(files[0]).then(t => { testInput.value = t; processRegex(); Layerbit.toast('Loaded ' + files[0].name + ' as the test string'); }); });
+
+    // ------------------------------------------------------------ synthesis
+    function synth() {
+      const pos = $('posExamples').value.split('\n').map(s => s.trim()).filter(Boolean), neg = $('negExamples').value.split('\n').map(s => s.trim()).filter(Boolean);
+      if (!pos.length) { $('synthResult').innerHTML = '<p class="muted-note err">Add at least one string that should match.</p>'; return; }
+      const c = R.synthesize(pos, neg);
+      $('synthResult').innerHTML = `<table class="tests-table synth-table"><thead><tr><th>Candidate</th><th>Pattern</th><th>Positives</th><th>Negatives rejected</th><th></th></tr></thead><tbody>${c.map((x, i) => `<tr class="${x.ok ? 'pass' : ''}"><td><strong>${escapeHTML(x.name)}</strong><div class="muted-note">${escapeHTML(x.note || '')}</div></td><td><code>${escapeHTML(x.pattern)}</code></td><td>${x.posOk}/${pos.length}</td><td>${x.negOk}/${neg.length}</td><td><button type="button" class="btn" onclick="useCandidate(${i})"><i data-lucide="arrow-up-left"></i> Use</button></td></tr>`).join('')}</tbody></table>`;
+      window._cands = c; icons();
+    }
+    function useCandidate(i) {
+      const c = window._cands[i]; regexInput.value = c.pattern;
+      const pos = $('posExamples').value.split('\n').map(s => s.trim()).filter(Boolean), neg = $('negExamples').value.split('\n').map(s => s.trim()).filter(Boolean);
+      tests = pos.map(p => ({ input: p, expect: 'match', group: '', value: '' })).concat(neg.map(n => ({ input: n, expect: 'nomatch', group: '', value: '' })));
+      if (!testInput.value) testInput.value = pos.concat(neg).join('\n');
+      setFlags(['g', 'm']); processRegex(); runUnitTests(); showTab('tests'); window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // ------------------------------------------------------------ misc
+    testInput.addEventListener('scroll', function () { testBackdrop.scrollTop = this.scrollTop; testBackdrop.scrollLeft = this.scrollLeft; testGutter.style.transform = `translateY(-${this.scrollTop}px)`; });
+    regexInput.addEventListener('input', processRegex);
+    testInput.addEventListener('input', processRegex);
+    function clearAll() { regexInput.value = ''; testInput.value = ''; replaceInput.value = ''; tests = []; renderTests(); processRegex(); Layerbit.state.clear(); }
+
+    function getState() { return { pattern: regexInput.value, flags: flagsStr(), text: testInput.value, replace: replaceInput.value, tests: tests.length ? tests : undefined }; }
+    function setState(s) {
+      if (!s) return;
+      if (typeof s.input === 'string' && s.pattern === undefined) { testInput.value = s.input; processRegex(); return; }
+      regexInput.value = s.pattern || ''; testInput.value = s.text || ''; replaceInput.value = s.replace || '';
+      if (typeof s.flags === 'string') setFlags(s.flags.split(''));
+      tests = Array.isArray(s.tests) ? s.tests : [];
+      processRegex(); if (tests.length) { runUnitTests(); showTab('tests'); }
+    }
+    Layerbit.register({ slug: 'regex-tester', getState, setState, run: processRegex, input: (text) => { testInput.value = text; processRegex(); } });
+
+    function loadSample(type) {
+      const samples = {
+        email: { regex: '[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}', test: 'Contact our support team at support@layerbit.co.in or reach out to sales at enterprise-sales@layerbit.co.in for licensing information.', flags: ['g', 'i'] },
+        ipv4: { regex: '\\b(?:[0-9]{1,3}\\.){3}[0-9]{1,3}\\b', test: '2026-08-06 20:56:50 [WARN] Unauthorized access attempt detected from 192.168.1.105.\n2026-08-06 20:56:55 [INFO] Successful login from 10.0.0.1.', flags: ['g'] },
+        jwt: { regex: 'eyJ[A-Za-z0-9-_]+\\.[A-Za-z0-9-_]+\\.[A-Za-z0-9-_]+', test: 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkxheWVyYml0IFVzZXIiLCJpYXQiOjE1MTYyMzkwMjJ9.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c', flags: ['g'] },
+        dateFormat: { regex: '(?<year>\\d{4})-(?<month>\\d{2})-(?<day>\\d{2})', test: 'Invoice #4471 issued 2026-03-14, due 2026-04-13. Last payment recorded 2026-02-01.', flags: ['g'], replace: '$<day>/$<month>/$<year>' },
+        log: { regex: '^(?<ts>\\S+ \\S+) \\[(?<level>[A-Z]+)\\] (?<msg>.*)$', test: '2026-10-17 09:12:01 [INFO] Service started on :8080\n2026-10-17 09:12:04 [WARN] Cache miss ratio 0.42\n2026-10-17 09:12:09 [ERROR] Upstream timeout after 5000ms\nmalformed line without a level', flags: ['g', 'm'], tests: [{ input: '2026-10-17 09:12:09 [ERROR] Upstream timeout', expect: 'full', group: 'level', value: 'ERROR' }, { input: 'malformed line', expect: 'nomatch', group: '', value: '' }] },
+        redos: { regex: '^(\\w+\\s?)+$', test: 'John Ronald Reuel Tolkien\nthis one does not end well!', flags: ['g', 'm'] }
+      };
+      const s = samples[type]; if (!s) return;
+      regexInput.value = s.regex; testInput.value = s.test; replaceInput.value = s.replace || ''; tests = s.tests ? s.tests.map(t => Object.assign({}, t)) : [];
+      setFlags(s.flags); processRegex(); if (tests.length) runUnitTests(); renderTests();
+      showTab(type === 'redos' ? 'safety' : s.tests ? 'tests' : 'matches');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+    renderTests(); renderCode();
   </script>
 <script src="../main.js"></script>
 </body>

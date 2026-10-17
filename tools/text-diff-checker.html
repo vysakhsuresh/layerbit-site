@@ -878,6 +878,7 @@
   <script>
     // ------------------------------------------------------------ state
     const $ = id => document.getElementById(id);
+    const icons = () => { if (window.lucide) lucide.createIcons(); };
     const E = LBDiff;
     let mode = 'text';
     let names = { a: 'original', b: 'modified' };
@@ -960,7 +961,7 @@
       ['text1', 'text2', 'baseText', 'oursText', 'theirsText', 'patchOriginal', 'patchText', 'mergedText'].forEach(id => $(id).value = '');
       names = { a: 'original', b: 'modified' }; zips = { a: null, b: null };
       $('zipAInfo').innerHTML = '<i data-lucide="folder-input"></i><span>Drop a .zip of the first folder here</span>'; $('zipBInfo').innerHTML = '<i data-lucide="folder-input"></i><span>Drop a .zip of the second folder here</span>';
-      $('outputSection').style.display = 'none'; $('mergedSection').style.display = 'none'; updateMeta(); Layerbit.state.clear(); lucide.createIcons();
+      $('outputSection').style.display = 'none'; $('mergedSection').style.display = 'none'; updateMeta(); Layerbit.state.clear(); icons();
     }
     function showError(msg) { $('errorBanner').classList.add('active'); $('errorText').textContent = msg; $('outputSection').style.display = 'grid'; }
     function clearError() { $('errorBanner').classList.remove('active'); }
@@ -1036,7 +1037,7 @@
       else if (!hunks.length) { const s = '<div class="diff-identical"><i data-lucide="check-circle-2"></i> No differences with the current options.</div>'; L = s + L; R = R; U = s + U; }
       $('leftPanel').innerHTML = L; $('rightPanel').innerHTML = R; $('inlinePanel').innerHTML = U;
       showPanel(view === 'unified' ? 'unified' : 'split');
-      lucide.createIcons();
+      icons();
     }
     function expandSkip(from, to) { $('contextLines').value = 'all'; renderText(); }
     function decide(i, d) { decisions[i] = d; renderText(); renderMerged(); }
@@ -1150,7 +1151,7 @@
       $('mergedText').value = out.join('\n') + (out.length ? '\n' : '');
       $('mergedTitle').textContent = 'Merged result';
       $('mergedMeta').textContent = unresolved ? `${unresolved} conflict marker block${unresolved === 1 ? '' : 's'} remain` : 'clean';
-      lucide.createIcons();
+      icons();
     }
     function resolve(i, how) { three.resolutions[i] = how; renderThree(); }
 
@@ -1178,7 +1179,7 @@
           : '<div class="diff-identical"><i data-lucide="check-circle-2"></i> Semantically identical: same keys, same values. Formatting and key order may differ.</div>';
         last = null; three = null; window._structDocs = [a, b];
         $('outputSection').style.display = 'grid'; $('mergedSection').style.display = 'none';
-        showPanel('structPanel'); lucide.createIcons();
+        showPanel('structPanel'); icons();
         Layerbit.history.push('text-diff-checker', getState(), `structural: ${d.length} change${d.length === 1 ? '' : 's'}`);
       }).catch(e => showError(e.message));
     }
@@ -1211,7 +1212,7 @@
       $('tablePanel').innerHTML = html;
       last = null; three = null;
       $('outputSection').style.display = 'grid'; $('mergedSection').style.display = 'none';
-      showPanel('tablePanel'); lucide.createIcons();
+      showPanel('tablePanel'); icons();
       Layerbit.history.push('text-diff-checker', getState(), `rows: +${r.added.length} −${r.removed.length} ~${r.changed.length}`);
     }
 
@@ -1234,7 +1235,7 @@
         const entries = E.readZip(buf);
         zips[side] = { name: file.name, entries, map: new Map(entries.map(e => [e.name.replace(/^[^/]+\//, ''), e])) };
         $(side === 'a' ? 'zipAInfo' : 'zipBInfo').innerHTML = `<i data-lucide="folder-check"></i><span><strong>${E.esc(file.name)}</strong> · ${entries.length} files · ${Layerbit.fmtBytes(buf.byteLength)}</span>`;
-        lucide.createIcons();
+        icons();
         if (zips.a && zips.b) run();
       }).catch(e => showError(`${file.name}: ${e.message}`));
     }
@@ -1258,7 +1259,7 @@
       window._zipRows = rows;
       last = null; three = null;
       $('outputSection').style.display = 'grid'; $('mergedSection').style.display = 'none';
-      showPanel('zipPanel'); lucide.createIcons();
+      showPanel('zipPanel'); icons();
     }
     async function zipOpen(i) {
       const r = window._zipRows[i];

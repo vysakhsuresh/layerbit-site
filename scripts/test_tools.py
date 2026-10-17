@@ -369,47 +369,44 @@ def _(t):
     t.set("regexInput", "")
     t.set("testInput", "abc")
     expect(not t.visible("#errorText"), "error shown for empty pattern")
+    expect("0 Matches" in t.text("matchCount"), t.text("matchCount"))
 
 
-@case("regex-tester", "typical", "counts matches and shows groups")
+@case("regex-tester", "typical", "counts matches, shows groups, alternates highlight colours")
 def _(t):
     t.set("regexInput", r"(\w+)@(\w+)\.com")
     t.set("testInput", "a@x.com, b@y.com and c@z.org")
-    t.wait_for("() => /2/.test(document.getElementById('matchCount').innerText)")
+    t.wait_for("() => /2 Matches/.test(document.getElementById('matchCount').innerText)")
     expect("x" in t.text("matchesGrid") and "y" in t.text("matchesGrid"), "groups not rendered")
+    eq(t.count("#testBackdrop .hl-match"), 2, "highlights")
+    eq(t.count("#testBackdrop .hl-match.alt"), 1, "alternate colour")
 
 
-@case("regex-tester", "typical", "replace preview honours $1")
+@case("regex-tester", "typical", "replace preview honours $1 and $<name>")
 def _(t):
-    t.set("regexInput", r"(\d{4})-(\d{2})-(\d{2})")
+    t.set("regexInput", r"(?<y>\d{4})-(\d{2})-(\d{2})")
     t.set("testInput", "2026-09-27")
-    t.set("replaceInput", "$3/$2/$1")
+    t.set("replaceInput", "$3/$2/$<y>")
     t.wait_for("() => document.getElementById('replaceOutput').innerText.includes('27/09/2026')")
 
 
-@case("regex-tester", "edge", "invalid pattern reports error, no throw")
+@case("regex-tester", "edge", "invalid pattern reports error, no throw; explain shows parse error")
 def _(t):
     t.set("regexInput", "(unclosed")
     t.set("testInput", "x")
     t.wait(50)
-    expect(t.visible("#errorText") or t.visible("#errorMsg"), "invalid regex not reported")
+    expect(t.visible("#errorText"), "invalid regex not reported")
+    expect("Cannot parse" in t.text("explainTree"), t.text("explainTree"))
 
 
-@case("regex-tester", "edge", "unicode property escapes with u flag")
+@case("regex-tester", "edge", "unicode property escapes need the u flag")
 def _(t):
-    t.set("regexInput", r"\p{L}+")
-    t.click(".flag-btn[data-flag='u']") if t.count(".flag-btn[data-flag='u']") else None
-    t.set("testInput", "héllo 日本")
-    t.wait(100)
-    mc = t.text("matchCount")
-    expect(any(ch.isdigit() for ch in mc), f"no match count: {mc!r}")
-
-
-@case("regex-tester", "maximal", "100k-char subject with many matches under budget")
-def _(t):
-    t.set("regexInput", r"\b\d+\b")
-    t.set("testInput", " ".join(str(i) for i in range(20000)))
-    t.wait_for("() => /20000|20,000/.test(document.getElementById('matchCount').innerText)")
+    t.set("regexInput", r"\p{Script=Han}+")
+    t.set("testInput", "abc 日本語 def")
+    t.wait(60)
+    expect("Error" in t.text("matchCount") or "0 Matches" in t.text("matchCount"), "without u, \\p should not match")
+    t.click(".flag-btn[data-flag='u']")
+    t.wait_for("() => /1 Match/.test(document.getElementById('matchCount').innerText)")
 
 
 @case("regex-tester", "typical", "s flag lets . cross newlines; timing readout renders")
@@ -418,18 +415,112 @@ def _(t):
     t.set("testInput", "a\nb")
     t.wait_for("() => /0 Matches/.test(document.getElementById('matchCount').innerText)")
     t.click(".flag-btn[data-flag='s']")
-    t.wait_for("() => /1 Matches/.test(document.getElementById('matchCount').innerText)")
+    t.wait_for("() => /1 Match/.test(document.getElementById('matchCount').innerText)")
     expect("ms on" in t.text("matchTiming"), "timing missing")
 
 
-@case("regex-tester", "typical", "u flag enables \\p{Script=Han}")
+@case("regex-tester", "typical", "explain tree and railroad diagram render for groups and quantifiers")
 def _(t):
-    t.set("regexInput", r"\p{Script=Han}+")
-    t.set("testInput", "abc 日本語 def")
+    t.set("regexInput", r"^(?<year>\d{4})-(?:jan|feb)+$")
     t.wait(60)
-    expect("Error" in t.text("matchCount") or "0 Matches" in t.text("matchCount"), "without u, \\p should not match")
-    t.click(".flag-btn[data-flag='u']")
-    t.wait_for("() => /1 Matches/.test(document.getElementById('matchCount').innerText)")
+    labels = t.call("[...document.querySelectorAll('#explainTree .ex-label')].map(e=>e.textContent)")
+    expect("Named group <year>" in labels and "Alternation" in labels, str(labels))
+    expect("exactly 4 times" in t.text("explainTree"), "quantifier description missing")
+    expect(t.count("#railroad svg") == 1 and t.count("#railroad .rr-term") >= 6, "railroad not rendered")
+
+
+@case("regex-tester", "typical", "safety analysis flags nested quantifiers and clears for safe patterns")
+def _(t):
+    t.set("regexInput", r"^(a+)+$")
+    t.wait(60)
+    eq(t.text("safetyBadge"), "1", "badge")
+    expect("Exponential risk" in t.text("safetyReport") and "Nested unbounded quantifier" in t.text("safetyReport"), t.text("safetyReport")[:200])
+    t.set("regexInput", r"^\d+-\w+$")
+    t.wait(60)
+    expect("No catastrophic-backtracking shape" in t.text("safetyReport"), t.text("safetyReport")[:120])
+
+
+@case("regex-tester", "edge", "growth measurement runs in a worker and confirms an exponential pattern")
+def _(t):
+    t.call("loadSample('redos')")
+    t.wait(100)
+    t.call("stressTest()")
+    t.wait_for("() => document.getElementById('stressResult').innerText.includes('Adversarial')", timeout=30000)
+    verdicts = t.call("[...document.querySelectorAll('#stressResult .finding strong')].map(e=>e.textContent)")
+    expect(any("Confirmed" in v for v in verdicts), str(verdicts))
+
+
+@case("regex-tester", "typical", "unit tests: add, evaluate, from-matches, group checks, badge")
+def _(t):
+    t.call("loadSample('log')")
+    t.wait(100)
+    eq(t.text("testsSummary"), "· 2/2 passing", "sample tests")
+    t.call("updateTest(0,'value','WARN'); runUnitTests()")
+    t.wait(50)
+    eq(t.text("testsSummary"), "· 1/2 passing", "group value check")
+    expect("group was" in t.text("testsBody"), t.text("testsBody")[:200])
+    t.call("loadSample('dateFormat')")
+    t.wait(100)
+    t.call("addTestsFromMatches()")
+    t.wait(50)
+    eq(t.text("testsSummary"), "· 3/3 passing", "tests from matches")
+    eq(t.text("testsBadge"), "3/3", "badge")
+
+
+@case("regex-tester", "typical", "code generation translates flags and warns about engine gaps")
+def _(t):
+    t.set("regexInput", r"(?<=x)(?<y>\d+)")
+    t.click(".flag-btn[data-flag='i']")
+    t.call("showTab('code')")
+    t.select("codeLang", "python")
+    expect("(?P<y>" in t.text("codeOut") and "re.IGNORECASE" in t.text("codeOut"), t.text("codeOut"))
+    t.select("codeLang", "go")
+    expect("lookbehind" in t.text("codeCaveats"), t.text("codeCaveats"))
+    t.select("codeLang", "csharp")
+    expect("RegexOptions.IgnoreCase" in t.text("codeOut"), t.text("codeOut"))
+
+
+@case("regex-tester", "typical", "pattern synthesis from examples yields a passing candidate")
+def _(t):
+    t.set("posExamples", "INV-2026-0042\nINV-2025-1187")
+    t.set("negExamples", "INV2026-0042\ninv-2026-0042")
+    t.call("synth()")
+    t.wait(50)
+    expect(t.count("#synthResult tbody tr.pass") >= 1, "no passing candidate")
+    t.call("useCandidate(0)")
+    t.wait(100)
+    expect(t.val("regexInput").startswith("^INV"), t.val("regexInput"))
+    eq(t.text("testsSummary"), "· 4/4 passing", "candidate tests")
+
+
+@case("regex-tester", "typical", "batch file: per-line matching with counts and download")
+def _(t):
+    t.set("regexInput", "ERROR")
+    t.page.set_input_files("#batchFile", {"name": "app.log", "mimeType": "text/plain",
+                                           "buffer": "\n".join(("line %d ERROR x" if i % 3 == 0 else "line %d ok") % i for i in range(300)).encode()})
+    t.wait_for("() => document.getElementById('batchResult').innerText.includes('matching')")
+    expect("100 matching" in t.text("batchResult") and "300 lines" in t.text("batchResult"), t.text("batchResult")[:200])
+    expect(t.visible("#btnBatchDl"), "download button hidden")
+
+
+@case("regex-tester", "typical", "share link restores pattern, flags, text and tests")
+def _(t):
+    t.call("loadSample('log')")
+    t.wait(100)
+    url = t.call("Layerbit.state.write(getState())")
+    t.page.goto(url, wait_until="load")
+    t.wait(300)
+    expect(t.val("regexInput").startswith("^(?<ts>"), "pattern not restored")
+    expect(t.call("document.querySelector('.flag-btn[data-flag=m]').classList.contains('active')"), "flags not restored")
+    eq(t.text("testsSummary"), "· 2/2 passing", "tests not restored")
+
+
+@case("regex-tester", "maximal", "100k-char subject with 20,000 matches under budget")
+def _(t):
+    t.set("regexInput", r"\b\d+\b")
+    t.set("testInput", " ".join(str(i) for i in range(20000)))
+    t.wait_for("() => /20,000 Matches|20000 Matches/.test(document.getElementById('matchCount').innerText)")
+    expect("first 500" in t.text("matchesNote"), t.text("matchesNote"))
 
 
 # ----------------------------------------------------------------------------
