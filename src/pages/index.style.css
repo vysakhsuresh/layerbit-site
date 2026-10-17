@@ -35,6 +35,9 @@
       align-items: center;
       max-width: 1200px;
       margin: 0 auto 60px auto;
+      /* the fixed "Support Layerbit" button sits over the header's right edge;
+         keep the kernel's search and privacy pills clear of it */
+      padding-right: 220px;
     }
 
     .brand img {
@@ -639,9 +642,11 @@
       .premium-bmc-btn {
         top: 15px;
         right: 15px;
-        padding: 8px 12px;
+        padding: 10px;
         font-size: 0.8em;
       }
+      .premium-bmc-btn span { display: none; } /* icon only on phones: the label collided with the header pills */
+      header { padding-right: 80px; flex-wrap: wrap; row-gap: 8px; margin-bottom: 40px; }
       
       .search-pill-wrapper {
         bottom: 20px;
