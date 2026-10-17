@@ -645,43 +645,74 @@ def _(t):
 # ----------------------------------------------------------------------------
 # text-diff-checker
 # ----------------------------------------------------------------------------
-@case("text-diff-checker", "minimal", "identical inputs -> no changes")
+@case("text-diff-checker", "minimal", "identical inputs -> no changes, no merge pane")
 def _(t):
     t.set("text1", "same")
     t.set("text2", "same")
-    t.call("runDiff()")
-    t.wait(150)
-    expect(t.count(".line-added, .added, .diff-add") == 0, "identical text produced additions")
+    t.call("run()")
+    t.wait(100)
+    expect(t.count("#rightPanel .line-added") == 0, "identical text produced additions")
+    expect("No differences" in t.text("leftPanel"), "identical notice missing")
+    expect(not t.visible("#mergedSection"), "merge pane shown with nothing to merge")
 
 
-@case("text-diff-checker", "typical", "one changed line is highlighted")
+@case("text-diff-checker", "minimal", "both empty -> empty notice, no error")
+def _(t):
+    t.call("run()")
+    t.wait(50)
+    expect("empty" in t.text("leftPanel"), t.text("leftPanel"))
+
+
+@case("text-diff-checker", "typical", "one changed line is highlighted with stats and a hunk bar")
 def _(t):
     t.set("text1", "a\nb\nc")
     t.set("text2", "a\nB\nc")
-    t.call("runDiff()")
-    t.wait(150)
-    body = t.text("outputSection")
-    expect("B" in body and "b" in body, "changed line not shown")
+    t.call("run()")
+    t.wait(100)
+    expect(t.count("#rightPanel .line-added") == 1 and t.count("#leftPanel .line-removed") == 1, "changed line not shown")
+    expect("1 change block" in t.text("diffStats"), t.text("diffStats"))
+    expect(t.count("#leftPanel .hunk-bar") == 1, "hunk bar missing")
 
 
-@case("text-diff-checker", "edge", "ignore-whitespace hides trailing-space-only changes")
+@case("text-diff-checker", "typical", "merge: per-hunk decisions and accept/keep all")
 def _(t):
-    t.set("text1", "x = 1")
-    t.set("text2", "x = 1   ")
-    t.call("document.getElementById('ignoreWhitespace').checked = true")
-    t.call("runDiff()")
+    t.call("loadSample('code')")
     t.wait(150)
-    expect(t.count(".line-added, .line-removed, .added, .removed") == 0, "whitespace-only change not ignored")
+    eq(t.val("mergedText"), t.val("text2"), "merged starts as modified")
+    t.call("decide(0,'left')")
+    expect("calculateTotal(price, tax)" in t.val("mergedText"), "hunk 0 not reverted")
+    expect("1 reverted" in t.text("mergedMeta"), t.text("mergedMeta"))
+    t.call("mergeAll('left')")
+    eq(t.val("mergedText"), t.val("text1"), "keep all original")
+    t.call("decide(1,'both')")
+    m = t.val("mergedText")
+    expect("module.exports = { calculateTotal };" in m and "round2" in m, "both did not include both sides")
 
 
-@case("text-diff-checker", "maximal", "5,000-line files under budget")
+@case("text-diff-checker", "typical", "syntax highlighting, unified view, context folding, show whitespace")
 def _(t):
-    a = "\n".join(f"line {i}" for i in range(5000))
-    b = "\n".join(f"line {i}" if i % 100 else f"LINE {i}" for i in range(5000))
-    t.set("text1", a)
-    t.set("text2", b)
-    t.call("runDiff()")
-    t.wait_for("() => document.getElementById('outputSection').innerText.includes('LINE 4900')")
+    t.call("loadSample('code')")
+    t.wait(150)
+    expect(t.count("#rightPanel .tk-kw") > 0, "no syntax tokens")
+    expect("js" in t.text("diffStats"), "language not detected")
+    t.select("viewMode", "unified")
+    t.wait(50)
+    expect(t.visible("#inlinePanel") and not t.visible("#splitWrap"), "unified view not shown")
+    t.select("viewMode", "split")
+    a = "\n".join(f"line {i}" for i in range(60))
+    b = a.replace("line 30", "LINE 30")
+    t.set("text1", a); t.set("text2", b)
+    t.select("contextLines", "3")
+    t.call("run()")
+    t.wait(100)
+    expect(t.count("#rightPanel .diff-skip") == 2, f"expected 2 folds, got {t.count('#rightPanel .diff-skip')}")
+    expect(t.count("#rightPanel .diff-line") <= 10, "context folding did not reduce rows")
+    t.call("expandSkip()")
+    t.wait(50)
+    expect(t.count("#rightPanel .diff-line") >= 60, "expand did not restore rows")
+    t.click("#showWs")
+    t.wait(50)
+    expect(t.count("#rightPanel .ws") > 0, "whitespace markers missing")
 
 
 @case("text-diff-checker", "typical", "character granularity isolates a one-letter change")
@@ -689,14 +720,148 @@ def _(t):
     t.set("text1", "getUserId()")
     t.set("text2", "getUserID()")
     t.select("granularity", "char")
-    t.call("runDiff()")
-    t.wait(150)
+    t.call("run()")
+    t.wait(100)
     spans = t.call("Array.from(document.querySelectorAll('#rightPanel .word-added')).map(e => e.textContent)")
     eq(spans, ["D"], "char-level added span")
     t.select("granularity", "none")
-    t.call("runDiff()")
-    t.wait(150)
+    t.call("run()")
+    t.wait(100)
     eq(t.count("#rightPanel .word-added"), 0, "lines-only mode still highlighted words")
+
+
+@case("text-diff-checker", "edge", "normalisation options: whitespace, case, trailing, blank, CRLF")
+def _(t):
+    t.set("text1", "x = 1\r\nY\r\n")
+    t.set("text2", "x = 1\ny\n")
+    t.call("run()"); t.wait(60)
+    expect("1 change block" in t.text("diffStats"), "case change not detected: " + t.text("diffStats"))
+    t.click("#ignoreCase"); t.call("run()"); t.wait(60)
+    expect("0 change blocks" in t.text("diffStats"), "ignore case / CRLF failed: " + t.text("diffStats"))
+    t.set("text1", "a  b   "); t.set("text2", "a b")
+    t.call("run()"); t.wait(60)
+    expect("1 change block" in t.text("diffStats"), "whitespace change not detected")
+    t.click("#ignoreWhitespace"); t.call("run()"); t.wait(60)
+    expect("0 change blocks" in t.text("diffStats"), "ignore whitespace failed")
+
+
+@case("text-diff-checker", "typical", "patch export is a unified diff that re-applies cleanly")
+def _(t):
+    t.set("text1", "one\ntwo\nthree\n"); t.set("text2", "one\n2\nthree\nfour\n")
+    t.call("run()"); t.wait(60)
+    p = t.call("patchText()")
+    expect(p.startswith("--- original\n+++ modified\n@@"), p[:60])
+    t.call("setMode('patch')")
+    t.set("patchOriginal", "one\ntwo\nthree\n"); t.set("patchText", p)
+    t.call("run()"); t.wait(100)
+    expect("1 hunk" in t.text("resultTitle"), t.text("resultTitle"))
+    eq(t.val("mergedText"), "one\n2\nthree\nfour\n", "patched result")
+
+
+@case("text-diff-checker", "edge", "patch that does not apply reports an error instead of throwing")
+def _(t):
+    t.call("loadSample('patch')"); t.wait(100)
+    expect("listen 443 ssl" in t.val("mergedText"), "sample patch not applied")
+    t.set("patchOriginal", "totally different file\n")
+    t.call("run()"); t.wait(60)
+    expect(t.visible("#errorBanner") and "does not apply" in t.text("errorText"), t.text("errorText"))
+    t.set("patchText", "garbage"); t.call("run()"); t.wait(60)
+    expect("No hunks" in t.text("errorText"), t.text("errorText"))
+
+
+@case("text-diff-checker", "typical", "three-way merge: auto-merge, conflict markers, click resolution")
+def _(t):
+    t.call("loadSample('three')"); t.wait(150)
+    expect("1 conflict" in t.text("diffStats"), t.text("diffStats"))
+    m = t.val("mergedText")
+    expect("<<<<<<< ours" in m and "||||||| base" in m and ">>>>>>> theirs" in m, "markers missing")
+    expect("- Added audit log export" in m, "non-conflicting change from ours not merged")
+    t.click("#threePanel .three-chunk.conflict .hb:nth-child(3)")  # Use theirs
+    t.wait(60)
+    m = t.val("mergedText")
+    expect("<<<<<<<" not in m and "author: platform team" in m, "resolution not applied: " + m[:120])
+    eq(t.text("mergedMeta"), "clean", "meta after resolve")
+
+
+@case("text-diff-checker", "typical", "structural diff ignores key order and reports paths")
+def _(t):
+    t.call("loadSample('json')"); t.wait(150)
+    rows = t.call("[...document.querySelectorAll('#structPanel tbody tr')].map(r=>r.children[0].textContent+':'+r.children[1].textContent)")
+    expect("$.port:type number → string" in rows and "$.features.ssl:added" in rows and "$.timeout:changed" in rows, str(rows))
+    t.set("text1", '{"a":1,"b":[1,2]}'); t.set("text2", '{"b":[1,2],"a":1}')
+    t.call("run()"); t.wait(60)
+    expect("Semantically identical" in t.text("structPanel"), t.text("structPanel"))
+
+
+@case("text-diff-checker", "edge", "structural diff: YAML input, keyed arrays, invalid input")
+def _(t):
+    t.call("loadSample('yaml')"); t.wait(400)
+    rows = t.call("[...document.querySelectorAll('#structPanel tbody tr')].map(r=>r.children[0].textContent)")
+    eq(rows, ["$.app.env.LOG_LEVEL", "$.app.replicas"], "yaml paths")
+    t.set("text1", '{"u":[{"id":1,"n":"a"},{"id":2,"n":"b"}]}'); t.set("text2", '{"u":[{"id":2,"n":"B"},{"id":3,"n":"c"}]}')
+    t.select("arrMode", "key"); t.call("run()"); t.wait(60)
+    rows = t.call("[...document.querySelectorAll('#structPanel tbody tr')].map(r=>r.children[0].textContent+':'+r.children[1].textContent)")
+    eq(sorted(rows), ["$.u[id=1]:removed", "$.u[id=2].n:changed", "$.u[id=3]:added"], "keyed arrays")
+    t.set("text2", '{"u": [1, 2,}'); t.call("run()"); t.wait(60)
+    expect(t.visible("#errorBanner") and "Modified" in t.text("errorText"), t.text("errorText"))
+
+
+@case("text-diff-checker", "typical", "table diff keyed by id: added, removed, changed cells, new column")
+def _(t):
+    t.call("loadSample('csv')"); t.wait(150)
+    s = t.text("diffStats")
+    expect("+1 rows" in s and "−1 rows" in s and "~2 changed" in s and "supplier" in s, s)
+    expect("Sprocket" in t.text("tablePanel") and "Gadget" in t.text("tablePanel"), "rows missing")
+    heads = t.call("[...document.querySelectorAll('#tablePanel table:first-of-type th')].map(e=>e.textContent)")
+    eq(heads, ["id", "name", "qty", "price", "supplier"], "header once, key not duplicated")
+    t.select("keyCol", "-1"); t.call("run()"); t.wait(60)
+    expect("by row order" in t.text("resultTitle"), t.text("resultTitle"))
+
+
+@case("text-diff-checker", "typical", "zip folder diff lists added/removed/modified and opens a file diff")
+def _(t):
+    t.call("""() => {
+      function crc32(u8){let c,crc=0xFFFFFFFF;for(let i=0;i<u8.length;i++){c=(crc^u8[i])&0xFF;for(let k=0;k<8;k++)c=c&1?(c>>>1)^0xEDB88320:c>>>1;crc=(crc>>>8)^c;}return (crc^0xFFFFFFFF)>>>0;}
+      function zip(files){const enc=new TextEncoder();const parts=[];const cd=[];let off=0;
+        for(const [name,text] of files){const n=enc.encode(name),d=enc.encode(text),crc=crc32(d);
+          const lh=new DataView(new ArrayBuffer(30));lh.setUint32(0,0x04034b50,true);lh.setUint32(14,crc,true);lh.setUint32(18,d.length,true);lh.setUint32(22,d.length,true);lh.setUint16(26,n.length,true);
+          parts.push(new Uint8Array(lh.buffer),n,d);
+          const c=new DataView(new ArrayBuffer(46));c.setUint32(0,0x02014b50,true);c.setUint32(16,crc,true);c.setUint32(20,d.length,true);c.setUint32(24,d.length,true);c.setUint16(28,n.length,true);c.setUint32(42,off,true);
+          cd.push(new Uint8Array(c.buffer),n); off+=30+n.length+d.length;}
+        const cdLen=cd.reduce((a,x)=>a+x.length,0);const e=new DataView(new ArrayBuffer(22));e.setUint32(0,0x06054b50,true);e.setUint16(8,files.length,true);e.setUint16(10,files.length,true);e.setUint32(12,cdLen,true);e.setUint32(16,off,true);
+        return new Blob([...parts,...cd,new Uint8Array(e.buffer)]);}
+      window._zipA=new File([zip([['proj/a.txt','hello\\nworld\\n'],['proj/same.txt','same'],['proj/gone.txt','bye']])],'v1.zip');
+      window._zipB=new File([zip([['proj/a.txt','hello\\nthere\\n'],['proj/same.txt','same'],['proj/new.txt','hi']])],'v2.zip');
+      setMode('zip'); loadZip('a', window._zipA); loadZip('b', window._zipB); }""")
+    t.wait_for("() => document.getElementById('zipPanel').innerText.includes('new.txt')")
+    rows = t.call("[...document.querySelectorAll('#zipPanel tbody tr')].map(r=>r.children[0].textContent+':'+r.children[1].textContent.split(' ')[0])")
+    eq(rows, ["a.txt:modified", "gone.txt:removed", "new.txt:added", "same.txt:same"], "zip rows")
+    t.call("zipOpen(0)")
+    t.wait_for("() => document.getElementById('resultTitle').textContent.includes('a.txt')")
+    eq(t.call("[...document.querySelectorAll('#rightPanel .word-added')].map(e=>e.textContent)"), ["there"], "file diff from zip")
+
+
+@case("text-diff-checker", "typical", "share link restores mode, inputs and options and re-runs")
+def _(t):
+    t.call("loadSample('code')"); t.wait(100)
+    t.click("#ignoreCase")
+    url = t.call("Layerbit.state.write(getState())")
+    t.page.goto(url, wait_until="load"); t.wait(400)
+    expect(t.call("document.getElementById('ignoreCase').checked"), "option not restored")
+    expect("2 change blocks" in t.text("diffStats"), "did not re-run: " + t.text("diffStats"))
+
+
+@case("text-diff-checker", "maximal", "20,000-line files with folding render under budget")
+def _(t):
+    a = "\n".join(f"line {i} = value_{i};" for i in range(20000))
+    b = "\n".join((f"line {i} = value_{i};" if i % 500 else f"LINE {i} = changed_{i};") for i in range(20000))
+    t.set("text1", a); t.set("text2", b)
+    t.select("contextLines", "3")
+    t.call("run()")
+    t.wait_for("() => document.getElementById('diffStats').innerText.includes('40 change blocks')")
+    expect(t.count("#rightPanel .diff-line") < 400, "folding not applied")
+    t.call("navDiff(1)")
+    eq(t.text("hunkCounter"), "1 / 40", "navigation counter")
 
 
 # ----------------------------------------------------------------------------

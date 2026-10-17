@@ -19,6 +19,9 @@ jobs:
         with:
           node-version: "20"
 
+      - name: Unit-test the tool engines
+        run: for f in scripts/unit/*.test.js; do node "$f" || exit 1; done
+
       - name: Verify committed pages match src/partials + src/pages
         run: python3 build.py --check
 
