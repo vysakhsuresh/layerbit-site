@@ -1,0 +1,119 @@
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "TechArticle",
+      "@id": "https://layerbit.co.in/guides/jsonpath-cheat-sheet.html#article",
+      "headline": "JSONPath Cheat Sheet: Wildcards, Recursive Descent, Slices and Filters",
+      "name": "JSONPath Cheat Sheet: Wildcards, Recursive Descent, Slices and Filters",
+      "description": "JSONPath syntax that works everywhere: root, keys, indexes, wildcards, recursive descent, slices, unions and filter predicates, and where tools differ.",
+      "url": "https://layerbit.co.in/guides/jsonpath-cheat-sheet.html",
+      "mainEntityOfPage": {
+        "@type": "WebPage",
+        "@id": "https://layerbit.co.in/guides/jsonpath-cheat-sheet.html"
+      },
+      "datePublished": "2026-10-17",
+      "dateModified": "2026-10-17",
+      "inLanguage": "en",
+      "wordCount": 1479,
+      "keywords": "JSONPath, JSONPath cheat sheet, JSONPath filter, recursive descent, JSONPath examples, RFC 9535, jq vs JSONPath, JSON query",
+      "articleSection": "Data Formats",
+      "author": {
+        "@type": "Organization",
+        "name": "Layerbit Technologies",
+        "url": "https://layerbit.co.in/about.html"
+      },
+      "publisher": {
+        "@type": "Organization",
+        "name": "Layerbit Technologies",
+        "url": "https://layerbit.co.in/",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://layerbit.co.in/icon-512.png",
+          "width": 512,
+          "height": 512
+        }
+      },
+      "image": {
+        "@type": "ImageObject",
+        "url": "https://layerbit.co.in/og-image.png",
+        "width": 1200,
+        "height": 630
+      },
+      "isAccessibleForFree": true,
+      "proficiencyLevel": "Beginner"
+    },
+    {
+      "@type": "BreadcrumbList",
+      "@id": "https://layerbit.co.in/guides/jsonpath-cheat-sheet.html#breadcrumb",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://layerbit.co.in/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Guides",
+          "item": "https://layerbit.co.in/blog.html"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": "JSONPath cheat sheet",
+          "item": "https://layerbit.co.in/guides/jsonpath-cheat-sheet.html"
+        }
+      ]
+    },
+    {
+      "@type": "FAQPage",
+      "@id": "https://layerbit.co.in/guides/jsonpath-cheat-sheet.html#faq",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "What is the difference between $.key and $..key?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "$.key reads the key directly under the root and nothing else. $..key searches every object at every depth and returns each key it finds, so on a document with nested records it can return many values from different places. Use the explicit path when you know where the value lives; use descent when the structure varies or you want every occurrence."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How do I filter an array by a field value?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Append a filter in square brackets with a predicate on @, the current element: $.items[?(@.status == 'paid')] keeps the elements whose status is paid, and you can continue the path after it, as in $.items[?(@.status == 'paid')].total. Combine conditions with \u0026\u0026 and ||, negate with !, and group with parentheses."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Why does my query return a list when I expect one value?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Because JSONPath always returns the set of matching nodes; a path that can only match once still returns a one-element list. Some tools unwrap single results for display. In code, take the first element explicitly, and check the count when the path could legitimately match zero or many nodes."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Can I use regular expressions in a JSONPath filter?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "In many implementations, with the =~ operator and a /pattern/ literal, as in [?(@.email =~ /@example\\.com$/)]. It is an extension rather than part of the original proposal; RFC 9535 provides match() and search() functions instead. If portability matters, filter on exact values and do pattern matching in the surrounding code."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Is JSONPath the same as jq?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "No. JSONPath selects nodes and stops; jq is a programming language that selects, transforms, computes and formats, with its own syntax. For extracting values, JSONPath is simpler and is built into many tools such as kubectl, Postman and test frameworks. For reshaping JSON into a new structure, jq or ordinary code is the right instrument."
+          }
+        }
+      ]
+    }
+  ]
+}
+  </script>

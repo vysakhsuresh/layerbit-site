@@ -1,0 +1,153 @@
+{{HEADER}}
+
+  <nav class="crumbs" aria-label="Breadcrumb">
+    <a href="../">Home</a>
+    <span class="sep">/</span>
+    <a href="../blog.html">Guides</a>
+    <span class="sep">/</span>
+    <span aria-current="page">JSON Schema validation explained</span>
+  </nav>
+
+  <article class="article">
+    <header class="article-head">
+      <span class="article-kicker">Data Formats</span>
+      <h1>JSON Schema Validation Explained: The Keywords That Matter and the Ones That Bite</h1>
+      <p class="article-standfirst">A JSON Schema is a contract for a document: which keys must exist, what type each value has, which strings are dates, which numbers have limits. Validating at the boundary turns a vague failure three functions deep into a precise message at the door. This guide covers the keywords you will actually use, how they combine, what <code>$ref</code> really does, and the four places schemas quietly do less than their authors think.</p>
+      <div class="article-meta">
+        <span class="byline">Layerbit Engineering</span>
+        <span><i data-lucide="calendar"></i>Published 17 October 2026</span>
+        <span><i data-lucide="clock"></i>11 min read</span>
+      </div>
+    </header>
+
+    <div class="takeaways">
+      <h2><i data-lucide="list-checks"></i> The short version</h2>
+      <ul>
+        <li>A schema is a set of <strong>constraints</strong>, each a keyword. A value is valid when it violates none of them. An empty schema <code>{}</code> accepts everything.</li>
+        <li><code>properties</code> describes keys <em>if present</em>; it does not require them. Requiring is <code>required</code>'s job, and forbidding extras is <code>additionalProperties: false</code>.</li>
+        <li><code>type: "integer"</code> accepts <code>1.0</code>. <code>format: "email"</code> is advisory in most validators unless you turn assertion on.</li>
+        <li><code>$ref</code> is a pointer, not an include: in draft-07 it <em>replaces</em> its siblings; in 2019-09 and later it combines with them.</li>
+        <li><code>oneOf</code> fails when <em>two</em> branches match. Use <code>anyOf</code> unless exclusivity is the point, and give branches a discriminating <code>const</code>.</li>
+      </ul>
+    </div>
+
+    <div class="prose">
+      <h2 id="model">The mental model: constraints, not shapes</h2>
+      <p>People read a schema as a drawing of the document, which is why the first surprises happen. A schema is a list of assertions, and a document is valid when every assertion holds. Consider:</p>
+      <pre><code>{ "type": "object", "properties": { "id": { "type": "integer" } } }</code></pre>
+      <p>This accepts <code>{"id": 1}</code>. It also accepts <code>{}</code>, because nothing says <code>id</code> must exist. And it accepts <code>{"id": 1, "anythingElse": "sure"}</code>, because nothing forbids other keys. Each of those is a separate constraint you have to add: <code>"required": ["id"]</code> for presence, <code>"additionalProperties": false</code> for closure.</p>
+      <p>The model also explains why <code>{}</code> and <code>true</code> are both valid schemas meaning "anything", and why <code>false</code> is a schema meaning "nothing". They are the identity and the empty set of the constraint algebra, and they appear in real schemas more than you would expect — <code>"additionalProperties": {}</code> is a common way of saying "extra keys are fine, any type".</p>
+
+      <h2 id="types">Types and the integer trap</h2>
+      <p>The seven primitive types are <code>object</code>, <code>array</code>, <code>string</code>, <code>number</code>, <code>integer</code>, <code>boolean</code> and <code>null</code>. <code>type</code> takes one or a list: <code>["string", "null"]</code> is the standard way to express a nullable field, and the only one — JSON Schema has no <code>nullable</code> keyword (OpenAPI 3.0 added one, which is why you see it in API specs, and OpenAPI 3.1 removed it again in favour of the type list).</p>
+      <p><code>integer</code> is defined mathematically, not lexically. A validator must accept <code>1.0</code> as an integer because its value is integral. If your producer emits <code>1.0</code> where you expect <code>1</code> and the consumer's deserialiser is strict about it, the schema will not catch the mismatch. The reverse trap is <code>"type": "number"</code> for an identifier: <code>9007199254740993</code> is a perfectly valid number that no JavaScript consumer can represent exactly. Identifiers beyond 2<sup>53</sup> belong in strings, and a schema can say so with <code>"type": "string", "pattern": "^[0-9]+$"</code>.</p>
+
+      <h2 id="strings">Strings: length, pattern, format</h2>
+      <p><code>minLength</code> and <code>maxLength</code> count Unicode code points, not bytes and not UTF-16 units. <code>"héllo"</code> has length 5 everywhere; <code>"🌍"</code> has length 1 even though JavaScript reports <code>2</code>. A validator implemented on top of <code>str.length</code> without correction is wrong for astral characters, which is the kind of bug that appears only when a user in a particular script hits a limit.</p>
+      <p><code>pattern</code> is an ECMAScript regular expression and is <em>unanchored</em>. <code>"pattern": "[0-9]{3}"</code> accepts <code>"abc123def"</code>. If you mean the whole string, write <code>^[0-9]{3}$</code>. This is the most common schema bug in the wild, and it fails open — too permissive — so it is never caught by the happy-path tests.</p>
+      <p><code>format</code> names a semantic: <code>date-time</code>, <code>date</code>, <code>email</code>, <code>uri</code>, <code>uuid</code>, <code>ipv4</code>, <code>ipv6</code>, <code>hostname</code>, <code>regex</code>. The specification says validators <em>should</em> treat it as an annotation by default and may offer assertion as an option. In practice Ajv validates formats only with the <code>ajv-formats</code> plugin, Python's <code>jsonschema</code> validates only the ones whose dependencies are installed, and .NET's <code>JsonSchema.Net</code> requires an explicit flag. A schema that relies on <code>format</code> to reject bad emails may be rejecting nothing at all. Pair it with a <code>pattern</code> when it matters.</p>
+
+      <h2 id="numbers">Numbers: bounds and multiples</h2>
+      <p><code>minimum</code> and <code>maximum</code> are inclusive. In draft-04, <code>exclusiveMinimum</code> was a boolean modifier on <code>minimum</code>; from draft-06 it is a number in its own right. Schemas written against the old form validate differently under new validators, usually silently, because an unknown-boolean is ignored. If you inherit a schema with <code>"exclusiveMinimum": true</code>, that constraint is probably no longer being applied.</p>
+      <p><code>multipleOf</code> is exact arithmetic on decimal values, and <code>0.1</code> is not exactly representable in binary floating point. <code>"multipleOf": 0.01</code> against <code>0.07</code> passes or fails depending on how the validator computes the division. Money should be integers in the smallest unit, and then <code>multipleOf</code> becomes unnecessary.</p>
+
+      <h2 id="objects">Objects: the three keywords you always need together</h2>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Keyword</th><th>Says</th><th>Without it</th></tr></thead>
+          <tbody>
+            <tr><td><code>properties</code></td><td>If this key is present, its value must satisfy this subschema</td><td>Any value is accepted for the key</td></tr>
+            <tr><td><code>required</code></td><td>These keys must be present</td><td>Every key is optional</td></tr>
+            <tr><td><code>additionalProperties</code></td><td>What keys not listed in <code>properties</code> or matched by <code>patternProperties</code> may be</td><td>Extra keys are accepted with any value</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p><code>additionalProperties: false</code> is right for a request body you control and wrong for a response you consume: the producer will add a field one day, and a closed schema turns that compatible change into a validation failure on your side. Closed schemas on input, open schemas on output, is the rule that survives contact with other teams.</p>
+      <p><code>patternProperties</code> applies a subschema to every key matching a regex — <code>"^x-": {"type": "string"}</code> for extension headers — and <code>propertyNames</code> constrains the keys themselves. <code>dependentRequired</code> (<code>dependencies</code> in draft-07) says "if <code>creditCard</code> is present, <code>billingAddress</code> must be too", which is the clean way to express conditional presence without <code>if</code>.</p>
+
+      <h2 id="arrays">Arrays: items versus tuples</h2>
+      <p><code>items</code> with a single schema applies it to every element. In draft-07, <code>items</code> with an <em>array</em> of schemas describes a tuple — first element this, second element that — and <code>additionalItems</code> governs the rest. The 2020-12 draft renamed the tuple form to <code>prefixItems</code> and made <code>items</code> mean "everything after the prefix", which is clearer and also means a draft-07 tuple schema is misread by a 2020-12 validator. Check the <code>$schema</code> declaration before trusting either behaviour.</p>
+      <p><code>uniqueItems: true</code> compares elements by deep equality, so <code>[{"a":1},{"a":1}]</code> fails. <code>contains</code> requires at least one element to match a subschema — "the roles array must include <code>admin</code>" — and <code>minContains</code>/<code>maxContains</code> bound how many.</p>
+
+      <h2 id="combining">Combining schemas: allOf, anyOf, oneOf, not</h2>
+      <p><code>allOf</code> is intersection: every branch must hold. <code>anyOf</code> is union: at least one. <code>not</code> inverts. These behave as you expect. <code>oneOf</code> is where schemas go wrong: it requires <em>exactly one</em> branch to match, so if two branches can both accept a value, that value is invalid. A classic:</p>
+      <pre><code>"oneOf": [
+  { "type": "object", "properties": { "kind": { "const": "card" } } },
+  { "type": "object", "properties": { "kind": { "const": "bank" } } }
+]</code></pre>
+      <p>Neither branch requires <code>kind</code>, so <code>{}</code> matches both and fails <code>oneOf</code> — and <code>{"kind":"card","extra":1}</code> matches the first and, because the second does not forbid <code>kind: card</code> (it only constrains it <em>if</em> it is… no, it constrains it to <code>bank</code>, so the second fails). The point is that reasoning about <code>oneOf</code> requires reasoning about every branch's permissiveness. Make branches mutually exclusive with a required discriminator (<code>"required": ["kind"]</code> plus <code>const</code>), or use <code>anyOf</code> and accept that overlap is allowed.</p>
+      <p><code>if</code>/<code>then</code>/<code>else</code> (draft-07 and later) is the readable form of conditional validation: if <code>kind</code> is <code>card</code>, then <code>cardNumber</code> is required. The <code>if</code> schema never causes failure by itself; it only selects which of <code>then</code> or <code>else</code> applies.</p>
+
+      <h2 id="ref">$ref: pointer, not include</h2>
+      <p><code>$ref</code> contains a URI reference. The common form is a JSON Pointer into the same document: <code>"#/definitions/Address"</code> in draft-07, <code>"#/$defs/Address"</code> from 2019-09. The validator resolves the pointer and validates against the target as if it were written in place — which is why recursive schemas (a tree whose children are trees) work: the reference is followed at validation time, not expanded at load time.</p>
+      <p>The behaviour that changed between drafts: in draft-07, a schema object containing <code>$ref</code> has <em>all its other keywords ignored</em>. <code>{"$ref": "#/definitions/Address", "description": "Billing"}</code> loses the description, and <code>{"$ref": "...", "required": ["city"]}</code> silently drops the <code>required</code>. From 2019-09, <code>$ref</code> is an ordinary keyword that combines with its siblings. If a schema is validated by two systems on different drafts, this is a place they can disagree.</p>
+      <p>Remote references — <code>"$ref": "https://example.com/schemas/address.json"</code> — require the validator to fetch, or to have been pre-loaded with, that document. Validators in browsers and offline tools do not fetch, for the same reason this site's validator does not: a validation step should not be a network request. Bundle the referenced schemas into <code>$defs</code> before shipping.</p>
+
+      <h2 id="errors">Reading validation errors</h2>
+      <p>A good validator reports three things per failure: the <strong>instance path</strong> (where in the document, <code>$.orders[2].total</code>), the <strong>keyword</strong> that failed (<code>type</code>, <code>required</code>, <code>pattern</code>), and the <strong>schema path</strong> (which part of the schema asserted it). Combinator failures are the noisy ones: a failing <code>anyOf</code> reports the errors from <em>every</em> branch, because the validator cannot know which branch you meant. When the branch list is long, the first helpful step is to find the one error that is not about the discriminator.</p>
+
+      <h2 id="inference">Inferring a schema from a sample</h2>
+      <p>Writing a schema from scratch for a 40-field object is tedious enough that it does not happen. Inference from a representative sample is the practical starting point: types from observed values, <code>required</code> for keys present in every record, a nullable type where a null was seen, formats detected from string shapes, and enums where a string field repeats a small set. The result describes the sample, not the producer's full behaviour — a key missing from all ten records in your sample may still appear in production — so treat it as a draft to prune and tighten, and keep <code>additionalProperties</code> open on anything you consume.</p>
+
+      <div class="tool-cta">
+        <div>
+          <strong>Validate or infer a schema in your browser</strong>
+          <span>The JSON tool's Schema tab validates a document against a pasted schema with errors by path and keyword, or infers a draft-07 schema from the document — with nothing uploaded.</span>
+        </div>
+        <a class="btn-cta" href="../tools/json-validator.html">Open the JSON tool <i data-lucide="arrow-right"></i></a>
+      </div>
+
+      <div class="further">
+        <h2>Related guides and tools</h2>
+        <div class="further-grid">
+          <a class="further-card" href="json-syntax-errors-explained.html">
+            <strong>JSON syntax errors explained</strong>
+            <span>Before a schema can be checked, the document has to parse.</span>
+          </a>
+          <a class="further-card" href="jsonpath-cheat-sheet.html">
+            <strong>JSONPath cheat sheet</strong>
+            <span>The query language for reaching into the document the schema describes.</span>
+          </a>
+          <a class="further-card" href="../tools/flow.html">
+            <strong>Flow</strong>
+            <span>Chain a decode, a format and a query in one recipe.</span>
+          </a>
+        </div>
+      </div>
+
+      <h2 id="faq">Frequently asked questions</h2>
+      <div class="faq-container">
+        <div class="faq-item">
+          <button class="faq-question">Does "properties" make a key required? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>No. properties only constrains a key's value when the key is present. To require a key, list it in the required array. To reject keys you did not describe, set additionalProperties to false. The three keywords are independent and most real schemas need all three.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">Why does my "pattern" accept strings it should reject? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>Because pattern is unanchored: it succeeds if the regex matches anywhere in the string. A pattern of [0-9]{3} accepts "abc123". Anchor it with ^ and $ to constrain the whole value. This mistake fails open, so it does not show up in tests that only use valid data.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">Is "format": "email" actually enforced? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>Not by default in most validators. The specification treats format as an annotation unless the validator is configured to assert it, and the popular libraries each need a plugin or flag. If an email, date or URI shape matters to your application, add a pattern alongside the format or enable format assertion explicitly and test that an invalid value is rejected.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">What is the difference between oneOf and anyOf? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>anyOf passes when at least one branch matches. oneOf passes only when exactly one does, so a value matching two branches is invalid. Use oneOf only when branches are mutually exclusive, typically by requiring a discriminator key with a distinct const in each branch; otherwise anyOf is both safer and faster.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">Which draft should I write new schemas in? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>Draft 2020-12 if every validator in your pipeline supports it, since it has the clearest array and $ref semantics and is what OpenAPI 3.1 uses. Draft-07 remains the most widely supported and is a sound choice when an older validator is involved. Whichever you pick, declare it in $schema so tools do not guess, and avoid relying on behaviour that differs between the two: tuple items and $ref with siblings.</p></div>
+        </div>
+      </div>
+    </div>
+  </article>
+
+  <a href="../" id="smartBackBtn" class="fab" aria-label="Command Center" title="Command Center">
+    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="filter: drop-shadow(0 0 8px rgba(56, 189, 248, 0.5));">
+      <path d="M12 2L2 7l10 5 10-5-10-5z" stroke="#38bdf8" stroke-width="2" stroke-linejoin="round" fill="rgba(56,189,248,0.2)"/>
+      <path d="M2 17l10 5 10-5M2 12l10 5 10-5" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </a>
+
+  {{FOOTER}}
+
+  <script src="../js/shared.js"></script>

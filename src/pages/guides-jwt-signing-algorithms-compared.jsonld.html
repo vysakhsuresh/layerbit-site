@@ -1,0 +1,119 @@
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "TechArticle",
+      "@id": "https://layerbit.co.in/guides/jwt-signing-algorithms-compared.html#article",
+      "headline": "JWT Signing Algorithms Compared: HS256, RS256, PS256, ES256 and EdDSA",
+      "name": "JWT Signing Algorithms Compared: HS256, RS256, PS256, ES256 and EdDSA",
+      "description": "HMAC versus RSA versus ECDSA versus Ed25519 for JWTs: who can forge, token size, speed, key formats, the ES256 signature trap, and a rule for choosing one.",
+      "url": "https://layerbit.co.in/guides/jwt-signing-algorithms-compared.html",
+      "mainEntityOfPage": {
+        "@type": "WebPage",
+        "@id": "https://layerbit.co.in/guides/jwt-signing-algorithms-compared.html"
+      },
+      "datePublished": "2026-10-17",
+      "dateModified": "2026-10-17",
+      "inLanguage": "en",
+      "wordCount": 1885,
+      "keywords": "JWT algorithms, HS256 vs RS256, ES256, EdDSA JWT, PS256, JWKS, alg none, JWT signing, Ed25519",
+      "articleSection": "Security",
+      "author": {
+        "@type": "Organization",
+        "name": "Layerbit Technologies",
+        "url": "https://layerbit.co.in/about.html"
+      },
+      "publisher": {
+        "@type": "Organization",
+        "name": "Layerbit Technologies",
+        "url": "https://layerbit.co.in/",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://layerbit.co.in/icon-512.png",
+          "width": 512,
+          "height": 512
+        }
+      },
+      "image": {
+        "@type": "ImageObject",
+        "url": "https://layerbit.co.in/og-image.png",
+        "width": 1200,
+        "height": 630
+      },
+      "isAccessibleForFree": true,
+      "proficiencyLevel": "Intermediate"
+    },
+    {
+      "@type": "BreadcrumbList",
+      "@id": "https://layerbit.co.in/guides/jwt-signing-algorithms-compared.html#breadcrumb",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://layerbit.co.in/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Guides",
+          "item": "https://layerbit.co.in/blog.html"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": "JWT signing algorithms compared",
+          "item": "https://layerbit.co.in/guides/jwt-signing-algorithms-compared.html"
+        }
+      ]
+    },
+    {
+      "@type": "FAQPage",
+      "@id": "https://layerbit.co.in/guides/jwt-signing-algorithms-compared.html#faq",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "Should I use HS256 or RS256?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Use HS256 only when the same service both issues and verifies the token, because the shared secret lets every verifier forge tokens. The moment a second service needs to verify, switch to an asymmetric algorithm: RS256 for the broadest compatibility, ES256 for smaller tokens, EdDSA if all your verifiers are modern. The secret for HS256 must be at least 256 random bits, never a passphrase."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Why do my ES256 tokens fail to verify?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Most often because the signature is DER-encoded. JWS requires the raw r and s values concatenated, exactly 64 bytes for P-256, whereas OpenSSL and many crypto APIs emit a DER structure of 70 to 72 bytes starting with 0x30. Convert to the raw form before base64url-encoding. The second common cause is a key on the wrong curve: ES256 requires P-256, ES384 P-384 and ES512 P-521."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Is EdDSA safe to use for JWTs now?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes, and it is arguably the best-designed option: deterministic signatures, no nonce to mismanage, small keys and fast operations. The only consideration is support. Current browsers, major JWT libraries and most identity providers handle it; some older API gateways and hardware modules do not. Confirm every verifier in the path supports alg EdDSA with an OKP Ed25519 key before adopting it."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What is the difference between RS256 and PS256?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Both use RSA keys; they differ in padding. RS256 uses PKCS#1 v1.5, deterministic and universally supported. PS256 uses PSS, which is randomised and has a formal security proof. For signatures both are considered secure. New specifications lean towards PS256; the installed base is overwhelmingly RS256. Either is a reasonable choice, and the keys are interchangeable."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Why must the verifier pin the algorithm instead of reading it from the token?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Because the header is written by whoever made the token. If the verifier does whatever the header says, a token can declare itself unsigned, or declare an HMAC algorithm so that the verifier's public key is used as the HMAC secret. A verifier configured with an explicit allowlist of algorithms and its own key material ignores the header's suggestion, which closes both problems."
+          }
+        }
+      ]
+    }
+  ]
+}
+  </script>

@@ -1,0 +1,119 @@
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "TechArticle",
+      "@id": "https://layerbit.co.in/guides/three-way-merge-explained.html#article",
+      "headline": "Three-Way Merge Explained: Why Git Needs the Base Version and What a Conflict Really Is",
+      "name": "Three-Way Merge Explained: Why Git Needs the Base Version and What a Conflict Really Is",
+      "description": "Why a merge needs the common ancestor, the four cases that decide each line, when a conflict happens, how to read diff3 markers and the four honest resolutions.",
+      "url": "https://layerbit.co.in/guides/three-way-merge-explained.html",
+      "mainEntityOfPage": {
+        "@type": "WebPage",
+        "@id": "https://layerbit.co.in/guides/three-way-merge-explained.html"
+      },
+      "datePublished": "2026-10-17",
+      "dateModified": "2026-10-17",
+      "inLanguage": "en",
+      "wordCount": 1773,
+      "keywords": "three-way merge, git merge conflict, diff3, conflict markers, merge base, rebase conflicts, rerere, merge tool",
+      "articleSection": "Version Control",
+      "author": {
+        "@type": "Organization",
+        "name": "Layerbit Technologies",
+        "url": "https://layerbit.co.in/about.html"
+      },
+      "publisher": {
+        "@type": "Organization",
+        "name": "Layerbit Technologies",
+        "url": "https://layerbit.co.in/",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://layerbit.co.in/icon-512.png",
+          "width": 512,
+          "height": 512
+        }
+      },
+      "image": {
+        "@type": "ImageObject",
+        "url": "https://layerbit.co.in/og-image.png",
+        "width": 1200,
+        "height": 630
+      },
+      "isAccessibleForFree": true,
+      "proficiencyLevel": "Beginner"
+    },
+    {
+      "@type": "BreadcrumbList",
+      "@id": "https://layerbit.co.in/guides/three-way-merge-explained.html#breadcrumb",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://layerbit.co.in/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Guides",
+          "item": "https://layerbit.co.in/blog.html"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": "Three-way merge explained",
+          "item": "https://layerbit.co.in/guides/three-way-merge-explained.html"
+        }
+      ]
+    },
+    {
+      "@type": "FAQPage",
+      "@id": "https://layerbit.co.in/guides/three-way-merge-explained.html#faq",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "Why does Git say there is a conflict when we edited different lines?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Because the two changed regions were adjacent or overlapping once context is included. When one hunk ends where the next begins, the merge cannot determine the order in which to place them, so it asks. Adding content at the same end of a file is the most common case: both additions are kept with the Both option and the order is your decision."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What do the \u003c\u003c\u003c\u003c\u003c\u003c\u003c, ======= and \u003e\u003e\u003e\u003e\u003e\u003e\u003e markers mean?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "They fence off the two competing versions of a conflicting region: the lines between the first marker and ======= are the current branch's version, and the lines between ======= and the last marker are the incoming version. With the diff3 conflict style a ||||||| section between them shows the original text both sides changed. Resolving means replacing the whole block, markers included, with the text you want."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Should I resolve with ours, theirs, or both?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Look at the base. If both sides changed the same value to different values, one of them is the intended one and you pick it. If both sides added different things at the same place, both are usually wanted and the order is the only question. If both sides tried to do the same job in different ways, revert to the base and reimplement once. Read what each side was trying to achieve rather than which text looks tidier."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Can a merge succeed and still break the code?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes. A clean merge only guarantees that no text region was edited differently by both sides. Changes in separate files or separate functions that depend on each other — a rename on one branch and a new use of the old name on the other — merge cleanly and fail at build or run time. Treat the merge result as new code and run the tests on it."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What is the difference between a merge and a rebase conflict?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Mechanically none: both are three-way merges. A merge does it once with the branch tips and their common ancestor. A rebase does it once per commit, with the base moving each time, which is why the same conflict can reappear on consecutive commits. Git's rerere feature records each resolution and replays it when the identical conflict returns."
+          }
+        }
+      ]
+    }
+  ]
+}
+  </script>

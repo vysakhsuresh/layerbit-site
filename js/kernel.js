@@ -53,6 +53,10 @@
   ];
   var GUIDES = [
     ['json-syntax-errors-explained', 'JSON syntax errors explained'],
+    ['json-schema-validation-explained', 'JSON Schema validation explained'],
+    ['jsonpath-cheat-sheet', 'JSONPath cheat sheet'],
+    ['three-way-merge-explained', 'Three-way merge explained'],
+    ['jwt-signing-algorithms-compared', 'JWT signing algorithms compared'],
     ['jwt-decode-vs-verify', 'Decoding a JWT is not verifying it'],
     ['regex-catastrophic-backtracking', 'Regex catastrophic backtracking'],
     ['base64-explained', 'What Base64 actually does'],
