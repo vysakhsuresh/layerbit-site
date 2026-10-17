@@ -81,7 +81,7 @@ html {
 
 .info-panel h2 { color: #fff; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
 
-.info-panel h2 i { color: var(--accent-main); }
+.info-panel h2 i, .info-panel h2 svg.lucide { color: var(--accent-main); }
 
 .info-panel p { color: var(--text-muted); margin-bottom: 20px; line-height: 1.7; }
 
@@ -91,7 +91,7 @@ html {
 
 .use-case-card h3 { display: flex; align-items: center; gap: 8px; font-size: 1.1em; margin-bottom: 10px; color: #fff; }
 
-.use-case-card h3 i { color: var(--accent-main); width: 16px; }
+.use-case-card h3 i, .use-case-card h3 svg.lucide { color: var(--accent-main); width: 16px; }
 
 .use-case-card p { font-size: 0.9em; margin-bottom: 0; color: var(--text-muted); line-height: 1.6; }
 
@@ -101,9 +101,9 @@ html {
 
 .faq-question:hover { background: rgba(255,255,255,0.05); }
 
-.faq-question i { transition: transform 0.3s; color: var(--accent-main); }
+.faq-question i, .faq-question svg.lucide { transition: transform 0.3s; color: var(--accent-main); }
 
-.faq-question.active i { transform: rotate(180deg); }
+.faq-question.active i, .faq-question.active svg.lucide { transform: rotate(180deg); }
 
 .faq-answer { max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out; background: rgba(0,0,0,0.2); }
 
@@ -299,3 +299,39 @@ body.lb-modal-open { overflow: hidden; }
 
 /* "Send to" / share buttons that tools place in their pane headers */
 .lb-send { display: inline-flex; align-items: center; gap: 6px; }
+
+/* ---- Touch and focus polish (site-wide) ----
+   Phones paint a translucent blue rectangle over anything tapped (the WebKit/
+   Blink tap highlight). It is not a focus ring, so suppress it everywhere and
+   keep only the keyboard :focus-visible outline above, which follows the
+   element's own border radius. touch-action removes the 300ms double-tap wait
+   on controls so taps feel immediate. */
+* { -webkit-tap-highlight-color: transparent; }
+a, button, [role="button"], [tabindex], label, summary, select, input, textarea { touch-action: manipulation; }
+:focus:not(:focus-visible) { outline: none; }
+.fab, .chat-fab-premium, .search-pill .search-icon, .premium-bmc-btn { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+
+/* ---- Floating controls: one footprint on every page ----
+   Command Center (.fab), the Get Help orb (.chat-fab-premium), the home search
+   pill and the Support button share a 60px (50px on phones) footprint, 30px
+   (20px) screen offsets and a 26px (22px) glyph. Individual pages used to drift
+   by a few pixels, so geometry is pinned here and wins over page styles. */
+.fab, .chat-fab-premium, .search-pill, .premium-bmc-btn { height: 60px !important; }
+.fab, .chat-fab-premium { width: 60px !important; }
+.search-pill { min-width: 60px; padding: 0 17px !important; }
+.fab, .search-pill-wrapper { bottom: 30px !important; left: 30px !important; }
+.chat-fab-premium { bottom: 30px !important; right: 30px !important; }
+.premium-bmc-btn { top: 30px !important; right: 30px !important; padding: 0 22px !important; border-radius: 30px !important; justify-content: center; }
+.fab svg, .fab i, .chat-fab-premium svg, .chat-fab-premium i, .chat-fab-premium .chat-custom-img, .search-pill .search-icon { width: 26px !important; height: 26px !important; }
+.premium-bmc-btn i, .premium-bmc-btn svg.lucide { width: 22px !important; height: 22px !important; }
+@media (max-width: 600px) {
+  .fab, .chat-fab-premium, .search-pill, .premium-bmc-btn { height: 50px !important; }
+  .fab, .chat-fab-premium, .premium-bmc-btn { width: 50px !important; }
+  .search-pill { min-width: 50px; padding: 0 14px !important; }
+  .search-pill:not(.expanded) { width: 50px !important; }
+  .fab, .search-pill-wrapper { bottom: 20px !important; left: 20px !important; }
+  .chat-fab-premium { bottom: 20px !important; right: 20px !important; }
+  .premium-bmc-btn { top: 20px !important; right: 20px !important; padding: 0 !important; border-radius: 50% !important; }
+  .premium-bmc-btn span { display: none; }
+  .fab svg, .fab i, .chat-fab-premium svg, .chat-fab-premium i, .chat-fab-premium .chat-custom-img, .search-pill .search-icon, .premium-bmc-btn i, .premium-bmc-btn svg.lucide { width: 22px !important; height: 22px !important; }
+}
