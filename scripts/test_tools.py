@@ -2004,6 +2004,19 @@ def _(t):
     expect(not t.visible("#lbPalette"), "palette did not close")
 
 
+@case("base64", "typical", "kernel: homepage has no header pills; Ctrl+K still opens the palette")
+def _(t):
+    base = t.page.url.split("/tools/")[0]
+    t.page.goto(base + "/index.html", wait_until="load")
+    t.wait(150)
+    n = t.call("document.querySelectorAll('.lb-header-tools, #lbPaletteBtn').length")
+    expect(n == 0, f"homepage header still has {n} kernel pill element(s)")
+    t.page.keyboard.press("Control+k")
+    t.wait(80)
+    expect(t.visible("#lbPalette"), "palette did not open on the homepage")
+    t.page.keyboard.press("Escape")
+
+
 @case("base64", "typical", "kernel: share link round-trips input through the #fragment")
 def _(t):
     t.set("plainText", "Hello share — ünïcode 🌍")
