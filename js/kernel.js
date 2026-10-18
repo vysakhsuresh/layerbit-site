@@ -57,6 +57,11 @@
     ['layerlink-viewer', 'LayerLink Viewer', 'screen share viewer', []]
   ];
   var GUIDES = [
+    ['how-to-create-a-strong-password', 'Strong passwords: length beats symbols'],
+    ['wcag-color-contrast-explained', 'WCAG color contrast explained'],
+    ['twos-complement-explained', "Two's complement explained"],
+    ['naming-conventions-camelcase-snake-case', 'Naming conventions by language'],
+    ['markdown-cheat-sheet', 'Markdown cheat sheet'],
     ['json-syntax-errors-explained', 'JSON syntax errors explained'],
     ['json-schema-validation-explained', 'JSON Schema validation explained'],
     ['jsonpath-cheat-sheet', 'JSONPath cheat sheet'],

@@ -1,0 +1,33 @@
+name: IndexNow
+
+# After GitHub Pages publishes a new build, tell IndexNow-enabled search
+# engines (Bing, Yandex, Seznam, Naver) which pages changed.
+on:
+  page_build:
+  workflow_run:
+    workflows: ["pages-build-deployment"]
+    types: [completed]
+  workflow_dispatch:
+    inputs:
+      all:
+        description: "Submit every URL in the sitemap, not just recently changed ones"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: indexnow
+  cancel-in-progress: true
+
+jobs:
+  submit:
+    runs-on: ubuntu-latest
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
+    steps:
+      - uses: actions/checkout@v4
+      - name: Wait for the new build to be served
+        run: sleep 60
+      - name: Submit changed URLs
+        run: python3 scripts/indexnow.py ${{ github.event.inputs.all == 'true' && '--all' || '' }}

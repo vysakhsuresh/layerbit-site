@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Naming conventions for Python, JavaScript, Java, C#, Go, Rust, SQL, URLs and CSS, how to handle acronyms, and how to convert safely at API boundaries." />
+  <title>camelCase vs snake_case vs kebab-case by Language</title>
+  <meta name="google-adsense-account" content="ca-pub-6072772587431629" />
+  <link rel="preload" href="../fonts/space-grotesk-latin.woff2" as="font" type="font/woff2" crossorigin />
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('consent', 'default', {ad_storage: 'denied', ad_user_data: 'denied', ad_personalization: 'denied', analytics_storage: 'denied', wait_for_update: 500, region: ["AT", "BE", "BG", "HR", "CY", "CZ", "DK", "EE", "FI", "FR", "DE", "GR", "HU", "IE", "IT", "LV", "LT", "LU", "MT", "NL", "PL", "PT", "RO", "SK", "SI", "ES", "SE", "IS", "LI", "NO", "GB", "CH"]});
+    gtag('consent', 'default', {ad_storage: 'granted', ad_user_data: 'granted', ad_personalization: 'granted', analytics_storage: 'granted'});
+    try { var lbc = localStorage.getItem('layerbit-cookie-consent'); if (!lbc && navigator.globalPrivacyControl === true) lbc = 'rejected'; if (lbc === 'accepted' || lbc === 'rejected') { var v = lbc === 'accepted' ? 'granted' : 'denied'; gtag('consent', 'update', {ad_storage: v, ad_user_data: v, ad_personalization: v, analytics_storage: v}); } } catch (e) {}
+  </script>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-ERX8MNPPP5"></script>
+  <script>
+    gtag('js', new Date());
+    gtag('config', 'G-ERX8MNPPP5');
+  </script>
+  <link rel="canonical" href="https://layerbit.co.in/guides/naming-conventions-camelcase-snake-case.html" />
+  <meta name="robots" content="max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+  <meta property="og:type" content="article" />
+  <meta property="article:published_time" content="2026-10-18" />
+  <meta property="article:modified_time" content="2026-10-18" />
+  <meta property="article:author" content="https://layerbit.co.in/about.html" />
+  <meta property="og:url" content="https://layerbit.co.in/guides/naming-conventions-camelcase-snake-case.html" />
+  <meta property="og:site_name" content="Layerbit" />
+  <meta property="og:title" content="camelCase vs snake_case vs kebab-case by Language" />
+  <meta property="og:description" content="Naming conventions for Python, JavaScript, Java, C#, Go, Rust, SQL, URLs and CSS, how to handle acronyms, and how to convert safely at API boundaries." />
+  <meta property="og:image" content="https://layerbit.co.in/images/og/guides-naming-conventions-camelcase-snake-case.jpg" />
+  <meta property="og:image:type" content="image/jpeg" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="camelCase vs snake_case vs kebab-case by Language" />
+  <meta property="og:locale" content="en" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="camelCase vs snake_case vs kebab-case by Language" />
+  <meta name="twitter:description" content="Naming conventions for Python, JavaScript, Java, C#, Go, Rust, SQL, URLs and CSS, how to handle acronyms, and how to convert safely at API boundaries." />
+  <meta name="twitter:image" content="https://layerbit.co.in/images/og/guides-naming-conventions-camelcase-snake-case.jpg" />
+  <meta name="twitter:image:alt" content="camelCase vs snake_case vs kebab-case by Language" />
+  <meta name="theme-color" content="#0a0c10" />
+  <script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "TechArticle",
+      "@id": "https://layerbit.co.in/guides/naming-conventions-camelcase-snake-case.html#article",
+      "headline": "camelCase vs snake_case vs kebab-case: Naming Conventions by Language",
+      "name": "camelCase vs snake_case vs kebab-case: Naming Conventions by Language",
+      "description": "Naming conventions for Python, JavaScript, Java, C#, Go, Rust, SQL, URLs and CSS, how to handle acronyms, and how to convert safely at API boundaries.",
+      "url": "https://layerbit.co.in/guides/naming-conventions-camelcase-snake-case.html",
+      "mainEntityOfPage": {
+        "@type": "WebPage",
+        "@id": "https://layerbit.co.in/guides/naming-conventions-camelcase-snake-case.html"
+      },
+      "datePublished": "2026-10-18",
+      "dateModified": "2026-10-18",
+      "inLanguage": "en",
+      "wordCount": 1298,
+      "keywords": "camelcase vs snake_case, naming conventions, kebab-case, pascalcase, pep 8 naming, json naming",
+      "articleSection": "Code Style",
+      "author": {
+        "@type": "Organization",
+        "name": "Layerbit Technologies",
+        "url": "https://layerbit.co.in/about.html"
+      },
+      "publisher": {
+        "@type": "Organization",
+        "name": "Layerbit Technologies",
+        "url": "https://layerbit.co.in/",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://layerbit.co.in/icon-512.png",
+          "width": 512,
+          "height": 512
+        }
+      },
+      "image": {
+        "@type": "ImageObject",
+        "url": "https://layerbit.co.in/images/og/guides-naming-conventions-camelcase-snake-case.jpg",
+        "width": 1200,
+        "height": 630
+      },
+      "isAccessibleForFree": true,
+      "proficiencyLevel": "Beginner"
+    },
+    {
+      "@type": "BreadcrumbList",
+      "@id": "https://layerbit.co.in/guides/naming-conventions-camelcase-snake-case.html#breadcrumb",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://layerbit.co.in/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Guides",
+          "item": "https://layerbit.co.in/blog.html"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": "Naming conventions",
+          "item": "https://layerbit.co.in/guides/naming-conventions-camelcase-snake-case.html"
+        }
+      ]
+    },
+    {
+      "@type": "FAQPage",
+      "@id": "https://layerbit.co.in/guides/naming-conventions-camelcase-snake-case.html#faq",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "What is the difference between camelCase and PascalCase?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Only the first letter. camelCase starts in lower case and capitalises each following word, as in orderTotal; PascalCase capitalises every word including the first, as in OrderTotal. Most languages use camelCase for variables and functions and PascalCase for classes and types. C# also uses PascalCase for methods and properties, and Go uses it to mark a name as exported."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Should I use snake_case or camelCase in JSON?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Either is acceptable, as long as an API uses one style throughout. camelCase matches JavaScript clients and Google's JSON style guide; snake_case matches Python and Ruby backends and is used by APIs such as GitHub and Stripe. Pick the one that matches most of your consumers, document it, and let the serializer convert to your server's internal style."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Which naming convention does Python use?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "PEP 8, Python's style guide, uses snake_case for functions, variables, methods and module names, PascalCase (which it calls CapWords) for classes and exceptions, and CONSTANT_CASE for module-level constants. A single leading underscore marks a name as internal, and a double leading underscore triggers name mangling inside classes."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Are hyphens or underscores better in URLs?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Hyphens. Google's URL structure guidance recommends hyphens to separate words because search engines treat a hyphen as a word separator, while an underscore may join words together. Use lower case as well, since paths are case-sensitive on most servers and mixed case creates duplicate addresses for the same page."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How should acronyms be written in camelCase?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Follow your language's style guide. Go keeps acronyms in capitals, as in userID and ServeHTTP. Google's Java and JavaScript guides and the Rust guidelines treat them as words, as in userId and XmlParser, which keeps word boundaries readable. .NET keeps two-letter acronyms capitalised and treats longer ones as words. Consistency within a codebase matters more than which rule you choose."
+          }
+        }
+      ]
+    }
+  ]
+}
+  </script>
+
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6072772587431629" crossorigin="anonymous"></script>
+
+  <script src="../js/vendor/lucide.min.js" async></script>
+
+  <link rel="icon" href="../favicon.ico" sizes="16x16 32x32 48x48" />
+  <link rel="icon" href="../favicon-48.png" type="image/png" sizes="48x48" />
+  <link rel="icon" href="../icon-192.png" type="image/png" sizes="192x192" />
+  <link rel="manifest" href="../manifest.json" />
+  <link rel="alternate" type="application/atom+xml" title="Layerbit developer guides" href="https://layerbit.co.in/feed.xml" />
+  <link rel="apple-touch-icon" href="../apple-touch-icon.png" />
+  <link rel="stylesheet" href="../css/base.css" />
+  <link rel="stylesheet" href="../css/article.css" />
+
+  <style>
+
+    /* Long-form guide styling lives in css/article.css, linked from this page's head. */
+  
+  </style>
+</head>
+<body>
+  <header>
+    <a href="../" class="brand">
+      <svg width="36" height="36" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <polygon points="32,20 54,28 32,36 10,28" stroke="#f8fafc" stroke-width="4" stroke-linejoin="round"/>
+        <polyline points="10,38 32,46 54,38" stroke="#f8fafc" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+        <polyline points="10,48 32,56 54,48" stroke="#f8fafc" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+        <rect x="50" y="10" width="10" height="10" rx="2" fill="#00f2fe" />
+      </svg>
+      Layerbit
+    </a>
+  </header>
+
+  <nav class="crumbs" aria-label="Breadcrumb">
+    <a href="../">Home</a>
+    <span class="sep">/</span>
+    <a href="../blog.html">Guides</a>
+    <span class="sep">/</span>
+    <span aria-current="page">Naming conventions</span>
+  </nav>
+
+  <main id="main">
+  <article class="article">
+    <header class="article-head">
+      <span class="article-kicker">Code Style</span>
+      <h1>camelCase vs snake_case vs kebab-case: Naming Conventions by Language</h1>
+      <p class="article-standfirst">Every language community settled on its own way of joining words into identifiers, and the style guides are explicit about it. Following them is not about taste: linters flag deviations, serializers depend on them, and a mismatch at a boundary, such as a JSON API in one style feeding a database in another, is a steady source of bugs. This is a reference to what each ecosystem expects, how acronyms are handled, and how to convert safely at the edges.</p>
+      <div class="article-meta">
+        <span class="byline">Layerbit Engineering</span>
+        <span><i data-lucide="calendar"></i>Published 18 October 2026</span>
+        <span><i data-lucide="clock"></i>8 min read</span>
+      </div>
+    </header>
+
+    <div class="takeaways">
+      <h2><i data-lucide="list-checks"></i> The short version</h2>
+      <ul>
+        <li><strong>camelCase</strong> for variables and functions in JavaScript, TypeScript, Java, Kotlin and Swift; <strong>snake_case</strong> in Python, Ruby and Rust.</li>
+        <li><strong>PascalCase</strong> for classes and types almost everywhere, and for all public members in C# and exported names in Go.</li>
+        <li><strong>CONSTANT_CASE</strong> for constants and environment variables; <strong>kebab-case</strong> for URLs, CSS classes, file names and CLI flags.</li>
+        <li>Pick one acronym rule and apply it consistently: most modern style guides treat acronyms as words (<code>XmlParser</code>, <code>userId</code>); Go keeps them in capitals (<code>userID</code>).</li>
+        <li>Convert at the boundary with your serializer's naming policy, not by hand in business logic.</li>
+      </ul>
+    </div>
+
+    <div class="prose">
+      <h2 id="styles">The styles, named</h2>
+      <div class="table-wrap">
+        <table>
+        <thead><tr><th>Style</th><th>Example</th><th>Also called</th></tr></thead>
+        <tbody>
+          <tr><td>camelCase</td><td><code>customerOrderId</code></td><td>lower camel case, dromedary case</td></tr>
+          <tr><td>PascalCase</td><td><code>CustomerOrderId</code></td><td>upper camel case, StudlyCaps, CapWords</td></tr>
+          <tr><td>snake_case</td><td><code>customer_order_id</code></td><td>lower snake case</td></tr>
+          <tr><td>CONSTANT_CASE</td><td><code>CUSTOMER_ORDER_ID</code></td><td>SCREAMING_SNAKE_CASE, upper snake case</td></tr>
+          <tr><td>kebab-case</td><td><code>customer-order-id</code></td><td>dash case, lisp case, spinal case</td></tr>
+          <tr><td>Train-Case</td><td><code>Customer-Order-Id</code></td><td>HTTP header case</td></tr>
+          <tr><td>dot.case</td><td><code>customer.order.id</code></td><td>used for configuration keys and log fields</td></tr>
+        </tbody>
+      </table>
+      </div>
+      <p>Readability research is mixed: eye-tracking studies have found snake_case read slightly faster by some people and camelCase by others, mostly according to what they were used to. The practical argument is consistency. A codebase where every name follows the ecosystem's convention is easier to search, easier to review, and works with the tools that assume it.</p>
+
+      <h2 id="languages">By language</h2>
+      <div class="table-wrap">
+        <table>
+        <thead><tr><th>Language</th><th>Variables &amp; functions</th><th>Types &amp; classes</th><th>Constants</th><th>Source</th></tr></thead>
+        <tbody>
+          <tr><td>Python</td><td><code>snake_case</code></td><td><code>PascalCase</code></td><td><code>CONSTANT_CASE</code></td><td>PEP 8</td></tr>
+          <tr><td>JavaScript / TypeScript</td><td><code>camelCase</code></td><td><code>PascalCase</code></td><td><code>CONSTANT_CASE</code> or <code>camelCase</code></td><td>Common practice, Google style guides</td></tr>
+          <tr><td>Java / Kotlin</td><td><code>camelCase</code></td><td><code>PascalCase</code></td><td><code>CONSTANT_CASE</code></td><td>Java conventions, Google Java Style</td></tr>
+          <tr><td>C#</td><td><code>camelCase</code> locals and parameters; <code>PascalCase</code> methods and properties</td><td><code>PascalCase</code>, interfaces prefixed <code>I</code></td><td><code>PascalCase</code></td><td>.NET design guidelines</td></tr>
+          <tr><td>Go</td><td><code>camelCase</code> unexported, <code>PascalCase</code> exported</td><td>same rule</td><td>same rule</td><td>Effective Go</td></tr>
+          <tr><td>Rust</td><td><code>snake_case</code></td><td><code>PascalCase</code></td><td><code>CONSTANT_CASE</code></td><td>Rust API guidelines (RFC 430)</td></tr>
+          <tr><td>Ruby</td><td><code>snake_case</code></td><td><code>PascalCase</code></td><td><code>CONSTANT_CASE</code></td><td>Ruby style guide</td></tr>
+          <tr><td>PHP</td><td><code>camelCase</code> methods</td><td><code>PascalCase</code></td><td><code>CONSTANT_CASE</code></td><td>PSR-1</td></tr>
+          <tr><td>Swift</td><td><code>camelCase</code></td><td><code>PascalCase</code></td><td><code>camelCase</code></td><td>Swift API design guidelines</td></tr>
+        </tbody>
+      </table>
+      </div>
+      <p>In Go the case is not just style: a name that starts with a capital letter is exported from its package, and one that starts with a lower-case letter is private, so renaming a function from <code>parseConfig</code> to <code>ParseConfig</code> changes its visibility. In C#, the .NET guidelines put public members in PascalCase, and the runtime's own code base uses <code>_camelCase</code> for private fields.</p>
+
+      <h2 id="outside">Outside the code: data, URLs and infrastructure</h2>
+      <ul>
+        <li><strong>SQL.</strong> Use <code>snake_case</code> for tables and columns. PostgreSQL folds unquoted identifiers to lower case, so a column created as <code>"orderId"</code> must be quoted in every query forever after, while <code>order_id</code> never needs quotes.</li>
+        <li><strong>JSON APIs.</strong> Both camelCase (Google's JSON style guide, most JavaScript-first APIs) and snake_case (GitHub, Stripe, Slack) are common. Choose one per API and never mix them within a payload.</li>
+        <li><strong>URLs.</strong> Use lowercase kebab-case slugs. Google's own guidance recommends hyphens rather than underscores to separate words in URLs, and lower case avoids duplicate addresses on case-sensitive servers.</li>
+        <li><strong>CSS.</strong> Class names and custom properties are conventionally kebab-case (<code>.card-header</code>, <code>--brand-text</code>); the BEM methodology adds <code>block__element--modifier</code>.</li>
+        <li><strong>Environment variables.</strong> <code>CONSTANT_CASE</code>, such as <code>DATABASE_URL</code>, by universal convention and because many shells do not accept hyphens in variable names.</li>
+        <li><strong>HTTP headers.</strong> Written in Train-Case by convention (<code>Content-Type</code>), but header names are case-insensitive, and HTTP/2 and HTTP/3 transmit them in lower case. Never compare header names case-sensitively.</li>
+        <li><strong>Files and packages.</strong> Kebab-case for web assets and npm packages, which must be lower case; snake_case for Python modules, which cannot contain hyphens because the file name becomes the import name.</li>
+      </ul>
+
+      <h2 id="acronyms">Acronyms and initialisms</h2>
+      <p>The hardest case in camelCase and PascalCase is a name that contains an acronym. There are two schools. One keeps acronyms in capitals: <code>XMLHttpRequest</code>, <code>userID</code>, <code>ServeHTTP</code>. Go's code review guidelines require this, and some browser APIs follow it. The other treats an acronym as an ordinary word: <code>XmlHttpRequest</code>, <code>userId</code>, <code>HtmlParser</code>. Google's Java and JavaScript style guides, the Rust API guidelines and most modern codebases prefer this, because consecutive capitals make word boundaries ambiguous: is <code>HTTPSURL</code> "HTTPS URL" or "HTTP SURL"? The .NET guidelines split the difference, keeping two-letter acronyms in capitals (<code>IOStream</code>) and treating longer ones as words (<code>XmlReader</code>).</p>
+      <p>Whichever rule a project follows, conversion tools need to understand both. A good converter splits <code>XMLHttpRequest</code> into <em>XML · Http · Request</em> and <code>getUserID2FA</code> into <em>get · User · ID · 2 · FA</em>, so that the snake_case form is <code>xml_http_request</code> rather than <code>x_m_l_http_request</code>.</p>
+
+      <h2 id="convert">Converting at the boundary</h2>
+      <p>When data crosses from one convention to another, convert once, at the edge, with the serializer's built-in naming policy. Hand-written mapping code drifts out of date the first time someone adds a field. Most ecosystems support it directly:</p>
+      <pre><code># Python, Pydantic v2: snake_case fields, camelCase JSON
+class Order(BaseModel):
+    model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
+    order_id: int
+
+// Java, Jackson: camelCase fields, snake_case JSON
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+class Order { long orderId; }
+
+// C#, System.Text.Json: PascalCase properties, camelCase JSON
+new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
+
+// Rust, serde
+#[derive(Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct Order { order_id: u64 }</code></pre>
+      <p>For one-off jobs, such as renaming a column list, generating constants from a spreadsheet header or turning a page title into a URL slug, a converter that works line by line is faster. Our <a href="../tools/text-case-converter.html">text case converter</a> converts a pasted list of names into seventeen styles at once and handles acronyms and digits the way described above.</p>
+
+      <div class="tool-cta">
+        <div>
+          <strong>Convert names between conventions</strong>
+          <span>camelCase, PascalCase, snake_case, CONSTANT_CASE, kebab-case, Train-Case, dot.case, title case and URL slugs, line by line, with acronym-aware word splitting. Runs in your browser.</span>
+        </div>
+        <a class="btn-cta" href="../tools/text-case-converter.html">Open the text case converter <i data-lucide="arrow-right"></i></a>
+      </div>
+
+      <div class="further">
+        <h2>Related guides and tools</h2>
+        <div class="further-grid">
+          <a class="further-card" href="json-syntax-errors-explained.html">
+            <strong>JSON syntax errors explained</strong>
+            <span>What breaks when keys and values cross language boundaries.</span>
+          </a>
+          <a class="further-card" href="percent-encoding-explained.html">
+            <strong>URL encoding explained</strong>
+            <span>What may and may not appear in a URL slug.</span>
+          </a>
+          <a class="further-card" href="../tools/json-validator.html">
+            <strong>JSON Formatter &amp; Validator</strong>
+            <span>Generate typed models from JSON in eight languages.</span>
+          </a>
+        </div>
+      </div>
+
+      <h2 id="faq">Frequently asked questions</h2>
+      <div class="faq-container">
+        <div class="faq-item">
+          <button class="faq-question">What is the difference between camelCase and PascalCase? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>Only the first letter. camelCase starts in lower case and capitalises each following word, as in orderTotal; PascalCase capitalises every word including the first, as in OrderTotal. Most languages use camelCase for variables and functions and PascalCase for classes and types. C# also uses PascalCase for methods and properties, and Go uses it to mark a name as exported.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">Should I use snake_case or camelCase in JSON? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>Either is acceptable, as long as an API uses one style throughout. camelCase matches JavaScript clients and Google's JSON style guide; snake_case matches Python and Ruby backends and is used by APIs such as GitHub and Stripe. Pick the one that matches most of your consumers, document it, and let the serializer convert to your server's internal style.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">Which naming convention does Python use? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>PEP 8, Python's style guide, uses snake_case for functions, variables, methods and module names, PascalCase (which it calls CapWords) for classes and exceptions, and CONSTANT_CASE for module-level constants. A single leading underscore marks a name as internal, and a double leading underscore triggers name mangling inside classes.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">Are hyphens or underscores better in URLs? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>Hyphens. Google's URL structure guidance recommends hyphens to separate words because search engines treat a hyphen as a word separator, while an underscore may join words together. Use lower case as well, since paths are case-sensitive on most servers and mixed case creates duplicate addresses for the same page.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">How should acronyms be written in camelCase? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>Follow your language's style guide. Go keeps acronyms in capitals, as in userID and ServeHTTP. Google's Java and JavaScript guides and the Rust guidelines treat them as words, as in userId and XmlParser, which keeps word boundaries readable. .NET keeps two-letter acronyms capitalised and treats longer ones as words. Consistency within a codebase matters more than which rule you choose.</p></div>
+        </div>
+      </div>
+    </div>
+  </article>
+  </main>
+
+  <a href="../" id="smartBackBtn" class="fab" aria-label="Command Center" title="Command Center">
+    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="filter: drop-shadow(0 0 8px rgba(56, 189, 248, 0.5));">
+      <path d="M12 2L2 7l10 5 10-5-10-5z" stroke="#38bdf8" stroke-width="2" stroke-linejoin="round" fill="rgba(56,189,248,0.2)"/>
+      <path d="M2 17l10 5 10-5M2 12l10 5 10-5" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </a>
+
+  <footer>
+    <nav class="site-dir" aria-label="Site directory">
+      <div class="site-dir-col">
+        <h2 class="site-dir-title">Developer tools</h2>
+        <ul>
+          <li><a href="../tools/json-validator.html">JSON Formatter &amp; Validator</a></li>
+          <li><a href="../tools/text-diff-checker.html">Text Diff Checker &amp; Merge Tool</a></li>
+          <li><a href="../tools/regex-tester.html">Regex Tester &amp; Debugger</a></li>
+          <li><a href="../tools/jwt-decoder.html">JWT Decoder &amp; Verifier</a></li>
+          <li><a href="../tools/flow.html">Flow: Data Pipeline Builder</a></li>
+          <li><a href="../tools/sql-formatter.html">SQL Formatter &amp; Beautifier</a></li>
+          <li><a href="../tools/base64.html">Base64 Encoder &amp; Decoder</a></li>
+          <li><a href="../tools/url-encoder.html">URL Encoder &amp; Decoder</a></li>
+          <li><a href="../tools/html-escape-unescape.html">HTML Escape &amp; Unescape</a></li>
+          <li><a href="../tools/hash-generator.html">Hash &amp; HMAC Generator</a></li>
+          <li><a href="../tools/json-to-table.html">JSON to Table Viewer</a></li>
+          <li><a href="../tools/csv-to-json.html">CSV to JSON Converter</a></li>
+          <li><a href="../tools/yaml-json-converter.html">YAML ⇄ JSON Converter</a></li>
+          <li><a href="../tools/xml-formatter.html">XML Formatter &amp; XPath Tester</a></li>
+          <li><a href="../tools/cron-generator.html">Cron Expression Generator</a></li>
+          <li><a href="../tools/timestamp-converter.html">Unix Timestamp Converter</a></li>
+          <li><a href="../tools/uuid-generator.html">UUID &amp; ULID Generator</a></li>
+          <li><a href="../tools/subnet-calculator.html">CIDR &amp; Subnet Calculator</a></li>
+          <li><a href="../tools/unicode-inspector.html">Unicode &amp; Invisible Character Inspector</a></li>
+          <li><a href="../tools/log-analyzer.html">Log File Analyzer</a></li>
+          <li><a href="../tools/qr-barcode.html">QR Code &amp; Barcode Generator</a></li>
+          <li><a href="../tools/password-generator.html">Strong Password Generator</a></li>
+          <li><a href="../tools/color-converter.html">Color Converter &amp; Contrast Checker</a></li>
+          <li><a href="../tools/number-base-converter.html">Number Base Converter</a></li>
+          <li><a href="../tools/text-case-converter.html">Text Case Converter &amp; Word Counter</a></li>
+          <li><a href="../tools/markdown-preview.html">Markdown Editor &amp; Preview</a></li>
+          <li><a href="../tools/pint-ae-checker.html">UAE PINT-AE E-Invoice Checker</a></li>
+          <li><a href="../tools/layerlink-sharer.html">LayerLink Screen Sharing</a></li>
+        </ul>
+      </div>
+      <div class="site-dir-col">
+        <h2 class="site-dir-title">Guides</h2>
+        <ul>
+          <li><a href="../guides/how-to-create-a-strong-password.html">Strong passwords: length beats symbols</a></li>
+          <li><a href="../guides/wcag-color-contrast-explained.html">WCAG color contrast explained</a></li>
+          <li><a href="../guides/twos-complement-explained.html">Two's complement explained</a></li>
+          <li><a href="../guides/naming-conventions-camelcase-snake-case.html">Naming conventions by language</a></li>
+          <li><a href="../guides/markdown-cheat-sheet.html">Markdown cheat sheet</a></li>
+          <li><a href="../guides/json-syntax-errors-explained.html">JSON syntax errors explained</a></li>
+          <li><a href="../guides/json-schema-validation-explained.html">JSON Schema validation explained</a></li>
+          <li><a href="../guides/jsonpath-cheat-sheet.html">JSONPath cheat sheet</a></li>
+          <li><a href="../guides/three-way-merge-explained.html">Three-way merge explained</a></li>
+          <li><a href="../guides/jwt-signing-algorithms-compared.html">JWT signing algorithms compared</a></li>
+          <li><a href="../guides/jwt-decode-vs-verify.html">Decoding a JWT is not verifying it</a></li>
+          <li><a href="../guides/regex-catastrophic-backtracking.html">Regex catastrophic backtracking</a></li>
+          <li><a href="../guides/base64-explained.html">What Base64 actually does</a></li>
+          <li><a href="../guides/percent-encoding-explained.html">URL encoding explained</a></li>
+          <li><a href="../guides/html-escaping-and-xss-contexts.html">HTML escaping and XSS contexts</a></li>
+          <li><a href="../guides/hashing-vs-encryption-vs-encoding.html">Hashing vs encryption vs encoding</a></li>
+          <li><a href="../guides/csv-edge-cases.html">Why CSV is not really a format</a></li>
+          <li><a href="../guides/yaml-gotchas.html">YAML's sharpest edges</a></li>
+          <li><a href="../guides/sql-formatting-and-dialects.html">SQL dialects compared</a></li>
+          <li><a href="../guides/cron-expressions-explained.html">Cron expression rules</a></li>
+          <li><a href="../guides/unix-time-and-time-zones.html">Unix time and time zones</a></li>
+          <li><a href="../guides/uuid-v4-vs-v7-database-keys.html">UUID v4 vs v7 for database keys</a></li>
+          <li><a href="../guides/subnetting-explained.html">Subnetting explained</a></li>
+          <li><a href="../guides/invisible-unicode-characters.html">Invisible Unicode characters</a></li>
+          <li><a href="../guides/xpath-cheat-sheet.html">XPath cheat sheet</a></li>
+          <li><a href="../guides/uae-einvoicing-pint-ae.html">UAE e-invoicing: PINT-AE</a></li>
+        </ul>
+      </div>
+      <div class="site-dir-col">
+        <h2 class="site-dir-title">Services</h2>
+        <ul>
+          <li><a href="../tools/erp-development.html">Custom ERP development</a></li>
+          <li><a href="../tools/api-automation.html">API integration &amp; automation</a></li>
+          <li><a href="../tools/app-development.html">Mobile app development</a></li>
+          <li><a href="../tools/custom-scripts.html">Custom scripts &amp; automation</a></li>
+          <li><a href="../tools/static-sites.html">Static website engineering</a></li>
+          <li><a href="../tools/portfolio-design.html">Portfolio website design</a></li>
+        </ul>
+      </div>
+    </nav>
+    <div class="footer-bottom">
+      <div class="footer-copy">&copy; 2025 - 2026 <strong>Layerbit Technologies</strong>. All rights reserved.</div>
+      <div class="footer-links">
+        <a href="../about.html">About</a>
+        <a href="../blog.html">Developer Blog</a>
+        <a href="../contact.html">Contact</a>
+        <a href="../privacy.html">Privacy Policy</a>
+        <a href="../terms.html">Terms of Service</a>
+        <a href="#" data-cookie-settings>Your privacy choices</a>
+      </div>
+    </div>
+  </footer>
+  <script src="../js/kernel.js"></script>
+
+  <script src="../js/shared.js"></script>
+</body>
+</html>

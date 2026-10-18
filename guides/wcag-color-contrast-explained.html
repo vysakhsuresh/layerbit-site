@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="How the WCAG contrast ratio is calculated, the 4.5:1 and 3:1 rules for text and UI, why brand colors fail, how to fix them, and what APCA changes." />
+  <title>WCAG Color Contrast Explained: AA, AAA and APCA</title>
+  <meta name="google-adsense-account" content="ca-pub-6072772587431629" />
+  <link rel="preload" href="../fonts/space-grotesk-latin.woff2" as="font" type="font/woff2" crossorigin />
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('consent', 'default', {ad_storage: 'denied', ad_user_data: 'denied', ad_personalization: 'denied', analytics_storage: 'denied', wait_for_update: 500, region: ["AT", "BE", "BG", "HR", "CY", "CZ", "DK", "EE", "FI", "FR", "DE", "GR", "HU", "IE", "IT", "LV", "LT", "LU", "MT", "NL", "PL", "PT", "RO", "SK", "SI", "ES", "SE", "IS", "LI", "NO", "GB", "CH"]});
+    gtag('consent', 'default', {ad_storage: 'granted', ad_user_data: 'granted', ad_personalization: 'granted', analytics_storage: 'granted'});
+    try { var lbc = localStorage.getItem('layerbit-cookie-consent'); if (!lbc && navigator.globalPrivacyControl === true) lbc = 'rejected'; if (lbc === 'accepted' || lbc === 'rejected') { var v = lbc === 'accepted' ? 'granted' : 'denied'; gtag('consent', 'update', {ad_storage: v, ad_user_data: v, ad_personalization: v, analytics_storage: v}); } } catch (e) {}
+  </script>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-ERX8MNPPP5"></script>
+  <script>
+    gtag('js', new Date());
+    gtag('config', 'G-ERX8MNPPP5');
+  </script>
+  <link rel="canonical" href="https://layerbit.co.in/guides/wcag-color-contrast-explained.html" />
+  <meta name="robots" content="max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+  <meta property="og:type" content="article" />
+  <meta property="article:published_time" content="2026-10-18" />
+  <meta property="article:modified_time" content="2026-10-18" />
+  <meta property="article:author" content="https://layerbit.co.in/about.html" />
+  <meta property="og:url" content="https://layerbit.co.in/guides/wcag-color-contrast-explained.html" />
+  <meta property="og:site_name" content="Layerbit" />
+  <meta property="og:title" content="WCAG Color Contrast Explained: AA, AAA and APCA" />
+  <meta property="og:description" content="How the WCAG contrast ratio is calculated, the 4.5:1 and 3:1 rules for text and UI, why brand colors fail, how to fix them, and what APCA changes." />
+  <meta property="og:image" content="https://layerbit.co.in/images/og/guides-wcag-color-contrast-explained.jpg" />
+  <meta property="og:image:type" content="image/jpeg" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="WCAG Color Contrast Explained: AA, AAA and APCA" />
+  <meta property="og:locale" content="en" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="WCAG Color Contrast Explained: AA, AAA and APCA" />
+  <meta name="twitter:description" content="How the WCAG contrast ratio is calculated, the 4.5:1 and 3:1 rules for text and UI, why brand colors fail, how to fix them, and what APCA changes." />
+  <meta name="twitter:image" content="https://layerbit.co.in/images/og/guides-wcag-color-contrast-explained.jpg" />
+  <meta name="twitter:image:alt" content="WCAG Color Contrast Explained: AA, AAA and APCA" />
+  <meta name="theme-color" content="#0a0c10" />
+  <script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "TechArticle",
+      "@id": "https://layerbit.co.in/guides/wcag-color-contrast-explained.html#article",
+      "headline": "WCAG Color Contrast Explained: Ratios, AA, AAA and APCA",
+      "name": "WCAG Color Contrast Explained: Ratios, AA, AAA and APCA",
+      "description": "How the WCAG contrast ratio is calculated, the 4.5:1 and 3:1 rules for text and UI, why brand colors fail, how to fix them, and what APCA changes.",
+      "url": "https://layerbit.co.in/guides/wcag-color-contrast-explained.html",
+      "mainEntityOfPage": {
+        "@type": "WebPage",
+        "@id": "https://layerbit.co.in/guides/wcag-color-contrast-explained.html"
+      },
+      "datePublished": "2026-10-18",
+      "dateModified": "2026-10-18",
+      "inLanguage": "en",
+      "wordCount": 1886,
+      "keywords": "wcag contrast, color contrast ratio, 4.5:1, accessible colors, apca, wcag aa aaa",
+      "articleSection": "Accessibility",
+      "author": {
+        "@type": "Organization",
+        "name": "Layerbit Technologies",
+        "url": "https://layerbit.co.in/about.html"
+      },
+      "publisher": {
+        "@type": "Organization",
+        "name": "Layerbit Technologies",
+        "url": "https://layerbit.co.in/",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://layerbit.co.in/icon-512.png",
+          "width": 512,
+          "height": 512
+        }
+      },
+      "image": {
+        "@type": "ImageObject",
+        "url": "https://layerbit.co.in/images/og/guides-wcag-color-contrast-explained.jpg",
+        "width": 1200,
+        "height": 630
+      },
+      "isAccessibleForFree": true,
+      "proficiencyLevel": "Intermediate"
+    },
+    {
+      "@type": "BreadcrumbList",
+      "@id": "https://layerbit.co.in/guides/wcag-color-contrast-explained.html#breadcrumb",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://layerbit.co.in/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Guides",
+          "item": "https://layerbit.co.in/blog.html"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": "WCAG color contrast",
+          "item": "https://layerbit.co.in/guides/wcag-color-contrast-explained.html"
+        }
+      ]
+    },
+    {
+      "@type": "FAQPage",
+      "@id": "https://layerbit.co.in/guides/wcag-color-contrast-explained.html#faq",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "What is a good color contrast ratio?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "For body text, at least 4.5:1 against its background, which is WCAG 2.2 level AA and the level most accessibility laws require. Large text, meaning 24 pixels regular or about 18.7 pixels bold, needs at least 3:1. For long-form reading, aim for 7:1, the AAA level. Icons, form-field borders and focus indicators need at least 3:1 against adjacent colors."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What is the difference between WCAG AA and AAA?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "They are two conformance levels. AA requires 4.5:1 for normal text and 3:1 for large text, and is the level referenced by laws and procurement rules in the United States, the European Union and elsewhere. AAA requires 7:1 and 4.5:1. W3C does not recommend requiring AAA across entire sites, because some content cannot meet it, but it is a good target for article text and documentation."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Does color contrast apply to icons and buttons?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes, under WCAG 2.1 and 2.2 success criterion 1.4.11, Non-text Contrast. Icons that convey meaning, the visible boundary of a button or input, checkbox and radio states, focus indicators and the lines and bars of a chart need at least 3:1 against the colors next to them. A button's label text is still text, so it needs 4.5:1 against the button's fill."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Is APCA part of WCAG?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Not yet. APCA was developed for WCAG 3, which is still a working draft and whose contrast method may change before it is finished. WCAG 2.2, with its contrast ratio, is the current W3C recommendation and the basis of legal requirements. Use the WCAG 2.2 ratio to confirm compliance and APCA as an additional check on readability, particularly for dark themes."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How do I fix a brand color that fails contrast?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Keep the brand color for large areas, illustrations and borders, and introduce a darker shade of the same hue for text and small elements on light backgrounds, or a lighter one on dark backgrounds. Adjusting lightness in OKLCH rather than HSL keeps the hue and saturation looking the same. Name the accessible shade as a separate design token so it is used consistently."
+          }
+        }
+      ]
+    }
+  ]
+}
+  </script>
+
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6072772587431629" crossorigin="anonymous"></script>
+
+  <script src="../js/vendor/lucide.min.js" async></script>
+
+  <link rel="icon" href="../favicon.ico" sizes="16x16 32x32 48x48" />
+  <link rel="icon" href="../favicon-48.png" type="image/png" sizes="48x48" />
+  <link rel="icon" href="../icon-192.png" type="image/png" sizes="192x192" />
+  <link rel="manifest" href="../manifest.json" />
+  <link rel="alternate" type="application/atom+xml" title="Layerbit developer guides" href="https://layerbit.co.in/feed.xml" />
+  <link rel="apple-touch-icon" href="../apple-touch-icon.png" />
+  <link rel="stylesheet" href="../css/base.css" />
+  <link rel="stylesheet" href="../css/article.css" />
+
+  <style>
+
+    /* Long-form guide styling lives in css/article.css, linked from this page's head. */
+  
+  </style>
+</head>
+<body>
+  <header>
+    <a href="../" class="brand">
+      <svg width="36" height="36" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <polygon points="32,20 54,28 32,36 10,28" stroke="#f8fafc" stroke-width="4" stroke-linejoin="round"/>
+        <polyline points="10,38 32,46 54,38" stroke="#f8fafc" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+        <polyline points="10,48 32,56 54,48" stroke="#f8fafc" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+        <rect x="50" y="10" width="10" height="10" rx="2" fill="#00f2fe" />
+      </svg>
+      Layerbit
+    </a>
+  </header>
+
+  <nav class="crumbs" aria-label="Breadcrumb">
+    <a href="../">Home</a>
+    <span class="sep">/</span>
+    <a href="../blog.html">Guides</a>
+    <span class="sep">/</span>
+    <span aria-current="page">WCAG color contrast</span>
+  </nav>
+
+  <main id="main">
+  <article class="article">
+    <header class="article-head">
+      <span class="article-kicker">Accessibility</span>
+      <h1>WCAG Color Contrast Explained: Ratios, AA, AAA and APCA</h1>
+      <p class="article-standfirst">Low-contrast text is the single most common accessibility failure on the web, found on the large majority of home pages in annual audits. The rules that fix it are short, but the arithmetic behind them is not obvious, and the brand colors most teams start from fail more often than they pass. This guide explains how the contrast ratio is calculated, which thresholds apply to what, where the formula goes wrong, and how to repair a palette without losing its character.</p>
+      <div class="article-meta">
+        <span class="byline">Layerbit Engineering</span>
+        <span><i data-lucide="calendar"></i>Published 18 October 2026</span>
+        <span><i data-lucide="clock"></i>10 min read</span>
+      </div>
+    </header>
+
+    <div class="takeaways">
+      <h2><i data-lucide="list-checks"></i> The short version</h2>
+      <ul>
+        <li>Body text needs a contrast ratio of at least <strong>4.5:1</strong> against its background (WCAG 2.2 level AA); large text needs <strong>3:1</strong>.</li>
+        <li>Icons, input borders, focus rings and chart lines need <strong>3:1</strong> against what is next to them.</li>
+        <li>The ratio compares <em>luminance</em>, not hue: red on green can look vivid and still fail.</li>
+        <li>Mid-tone brand colors such as sky blue, bright green and orange almost never pass as text on white; their darker shades usually do.</li>
+        <li>APCA, the algorithm proposed for WCAG 3, predicts readability better, especially in dark mode, but WCAG 2.2 is the legal standard today.</li>
+      </ul>
+    </div>
+
+    <div class="prose">
+      <h2 id="ratio">How the contrast ratio is calculated</h2>
+      <p>WCAG measures contrast with the <strong>relative luminance</strong> of each color: how bright it is to the eye, on a scale from 0 for black to 1 for white. Each sRGB channel is first converted from its gamma-encoded value to linear light, because the numbers in a hex code are not proportional to brightness. The three linear channels are then weighted by how sensitive the eye is to each: green contributes about 72% of perceived brightness, red about 21% and blue only 7%.</p>
+      <pre><code>linear(c) = c / 12.92                    if c ≤ 0.04045
+          = ((c + 0.055) / 1.055) ^ 2.4  otherwise       (c = channel / 255)
+
+L = 0.2126 × R + 0.7152 × G + 0.0722 × B                 (linear channels)
+
+ratio = (L_lighter + 0.05) / (L_darker + 0.05)</code></pre>
+      <p>The <code>+ 0.05</code> models the glare of ambient light reflecting off a screen, and stops the ratio running to infinity for pure black. The result runs from 1:1 for identical colors to 21:1 for black on white. Because the eye weights green so heavily, pure blue <code>#0000ff</code> on white reaches 8.6:1, while pure yellow <code>#ffff00</code> on white manages only 1.07:1, even though both are fully saturated.</p>
+      <p>The ratio is a threshold, so it must not be rounded up. <code>#767676</code> on white is 4.54:1 and passes; <code>#777777</code>, one step lighter, is 4.47:1 and fails. Tools that display 4.5 for the second one by rounding are giving a false pass.</p>
+
+      <h2 id="thresholds">Which threshold applies to what</h2>
+      <div class="table-wrap">
+        <table>
+        <thead><tr><th>Success criterion</th><th>Level</th><th>Applies to</th><th>Minimum</th></tr></thead>
+        <tbody>
+          <tr><td>1.4.3 Contrast (Minimum)</td><td>AA</td><td>Text and images of text</td><td>4.5:1</td></tr>
+          <tr><td>1.4.3 Contrast (Minimum)</td><td>AA</td><td>Large text</td><td>3:1</td></tr>
+          <tr><td>1.4.6 Contrast (Enhanced)</td><td>AAA</td><td>Text</td><td>7:1</td></tr>
+          <tr><td>1.4.6 Contrast (Enhanced)</td><td>AAA</td><td>Large text</td><td>4.5:1</td></tr>
+          <tr><td>1.4.11 Non-text Contrast</td><td>AA</td><td>UI component boundaries, states, focus indicators, meaningful graphics</td><td>3:1</td></tr>
+        </tbody>
+      </table>
+      </div>
+      <p><strong>Large text</strong> means at least 18 point, which is 24 CSS pixels, at a regular weight, or at least 14 point, about 18.66 pixels, in bold. A 20-pixel semi-bold heading is not large text, so it needs the full 4.5:1.</p>
+      <p>Some things are exempt: text that is purely decorative, text in a logo or brand name, text on an inactive (disabled) control, and incidental text that happens to sit in a photograph. Placeholder text in a form field is <em>not</em> exempt if it carries information the user needs, which is one more reason not to use a placeholder as the only label.</p>
+      <p>Level AA is what laws reference. In the United States, the Department of Justice's 2024 rule for state and local governments adopts WCAG 2.1 AA, and courts routinely use it in Americans with Disabilities Act cases. In the European Union, the European Accessibility Act has applied to many consumer-facing websites and apps since 28 June 2025, through the EN 301 549 standard, which incorporates WCAG 2.1 AA. Level AAA is a sensible target for long-form reading, but is not required across a whole site.</p>
+
+      <h2 id="brand">Why brand colors fail, and how to fix them</h2>
+      <p>Designers pick brand colors for vividness, and vivid colors sit in the middle of the lightness range, which is exactly where contrast against both white and black is weakest. Some common examples on a white background:</p>
+      <div class="table-wrap">
+        <table>
+        <thead><tr><th>Color</th><th>Example use</th><th>Ratio on white</th><th>Body text</th></tr></thead>
+        <tbody>
+          <tr><td><code>#38bdf8</code> sky blue</td><td>Link color</td><td>2.14:1</td><td>Fails</td></tr>
+          <tr><td><code>#0284c7</code> a darker sky</td><td>Link color</td><td>4.09:1</td><td>Fails (large text only)</td></tr>
+          <tr><td><code>#0369a1</code> darker again</td><td>Link color</td><td>5.93:1</td><td>Passes AA</td></tr>
+          <tr><td><code>#22c55e</code> green</td><td>"Success" text</td><td>2.27:1</td><td>Fails</td></tr>
+          <tr><td><code>#15803d</code> dark green</td><td>"Success" text</td><td>5.01:1</td><td>Passes AA</td></tr>
+          <tr><td><code>#ef4444</code> red</td><td>Error message</td><td>3.76:1</td><td>Fails</td></tr>
+          <tr><td><code>#dc2626</code> darker red</td><td>Error message</td><td>4.82:1</td><td>Passes AA</td></tr>
+        </tbody>
+      </table>
+      </div>
+      <p>The same applies in reverse to white text on a colored button: white on <code>#3b82f6</code> is 3.67:1 and fails for button labels, while white on <code>#2563eb</code>, one shade darker, is 5.16:1 and passes. The usual fix is not to abandon the brand color but to use it for large surfaces, borders and illustrations, and a darker shade of the same hue for text and small controls.</p>
+      <p>Darkening a color in HSL tends to make it muddy and shift its hue. Doing it in a perceptual space such as <strong>OKLCH</strong>, by lowering only the lightness while keeping chroma and hue, keeps the color recognizably the same. That is what the fix buttons in our <a href="../tools/color-converter.html">color converter and contrast checker</a> do: they search for the nearest OKLCH lightness that reaches 4.5:1 or 7:1, so <code>#38bdf8</code> on white becomes <code>#007fad</code> at 4.52:1 rather than being replaced by black.</p>
+
+      <h2 id="pitfalls">Common contrast pitfalls</h2>
+      <ul>
+        <li><strong>Transparency.</strong> Text set with <code>opacity</code> or an alpha color is measured on the color it produces after blending. Black at 54% opacity on white is 4.58:1; at 50% it fails. Check the composited color, not the declared one.</li>
+        <li><strong>Text over images and gradients.</strong> The ratio has to hold against the lightest part of the image behind the text. Use an overlay, a text shadow or a solid band behind captions.</li>
+        <li><strong>Hover, focus and visited states.</strong> Every state is text the user reads, so each needs its own check, and the focus indicator itself needs 3:1 against the surrounding colors.</li>
+        <li><strong>Disabled is not invisible.</strong> Disabled controls are exempt, but users still need to see that the control exists; a ratio around 2:1 to 3:1 keeps it discoverable.</li>
+        <li><strong>Color as the only signal.</strong> Contrast is about luminance; meaning conveyed by hue alone, such as red for an error with no icon or text, fails a separate criterion, 1.4.1 Use of Color.</li>
+      </ul>
+
+      <h2 id="apca">Where the WCAG 2 formula goes wrong, and what APCA changes</h2>
+      <p>The WCAG 2 ratio is simple and legally established, but it is known to misjudge two situations. It is <strong>too generous in dark mode</strong>: mid-grey text on black often passes comfortably while being harder to read than its score suggests. And it is <strong>too strict for some light, saturated colors</strong> in large sizes. Both problems come from treating contrast symmetrically, as if light text on dark were equivalent to dark text on light, which human vision does not do.</p>
+      <p>The <strong>Accessible Perceptual Contrast Algorithm</strong> (APCA), developed for the WCAG 3 drafts, fixes this by modelling perceived lightness contrast with different exponents for each polarity. It reports a value called Lc from 0 to about 106 for dark text on light and to about −108 for light on dark. Its guidance is tied to text size and weight rather than one pass mark: roughly Lc 90 for long body text, 75 as the minimum for body text, 60 for text larger than body size, 45 for large headings, and 30 for placeholder or disabled text.</p>
+      <p>A concrete example shows the difference. Light grey <code>#959595</code> on black scores 7.01:1, enough for WCAG 2 level AAA. Its APCA value is only about Lc −45, which APCA considers suitable for large headings, not paragraphs. Readers of dark interfaces would agree with APCA. Until WCAG 3 is finished and adopted, the practical approach is to pass WCAG 2.2 AA for compliance and use APCA as a second opinion, especially for dark themes.</p>
+
+      <h2 id="process">A checking routine that works</h2>
+      <ol>
+        <li>List every text color and background pair in the design system, including states: default, hover, focus, visited, error, disabled, and both themes.</li>
+        <li>Check each against 4.5:1, or 3:1 if it is only ever used for genuinely large text. Check icon colors and input borders against 3:1.</li>
+        <li>For each failure, darken or lighten the foreground in OKLCH until it passes, and give the passing shade a token name such as <code>--brand-text</code>, separate from the brand fill color.</li>
+        <li>Review the dark theme with APCA as well, and soften pure white text on pure black slightly (for example <code>#f1f5f9</code> on <code>#0a0c10</code>), which reduces halation for readers with astigmatism while staying far above the threshold.</li>
+        <li>Automate it: contrast checks in a design-token build or in automated accessibility tests catch regressions before they ship.</li>
+      </ol>
+
+      <div class="tool-cta">
+        <div>
+          <strong>Check and fix a color pair</strong>
+          <span>WCAG 2.2 ratio with AA, AAA and non-text results, APCA Lc, one-click OKLCH fixes, a shade scale and color-blindness simulation, all computed in your browser.</span>
+        </div>
+        <a class="btn-cta" href="../tools/color-converter.html">Open the contrast checker <i data-lucide="arrow-right"></i></a>
+      </div>
+
+      <div class="further">
+        <h2>Related guides and tools</h2>
+        <div class="further-grid">
+          <a class="further-card" href="invisible-unicode-characters.html">
+            <strong>Invisible Unicode characters</strong>
+            <span>Another class of text problem you cannot see on screen.</span>
+          </a>
+          <a class="further-card" href="html-escaping-and-xss-contexts.html">
+            <strong>HTML escaping and XSS contexts</strong>
+            <span>The other half of rendering text safely in a page.</span>
+          </a>
+          <a class="further-card" href="../tools/markdown-preview.html">
+            <strong>Markdown Editor &amp; Preview</strong>
+            <span>Write accessible documentation with real headings.</span>
+          </a>
+        </div>
+      </div>
+
+      <h2 id="faq">Frequently asked questions</h2>
+      <div class="faq-container">
+        <div class="faq-item">
+          <button class="faq-question">What is a good color contrast ratio? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>For body text, at least 4.5:1 against its background, which is WCAG 2.2 level AA and the level most accessibility laws require. Large text, meaning 24 pixels regular or about 18.7 pixels bold, needs at least 3:1. For long-form reading, aim for 7:1, the AAA level. Icons, form-field borders and focus indicators need at least 3:1 against adjacent colors.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">What is the difference between WCAG AA and AAA? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>They are two conformance levels. AA requires 4.5:1 for normal text and 3:1 for large text, and is the level referenced by laws and procurement rules in the United States, the European Union and elsewhere. AAA requires 7:1 and 4.5:1. W3C does not recommend requiring AAA across entire sites, because some content cannot meet it, but it is a good target for article text and documentation.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">Does color contrast apply to icons and buttons? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>Yes, under WCAG 2.1 and 2.2 success criterion 1.4.11, Non-text Contrast. Icons that convey meaning, the visible boundary of a button or input, checkbox and radio states, focus indicators and the lines and bars of a chart need at least 3:1 against the colors next to them. A button's label text is still text, so it needs 4.5:1 against the button's fill.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">Is APCA part of WCAG? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>Not yet. APCA was developed for WCAG 3, which is still a working draft and whose contrast method may change before it is finished. WCAG 2.2, with its contrast ratio, is the current W3C recommendation and the basis of legal requirements. Use the WCAG 2.2 ratio to confirm compliance and APCA as an additional check on readability, particularly for dark themes.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">How do I fix a brand color that fails contrast? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>Keep the brand color for large areas, illustrations and borders, and introduce a darker shade of the same hue for text and small elements on light backgrounds, or a lighter one on dark backgrounds. Adjusting lightness in OKLCH rather than HSL keeps the hue and saturation looking the same. Name the accessible shade as a separate design token so it is used consistently.</p></div>
+        </div>
+      </div>
+    </div>
+  </article>
+  </main>
+
+  <a href="../" id="smartBackBtn" class="fab" aria-label="Command Center" title="Command Center">
+    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="filter: drop-shadow(0 0 8px rgba(56, 189, 248, 0.5));">
+      <path d="M12 2L2 7l10 5 10-5-10-5z" stroke="#38bdf8" stroke-width="2" stroke-linejoin="round" fill="rgba(56,189,248,0.2)"/>
+      <path d="M2 17l10 5 10-5M2 12l10 5 10-5" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </a>
+
+  <footer>
+    <nav class="site-dir" aria-label="Site directory">
+      <div class="site-dir-col">
+        <h2 class="site-dir-title">Developer tools</h2>
+        <ul>
+          <li><a href="../tools/json-validator.html">JSON Formatter &amp; Validator</a></li>
+          <li><a href="../tools/text-diff-checker.html">Text Diff Checker &amp; Merge Tool</a></li>
+          <li><a href="../tools/regex-tester.html">Regex Tester &amp; Debugger</a></li>
+          <li><a href="../tools/jwt-decoder.html">JWT Decoder &amp; Verifier</a></li>
+          <li><a href="../tools/flow.html">Flow: Data Pipeline Builder</a></li>
+          <li><a href="../tools/sql-formatter.html">SQL Formatter &amp; Beautifier</a></li>
+          <li><a href="../tools/base64.html">Base64 Encoder &amp; Decoder</a></li>
+          <li><a href="../tools/url-encoder.html">URL Encoder &amp; Decoder</a></li>
+          <li><a href="../tools/html-escape-unescape.html">HTML Escape &amp; Unescape</a></li>
+          <li><a href="../tools/hash-generator.html">Hash &amp; HMAC Generator</a></li>
+          <li><a href="../tools/json-to-table.html">JSON to Table Viewer</a></li>
+          <li><a href="../tools/csv-to-json.html">CSV to JSON Converter</a></li>
+          <li><a href="../tools/yaml-json-converter.html">YAML ⇄ JSON Converter</a></li>
+          <li><a href="../tools/xml-formatter.html">XML Formatter &amp; XPath Tester</a></li>
+          <li><a href="../tools/cron-generator.html">Cron Expression Generator</a></li>
+          <li><a href="../tools/timestamp-converter.html">Unix Timestamp Converter</a></li>
+          <li><a href="../tools/uuid-generator.html">UUID &amp; ULID Generator</a></li>
+          <li><a href="../tools/subnet-calculator.html">CIDR &amp; Subnet Calculator</a></li>
+          <li><a href="../tools/unicode-inspector.html">Unicode &amp; Invisible Character Inspector</a></li>
+          <li><a href="../tools/log-analyzer.html">Log File Analyzer</a></li>
+          <li><a href="../tools/qr-barcode.html">QR Code &amp; Barcode Generator</a></li>
+          <li><a href="../tools/password-generator.html">Strong Password Generator</a></li>
+          <li><a href="../tools/color-converter.html">Color Converter &amp; Contrast Checker</a></li>
+          <li><a href="../tools/number-base-converter.html">Number Base Converter</a></li>
+          <li><a href="../tools/text-case-converter.html">Text Case Converter &amp; Word Counter</a></li>
+          <li><a href="../tools/markdown-preview.html">Markdown Editor &amp; Preview</a></li>
+          <li><a href="../tools/pint-ae-checker.html">UAE PINT-AE E-Invoice Checker</a></li>
+          <li><a href="../tools/layerlink-sharer.html">LayerLink Screen Sharing</a></li>
+        </ul>
+      </div>
+      <div class="site-dir-col">
+        <h2 class="site-dir-title">Guides</h2>
+        <ul>
+          <li><a href="../guides/how-to-create-a-strong-password.html">Strong passwords: length beats symbols</a></li>
+          <li><a href="../guides/wcag-color-contrast-explained.html">WCAG color contrast explained</a></li>
+          <li><a href="../guides/twos-complement-explained.html">Two's complement explained</a></li>
+          <li><a href="../guides/naming-conventions-camelcase-snake-case.html">Naming conventions by language</a></li>
+          <li><a href="../guides/markdown-cheat-sheet.html">Markdown cheat sheet</a></li>
+          <li><a href="../guides/json-syntax-errors-explained.html">JSON syntax errors explained</a></li>
+          <li><a href="../guides/json-schema-validation-explained.html">JSON Schema validation explained</a></li>
+          <li><a href="../guides/jsonpath-cheat-sheet.html">JSONPath cheat sheet</a></li>
+          <li><a href="../guides/three-way-merge-explained.html">Three-way merge explained</a></li>
+          <li><a href="../guides/jwt-signing-algorithms-compared.html">JWT signing algorithms compared</a></li>
+          <li><a href="../guides/jwt-decode-vs-verify.html">Decoding a JWT is not verifying it</a></li>
+          <li><a href="../guides/regex-catastrophic-backtracking.html">Regex catastrophic backtracking</a></li>
+          <li><a href="../guides/base64-explained.html">What Base64 actually does</a></li>
+          <li><a href="../guides/percent-encoding-explained.html">URL encoding explained</a></li>
+          <li><a href="../guides/html-escaping-and-xss-contexts.html">HTML escaping and XSS contexts</a></li>
+          <li><a href="../guides/hashing-vs-encryption-vs-encoding.html">Hashing vs encryption vs encoding</a></li>
+          <li><a href="../guides/csv-edge-cases.html">Why CSV is not really a format</a></li>
+          <li><a href="../guides/yaml-gotchas.html">YAML's sharpest edges</a></li>
+          <li><a href="../guides/sql-formatting-and-dialects.html">SQL dialects compared</a></li>
+          <li><a href="../guides/cron-expressions-explained.html">Cron expression rules</a></li>
+          <li><a href="../guides/unix-time-and-time-zones.html">Unix time and time zones</a></li>
+          <li><a href="../guides/uuid-v4-vs-v7-database-keys.html">UUID v4 vs v7 for database keys</a></li>
+          <li><a href="../guides/subnetting-explained.html">Subnetting explained</a></li>
+          <li><a href="../guides/invisible-unicode-characters.html">Invisible Unicode characters</a></li>
+          <li><a href="../guides/xpath-cheat-sheet.html">XPath cheat sheet</a></li>
+          <li><a href="../guides/uae-einvoicing-pint-ae.html">UAE e-invoicing: PINT-AE</a></li>
+        </ul>
+      </div>
+      <div class="site-dir-col">
+        <h2 class="site-dir-title">Services</h2>
+        <ul>
+          <li><a href="../tools/erp-development.html">Custom ERP development</a></li>
+          <li><a href="../tools/api-automation.html">API integration &amp; automation</a></li>
+          <li><a href="../tools/app-development.html">Mobile app development</a></li>
+          <li><a href="../tools/custom-scripts.html">Custom scripts &amp; automation</a></li>
+          <li><a href="../tools/static-sites.html">Static website engineering</a></li>
+          <li><a href="../tools/portfolio-design.html">Portfolio website design</a></li>
+        </ul>
+      </div>
+    </nav>
+    <div class="footer-bottom">
+      <div class="footer-copy">&copy; 2025 - 2026 <strong>Layerbit Technologies</strong>. All rights reserved.</div>
+      <div class="footer-links">
+        <a href="../about.html">About</a>
+        <a href="../blog.html">Developer Blog</a>
+        <a href="../contact.html">Contact</a>
+        <a href="../privacy.html">Privacy Policy</a>
+        <a href="../terms.html">Terms of Service</a>
+        <a href="#" data-cookie-settings>Your privacy choices</a>
+      </div>
+    </div>
+  </footer>
+  <script src="../js/kernel.js"></script>
+
+  <script src="../js/shared.js"></script>
+</body>
+</html>

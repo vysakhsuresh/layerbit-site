@@ -35,13 +35,13 @@
       <div class="pane-header">
         <div class="pane-title"><i data-lucide="check-circle"></i> Result</div>
         <div class="btn-group">
-          <div class="view-toggle" role="tablist">
-            <button class="view-tab active" id="viewTabText" type="button" onclick="setOutputView('text')">Text</button>
-            <button class="view-tab" id="viewTabTree" type="button" onclick="setOutputView('tree')">Tree</button>
-            <button class="view-tab" id="viewTabQuery" type="button" onclick="setOutputView('query')">Query</button>
-            <button class="view-tab" id="viewTabSchema" type="button" onclick="setOutputView('schema')">Schema</button>
-            <button class="view-tab" id="viewTabTypes" type="button" onclick="setOutputView('types')">Types</button>
-            <button class="view-tab" id="viewTabConvert" type="button" onclick="setOutputView('convert')">Convert</button>
+          <div class="view-toggle" role="tablist" aria-label="Output view">
+            <button class="view-tab active" id="viewTabText" type="button" role="tab" aria-selected="true" onclick="setOutputView('text')">Text</button>
+            <button class="view-tab" id="viewTabTree" type="button" role="tab" aria-selected="false" onclick="setOutputView('tree')">Tree</button>
+            <button class="view-tab" id="viewTabQuery" type="button" role="tab" aria-selected="false" onclick="setOutputView('query')">Query</button>
+            <button class="view-tab" id="viewTabSchema" type="button" role="tab" aria-selected="false" onclick="setOutputView('schema')">Schema</button>
+            <button class="view-tab" id="viewTabTypes" type="button" role="tab" aria-selected="false" onclick="setOutputView('types')">Types</button>
+            <button class="view-tab" id="viewTabConvert" type="button" role="tab" aria-selected="false" onclick="setOutputView('convert')">Convert</button>
           </div>
           <button class="btn" id="btnExpandAll" type="button" onclick="setAllTreeNodes(false)" title="Expand All" style="display:none;"><i data-lucide="chevrons-down"></i></button>
           <button class="btn" id="btnCollapseAll" type="button" onclick="setAllTreeNodes(true)" title="Collapse All" style="display:none;"><i data-lucide="chevrons-up"></i></button>
@@ -366,7 +366,7 @@
 
     function setOutputView(view) {
       outputView = view;
-      ['text', 'tree', 'query', 'schema', 'types', 'convert'].forEach(v => $('viewTab' + v[0].toUpperCase() + v.slice(1)).classList.toggle('active', v === view));
+      ['text', 'tree', 'query', 'schema', 'types', 'convert'].forEach(v => { const t = $('viewTab' + v[0].toUpperCase() + v.slice(1)); t.classList.toggle('active', v === view); t.setAttribute('aria-selected', v === view); });
       jsonOutput.style.display = view === 'text' ? '' : 'none';
       jsonTree.style.display = view === 'tree' ? '' : 'none';
       $('viewQuery').style.display = view === 'query' ? '' : 'none';

@@ -38,32 +38,60 @@ document.addEventListener("DOMContentLoaded", () => {
   initCookieConsent();
 });
 
-// Cookie consent banner: AdSense, Google Analytics, and (on the LayerLink
-// tools) Firebase all set cookies before any visitor interaction, so a
-// dismissible notice is shown until the visitor accepts it once.
-function initCookieConsent() {
-  try {
-    if (localStorage.getItem('layerbit-cookie-consent') === 'accepted') return;
-  } catch (e) {
-    return; // storage unavailable (e.g. blocked) - don't block rendering over it
-  }
-
-  // Depth-based rather than a '/tools/' string match, so pages in guides/ (or
-  // any future directory) link to the real privacy.html instead of a 404.
-  const depth = location.pathname.split('/').filter(Boolean).length - 1;
-  const prefix = '../'.repeat(Math.max(0, depth));
-  const banner = document.createElement('div');
-  banner.className = 'cookie-consent-banner';
-  banner.setAttribute('role', 'region');
-  banner.setAttribute('aria-label', 'Cookie notice');
-  banner.innerHTML =
-    '<p>Layerbit uses cookies for analytics and ads, and (on tools that need it) for core functionality. ' +
-    'See our <a href="' + prefix + 'privacy.html">Privacy Policy</a> for details.</p>' +
-    '<button type="button" class="cookie-consent-accept">Accept</button>';
-  document.body.appendChild(banner);
-
-  banner.querySelector('.cookie-consent-accept').addEventListener('click', () => {
-    try { localStorage.setItem('layerbit-cookie-consent', 'accepted'); } catch (e) {}
-    banner.remove();
-  });
+// Cookie consent banner. The visitor can accept or reject non-essential
+// cookies (advertising and analytics); the choice is stored in localStorage,
+// sent to Google Consent Mode v2 immediately, and re-applied on every later
+// page load by the consent snippet in <head> before any Google tag runs.
+// "Your privacy choices" in the footer reopens it. If Google's own consent
+// message (the AdSense Privacy & messaging CMP, used for EEA/UK visitors) is
+// on the page, it takes precedence and this banner stands aside.
+function applyConsent(choice) {
+  var v = choice === 'accepted' ? 'granted' : 'denied';
+  try { if (typeof window.gtag === 'function') window.gtag('consent', 'update', { ad_storage: v, ad_user_data: v, ad_personalization: v, analytics_storage: v }); } catch (e) {}
 }
+function initCookieConsent(force) {
+  var stored = null;
+  try { stored = localStorage.getItem('layerbit-cookie-consent'); } catch (e) { return; }
+  if (!force && (stored === 'accepted' || stored === 'rejected')) return;
+  if (document.querySelector('.cookie-consent-banner')) return;
+
+  var depth = location.pathname.split('/').filter(Boolean).length - 1;
+  var prefix = '../'.repeat(Math.max(0, depth));
+  var banner = document.createElement('div');
+  banner.className = 'cookie-consent-banner';
+  banner.setAttribute('role', 'dialog');
+  banner.setAttribute('aria-live', 'polite');
+  banner.setAttribute('aria-label', 'Cookie choices');
+  banner.innerHTML =
+    '<p>We use cookies to show ads (Google AdSense) and to measure which pages are useful (Google Analytics). ' +
+    'The tools themselves need none. Choose whether to allow them; you can change this any time from the footer. ' +
+    '<a href="' + prefix + 'privacy.html#cookies">Privacy Policy</a></p>' +
+    '<div class="cookie-consent-actions">' +
+    '<button type="button" class="cookie-consent-reject">Reject all</button>' +
+    '<button type="button" class="cookie-consent-accept">Accept all</button>' +
+    '</div>';
+  document.body.appendChild(banner);
+  function choose(choice) {
+    try { localStorage.setItem('layerbit-cookie-consent', choice); } catch (e) {}
+    applyConsent(choice);
+    banner.remove();
+  }
+  banner.querySelector('.cookie-consent-accept').addEventListener('click', function () { choose('accepted'); });
+  banner.querySelector('.cookie-consent-reject').addEventListener('click', function () { choose('rejected'); });
+
+  // Defer to Google's certified CMP when it renders (EEA/UK/CH visitors).
+  if (!force) {
+    var checks = 0, t = setInterval(function () {
+      checks++;
+      if (document.querySelector('.fc-consent-root, .fc-dialog-container')) { banner.remove(); clearInterval(t); }
+      if (checks > 20) clearInterval(t);
+    }, 300);
+  }
+}
+document.addEventListener('click', function (e) {
+  var a = e.target.closest && e.target.closest('[data-cookie-settings]');
+  if (!a) return;
+  e.preventDefault();
+  if (window.googlefc && typeof window.googlefc.showRevocationMessage === 'function' && document.querySelector('.fc-consent-root')) { window.googlefc.showRevocationMessage(); return; }
+  initCookieConsent(true);
+});

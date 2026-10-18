@@ -18,6 +18,11 @@ GUIDE_TOOL = {
     "html-escaping-and-xss-contexts": "html-escape-unescape", "hashing-vs-encryption-vs-encoding": "hash-generator",
     "sql-formatting-and-dialects": "sql-formatter", "unix-time-and-time-zones": "timestamp-converter",
     "xpath-cheat-sheet": "xml-formatter",
+    "how-to-create-a-strong-password": "password-generator",
+    "wcag-color-contrast-explained": "color-converter",
+    "twos-complement-explained": "number-base-converter",
+    "naming-conventions-camelcase-snake-case": "text-case-converter",
+    "markdown-cheat-sheet": "markdown-preview",
 }
 
 def main(path):
