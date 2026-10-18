@@ -1188,8 +1188,8 @@ def _(t):
     t.set("logInput", "INFO alpha\nERROR beta\nERROR gamma")
     t.call("analyzeLogs()")
     t.click("#filter-ERROR")
-    t.set("searchInput", "gam", event="keyup")
-    t.wait(50)
+    t.set("searchInput", "gam")
+    t.wait(200)
     out = t.text("logOutput")
     expect("gamma" in out and "beta" not in out and "alpha" not in out, f"filter/grep wrong: {out!r}")
 
@@ -1220,8 +1220,8 @@ def _(t):
     top = t.text("topMessages")
     expect("×4" in top and "user # timed out" in top, f"tally wrong: {top!r}")
     t.call("document.getElementById('grepRegex').checked = true")
-    t.set("searchInput", "user 100[12]", event="keyup")
-    t.wait(50)
+    t.set("searchInput", "user 100[12]")
+    t.wait(200)
     vis = t.call("Array.from(document.querySelectorAll('#logOutput .log-line')).filter(l => l.style.display !== 'none').length")
     eq(vis, 2, "regex grep visible rows")
 
@@ -1987,6 +1987,381 @@ def _(t):
 
 
 # ----------------------------------------------------------------------------
+# October 2026 audit: options that apply live, real-world inputs, new tools
+# ----------------------------------------------------------------------------
+NGINX = "\n".join([
+    '93.180.71.3 - - [17/May/2015:08:05:32 +0000] "GET /downloads/product_1 HTTP/1.1" 304 0 "-" "Debian APT-HTTP/1.3"',
+    '217.168.17.5 - - [17/May/2015:08:05:12 +0000] "GET /downloads/product_2 HTTP/1.1" 200 3316 "-" "-"',
+    '80.91.33.133 - - [17/May/2015:08:05:24 +0000] "GET /downloads/product_1 HTTP/1.1" 404 337 "-" "Debian APT-HTTP/1.3"',
+    '10.0.0.7 - - [17/May/2015:08:06:01 +0000] "POST /api/orders HTTP/1.1" 502 166 "-" "curl/7.88"',
+])
+SAKILA = """CREATE SEQUENCE actor_actor_id_seq START WITH 1 INCREMENT BY 1;
+CREATE TABLE actor (
+    actor_id integer DEFAULT nextval('actor_actor_id_seq'::regclass) NOT NULL,
+    first_name character varying(45) NOT NULL,
+    last_update timestamp without time zone DEFAULT now() NOT NULL
+);
+CREATE FUNCTION film_in_stock(p_film_id integer, p_store_id integer, OUT p_film_count integer) RETURNS SETOF integer
+    AS $_$
+     SELECT inventory_id FROM inventory WHERE film_id = $1 AND store_id = $2 AND inventory_in_stock(inventory_id);
+$_$
+    LANGUAGE sql;"""
+ZOHO = """Invoice Date,Invoice ID,Invoice Number,Invoice Status,Customer Name,Customer TRN,Due Date,Currency Code,Exchange Rate,Item Name,Item Desc,Quantity,Item Price,Item Tax %,Item Tax Amount,SubTotal,Total,Balance
+2026-09-01,4410000000123,INV-000231,Sent,Al Noor Trading LLC,100234567800003,2026-10-01,AED,1,Website maintenance,Monthly retainer,1,4500.00,5,225.00,4500.00,4725.00,4725.00
+2026-09-03,4410000000124,INV-000232,Draft,"Gulf Star Logistics, FZE",100987654300003,2026-10-03,AED,1,API integration,ERP sync,10,600.00,5,300.00,6000.00,6300.00,6300.00"""
+
+
+@case("text-diff-checker", "typical", "audit: ignore-whitespace/case and highlight options re-run the diff live")
+def _(t):
+    t.set("text1", "Hello  World\nsecond line\n")
+    t.set("text2", "hello world\nsecond line\n")
+    t.click("#btnRun"); t.wait(200)
+    expect("1 change" in t.text("diffStats") or "change block" in t.text("diffStats"), t.text("diffStats"))
+    t.page.check("#ignoreCase"); t.page.check("#ignoreWhitespace"); t.wait(150)
+    expect(t.count(".hunk-bar") == 0, "ignore case + whitespace did not re-run the comparison")
+    t.page.uncheck("#ignoreCase"); t.wait(150)
+    expect(t.count(".hunk-bar") > 0, "unchecking did not re-run")
+    before = t.html("outputSection")
+    t.select("granularity", "char"); t.wait(150)
+    expect(t.html("outputSection") != before, "highlight granularity did not re-render")
+
+
+@case("text-diff-checker", "typical", "audit: replaced block pairs lines by similarity (module.exports matches module.exports)")
+def _(t):
+    t.set("text1", "x();\nmodule.exports = { calculateTotal };\n")
+    t.set("text2", "x();\nfunction round2(n) { return Math.round(n * 100) / 100; }\n\nmodule.exports = { calculateTotal, round2 };\n")
+    t.click("#btnRun"); t.wait(200)
+    pairs = t.call("[...document.querySelectorAll('#leftPanel .diff-line, #leftPanel tr, #leftPanel > div')].map(e=>e.innerText).join('\\n')")
+    rows = t.call("(() => { const r = []; document.querySelectorAll('.word-removed, .w-del, del, .seg-del').forEach(e => r.push(e.textContent)); return r; })()")
+    # 'module.exports' itself must not be marked removed: only the inserted ', round2' differs
+    expect(not any('module.exports' in x for x in rows), f"module.exports was highlighted as removed: {rows}")
+
+
+@case("text-diff-checker", "edge", "audit: editing an input after comparing refreshes the result")
+def _(t):
+    t.set("text1", "a\nb\n"); t.set("text2", "a\nb\n")
+    t.click("#btnRun"); t.wait(150)
+    t.set("text2", "a\nB\n"); t.wait(700)
+    expect(t.count(".hunk-bar") > 0, "typing into the modified pane did not refresh the diff")
+
+
+@case("sql-formatter", "typical", "audit: real pg_dump DDL auto-detects PostgreSQL and formats")
+def _(t):
+    t.select("dialectSelect", "auto")
+    t.set("sqlInput", SAKILA)
+    t.click("#btnFormat"); t.wait(300)
+    out = t.text("sqlOutput")
+    expect("CREATE TABLE" in out.upper() and "::regclass" in out, out[:300])
+    expect("PostgreSQL" in t.text("dialectHint"), t.text("dialectHint"))
+    expect(not t.call("document.getElementById('errorBanner').classList.contains('active')"), "error banner shown")
+
+
+@case("sql-formatter", "typical", "audit: indent and keyword-case options re-format immediately")
+def _(t):
+    t.select("dialectSelect", "auto")
+    t.set("sqlInput", "select a,b from t where x=1")
+    t.click("#btnFormat"); t.wait(200)
+    first = t.text("sqlOutput")
+    t.select("keywordCaseSelect", "upper" if "SELECT" not in first else "lower"); t.wait(200)
+    expect(t.text("sqlOutput") != first, "keyword case did not apply")
+    second = t.text("sqlOutput")
+    t.select("indentSelect", "4" if "    " not in second else "2"); t.wait(200)
+    expect(t.text("sqlOutput") != second, "indent did not apply")
+
+
+@case("sql-formatter", "edge", "audit: explicit wrong dialect shows the error with a one-click suggestion")
+def _(t):
+    t.select("dialectSelect", "sql")
+    t.set("sqlInput", SAKILA)
+    t.click("#btnFormat"); t.wait(300)
+    expect(t.call("document.getElementById('errorBanner').classList.contains('active')"), "no error for generic dialect")
+    expect("PostgreSQL" in t.text("errorHint"), t.text("errorHint"))
+    t.click("#errorHint button"); t.wait(300)
+    expect("::regclass" in t.text("sqlOutput"), "suggestion button did not format")
+
+
+@case("csv-to-json", "typical", "audit: delimiter and smart-types options re-convert live")
+def _(t):
+    t.set("csvInput", "id;name;active\n1;Ada;true\n2;Linus;false")
+    t.wait(600)
+    t.select("delimSelect", ","); t.wait(200)
+    comma = t.text("jsonOutput")
+    t.select("delimSelect", ";"); t.wait(200)
+    semi = t.text("jsonOutput")
+    expect(comma != semi and '"name"' in semi, "delimiter change did not re-run")
+    t.page.uncheck("#inferTypes"); t.wait(200)
+    expect('"1"' in t.text("jsonOutput"), "smart types toggle did not re-run")
+
+
+@case("log-analyzer", "typical", "audit: pasted access log parses automatically; status codes set severity")
+def _(t):
+    t.set("logInput", NGINX); t.wait(700)
+    eq(t.text("countAll"), "4", "all lines")
+    eq(t.text("countErr"), "1", "502 is an error")
+    eq(t.text("countWarn"), "1", "404 is a warning")
+    eq(t.text("countInfo"), "2", "2xx/3xx are info")
+    t.click("#filter-WARN"); t.wait(150)
+    expect(t.count("#logOutput .log-line") == 1, "WARN filter")
+
+
+@case("log-analyzer", "maximal", "audit: 60,000-line log stays responsive; copy covers every match")
+def _(t):
+    big = "\n".join(f'10.0.{i % 250}.{i % 200} - - [17/May/2015:08:{i % 60:02d}:00 +0000] "GET /p/{i} HTTP/1.1" {404 if i % 3 == 0 else 200} 12 "-" "-"' for i in range(60000))
+    t.page.context.grant_permissions(["clipboard-read", "clipboard-write"])
+    t.upload("logFileInput", "access.log", big)
+    t.wait_for("document.querySelectorAll('#logOutput .log-line').length > 0", timeout=20000)
+    expect(t.visible("#bigLogBar"), "large file was not kept in memory")
+    expect(t.count("#logOutput .log-line") <= 5000, "rendered more than one page of rows")
+    t.click("#filter-WARN"); t.wait(300)
+    t.click("text=Copy Filtered"); t.wait(300)
+    n = t.call("navigator.clipboard.readText()").count("\n")
+    eq(n, 20000, "copied every 404 line")
+
+
+@case("qr-barcode", "typical", "audit: size and error-correction changes redraw the code")
+def _(t):
+    t.set("dataInput", "https://layerbit.co.in/"); t.wait(400)
+    w1 = t.call("(document.querySelector('#outputArea canvas')||{}).width")
+    t.select("sizeSelect", "500"); t.wait(300)
+    w2 = t.call("(document.querySelector('#outputArea canvas')||{}).width")
+    expect(w1 and w2 and w1 != w2, f"size did not apply: {w1} -> {w2}")
+
+
+@case("pint-ae-checker", "typical", "audit: Zoho Books export maps every column to the right field")
+def _(t):
+    t.upload("fileInput", "invoices.csv", ZOHO, "text/csv"); t.wait(600)
+    m = t.call("Object.fromEntries([...document.querySelectorAll('.mapping-row')].map(r => [r.querySelector('.mapping-label, label, .field-label')?.innerText.split('(')[0].trim() || r.innerText.split('\\n')[0], r.querySelector('select')?.value || '']))")
+    def get(prefix):
+        for k, v in m.items():
+            if k.startswith(prefix): return v
+        return None
+    eq(get("Supplier TIN"), "", "supplier TRN must not take the customer column")
+    eq(get("Buyer TIN"), "Customer TRN", "buyer TRN")
+    eq(get("Unit Price"), "Item Price", "unit price must not be the exchange rate")
+    eq(get("VAT Rate"), "Item Tax %", "VAT rate")
+    eq(get("Total Invoice"), "Total", "invoice total")
+
+
+@case("json-validator", "edge", "audit: schema inference options re-infer an unedited schema")
+def _(t):
+    t.set("jsonInput", '{"id": 7, "name": "Ada", "score": 9.5}')
+    t.click("#btnFormat"); t.wait(200)
+    t.call("document.querySelector('[data-tab=schema], #tabSchema, .view-tab[data-view=schema]') && document.querySelector('[data-tab=schema], #tabSchema, .view-tab[data-view=schema]').click()")
+    t.call("inferSchema()"); t.wait(100)
+    before = t.val("schemaInput")
+    t.page.evaluate("document.getElementById('inferClosed').click()"); t.wait(150)
+    after = t.val("schemaInput")
+    expect(before != after and '"additionalProperties": false' in after, "closed option did not re-infer")
+
+
+# ---- new tools --------------------------------------------------------------
+@case("password-generator", "minimal", "loads with a 20-character password and its entropy")
+def _(t):
+    pw = t.text("pwOut")
+    eq(len(pw), 20, "default length")
+    expect("bits" in t.text("genLabel"), t.text("genLabel"))
+
+
+@case("password-generator", "typical", "options apply instantly: length, sets, look-alikes")
+def _(t):
+    t.set("pwLenNum", "32"); t.page.dispatch_event("#pwLenNum", "change"); t.wait(100)
+    eq(len(t.text("pwOut")), 32, "length 32")
+    t.page.uncheck("#optSymbols"); t.page.uncheck("#optUpper"); t.wait(100)
+    import re as _re
+    expect(_re.fullmatch(r"[a-z0-9]{32}", t.text("pwOut")), t.text("pwOut"))
+    t.page.check("#optAmbiguous"); t.wait(100)
+    for _i in range(30):
+        t.click("#btnRegen")
+        expect(not _re.search(r"[l1o0]", t.text("pwOut")), "look-alike found: " + t.text("pwOut"))
+
+
+@case("password-generator", "typical", "passphrase and PIN modes")
+def _(t):
+    t.click(".seg-btn[data-mode=passphrase]"); t.wait(150)
+    words = t.text("pwOut").split("-")
+    eq(len(words), 6, "six words"); expect(all(w.isalpha() for w in words), words)
+    expect(abs(float(t.text("genLabel").split(" bits")[0]) - 77.5) < 0.2, t.text("genLabel"))
+    t.click(".seg-btn[data-mode=pin]"); t.wait(100)
+    expect(t.text("pwOut").isdigit() and len(t.text("pwOut")) == 6, t.text("pwOut"))
+
+
+@case("password-generator", "edge", "strength checker flags real-world weak passwords")
+def _(t):
+    t.set("checkInput", "P@ssw0rd1!"); t.wait(100)
+    expect(t.text("chkLabel").startswith(("Very weak", "Weak")), t.text("chkLabel"))
+    expect("common password" in t.text("findings"), t.text("findings"))
+    t.set("checkInput", "correct-horse-battery-staple-orbit-lantern"); t.wait(100)
+    expect(t.text("chkLabel").startswith(("Strong", "Very strong")), t.text("chkLabel"))
+
+
+@case("password-generator", "edge", "impossible rules explain themselves instead of failing silently")
+def _(t):
+    for cb in ("optUpper", "optLower", "optDigits", "optSymbols"): t.page.uncheck("#" + cb)
+    t.wait(100)
+    expect("at least one" in t.text("pwOut"), t.text("pwOut"))
+
+
+@case("password-generator", "maximal", "bulk generates 1,000 unique passwords")
+def _(t):
+    t.call("document.querySelector('details.bulk').open = true")
+    t.set("bulkCount", "1000"); t.click("#btnBulk"); t.wait(300)
+    lines = t.val("bulkOut").split("\n")
+    eq(len(lines), 1000, "count"); eq(len(set(lines)), 1000, "unique")
+
+
+@case("password-generator", "edge", "share link carries settings but never the password")
+def _(t):
+    s = t.call("JSON.stringify(window.LB_TOOL.getState())")
+    expect(t.text("pwOut") not in s, "password leaked into state")
+
+
+@case("color-converter", "minimal", "default color shows every format")
+def _(t):
+    html = t.html("fmtTable")
+    for f in ("#38bdf8", "rgb(56 189 248)", "oklch(", "hsl(", "cmyk("): expect(f in html, f)
+
+
+@case("color-converter", "typical", "parses real-world notations from design tools and CSS")
+def _(t):
+    for src, hexv in [("rgb(56, 189, 248)", "#38bdf8"), ("hsl(120 100% 25%)", "#008000"), ("RebeccaPurple", "#663399"), ("56 189 248", "#38bdf8"), ("oklch(62.8% 0.2577 29.23)", "#ff0000"), ("#0AF", "#00aaff")]:
+        t.set("colorInput", src); t.wait(60)
+        expect(hexv in t.html("fmtTable"), f"{src} -> expected {hexv}")
+
+
+@case("color-converter", "typical", "WCAG ratio, chips and the AA fix")
+def _(t):
+    t.set("fgInput", "#777777"); t.set("bgInput", "#ffffff"); t.wait(100)
+    eq(t.text("ratio"), "4.47:1", "famous near miss")
+    expect("AA text" in t.text("wcagChips"), "chips")
+    expect(t.count("#wcagChips .chip.fail") >= 1, "AA must fail")
+    t.click("#btnFixAA"); t.wait(150)
+    r = float(t.text("ratio").split(":")[0])
+    expect(r >= 4.5, f"fixed ratio {r}")
+
+
+@case("color-converter", "edge", "invalid color explains itself; palette export copies CSS variables")
+def _(t):
+    t.set("colorInput", "notacolor"); t.wait(60)
+    expect(t.visible("#colorError"), "no error for invalid input")
+    t.set("colorInput", "#38bdf8"); t.wait(60)
+    eq(t.count("#scale .sw"), 11, "scale steps")
+    eq(t.count("#cvd .cvd-cell"), 5, "vision simulations")
+
+
+@case("number-base-converter", "minimal", "255 converts to every base")
+def _(t):
+    h = t.html("outTable")
+    for v in ("1111 1111", "377", "FF", "73"): expect(v in h, v)
+
+
+@case("number-base-converter", "typical", "huge values stay exact (2^64-1, a 256-bit hash)")
+def _(t):
+    t.set("numInput", "18446744073709551615"); t.wait(60)
+    expect("FFFF FFFF FFFF FFFF" in t.text("outTable"), t.text("outTable"))
+    t.set("numInput", "0x" + "f" * 64); t.wait(60)
+    expect("115,792,089,237,316,195,423,570,985,008,687,907,853,269,984,665,640,564,039,457,584,007,913,129,639,935" in t.text("outTable"), "256-bit decimal")
+
+
+@case("number-base-converter", "typical", "two's complement, bit flip and IEEE-754")
+def _(t):
+    t.set("numInput", "-1"); t.select("width", "16"); t.wait(80)
+    expect("65,535" in t.text("twosGrid"), t.text("twosGrid"))
+    t.set("numInput", "0"); t.wait(60)
+    t.click(".bit[data-bit='3']"); t.wait(60)
+    expect(t.val("numInput").upper() in ("0X8", "0X0008"), t.val("numInput"))
+    t.set("floatInput", "0.1"); t.select("floatWidth", "64"); t.click("#btnFloat"); t.wait(100)
+    expect("3FB999999999999A" in t.val("numInput").upper(), t.val("numInput"))
+    expect("0.1" in t.text("byteGrid"), t.text("byteGrid"))
+
+
+@case("number-base-converter", "edge", "invalid digits are reported with their position")
+def _(t):
+    t.select("inBase", "2"); t.set("numInput", "10201"); t.wait(60)
+    expect(t.visible("#numError") and "position 3" in t.text("numError"), t.text("numError"))
+
+
+@case("number-base-converter", "typical", "bitwise calculator")
+def _(t):
+    t.set("calcA", "0b1100"); t.set("calcB", "0b1010"); t.select("calcOp", "xor"); t.wait(60)
+    expect("0b110" in t.text("calcOut"), t.text("calcOut"))
+    t.select("calcOp", "div"); t.set("calcB", "0"); t.wait(60)
+    expect("Division by zero" in t.text("calcError"), t.text("calcError"))
+
+
+@case("text-case-converter", "minimal", "empty input shows example conversions and zero counts")
+def _(t):
+    expect("parseHttpResponseBody" in t.text("caseList"), t.text("caseList")[:200])
+    expect("0 words" in t.text("statsStrip"), t.text("statsStrip"))
+
+
+@case("text-case-converter", "typical", "identifier list converts per line; apply and undo")
+def _(t):
+    t.set("textInput", "userAccountId\nXMLHttpRequest\nAPI_BASE_URL"); t.wait(120)
+    expect("user_account_id\nxml_http_request\napi_base_url" in t.text("caseList"), t.text("caseList")[:600])
+    t.click(".case-row[data-case=kebab]"); t.click("#btnApply"); t.wait(80)
+    eq(t.val("textInput"), "user-account-id\nxml-http-request\napi-base-url", "applied kebab")
+    t.click("#btnUndo"); t.wait(60)
+    eq(t.val("textInput"), "userAccountId\nXMLHttpRequest\nAPI_BASE_URL", "undo")
+
+
+@case("text-case-converter", "typical", "word count, reading time and keywords on real prose")
+def _(t):
+    prose = ("Kubernetes schedules containers onto nodes. Each node runs a kubelet. "
+             "The kubelet reports node health, and the scheduler places pods where resources allow. ") * 40
+    t.set("textInput", prose); t.wait(200)
+    expect("920" in t.text("tiles"), t.text("tiles"))  # 23 words x 40
+    expect(t.text("kwTable").lower().split("\n")[1].startswith(("node", "kubelet")), t.text("kwTable"))
+
+
+@case("text-case-converter", "edge", "line tools: dedupe and natural sort")
+def _(t):
+    t.set("textInput", "item10\nitem2\nitem2\nitem1"); t.wait(60)
+    t.click("[data-line=dedupe]"); t.click("[data-line=sortAsc]"); t.wait(60)
+    eq(t.val("textInput"), "item1\nitem2\nitem10", "dedupe + natural sort")
+
+
+@case("markdown-preview", "minimal", "sample renders with a table of contents and stats")
+def _(t):
+    expect(t.count("#mdPreview table") == 1 and t.count("#mdPreview input[type=checkbox]") == 4, "GFM table/tasks")
+    expect(t.count("#toc a") >= 4, "toc")
+    expect("words" in t.text("mdStats"), t.text("mdStats"))
+
+
+@case("markdown-preview", "typical", "raw HTML is sanitized: no scripts, handlers or javascript: links")
+def _(t):
+    t.set("mdInput", '# Hi\n\n<img src=x onerror="window.__pwned=1"><script>window.__pwned=2</script><a href="javascript:alert(1)">x</a>'); t.wait(200)
+    h = t.html("mdPreview")
+    expect("onerror" not in h and "<script" not in h and "javascript:" not in h, h)
+    expect(not t.call("window.__pwned"), "script executed")
+
+
+@case("markdown-preview", "typical", "toolbar wraps the selection; headings get GitHub-style ids")
+def _(t):
+    t.set("mdInput", "Getting Started!"); t.wait(60)
+    t.call("const e=document.getElementById('mdInput'); e.focus(); e.setSelectionRange(0, 16)")
+    t.click("[data-md=h2]"); t.wait(100)
+    expect(t.count("#mdPreview h2#getting-started") == 1, t.html("mdPreview"))
+    t.call("const e=document.getElementById('mdInput'); e.value='bold me'; e.setSelectionRange(0,4)")
+    t.click("[data-md=bold]"); t.wait(100)
+    eq(t.val("mdInput"), "**bold** me", "bold wrap")
+
+
+@case("markdown-preview", "maximal", "large README (2,000 sections) renders under budget")
+def _(t):
+    import time as _time
+    doc = "\n\n".join(f"## Section {i}\n\nParagraph with **bold**, `code` and a [link](https://example.com/{i}).\n\n- a\n- b" for i in range(2000))
+    t0 = _time.time(); t.set("mdInput", doc); t.wait_for("document.querySelectorAll('#mdPreview h2').length === 2000", timeout=10000)
+    expect(_time.time() - t0 < 6, f"render took {_time.time() - t0:.1f}s")
+
+
+@case("markdown-preview", "edge", "export buttons explain an empty document")
+def _(t):
+    t.set("mdInput", ""); t.wait(80)
+    t.click("#btnCopyHtml"); t.wait(80)
+    expect("Nothing to copy" in t.text("lbToast"), t.text("lbToast"))
+
+
+# ----------------------------------------------------------------------------
 # kernel (js/kernel.js): palette, share links, send-to, history, drop, privacy
 # ----------------------------------------------------------------------------
 @case("base64", "typical", "kernel: header pills, palette search and keyboard navigation")
@@ -2033,7 +2408,7 @@ def _(t):
 def _(t):
     t.call("Layerbit.sendTo('{\"a\":1}', 'json')")
     t.wait(80)
-    t.call("[...document.querySelectorAll('#lbPalette .lb-pal-item')].find(e=>e.textContent.includes('JSON Validator')).click()")
+    t.call("[...document.querySelectorAll('#lbPalette .lb-pal-item')].find(e=>e.textContent.includes('JSON Formatter')).click()")
     t.page.wait_for_load_state("load")
     t.wait(300)
     expect("json-validator.html" in t.page.url, f"landed on {t.page.url}")

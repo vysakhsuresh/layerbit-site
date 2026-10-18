@@ -536,6 +536,8 @@
       }
     }
   
+    .btn-inline { display: inline-flex; margin-left: 8px; padding: 3px 10px; font-size: 0.85em; vertical-align: middle; }
+
   </style>
 </head>
 <body>
@@ -563,6 +565,7 @@
         <div class="pane-title"><i data-lucide="database"></i> Raw Query</div>
         <div class="btn-group">
           <select id="dialectSelect" class="dialect-select" aria-label="SQL dialect">
+            <option value="auto" selected>Auto-detect dialect</option>
             <optgroup label="Common">
               <option value="sql">Standard SQL</option>
               <option value="mysql">MySQL</option>
@@ -950,9 +953,51 @@
     });
 
     // ---------- Format Options ----------
+    // ---------- Dialect detection ----------
+    // Scores tell-tale syntax so a pasted pg_dump, mysqldump or SQL Server
+    // script formats correctly without the visitor choosing first.
+    const DIALECT_NAMES = { sql: 'Standard SQL', postgresql: 'PostgreSQL', mysql: 'MySQL', mariadb: 'MariaDB', tsql: 'T-SQL', plsql: 'PL/SQL', sqlite: 'SQLite', bigquery: 'BigQuery', snowflake: 'Snowflake', redshift: 'Redshift', spark: 'Spark', hive: 'Hive', db2: 'DB2', trino: 'Trino', n1ql: 'N1QL', tidb: 'TiDB', singlestoredb: 'SingleStoreDB' };
+    function detectDialect(sql) {
+      const t = sql.slice(0, 200000);
+      const score = { postgresql: 0, mysql: 0, tsql: 0, plsql: 0, sqlite: 0, bigquery: 0, snowflake: 0 };
+      const hit = (d, re, w) => { if (re.test(t)) score[d] += (w || 1); };
+      hit('postgresql', /::\s*[a-z_]+/i, 3); hit('postgresql', /\$[a-z_]*\$/i, 3); hit('postgresql', /\b(serial|bigserial|bytea|jsonb|ilike|returning|plpgsql|regclass|tsvector)\b/i, 2); hit('postgresql', /\bcreate\s+(extension|domain|type)\b/i, 2); hit('postgresql', /\bset\s+search_path\b/i, 2);
+      hit('mysql', /`[^`\n]+`/, 3); hit('mysql', /\b(auto_increment|unsigned|tinyint|mediumtext|longtext)\b/i, 2); hit('mysql', /\bengine\s*=/i, 3); hit('mysql', /\bon\s+duplicate\s+key\b/i, 3);
+      hit('tsql', /\[[a-z_][\w ]*\]\s*[.,(\s]/i, 2); hit('tsql', /^\s*go\s*$/im, 3); hit('tsql', /\b(nvarchar|identity\s*\(|getdate\s*\(|uniqueidentifier|nolock)\b/i, 2); hit('tsql', /\bselect\s+top\s+\d+/i, 3); hit('tsql', /@[a-z_]\w*/i, 1);
+      hit('plsql', /\b(varchar2|number\s*\(|nvl\s*\(|sysdate|rownum|dual)\b/i, 2); hit('plsql', /\bbegin\b[\s\S]*\bexception\b/i, 2); hit('plsql', /:=\s*/, 1);
+      hit('sqlite', /\b(autoincrement|pragma)\b/i, 3); hit('sqlite', /\bwithout\s+rowid\b/i, 3);
+      hit('bigquery', /\b(struct<|array<|qualify|safe_cast|except\s*\()/i, 2); hit('bigquery', /`[\w-]+\.[\w-]+\.[\w-]+`/, 3);
+      hit('snowflake', /\b(variant|flatten\s*\(|ilike\s+any|warehouse)\b/i, 2);
+      let best = 'sql', bestScore = 0;
+      Object.keys(score).forEach(d => { if (score[d] > bestScore) { best = d; bestScore = score[d]; } });
+      return best;
+    }
+    let lastDialect = 'sql', lastNote = '';
+    function resolvedDialect() { return dialectSelect.value === 'auto' ? detectDialect(sqlInput.value) : dialectSelect.value; }
+    function updateDialectHint() {
+      dialectHint.textContent = dialectSelect.value === 'auto' ? 'Auto · ' + (DIALECT_NAMES[lastDialect] || lastDialect) : dialectSelect.options[dialectSelect.selectedIndex].text;
+    }
+    // Formats with the chosen dialect; in auto mode, falls back through the
+    // common dialects when the detected one cannot parse the script.
+    function formatWith(raw, opts) {
+      const first = resolvedDialect();
+      try { lastDialect = first; lastNote = ''; return sqlFormatter.format(raw, Object.assign({}, opts, { language: first })); }
+      catch (err) {
+        const order = ['postgresql', 'mysql', 'tsql', 'plsql', 'sqlite', 'bigquery', 'snowflake', 'sql'].filter(d => d !== first);
+        for (const d of order) {
+          try {
+            const out = sqlFormatter.format(raw, Object.assign({}, opts, { language: d }));
+            if (dialectSelect.value === 'auto') { lastDialect = d; lastNote = ''; return out; }
+            err.suggest = d; break;
+          } catch (e) { /* try the next dialect */ }
+        }
+        throw err;
+      }
+    }
+
     function getFormatOptions() {
       return {
-        language: dialectSelect.value,
+        language: resolvedDialect(),
         tabWidth: parseInt(indentSelect.value, 10),
         keywordCase: keywordCaseSelect.value,
         indentStyle: indentStyleSelect.value,
@@ -1019,6 +1064,15 @@
         errorHint.textContent = 'Check for mismatched quotes, unbalanced parentheses, or syntax not supported by the selected dialect.';
       }
 
+      if (err && err.suggest) {
+        errorHint.hidden = false;
+        errorHint.innerHTML = '';
+        errorHint.append(`This script parses as ${DIALECT_NAMES[err.suggest] || err.suggest}. `);
+        const b = document.createElement('button');
+        b.type = 'button'; b.className = 'btn btn-inline'; b.textContent = `Format as ${DIALECT_NAMES[err.suggest] || err.suggest}`;
+        b.addEventListener('click', () => { dialectSelect.value = err.suggest; saveState(); processSQL(); });
+        errorHint.append(b);
+      }
       errorBanner.classList.add('active');
     }
 
@@ -1049,12 +1103,14 @@
         return;
       }
 
+      lastAction = 'format';
       try {
-        const formatted = sqlFormatter.format(raw, getFormatOptions());
+        const formatted = formatWith(raw, getFormatOptions());
         renderOutput(formatted);
       } catch (err) {
         showError(err);
       }
+      updateDialectHint();
     }
 
     function minifySQL() {
@@ -1071,14 +1127,18 @@
         return;
       }
 
+      lastAction = 'minify';
       try {
-        const formatted = sqlFormatter.format(raw, { language: dialectSelect.value });
+        const formatted = formatWith(raw, {});
         const minified = formatted.replace(/\s+/g, ' ').trim();
         renderOutput(minified);
       } catch (err) {
         showError(err);
       }
+      updateDialectHint();
     }
+    let lastAction = null;
+    function rerun() { if (!sqlInput.value.trim()) return; if (lastAction === 'minify') minifySQL(); else processSQL(); }
 
     btnFormat.addEventListener('click', processSQL);
     btnMinify.addEventListener('click', minifySQL);
@@ -1097,9 +1157,9 @@
 
     btnCopy.addEventListener('click', () => {
       const text = sqlOutput.innerText;
-      if (!text) return;
+      if (!text) { if (window.Layerbit) Layerbit.toast('Nothing to copy yet: format a query first.', 'warn'); return; }
 
-      navigator.clipboard.writeText(text).then(() => {
+      Layerbit.copy(text).then(() => {
         const originalText = btnCopy.innerHTML;
         btnCopy.innerHTML = '<i data-lucide="check"></i> Copied!';
         safeCreateIcons();
@@ -1113,7 +1173,7 @@
 
     btnDownload.addEventListener('click', () => {
       const text = sqlOutput.innerText;
-      if (!text) return;
+      if (!text) { if (window.Layerbit) Layerbit.toast('Nothing to download yet: format a query first.', 'warn'); return; }
 
       const blob = new Blob([text], { type: 'text/plain' });
       const url = URL.createObjectURL(blob);
@@ -1146,6 +1206,7 @@
     function saveState() {
       try {
         localStorage.setItem(STORAGE_KEY, JSON.stringify({
+          v: 2,
           query: sqlInput.value,
           dialect: dialectSelect.value,
           tabWidth: indentSelect.value,
@@ -1162,7 +1223,8 @@
         if (!raw) return;
         const state = JSON.parse(raw);
         if (typeof state.query === 'string') sqlInput.value = state.query;
-        if (state.dialect) dialectSelect.value = state.dialect;
+        // v1 saved the old default 'sql' for everyone; auto-detect replaces it
+        if (state.dialect && !(state.dialect === 'sql' && !state.v)) dialectSelect.value = state.dialect;
         if (state.tabWidth) indentSelect.value = state.tabWidth;
         if (state.keywordCase) keywordCaseSelect.value = state.keywordCase;
         if (state.indentStyle) indentStyleSelect.value = state.indentStyle;
@@ -1172,18 +1234,22 @@
 
     const debouncedSave = debounce(saveState, 400);
 
+    // Once something has been formatted, edits and option changes re-format
+    // in place, so every control visibly does what it says.
+    const debouncedRerun = debounce(() => { if (lastAction && sqlInput.value.length < 400000) rerun(); }, 450);
     sqlInput.addEventListener('input', () => {
       updateInputMeta();
       debouncedSave();
+      debouncedRerun();
     });
 
     [dialectSelect, indentSelect, keywordCaseSelect, indentStyleSelect].forEach(el => {
       el.addEventListener('change', () => {
-        dialectHint.textContent = dialectSelect.options[dialectSelect.selectedIndex].text;
         saveState();
+        if (sqlInput.value.trim()) rerun(); else updateDialectHint();
       });
     });
-    uppercaseFunctions.addEventListener('change', saveState);
+    uppercaseFunctions.addEventListener('change', () => { saveState(); if (sqlInput.value.trim()) rerun(); });
 
     // FAQ Accordion Logic
     
@@ -1206,7 +1272,7 @@
     loadState();
     updateInputMeta();
     updateOutputMeta('');
-    dialectHint.textContent = dialectSelect.options[dialectSelect.selectedIndex].text;
+    updateDialectHint();
     if (sqlInput.value.trim()) processSQL();
   </script>
 <script src="../main.js"></script>

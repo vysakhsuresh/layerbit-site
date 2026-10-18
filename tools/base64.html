@@ -594,6 +594,10 @@
             <div class="use-case-card">
               <h3><i data-lucide="wrench"></i> <a href="hash-generator.html">Hash & HMAC Generator</a></h3>
               <p>Another local tool that pairs with this one. Runs entirely in your browser.</p>
+            <div class="use-case-card">
+              <h3><i data-lucide="wrench"></i> <a href="number-base-converter.html">Number Base Converter</a></h3>
+              <p>See the bits and bytes behind the encoding.</p>
+            </div>
             </div>
           </div>
         </div>
@@ -681,7 +685,7 @@
     async function copyContent(elementId, btnElement) {
       const textarea = document.getElementById(elementId);
       const text = textarea.value;
-      if (!text) return;
+      if (!text) { Layerbit.toast(elementId === 'imageOutputText' ? 'Choose or drop a file first; its Base64 appears here.' : 'Nothing to copy yet.', 'warn'); return; }
 
       const triggerSuccessVisual = () => {
         const label = btnElement.querySelector('span');
@@ -714,7 +718,7 @@
           document.execCommand('copy');
           triggerSuccessVisual();
         } catch (fallbackErr) {
-          alert("Failed to copy automatically. The data might be too large for this browser. Please select all inside the box and copy manually.");
+          Layerbit.toast('Could not copy automatically; the data may be too large. Select the text and copy it manually.', 'warn');
         }
         window.getSelection().removeAllRanges();
       }
@@ -723,12 +727,12 @@
     // Asset Downloader
     function downloadAsset() {
         const val = document.getElementById('imageDecodeInput').value.trim();
-        if(!val) return;
+        if(!val) { Layerbit.toast('Paste a data URI (data:image/png;base64,...) into the decode box first.', 'warn'); return; }
         
         try {
             const match = val.match(/^data:(.*?);base64,(.*)$/);
             if(!match) {
-                alert("Please ensure the format is a valid Data URI (data:[mime type];base64,...).");
+                Layerbit.toast('That is not a data URI. It should look like data:image/png;base64,...', 'warn');
                 return;
             }
             const mime = match[1];
@@ -757,7 +761,7 @@
             document.body.removeChild(a);
             URL.revokeObjectURL(url);
         } catch(e) {
-            alert("Error preparing download. The Base64 string might be invalid or too large.");
+            Layerbit.toast('Could not decode that Base64; it may be invalid or truncated.', 'warn');
             console.error(e);
         }
     }

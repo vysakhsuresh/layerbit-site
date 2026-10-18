@@ -14,6 +14,9 @@ offline, and sends no visitor IP to a CDN operator).
 | `JsBarcode.all.min.js` | jsbarcode | 3.11.5 | MIT |
 | `qrcode.min.js` | qrcodejs | 1.0.0 | MIT |
 | `xlsx.full.min.js` | xlsx (SheetJS CE) | 0.18.5 | Apache-2.0 |
+| `marked.umd.js` | marked (`lib/marked.umd.js`) | 18.0.14 | MIT |
+| `purify.min.js` | dompurify | 3.4.16 | MPL-2.0 OR Apache-2.0 |
+| `eff-wordlist.js` | EFF Large Wordlist (via diceware-wordlist-en-eff 1.0.1), repackaged as one script | 2016 | CC BY 3.0 US |
 
 To upgrade one: download the same `dist/` file from the new version's npm
 tarball, replace it here, and update this table.

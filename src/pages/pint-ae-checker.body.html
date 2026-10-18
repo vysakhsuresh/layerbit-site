@@ -384,12 +384,12 @@
             const rows = XLSX.utils.sheet_to_json(sheet, { header: 1, raw: false, defval: '' });
             ingestRows(rows);
           } catch (err) {
-            alert('Could not read this Excel file. Please try exporting it as CSV instead.');
+            Layerbit.toast('Could not read this Excel file. Try exporting it as CSV instead.', 'warn');
           }
         };
         reader.readAsArrayBuffer(file);
       } else {
-        alert('Please upload a .csv, .xlsx, or .xls file.');
+        Layerbit.toast('Please upload a .csv, .xlsx or .xls file.', 'warn');
       }
     }
 
@@ -409,7 +409,7 @@
     function ingestRows(rawRows) {
       const rows = rawRows.filter(r => r.some(c => String(c).trim() !== ''));
       if (rows.length < 2) {
-        alert('This file needs a header row plus at least one data row.');
+        Layerbit.toast('This file needs a header row plus at least one data row.', 'warn');
         return;
       }
       currentHeaders = rows[0].map(h => String(h).trim());
@@ -434,23 +434,61 @@
       return h.toLowerCase().replace(/[._#()/-]/g, ' ').replace(/\s+/g, ' ').trim();
     }
 
+    // Scored, whole-word header matching. Real exports (Zoho Books, Tally,
+    // QuickBooks, Odoo, Excel templates) name columns loosely, so substring
+    // matching alone mapped "Customer TRN" to the supplier and "Exchange Rate"
+    // to the unit price. Each field now has extra real-world variants and words
+    // that rule a column out, and a column is assigned to at most one field.
+    const EXTRA_VARIANTS = {
+      supplierTIN: ['tax registration number', 'trn number', 'our trn', 'business trn', 'organisation trn', 'organization trn'],
+      buyerTIN: ['customer tax registration number', 'customer trn number', 'party trn', 'bill to trn', 'buyer tax registration number'],
+      invoiceNumber: ['invoice', 'invoice ref', 'reference number', 'bill number'],
+      issueDate: ['invoice issue date', 'transaction date', 'posting date'],
+      description: ['item desc', 'line description', 'service', 'item details', 'narration'],
+      quantity: ['item quantity', 'qty sold', 'billed qty'],
+      unitPrice: ['item price', 'selling price', 'sale price', 'price per unit', 'unit amount', 'list price'],
+      vatRate: ['item tax %', 'item tax rate', 'tax %', 'tax percent', 'tax percentage', 'vat percentage', 'vat'],
+      vatAmount: ['item tax amount', 'item tax', 'line tax', 'tax', 'vat amt'],
+      totalTaxable: ['taxable value', 'amount excl vat', 'total excl vat', 'net total', 'line total excl vat'],
+      totalVAT: ['total tax', 'total tax amount', 'vat payable'],
+      totalInvoice: ['total', 'invoice amount', 'total incl vat', 'total including vat', 'gross amount', 'amount']
+    };
+    const EXCLUDE = {
+      supplierTIN: /\b(customer|buyer|client|recipient|party|bill to|ship to)\b/,
+      buyerTIN: /\b(supplier|seller|vendor|company|our|my|organi[sz]ation|business)\b/,
+      invoiceNumber: /\b(id|date|status|type|amount|total)\b/,
+      issueDate: /\b(due|payment|created|modified|updated)\b/,
+      dueDate: /\b(invoice date|issue)\b/,
+      currency: /\b(rate|exchange)\b/,
+      description: /\b(customer|status|tax)\b/,
+      quantity: /\b(price|amount|rate)\b/,
+      unitPrice: /\b(exchange|total|sub|tax|vat|discount)\b/,
+      vatRate: /\b(amount|amt|value|total|exchange|number|registration|trn)\b/,
+      vatAmount: /(%|\b(rate|percent|percentage|total|registration|trn|number)\b)/,
+      totalTaxable: /\b(tax amount|vat amount)\b/,
+      totalVAT: /(%|\b(rate|item|line|registration|trn)\b)/,
+      totalInvoice: /\b(sub|taxable|tax|vat|balance|paid|due|excl)\b/
+    };
+    function headerScore(field, h) {
+      if (EXCLUDE[field.key] && EXCLUDE[field.key].test(h)) return 0;
+      const variants = field.variants.concat(EXTRA_VARIANTS[field.key] || []);
+      let best = 0;
+      variants.forEach((v, idx) => {
+        const order = 1 - idx / (variants.length * 10);   // earlier variants win ties
+        if (h === v) best = Math.max(best, 100 * order);
+        else if (h.replace(/^(item|line|invoice|inv|bill)\s+/, '') === v) best = Math.max(best, 85 * order);
+        else if (new RegExp('(^|\\s)' + v.replace(/[.*+?^${}()|[\]\\%#]/g, '\\$&') + '($|\\s)').test(h)) best = Math.max(best, (50 + Math.min(v.length, 25)) * order);
+      });
+      return best;
+    }
     function autoDetectMapping(headers) {
       const norm = headers.map(h => ({ raw: h, n: normalizeHeader(h) }));
-      const result = {};
-      FIELDS.forEach(field => {
-        let found = '';
-        for (const variant of field.variants) {
-          const exact = norm.find(h => h.n === variant);
-          if (exact) { found = exact.raw; break; }
-        }
-        if (!found) {
-          for (const variant of field.variants) {
-            const partial = norm.find(h => h.n.includes(variant));
-            if (partial) { found = partial.raw; break; }
-          }
-        }
-        result[field.key] = found;
-      });
+      const cands = [];
+      FIELDS.forEach(field => norm.forEach(h => { const sc = headerScore(field, h.n); if (sc > 0) cands.push({ key: field.key, raw: h.raw, sc }); }));
+      cands.sort((a, b) => b.sc - a.sc);
+      const result = {}, used = new Set();
+      FIELDS.forEach(f => { result[f.key] = ''; });
+      cands.forEach(c => { if (!result[c.key] && !used.has(c.raw)) { result[c.key] = c.raw; used.add(c.raw); } });
       return result;
     }
 

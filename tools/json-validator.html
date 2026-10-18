@@ -38,7 +38,7 @@
     {
       "@type": "SoftwareApplication",
       "@id": "https://layerbit.co.in/tools/json-validator.html#app",
-      "name": "JSON Validator, Formatter \u0026 Schema Tool",
+      "name": "JSON Formatter, Validator \u0026 Schema Tool",
       "url": "https://layerbit.co.in/tools/json-validator.html",
       "description": "Validate, beautify, fix and query JSON with JSONPath, validate or infer a JSON Schema, generate TypeScript, Go, C# and Rust types, export SQL and CSV.",
       "applicationCategory": "DeveloperApplication",
@@ -534,7 +534,7 @@
   </header>
 
   <main class="hero">
-    <h1>JSON Validator, Formatter &amp; Schema Tool</h1>
+    <h1>JSON Formatter, Validator &amp; Schema Tool</h1>
     <p>Validate, beautify, minify and repair JSON; query it with JSONPath; validate against or infer a JSON Schema; generate TypeScript, Go, C#, Kotlin, Python, Java or Rust types; export SQL and CSV — all client-side.</p>
   </main>
 
@@ -1005,10 +1005,14 @@
     function inferSchema() {
       if (lastParsed === null) { Layerbit.toast('Beautify a document first'); return; }
       const s = J.inferSchema(lastParsed, { closed: $('inferClosed').checked, ranges: $('inferRanges').checked, title: 'Root' });
-      $('schemaInput').value = JSON.stringify(s, null, 2);
+      $('schemaInput').value = lastInferred = JSON.stringify(s, null, 2);
       $('schemaResult').innerHTML = `<div class="schema-ok"><i data-lucide="sparkles"></i> Schema inferred from the document: ${Object.keys(s.properties || (s.items && s.items.properties) || {}).length} top-level properties. Edit it, then validate.</div>`;
       icons();
     }
+    // The inference options apply immediately to a schema that was inferred
+    // and not edited since; an edited schema is never overwritten.
+    let lastInferred = null;
+    ['inferClosed', 'inferRanges'].forEach(id => $(id).addEventListener('change', () => { if (lastInferred !== null && $('schemaInput').value === lastInferred && lastParsed !== null) inferSchema(); }));
     function validateSchema() {
       if (lastParsed === null) { Layerbit.toast('Beautify a document first'); return; }
       let schema;

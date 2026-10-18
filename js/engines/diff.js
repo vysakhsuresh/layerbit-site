@@ -56,13 +56,18 @@
           rows.push({ type: 'eq', l: { n: ai + 1, text: la[ai] }, r: { n: bi + 1, text: lb[bi] } }); ai++; bi++;
         }
       } else if (p.removed && next && next.added) {
-        var n = Math.min(p.value.length, next.value.length);
-        for (var k2 = 0; k2 < n; k2++) {
-          var segs = intraline(la[ai], lb[bi], o.granularity);
-          rows.push({ type: 'mod', l: { n: ai + 1, text: la[ai], segs: segs.a }, r: { n: bi + 1, text: lb[bi], segs: segs.b } }); ai++; bi++;
+        // A replaced block: pair each removed line with the added line it most
+        // resembles (order-preserving), so a moved-down line is not compared
+        // against whatever happens to sit in the same slot.
+        var plan = pairBlock(la.slice(ai, ai + p.value.length), lb.slice(bi, bi + next.value.length), ka.slice(ai, ai + p.value.length), kb.slice(bi, bi + next.value.length));
+        for (var q = 0; q < plan.length; q++) {
+          var step = plan[q];
+          if (step === 'm') {
+            var segs = intraline(la[ai], lb[bi], o.granularity);
+            rows.push({ type: 'mod', l: { n: ai + 1, text: la[ai], segs: segs.a }, r: { n: bi + 1, text: lb[bi], segs: segs.b } }); ai++; bi++;
+          } else if (step === 'd') { rows.push({ type: 'del', l: { n: ai + 1, text: la[ai] }, r: null }); ai++; }
+          else { rows.push({ type: 'ins', l: null, r: { n: bi + 1, text: lb[bi] } }); bi++; }
         }
-        for (var k3 = n; k3 < p.value.length; k3++) { rows.push({ type: 'del', l: { n: ai + 1, text: la[ai] }, r: null }); ai++; }
-        for (var k4 = n; k4 < next.value.length; k4++) { rows.push({ type: 'ins', l: null, r: { n: bi + 1, text: lb[bi] } }); bi++; }
         i++;
       } else if (p.removed) {
         for (var k5 = 0; k5 < p.value.length; k5++) { rows.push({ type: 'del', l: { n: ai + 1, text: la[ai] }, r: null }); ai++; }
@@ -71,6 +76,50 @@
       }
     }
     return { rows: rows, hunks: hunksOf(rows), stats: statsOf(rows, la.length, lb.length) };
+  }
+
+  /** Character-bigram Dice similarity of two lines, 0..1 (whitespace-insensitive). */
+  function lineSimilarity(x, y) {
+    x = x.replace(/\s+/g, ' ').trim(); y = y.replace(/\s+/g, ' ').trim();
+    if (x === y) return 1;
+    if (x.length < 2 || y.length < 2) return 0;
+    var grams = {}, n = 0, hit = 0, i;
+    for (i = 0; i < x.length - 1; i++) { var g = x.substr(i, 2); grams[g] = (grams[g] || 0) + 1; n++; }
+    for (i = 0; i < y.length - 1; i++) { var h = y.substr(i, 2); if (grams[h] > 0) { grams[h]--; hit++; } }
+    return 2 * hit / (n + y.length - 1);
+  }
+  /** Order-preserving alignment of a removed block A against an added block B.
+   *  Returns steps 'm' (pair), 'd' (removed only), 'i' (added only). Strong
+   *  pairs (>= 40% alike) score fully; weak ones (>= 12%) score half, so a line
+   *  rewritten in place still pairs unless a better partner exists. Blocks over
+   *  400x400 fall back to slot order. */
+  function pairBlock(A, B, KA, KB) {
+    var na = A.length, nb = B.length, i, j, steps = [];
+    var slots = function () {
+      var m = Math.min(na, nb);
+      for (i = 0; i < m; i++) steps.push('m');
+      for (i = m; i < na; i++) steps.push('d');
+      for (j = m; j < nb; j++) steps.push('i');
+      return steps;
+    };
+    if (na * nb > 160000) return slots();
+    var sim = [], dp = [];
+    for (i = 0; i <= na; i++) { dp.push(new Float64Array(nb + 1)); sim.push(i < na ? new Float64Array(nb) : null); }
+    for (i = 0; i < na; i++) for (j = 0; j < nb; j++) { var v = lineSimilarity(KA[i], KB[j]); sim[i][j] = v >= 0.4 ? v : v >= 0.12 ? v / 2 : 0; }
+    for (i = na - 1; i >= 0; i--) for (j = nb - 1; j >= 0; j--) {
+      var best = Math.max(dp[i + 1][j], dp[i][j + 1]);
+      if (sim[i][j] > 0) best = Math.max(best, dp[i + 1][j + 1] + sim[i][j]);
+      dp[i][j] = best;
+    }
+    // nothing alike at all (short or unrelated lines): keep slot order
+    if (dp[0][0] === 0) return slots();
+    i = 0; j = 0;
+    while (i < na || j < nb) {
+      if (i < na && j < nb && sim[i][j] > 0 && dp[i][j] === dp[i + 1][j + 1] + sim[i][j]) { steps.push('m'); i++; j++; }
+      else if (i < na && (j >= nb || dp[i][j] === dp[i + 1][j])) steps.push('d'), i++;
+      else steps.push('i'), j++;
+    }
+    return steps;
   }
 
   /** Groups consecutive changed rows into hunks: [{start, end}] (row indexes, end exclusive). */

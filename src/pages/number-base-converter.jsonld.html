@@ -1,0 +1,115 @@
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "SoftwareApplication",
+      "@id": "https://layerbit.co.in/tools/number-base-converter.html#app",
+      "name": "Number Base Converter: Binary, Hex, Decimal",
+      "url": "https://layerbit.co.in/tools/number-base-converter.html",
+      "description": "Convert between binary, octal, decimal, hex and any base to 36 with arbitrary precision, two's complement, byte order, IEEE-754 floats and bitwise math.",
+      "applicationCategory": "DeveloperApplication",
+      "operatingSystem": "Any (runs in the browser)",
+      "browserRequirements": "Requires JavaScript",
+      "isAccessibleForFree": true,
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "publisher": {
+        "@id": "https://layerbit.co.in/#organization"
+      },
+      "featureList": [
+        "Binary, octal, decimal, hexadecimal and any base from 2 to 36",
+        "Arbitrary-precision BigInt conversion with no rounding",
+        "0x, 0b, 0o prefixes, h suffix and digit separators",
+        "Two's complement at 8, 16, 32, 64 and 128 bits with overflow detection",
+        "Clickable bit grid",
+        "Big-endian and little-endian byte views with ASCII",
+        "IEEE-754 float32 and float64 decoding and encoding",
+        "Bitwise AND, OR, XOR, NOT, shifts and arithmetic calculator",
+        "Runs entirely in the browser"
+      ]
+    },
+    {
+      "@type": "BreadcrumbList",
+      "@id": "https://layerbit.co.in/tools/number-base-converter.html#breadcrumb",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://layerbit.co.in/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Tools",
+          "item": "https://layerbit.co.in/blog.html"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": "Number Base Converter",
+          "item": "https://layerbit.co.in/tools/number-base-converter.html"
+        }
+      ]
+    },
+    {
+      "@type": "FAQPage",
+      "@id": "https://layerbit.co.in/tools/number-base-converter.html#faq",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "How do I convert hexadecimal to decimal?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Multiply each hex digit by 16 raised to its position, counting from zero on the right, and add the results. For 0x2F3 that is 2 × 256 + 15 × 16 + 3 × 1 = 755, using A = 10 through F = 15. Typing 0x2F3, or 2F3 with the input base set to hex, into the converter shows 755 along with binary, octal and every other base, with no limit on the number of digits."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How do I convert a negative number to binary?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Negative integers are normally stored in two's complement at a fixed width. Write the positive value in binary, invert every bit, and add one. For −5 in 8 bits: 5 is 00000101, inverted 11111010, plus one is 11111011, which is 0xFB. Enter −5 and pick a width in the bits panel to see the two's-complement bits, the unsigned reading of the same bits (251 at 8-bit) and the bytes in both byte orders."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Why does my large number change when I convert it elsewhere?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Most web converters and spreadsheets use 64-bit floating point numbers, which can represent every integer exactly only up to 2 to the power 53, about 9 quadrillion. Beyond that, digits are rounded, so a 19-digit Twitter/X or Discord snowflake ID, a 64-bit database key or a hash prefix comes back altered. This tool parses and formats with arbitrary-precision BigInt arithmetic, so every digit is preserved at any size."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What bases can it convert between?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Any integer base from 2 to 36, using the digits 0–9 followed by the letters A–Z. Binary, octal, decimal, hexadecimal and base 36 are always shown; set \"Also show base\" for another, for example base 3 or base 32. Input accepts 0x, 0b and 0o prefixes, an assembler-style h suffix in auto mode, and underscores, commas, spaces or apostrophes as digit separators, so values copied from code or documentation paste cleanly."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What is the difference between signed and unsigned?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "They are two readings of the same bits. Unsigned treats every bit as positive, so 8 bits hold 0 to 255. Signed two's complement gives the top bit a negative weight, so 8 bits hold −128 to 127. The pattern 11111111 is 255 unsigned and −1 signed. Bugs appear when a value written as one type is read as the other, for example a length of 200 stored in a signed byte reading back as −56."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Is the number I enter sent anywhere?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "No. Parsing, conversion, two's complement, byte order, float decoding and the calculator all run in JavaScript on this page. There are no network requests, and the page continues to work offline once it has loaded."
+          }
+        }
+      ]
+    }
+  ]
+}
+  </script>

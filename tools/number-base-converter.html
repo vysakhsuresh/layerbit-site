@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Convert between binary, octal, decimal, hex and any base to 36 with arbitrary precision, two's complement, byte order, IEEE-754 floats and bitwise math." />
+  <title>Number Base Converter: Binary, Hex, Decimal | Layerbit</title>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-ERX8MNPPP5"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-ERX8MNPPP5');
+  </script>
+  <link rel="canonical" href="https://layerbit.co.in/tools/number-base-converter.html" />
+  <meta name="robots" content="max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://layerbit.co.in/tools/number-base-converter.html" />
+  <meta property="og:site_name" content="Layerbit" />
+  <meta property="og:title" content="Number Base Converter: Binary, Hex, Decimal | Layerbit" />
+  <meta property="og:description" content="Convert between binary, octal, decimal, hex and any base to 36 with arbitrary precision, two's complement, byte order, IEEE-754 floats and bitwise math." />
+  <meta property="og:image" content="https://layerbit.co.in/og-image.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="Layerbit - free browser-based developer tools" />
+  <meta property="og:locale" content="en" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Number Base Converter: Binary, Hex, Decimal | Layerbit" />
+  <meta name="twitter:description" content="Convert between binary, octal, decimal, hex and any base to 36 with arbitrary precision, two's complement, byte order, IEEE-754 floats and bitwise math." />
+  <meta name="twitter:image" content="https://layerbit.co.in/og-image.png" />
+  <meta name="twitter:image:alt" content="Layerbit - free browser-based developer tools" />
+  <meta name="theme-color" content="#0a0c10" />
+  <script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "SoftwareApplication",
+      "@id": "https://layerbit.co.in/tools/number-base-converter.html#app",
+      "name": "Number Base Converter: Binary, Hex, Decimal",
+      "url": "https://layerbit.co.in/tools/number-base-converter.html",
+      "description": "Convert between binary, octal, decimal, hex and any base to 36 with arbitrary precision, two's complement, byte order, IEEE-754 floats and bitwise math.",
+      "applicationCategory": "DeveloperApplication",
+      "operatingSystem": "Any (runs in the browser)",
+      "browserRequirements": "Requires JavaScript",
+      "isAccessibleForFree": true,
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "publisher": {
+        "@id": "https://layerbit.co.in/#organization"
+      },
+      "featureList": [
+        "Binary, octal, decimal, hexadecimal and any base from 2 to 36",
+        "Arbitrary-precision BigInt conversion with no rounding",
+        "0x, 0b, 0o prefixes, h suffix and digit separators",
+        "Two's complement at 8, 16, 32, 64 and 128 bits with overflow detection",
+        "Clickable bit grid",
+        "Big-endian and little-endian byte views with ASCII",
+        "IEEE-754 float32 and float64 decoding and encoding",
+        "Bitwise AND, OR, XOR, NOT, shifts and arithmetic calculator",
+        "Runs entirely in the browser"
+      ]
+    },
+    {
+      "@type": "BreadcrumbList",
+      "@id": "https://layerbit.co.in/tools/number-base-converter.html#breadcrumb",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://layerbit.co.in/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Tools",
+          "item": "https://layerbit.co.in/blog.html"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": "Number Base Converter",
+          "item": "https://layerbit.co.in/tools/number-base-converter.html"
+        }
+      ]
+    },
+    {
+      "@type": "FAQPage",
+      "@id": "https://layerbit.co.in/tools/number-base-converter.html#faq",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "How do I convert hexadecimal to decimal?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Multiply each hex digit by 16 raised to its position, counting from zero on the right, and add the results. For 0x2F3 that is 2 × 256 + 15 × 16 + 3 × 1 = 755, using A = 10 through F = 15. Typing 0x2F3, or 2F3 with the input base set to hex, into the converter shows 755 along with binary, octal and every other base, with no limit on the number of digits."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How do I convert a negative number to binary?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Negative integers are normally stored in two's complement at a fixed width. Write the positive value in binary, invert every bit, and add one. For −5 in 8 bits: 5 is 00000101, inverted 11111010, plus one is 11111011, which is 0xFB. Enter −5 and pick a width in the bits panel to see the two's-complement bits, the unsigned reading of the same bits (251 at 8-bit) and the bytes in both byte orders."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Why does my large number change when I convert it elsewhere?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Most web converters and spreadsheets use 64-bit floating point numbers, which can represent every integer exactly only up to 2 to the power 53, about 9 quadrillion. Beyond that, digits are rounded, so a 19-digit Twitter/X or Discord snowflake ID, a 64-bit database key or a hash prefix comes back altered. This tool parses and formats with arbitrary-precision BigInt arithmetic, so every digit is preserved at any size."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What bases can it convert between?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Any integer base from 2 to 36, using the digits 0–9 followed by the letters A–Z. Binary, octal, decimal, hexadecimal and base 36 are always shown; set \"Also show base\" for another, for example base 3 or base 32. Input accepts 0x, 0b and 0o prefixes, an assembler-style h suffix in auto mode, and underscores, commas, spaces or apostrophes as digit separators, so values copied from code or documentation paste cleanly."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What is the difference between signed and unsigned?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "They are two readings of the same bits. Unsigned treats every bit as positive, so 8 bits hold 0 to 255. Signed two's complement gives the top bit a negative weight, so 8 bits hold −128 to 127. The pattern 11111111 is 255 unsigned and −1 signed. Bugs appear when a value written as one type is read as the other, for example a length of 200 stored in a signed byte reading back as −56."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Is the number I enter sent anywhere?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "No. Parsing, conversion, two's complement, byte order, float decoding and the calculator all run in JavaScript on this page. There are no network requests, and the page continues to work offline once it has loaded."
+          }
+        }
+      ]
+    }
+  ]
+}
+  </script>
+
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6072772587431629" crossorigin="anonymous"></script>
+
+  <script src="../js/vendor/lucide.min.js" async></script>
+  <script src="../js/kernel.js"></script>
+
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet" />
+  <link href="../layerbit-logo.png" rel="icon" type="image/x-icon" />
+  <link rel="manifest" href="../manifest.json" />
+  <link rel="apple-touch-icon" href="../apple-touch-icon.png" />
+  <link rel="stylesheet" href="../css/base.css" />
+  <link rel="stylesheet" href="../css/tool.css" />
+
+  <style>
+
+    .in-row { display: flex; gap: 8px; align-items: stretch; }
+    .in-row .text-input { flex: 1; min-width: 0; }
+    .text-input.big { font-size: 1.15em; }
+    .base-select { width: auto; flex: 0 0 auto; }
+    .error-inline { font-size: 0.85em; color: #fca5a5; background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.3); padding: 8px 12px; border-radius: 8px; }
+    .out-table td.val { word-break: break-all; font-size: 1.02em; }
+    .out-table td.act { width: 34px; text-align: right; }
+    .out-table td.muted { white-space: nowrap; width: 110px; }
+    .row .checks.opts { align-self: flex-end; padding-bottom: 10px; }
+    .stats-strip.inline { border: 0; background: none; padding: 0; }
+    .kv-grid dt { font-family: 'Space Grotesk', sans-serif; }
+    .bits { display: flex; flex-wrap: wrap; gap: 8px 10px; }
+    .byte { display: inline-flex; gap: 2px; position: relative; padding-bottom: 14px; }
+    .byte-idx { position: absolute; bottom: 0; left: 0; right: 0; text-align: center; font-size: 0.62em; color: var(--text-muted); font-family: 'Fira Code', monospace; }
+    .bit { width: 22px; height: 28px; border-radius: 5px; border: 1px solid rgba(255,255,255,0.12); background: rgba(0,0,0,0.3); color: var(--text-muted); font: 500 0.8em 'Fira Code', monospace; cursor: pointer; padding: 0; transition: background 0.15s, color 0.15s; }
+    .bit.on { background: rgba(56,189,248,0.22); color: #fff; border-color: rgba(56,189,248,0.6); }
+    .bit.sign { box-shadow: inset 0 -2px 0 #f472b6; }
+    .bit:hover { border-color: var(--accent-main); }
+    .fbits b { font-weight: 500; }
+    .fbits .s { color: #f472b6; } .fbits .e { color: #fdba74; } .fbits .m { color: #a7f3d0; }
+    .calc-row { display: grid; grid-template-columns: 1fr auto 1fr auto; gap: 8px; align-items: stretch; }
+    .op-select { width: auto; }
+    .hint-bar.inline { border-top: 0; padding: 0; }
+    @media (max-width: 700px) {
+      .calc-row { grid-template-columns: 1fr; }
+      .in-row { flex-wrap: wrap; }
+      .bit { width: 19px; height: 26px; }
+      .out-table td.muted { width: 84px; }
+    }
+
+  </style>
+</head>
+<body>
+  <header>
+    <a href="../" class="brand">
+      <svg width="36" height="36" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <polygon points="32,20 54,28 32,36 10,28" stroke="#f8fafc" stroke-width="4" stroke-linejoin="round"/>
+        <polyline points="10,38 32,46 54,38" stroke="#f8fafc" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+        <polyline points="10,48 32,56 54,48" stroke="#f8fafc" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+        <rect x="50" y="10" width="10" height="10" rx="2" fill="#00f2fe" />
+      </svg>
+      Layerbit
+    </a>
+  </header>
+
+  <main class="hero">
+    <div class="hero-badge"><i data-lucide="shield-check"></i> Runs entirely in your browser</div>
+    <h1>Number Base Converter: Binary, Hex, Decimal</h1>
+    <p>Convert integers of any size between binary, octal, decimal, hexadecimal and any base up to 36, then inspect the same value as two's-complement bits you can toggle, big- and little-endian bytes, and IEEE-754 floats, with a bitwise calculator alongside.</p>
+  </main>
+
+  <div class="ide-container">
+    <div class="pane">
+      <div class="pane-header">
+        <div class="pane-title"><i data-lucide="binary"></i> Number</div>
+        <div class="btn-group">
+          <button class="btn" type="button" data-sample="0xDEADBEEF">0xDEADBEEF</button>
+          <button class="btn" type="button" data-sample="-1">-1</button>
+          <button class="btn" type="button" data-sample="18446744073709551615">2⁶⁴−1</button>
+        </div>
+      </div>
+      <div class="pane-body">
+        <div class="field">
+          <label for="numInput"><i data-lucide="keyboard"></i> Value (prefixes 0x, 0b, 0o and _ separators work)</label>
+          <div class="in-row">
+            <input type="text" id="numInput" class="text-input big" value="255" spellcheck="false" autocomplete="off" inputmode="text">
+            <select id="inBase" class="select-input base-select" aria-label="Input base">
+              <option value="auto">auto</option><option value="10">decimal</option><option value="16">hex</option><option value="2">binary</option><option value="8">octal</option><option value="36">base 36</option><option value="custom">other…</option>
+            </select>
+            <input type="number" id="inBaseCustom" class="text-input num" min="2" max="36" value="3" hidden aria-label="Custom input base">
+          </div>
+        </div>
+        <div class="error-inline" id="numError" hidden></div>
+        <table class="data-table out-table" id="outTable"><tbody></tbody></table>
+        <div class="row">
+          <div class="field"><label for="outBase"><i data-lucide="variable"></i> Also show base</label><input type="number" id="outBase" class="text-input" min="2" max="36" value="7"></div>
+          <div class="checks opts"><label class="check"><input type="checkbox" id="optUpper" checked> Uppercase hex</label><label class="check"><input type="checkbox" id="optGroup" checked> Group digits</label></div>
+        </div>
+        <div class="stats-strip inline" id="numStats"></div>
+      </div>
+    </div>
+
+    <div class="pane">
+      <div class="pane-header">
+        <div class="pane-title"><i data-lucide="cpu"></i> Bits &amp; bytes</div>
+        <div class="btn-group">
+          <select id="width" class="mini-select" aria-label="Bit width"><option value="auto">auto width</option><option value="8">8-bit</option><option value="16">16-bit</option><option value="32">32-bit</option><option value="64">64-bit</option><option value="128">128-bit</option></select>
+        </div>
+      </div>
+      <div class="pane-body">
+        <dl class="kv-grid" id="twosGrid"></dl>
+        <div class="field">
+          <label><i data-lucide="mouse-pointer-click"></i> Bits (click to flip; bit 0 is on the right)</label>
+          <div class="bits" id="bits"></div>
+        </div>
+        <dl class="kv-grid" id="byteGrid"></dl>
+        <div class="field">
+          <label for="floatInput"><i data-lucide="sigma"></i> Decimal to IEEE-754 bits</label>
+          <div class="in-row">
+            <input type="text" id="floatInput" class="text-input" placeholder="e.g. 0.1 or -2.5e-3" spellcheck="false" autocomplete="off">
+            <select id="floatWidth" class="select-input base-select" aria-label="Float width"><option value="32">float32</option><option value="64" selected>float64</option></select>
+            <button class="btn" type="button" id="btnFloat">Load bits</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="ide-container single">
+    <div class="pane">
+      <div class="pane-header">
+        <div class="pane-title"><i data-lucide="calculator"></i> Bitwise &amp; arithmetic calculator</div>
+      </div>
+      <div class="pane-body">
+        <div class="calc-row">
+          <input type="text" id="calcA" class="text-input" value="0b1100" spellcheck="false" aria-label="Operand A">
+          <select id="calcOp" class="select-input op-select" aria-label="Operation">
+            <option value="and">AND (&amp;)</option><option value="or">OR (|)</option><option value="xor">XOR (^)</option><option value="not">NOT A (~)</option>
+            <option value="shl">A &lt;&lt; B</option><option value="shr">A &gt;&gt; B</option>
+            <option value="add">A + B</option><option value="sub">A − B</option><option value="mul">A × B</option><option value="div">A ÷ B (integer)</option><option value="mod">A mod B</option><option value="pow">A ^ B (power)</option>
+          </select>
+          <input type="text" id="calcB" class="text-input" value="0b1010" spellcheck="false" aria-label="Operand B">
+          <button class="btn" type="button" id="btnCalcUse" title="Send the result to the converter above"><i data-lucide="arrow-up"></i> Use result</button>
+        </div>
+        <div class="error-inline" id="calcError" hidden></div>
+        <dl class="kv-grid" id="calcOut"></dl>
+        <div class="hint-bar inline">Operands accept the same notation as the converter. NOT, and shifts with a fixed width, use the bit width chosen above (auto picks the smallest standard width that fits).</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="docs-container">
+    <div class="info-panel">
+      <h2><i data-lucide="book-open"></i> How positional number bases work</h2>
+      <p>A base, or radix, is the number of distinct digits a system uses. In base 10 each position is worth ten times the one to its right; in base 2 each is worth twice as much, so <code>1011</code> is 8 + 0 + 2 + 1 = 11. Hexadecimal, base 16, uses the digits 0–9 and then A–F for ten to fifteen. It is popular in computing because one hex digit is exactly four bits, so a byte is always two hex digits and a 32-bit value is eight: <code>0xDEADBEEF</code> is far easier to read than its 32 binary digits. Octal, base 8, maps three bits per digit and survives in Unix file permissions such as <code>chmod 755</code>.</p>
+      <p>Converting between any two bases means reading the digits into a single integer and writing it back out in the target base. This tool does that with JavaScript's BigInt, so there is no upper limit and no rounding: a 256-bit hash, a 20-digit account number or 2<sup>64</sup>−1 converts exactly. Regular JavaScript numbers lose precision above 2<sup>53</sup>, which is why pasting a large ID into many converters silently changes its last digits.</p>
+
+      <h2><i data-lucide="cpu"></i> Two's complement and fixed widths</h2>
+      <p>Computers store integers in a fixed number of bits, and almost all of them represent negative numbers with two's complement: the most significant bit carries a negative weight. In 8 bits, <code>11111111</code> is 255 read as unsigned but −1 read as signed, and <code>10000000</code> is 128 or −128. The same bit pattern means different things depending on the type you read it as, which is the source of many overflow bugs. The bits panel shows both readings at the chosen width, flags values that do not fit, and lets you flip individual bits to see the effect, which is useful when working with flags, masks and hardware registers.</p>
+      <table>
+        <thead><tr><th>Width</th><th>Unsigned range</th><th>Signed range</th><th>Common type</th></tr></thead>
+        <tbody>
+          <tr><td>8-bit</td><td>0 to 255</td><td>−128 to 127</td><td>uint8 / int8, byte, char</td></tr>
+          <tr><td>16-bit</td><td>0 to 65,535</td><td>−32,768 to 32,767</td><td>uint16 / short, UTF-16 code unit</td></tr>
+          <tr><td>32-bit</td><td>0 to 4,294,967,295</td><td>−2,147,483,648 to 2,147,483,647</td><td>uint32 / int, IPv4 address, Unix time (signed)</td></tr>
+          <tr><td>64-bit</td><td>0 to 18,446,744,073,709,551,615</td><td>±9.22 × 10<sup>18</sup></td><td>uint64 / long, database BIGINT</td></tr>
+        </tbody>
+      </table>
+
+      <h2><i data-lucide="arrow-left-right"></i> Byte order</h2>
+      <p>A multi-byte value has to be laid out in memory in some order. Big-endian puts the most significant byte first, the way we write numbers; it is the network byte order used by TCP/IP headers and most file formats. Little-endian puts the least significant byte first, and is what x86 and ARM processors use in memory. The value <code>0x12345678</code> is stored as <code>12 34 56 78</code> big-endian and <code>78 56 34 12</code> little-endian. When a hex dump of a file or packet does not match the number you expected, reversing the byte order is the first thing to try; both layouts are shown side by side.</p>
+
+      <h2><i data-lucide="sigma"></i> Floating point bits</h2>
+      <p>At 32 and 64 bits the same pattern can also be read as an IEEE-754 floating-point number, the format used by <code>float</code> and <code>double</code> in nearly every language. The bits split into a sign, an exponent and a mantissa. The panel decodes them and reports whether the value is normal, subnormal, zero, infinity or NaN. Use the decimal-to-bits field to see why <code>0.1</code> cannot be stored exactly: its float64 pattern is <code>0x3FB999999999999A</code>, a repeating binary fraction rounded at the last bit, which is why 0.1 + 0.2 is not exactly 0.3.</p>
+    </div>
+
+    <div class="info-panel">
+      <h2><i data-lucide="help-circle"></i> Frequently asked questions</h2>
+      <div class="faq-container">
+        <div class="faq-item">
+          <button class="faq-question">How do I convert hexadecimal to decimal? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>Multiply each hex digit by 16 raised to its position, counting from zero on the right, and add the results. For 0x2F3 that is 2 × 256 + 15 × 16 + 3 × 1 = 755, using A = 10 through F = 15. Typing 0x2F3, or 2F3 with the input base set to hex, into the converter shows 755 along with binary, octal and every other base, with no limit on the number of digits.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">How do I convert a negative number to binary? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>Negative integers are normally stored in two's complement at a fixed width. Write the positive value in binary, invert every bit, and add one. For −5 in 8 bits: 5 is 00000101, inverted 11111010, plus one is 11111011, which is 0xFB. Enter −5 and pick a width in the bits panel to see the two's-complement bits, the unsigned reading of the same bits (251 at 8-bit) and the bytes in both byte orders.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">Why does my large number change when I convert it elsewhere? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>Most web converters and spreadsheets use 64-bit floating point numbers, which can represent every integer exactly only up to 2 to the power 53, about 9 quadrillion. Beyond that, digits are rounded, so a 19-digit Twitter/X or Discord snowflake ID, a 64-bit database key or a hash prefix comes back altered. This tool parses and formats with arbitrary-precision BigInt arithmetic, so every digit is preserved at any size.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">What bases can it convert between? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>Any integer base from 2 to 36, using the digits 0–9 followed by the letters A–Z. Binary, octal, decimal, hexadecimal and base 36 are always shown; set "Also show base" for another, for example base 3 or base 32. Input accepts 0x, 0b and 0o prefixes, an assembler-style h suffix in auto mode, and underscores, commas, spaces or apostrophes as digit separators, so values copied from code or documentation paste cleanly.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">What is the difference between signed and unsigned? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>They are two readings of the same bits. Unsigned treats every bit as positive, so 8 bits hold 0 to 255. Signed two's complement gives the top bit a negative weight, so 8 bits hold −128 to 127. The pattern 11111111 is 255 unsigned and −1 signed. Bugs appear when a value written as one type is read as the other, for example a length of 200 stored in a signed byte reading back as −56.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">Is the number I enter sent anywhere? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>No. Parsing, conversion, two's complement, byte order, float decoding and the calculator all run in JavaScript on this page. There are no network requests, and the page continues to work offline once it has loaded.</p></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="info-panel related-panel">
+      <h2><i data-lucide="link"></i> Related guides and tools</h2>
+      <p>Tools that deal with the same bits from another angle.</p>
+      <div class="use-cases-grid">
+        <div class="use-case-card">
+          <h3><i data-lucide="wrench"></i> <a href="subnet-calculator.html">CIDR &amp; Subnet Calculator</a></h3>
+          <p>IPv4 and IPv6 masks are binary prefixes.</p>
+        </div>
+        <div class="use-case-card">
+          <h3><i data-lucide="wrench"></i> <a href="base64.html">Base64 Encoder &amp; Decoder</a></h3>
+          <p>Six bits per character, padded to bytes.</p>
+        </div>
+        <div class="use-case-card">
+          <h3><i data-lucide="book-open"></i> <a href="../guides/unix-time-and-time-zones.html">Unix time and time zones</a></h3>
+          <p>Why signed 32-bit time ends in 2038.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="info-panel">
+      <h2><i data-lucide="git-commit"></i> Changelog</h2>
+      <ul class="changelog-list">
+        <li><span class="changelog-tag">v1.0.0</span> Initial release: arbitrary-precision conversion in bases 2–36 with prefix, suffix and separator parsing, two's complement at 8–128 bits with overflow detection, clickable bit grid, big- and little-endian bytes with ASCII, IEEE-754 float32/float64 decoding and encoding, and a bitwise and arithmetic calculator.</li>
+      </ul>
+    </div>
+  </div>
+
+  <a id="smartBackBtn" class="fab home-fab-premium" aria-label="Command Center" title="Command Center" href="../">
+    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="filter: drop-shadow(0 0 8px rgba(56, 189, 248, 0.5));">
+      <path d="M12 2L2 7l10 5 10-5-10-5z" stroke="#38bdf8" stroke-width="2" stroke-linejoin="round" fill="rgba(56,189,248,0.2)"/>
+      <path d="M2 17l10 5 10-5M2 12l10 5 10-5" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </a>
+
+  <footer>
+    <div style="margin-bottom: 15px;">
+      &copy; 2025 - 2026 <strong>Layerbit Technologies</strong>. All rights reserved.
+    </div>
+    <div>
+      <a href="../about.html">About</a>
+      <a href="../privacy.html">Privacy Policy</a>
+      <a href="../terms.html">Terms of Service</a>
+      <a href="../blog.html">Developer Blog</a>
+      <a href="../contact.html">Contact</a>
+    </div>
+  </footer>
+
+  <script src="../js/shared.js"></script>
+  <script src="../js/engines/numbase.js"></script>
+  <script>
+    const $ = id => document.getElementById(id);
+    const N = window.LBNum;
+    const icons = () => { if (window.lucide) lucide.createIcons(); };
+    const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+    let value = 255n, width = 8;
+
+    function inBase() { const v = $('inBase').value; return v === 'custom' ? Math.max(2, Math.min(36, +$('inBaseCustom').value || 10)) : v; }
+    function fmt(v, b) {
+      const up = $('optUpper').checked, g = $('optGroup').checked;
+      const group = !g ? 0 : b === 2 ? 4 : b === 16 ? 4 : b === 10 ? 3 : b === 8 ? 3 : 0;
+      return N.format(v, b, { upper: up && b > 10, group, sep: b === 10 ? ',' : ' ' });
+    }
+    function row(label, v, b, prefix) {
+      const plain = N.format(v, b, { upper: $('optUpper').checked && b > 10, prefix: !!prefix });
+      return `<tr><td class="muted">${label}</td><td class="val">${esc(fmt(v, b))}</td><td class="act"><button class="copy-btn" type="button" data-copy="${esc(plain)}" title="Copy ${esc(plain)}"><i data-lucide="copy"></i></button></td></tr>`;
+    }
+    function render() {
+      const ob = Math.max(2, Math.min(36, +$('outBase').value || 7));
+      $('outTable').querySelector('tbody').innerHTML = row('Binary', value, 2, true) + row('Octal', value, 8, true) + row('Decimal', value, 10) + row('Hexadecimal', value, 16, true) + row('Base 36', value, 36) + row('Base ' + ob, value, ob);
+      const bl = N.bitLength(value);
+      $('numStats').innerHTML = `<span><strong>${bl}</strong> bits significant</span><span><strong>${N.popcount(value < 0n ? N.twos(value, width).unsigned : value)}</strong> bits set</span><span>fits in <strong>${N.fitWidth(value)}-bit</strong></span><span><strong>${N.format(value < 0n ? -value : value, 10).length}</strong> decimal digits</span>`;
+      renderBits();
+      icons();
+    }
+    function readInput() {
+      const raw = $('numInput').value;
+      if (!raw.trim()) { $('numError').hidden = true; return; }
+      try { value = N.parse(raw, inBase()); $('numError').hidden = true; $('numInput').classList.remove('bad'); }
+      catch (e) { $('numError').hidden = false; $('numError').textContent = e.message; $('numInput').classList.add('bad'); return; }
+      width = $('width').value === 'auto' ? N.fitWidth(value) : +$('width').value;
+      render();
+    }
+    function renderBits() {
+      const t = N.twos(value, width);
+      const grid = [
+        ['Width', `${width} bits${t.overflow ? ' <span class="tag bad">value does not fit</span>' : ''}`],
+        ['Unsigned reading', esc(N.format(t.unsigned, 10, { group: 3, sep: ',' }))],
+        ['Signed reading (two\'s complement)', esc(N.format(t.signed, 10, { group: 3, sep: ',' }))],
+        ['Hex', '0x' + esc(N.format(t.unsigned, 16, { upper: true }).padStart(width / 4, '0'))]
+      ];
+      $('twosGrid').innerHTML = grid.map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join('');
+      // bit grid: groups of 8, MSB first
+      let html = '';
+      for (let byte = width / 8 - 1; byte >= 0; byte--) {
+        html += `<div class="byte" title="byte ${byte}">`;
+        for (let bit = 7; bit >= 0; bit--) { const i = byte * 8 + bit, on = t.bits[width - 1 - i] === '1'; html += `<button type="button" class="bit${on ? ' on' : ''}${i === width - 1 ? ' sign' : ''}" data-bit="${i}" title="bit ${i}">${on ? 1 : 0}</button>`; }
+        html += `<span class="byte-idx">${byte * 8 + 7}…${byte * 8}</span></div>`;
+      }
+      $('bits').innerHTML = html;
+      const be = N.bytes(t.unsigned, width, false), le = N.bytes(t.unsigned, width, true), hex = a => a.map(b => b.toString(16).padStart(2, '0').toUpperCase()).join(' ');
+      const rows = [['Big-endian bytes', hex(be)], ['Little-endian bytes', hex(le)], ['As ASCII', esc(N.ascii(be))]];
+      if (width === 32 || width === 64) {
+        const f = N.asFloat(t.unsigned, width);
+        rows.push([`As float${width}`, `${esc(f.kind === 'NaN' ? 'NaN' : String(f.value))} <span class="tag">${f.kind}</span>`]);
+        rows.push(['Sign · exponent · mantissa', `<span class="fbits"><b class="s">${f.sign}</b> <b class="e">${f.exponent}</b> <b class="m">${f.mantissa}</b></span>${f.unbiased != null ? ` <span class="muted">2^${f.unbiased}</span>` : ''}`]);
+      }
+      $('byteGrid').innerHTML = rows.map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join('');
+    }
+    $('bits').addEventListener('click', e => {
+      const b = e.target.closest('.bit'); if (!b) return;
+      const t = N.twos(value, width), u = t.unsigned ^ (1n << BigInt(b.dataset.bit));
+      value = u; $('numInput').value = '0x' + N.format(u, 16, { upper: true }); $('inBase').value = 'auto'; $('inBaseCustom').hidden = true;
+      $('numError').hidden = true; render();
+    });
+    $('numInput').addEventListener('input', readInput);
+    $('inBase').addEventListener('change', () => { $('inBaseCustom').hidden = $('inBase').value !== 'custom'; readInput(); });
+    ['inBaseCustom', 'outBase'].forEach(id => $(id).addEventListener('input', readInput));
+    ['optUpper', 'optGroup'].forEach(id => $(id).addEventListener('change', render));
+    $('width').addEventListener('change', readInput);
+    document.querySelectorAll('[data-sample]').forEach(b => b.addEventListener('click', () => { $('numInput').value = b.dataset.sample; $('inBase').value = 'auto'; $('inBaseCustom').hidden = true; readInput(); }));
+    $('btnFloat').addEventListener('click', () => {
+      const x = Number($('floatInput').value.trim().replace(/_/g, ''));
+      if ($('floatInput').value.trim() === '' || Number.isNaN(x) && !/^nan$/i.test($('floatInput').value.trim())) { Layerbit.toast('Enter a decimal number such as 0.1, -2.5 or 1e-7.', 'warn'); return; }
+      const w = +$('floatWidth').value, u = N.floatBits(x, w);
+      $('width').value = String(w); value = u; $('numInput').value = '0x' + N.format(u, 16, { upper: true }).padStart(w / 4, '0'); $('inBase').value = 'auto'; width = w; render();
+    });
+    $('floatInput').addEventListener('keydown', e => { if (e.key === 'Enter') $('btnFloat').click(); });
+    document.addEventListener('click', e => { const b = e.target.closest('[data-copy]'); if (b) Layerbit.copy(b.dataset.copy).then(() => Layerbit.toast('Copied ' + b.dataset.copy)); });
+
+    // calculator
+    let calcResult = null;
+    function calc() {
+      const op = $('calcOp').value;
+      $('calcB').disabled = op === 'not';
+      try {
+        const a = N.parse($('calcA').value, 'auto'), b = op === 'not' ? 0n : N.parse($('calcB').value, 'auto');
+        const w = $('width').value === 'auto' ? N.fitWidth(a > b ? a : b) : +$('width').value;
+        const fixed = ['not', 'shl', 'and', 'or', 'xor'].includes(op) && (op === 'not' || $('width').value !== 'auto');
+        calcResult = N.op(a, b, op, fixed ? w : null);
+        $('calcError').hidden = true;
+        const r = calcResult, t = N.twos(r, w);
+        $('calcOut').innerHTML = [['Decimal', N.format(r, 10, { group: 3, sep: ',' })], ['Hex', N.format(r, 16, { upper: true, prefix: true })], ['Binary', N.format(r, 2, { group: 4, prefix: true })], [`${w}-bit two's complement`, t.overflow ? 'does not fit' : N.format(t.signed, 10)]]
+          .map(([k, v]) => `<dt>${k}</dt><dd>${esc(v)}</dd>`).join('');
+      } catch (e) { calcResult = null; $('calcError').hidden = false; $('calcError').textContent = e.message; $('calcOut').innerHTML = ''; }
+    }
+    ['calcA', 'calcB'].forEach(id => $(id).addEventListener('input', calc));
+    $('calcOp').addEventListener('change', calc);
+    $('btnCalcUse').addEventListener('click', () => { if (calcResult == null) return; $('numInput').value = N.format(calcResult, 10); $('inBase').value = 'auto'; readInput(); window.scrollTo({ top: 0, behavior: 'smooth' }); });
+
+    function getState() { return { v: $('numInput').value, base: $('inBase').value, custom: $('inBaseCustom').value, width: $('width').value, out: $('outBase').value }; }
+    function setState(s) { if (!s) return; if (s.v != null) $('numInput').value = s.v; if (s.base) $('inBase').value = s.base; if (s.custom) $('inBaseCustom').value = s.custom; $('inBaseCustom').hidden = $('inBase').value !== 'custom'; if (s.width) $('width').value = s.width; if (s.out) $('outBase').value = s.out; readInput(); }
+    if (window.Layerbit) Layerbit.register({ slug: 'number-base-converter', getState, setState, run: readInput, input: t => { $('numInput').value = t.trim(); readInput(); } });
+    readInput(); calc();
+  </script>
+</body>
+</html>

@@ -15,10 +15,11 @@
           <button class="btn" onclick="document.getElementById('logFileInput').click()"><i data-lucide="upload"></i> Upload File</button>
           
           <button class="btn" onclick="clearLogs()"><i data-lucide="trash-2"></i> Clear</button>
-          <button class="btn btn-primary" onclick="analyzeLogs()"><i data-lucide="activity"></i> Parse Logs</button>
+          <button class="btn btn-primary" data-lb-primary onclick="analyzeLogs()"><i data-lucide="activity"></i> Parse Logs</button>
         </div>
       </div>
       <textarea id="logInput" class="editor" placeholder="Paste your raw Nginx, Apache, Node.js, or Docker logs here...&#10;&#10;2026-04-18 10:15:32 [INFO] Server started on port 8080&#10;2026-04-18 10:16:01 [WARN] High memory usage detected&#10;2026-04-18 10:16:45 [ERROR] Connection timeout to database" spellcheck="false"></textarea>
+      <div class="big-log" id="bigLogBar" hidden><i data-lucide="hard-drive"></i><span id="bigLogLabel"></span><button type="button" class="btn btn-inline" id="btnEditBig" title="Put the whole log in the text box (slow for very large files)">Edit as text</button></div>
     </div>
 
     <div class="pane">
@@ -40,7 +41,7 @@
         </div>
         <div class="search-wrapper">
           <i data-lucide="search"></i>
-          <input type="text" id="searchInput" class="search-input" placeholder="Grep output..." onkeyup="grepLogs()">
+          <input type="text" id="searchInput" class="search-input" placeholder="Grep output..." oninput="grepLogs()">
           <label class="regex-toggle" title="Treat the grep as a regular expression (case-insensitive)"><input type="checkbox" id="grepRegex" onchange="grepLogs()"> .*</label>
         </div>
       </div>
@@ -209,45 +210,150 @@
     const countWarn = document.getElementById('countWarn');
     const countInfo = document.getElementById('countInfo');
 
-    // UPLOAD LOGIC ADDED HERE
-    // No virtualization downstream - every line becomes its own DOM row - so
-    // a very large file will make the tab sluggish or unresponsive well
-    // before it runs out of memory. Warn rather than silently hang.
-    const LARGE_FILE_WARN_BYTES = 15 * 1024 * 1024; // 15 MB
+    // File upload. Rendering is capped at RENDER_CAP rows, so large files
+    // stay responsive; only truly huge ones (over 150 MB) get a confirmation.
+    const LARGE_FILE_WARN_BYTES = 150 * 1024 * 1024;
     const logFileInput = document.getElementById('logFileInput');
     logFileInput.addEventListener('change', function(e) {
       const file = e.target.files[0];
       if (!file) return;
 
       if (file.size > LARGE_FILE_WARN_BYTES) {
-        const mb = (file.size / (1024 * 1024)).toFixed(1);
-        const proceed = confirm(
-          `This file is ${mb} MB. Every line renders as its own row with no virtualization, so a file this large will make the tab sluggish or unresponsive.\n\nFor a large dump, split it first (e.g. grep the relevant window or tail -n 200000) and load that slice instead.\n\nLoad the full file anyway?`
-        );
-        if (!proceed) {
-          this.value = '';
-          return;
-        }
+        const mb = (file.size / (1024 * 1024)).toFixed(0);
+        if (!confirm(`This file is ${mb} MB and will use a lot of memory in this tab. Load it anyway?`)) { this.value = ''; return; }
       }
 
       const reader = new FileReader();
       reader.onload = function(e) {
-        logInput.value = e.target.result;
-        analyzeLogs(); // Auto-parse after upload for better UX
+        const text = e.target.result;
+        if (text.length > BIG_LOG_CHARS) loadBig(text, file.name);
+        else { setBig(null); logInput.value = text; analyzeLogs(); }
       };
       reader.readAsText(file);
       this.value = ''; // Reset so the same file can be uploaded again if needed
     });
 
     // Regex Patterns
-    const rxError = /\b(ERROR|ERR|FATAL|EXCEPTION|CRITICAL)\b/i;
+    const rxError = /\b(ERROR|ERR|FATAL|EXCEPTION|CRITICAL|CRIT|SEVERE|EMERG|EMERGENCY|ALERT|PANIC)\b/i;
     const rxWarn = /\b(WARN|WARNING)\b/i;
     const rxInfo = /\b(INFO|NOTICE)\b/i;
-    const rxDebug = /\b(DEBUG|TRACE)\b/i;
-    // Basic timestamp matcher (YYYY-MM-DD HH:MM:SS or ISO variants)
-    const rxTime = /\b(\d{4}[-/]\d{2}[-/]\d{2}[T\s]\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:?\d{2})?)\b/g;
+    const rxDebug = /\b(DEBUG|TRACE|VERBOSE)\b/i;
+    // Access logs (nginx, Apache combined, CloudFront, ELB) carry no level
+    // word; their severity is the HTTP status right after the quoted request.
+    const rxHttpStatus = /"[A-Z]+ [^"]*" (\d{3}) /;
+    // Timestamps: ISO 8601, Apache error log, nginx/Apache access log, syslog, HDFS/Hadoop
+    const rxTime = /(\b\d{4}[-/]\d{2}[-/]\d{2}[T\s]\d{2}:\d{2}:\d{2}(?:[.,]\d+)?(?:Z|[+-]\d{2}:?\d{2})?\b|\[(?:Mon|Tue|Wed|Thu|Fri|Sat|Sun) [A-Z][a-z]{2} \d{2} \d{2}:\d{2}:\d{2}(?:\.\d+)? \d{4}\]|\[\d{2}\/[A-Z][a-z]{2}\/\d{4}:\d{2}:\d{2}:\d{2} [+-]\d{4}\]|^[A-Z][a-z]{2} {1,2}\d{1,2} \d{2}:\d{2}:\d{2}\b|^\d{6} \d{6}\b)/gm;
+    const RENDER_STEP = 5000;   // rows drawn per page; 'Show more' appends the next page
+    let shown = 0, lastRows = [];
+    let parsed = [];          // [{n, line, cls}]
+    let currentFilter = 'ALL';
+
+    function classify(line) {
+      if (rxError.test(line)) return 'type-error';
+      const http = rxHttpStatus.exec(line);
+      if (http) { const code = +http[1]; return code >= 500 ? 'type-error' : code >= 400 ? 'type-warn' : 'type-info'; }
+      if (rxWarn.test(line)) return 'type-warn';
+      if (rxInfo.test(line)) return 'type-info';
+      if (rxDebug.test(line)) return 'type-debug';
+      return 'type-normal';
+    }
+    const BADGE = { 'type-error': [rxError, 'badge-error', new RegExp(rxError.source, 'gi')], 'type-warn': [rxWarn, 'badge-warn', new RegExp(rxWarn.source, 'gi')], 'type-info': [rxInfo, 'badge-info', new RegExp(rxInfo.source, 'gi')], 'type-debug': [rxDebug, 'badge-debug', new RegExp(rxDebug.source, 'gi')] };
+    function lineHtml(r) {
+      let safe = escapeHTML(r.line);
+      const b = BADGE[r.cls];
+      if (b && b[0].test(r.line)) safe = safe.replace(b[2], `<span class="${b[1]}">$&</span>`);
+      else if (b) safe = safe.replace(/(&quot;|") (\d{3}) /, (m, q, code) => `${q} <span class="${b[1]}">${code}</span> `);
+      safe = safe.replace(rxTime, '<span class="hl-timestamp">$&</span>');
+      return `<div class="log-line ${r.cls}"><div class="line-num">${r.n}</div><div class="line-content">${safe}</div></div>`;
+    }
+
+    function analyzeLogs() {
+      const rawText = (bigLog != null ? bigLog : logInput.value).trim();
+      if (!rawText) return;
+      const lines = rawText.split(/\r?\n/);
+      const counts = { 'type-error': 0, 'type-warn': 0, 'type-info': 0, 'type-debug': 0, 'type-normal': 0 };
+      messageTally.clear();
+      parsed = [];
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i];
+        if (!line.trim()) continue;
+        const cls = classify(line);
+        counts[cls]++;
+        tallyMessage(line);
+        parsed.push({ n: i + 1, line, cls });
+      }
+      countAll.innerText = parsed.length.toLocaleString();
+      countErr.innerText = counts['type-error'].toLocaleString();
+      countWarn.innerText = counts['type-warn'].toLocaleString();
+      countInfo.innerText = counts['type-info'].toLocaleString();
+      document.getElementById('countDebug').innerText = counts['type-debug'].toLocaleString();
+      renderTopMessages();
+      searchInput.value = '';
+      setFilter('ALL');
+    }
+
+    // Rows matching the active severity filter and grep, from the parsed
+    // data rather than the DOM, so copy/export cover every line even when
+    // only the first RENDER_CAP rows are drawn.
+    function matchingRows() {
+      const q = searchInput.value;
+      let re = null;
+      if (document.getElementById('grepRegex').checked && q) {
+        try { re = new RegExp(q, 'i'); searchInput.classList.remove('bad'); }
+        catch (e) { searchInput.classList.add('bad'); return null; }
+      } else searchInput.classList.remove('bad');
+      const ql = q.toLowerCase(), want = currentFilter === 'ALL' ? null : 'type-' + currentFilter.toLowerCase();
+      return parsed.filter(r => (!want || r.cls === want) && (!q || (re ? re.test(r.line) : r.line.toLowerCase().includes(ql))));
+    }
+    function renderRows() {
+      if (!parsed.length) return;
+      const rows = matchingRows();
+      if (!rows) return;
+      lastRows = rows; shown = 0;
+      logOutput.innerHTML = rows.length ? '' : '<div class="log-empty">No lines match this filter.</div>';
+      logOutput.setAttribute('data-filter', 'ALL');
+      logOutput.scrollTop = 0;
+      showMore();
+    }
+    function showMore() {
+      const more = logOutput.querySelector('.log-more'); if (more) more.remove();
+      const next = lastRows.slice(shown, shown + RENDER_STEP);
+      logOutput.insertAdjacentHTML('beforeend', next.map(lineHtml).join(''));
+      shown += next.length;
+      if (shown < lastRows.length) {
+        logOutput.insertAdjacentHTML('beforeend', `<div class="log-empty log-more">Showing ${shown.toLocaleString()} of ${lastRows.length.toLocaleString()} matching lines. <button type="button" class="btn btn-inline" onclick="showMore()">Show ${Math.min(RENDER_STEP, lastRows.length - shown).toLocaleString()} more</button> Copy and Export always include all ${lastRows.length.toLocaleString()}.</div>`);
+      }
+    }
+    // Logs over BIG_LOG_CHARS stay in memory instead of the text box: a
+    // browser spends seconds laying out megabytes of textarea text, while the
+    // analysis itself takes well under a second.
+    const BIG_LOG_CHARS = 1500000;
+    let bigLog = null;
+    function setBig(text, name) {
+      bigLog = text;
+      const bar = document.getElementById('bigLogBar');
+      bar.hidden = text == null;
+      if (text != null) {
+        const lines = (text.match(/\n/g) || []).length + 1;
+        document.getElementById('bigLogLabel').textContent = `${name} · ${Layerbit.fmtBytes(new Blob([text]).size)} · ${lines.toLocaleString()} lines, analysed in memory`;
+        logInput.value = '';
+        logInput.placeholder = `${name} is loaded and analysed (too large to edit comfortably here). Paste or type to replace it.`;
+      }
+    }
+    function loadBig(text, name) { setBig(text, name); analyzeLogs(); }
+    logInput.addEventListener('paste', e => {
+      const t = e.clipboardData && e.clipboardData.getData('text');
+      if (t && t.length > BIG_LOG_CHARS) { e.preventDefault(); loadBig(t, 'Pasted log'); }
+    });
+    document.getElementById('btnEditBig').addEventListener('click', () => { const t = bigLog; setBig(null); logInput.value = t; });
+    if (window.Layerbit) Layerbit.onDrop(file => { const r = new FileReader(); r.onload = ev => { const t = ev.target.result; if (t.length > BIG_LOG_CHARS) loadBig(t, file.name); else { setBig(null); logInput.value = t; analyzeLogs(); } }; r.readAsText(file); });
+
+    // Parse as soon as a log is pasted or typed; the button stays for re-runs.
+    let parseTimer = null;
+    logInput.addEventListener('input', () => { if (bigLog != null) setBig(null); clearTimeout(parseTimer); parseTimer = setTimeout(() => { if (logInput.value.trim()) analyzeLogs(); }, logInput.value.length > 2000000 ? 700 : 300); });
 
     function clearLogs() {
+      parsed = []; messageTally.clear(); renderTopMessages(); setBig(null);
       logInput.value = '';
       logOutput.innerHTML = '<div style="padding: 20px; color: var(--text-muted); text-align: center; font-style: italic;">Awaiting log ingestion...</div>';
       countAll.innerText = '0';
@@ -259,65 +365,6 @@
 
     function escapeHTML(str) {
       return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-    }
-
-    function analyzeLogs() {
-      const rawText = logInput.value.trim();
-      if (!rawText) return;
-
-      const lines = rawText.split('\n');
-      
-      let htmlBuilder = '';
-      let cErr = 0, cWarn = 0, cInfo = 0, cDebug = 0;
-      messageTally.clear();
-
-      for (let i = 0; i < lines.length; i++) {
-        let line = lines[i];
-        if (!line.trim()) continue; // Skip empty lines
-
-        let safeLine = escapeHTML(line);
-        let rowClass = 'type-normal';
-        let severityClass = '';
-
-        // Determine Severity
-        if (rxError.test(line)) {
-          rowClass = 'type-error';
-          cErr++;
-          safeLine = safeLine.replace(new RegExp(rxError.source, 'gi'), '<span class="badge-error">$&</span>');
-        } else if (rxWarn.test(line)) {
-          rowClass = 'type-warn';
-          cWarn++;
-          safeLine = safeLine.replace(new RegExp(rxWarn.source, 'gi'), '<span class="badge-warn">$&</span>');
-        } else if (rxInfo.test(line)) {
-          rowClass = 'type-info';
-          cInfo++;
-          safeLine = safeLine.replace(new RegExp(rxInfo.source, 'gi'), '<span class="badge-info">$&</span>');
-        } else if (rxDebug.test(line)) {
-          rowClass = 'type-debug';
-          cDebug++;
-          safeLine = safeLine.replace(new RegExp(rxDebug.source, 'gi'), '<span class="badge-debug">$&</span>');
-        }
-        tallyMessage(line);
-
-        // Highlight Timestamps
-        safeLine = safeLine.replace(rxTime, '<span class="hl-timestamp">$&</span>');
-
-        htmlBuilder += `<div class="log-line ${rowClass}"><div class="line-num">${i + 1}</div><div class="line-content">${safeLine}</div></div>`;
-      }
-
-      logOutput.innerHTML = htmlBuilder;
-      
-      // Update Telemetry
-      countAll.innerText = lines.filter(l => l.trim() !== '').length;
-      countErr.innerText = cErr;
-      countWarn.innerText = cWarn;
-      countInfo.innerText = cInfo;
-      document.getElementById('countDebug').innerText = cDebug;
-      renderTopMessages();
-
-      // Reset Search & Filter
-      setFilter('ALL');
-      searchInput.value = '';
     }
 
     // Repeated messages, with the parts that vary (timestamps, ids, numbers,
@@ -349,59 +396,24 @@
     }
 
     function setFilter(type) {
-      logOutput.setAttribute('data-filter', type);
-      
-      // Update UI Tabs
+      currentFilter = type;
       document.querySelectorAll('.stat-badge').forEach(b => b.classList.remove('active'));
       document.getElementById('filter-' + type).classList.add('active');
+      renderRows();
     }
 
-    function grepLogs() {
-      const query = searchInput.value.toLowerCase();
-      const lines = logOutput.querySelectorAll('.log-line');
-      let re = null;
-      if (document.getElementById('grepRegex').checked && query) {
-        try { re = new RegExp(searchInput.value, 'i'); searchInput.classList.remove('bad'); }
-        catch (e) { searchInput.classList.add('bad'); return; }
-      } else searchInput.classList.remove('bad');
-
-      lines.forEach(line => {
-        const text = line.querySelector('.line-content').innerText.toLowerCase();
-        if (re ? re.test(text) : text.includes(query)) {
-          line.style.display = ''; // Revert to CSS data-filter logic
-        } else {
-          line.style.display = 'none'; // Force hide
-        }
-      });
-    }
+    let grepTimer = null;
+    function grepLogs() { clearTimeout(grepTimer); grepTimer = setTimeout(renderRows, parsed.length > 50000 ? 200 : 60); }
 
     function getVisibleLogText() {
-      // Grab only visible lines (respecting both data-filter and grep search)
-      const lines = logOutput.querySelectorAll('.log-line');
-      let text = '';
-
-      lines.forEach(line => {
-        // If display is not 'none' and it matches the current severity filter
-        const filterState = logOutput.getAttribute('data-filter');
-        const isVisibleBySearch = line.style.display !== 'none';
-
-        let isVisibleByFilter = true;
-        if (filterState === 'ERROR' && !line.classList.contains('type-error')) isVisibleByFilter = false;
-        if (filterState === 'WARN' && !line.classList.contains('type-warn')) isVisibleByFilter = false;
-        if (filterState === 'INFO' && !line.classList.contains('type-info')) isVisibleByFilter = false;
-
-        if (isVisibleBySearch && isVisibleByFilter) {
-          text += line.querySelector('.line-content').innerText + '\n';
-        }
-      });
-
-      return text;
+      const rows = matchingRows();
+      return rows && rows.length ? rows.map(r => r.line).join('\n') + '\n' : '';
     }
 
     function exportLogs() {
       const exportText = getVisibleLogText();
       if (!exportText) {
-        alert("No visible logs to export.");
+        Layerbit.toast(parsed.length ? 'No lines match the current filter.' : 'Paste or open a log first.', 'warn');
         return;
       }
 
@@ -415,11 +427,11 @@
     function copyLogs(btnElement) {
       const text = getVisibleLogText();
       if (!text) {
-        alert("No visible logs to copy.");
+        Layerbit.toast(parsed.length ? 'No lines match the current filter.' : 'Paste or open a log first.', 'warn');
         return;
       }
 
-      navigator.clipboard.writeText(text).then(() => {
+      Layerbit.copy(text).then(() => {
         const originalText = btnElement.innerHTML;
         btnElement.innerHTML = '<i data-lucide="check"></i> Copied!';
         lucide.createIcons();

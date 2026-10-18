@@ -467,6 +467,14 @@
 
     // Drag & Drop / File Upload Logic
     csvFile.addEventListener('change', function(e) { handleFile(e.target.files[0]); });
+    // Options and edits apply immediately once there is input: the delimiter
+    // and type inference change the result, so they re-run the conversion.
+    let liveTimer = null;
+    function convertSoon(ms) { clearTimeout(liveTimer); liveTimer = setTimeout(() => { if (csvInput.value.trim()) convert(); }, ms); }
+    document.getElementById('delimSelect').addEventListener('change', () => convertSoon(0));
+    inferTypes.addEventListener('change', () => convertSoon(0));
+    csvInput.addEventListener('input', () => { if (csvInput.value.length < 3000000) convertSoon(400); });
+
 
     inputPane.addEventListener('dragover', (e) => {
       e.preventDefault();

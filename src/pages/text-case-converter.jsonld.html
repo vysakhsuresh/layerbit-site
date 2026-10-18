@@ -1,0 +1,117 @@
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "SoftwareApplication",
+      "@id": "https://layerbit.co.in/tools/text-case-converter.html#app",
+      "name": "Text Case Converter \u0026 Word Counter",
+      "url": "https://layerbit.co.in/tools/text-case-converter.html",
+      "description": "Convert text to camelCase, snake_case, kebab-case, Title Case and more, count words, characters and reading time, and clean up lines, all in your browser.",
+      "applicationCategory": "DeveloperApplication",
+      "operatingSystem": "Any (runs in the browser)",
+      "browserRequirements": "Requires JavaScript",
+      "isAccessibleForFree": true,
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "publisher": {
+        "@id": "https://layerbit.co.in/#organization"
+      },
+      "featureList": [
+        "camelCase, PascalCase, snake_case, CONSTANT_CASE, kebab-case, Train-Case, COBOL-CASE, dot.case and path/case",
+        "Identifier-aware word splitting (XMLHttpRequest, getUserID2FA) and per-line conversion",
+        "AP and Chicago style title case that keeps acronyms",
+        "Sentence case, upper, lower, inverse and alternating case",
+        "URL slugs with accent folding",
+        "Naming-convention detection",
+        "Grapheme-accurate character count, words, sentences, paragraphs and lines",
+        "Reading and speaking time, Flesch reading ease",
+        "Keyword density with stop words excluded",
+        "Trim, dedupe, sort, reverse, collapse and unwrap lines with undo",
+        "Runs entirely in the browser"
+      ]
+    },
+    {
+      "@type": "BreadcrumbList",
+      "@id": "https://layerbit.co.in/tools/text-case-converter.html#breadcrumb",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://layerbit.co.in/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Tools",
+          "item": "https://layerbit.co.in/blog.html"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": "Text Case Converter",
+          "item": "https://layerbit.co.in/tools/text-case-converter.html"
+        }
+      ]
+    },
+    {
+      "@type": "FAQPage",
+      "@id": "https://layerbit.co.in/tools/text-case-converter.html#faq",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "How do I convert camelCase to snake_case?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Paste the identifiers into the text box, one per line, and copy the snake_case row from the list on the right, or select it and press Apply to text. The converter splits camelCase at each lower-to-upper transition and keeps runs of capitals together, so parseHTTPResponse becomes parse_http_response. It works the same way for PascalCase, kebab-case, dot.case and CONSTANT_CASE input."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Which words stay lowercase in title case?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Articles (a, an, the), coordinating conjunctions (and, but, or, nor, for, so, yet) and short prepositions (at, by, in, of, on, to, up, via, with and similar) stay lowercase unless they are the first word, the last word, or follow a colon. Everything else is capitalised. Acronyms written in capitals and words with internal capitals, such as iOS or YouTube, are left as typed."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Why is the character count different from other tools?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Tools count different things. This one reports visible characters (grapheme clusters), so an emoji is one character, alongside the UTF-16 code units that JavaScript's length property and many form limits count, and the UTF-8 bytes a file or database column stores. A single flag emoji is 1 character, 4 code units and 8 bytes. If a limit is enforced by a system, check which of these it uses; Twitter/X, for example, uses its own weighted count."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How is reading time calculated?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "The word count divided by a reading speed of 238 words per minute, the average for adults reading non-fiction silently according to a 2019 review of 190 studies. You can change the speed in the counts panel; technical material is often read at 150 to 200 words per minute. Speaking time uses 150 words per minute, a comfortable pace for a talk or a voice-over."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Can it remove duplicate lines and sort a list?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes. The line tools remove duplicate lines (keeping the first occurrence and the original order), remove blank lines, trim spaces, sort A to Z or Z to A, reverse the order, collapse repeated spaces, and join hard-wrapped lines back into paragraphs. Sorting is natural and case-insensitive, so item2 sorts before item10. Each tool changes the input text, and Undo restores the previous version."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Is my text uploaded anywhere?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "No. Conversion, counting and keyword analysis run in JavaScript in this page using your browser's built-in Unicode support. Nothing is sent to a server, which you can confirm in the Network tab of your browser's developer tools, and the page works offline once loaded."
+          }
+        }
+      ]
+    }
+  ]
+}
+  </script>

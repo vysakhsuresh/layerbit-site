@@ -1,0 +1,311 @@
+{{HEADER}}
+
+  <main class="hero">
+    <div class="hero-badge"><i data-lucide="shield-check"></i> Runs entirely in your browser</div>
+    <h1>Markdown Editor &amp; Live Preview to HTML</h1>
+    <p>Write GitHub-flavored Markdown with a formatting toolbar and see a live, sanitized preview with tables, task lists and a clickable table of contents, then copy clean HTML or download a styled, self-contained HTML page.</p>
+  </main>
+
+  <div class="seg view-switch" role="tablist" aria-label="View">
+    <button type="button" class="seg-btn active" data-view="split" role="tab" aria-selected="true">Split</button>
+    <button type="button" class="seg-btn" data-view="edit" role="tab" aria-selected="false">Editor</button>
+    <button type="button" class="seg-btn" data-view="preview" role="tab" aria-selected="false">Preview</button>
+    <button type="button" class="seg-btn" data-view="html" role="tab" aria-selected="false">HTML</button>
+  </div>
+
+  <div class="ide-container md-grid" id="mdGrid" data-view="split">
+    <div class="pane edit-pane">
+      <div class="pane-header">
+        <div class="toolbar" role="toolbar" aria-label="Formatting">
+          <button class="tb" type="button" data-md="bold" title="Bold (Ctrl+B)"><i data-lucide="bold"></i></button>
+          <button class="tb" type="button" data-md="italic" title="Italic (Ctrl+I)"><i data-lucide="italic"></i></button>
+          <button class="tb" type="button" data-md="strike" title="Strikethrough"><i data-lucide="strikethrough"></i></button>
+          <button class="tb" type="button" data-md="h2" title="Heading"><i data-lucide="heading-2"></i></button>
+          <button class="tb" type="button" data-md="link" title="Link (Ctrl+K)"><i data-lucide="link"></i></button>
+          <button class="tb" type="button" data-md="code" title="Inline code"><i data-lucide="code"></i></button>
+          <button class="tb" type="button" data-md="codeblock" title="Code block"><i data-lucide="square-code"></i></button>
+          <button class="tb" type="button" data-md="ul" title="Bulleted list"><i data-lucide="list"></i></button>
+          <button class="tb" type="button" data-md="ol" title="Numbered list"><i data-lucide="list-ordered"></i></button>
+          <button class="tb" type="button" data-md="task" title="Task list"><i data-lucide="list-checks"></i></button>
+          <button class="tb" type="button" data-md="quote" title="Quote"><i data-lucide="quote"></i></button>
+          <button class="tb" type="button" data-md="table" title="Table"><i data-lucide="table"></i></button>
+          <button class="tb" type="button" data-md="hr" title="Divider"><i data-lucide="minus"></i></button>
+        </div>
+        <div class="btn-group">
+          <input type="file" id="mdFile" accept=".md,.markdown,.txt,text/markdown,text/plain" hidden>
+          <button class="btn" type="button" id="btnOpen" title="Open a .md file"><i data-lucide="folder-open"></i></button>
+          <button class="btn" type="button" id="btnSample">Sample</button>
+        </div>
+      </div>
+      <textarea id="mdInput" class="editor md-editor" spellcheck="true" placeholder="# Start writing&#10;&#10;Markdown appears formatted on the right as you type."></textarea>
+      <div class="stats-strip" id="mdStats"></div>
+    </div>
+
+    <div class="pane preview-pane">
+      <div class="pane-header">
+        <div class="pane-title"><i data-lucide="eye"></i> Preview</div>
+        <div class="btn-group">
+          <label class="check" title="Treat single line breaks as &lt;br&gt;, as GitHub comments do"><input type="checkbox" id="optBreaks"> Line breaks</label>
+          <label class="check" title="Keep the preview scrolled to the same place as the editor"><input type="checkbox" id="optSync" checked> Sync scroll</label>
+        </div>
+      </div>
+      <div class="preview-wrap">
+        <nav class="toc" id="toc" aria-label="Table of contents" hidden></nav>
+        <article class="md-body" id="mdPreview"></article>
+      </div>
+    </div>
+
+    <div class="pane html-pane">
+      <div class="pane-header">
+        <div class="pane-title"><i data-lucide="file-code-2"></i> HTML</div>
+      </div>
+      <pre class="output-area html-out" id="htmlOut"></pre>
+    </div>
+  </div>
+
+  <div class="action-bar">
+    <button class="btn btn-primary" type="button" id="btnCopyHtml" data-lb-primary><i data-lucide="copy"></i> Copy HTML</button>
+    <button class="btn" type="button" id="btnDlHtml"><i data-lucide="download"></i> Download .html page</button>
+    <button class="btn" type="button" id="btnDlMd"><i data-lucide="file-down"></i> Download .md</button>
+    <button class="btn" type="button" id="btnCopyMd"><i data-lucide="clipboard-copy"></i> Copy Markdown</button>
+  </div>
+
+  <div class="docs-container">
+    <div class="info-panel">
+      <h2><i data-lucide="book-open"></i> Markdown in one screen</h2>
+      <p>Markdown is a plain-text format that reads naturally as text and converts cleanly to HTML. It is the format of README files on GitHub and GitLab, of most documentation sites, of notes apps such as Obsidian, and of messages in Slack, Discord and many issue trackers. This editor follows GitHub-flavored Markdown (GFM), the most widely used dialect, which adds tables, task lists, strikethrough and automatic links to the original syntax.</p>
+      <table>
+        <thead><tr><th>You type</th><th>You get</th></tr></thead>
+        <tbody>
+          <tr><td><code># Title</code>, <code>## Section</code></td><td>Headings, level 1 to 6</td></tr>
+          <tr><td><code>**bold**</code>, <code>*italic*</code>, <code>~~struck~~</code></td><td><strong>bold</strong>, <em>italic</em>, <del>struck</del></td></tr>
+          <tr><td><code>[text](https://example.com)</code></td><td>A link; <code>![alt](image.png)</code> for an image</td></tr>
+          <tr><td><code>- item</code> or <code>1. item</code></td><td>Bulleted or numbered list; indent for nesting</td></tr>
+          <tr><td><code>- [ ] todo</code>, <code>- [x] done</code></td><td>Task list with checkboxes</td></tr>
+          <tr><td><code>&gt; quoted</code></td><td>Block quote</td></tr>
+          <tr><td><code>`code`</code> and fenced <code>```js</code> blocks</td><td>Inline code and code blocks with a language tag</td></tr>
+          <tr><td><code>| a | b |</code> rows with a <code>|---|---|</code> line</td><td>A table; colons in the divider set alignment</td></tr>
+          <tr><td><code>---</code> on its own line</td><td>A horizontal rule</td></tr>
+        </tbody>
+      </table>
+      <p>A single line break inside a paragraph is ignored in standard Markdown, so hard-wrapped text flows as one paragraph; leave a blank line to start a new one, or end a line with two spaces or a backslash to force a break. The "Line breaks" option treats every newline as a break, which is how GitHub renders comments and issues but not README files.</p>
+
+      <h2><i data-lucide="shield"></i> Why the preview is sanitized</h2>
+      <p>Markdown allows raw HTML, so a Markdown document can contain a <code>&lt;script&gt;</code> tag, an <code>onerror</code> attribute on an image or a <code>javascript:</code> link. Rendering untrusted Markdown straight into a page is a classic cross-site scripting hole. This editor converts Markdown with the <em>marked</em> parser and then passes the HTML through <em>DOMPurify</em>, which keeps safe formatting and strips scripts, event handlers and dangerous URLs before anything reaches the page. The copied and downloaded HTML is the same sanitized output, so it is safe to paste into a CMS or an email template. If you build your own Markdown pipeline, sanitize on output in the same way; escaping the input is not enough because Markdown's own syntax produces HTML.</p>
+
+      <h2><i data-lucide="file-code-2"></i> Using the exported HTML</h2>
+      <p><strong>Copy HTML</strong> gives you the body fragment: headings with stable <code>id</code> attributes for linking, paragraphs, lists, tables and code blocks, with no styles or scripts, ready for a CMS, a blog engine, an email builder or a documentation template. <strong>Download .html page</strong> wraps that fragment in a complete, self-contained document with a readable typographic style, a light and dark theme that follows the reader's system setting, and no external requests, which makes it suitable for sending as an attachment, archiving or printing to PDF from the browser. The heading ids follow the same rule GitHub uses (lowercase, spaces to hyphens, punctuation removed), so links like <code>#getting-started</code> written for a README keep working.</p>
+    </div>
+
+    <div class="info-panel">
+      <h2><i data-lucide="help-circle"></i> Frequently asked questions</h2>
+      <div class="faq-container">
+        <div class="faq-item">
+          <button class="faq-question">How do I convert Markdown to HTML? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>Paste or type Markdown into the editor and the HTML is generated as you type. Use Copy HTML for the HTML fragment to paste into a website, CMS or email builder, or Download .html page for a complete styled document. Switch to the HTML view to read the generated markup. The conversion follows GitHub-flavored Markdown, so tables, task lists and strikethrough are included.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">How do I make a table in Markdown? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>Write the header cells separated by pipes, then a divider row of dashes, then one row per line: | Name | Role | on the first line, | --- | --- | on the second, and | Ada | Engineer | below. Colons in the divider set alignment: :--- for left, :---: for centered and ---: for right. The table button in the toolbar inserts a starter table you can edit. The cells do not need to line up in the source.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">Does it support GitHub-flavored Markdown? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>Yes. Tables, task lists, strikethrough, fenced code blocks with a language tag and automatic linking of bare URLs all render as they do on GitHub, and headings get the same anchor ids GitHub generates. GitHub-specific extensions that need its servers, such as @mentions, issue references, emoji shortcodes and Mermaid diagrams, are shown as plain text.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">Why does my line break disappear in the preview? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>In Markdown a single newline inside a paragraph is treated as a space, so text wrapped at 80 columns still forms one paragraph. To start a new paragraph leave a blank line; to force a line break within a paragraph end the line with two spaces or a backslash. If you want every newline to become a break, as in GitHub comments, turn on the Line breaks option.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">Is it safe to paste Markdown that contains HTML? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>Yes. Raw HTML in the Markdown is passed through DOMPurify before it is displayed or exported, which removes script tags, inline event handlers such as onerror, and javascript: URLs while keeping harmless formatting. The editor itself never runs code from the document, and nothing you type is sent to a server.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">Is my document saved or uploaded? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>It is not uploaded: parsing and rendering happen in your browser and there are no network requests. The draft is not stored either unless you choose Share link from the header, which places it in the link's #fragment so it reaches only the person you send it to. Use Download .md to keep a copy.</p></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="info-panel related-panel">
+      <h2><i data-lucide="link"></i> Related guides and tools</h2>
+      <p>Tools for the HTML and text that Markdown produces.</p>
+      <div class="use-cases-grid">
+        <div class="use-case-card">
+          <h3><i data-lucide="book-open"></i> <a href="../guides/html-escaping-and-xss-contexts.html">HTML escaping and XSS contexts</a></h3>
+          <p>Why rendered HTML needs sanitizing, not just escaping.</p>
+        </div>
+        <div class="use-case-card">
+          <h3><i data-lucide="wrench"></i> <a href="html-escape-unescape.html">HTML Escape &amp; Unescape</a></h3>
+          <p>Show HTML as text inside a page or a code sample.</p>
+        </div>
+        <div class="use-case-card">
+          <h3><i data-lucide="wrench"></i> <a href="text-case-converter.html">Text Case Converter &amp; Word Counter</a></h3>
+          <p>Headline case, slugs and reading time for your draft.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="info-panel">
+      <h2><i data-lucide="git-commit"></i> Changelog</h2>
+      <ul class="changelog-list">
+        <li><span class="changelog-tag">v1.0.0</span> Initial release: GitHub-flavored Markdown with marked 18, DOMPurify sanitizing, formatting toolbar and shortcuts, GitHub-style heading anchors and table of contents, proportional scroll sync, split/editor/preview/HTML views, .md open and download, HTML fragment copy and a self-contained styled HTML export.</li>
+      </ul>
+    </div>
+  </div>
+
+  <a id="smartBackBtn" class="fab home-fab-premium" aria-label="Command Center" title="Command Center" href="../">
+    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="filter: drop-shadow(0 0 8px rgba(56, 189, 248, 0.5));">
+      <path d="M12 2L2 7l10 5 10-5-10-5z" stroke="#38bdf8" stroke-width="2" stroke-linejoin="round" fill="rgba(56,189,248,0.2)"/>
+      <path d="M2 17l10 5 10-5M2 12l10 5 10-5" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </a>
+
+  {{FOOTER}}
+
+  <script src="../js/shared.js"></script>
+  <script src="../js/vendor/marked.umd.js"></script>
+  <script src="../js/vendor/purify.min.js"></script>
+  <script>
+    const $ = id => document.getElementById(id);
+    const icons = () => { if (window.lucide) lucide.createIcons(); };
+    const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+    const ed = $('mdInput');
+    let html = '', toc = [];
+
+    const SAMPLE = `# Project Atlas
+
+A **fast**, _local-first_ sync engine for field teams. See [the docs](https://example.com/docs) or jump to [Getting started](#getting-started).
+
+> Works offline, merges on reconnect, and never ships your data to a third party.
+
+## Getting started
+
+1. Install the CLI
+2. Run \`atlas init\` in your project
+3. Commit the generated \`atlas.toml\`
+
+\`\`\`bash
+npm install -g @example/atlas
+atlas init --region me-central-1
+\`\`\`
+
+## Status
+
+| Component | Owner | State |
+| :-------- | :---: | ----: |
+| Sync core | Ada | ✅ Shipped |
+| Web client | Linus | 🚧 Beta |
+| Android | Grace | ⏳ Planned |
+
+## Release checklist
+
+- [x] Encrypt the local cache
+- [x] Retry with exponential backoff
+- [ ] Publish the migration guide
+- [ ] ~~Support Windows XP~~
+
+---
+
+Raw HTML is allowed but sanitized: <a href="javascript:alert('nope')" onclick="alert('nope')">this link's script</a> is stripped before display.
+`;
+
+    function slug(text, used) {
+      let s = text.toLowerCase().trim().replace(/[^\p{L}\p{N}\s-]/gu, '').replace(/\s/g, '-');
+      let out = s, n = 1;
+      while (used.has(out)) out = s + '-' + n++;
+      used.add(out); return out;
+    }
+    function render() {
+      const src = ed.value;
+      const raw = marked.parse(src, { gfm: true, breaks: $('optBreaks').checked });
+      const tpl = document.createElement('template');
+      tpl.innerHTML = DOMPurify.sanitize(raw, { ADD_ATTR: ['target'] });
+      const used = new Set(); toc = [];
+      tpl.content.querySelectorAll('h1,h2,h3,h4,h5,h6').forEach(h => { h.id = slug(h.textContent, used); toc.push({ level: +h.tagName[1], text: h.textContent, id: h.id }); });
+      tpl.content.querySelectorAll('a[href^="http"]').forEach(a => { a.setAttribute('rel', 'noopener noreferrer'); });
+      html = tpl.innerHTML.trim();
+      const pv = $('mdPreview');
+      pv.innerHTML = html || '<p class="empty">The formatted preview appears here.</p>';
+      pv.querySelectorAll('a[href^="http"]').forEach(a => a.target = '_blank');
+      $('htmlOut').textContent = html;
+      $('toc').hidden = toc.length < 2;
+      $('toc').innerHTML = '<div class="toc-title">Contents</div>' + toc.map(t => `<a href="#${esc(t.id)}" data-toc="${esc(t.id)}" class="l${t.level}">${esc(t.text)}</a>`).join('');
+      const words = (src.replace(/```[\s\S]*?```/g, '').match(/[\p{L}\p{N}][\p{L}\p{N}'’-]*/gu) || []).length;
+      $('mdStats').innerHTML = `<span><strong>${words.toLocaleString()}</strong> words</span><span><strong>${Math.max(words ? 1 : 0, Math.round(words / 238))}</strong> min read</span><span><strong>${toc.length}</strong> headings</span><span><strong>${src.split('\n').length.toLocaleString()}</strong> lines</span>`;
+    }
+    let t = null;
+    ed.addEventListener('input', () => { clearTimeout(t); t = setTimeout(render, ed.value.length > 100000 ? 200 : 30); });
+    $('optBreaks').addEventListener('change', render);
+    $('toc').addEventListener('click', e => { const a = e.target.closest('[data-toc]'); if (!a) return; e.preventDefault(); const h = document.getElementById(a.dataset.toc); if (h) { const box = $('mdPreview').closest('.preview-wrap'); box.scrollTo({ top: h.offsetTop - box.offsetTop - 8, behavior: 'smooth' }); } });
+    $('mdPreview').addEventListener('click', e => { const a = e.target.closest('a[href^="#"]'); if (!a) return; e.preventDefault(); const h = document.getElementById(decodeURIComponent(a.getAttribute('href').slice(1))); if (h) { const box = $('mdPreview').closest('.preview-wrap'); box.scrollTo({ top: h.offsetTop - box.offsetTop - 8, behavior: 'smooth' }); } });
+
+    // proportional scroll sync, editor -> preview
+    ed.addEventListener('scroll', () => {
+      if (!$('optSync').checked) return;
+      const box = $('mdPreview').closest('.preview-wrap'), r = ed.scrollTop / Math.max(1, ed.scrollHeight - ed.clientHeight);
+      box.scrollTop = r * (box.scrollHeight - box.clientHeight);
+    });
+
+    // toolbar
+    function wrap(before, after, placeholder) {
+      const s = ed.selectionStart, e = ed.selectionEnd, sel = ed.value.slice(s, e) || placeholder;
+      ed.setRangeText(before + sel + after, s, e, 'end');
+      if (!ed.value.slice(s, e + before.length + after.length).includes(placeholder) || e > s) {}
+      ed.setSelectionRange(s + before.length, s + before.length + sel.length);
+      ed.focus(); ed.dispatchEvent(new Event('input'));
+    }
+    function linePrefix(fn) {
+      const s = ed.selectionStart, e = ed.selectionEnd, start = ed.value.lastIndexOf('\n', s - 1) + 1, endIdx = ed.value.indexOf('\n', e), end = endIdx < 0 ? ed.value.length : endIdx;
+      const lines = ed.value.slice(start, end).split('\n').map(fn);
+      ed.setRangeText(lines.join('\n'), start, end, 'select'); ed.focus(); ed.dispatchEvent(new Event('input'));
+    }
+    function block(text) {
+      const s = ed.selectionStart, pre = s > 0 && ed.value[s - 1] !== '\n' ? '\n\n' : '';
+      ed.setRangeText(pre + text + '\n', s, ed.selectionEnd, 'end'); ed.focus(); ed.dispatchEvent(new Event('input'));
+    }
+    const ACTIONS = {
+      bold: () => wrap('**', '**', 'bold text'), italic: () => wrap('_', '_', 'italic text'), strike: () => wrap('~~', '~~', 'struck text'),
+      code: () => wrap('`', '`', 'code'), link: () => wrap('[', '](https://)', 'link text'),
+      h2: () => linePrefix(l => l.replace(/^#{1,6}\s*/, '').replace(/^/, '## ')),
+      ul: () => linePrefix(l => '- ' + l.replace(/^(\s*)([-*+]|\d+\.)\s+/, '$1')), ol: () => { let n = 1; linePrefix(l => (n++) + '. ' + l.replace(/^(\s*)([-*+]|\d+\.)\s+/, '$1')); },
+      task: () => linePrefix(l => '- [ ] ' + l.replace(/^(\s*)([-*+]|\d+\.)\s+(\[[ x]\]\s+)?/, '$1')), quote: () => linePrefix(l => '> ' + l),
+      codeblock: () => wrap('```\n', '\n```', 'code'), hr: () => block('---'),
+      table: () => block('| Column | Column |\n| --- | --- |\n| Cell | Cell |')
+    };
+    document.querySelectorAll('[data-md]').forEach(b => b.addEventListener('click', () => ACTIONS[b.dataset.md]()));
+    ed.addEventListener('keydown', e => {
+      if (!(e.ctrlKey || e.metaKey) || e.shiftKey || e.altKey) return;
+      const k = e.key.toLowerCase();
+      if (k === 'b' || k === 'i' || k === 'k') { e.preventDefault(); e.stopPropagation(); ACTIONS[{ b: 'bold', i: 'italic', k: 'link' }[k]](); }
+    });
+
+    // views
+    function setView(v) {
+      $('mdGrid').dataset.view = v;
+      document.querySelectorAll('.view-switch .seg-btn').forEach(b => { const on = b.dataset.view === v; b.classList.toggle('active', on); b.setAttribute('aria-selected', on); });
+    }
+    document.querySelectorAll('.view-switch .seg-btn').forEach(b => b.addEventListener('click', () => setView(b.dataset.view)));
+    if (window.matchMedia('(max-width: 900px)').matches) setView('edit');
+
+    // files and export
+    const download = (name, text, type) => { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([text], { type })); a.download = name; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 1000); };
+    const docTitle = () => (toc[0] && toc[0].text) || 'Document';
+    function page() {
+      return `<!doctype html>\n<html lang="en">\n<head>\n<meta charset="utf-8">\n<meta name="viewport" content="width=device-width, initial-scale=1">\n<title>${esc(docTitle())}</title>\n<style>\n:root{color-scheme:light dark;--fg:#1f2328;--muted:#59636e;--bg:#fff;--line:#d1d9e0;--code:#f6f8fa;--link:#0969da}\n@media (prefers-color-scheme:dark){:root{--fg:#e6edf3;--muted:#9198a1;--bg:#0d1117;--line:#3d444d;--code:#151b23;--link:#4493f8}}\nbody{margin:0;background:var(--bg);color:var(--fg);font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif}\nmain{max-width:780px;margin:0 auto;padding:40px 20px}\nh1,h2{border-bottom:1px solid var(--line);padding-bottom:.3em}\nh1,h2,h3,h4{line-height:1.25;margin:1.5em 0 .6em}\na{color:var(--link)}\ncode,pre{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.88em}\ncode{background:var(--code);padding:.15em .35em;border-radius:6px}\npre{background:var(--code);padding:14px 16px;border-radius:8px;overflow:auto}\npre code{background:none;padding:0}\nblockquote{margin:0;padding:0 1em;color:var(--muted);border-left:.25em solid var(--line)}\ntable{border-collapse:collapse;display:block;overflow:auto}\nth,td{border:1px solid var(--line);padding:6px 13px}\ntr:nth-child(2n){background:var(--code)}\nimg{max-width:100%}\nhr{border:0;border-top:1px solid var(--line);margin:24px 0}\nul.contains-task-list,li:has(>input[type=checkbox]){list-style:none}\n@media print{main{max-width:none}}\n</style>\n</head>\n<body>\n<main>\n${html}\n</main>\n</body>\n</html>\n`;
+    }
+    $('btnCopyHtml').addEventListener('click', () => { if (!html) { Layerbit.toast('Nothing to copy yet: write some Markdown first.', 'warn'); return; } Layerbit.copy(html).then(() => Layerbit.toast('HTML copied (' + Layerbit.fmtBytes(new Blob([html]).size) + ')')); });
+    $('btnDlHtml').addEventListener('click', () => { if (!html) { Layerbit.toast('Nothing to download yet.', 'warn'); return; } download(slug(docTitle(), new Set()) + '.html', page(), 'text/html'); });
+    $('btnDlMd').addEventListener('click', () => { if (!ed.value) { Layerbit.toast('Nothing to download yet.', 'warn'); return; } download(slug(docTitle(), new Set()) + '.md', ed.value, 'text/markdown'); });
+    $('btnCopyMd').addEventListener('click', () => { if (!ed.value) { Layerbit.toast('Nothing to copy yet.', 'warn'); return; } Layerbit.copy(ed.value).then(() => Layerbit.toast('Markdown copied')); });
+    $('btnOpen').addEventListener('click', () => $('mdFile').click());
+    function loadText(text) { ed.value = text; render(); }
+    $('mdFile').addEventListener('change', e => { const f = e.target.files[0]; if (f) Layerbit.readFile(f).then(loadText); e.target.value = ''; });
+    $('btnSample').addEventListener('click', () => loadText(SAMPLE));
+    if (window.Layerbit) Layerbit.onDrop(f => Layerbit.readFile(f).then(loadText));
+
+    function getState() { return ed.value ? { input: ed.value, breaks: $('optBreaks').checked } : null; }
+    function setState(s) { if (!s) return; if (typeof s.input === 'string') ed.value = s.input; $('optBreaks').checked = !!s.breaks; render(); }
+    if (window.Layerbit) Layerbit.register({ slug: 'markdown-preview', getState, setState, run: render, input: loadText });
+    ed.value = SAMPLE; render(); icons();
+  </script>

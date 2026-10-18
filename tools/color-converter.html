@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Convert HEX, RGB, HSL, HWB, LAB, LCH, OKLCH and CMYK colors, check WCAG and APCA contrast, fix failing colors, build palettes and simulate color blindness." />
+  <title>Color Converter & WCAG Contrast Checker | Layerbit</title>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-ERX8MNPPP5"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-ERX8MNPPP5');
+  </script>
+  <link rel="canonical" href="https://layerbit.co.in/tools/color-converter.html" />
+  <meta name="robots" content="max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://layerbit.co.in/tools/color-converter.html" />
+  <meta property="og:site_name" content="Layerbit" />
+  <meta property="og:title" content="Color Converter & WCAG Contrast Checker | Layerbit" />
+  <meta property="og:description" content="Convert HEX, RGB, HSL, HWB, LAB, LCH, OKLCH and CMYK colors, check WCAG and APCA contrast, fix failing colors, build palettes and simulate color blindness." />
+  <meta property="og:image" content="https://layerbit.co.in/og-image.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="Layerbit - free browser-based developer tools" />
+  <meta property="og:locale" content="en" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Color Converter & WCAG Contrast Checker | Layerbit" />
+  <meta name="twitter:description" content="Convert HEX, RGB, HSL, HWB, LAB, LCH, OKLCH and CMYK colors, check WCAG and APCA contrast, fix failing colors, build palettes and simulate color blindness." />
+  <meta name="twitter:image" content="https://layerbit.co.in/og-image.png" />
+  <meta name="twitter:image:alt" content="Layerbit - free browser-based developer tools" />
+  <meta name="theme-color" content="#0a0c10" />
+  <script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "SoftwareApplication",
+      "@id": "https://layerbit.co.in/tools/color-converter.html#app",
+      "name": "Color Converter \u0026 WCAG Contrast Checker",
+      "url": "https://layerbit.co.in/tools/color-converter.html",
+      "description": "Convert HEX, RGB, HSL, HWB, LAB, LCH, OKLCH and CMYK colors, check WCAG and APCA contrast, fix failing colors, build palettes and simulate color blindness.",
+      "applicationCategory": "DeveloperApplication",
+      "operatingSystem": "Any (runs in the browser)",
+      "browserRequirements": "Requires JavaScript",
+      "isAccessibleForFree": true,
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "publisher": {
+        "@id": "https://layerbit.co.in/#organization"
+      },
+      "featureList": [
+        "Parses every CSS Color 4 notation: hex, rgb, hsl, hwb, lab, lch, oklab, oklch, cmyk and 148 named colors",
+        "CSS Color 4 gamut mapping for out-of-sRGB colors",
+        "Outputs HEX, RGB, HSL, HWB, OKLCH, OKLab, LCH, Lab, CMYK, integer, Android ARGB and SwiftUI",
+        "Nearest named color with perceptual distance",
+        "WCAG 2.2 contrast ratio with AA, AAA and non-text results",
+        "APCA lightness contrast (Lc) with usage guidance",
+        "One-click contrast fix that keeps hue and chroma",
+        "11-step OKLCH tint and shade scale with CSS, Tailwind, JSON and SCSS export",
+        "Complementary, analogous, triadic, split and tetradic harmonies",
+        "Protanopia, deuteranopia, tritanopia and achromatopsia simulation",
+        "Runs entirely in the browser"
+      ]
+    },
+    {
+      "@type": "BreadcrumbList",
+      "@id": "https://layerbit.co.in/tools/color-converter.html#breadcrumb",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://layerbit.co.in/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Tools",
+          "item": "https://layerbit.co.in/blog.html"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": "Color Converter",
+          "item": "https://layerbit.co.in/tools/color-converter.html"
+        }
+      ]
+    },
+    {
+      "@type": "FAQPage",
+      "@id": "https://layerbit.co.in/tools/color-converter.html#faq",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "How do I convert HEX to RGB?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Split the six hex digits into three pairs and convert each pair from base 16 to base 10: #38BDF8 becomes 38, BD and F8, which are 56, 189 and 248, so rgb(56 189 248). A three-digit hex like #0AF doubles each digit first, giving #00AAFF. An eight-digit hex adds an alpha pair, where 80 is about 50% opacity. Paste any of these into the color field above and every other format is computed instantly."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What contrast ratio do I need for accessible text?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "WCAG 2.2 level AA, the level most laws and policies reference, requires 4.5:1 for normal text and 3:1 for large text, meaning 24px regular or 18.66px bold and larger. Level AAA raises these to 7:1 and 4.5:1. User-interface components and meaningful graphics such as icons, input borders and focus indicators need 3:1 against adjacent colors. The checker above shows all five results at once for any pair."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What is OKLCH and why are designers switching to it?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "OKLCH is a color format built on the OKLab color space, published by Björn Ottosson in 2020. Its three values are perceived lightness, chroma and hue. Because lightness is perceptual, two colors with the same L look equally bright, so you can generate shade scales, hover states and dark themes by changing one number without hues drifting or yellows looking washed out. It is supported in CSS by every current browser and can express colors outside sRGB on wide-gamut displays."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Why does my color say it was out of gamut?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "OKLCH, LCH and Lab can describe colors more saturated than an sRGB screen can show, for example oklch(70% 0.35 150). When that happens the tool maps the color into sRGB the way CSS Color 4 specifies: it keeps the lightness and hue and reduces chroma until the color fits, rather than clipping each channel, which would shift the hue. The hex and rgb values shown are that mapped color; on a wide-gamut display the original may look more vivid in a browser."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Is APCA better than the WCAG contrast ratio?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "APCA predicts readability more accurately, especially for dark themes and mid-tone colors, and accounts for whether text is lighter or darker than its background. But WCAG 2.2's ratio is the standard referenced by accessibility laws today, so a design must still pass it. The practical approach is to meet the WCAG 2 thresholds for compliance and use APCA to catch pairs that technically pass but are uncomfortable to read."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Is anything I enter sent to a server?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "No. Parsing, conversion, contrast, palettes and color-vision simulation are all computed by JavaScript in this page, using published formulas from the CSS Color 4 specification, WCAG 2.2, APCA and the Machado 2009 model. There are no network requests, which you can confirm in your browser's developer tools, and the page keeps working offline once loaded."
+          }
+        }
+      ]
+    }
+  ]
+}
+  </script>
+
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6072772587431629" crossorigin="anonymous"></script>
+
+  <script src="../js/vendor/lucide.min.js" async></script>
+  <script src="../js/kernel.js"></script>
+
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet" />
+  <link href="../layerbit-logo.png" rel="icon" type="image/x-icon" />
+  <link rel="manifest" href="../manifest.json" />
+  <link rel="apple-touch-icon" href="../apple-touch-icon.png" />
+  <link rel="stylesheet" href="../css/base.css" />
+  <link rel="stylesheet" href="../css/tool.css" />
+
+  <style>
+
+    .color-input-row { display: flex; gap: 10px; align-items: center; }
+    .color-input-row .text-input { flex: 1; min-width: 0; font-size: 1.05em; }
+    .color-input-row.small .text-input { font-size: 0.95em; }
+    .swatch-pick { position: relative; flex: 0 0 auto; cursor: pointer; display: block; }
+    .swatch-pick input[type=color] { position: absolute; inset: 0; opacity: 0; width: 100%; height: 100%; cursor: pointer; border: 0; padding: 0; }
+    .swatch { display: block; width: 46px; height: 46px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.18); box-shadow: inset 0 0 0 1px rgba(0,0,0,0.25); background-image: linear-gradient(45deg, #2a2d36 25%, transparent 25%), linear-gradient(-45deg, #2a2d36 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #2a2d36 75%), linear-gradient(-45deg, transparent 75%, #2a2d36 75%); background-size: 12px 12px; background-position: 0 0, 0 6px, 6px -6px, -6px 0; }
+    #mainSwatch { width: 54px; height: 54px; }
+    .color-input-row.small .swatch { width: 40px; height: 40px; border-radius: 10px; }
+    input[type=range]#alpha { width: 100%; accent-color: var(--accent-main); }
+    .error-inline { font-size: 0.85em; color: #fca5a5; background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.3); padding: 8px 12px; border-radius: 8px; }
+    .name-line { font-size: 0.88em; color: var(--text-muted); }
+    .name-line strong { color: var(--text-main); }
+    .warn-text { color: #f59e0b; }
+    .fmt-table td.val { word-break: break-all; }
+    .fmt-table td.act { width: 34px; text-align: right; }
+    .fmt-table td.muted { white-space: nowrap; width: 120px; }
+    .preview { border-radius: 12px; padding: 18px 20px; border: 1px solid rgba(255,255,255,0.12); display: flex; flex-direction: column; gap: 8px; font-family: 'Space Grotesk', sans-serif; transition: background 0.2s, color 0.2s; }
+    .preview p { margin: 0; line-height: 1.4; }
+    .pv-large { font-size: 24px; font-weight: 500; }
+    .pv-normal { font-size: 16px; }
+    .pv-small { font-size: 12px; }
+    .pv-ui { align-self: flex-start; display: inline-flex; align-items: center; gap: 6px; border: 2px solid; border-radius: 8px; padding: 5px 12px; font-size: 14px; font-weight: 600; }
+    .pv-ui i, .pv-ui svg.lucide { width: 15px; height: 15px; }
+    .ratio-row { display: flex; gap: 12px; }
+    .ratio { flex: 1; text-align: center; background: rgba(0,0,0,0.25); border: 1px solid var(--card-border); border-radius: 12px; padding: 12px; }
+    .ratio span { display: block; font-size: 1.9em; font-weight: 700; color: #fff; font-variant-numeric: tabular-nums; }
+    .ratio small { color: var(--text-muted); font-size: 0.78em; }
+    .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+    .chip { display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px; border-radius: 999px; font-size: 0.8em; font-weight: 600; border: 1px solid; }
+    .chip i, .chip svg.lucide { width: 13px; height: 13px; }
+    .chip.pass { color: #4ade80; border-color: rgba(34,197,94,0.4); background: rgba(34,197,94,0.1); }
+    .chip.fail { color: #f87171; border-color: rgba(239,68,68,0.4); background: rgba(239,68,68,0.1); }
+    .fix-row .btn:disabled { opacity: 0.45; }
+    .scale { display: grid; grid-template-columns: repeat(11, minmax(0, 1fr)); gap: 6px; }
+    .sw { border: 0; border-radius: 10px; min-height: 64px; padding: 8px 6px; display: flex; flex-direction: column; justify-content: flex-end; align-items: flex-start; gap: 2px; cursor: pointer; font-family: 'Space Grotesk', sans-serif; transition: transform 0.15s; box-shadow: inset 0 0 0 1px rgba(255,255,255,0.08); }
+    .sw:hover { transform: translateY(-2px); }
+    .sw span { font-size: 0.78em; font-weight: 700; }
+    .sw code { font-family: 'Fira Code', monospace; font-size: 0.68em; opacity: 0.85; background: none; padding: 0; }
+    .harmonies { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; }
+    .h-label { font-size: 0.8em; color: var(--text-muted); font-weight: 600; margin-bottom: 6px; }
+    .h-row { display: flex; gap: 6px; }
+    .h-row .sw { flex: 1; min-height: 52px; }
+    .cvd { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; }
+    .cvd-cell { border-radius: 10px; padding: 12px 10px; display: flex; flex-direction: column; gap: 2px; box-shadow: inset 0 0 0 1px rgba(255,255,255,0.08); }
+    .cvd-cell strong { font-size: 1.5em; }
+    .cvd-cell span { font-size: 0.78em; font-weight: 600; }
+    .cvd-cell em { font-style: normal; font-size: 0.75em; opacity: 0.85; font-family: 'Fira Code', monospace; }
+    .hint-bar.inline { border-top: 0; padding: 0; }
+    @media (max-width: 900px) {
+      .scale { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+      .cvd { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+    @media (max-width: 600px) {
+      .scale { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+      .fmt-table td.muted { width: 96px; }
+      .ratio span { font-size: 1.5em; }
+    }
+
+  </style>
+</head>
+<body>
+  <header>
+    <a href="../" class="brand">
+      <svg width="36" height="36" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <polygon points="32,20 54,28 32,36 10,28" stroke="#f8fafc" stroke-width="4" stroke-linejoin="round"/>
+        <polyline points="10,38 32,46 54,38" stroke="#f8fafc" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+        <polyline points="10,48 32,56 54,48" stroke="#f8fafc" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+        <rect x="50" y="10" width="10" height="10" rx="2" fill="#00f2fe" />
+      </svg>
+      Layerbit
+    </a>
+  </header>
+
+  <main class="hero">
+    <div class="hero-badge"><i data-lucide="shield-check"></i> Runs entirely in your browser</div>
+    <h1>Color Converter &amp; WCAG Contrast Checker</h1>
+    <p>Paste a color in any CSS notation and get every other format, check text contrast against WCAG 2.2 and APCA with a one-click fix for failing pairs, build a tint and shade scale, and see how the pair looks to people with color-vision deficiencies.</p>
+  </main>
+
+  <div class="ide-container">
+    <div class="pane">
+      <div class="pane-header">
+        <div class="pane-title"><i data-lucide="palette"></i> Color</div>
+        <div class="btn-group">
+          <button class="btn" type="button" id="btnRandom" title="A random color"><i data-lucide="shuffle"></i> Random</button>
+        </div>
+      </div>
+      <div class="pane-body">
+        <div class="color-input-row">
+          <label class="swatch-pick" title="Pick a color"><input type="color" id="picker" value="#38bdf8" aria-label="Color picker"><span class="swatch" id="mainSwatch"></span></label>
+          <input type="text" id="colorInput" class="text-input" value="#38bdf8" spellcheck="false" autocomplete="off" aria-label="Color in any CSS format" placeholder="#38bdf8, rgb(56 189 248), hsl(198 93% 60%), oklch(…), tomato">
+        </div>
+        <div class="field">
+          <label for="alpha"><i data-lucide="droplet"></i> Opacity <strong id="alphaOut">100%</strong></label>
+          <input type="range" id="alpha" min="0" max="100" value="100">
+        </div>
+        <div class="error-inline" id="colorError" hidden></div>
+        <div class="name-line" id="nameLine"></div>
+        <table class="data-table fmt-table" id="fmtTable"><tbody></tbody></table>
+      </div>
+    </div>
+
+    <div class="pane">
+      <div class="pane-header">
+        <div class="pane-title"><i data-lucide="contrast"></i> Contrast</div>
+        <div class="btn-group">
+          <button class="btn" type="button" id="btnSwap" title="Swap text and background"><i data-lucide="arrow-up-down"></i> Swap</button>
+        </div>
+      </div>
+      <div class="pane-body">
+        <div class="row">
+          <div class="field"><label for="fgInput"><i data-lucide="type"></i> Text</label>
+            <div class="color-input-row small"><label class="swatch-pick"><input type="color" id="fgPicker" value="#0a0c10" aria-label="Text color picker"><span class="swatch" id="fgSwatch"></span></label><input type="text" id="fgInput" class="text-input" value="#0a0c10" spellcheck="false" autocomplete="off"></div></div>
+          <div class="field"><label for="bgInput"><i data-lucide="square"></i> Background</label>
+            <div class="color-input-row small"><label class="swatch-pick"><input type="color" id="bgPicker" value="#38bdf8" aria-label="Background color picker"><span class="swatch" id="bgSwatch"></span></label><input type="text" id="bgInput" class="text-input" value="#38bdf8" spellcheck="false" autocomplete="off"></div></div>
+        </div>
+        <div class="preview" id="preview">
+          <p class="pv-large">Large text, 24px</p>
+          <p class="pv-normal">Body text at 16px. The quick brown fox jumps over the lazy dog.</p>
+          <p class="pv-small">Small print at 12px is where low contrast hurts first.</p>
+          <span class="pv-ui"><i data-lucide="mouse-pointer-click"></i> Button outline</span>
+        </div>
+        <div class="ratio-row">
+          <div class="ratio"><span id="ratio">–</span><small>WCAG 2 ratio</small></div>
+          <div class="ratio"><span id="apca">–</span><small>APCA Lc</small></div>
+        </div>
+        <div class="chips" id="wcagChips"></div>
+        <div class="findings" id="contrastNotes"></div>
+        <div class="btn-group fix-row">
+          <button class="btn" type="button" id="btnFixAA"><i data-lucide="wand-2"></i> Fix text for AA (4.5:1)</button>
+          <button class="btn" type="button" id="btnFixAAA"><i data-lucide="wand-2"></i> Fix for AAA (7:1)</button>
+          <button class="btn" type="button" id="btnUseMain" title="Use the color from the left panel as the background">Use left color as background</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="ide-container single">
+    <div class="pane">
+      <div class="pane-header">
+        <div class="pane-title"><i data-lucide="swatch-book"></i> Palette from this color</div>
+        <div class="btn-group">
+          <select id="exportFmt" class="mini-select" aria-label="Export format">
+            <option value="css">CSS variables</option>
+            <option value="tailwind">Tailwind config</option>
+            <option value="json">JSON</option>
+            <option value="scss">SCSS variables</option>
+          </select>
+          <button class="btn" type="button" id="btnCopyScale"><i data-lucide="copy"></i> Copy scale</button>
+        </div>
+      </div>
+      <div class="pane-body">
+        <div class="scale" id="scale"></div>
+        <div class="harmonies" id="harmonies"></div>
+        <div class="field">
+          <label><i data-lucide="eye"></i> The contrast pair as seen with color-vision deficiencies</label>
+          <div class="cvd" id="cvd"></div>
+        </div>
+        <div class="hint-bar inline">Click any swatch to copy its hex value. Scales and harmonies are computed in OKLCH, so steps look evenly spaced and hues stay true.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="docs-container">
+    <div class="info-panel">
+      <h2><i data-lucide="book-open"></i> Which color format to use</h2>
+      <p>Every format on the left describes the same color; they differ in what is easy to read and edit. <strong>Hex</strong> and <strong>rgb()</strong> are the universal interchange formats: every design tool, browser and platform understands them, which is why they are the safe choice for brand guidelines and design tokens. <strong>hsl()</strong> was the first attempt at a human-editable format, with hue, saturation and lightness, but its lightness is not perceptual: <code>hsl(60 100% 50%)</code> yellow and <code>hsl(240 100% 50%)</code> blue have the same L yet look wildly different in brightness.</p>
+      <p><strong>oklch()</strong> fixes that. Its L is perceived lightness, C is chroma (colorfulness) and H is hue, in a space designed so that equal numeric steps look like equal visual steps. Changing L in OKLCH changes brightness without shifting the hue, which makes it the best format for building scales, hover states and dark-mode variants. Every current browser supports <code>oklch()</code> in CSS. <strong>lab()</strong> and <strong>lch()</strong> are the older CIE equivalents, used in print and color science. <strong>cmyk()</strong> here is a naive conversion for quick reference; real print output depends on the press's ICC profile.</p>
+
+      <h2><i data-lucide="contrast"></i> The WCAG contrast rules</h2>
+      <p>WCAG 2.2 measures contrast as a ratio between the relative luminance of the lighter and darker colors, from 1:1 (identical) to 21:1 (black on white). The thresholds depend on what the color is used for:</p>
+      <table>
+        <thead><tr><th>Criterion</th><th>Applies to</th><th>Minimum ratio</th></tr></thead>
+        <tbody>
+          <tr><td>1.4.3 Contrast (Minimum), level AA</td><td>Body text and images of text</td><td>4.5:1</td></tr>
+          <tr><td>1.4.3, level AA</td><td>Large text: 24px regular, or 18.66px (14pt) bold and up</td><td>3:1</td></tr>
+          <tr><td>1.4.6 Contrast (Enhanced), level AAA</td><td>Body text</td><td>7:1</td></tr>
+          <tr><td>1.4.6, level AAA</td><td>Large text</td><td>4.5:1</td></tr>
+          <tr><td>1.4.11 Non-text Contrast, level AA</td><td>Icons, input borders, focus rings, chart lines</td><td>3:1</td></tr>
+        </tbody>
+      </table>
+      <p>The ratio is truncated, never rounded up: #777777 on white is 4.48:1, and that famous near miss fails AA even though it looks fine to many people. Transparent text is composited onto the background first, so a 60% opacity grey is judged on the color you actually see. Placeholder text, disabled controls and logos are exempt; everything else a user must read is not.</p>
+
+      <h2><i data-lucide="sun-medium"></i> What APCA adds</h2>
+      <p>The Accessible Perceptual Contrast Algorithm, developed for the next generation of guidelines, models how contrast is actually perceived. Unlike the WCAG 2 ratio, it is polarity-aware (light text on dark is treated differently from dark on light) and far more accurate for mid-tones and dark themes, where the WCAG 2 formula is known to pass pairs that are hard to read and fail pairs that are fine. APCA reports a lightness contrast value, Lc, from 0 to about 106. As a rule of thumb, Lc 90 suits long body text, Lc 75 is the minimum for body text, Lc 60 for content text larger than body size, Lc 45 for large headlines, and Lc 30 for placeholder and disabled text. APCA is not yet a legal standard, so check both: WCAG 2 for compliance, APCA for whether people can comfortably read it.</p>
+
+      <h2><i data-lucide="wand-2"></i> How the contrast fix works</h2>
+      <p>The fix buttons keep the text color's hue and chroma and move only its OKLCH lightness, searching for the value closest to the original that reaches the target ratio against the current background. The result stays recognizably the same color, just darker or lighter, instead of being replaced by black or white. If no lightness can reach the target, for example a saturated mid-tone background that sits too close to the middle of the range, the tool falls back to black or white, whichever contrasts more. The tint and shade scale below uses the same space, so the 600 or 700 step of your brand color is often already a compliant text color on white.</p>
+
+      <h2><i data-lucide="eye"></i> Designing for color-vision deficiencies</h2>
+      <p>About 1 in 12 men and 1 in 200 women have a color-vision deficiency, most often deuteranomaly or protanomaly, which reduce the ability to tell red from green. The simulations use the Machado, Oliveira and Fernandes (2009) model at full severity for protanopia, deuteranopia and tritanopia, plus full achromatopsia, and recompute the contrast ratio for each. Contrast based on luminance survives most deficiencies, which is exactly why WCAG measures luminance; the real risk is relying on hue alone. Never use color as the only way to convey meaning: pair a red error state with an icon and text, and give chart series different shapes or line styles as well as colors.</p>
+    </div>
+
+    <div class="info-panel">
+      <h2><i data-lucide="help-circle"></i> Frequently asked questions</h2>
+      <div class="faq-container">
+        <div class="faq-item">
+          <button class="faq-question">How do I convert HEX to RGB? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>Split the six hex digits into three pairs and convert each pair from base 16 to base 10: #38BDF8 becomes 38, BD and F8, which are 56, 189 and 248, so rgb(56 189 248). A three-digit hex like #0AF doubles each digit first, giving #00AAFF. An eight-digit hex adds an alpha pair, where 80 is about 50% opacity. Paste any of these into the color field above and every other format is computed instantly.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">What contrast ratio do I need for accessible text? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>WCAG 2.2 level AA, the level most laws and policies reference, requires 4.5:1 for normal text and 3:1 for large text, meaning 24px regular or 18.66px bold and larger. Level AAA raises these to 7:1 and 4.5:1. User-interface components and meaningful graphics such as icons, input borders and focus indicators need 3:1 against adjacent colors. The checker above shows all five results at once for any pair.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">What is OKLCH and why are designers switching to it? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>OKLCH is a color format built on the OKLab color space, published by Björn Ottosson in 2020. Its three values are perceived lightness, chroma and hue. Because lightness is perceptual, two colors with the same L look equally bright, so you can generate shade scales, hover states and dark themes by changing one number without hues drifting or yellows looking washed out. It is supported in CSS by every current browser and can express colors outside sRGB on wide-gamut displays.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">Why does my color say it was out of gamut? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>OKLCH, LCH and Lab can describe colors more saturated than an sRGB screen can show, for example oklch(70% 0.35 150). When that happens the tool maps the color into sRGB the way CSS Color 4 specifies: it keeps the lightness and hue and reduces chroma until the color fits, rather than clipping each channel, which would shift the hue. The hex and rgb values shown are that mapped color; on a wide-gamut display the original may look more vivid in a browser.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">Is APCA better than the WCAG contrast ratio? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>APCA predicts readability more accurately, especially for dark themes and mid-tone colors, and accounts for whether text is lighter or darker than its background. But WCAG 2.2's ratio is the standard referenced by accessibility laws today, so a design must still pass it. The practical approach is to meet the WCAG 2 thresholds for compliance and use APCA to catch pairs that technically pass but are uncomfortable to read.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">Is anything I enter sent to a server? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>No. Parsing, conversion, contrast, palettes and color-vision simulation are all computed by JavaScript in this page, using published formulas from the CSS Color 4 specification, WCAG 2.2, APCA and the Machado 2009 model. There are no network requests, which you can confirm in your browser's developer tools, and the page keeps working offline once loaded.</p></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="info-panel related-panel">
+      <h2><i data-lucide="link"></i> Related guides and tools</h2>
+      <p>Other front-end tools that run entirely in your browser.</p>
+      <div class="use-cases-grid">
+        <div class="use-case-card">
+          <h3><i data-lucide="wrench"></i> <a href="markdown-preview.html">Markdown Editor &amp; Preview</a></h3>
+          <p>Write documentation and copy clean HTML.</p>
+        </div>
+        <div class="use-case-card">
+          <h3><i data-lucide="wrench"></i> <a href="qr-barcode.html">QR Code &amp; Barcode Generator</a></h3>
+          <p>Custom foreground and background colors with a scan-contrast check.</p>
+        </div>
+        <div class="use-case-card">
+          <h3><i data-lucide="wrench"></i> <a href="number-base-converter.html">Number Base Converter</a></h3>
+          <p>Hex, binary and decimal, with byte views.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="info-panel">
+      <h2><i data-lucide="git-commit"></i> Changelog</h2>
+      <ul class="changelog-list">
+        <li><span class="changelog-tag">v1.0.0</span> Initial release: CSS Color 4 parsing (hex, rgb, hsl, hwb, lab, lch, oklab, oklch, cmyk, 148 named colors), gamut mapping, eleven output formats plus Android and SwiftUI, nearest named color, WCAG 2.2 and APCA contrast with OKLCH lightness fixes, 11-step scale with CSS/Tailwind/JSON/SCSS export, harmonies, and color-vision simulation.</li>
+      </ul>
+    </div>
+  </div>
+
+  <a id="smartBackBtn" class="fab home-fab-premium" aria-label="Command Center" title="Command Center" href="../">
+    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="filter: drop-shadow(0 0 8px rgba(56, 189, 248, 0.5));">
+      <path d="M12 2L2 7l10 5 10-5-10-5z" stroke="#38bdf8" stroke-width="2" stroke-linejoin="round" fill="rgba(56,189,248,0.2)"/>
+      <path d="M2 17l10 5 10-5M2 12l10 5 10-5" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </a>
+
+  <footer>
+    <div style="margin-bottom: 15px;">
+      &copy; 2025 - 2026 <strong>Layerbit Technologies</strong>. All rights reserved.
+    </div>
+    <div>
+      <a href="../about.html">About</a>
+      <a href="../privacy.html">Privacy Policy</a>
+      <a href="../terms.html">Terms of Service</a>
+      <a href="../blog.html">Developer Blog</a>
+      <a href="../contact.html">Contact</a>
+    </div>
+  </footer>
+
+  <script src="../js/shared.js"></script>
+  <script src="../js/engines/color.js"></script>
+  <script>
+    const $ = id => document.getElementById(id);
+    const C = window.LBColor;
+    const icons = () => { if (window.lucide) lucide.createIcons(); };
+    const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+    let color = C.parse('#38bdf8'), fg = C.parse('#0a0c10'), bg = C.parse('#38bdf8');
+    const WHITE = { r: 1, g: 1, b: 1, a: 1 };
+    const css = c => c.a < 1 ? C.formats(c).rgb : C.toHex(c, false);
+
+    const FORMATS = [['hex', 'HEX'], ['hex8', 'HEX + alpha'], ['rgb', 'RGB'], ['rgbLegacy', 'RGB (legacy)'], ['hsl', 'HSL'], ['hwb', 'HWB'], ['oklch', 'OKLCH'], ['oklab', 'OKLab'], ['lch', 'LCH'], ['lab', 'Lab'], ['cmyk', 'CMYK'], ['int', 'Integer'], ['androidArgb', 'Android ARGB'], ['swiftUI', 'SwiftUI']];
+    function renderColor() {
+      const f = C.formats(color);
+      $('mainSwatch').style.background = css(color);
+      $('picker').value = C.toHex(color, false);
+      $('alpha').value = Math.round(color.a * 100); $('alphaOut').textContent = Math.round(color.a * 100) + '%';
+      $('fmtTable').querySelector('tbody').innerHTML = FORMATS.map(([k, label]) => `<tr><td class="muted">${label}</td><td class="val">${esc(f[k])}</td><td class="act"><button class="copy-btn" type="button" data-copy="${esc(f[k])}" title="Copy"><i data-lucide="copy"></i></button></td></tr>`).join('');
+      const n = f.name;
+      $('nameLine').innerHTML = n.exact ? `Named color: <strong>${n.name}</strong>` : `Nearest named color: <strong>${n.name}</strong> <span class="muted">(ΔE<sub>ok</sub> ${n.deltaE})</span>`;
+      if (color.outOfGamut) $('nameLine').innerHTML += ` · <span class="warn-text">outside sRGB, mapped by reducing chroma</span>`;
+      renderPalette();
+      icons();
+    }
+    function readMain(text) {
+      const c = C.parse(text);
+      if (!c) { $('colorError').hidden = false; $('colorError').textContent = `"${text}" is not a color this tool recognises. Try #38bdf8, rgb(56 189 248), hsl(198 93% 60%), oklch(75% 0.15 230) or a CSS name like tomato.`; return false; }
+      $('colorError').hidden = true; color = c; renderColor(); return true;
+    }
+    $('colorInput').addEventListener('input', () => { if ($('colorInput').value.trim()) readMain($('colorInput').value); });
+    $('picker').addEventListener('input', () => { const c = C.parse($('picker').value); c.a = color.a; color = c; $('colorInput').value = C.formats(c).hex; $('colorError').hidden = true; renderColor(); });
+    $('alpha').addEventListener('input', () => { color = Object.assign({}, color, { a: +$('alpha').value / 100 }); $('colorInput').value = C.formats(color).hex; renderColor(); });
+    $('btnRandom').addEventListener('click', () => { const c = C.fromOklch(0.45 + Math.random() * 0.4, 0.06 + Math.random() * 0.14, Math.random() * 360); $('colorInput').value = C.formats(c).hex; readMain($('colorInput').value); });
+    document.addEventListener('click', e => { const b = e.target.closest('[data-copy]'); if (b) Layerbit.copy(b.dataset.copy).then(() => Layerbit.toast('Copied ' + b.dataset.copy)); });
+
+    // ---- contrast
+    function readPair() {
+      const f = C.parse($('fgInput').value), b = C.parse($('bgInput').value);
+      $('fgInput').classList.toggle('bad', !f); $('bgInput').classList.toggle('bad', !b);
+      if (f) fg = f; if (b) bg = Object.assign({}, b, { a: 1 });
+      renderContrast();
+    }
+    function chip(ok, label) { return `<span class="chip ${ok ? 'pass' : 'fail'}"><i data-lucide="${ok ? 'check' : 'x'}"></i>${label}</span>`; }
+    function renderContrast() {
+      const w = C.wcag(fg, bg), lc = C.apca(fg, bg);
+      $('fgSwatch').style.background = css(fg); $('bgSwatch').style.background = css(bg);
+      $('fgPicker').value = C.toHex(fg, false); $('bgPicker').value = C.toHex(bg, false);
+      const pv = $('preview'); pv.style.color = css(fg); pv.style.background = css(bg); pv.querySelector('.pv-ui').style.borderColor = css(fg);
+      $('ratio').textContent = w.ratio.toFixed(2) + ':1';
+      $('apca').textContent = String(lc);
+      $('wcagChips').innerHTML = chip(w.aaNormal, 'AA text') + chip(w.aaLarge, 'AA large') + chip(w.aaaNormal, 'AAA text') + chip(w.aaaLarge, 'AAA large') + chip(w.nonText, 'UI 3:1');
+      const a = Math.abs(lc), notes = [];
+      notes.push([a >= 75 ? 'ok' : a >= 60 ? 'info' : a >= 45 ? 'warn' : 'bad', a >= 90 ? 'APCA: comfortable for long body text.' : a >= 75 ? 'APCA: fine for body text.' : a >= 60 ? 'APCA: use for text larger than body size (about 24px), not paragraphs.' : a >= 45 ? 'APCA: headlines and large bold text only.' : a >= 30 ? 'APCA: placeholder or disabled text at most.' : 'APCA: too low for any text.']);
+      if (fg.a < 1) notes.push(['info', `The text is ${Math.round(fg.a * 100)}% opaque; contrast is measured on the color it produces over this background.`]);
+      $('contrastNotes').innerHTML = notes.map(([k, t]) => `<div class="finding ${k}"><i data-lucide="${k === 'ok' ? 'check-circle' : k === 'bad' ? 'x-circle' : k === 'warn' ? 'alert-triangle' : 'info'}"></i><span>${t}</span></div>`).join('');
+      $('btnFixAA').disabled = w.ratio >= 4.5; $('btnFixAAA').disabled = w.ratio >= 7;
+      renderCvd();
+      icons();
+    }
+    ['fgInput', 'bgInput'].forEach(id => $(id).addEventListener('input', readPair));
+    $('fgPicker').addEventListener('input', () => { $('fgInput').value = $('fgPicker').value; readPair(); });
+    $('bgPicker').addEventListener('input', () => { $('bgInput').value = $('bgPicker').value; readPair(); });
+    $('btnSwap').addEventListener('click', () => { const t = $('fgInput').value; $('fgInput').value = $('bgInput').value; $('bgInput').value = t; readPair(); });
+    function fix(target) {
+      const r = C.fixContrast(fg, bg, target);
+      $('fgInput').value = C.formats(r.color).hex; readPair();
+      Layerbit.toast(`Text color adjusted to ${C.formats(r.color).hex} (${C.wcag(r.color, bg).ratio.toFixed(2)}:1)`);
+    }
+    $('btnFixAA').addEventListener('click', () => fix(4.5));
+    $('btnFixAAA').addEventListener('click', () => fix(7));
+    $('btnUseMain').addEventListener('click', () => { $('bgInput').value = C.formats(color).hex; readPair(); });
+
+    // ---- palette
+    let scale = [];
+    function sw(c, label) { const h = C.toHex(c, false); return `<button type="button" class="sw" data-copy="${h}" style="background:${h};color:${C.wcag({ r: 0, g: 0, b: 0, a: 1 }, c).ratio >= 4.5 ? '#000' : '#fff'}" title="Copy ${h}"><span>${label}</span><code>${h}</code></button>`; }
+    function renderPalette() {
+      const solid = Object.assign({}, color, { a: 1 });
+      scale = C.scale(solid);
+      $('scale').innerHTML = scale.map(s => sw(s.color, s.step)).join('');
+      const h = C.harmonies(solid), names = { complementary: 'Complementary', analogous: 'Analogous', triadic: 'Triadic', splitComplementary: 'Split complementary', tetradic: 'Tetradic' };
+      $('harmonies').innerHTML = Object.keys(names).map(k => `<div class="harmony"><div class="h-label">${names[k]}</div><div class="h-row">${h[k].map(c => sw(c, '')).join('')}</div></div>`).join('');
+    }
+    function renderCvd() {
+      const kinds = [['normal', 'Typical vision'], ['protanopia', 'Protanopia'], ['deuteranopia', 'Deuteranopia'], ['tritanopia', 'Tritanopia'], ['achromatopsia', 'Achromatopsia']];
+      $('cvd').innerHTML = kinds.map(([k, label]) => {
+        const f = k === 'normal' ? C.over(fg, bg) : C.simulate(C.over(fg, bg), k), b = k === 'normal' ? bg : C.simulate(bg, k), r = C.wcag(f, b).ratio;
+        return `<div class="cvd-cell" style="background:${C.toHex(b, false)};color:${C.toHex(f, false)}"><strong>Aa</strong><span>${label}</span><em>${r.toFixed(2)}:1</em></div>`;
+      }).join('');
+    }
+    function exportScale() {
+      const fmt = $('exportFmt').value, base = 'brand', hex = s => C.toHex(s.color, false);
+      if (fmt === 'css') return ':root {\n' + scale.map(s => `  --${base}-${s.step}: ${hex(s)};`).join('\n') + '\n}';
+      if (fmt === 'scss') return scale.map(s => `$${base}-${s.step}: ${hex(s)};`).join('\n');
+      if (fmt === 'json') return JSON.stringify({ [base]: Object.fromEntries(scale.map(s => [s.step, hex(s)])) }, null, 2);
+      return `// tailwind.config.js\nmodule.exports = {\n  theme: { extend: { colors: {\n    ${base}: {\n` + scale.map(s => `      ${s.step}: '${hex(s)}',`).join('\n') + '\n    },\n  } } },\n};';
+    }
+    $('btnCopyScale').addEventListener('click', () => Layerbit.copy(exportScale()).then(() => Layerbit.toast('Scale copied as ' + $('exportFmt').selectedOptions[0].text)));
+
+    // ---- state
+    function getState() { return { color: $('colorInput').value, fg: $('fgInput').value, bg: $('bgInput').value, a: color.a }; }
+    function setState(s) {
+      if (!s) return;
+      if (s.color) { $('colorInput').value = s.color; readMain(s.color); }
+      if (typeof s.a === 'number' && color) { color = Object.assign({}, color, { a: s.a }); renderColor(); }
+      if (s.fg) $('fgInput').value = s.fg; if (s.bg) $('bgInput').value = s.bg; readPair();
+    }
+    if (window.Layerbit) Layerbit.register({ slug: 'color-converter', getState, setState, run: () => readMain($('colorInput').value), input: t => { $('colorInput').value = t.trim(); readMain(t); } });
+    renderColor(); readPair();
+  </script>
+</body>
+</html>
