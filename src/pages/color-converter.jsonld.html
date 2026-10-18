@@ -1,0 +1,117 @@
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "SoftwareApplication",
+      "@id": "https://layerbit.co.in/tools/color-converter.html#app",
+      "name": "Color Converter \u0026 WCAG Contrast Checker",
+      "url": "https://layerbit.co.in/tools/color-converter.html",
+      "description": "Convert HEX, RGB, HSL, HWB, LAB, LCH, OKLCH and CMYK colors, check WCAG and APCA contrast, fix failing colors, build palettes and simulate color blindness.",
+      "applicationCategory": "DeveloperApplication",
+      "operatingSystem": "Any (runs in the browser)",
+      "browserRequirements": "Requires JavaScript",
+      "isAccessibleForFree": true,
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "publisher": {
+        "@id": "https://layerbit.co.in/#organization"
+      },
+      "featureList": [
+        "Parses every CSS Color 4 notation: hex, rgb, hsl, hwb, lab, lch, oklab, oklch, cmyk and 148 named colors",
+        "CSS Color 4 gamut mapping for out-of-sRGB colors",
+        "Outputs HEX, RGB, HSL, HWB, OKLCH, OKLab, LCH, Lab, CMYK, integer, Android ARGB and SwiftUI",
+        "Nearest named color with perceptual distance",
+        "WCAG 2.2 contrast ratio with AA, AAA and non-text results",
+        "APCA lightness contrast (Lc) with usage guidance",
+        "One-click contrast fix that keeps hue and chroma",
+        "11-step OKLCH tint and shade scale with CSS, Tailwind, JSON and SCSS export",
+        "Complementary, analogous, triadic, split and tetradic harmonies",
+        "Protanopia, deuteranopia, tritanopia and achromatopsia simulation",
+        "Runs entirely in the browser"
+      ]
+    },
+    {
+      "@type": "BreadcrumbList",
+      "@id": "https://layerbit.co.in/tools/color-converter.html#breadcrumb",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://layerbit.co.in/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Tools",
+          "item": "https://layerbit.co.in/blog.html"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": "Color Converter",
+          "item": "https://layerbit.co.in/tools/color-converter.html"
+        }
+      ]
+    },
+    {
+      "@type": "FAQPage",
+      "@id": "https://layerbit.co.in/tools/color-converter.html#faq",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "How do I convert HEX to RGB?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Split the six hex digits into three pairs and convert each pair from base 16 to base 10: #38BDF8 becomes 38, BD and F8, which are 56, 189 and 248, so rgb(56 189 248). A three-digit hex like #0AF doubles each digit first, giving #00AAFF. An eight-digit hex adds an alpha pair, where 80 is about 50% opacity. Paste any of these into the color field above and every other format is computed instantly."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What contrast ratio do I need for accessible text?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "WCAG 2.2 level AA, the level most laws and policies reference, requires 4.5:1 for normal text and 3:1 for large text, meaning 24px regular or 18.66px bold and larger. Level AAA raises these to 7:1 and 4.5:1. User-interface components and meaningful graphics such as icons, input borders and focus indicators need 3:1 against adjacent colors. The checker above shows all five results at once for any pair."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What is OKLCH and why are designers switching to it?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "OKLCH is a color format built on the OKLab color space, published by Björn Ottosson in 2020. Its three values are perceived lightness, chroma and hue. Because lightness is perceptual, two colors with the same L look equally bright, so you can generate shade scales, hover states and dark themes by changing one number without hues drifting or yellows looking washed out. It is supported in CSS by every current browser and can express colors outside sRGB on wide-gamut displays."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Why does my color say it was out of gamut?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "OKLCH, LCH and Lab can describe colors more saturated than an sRGB screen can show, for example oklch(70% 0.35 150). When that happens the tool maps the color into sRGB the way CSS Color 4 specifies: it keeps the lightness and hue and reduces chroma until the color fits, rather than clipping each channel, which would shift the hue. The hex and rgb values shown are that mapped color; on a wide-gamut display the original may look more vivid in a browser."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Is APCA better than the WCAG contrast ratio?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "APCA predicts readability more accurately, especially for dark themes and mid-tone colors, and accounts for whether text is lighter or darker than its background. But WCAG 2.2's ratio is the standard referenced by accessibility laws today, so a design must still pass it. The practical approach is to meet the WCAG 2 thresholds for compliance and use APCA to catch pairs that technically pass but are uncomfortable to read."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Is anything I enter sent to a server?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "No. Parsing, conversion, contrast, palettes and color-vision simulation are all computed by JavaScript in this page, using published formulas from the CSS Color 4 specification, WCAG 2.2, APCA and the Machado 2009 model. There are no network requests, which you can confirm in your browser's developer tools, and the page keeps working offline once loaded."
+          }
+        }
+      ]
+    }
+  ]
+}
+  </script>

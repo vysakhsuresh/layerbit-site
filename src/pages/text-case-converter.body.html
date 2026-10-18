@@ -1,0 +1,237 @@
+{{HEADER}}
+
+  <main class="hero">
+    <div class="hero-badge"><i data-lucide="shield-check"></i> Runs entirely in your browser</div>
+    <h1>Text Case Converter &amp; Word Counter</h1>
+    <p>Convert text or identifiers between camelCase, snake_case, kebab-case, Title Case and a dozen other styles, count words, characters, sentences and reading time as you type, and clean up lists with one click: sort, dedupe, trim and unwrap.</p>
+  </main>
+
+  <div class="ide-container">
+    <div class="pane">
+      <div class="pane-header">
+        <div class="pane-title"><i data-lucide="type"></i> Text <span class="muted-count" id="detected"></span></div>
+        <div class="btn-group">
+          <button class="btn" type="button" id="btnSampleCode">Identifiers</button>
+          <button class="btn" type="button" id="btnSampleProse">Headline</button>
+          <button class="btn" type="button" id="btnClear" aria-label="Clear" title="Clear"><i data-lucide="trash-2"></i></button>
+        </div>
+      </div>
+      <textarea id="textInput" class="editor" spellcheck="true" placeholder="Paste text, a headline, or a list of variable names (one per line)…"></textarea>
+      <div class="stats-strip" id="statsStrip"></div>
+    </div>
+
+    <div class="pane">
+      <div class="pane-header">
+        <div class="pane-title"><i data-lucide="case-sensitive"></i> Convert to</div>
+        <div class="btn-group">
+          <button class="btn" type="button" id="btnApply" data-lb-primary title="Replace the text on the left with the selected style"><i data-lucide="arrow-left"></i> Apply to text</button>
+        </div>
+      </div>
+      <div class="pane-body">
+        <div class="case-list" id="caseList" role="listbox" aria-label="Case styles"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="ide-container">
+    <div class="pane">
+      <div class="pane-header">
+        <div class="pane-title"><i data-lucide="bar-chart-3"></i> Counts &amp; readability</div>
+        <div class="btn-group">
+          <label class="check" title="Average adult silent reading speed is about 238 words per minute">Reading speed <input type="number" id="wpm" class="text-input num tiny" min="80" max="600" value="238"> wpm</label>
+        </div>
+      </div>
+      <div class="pane-body">
+        <div class="tiles" id="tiles"></div>
+        <dl class="kv-grid" id="moreStats"></dl>
+      </div>
+    </div>
+    <div class="pane">
+      <div class="pane-header">
+        <div class="pane-title"><i data-lucide="list-checks"></i> Keywords &amp; line tools</div>
+      </div>
+      <div class="pane-body">
+        <div class="field">
+          <label><i data-lucide="wand"></i> Clean up the text (applies to the input)</label>
+          <div class="btn-group wrap">
+            <button class="btn" type="button" data-line="trim">Trim lines</button>
+            <button class="btn" type="button" data-line="dropBlank">Remove blank lines</button>
+            <button class="btn" type="button" data-line="dedupe">Remove duplicates</button>
+            <button class="btn" type="button" data-line="sortAsc">Sort A→Z</button>
+            <button class="btn" type="button" data-line="sortDesc">Sort Z→A</button>
+            <button class="btn" type="button" data-line="reverse">Reverse order</button>
+            <button class="btn" type="button" data-line="squeeze">Collapse spaces</button>
+            <button class="btn" type="button" data-line="unwrap">Join wrapped lines</button>
+            <button class="btn" type="button" id="btnUndo" disabled><i data-lucide="undo-2"></i> Undo</button>
+          </div>
+        </div>
+        <div class="field">
+          <label><i data-lucide="key"></i> Top keywords (stop words excluded)</label>
+          <table class="data-table" id="kwTable"><thead><tr><th>Word</th><th>Count</th><th>Density</th></tr></thead><tbody></tbody></table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="docs-container">
+    <div class="info-panel">
+      <h2><i data-lucide="book-open"></i> Naming conventions and where they are used</h2>
+      <p>Programming languages and file formats each have a preferred way of joining words into a single identifier. Following the convention of the ecosystem you are in makes code easier to read and avoids linter warnings, and converting between them is a constant chore when data crosses a boundary: a JSON API in camelCase feeding a Python service in snake_case, or a database column becoming a CSS class.</p>
+      <table>
+        <thead><tr><th>Style</th><th>Example</th><th>Conventional for</th></tr></thead>
+        <tbody>
+          <tr><td>camelCase</td><td><code>userAccountId</code></td><td>JavaScript and Java variables and functions, JSON keys from JS APIs</td></tr>
+          <tr><td>PascalCase</td><td><code>UserAccountId</code></td><td>Classes and types in most languages, C# methods and properties, React components</td></tr>
+          <tr><td>snake_case</td><td><code>user_account_id</code></td><td>Python, Ruby and Rust variables, PostgreSQL columns</td></tr>
+          <tr><td>CONSTANT_CASE</td><td><code>USER_ACCOUNT_ID</code></td><td>Constants and environment variables everywhere</td></tr>
+          <tr><td>kebab-case</td><td><code>user-account-id</code></td><td>URLs, CSS classes, HTML attributes, CLI flags, npm package names</td></tr>
+          <tr><td>Train-Case</td><td><code>User-Account-Id</code></td><td>HTTP header names such as Content-Type</td></tr>
+          <tr><td>dot.case</td><td><code>user.account.id</code></td><td>Configuration keys (Java properties, Spring), log field names</td></tr>
+        </tbody>
+      </table>
+      <p>The converter splits input into words before joining them in the target style, and it understands the boundaries inside identifiers: <code>XMLHttpRequest</code> becomes <em>XML · Http · Request</em>, <code>getUserID2FA</code> becomes <em>get · User · ID · 2 · FA</em>, and underscores, hyphens, dots and spaces all count as separators. That is what lets it turn <code>XMLHttpRequest</code> into <code>xml_http_request</code> rather than <code>x_m_l_http_request</code>. Each line is converted separately, so a pasted column of field names converts as a column.</p>
+
+      <h2><i data-lucide="heading"></i> Title case rules</h2>
+      <p>Title case is not simply capitalising every word. The major style guides, including AP and Chicago, keep short articles, conjunctions and prepositions lowercase unless they are the first or last word or follow a colon: "The Lord of the Rings: The Return of the King". This converter applies those rules, keeps acronyms such as NASA and API in capitals, and leaves words with deliberate inner capitals such as iPhone or McDonald untouched. Style guides differ on prepositions of four or more letters (Chicago lowercases "with", AP capitalises it), so check your house style for headlines that will be published. Sentence case, which capitalises only the first word and proper nouns, is the default for most UI text and is increasingly preferred for headings because it is easier to read.</p>
+
+      <h2><i data-lucide="link"></i> URL slugs</h2>
+      <p>The url-slug style produces lowercase words joined by hyphens with accents removed, the form search engines and humans read most easily in an address: "Crème Brûlée: A Beginner's Guide" becomes <code>creme-brulee-a-beginners-guide</code>. Accented letters are decomposed and their marks dropped, German ß becomes ss, and apostrophes disappear rather than splitting a word. Keep slugs short and stable; changing one later breaks every link to the old address unless you add a redirect.</p>
+
+      <h2><i data-lucide="bar-chart-3"></i> How the counts are calculated</h2>
+      <p>Character counts use grapheme clusters, what a reader perceives as one character, through the browser's Intl.Segmenter, so an emoji with a skin-tone modifier or a family emoji counts as one character, not four or eleven. The separate code-unit figure is what JavaScript's <code>.length</code> reports and what many databases and SMS limits count, and the byte figure is the UTF-8 size. Words are segmented with the same Unicode rules, which also handles languages written without spaces. Reading time uses 238 words per minute, the average for adult silent reading of non-fiction found in a 2019 meta-analysis by Brysbaert; speaking time uses 150 words per minute, a typical presentation pace. The Flesch reading-ease score is shown for English text; scores from 60 to 70 read as plain English, and higher is easier.</p>
+    </div>
+
+    <div class="info-panel">
+      <h2><i data-lucide="help-circle"></i> Frequently asked questions</h2>
+      <div class="faq-container">
+        <div class="faq-item">
+          <button class="faq-question">How do I convert camelCase to snake_case? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>Paste the identifiers into the text box, one per line, and copy the snake_case row from the list on the right, or select it and press Apply to text. The converter splits camelCase at each lower-to-upper transition and keeps runs of capitals together, so parseHTTPResponse becomes parse_http_response. It works the same way for PascalCase, kebab-case, dot.case and CONSTANT_CASE input.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">Which words stay lowercase in title case? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>Articles (a, an, the), coordinating conjunctions (and, but, or, nor, for, so, yet) and short prepositions (at, by, in, of, on, to, up, via, with and similar) stay lowercase unless they are the first word, the last word, or follow a colon. Everything else is capitalised. Acronyms written in capitals and words with internal capitals, such as iOS or YouTube, are left as typed.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">Why is the character count different from other tools? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>Tools count different things. This one reports visible characters (grapheme clusters), so an emoji is one character, alongside the UTF-16 code units that JavaScript's length property and many form limits count, and the UTF-8 bytes a file or database column stores. A single flag emoji is 1 character, 4 code units and 8 bytes. If a limit is enforced by a system, check which of these it uses; Twitter/X, for example, uses its own weighted count.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">How is reading time calculated? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>The word count divided by a reading speed of 238 words per minute, the average for adults reading non-fiction silently according to a 2019 review of 190 studies. You can change the speed in the counts panel; technical material is often read at 150 to 200 words per minute. Speaking time uses 150 words per minute, a comfortable pace for a talk or a voice-over.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">Can it remove duplicate lines and sort a list? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>Yes. The line tools remove duplicate lines (keeping the first occurrence and the original order), remove blank lines, trim spaces, sort A to Z or Z to A, reverse the order, collapse repeated spaces, and join hard-wrapped lines back into paragraphs. Sorting is natural and case-insensitive, so item2 sorts before item10. Each tool changes the input text, and Undo restores the previous version.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">Is my text uploaded anywhere? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>No. Conversion, counting and keyword analysis run in JavaScript in this page using your browser's built-in Unicode support. Nothing is sent to a server, which you can confirm in the Network tab of your browser's developer tools, and the page works offline once loaded.</p></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="info-panel related-panel">
+      <h2><i data-lucide="link"></i> Related guides and tools</h2>
+      <p>Other text tools that run entirely in your browser.</p>
+      <div class="use-cases-grid">
+        <div class="use-case-card">
+          <h3><i data-lucide="wrench"></i> <a href="unicode-inspector.html">Unicode &amp; Invisible Character Inspector</a></h3>
+          <p>Find zero-width spaces and lookalikes hiding in text.</p>
+        </div>
+        <div class="use-case-card">
+          <h3><i data-lucide="wrench"></i> <a href="text-diff-checker.html">Text Diff Checker &amp; Merge Tool</a></h3>
+          <p>Compare two versions of a document line by line.</p>
+        </div>
+        <div class="use-case-card">
+          <h3><i data-lucide="wrench"></i> <a href="markdown-preview.html">Markdown Editor &amp; Preview</a></h3>
+          <p>Write formatted text and export clean HTML.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="info-panel">
+      <h2><i data-lucide="git-commit"></i> Changelog</h2>
+      <ul class="changelog-list">
+        <li><span class="changelog-tag">v1.0.0</span> Initial release: 17 case styles with identifier-aware word splitting and per-line conversion, AP/Chicago title case, accent-folding slugs, naming-convention detection, grapheme-accurate counts, reading and speaking time, Flesch reading ease, keyword density, and eight line clean-up tools with undo.</li>
+      </ul>
+    </div>
+  </div>
+
+  <a id="smartBackBtn" class="fab home-fab-premium" aria-label="Command Center" title="Command Center" href="../">
+    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="filter: drop-shadow(0 0 8px rgba(56, 189, 248, 0.5));">
+      <path d="M12 2L2 7l10 5 10-5-10-5z" stroke="#38bdf8" stroke-width="2" stroke-linejoin="round" fill="rgba(56,189,248,0.2)"/>
+      <path d="M2 17l10 5 10-5M2 12l10 5 10-5" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </a>
+
+  {{FOOTER}}
+
+  <script src="../js/shared.js"></script>
+  <script src="../js/engines/textcase.js"></script>
+  <script>
+    const $ = id => document.getElementById(id);
+    const T = window.LBText;
+    const icons = () => { if (window.lucide) lucide.createIcons(); };
+    const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+    const ORDER = ['camel', 'pascal', 'snake', 'constant', 'kebab', 'train', 'cobol', 'dot', 'path', 'space', 'title', 'sentence', 'upper', 'lower', 'slug', 'inverse', 'alternating'];
+    let selected = 'camel', undoStack = [];
+    const DETECT_NAMES = { camel: 'camelCase', pascal: 'PascalCase', snake: 'snake_case', constant: 'CONSTANT_CASE', kebab: 'kebab-case', cobol: 'COBOL-CASE', train: 'Train-Case', dot: 'dot.case', lower: 'lowercase', upper: 'UPPERCASE', text: 'prose' };
+
+    function preview(s) { s = s.length > 4000 ? s.slice(0, 4000) : s; return s; }
+    function renderCases() {
+      const text = $('textInput').value, sample = preview(text) || 'Parse HTTP response body';
+      $('caseList').innerHTML = ORDER.map(k => {
+        let out; try { out = T.convert(sample, k); } catch (e) { out = ''; }
+        const firstLines = out.split('\n').slice(0, 3).join('\n') + (out.split('\n').length > 3 ? '\n…' : '');
+        return `<div class="case-row${k === selected ? ' sel' : ''}" data-case="${k}" role="option" aria-selected="${k === selected}" tabindex="0">` +
+          `<span class="case-label">${esc(T.labels[k])}</span><code class="case-out${text ? '' : ' ghost'}">${esc(firstLines)}</code>` +
+          `<button class="copy-btn" type="button" data-copy-case="${k}" title="Copy ${esc(T.labels[k])}" ${text ? '' : 'disabled'}><i data-lucide="copy"></i></button></div>`;
+      }).join('');
+      const first = text.trim().split('\n')[0] || '';
+      const d = first ? T.detect(first.trim()) : '';
+      $('detected').textContent = d && DETECT_NAMES[d] ? `· looks like ${DETECT_NAMES[d]}` : '';
+      icons();
+    }
+    function fmtDur(s) { if (s < 60) return s + ' s'; const m = Math.floor(s / 60), r = s % 60; return m + ' min' + (r ? ' ' + r + ' s' : ''); }
+    function renderStats() {
+      const text = $('textInput').value, st = T.stats(text, { wpm: Math.max(80, Math.min(600, +$('wpm').value || 238)) });
+      $('statsStrip').innerHTML = `<span><strong>${st.words.toLocaleString()}</strong> words</span><span><strong>${st.characters.toLocaleString()}</strong> characters</span><span><strong>${st.lines.toLocaleString()}</strong> lines</span><span><strong>${fmtDur(st.readingSeconds)}</strong> read</span>`;
+      const tiles = [['Words', st.words], ['Characters', st.characters], ['Without spaces', st.charactersNoSpaces], ['Sentences', st.sentences], ['Paragraphs', st.paragraphs], ['Reading time', fmtDur(st.readingSeconds)]];
+      $('tiles').innerHTML = tiles.map(([k, v]) => `<div class="tile"><span>${typeof v === 'number' ? v.toLocaleString() : v}</span><small>${k}</small></div>`).join('');
+      const fre = st.fleschReadingEase;
+      const freLabel = fre == null ? '–' : `${fre} <span class="tag">${fre >= 80 ? 'very easy' : fre >= 70 ? 'easy' : fre >= 60 ? 'plain English' : fre >= 50 ? 'fairly difficult' : fre >= 30 ? 'difficult' : 'very difficult'}</span>`;
+      $('moreStats').innerHTML = [
+        ['Speaking time', fmtDur(st.speakingSeconds) + ' <span class="muted">at 150 wpm</span>'], ['Unique words', st.uniqueWords.toLocaleString()],
+        ['Lines (blank)', `${st.lines.toLocaleString()} (${st.blankLines.toLocaleString()})`], ['Average word', st.avgWordLength.toFixed(1) + ' letters'],
+        ['Average sentence', st.avgSentenceWords.toFixed(1) + ' words'], ['Longest word', esc(st.longestWord || '–')],
+        ['UTF-16 code units', st.codeUnits.toLocaleString() + ' <span class="muted">JavaScript .length</span>'], ['UTF-8 size', st.bytes.toLocaleString() + ' bytes'],
+        ['Flesch reading ease', freLabel]
+      ].map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join('');
+      $('kwTable').querySelector('tbody').innerHTML = st.keywords.length ? st.keywords.map(k => `<tr><td>${esc(k.word)}</td><td>${k.count}</td><td>${k.pct.toFixed(1)}%</td></tr>`).join('') : '<tr><td colspan="3" class="muted">Keywords appear here once there is some text.</td></tr>';
+    }
+    let timer = null;
+    function update() { clearTimeout(timer); timer = setTimeout(() => { renderCases(); renderStats(); }, $('textInput').value.length > 200000 ? 250 : 40); }
+    $('textInput').addEventListener('input', update);
+    $('wpm').addEventListener('input', renderStats);
+
+    function select(k) { selected = k; document.querySelectorAll('.case-row').forEach(r => { const on = r.dataset.case === k; r.classList.toggle('sel', on); r.setAttribute('aria-selected', on); }); }
+    $('caseList').addEventListener('click', e => {
+      const c = e.target.closest('[data-copy-case]');
+      if (c) { e.stopPropagation(); const out = T.convert($('textInput').value, c.dataset.copyCase); Layerbit.copy(out).then(() => Layerbit.toast('Copied as ' + T.labels[c.dataset.copyCase])); return; }
+      const r = e.target.closest('.case-row'); if (r) select(r.dataset.case);
+    });
+    $('caseList').addEventListener('keydown', e => { const r = e.target.closest('.case-row'); if (!r) return; if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); select(r.dataset.case); } });
+    function setText(v) { undoStack.push($('textInput').value); if (undoStack.length > 50) undoStack.shift(); $('btnUndo').disabled = false; $('textInput').value = v; update(); }
+    $('btnApply').addEventListener('click', () => { if (!$('textInput').value) { Layerbit.toast('Type or paste some text first.', 'warn'); return; } setText(T.convert($('textInput').value, selected)); Layerbit.toast('Converted to ' + T.labels[selected]); });
+    document.querySelectorAll('[data-line]').forEach(b => b.addEventListener('click', () => { if (!$('textInput').value) { Layerbit.toast('Type or paste some text first.', 'warn'); return; } const before = $('textInput').value, after = T.lineOp(before, b.dataset.line); if (after === before) { Layerbit.toast('Nothing to change.'); return; } setText(after); }));
+    $('btnUndo').addEventListener('click', () => { if (!undoStack.length) return; $('textInput').value = undoStack.pop(); $('btnUndo').disabled = !undoStack.length; update(); });
+    $('btnClear').addEventListener('click', () => { if ($('textInput').value) setText(''); });
+    $('btnSampleCode').addEventListener('click', () => setText('userAccountId\nXMLHttpRequest\nparse_http_response\nmax-retry-count\nAPI_BASE_URL\nisEmailVerified'));
+    $('btnSampleProse').addEventListener('click', () => setText('the complete guide to building an API with node.js and postgres: what nobody tells you about scaling'));
+
+    function getState() { const t = $('textInput').value; return t.length < 20000 ? { input: t, sel: selected } : { sel: selected }; }
+    function setState(s) { if (!s) return; if (typeof s.input === 'string') $('textInput').value = s.input; if (s.sel && T.labels[s.sel]) selected = s.sel; update(); }
+    if (window.Layerbit) Layerbit.register({ slug: 'text-case-converter', getState, setState, run: () => $('btnApply').click(), input: t => { $('textInput').value = t; update(); } });
+    renderCases(); renderStats();
+  </script>

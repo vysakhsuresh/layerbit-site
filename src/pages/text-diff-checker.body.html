@@ -361,6 +361,10 @@
         <div class="use-case-card">
           <h3><i data-lucide="wrench"></i> <a href="csv-to-json.html">CSV to JSON Converter</a></h3>
           <p>Turn a spreadsheet export into structured data.</p>
+        <div class="use-case-card">
+          <h3><i data-lucide="wrench"></i> <a href="text-case-converter.html">Text Case Converter &amp; Word Counter</a></h3>
+          <p>Normalize case and whitespace before comparing.</p>
+        </div>
         </div>
       </div>
     </div>
@@ -473,7 +477,7 @@
       const s = document.createElement('script'); s.src = '../js/vendor/xlsx.full.min.js'; s.onload = go; s.onerror = () => showError('Could not load the spreadsheet reader.'); document.head.appendChild(s);
     }
 
-    function swapInputs() { const t = $('text1').value; $('text1').value = $('text2').value; $('text2').value = t; const n = names.a; names.a = names.b; names.b = n; updateMeta(); if ($('outputSection').style.display !== 'none') run(); }
+    function swapInputs() { const t = $('text1').value; $('text1').value = $('text2').value; $('text2').value = t; const n = names.a; names.a = names.b; names.b = n; updateMeta(); if ($('outputSection').style.display !== 'none') run(true); }
     function clearInputs() {
       ['text1', 'text2', 'baseText', 'oursText', 'theirsText', 'patchOriginal', 'patchText', 'mergedText'].forEach(id => $(id).value = '');
       names = { a: 'original', b: 'modified' }; zips = { a: null, b: null };
@@ -492,7 +496,7 @@
     }
 
     // ------------------------------------------------------------ run
-    function run() {
+    function run(quiet) {
       clearError();
       try {
         if (mode === 'text') runText($('text1').value, $('text2').value, names.a, names.b);
@@ -502,8 +506,28 @@
         else if (mode === 'patch') runPatch();
         else if (mode === 'zip') runZip();
       } catch (e) { showError(e.message || String(e)); }
-      $('outputSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      if (quiet !== true) $('outputSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
+    // Options and edits apply immediately once a comparison is on screen: the
+    // normalisation switches, highlight granularity and the structure/table
+    // matching rules all change the diff itself, so they re-run it in place
+    // (no scroll jump). Pasting or typing into the inputs refreshes it too.
+    function hasResult() { return $('outputSection').style.display !== 'none' && $('outputSection').style.display !== ''; }
+    let liveTimer = null;
+    function rerunSoon(delay) {
+      clearTimeout(liveTimer);
+      liveTimer = setTimeout(() => { if (hasResult() && mode !== 'zip') run(true); }, delay || 0);
+    }
+    ['ignoreWhitespace', 'ignoreCase', 'trimTrailing', 'ignoreBlank', 'granularity', 'arrMode', 'keyCol']
+      .forEach(id => $(id).addEventListener('change', () => rerunSoon(0)));
+    $('keyField').addEventListener('input', () => rerunSoon(350));
+    ['text1', 'text2', 'baseText', 'oursText', 'theirsText', 'patchOriginal', 'patchText'].forEach(id => $(id).addEventListener('input', () => {
+      const size = $('text1').value.length + $('text2').value.length;
+      if (size < 1500000) rerunSoon(450);
+    }));
+    // Side-by-side columns stack on a phone, which separates each change from
+    // its counterpart; start in unified view there unless the visitor picks.
+    if (window.matchMedia && window.matchMedia('(max-width: 760px)').matches && !location.hash) $('viewMode').value = 'unified';
 
     // ---- text
     function runText(a, b, nameA, nameB, title) {

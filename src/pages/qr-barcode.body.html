@@ -2,7 +2,7 @@
 
   <main class="hero">
     <div class="osint-badge"><i data-lucide="shield-check"></i> Runs entirely in your browser</div>
-    <h1>QR &amp; Barcode Generator</h1>
+    <h1>QR Code &amp; Barcode Generator</h1>
     <p>Generate print-ready QR codes and linear barcodes, with structural checks on the URL you are encoding.</p>
   </main>
 
@@ -80,7 +80,7 @@
         <div class="payload-meta" id="contrastMeta"></div>
       </div>
 
-      <button class="btn-generate" onclick="generateCode()">
+      <button class="btn-generate" data-lb-primary onclick="generateCode()">
         <i data-lucide="zap"></i> Generate Code
       </button>
     </div>
@@ -188,6 +188,10 @@
           <div class="use-case-card">
             <h3><i data-lucide="wrench"></i> <a href="url-encoder.html">URL Encoder / Decoder</a></h3>
             <p>Another local tool that pairs with this one. Runs entirely in your browser.</p>
+          <div class="use-case-card">
+            <h3><i data-lucide="wrench"></i> <a href="color-converter.html">Color Converter &amp; Contrast Checker</a></h3>
+            <p>Pick colors that keep enough contrast to scan and read.</p>
+          </div>
           </div>
         </div>
       </div>
@@ -320,6 +324,7 @@
       payloadFields.querySelectorAll('[data-pf]').forEach(el => { f[el.dataset.pf] = el.type === 'checkbox' ? el.checked : el.value; });
       dataInput.value = def.compose(f);
       updateMeta();
+      if (typeof regenerateSoon === 'function') regenerateSoon(250);
     }
 
     // ---- live readouts --------------------------------------------------
@@ -366,6 +371,13 @@
     ecSelect.addEventListener('change', updateMeta);
     dataInput.addEventListener('input', updateMeta);
     ['colorDark', 'colorLight'].forEach(id => document.getElementById(id).addEventListener('input', updateContrast));
+    // Every option applies immediately once there is data: size, error
+    // correction, colours, symbology and the payload itself redraw the code.
+    var regenTimer = null;
+    function regenerateSoon(ms) { clearTimeout(regenTimer); regenTimer = setTimeout(() => { if (dataInput.value.trim()) generateCode(); }, ms); }
+    [sizeSelect, ecSelect, typeSelect].forEach(el => el.addEventListener('change', () => regenerateSoon(0)));
+    ['colorDark', 'colorLight'].forEach(id => document.getElementById(id).addEventListener('input', () => regenerateSoon(120)));
+    dataInput.addEventListener('input', () => regenerateSoon(250));
     renderPayloadFields();
     syncControls();
 

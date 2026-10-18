@@ -20,6 +20,22 @@ t('lineDiff ins/del unequal counts', () => {
   const r = D.lineDiff('a\nb\n', 'a\nx\ny\nz\n');
   assert.deepStrictEqual(r.rows.map(x => x.type), ['eq', 'mod', 'ins', 'ins']);
 });
+t('lineDiff pairs replaced lines by similarity, not slot', () => {
+  const a = 'x();\nmodule.exports = { calculateTotal };\n';
+  const b = 'x();\nfunction round2(n) { return Math.round(n * 100) / 100; }\n\nmodule.exports = { calculateTotal, round2 };\n';
+  const r = D.lineDiff(a, b);
+  assert.deepStrictEqual(r.rows.map(x => x.type), ['eq', 'ins', 'ins', 'mod']);
+  assert.strictEqual(r.rows[3].l.text, 'module.exports = { calculateTotal };');
+});
+t('lineDiff rewritten-in-place line still pairs', () => {
+  const r = D.lineDiff('  let total = price + tax;\n', '  const finalTotal = basePrice;\n');
+  assert.deepStrictEqual(r.rows.map(x => x.type), ['mod']);
+});
+t('lineDiff ignore options change the result', () => {
+  const a = 'Hello  World\n', b = 'hello world\n';
+  assert.strictEqual(D.lineDiff(a, b).hunks.length, 1);
+  assert.strictEqual(D.lineDiff(a, b, { ignoreCase: true, ignoreWhitespace: true }).hunks.length, 0);
+});
 t('intraline char', () => {
   const s = D.intraline('getUserId()', 'getUserID()', 'char');
   assert.deepStrictEqual(s.b.filter(x => x.c === 'ins').map(x => x.t), ['D']);
