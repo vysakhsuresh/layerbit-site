@@ -40,7 +40,7 @@ def main(slug, m):
          "mainEntityOfPage": {"@type": "WebPage", "@id": url}, "datePublished": date, "dateModified": date, "inLanguage": "en",
          "wordCount": words, "keywords": ", ".join(m["keywords"]), "articleSection": m["section"],
          "author": {"@type": "Organization", "name": "Layerbit Technologies", "url": "https://layerbit.co.in/about.html"}, "publisher": org,
-         "image": {"@type": "ImageObject", "url": "https://layerbit.co.in/og-image.png", "width": 1200, "height": 630},
+         "image": {"@type": "ImageObject", "url": f"https://layerbit.co.in/images/og/guides-{slug}.jpg", "width": 1200, "height": 630},
          "isAccessibleForFree": True, "proficiencyLevel": m["level"]},
         {"@type": "BreadcrumbList", "@id": url + "#breadcrumb", "itemListElement": [
             {"@type": "ListItem", "position": 1, "name": "Home", "item": "https://layerbit.co.in/"},

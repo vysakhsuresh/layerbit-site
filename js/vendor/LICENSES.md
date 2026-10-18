@@ -6,7 +6,7 @@ offline, and sends no visitor IP to a CDN operator).
 
 | File | Package | Version | License |
 |---|---|---|---|
-| `lucide.min.js` | lucide | 1.39.0 | ISC |
+| `lucide.min.js` | lucide (subset of the icons the site uses, built by `scripts/build_lucide_subset.py`) | 1.39.0 | ISC |
 | `diff.min.js` | diff (jsdiff) | 5.1.0 | BSD-3-Clause |
 | `js-yaml.min.js` | js-yaml | 4.1.0 | MIT |
 | `sql-formatter.min.js` | sql-formatter | 15.6.2 | MIT |

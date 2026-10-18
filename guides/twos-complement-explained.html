@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="How computers store negative integers: two's complement from first principles, invert-and-add-one, ranges, sign extension and the overflow bugs it causes." />
+  <title>Two's Complement Explained: Negative Numbers in Binary</title>
+  <meta name="google-adsense-account" content="ca-pub-6072772587431629" />
+  <link rel="preload" href="../fonts/space-grotesk-latin.woff2" as="font" type="font/woff2" crossorigin />
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('consent', 'default', {ad_storage: 'denied', ad_user_data: 'denied', ad_personalization: 'denied', analytics_storage: 'denied', wait_for_update: 500, region: ["AT", "BE", "BG", "HR", "CY", "CZ", "DK", "EE", "FI", "FR", "DE", "GR", "HU", "IE", "IT", "LV", "LT", "LU", "MT", "NL", "PL", "PT", "RO", "SK", "SI", "ES", "SE", "IS", "LI", "NO", "GB", "CH"]});
+    gtag('consent', 'default', {ad_storage: 'granted', ad_user_data: 'granted', ad_personalization: 'granted', analytics_storage: 'granted'});
+    try { var lbc = localStorage.getItem('layerbit-cookie-consent'); if (!lbc && navigator.globalPrivacyControl === true) lbc = 'rejected'; if (lbc === 'accepted' || lbc === 'rejected') { var v = lbc === 'accepted' ? 'granted' : 'denied'; gtag('consent', 'update', {ad_storage: v, ad_user_data: v, ad_personalization: v, analytics_storage: v}); } } catch (e) {}
+  </script>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-ERX8MNPPP5"></script>
+  <script>
+    gtag('js', new Date());
+    gtag('config', 'G-ERX8MNPPP5');
+  </script>
+  <link rel="canonical" href="https://layerbit.co.in/guides/twos-complement-explained.html" />
+  <meta name="robots" content="max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+  <meta property="og:type" content="article" />
+  <meta property="article:published_time" content="2026-10-18" />
+  <meta property="article:modified_time" content="2026-10-18" />
+  <meta property="article:author" content="https://layerbit.co.in/about.html" />
+  <meta property="og:url" content="https://layerbit.co.in/guides/twos-complement-explained.html" />
+  <meta property="og:site_name" content="Layerbit" />
+  <meta property="og:title" content="Two's Complement Explained: Negative Numbers in Binary" />
+  <meta property="og:description" content="How computers store negative integers: two's complement from first principles, invert-and-add-one, ranges, sign extension and the overflow bugs it causes." />
+  <meta property="og:image" content="https://layerbit.co.in/images/og/guides-twos-complement-explained.jpg" />
+  <meta property="og:image:type" content="image/jpeg" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="Two's Complement Explained: Negative Numbers in Binary" />
+  <meta property="og:locale" content="en" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Two's Complement Explained: Negative Numbers in Binary" />
+  <meta name="twitter:description" content="How computers store negative integers: two's complement from first principles, invert-and-add-one, ranges, sign extension and the overflow bugs it causes." />
+  <meta name="twitter:image" content="https://layerbit.co.in/images/og/guides-twos-complement-explained.jpg" />
+  <meta name="twitter:image:alt" content="Two's Complement Explained: Negative Numbers in Binary" />
+  <meta name="theme-color" content="#0a0c10" />
+  <script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "TechArticle",
+      "@id": "https://layerbit.co.in/guides/twos-complement-explained.html#article",
+      "headline": "Two's Complement Explained: How Computers Store Negative Numbers",
+      "name": "Two's Complement Explained: How Computers Store Negative Numbers",
+      "description": "How computers store negative integers: two's complement from first principles, invert-and-add-one, ranges, sign extension and the overflow bugs it causes.",
+      "url": "https://layerbit.co.in/guides/twos-complement-explained.html",
+      "mainEntityOfPage": {
+        "@type": "WebPage",
+        "@id": "https://layerbit.co.in/guides/twos-complement-explained.html"
+      },
+      "datePublished": "2026-10-18",
+      "dateModified": "2026-10-18",
+      "inLanguage": "en",
+      "wordCount": 1617,
+      "keywords": "twos complement, negative binary numbers, signed integer, integer overflow, sign extension",
+      "articleSection": "Computer Science",
+      "author": {
+        "@type": "Organization",
+        "name": "Layerbit Technologies",
+        "url": "https://layerbit.co.in/about.html"
+      },
+      "publisher": {
+        "@type": "Organization",
+        "name": "Layerbit Technologies",
+        "url": "https://layerbit.co.in/",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://layerbit.co.in/icon-512.png",
+          "width": 512,
+          "height": 512
+        }
+      },
+      "image": {
+        "@type": "ImageObject",
+        "url": "https://layerbit.co.in/images/og/guides-twos-complement-explained.jpg",
+        "width": 1200,
+        "height": 630
+      },
+      "isAccessibleForFree": true,
+      "proficiencyLevel": "Beginner"
+    },
+    {
+      "@type": "BreadcrumbList",
+      "@id": "https://layerbit.co.in/guides/twos-complement-explained.html#breadcrumb",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://layerbit.co.in/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Guides",
+          "item": "https://layerbit.co.in/blog.html"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": "Two's complement",
+          "item": "https://layerbit.co.in/guides/twos-complement-explained.html"
+        }
+      ]
+    },
+    {
+      "@type": "FAQPage",
+      "@id": "https://layerbit.co.in/guides/twos-complement-explained.html#faq",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "How do you calculate two's complement?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Write the positive number in binary at the chosen width, invert every bit, then add one. For −12 in 8 bits: 12 is 00001100, inverted it is 11110011, and adding one gives 11110100, which is 0xF4. Equivalently, subtract the magnitude from 2 to the power of the width: 256 − 12 = 244, which is 11110100 in binary."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Why do computers use two's complement?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Because it has a single representation of zero and lets the same adder circuit handle signed and unsigned numbers. Addition, subtraction and multiplication of the low bits work identically for both, so processors need no separate signed arithmetic for those operations. Sign-and-magnitude and ones' complement both have a negative zero and need extra logic to add numbers of different signs."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Why is the range of a signed byte −128 to 127, not −127 to 127?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Eight bits have 256 patterns. Zero takes one of the patterns with the top bit clear, leaving 127 positive values, and all 128 patterns with the top bit set are negative, from −128 to −1. The extra negative value is the price of having a single zero; it is also why negating the most negative number overflows back to itself."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What is the difference between signed and unsigned integers?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "They are two interpretations of the same bits. Unsigned treats every bit as a positive power of two, so 8 bits hold 0 to 255. Signed two's complement gives the top bit a negative weight, so 8 bits hold −128 to 127. The bit pattern 11001000 is 200 unsigned and −56 signed. Choose unsigned for sizes, counts and raw bytes, and signed for quantities that can go below zero."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How do I convert a negative number to hexadecimal?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Hexadecimal of a negative number depends on the width. Take the two's-complement bits at that width and group them in fours: −5 is FB in 8 bits, FFFB in 16 bits and FFFFFFFB in 32 bits. In JavaScript, (−5 \u003e\u003e\u003e 0).toString(16) gives the 32-bit form, fffffffb. The number base converter shows every width at once."
+          }
+        }
+      ]
+    }
+  ]
+}
+  </script>
+
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6072772587431629" crossorigin="anonymous"></script>
+
+  <script src="../js/vendor/lucide.min.js" async></script>
+
+  <link rel="icon" href="../favicon.ico" sizes="16x16 32x32 48x48" />
+  <link rel="icon" href="../favicon-48.png" type="image/png" sizes="48x48" />
+  <link rel="icon" href="../icon-192.png" type="image/png" sizes="192x192" />
+  <link rel="manifest" href="../manifest.json" />
+  <link rel="alternate" type="application/atom+xml" title="Layerbit developer guides" href="https://layerbit.co.in/feed.xml" />
+  <link rel="apple-touch-icon" href="../apple-touch-icon.png" />
+  <link rel="stylesheet" href="../css/base.css" />
+  <link rel="stylesheet" href="../css/article.css" />
+
+  <style>
+
+    /* Long-form guide styling lives in css/article.css, linked from this page's head. */
+  
+  </style>
+</head>
+<body>
+  <header>
+    <a href="../" class="brand">
+      <svg width="36" height="36" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <polygon points="32,20 54,28 32,36 10,28" stroke="#f8fafc" stroke-width="4" stroke-linejoin="round"/>
+        <polyline points="10,38 32,46 54,38" stroke="#f8fafc" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+        <polyline points="10,48 32,56 54,48" stroke="#f8fafc" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+        <rect x="50" y="10" width="10" height="10" rx="2" fill="#00f2fe" />
+      </svg>
+      Layerbit
+    </a>
+  </header>
+
+  <nav class="crumbs" aria-label="Breadcrumb">
+    <a href="../">Home</a>
+    <span class="sep">/</span>
+    <a href="../blog.html">Guides</a>
+    <span class="sep">/</span>
+    <span aria-current="page">Two's complement</span>
+  </nav>
+
+  <main id="main">
+  <article class="article">
+    <header class="article-head">
+      <span class="article-kicker">Computer Science</span>
+      <h1>Two's Complement Explained: How Computers Store Negative Numbers</h1>
+      <p class="article-standfirst">Every mainstream processor stores signed integers the same way, and almost every overflow bug, unexpected <code>-56</code> and broken byte parser comes from forgetting how. Two's complement is a few lines of arithmetic once you see why it works. This guide builds it from first principles, then walks through the bugs it causes in real code, from Java bytes to JavaScript bit operators to the year 2038.</p>
+      <div class="article-meta">
+        <span class="byline">Layerbit Engineering</span>
+        <span><i data-lucide="calendar"></i>Published 18 October 2026</span>
+        <span><i data-lucide="clock"></i>9 min read</span>
+      </div>
+    </header>
+
+    <div class="takeaways">
+      <h2><i data-lucide="list-checks"></i> The short version</h2>
+      <ul>
+        <li>In an <em>n</em>-bit two's-complement number, the top bit is worth <strong>−2<sup>n−1</sup></strong> instead of +2<sup>n−1</sup>. Every other bit keeps its usual positive weight.</li>
+        <li>To negate a number: invert every bit and add one. <code>5</code> is <code>00000101</code>, so <code>−5</code> is <code>11111011</code>.</li>
+        <li>An 8-bit signed value runs from −128 to 127; 16-bit from −32,768 to 32,767; 32-bit from −2,147,483,648 to 2,147,483,647.</li>
+        <li>The same bits mean different numbers as signed and unsigned: <code>11111111</code> is 255 or −1. Most bugs are a value written as one and read as the other.</li>
+        <li>Overflow wraps around silently in most languages: 2,147,483,647 + 1 becomes −2,147,483,648 in 32 bits.</li>
+      </ul>
+    </div>
+
+    <div class="prose">
+      <h2 id="problem">The problem: binary has no minus sign</h2>
+      <p>Memory holds bits, so a negative number needs an encoding. The obvious idea, <strong>sign and magnitude</strong>, uses the top bit as a sign flag and the rest as the value: <code>00000101</code> is 5 and <code>10000101</code> is −5. It has two flaws. There are two zeros, <code>00000000</code> and <code>10000000</code>, which every comparison has to treat as equal. And adding a positive and a negative number needs different circuitry from adding two positives. <strong>Ones' complement</strong>, used by some early machines, negates by inverting every bit; it still has a negative zero and needs an "end-around carry" when adding.</p>
+      <p>Two's complement removes both problems. There is exactly one zero, and the ordinary binary adder that handles unsigned numbers gives the right answer for signed numbers too, with no special cases. That is why every processor in common use, from phones to servers, uses it, and why C++20 and C23 finally made it the only representation the language standards allow.</p>
+
+      <h2 id="how">How it works</h2>
+      <p>Think of an 8-bit number as eight weighted positions. Unsigned, the weights are 128, 64, 32, 16, 8, 4, 2 and 1. Two's complement changes exactly one thing: the top bit is worth <strong>−128</strong>. So <code>10000000</code> is −128, <code>10000001</code> is −128 + 1 = −127, and <code>11111111</code> is −128 + 127 = −1.</p>
+      <div class="table-wrap">
+        <table>
+        <thead><tr><th>Bits</th><th>Unsigned</th><th>Signed (two's complement)</th></tr></thead>
+        <tbody>
+          <tr><td><code>0000 0000</code></td><td>0</td><td>0</td></tr>
+          <tr><td><code>0000 0001</code></td><td>1</td><td>1</td></tr>
+          <tr><td><code>0111 1111</code></td><td>127</td><td>127 (largest)</td></tr>
+          <tr><td><code>1000 0000</code></td><td>128</td><td>−128 (smallest)</td></tr>
+          <tr><td><code>1100 1000</code></td><td>200</td><td>−56</td></tr>
+          <tr><td><code>1111 1011</code></td><td>251</td><td>−5</td></tr>
+          <tr><td><code>1111 1111</code></td><td>255</td><td>−1</td></tr>
+        </tbody>
+      </table>
+      </div>
+      <p>An equivalent way to see it: a negative number −<em>x</em> is stored as 2<sup>n</sup> − <em>x</em>. In 8 bits, −5 is stored as 256 − 5 = 251. This is arithmetic modulo 2<sup>n</sup>, the same wrap-around you get on a clock face, which is exactly why addition works without special cases: 7 + (−5) is 7 + 251 = 258, and 258 modulo 256 is 2.</p>
+
+      <h2 id="negate">Negating: invert and add one</h2>
+      <p>To find the bits of −<em>x</em>, flip every bit of <em>x</em> and add one. Flipping every bit gives 2<sup>n</sup> − 1 − <em>x</em>, so adding one gives 2<sup>n</sup> − <em>x</em>, which is the definition above.</p>
+      <pre><code>  5  =  0000 0101
+ ~5  =  1111 1010     invert every bit
++1   =  1111 1011     = −5  (0xFB, or 251 read as unsigned)
+
+check: 0000 0101 + 1111 1011 = 1 0000 0000 → the carry falls off the top → 0</code></pre>
+      <p>The same rule works in reverse, so applying it twice returns the original number. One value has no positive counterpart: the most negative number. In 8 bits, inverting −128 (<code>10000000</code>) and adding one gives <code>10000000</code> again. That is why <code>abs(INT_MIN)</code> in C is undefined behavior and returns a negative number in practice, and why <code>Math.abs(Integer.MIN_VALUE)</code> in Java returns −2,147,483,648.</p>
+
+      <h2 id="ranges">Ranges and sign extension</h2>
+      <div class="table-wrap">
+        <table>
+        <thead><tr><th>Width</th><th>Signed range</th><th>Unsigned range</th><th>Typical types</th></tr></thead>
+        <tbody>
+          <tr><td>8 bits</td><td>−128 … 127</td><td>0 … 255</td><td><code>int8_t</code>, Java <code>byte</code>, <code>uint8_t</code></td></tr>
+          <tr><td>16 bits</td><td>−32,768 … 32,767</td><td>0 … 65,535</td><td><code>short</code>, <code>int16_t</code></td></tr>
+          <tr><td>32 bits</td><td>−2,147,483,648 … 2,147,483,647</td><td>0 … 4,294,967,295</td><td><code>int</code>, <code>int32_t</code>, SQL <code>INTEGER</code></td></tr>
+          <tr><td>64 bits</td><td>−9,223,372,036,854,775,808 … 9,223,372,036,854,775,807</td><td>0 … 18,446,744,073,709,551,615</td><td><code>long</code>, <code>int64_t</code>, SQL <code>BIGINT</code></td></tr>
+        </tbody>
+      </table>
+      </div>
+      <p>When a signed value moves into a wider type, it is <strong>sign-extended</strong>: the top bit is copied into every new bit, so −5 in 8 bits (<code>11111011</code>) becomes <code>11111111 11111011</code> in 16 bits, still −5. An unsigned value is <strong>zero-extended</strong> instead. Mixing the two up is how a byte of <code>0xFB</code> read from a file turns into −5 when you expected 251, or into 65,531 when you expected −5.</p>
+
+      <h2 id="bugs">The bugs it causes in real code</h2>
+      <ul>
+        <li><strong>Java's signed bytes.</strong> Java has no unsigned byte, so <code>(byte) 200</code> is −56, and a byte array read from a network socket prints negative values for everything above 127. Mask to recover the unsigned value: <code>b &amp; 0xFF</code>.</li>
+        <li><strong>JavaScript bit operators work in 32 bits.</strong> Numbers are 64-bit floats, but <code>|</code>, <code>&amp;</code>, <code>^</code>, <code>~</code>, <code>&lt;&lt;</code> and <code>&gt;&gt;</code> convert their operands to signed 32-bit integers first. So <code>0xFFFFFFFF | 0</code> is −1, and <code>2147483647 + 1 | 0</code> is −2,147,483,648. The unsigned right shift <code>x &gt;&gt;&gt; 0</code> reinterprets the result as unsigned, which is why it appears in hashing code. For wider values use <code>BigInt</code>.</li>
+        <li><strong>Arithmetic versus logical shift.</strong> Shifting a negative number right with <code>&gt;&gt;</code> copies the sign bit in from the left, so −128 &gt;&gt; 1 is −64. A logical shift (<code>&gt;&gt;&gt;</code> in Java and JavaScript) fills with zeros and produces a large positive number instead.</li>
+        <li><strong>Silent overflow.</strong> In C, signed overflow is undefined behavior, and compilers may optimise on the assumption that it never happens; in Java, C# and Go it wraps. Rust panics in debug builds and wraps in release builds unless you use the <code>checked_</code>, <code>wrapping_</code> or <code>saturating_</code> methods. Python's integers never overflow, which hides the problem until the value reaches a database or a C library.</li>
+        <li><strong>Counters that hit the limit.</strong> YouTube's view counter was a signed 32-bit integer until 2014, when one video approached 2,147,483,647 views and the counter was moved to 64 bits. The same limit is behind the <a href="unix-time-and-time-zones.html">year 2038 problem</a>: signed 32-bit Unix time runs out at 03:14:07 UTC on 19 January 2038.</li>
+        <li><strong>Narrowing conversions.</strong> In 1996 the first Ariane 5 rocket was lost when software converted a 64-bit floating-point velocity into a 16-bit signed integer, the value was too large to fit, and the resulting exception shut down the guidance system.</li>
+      </ul>
+
+      <h2 id="reading">Reading signed values from bytes</h2>
+      <p>File formats and network protocols specify both a width and a signedness for every field, plus a byte order. To decode a signed 16-bit big-endian value by hand, combine the bytes as unsigned and then subtract 2<sup>16</sup> if the top bit is set:</p>
+      <pre><code>// bytes FF 38 → 0xFF38 = 65,336 as unsigned
+const u = (bytes[0] &lt;&lt; 8) | bytes[1];
+const s = u &gt;= 0x8000 ? u - 0x10000 : u;   // −200
+
+// or let the platform do it
+new DataView(buffer).getInt16(0, false);   // false = big-endian</code></pre>
+      <p>Most languages provide the second form: <code>DataView</code> in JavaScript, <code>struct.unpack('&gt;h', …)</code> in Python, <code>ByteBuffer.getShort()</code> in Java, and <code>binary.BigEndian.Uint16</code> followed by a conversion to <code>int16</code> in Go. Use them rather than hand-rolled shifts whenever you can.</p>
+
+      <div class="tool-cta">
+        <div>
+          <strong>See any number as bits</strong>
+          <span>Enter a value and see its two's-complement bits at 8 to 128 bits, signed and unsigned readings, both byte orders and IEEE-754 floats. Click a bit to flip it.</span>
+        </div>
+        <a class="btn-cta" href="../tools/number-base-converter.html">Open the number base converter <i data-lucide="arrow-right"></i></a>
+      </div>
+
+      <div class="further">
+        <h2>Related guides and tools</h2>
+        <div class="further-grid">
+          <a class="further-card" href="unix-time-and-time-zones.html">
+            <strong>Unix time and time zones</strong>
+            <span>Signed 32-bit seconds, and why 2038 matters.</span>
+          </a>
+          <a class="further-card" href="subnetting-explained.html">
+            <strong>Subnetting explained</strong>
+            <span>Binary prefixes and masks applied to IP addresses.</span>
+          </a>
+          <a class="further-card" href="base64-explained.html">
+            <strong>What Base64 actually does</strong>
+            <span>Six bits per character, padded to whole bytes.</span>
+          </a>
+        </div>
+      </div>
+
+      <h2 id="faq">Frequently asked questions</h2>
+      <div class="faq-container">
+        <div class="faq-item">
+          <button class="faq-question">How do you calculate two's complement? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>Write the positive number in binary at the chosen width, invert every bit, then add one. For −12 in 8 bits: 12 is 00001100, inverted it is 11110011, and adding one gives 11110100, which is 0xF4. Equivalently, subtract the magnitude from 2 to the power of the width: 256 − 12 = 244, which is 11110100 in binary.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">Why do computers use two's complement? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>Because it has a single representation of zero and lets the same adder circuit handle signed and unsigned numbers. Addition, subtraction and multiplication of the low bits work identically for both, so processors need no separate signed arithmetic for those operations. Sign-and-magnitude and ones' complement both have a negative zero and need extra logic to add numbers of different signs.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">Why is the range of a signed byte −128 to 127, not −127 to 127? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>Eight bits have 256 patterns. Zero takes one of the patterns with the top bit clear, leaving 127 positive values, and all 128 patterns with the top bit set are negative, from −128 to −1. The extra negative value is the price of having a single zero; it is also why negating the most negative number overflows back to itself.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">What is the difference between signed and unsigned integers? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>They are two interpretations of the same bits. Unsigned treats every bit as a positive power of two, so 8 bits hold 0 to 255. Signed two's complement gives the top bit a negative weight, so 8 bits hold −128 to 127. The bit pattern 11001000 is 200 unsigned and −56 signed. Choose unsigned for sizes, counts and raw bytes, and signed for quantities that can go below zero.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">How do I convert a negative number to hexadecimal? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>Hexadecimal of a negative number depends on the width. Take the two's-complement bits at that width and group them in fours: −5 is FB in 8 bits, FFFB in 16 bits and FFFFFFFB in 32 bits. In JavaScript, (−5 &gt;&gt;&gt; 0).toString(16) gives the 32-bit form, fffffffb. The number base converter shows every width at once.</p></div>
+        </div>
+      </div>
+    </div>
+  </article>
+  </main>
+
+  <a href="../" id="smartBackBtn" class="fab" aria-label="Command Center" title="Command Center">
+    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="filter: drop-shadow(0 0 8px rgba(56, 189, 248, 0.5));">
+      <path d="M12 2L2 7l10 5 10-5-10-5z" stroke="#38bdf8" stroke-width="2" stroke-linejoin="round" fill="rgba(56,189,248,0.2)"/>
+      <path d="M2 17l10 5 10-5M2 12l10 5 10-5" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </a>
+
+  <footer>
+    <nav class="site-dir" aria-label="Site directory">
+      <div class="site-dir-col">
+        <h2 class="site-dir-title">Developer tools</h2>
+        <ul>
+          <li><a href="../tools/json-validator.html">JSON Formatter &amp; Validator</a></li>
+          <li><a href="../tools/text-diff-checker.html">Text Diff Checker &amp; Merge Tool</a></li>
+          <li><a href="../tools/regex-tester.html">Regex Tester &amp; Debugger</a></li>
+          <li><a href="../tools/jwt-decoder.html">JWT Decoder &amp; Verifier</a></li>
+          <li><a href="../tools/flow.html">Flow: Data Pipeline Builder</a></li>
+          <li><a href="../tools/sql-formatter.html">SQL Formatter &amp; Beautifier</a></li>
+          <li><a href="../tools/base64.html">Base64 Encoder &amp; Decoder</a></li>
+          <li><a href="../tools/url-encoder.html">URL Encoder &amp; Decoder</a></li>
+          <li><a href="../tools/html-escape-unescape.html">HTML Escape &amp; Unescape</a></li>
+          <li><a href="../tools/hash-generator.html">Hash &amp; HMAC Generator</a></li>
+          <li><a href="../tools/json-to-table.html">JSON to Table Viewer</a></li>
+          <li><a href="../tools/csv-to-json.html">CSV to JSON Converter</a></li>
+          <li><a href="../tools/yaml-json-converter.html">YAML ⇄ JSON Converter</a></li>
+          <li><a href="../tools/xml-formatter.html">XML Formatter &amp; XPath Tester</a></li>
+          <li><a href="../tools/cron-generator.html">Cron Expression Generator</a></li>
+          <li><a href="../tools/timestamp-converter.html">Unix Timestamp Converter</a></li>
+          <li><a href="../tools/uuid-generator.html">UUID &amp; ULID Generator</a></li>
+          <li><a href="../tools/subnet-calculator.html">CIDR &amp; Subnet Calculator</a></li>
+          <li><a href="../tools/unicode-inspector.html">Unicode &amp; Invisible Character Inspector</a></li>
+          <li><a href="../tools/log-analyzer.html">Log File Analyzer</a></li>
+          <li><a href="../tools/qr-barcode.html">QR Code &amp; Barcode Generator</a></li>
+          <li><a href="../tools/password-generator.html">Strong Password Generator</a></li>
+          <li><a href="../tools/color-converter.html">Color Converter &amp; Contrast Checker</a></li>
+          <li><a href="../tools/number-base-converter.html">Number Base Converter</a></li>
+          <li><a href="../tools/text-case-converter.html">Text Case Converter &amp; Word Counter</a></li>
+          <li><a href="../tools/markdown-preview.html">Markdown Editor &amp; Preview</a></li>
+          <li><a href="../tools/pint-ae-checker.html">UAE PINT-AE E-Invoice Checker</a></li>
+          <li><a href="../tools/layerlink-sharer.html">LayerLink Screen Sharing</a></li>
+        </ul>
+      </div>
+      <div class="site-dir-col">
+        <h2 class="site-dir-title">Guides</h2>
+        <ul>
+          <li><a href="../guides/how-to-create-a-strong-password.html">Strong passwords: length beats symbols</a></li>
+          <li><a href="../guides/wcag-color-contrast-explained.html">WCAG color contrast explained</a></li>
+          <li><a href="../guides/twos-complement-explained.html">Two's complement explained</a></li>
+          <li><a href="../guides/naming-conventions-camelcase-snake-case.html">Naming conventions by language</a></li>
+          <li><a href="../guides/markdown-cheat-sheet.html">Markdown cheat sheet</a></li>
+          <li><a href="../guides/json-syntax-errors-explained.html">JSON syntax errors explained</a></li>
+          <li><a href="../guides/json-schema-validation-explained.html">JSON Schema validation explained</a></li>
+          <li><a href="../guides/jsonpath-cheat-sheet.html">JSONPath cheat sheet</a></li>
+          <li><a href="../guides/three-way-merge-explained.html">Three-way merge explained</a></li>
+          <li><a href="../guides/jwt-signing-algorithms-compared.html">JWT signing algorithms compared</a></li>
+          <li><a href="../guides/jwt-decode-vs-verify.html">Decoding a JWT is not verifying it</a></li>
+          <li><a href="../guides/regex-catastrophic-backtracking.html">Regex catastrophic backtracking</a></li>
+          <li><a href="../guides/base64-explained.html">What Base64 actually does</a></li>
+          <li><a href="../guides/percent-encoding-explained.html">URL encoding explained</a></li>
+          <li><a href="../guides/html-escaping-and-xss-contexts.html">HTML escaping and XSS contexts</a></li>
+          <li><a href="../guides/hashing-vs-encryption-vs-encoding.html">Hashing vs encryption vs encoding</a></li>
+          <li><a href="../guides/csv-edge-cases.html">Why CSV is not really a format</a></li>
+          <li><a href="../guides/yaml-gotchas.html">YAML's sharpest edges</a></li>
+          <li><a href="../guides/sql-formatting-and-dialects.html">SQL dialects compared</a></li>
+          <li><a href="../guides/cron-expressions-explained.html">Cron expression rules</a></li>
+          <li><a href="../guides/unix-time-and-time-zones.html">Unix time and time zones</a></li>
+          <li><a href="../guides/uuid-v4-vs-v7-database-keys.html">UUID v4 vs v7 for database keys</a></li>
+          <li><a href="../guides/subnetting-explained.html">Subnetting explained</a></li>
+          <li><a href="../guides/invisible-unicode-characters.html">Invisible Unicode characters</a></li>
+          <li><a href="../guides/xpath-cheat-sheet.html">XPath cheat sheet</a></li>
+          <li><a href="../guides/uae-einvoicing-pint-ae.html">UAE e-invoicing: PINT-AE</a></li>
+        </ul>
+      </div>
+      <div class="site-dir-col">
+        <h2 class="site-dir-title">Services</h2>
+        <ul>
+          <li><a href="../tools/erp-development.html">Custom ERP development</a></li>
+          <li><a href="../tools/api-automation.html">API integration &amp; automation</a></li>
+          <li><a href="../tools/app-development.html">Mobile app development</a></li>
+          <li><a href="../tools/custom-scripts.html">Custom scripts &amp; automation</a></li>
+          <li><a href="../tools/static-sites.html">Static website engineering</a></li>
+          <li><a href="../tools/portfolio-design.html">Portfolio website design</a></li>
+        </ul>
+      </div>
+    </nav>
+    <div class="footer-bottom">
+      <div class="footer-copy">&copy; 2025 - 2026 <strong>Layerbit Technologies</strong>. All rights reserved.</div>
+      <div class="footer-links">
+        <a href="../about.html">About</a>
+        <a href="../blog.html">Developer Blog</a>
+        <a href="../contact.html">Contact</a>
+        <a href="../privacy.html">Privacy Policy</a>
+        <a href="../terms.html">Terms of Service</a>
+        <a href="#" data-cookie-settings>Your privacy choices</a>
+      </div>
+    </div>
+  </footer>
+  <script src="../js/kernel.js"></script>
+
+  <script src="../js/shared.js"></script>
+</body>
+</html>

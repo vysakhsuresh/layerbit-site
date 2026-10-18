@@ -2362,6 +2362,61 @@ def _(t):
 
 
 # ----------------------------------------------------------------------------
+# site-wide: consent, redirects, footer directory, feed (AdSense / SEO pass)
+# ----------------------------------------------------------------------------
+@case("base64", "typical", "site: Reject all stores the choice and sends denied consent to Google")
+def _(t):
+    t.call("localStorage.removeItem('layerbit-cookie-consent'); initCookieConsent(true)")
+    expect(t.visible(".cookie-consent-banner"), "banner did not open")
+    t.click(".cookie-consent-reject"); t.wait(100)
+    eq(t.call("localStorage.getItem('layerbit-cookie-consent')"), "rejected", "stored choice")
+    last = t.call("JSON.stringify([...dataLayer].reverse().find(e => e[0] === 'consent' && e[1] === 'update'))")
+    expect('"ad_storage":"denied"' in last and '"analytics_storage":"denied"' in last, last)
+    t.page.reload(wait_until="load")
+    first_update = t.call("JSON.stringify([...dataLayer].find(e => e[0] === 'consent' && e[1] === 'update'))")
+    expect('"ad_storage":"denied"' in first_update, "choice not re-applied before tags on reload: " + str(first_update))
+    expect(not t.visible(".cookie-consent-banner"), "banner reappeared after a choice")
+    t.call("localStorage.removeItem('layerbit-cookie-consent')")
+
+
+@case("base64", "typical", "site: footer 'Your privacy choices' reopens the banner; Accept grants consent")
+def _(t):
+    t.call("localStorage.setItem('layerbit-cookie-consent', 'rejected')")
+    t.click("footer [data-cookie-settings]"); t.wait(100)
+    expect(t.visible(".cookie-consent-banner"), "privacy choices link did not reopen the banner")
+    t.click(".cookie-consent-accept"); t.wait(100)
+    eq(t.call("localStorage.getItem('layerbit-cookie-consent')"), "accepted", "stored choice")
+    last = t.call("JSON.stringify([...dataLayer].reverse().find(e => e[0] === 'consent' && e[1] === 'update'))")
+    expect('"ad_storage":"granted"' in last, last)
+    t.call("localStorage.removeItem('layerbit-cookie-consent')")
+
+
+@case("base64", "typical", "site: footer directory links every tool and guide in the registry")
+def _(t):
+    n_tools, n_guides = t.call("[Layerbit.tools.length, Layerbit.guides.length]")
+    links = t.call("[...document.querySelectorAll('footer .site-dir a')].map(a => a.getAttribute('href'))")
+    expect(sum(1 for h in links if h.startswith('../guides/')) == n_guides, f"guides in footer: {links}")
+    expect(sum(1 for h in links if h.startswith('../tools/')) >= n_tools - 1 + 6, "tools and services in footer")
+    expect(t.count("nav.tool-crumbs a") == 2, "visible breadcrumb missing")
+
+
+@case("base64", "edge", "site: removed tool URLs redirect to their replacement")
+def _(t):
+    base = t.page.url.split("/tools/")[0]
+    t.page.goto(base + "/tools/breachalert.html#x"); t.page.wait_for_url("**/password-generator.html#x", timeout=5000)
+    t.page.goto(base + "/tools/malicious-url-checker-dns-only.html"); t.page.wait_for_url("**/url-encoder.html", timeout=5000)
+    t.page.goto(base + "/tools/insight.html"); t.page.wait_for_url(lambda u: u.rstrip("/").endswith(base.split("//")[1]) or u.endswith("/"), timeout=5000)
+
+
+@case("base64", "minimal", "site: head carries AdSense account, consent defaults, per-page share image, favicon and feed")
+def _(t):
+    head = t.call("document.head.innerHTML")
+    for needle in ['google-adsense-account" content="ca-pub-6072772587431629"', "gtag('consent', 'default'", "images/og/tools-base64.jpg", 'favicon.ico', 'application/atom+xml', 'fonts/space-grotesk-latin.woff2']:
+        expect(needle in head, "missing in <head>: " + needle)
+    expect("fonts.googleapis.com" not in head, "third-party font CSS still loaded")
+
+
+# ----------------------------------------------------------------------------
 # kernel (js/kernel.js): palette, share links, send-to, history, drop, privacy
 # ----------------------------------------------------------------------------
 @case("base64", "typical", "kernel: header pills, palette search and keyboard navigation")
@@ -2486,7 +2541,8 @@ def smoke_all_pages(page, base):
     import glob
     fails, errs = [], []
     page.on("pageerror", lambda e: errs.append(str(e)))
-    pages = sorted(glob.glob("*.html") + glob.glob("tools/*.html") + glob.glob("guides/*.html"))
+    pages = sorted(f for f in glob.glob("*.html") + glob.glob("tools/*.html") + glob.glob("guides/*.html")
+                   if 'http-equiv="refresh"' not in open(f, encoding="utf-8").read(2000))
     for f in pages:
         errs.clear()
         page.set_viewport_size({"width": 1280, "height": 900})

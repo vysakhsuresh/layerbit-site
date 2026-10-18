@@ -1,0 +1,163 @@
+{{HEADER}}
+
+  <nav class="crumbs" aria-label="Breadcrumb">
+    <a href="../">Home</a>
+    <span class="sep">/</span>
+    <a href="../blog.html">Guides</a>
+    <span class="sep">/</span>
+    <span aria-current="page">Two's complement</span>
+  </nav>
+
+  <main id="main">
+  <article class="article">
+    <header class="article-head">
+      <span class="article-kicker">Computer Science</span>
+      <h1>Two's Complement Explained: How Computers Store Negative Numbers</h1>
+      <p class="article-standfirst">Every mainstream processor stores signed integers the same way, and almost every overflow bug, unexpected <code>-56</code> and broken byte parser comes from forgetting how. Two's complement is a few lines of arithmetic once you see why it works. This guide builds it from first principles, then walks through the bugs it causes in real code, from Java bytes to JavaScript bit operators to the year 2038.</p>
+      <div class="article-meta">
+        <span class="byline">Layerbit Engineering</span>
+        <span><i data-lucide="calendar"></i>Published 18 October 2026</span>
+        <span><i data-lucide="clock"></i>9 min read</span>
+      </div>
+    </header>
+
+    <div class="takeaways">
+      <h2><i data-lucide="list-checks"></i> The short version</h2>
+      <ul>
+        <li>In an <em>n</em>-bit two's-complement number, the top bit is worth <strong>−2<sup>n−1</sup></strong> instead of +2<sup>n−1</sup>. Every other bit keeps its usual positive weight.</li>
+        <li>To negate a number: invert every bit and add one. <code>5</code> is <code>00000101</code>, so <code>−5</code> is <code>11111011</code>.</li>
+        <li>An 8-bit signed value runs from −128 to 127; 16-bit from −32,768 to 32,767; 32-bit from −2,147,483,648 to 2,147,483,647.</li>
+        <li>The same bits mean different numbers as signed and unsigned: <code>11111111</code> is 255 or −1. Most bugs are a value written as one and read as the other.</li>
+        <li>Overflow wraps around silently in most languages: 2,147,483,647 + 1 becomes −2,147,483,648 in 32 bits.</li>
+      </ul>
+    </div>
+
+    <div class="prose">
+      <h2 id="problem">The problem: binary has no minus sign</h2>
+      <p>Memory holds bits, so a negative number needs an encoding. The obvious idea, <strong>sign and magnitude</strong>, uses the top bit as a sign flag and the rest as the value: <code>00000101</code> is 5 and <code>10000101</code> is −5. It has two flaws. There are two zeros, <code>00000000</code> and <code>10000000</code>, which every comparison has to treat as equal. And adding a positive and a negative number needs different circuitry from adding two positives. <strong>Ones' complement</strong>, used by some early machines, negates by inverting every bit; it still has a negative zero and needs an "end-around carry" when adding.</p>
+      <p>Two's complement removes both problems. There is exactly one zero, and the ordinary binary adder that handles unsigned numbers gives the right answer for signed numbers too, with no special cases. That is why every processor in common use, from phones to servers, uses it, and why C++20 and C23 finally made it the only representation the language standards allow.</p>
+
+      <h2 id="how">How it works</h2>
+      <p>Think of an 8-bit number as eight weighted positions. Unsigned, the weights are 128, 64, 32, 16, 8, 4, 2 and 1. Two's complement changes exactly one thing: the top bit is worth <strong>−128</strong>. So <code>10000000</code> is −128, <code>10000001</code> is −128 + 1 = −127, and <code>11111111</code> is −128 + 127 = −1.</p>
+      <div class="table-wrap">
+        <table>
+        <thead><tr><th>Bits</th><th>Unsigned</th><th>Signed (two's complement)</th></tr></thead>
+        <tbody>
+          <tr><td><code>0000 0000</code></td><td>0</td><td>0</td></tr>
+          <tr><td><code>0000 0001</code></td><td>1</td><td>1</td></tr>
+          <tr><td><code>0111 1111</code></td><td>127</td><td>127 (largest)</td></tr>
+          <tr><td><code>1000 0000</code></td><td>128</td><td>−128 (smallest)</td></tr>
+          <tr><td><code>1100 1000</code></td><td>200</td><td>−56</td></tr>
+          <tr><td><code>1111 1011</code></td><td>251</td><td>−5</td></tr>
+          <tr><td><code>1111 1111</code></td><td>255</td><td>−1</td></tr>
+        </tbody>
+      </table>
+      </div>
+      <p>An equivalent way to see it: a negative number −<em>x</em> is stored as 2<sup>n</sup> − <em>x</em>. In 8 bits, −5 is stored as 256 − 5 = 251. This is arithmetic modulo 2<sup>n</sup>, the same wrap-around you get on a clock face, which is exactly why addition works without special cases: 7 + (−5) is 7 + 251 = 258, and 258 modulo 256 is 2.</p>
+
+      <h2 id="negate">Negating: invert and add one</h2>
+      <p>To find the bits of −<em>x</em>, flip every bit of <em>x</em> and add one. Flipping every bit gives 2<sup>n</sup> − 1 − <em>x</em>, so adding one gives 2<sup>n</sup> − <em>x</em>, which is the definition above.</p>
+      <pre><code>  5  =  0000 0101
+ ~5  =  1111 1010     invert every bit
++1   =  1111 1011     = −5  (0xFB, or 251 read as unsigned)
+
+check: 0000 0101 + 1111 1011 = 1 0000 0000 → the carry falls off the top → 0</code></pre>
+      <p>The same rule works in reverse, so applying it twice returns the original number. One value has no positive counterpart: the most negative number. In 8 bits, inverting −128 (<code>10000000</code>) and adding one gives <code>10000000</code> again. That is why <code>abs(INT_MIN)</code> in C is undefined behavior and returns a negative number in practice, and why <code>Math.abs(Integer.MIN_VALUE)</code> in Java returns −2,147,483,648.</p>
+
+      <h2 id="ranges">Ranges and sign extension</h2>
+      <div class="table-wrap">
+        <table>
+        <thead><tr><th>Width</th><th>Signed range</th><th>Unsigned range</th><th>Typical types</th></tr></thead>
+        <tbody>
+          <tr><td>8 bits</td><td>−128 … 127</td><td>0 … 255</td><td><code>int8_t</code>, Java <code>byte</code>, <code>uint8_t</code></td></tr>
+          <tr><td>16 bits</td><td>−32,768 … 32,767</td><td>0 … 65,535</td><td><code>short</code>, <code>int16_t</code></td></tr>
+          <tr><td>32 bits</td><td>−2,147,483,648 … 2,147,483,647</td><td>0 … 4,294,967,295</td><td><code>int</code>, <code>int32_t</code>, SQL <code>INTEGER</code></td></tr>
+          <tr><td>64 bits</td><td>−9,223,372,036,854,775,808 … 9,223,372,036,854,775,807</td><td>0 … 18,446,744,073,709,551,615</td><td><code>long</code>, <code>int64_t</code>, SQL <code>BIGINT</code></td></tr>
+        </tbody>
+      </table>
+      </div>
+      <p>When a signed value moves into a wider type, it is <strong>sign-extended</strong>: the top bit is copied into every new bit, so −5 in 8 bits (<code>11111011</code>) becomes <code>11111111 11111011</code> in 16 bits, still −5. An unsigned value is <strong>zero-extended</strong> instead. Mixing the two up is how a byte of <code>0xFB</code> read from a file turns into −5 when you expected 251, or into 65,531 when you expected −5.</p>
+
+      <h2 id="bugs">The bugs it causes in real code</h2>
+      <ul>
+        <li><strong>Java's signed bytes.</strong> Java has no unsigned byte, so <code>(byte) 200</code> is −56, and a byte array read from a network socket prints negative values for everything above 127. Mask to recover the unsigned value: <code>b &amp; 0xFF</code>.</li>
+        <li><strong>JavaScript bit operators work in 32 bits.</strong> Numbers are 64-bit floats, but <code>|</code>, <code>&amp;</code>, <code>^</code>, <code>~</code>, <code>&lt;&lt;</code> and <code>&gt;&gt;</code> convert their operands to signed 32-bit integers first. So <code>0xFFFFFFFF | 0</code> is −1, and <code>2147483647 + 1 | 0</code> is −2,147,483,648. The unsigned right shift <code>x &gt;&gt;&gt; 0</code> reinterprets the result as unsigned, which is why it appears in hashing code. For wider values use <code>BigInt</code>.</li>
+        <li><strong>Arithmetic versus logical shift.</strong> Shifting a negative number right with <code>&gt;&gt;</code> copies the sign bit in from the left, so −128 &gt;&gt; 1 is −64. A logical shift (<code>&gt;&gt;&gt;</code> in Java and JavaScript) fills with zeros and produces a large positive number instead.</li>
+        <li><strong>Silent overflow.</strong> In C, signed overflow is undefined behavior, and compilers may optimise on the assumption that it never happens; in Java, C# and Go it wraps. Rust panics in debug builds and wraps in release builds unless you use the <code>checked_</code>, <code>wrapping_</code> or <code>saturating_</code> methods. Python's integers never overflow, which hides the problem until the value reaches a database or a C library.</li>
+        <li><strong>Counters that hit the limit.</strong> YouTube's view counter was a signed 32-bit integer until 2014, when one video approached 2,147,483,647 views and the counter was moved to 64 bits. The same limit is behind the <a href="unix-time-and-time-zones.html">year 2038 problem</a>: signed 32-bit Unix time runs out at 03:14:07 UTC on 19 January 2038.</li>
+        <li><strong>Narrowing conversions.</strong> In 1996 the first Ariane 5 rocket was lost when software converted a 64-bit floating-point velocity into a 16-bit signed integer, the value was too large to fit, and the resulting exception shut down the guidance system.</li>
+      </ul>
+
+      <h2 id="reading">Reading signed values from bytes</h2>
+      <p>File formats and network protocols specify both a width and a signedness for every field, plus a byte order. To decode a signed 16-bit big-endian value by hand, combine the bytes as unsigned and then subtract 2<sup>16</sup> if the top bit is set:</p>
+      <pre><code>// bytes FF 38 → 0xFF38 = 65,336 as unsigned
+const u = (bytes[0] &lt;&lt; 8) | bytes[1];
+const s = u &gt;= 0x8000 ? u - 0x10000 : u;   // −200
+
+// or let the platform do it
+new DataView(buffer).getInt16(0, false);   // false = big-endian</code></pre>
+      <p>Most languages provide the second form: <code>DataView</code> in JavaScript, <code>struct.unpack('&gt;h', …)</code> in Python, <code>ByteBuffer.getShort()</code> in Java, and <code>binary.BigEndian.Uint16</code> followed by a conversion to <code>int16</code> in Go. Use them rather than hand-rolled shifts whenever you can.</p>
+
+      <div class="tool-cta">
+        <div>
+          <strong>See any number as bits</strong>
+          <span>Enter a value and see its two's-complement bits at 8 to 128 bits, signed and unsigned readings, both byte orders and IEEE-754 floats. Click a bit to flip it.</span>
+        </div>
+        <a class="btn-cta" href="../tools/number-base-converter.html">Open the number base converter <i data-lucide="arrow-right"></i></a>
+      </div>
+
+      <div class="further">
+        <h2>Related guides and tools</h2>
+        <div class="further-grid">
+          <a class="further-card" href="unix-time-and-time-zones.html">
+            <strong>Unix time and time zones</strong>
+            <span>Signed 32-bit seconds, and why 2038 matters.</span>
+          </a>
+          <a class="further-card" href="subnetting-explained.html">
+            <strong>Subnetting explained</strong>
+            <span>Binary prefixes and masks applied to IP addresses.</span>
+          </a>
+          <a class="further-card" href="base64-explained.html">
+            <strong>What Base64 actually does</strong>
+            <span>Six bits per character, padded to whole bytes.</span>
+          </a>
+        </div>
+      </div>
+
+      <h2 id="faq">Frequently asked questions</h2>
+      <div class="faq-container">
+        <div class="faq-item">
+          <button class="faq-question">How do you calculate two's complement? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>Write the positive number in binary at the chosen width, invert every bit, then add one. For −12 in 8 bits: 12 is 00001100, inverted it is 11110011, and adding one gives 11110100, which is 0xF4. Equivalently, subtract the magnitude from 2 to the power of the width: 256 − 12 = 244, which is 11110100 in binary.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">Why do computers use two's complement? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>Because it has a single representation of zero and lets the same adder circuit handle signed and unsigned numbers. Addition, subtraction and multiplication of the low bits work identically for both, so processors need no separate signed arithmetic for those operations. Sign-and-magnitude and ones' complement both have a negative zero and need extra logic to add numbers of different signs.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">Why is the range of a signed byte −128 to 127, not −127 to 127? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>Eight bits have 256 patterns. Zero takes one of the patterns with the top bit clear, leaving 127 positive values, and all 128 patterns with the top bit set are negative, from −128 to −1. The extra negative value is the price of having a single zero; it is also why negating the most negative number overflows back to itself.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">What is the difference between signed and unsigned integers? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>They are two interpretations of the same bits. Unsigned treats every bit as a positive power of two, so 8 bits hold 0 to 255. Signed two's complement gives the top bit a negative weight, so 8 bits hold −128 to 127. The bit pattern 11001000 is 200 unsigned and −56 signed. Choose unsigned for sizes, counts and raw bytes, and signed for quantities that can go below zero.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">How do I convert a negative number to hexadecimal? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>Hexadecimal of a negative number depends on the width. Take the two's-complement bits at that width and group them in fours: −5 is FB in 8 bits, FFFB in 16 bits and FFFFFFFB in 32 bits. In JavaScript, (−5 &gt;&gt;&gt; 0).toString(16) gives the 32-bit form, fffffffb. The number base converter shows every width at once.</p></div>
+        </div>
+      </div>
+    </div>
+  </article>
+  </main>
+
+  <a href="../" id="smartBackBtn" class="fab" aria-label="Command Center" title="Command Center">
+    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="filter: drop-shadow(0 0 8px rgba(56, 189, 248, 0.5));">
+      <path d="M12 2L2 7l10 5 10-5-10-5z" stroke="#38bdf8" stroke-width="2" stroke-linejoin="round" fill="rgba(56,189,248,0.2)"/>
+      <path d="M2 17l10 5 10-5M2 12l10 5 10-5" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </a>
+
+  {{FOOTER}}
+
+  <script src="../js/shared.js"></script>

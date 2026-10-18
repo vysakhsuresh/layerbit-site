@@ -1,0 +1,119 @@
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "TechArticle",
+      "@id": "https://layerbit.co.in/guides/twos-complement-explained.html#article",
+      "headline": "Two's Complement Explained: How Computers Store Negative Numbers",
+      "name": "Two's Complement Explained: How Computers Store Negative Numbers",
+      "description": "How computers store negative integers: two's complement from first principles, invert-and-add-one, ranges, sign extension and the overflow bugs it causes.",
+      "url": "https://layerbit.co.in/guides/twos-complement-explained.html",
+      "mainEntityOfPage": {
+        "@type": "WebPage",
+        "@id": "https://layerbit.co.in/guides/twos-complement-explained.html"
+      },
+      "datePublished": "2026-10-18",
+      "dateModified": "2026-10-18",
+      "inLanguage": "en",
+      "wordCount": 1617,
+      "keywords": "twos complement, negative binary numbers, signed integer, integer overflow, sign extension",
+      "articleSection": "Computer Science",
+      "author": {
+        "@type": "Organization",
+        "name": "Layerbit Technologies",
+        "url": "https://layerbit.co.in/about.html"
+      },
+      "publisher": {
+        "@type": "Organization",
+        "name": "Layerbit Technologies",
+        "url": "https://layerbit.co.in/",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://layerbit.co.in/icon-512.png",
+          "width": 512,
+          "height": 512
+        }
+      },
+      "image": {
+        "@type": "ImageObject",
+        "url": "https://layerbit.co.in/images/og/guides-twos-complement-explained.jpg",
+        "width": 1200,
+        "height": 630
+      },
+      "isAccessibleForFree": true,
+      "proficiencyLevel": "Beginner"
+    },
+    {
+      "@type": "BreadcrumbList",
+      "@id": "https://layerbit.co.in/guides/twos-complement-explained.html#breadcrumb",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://layerbit.co.in/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Guides",
+          "item": "https://layerbit.co.in/blog.html"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": "Two's complement",
+          "item": "https://layerbit.co.in/guides/twos-complement-explained.html"
+        }
+      ]
+    },
+    {
+      "@type": "FAQPage",
+      "@id": "https://layerbit.co.in/guides/twos-complement-explained.html#faq",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "How do you calculate two's complement?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Write the positive number in binary at the chosen width, invert every bit, then add one. For −12 in 8 bits: 12 is 00001100, inverted it is 11110011, and adding one gives 11110100, which is 0xF4. Equivalently, subtract the magnitude from 2 to the power of the width: 256 − 12 = 244, which is 11110100 in binary."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Why do computers use two's complement?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Because it has a single representation of zero and lets the same adder circuit handle signed and unsigned numbers. Addition, subtraction and multiplication of the low bits work identically for both, so processors need no separate signed arithmetic for those operations. Sign-and-magnitude and ones' complement both have a negative zero and need extra logic to add numbers of different signs."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Why is the range of a signed byte −128 to 127, not −127 to 127?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Eight bits have 256 patterns. Zero takes one of the patterns with the top bit clear, leaving 127 positive values, and all 128 patterns with the top bit set are negative, from −128 to −1. The extra negative value is the price of having a single zero; it is also why negating the most negative number overflows back to itself."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What is the difference between signed and unsigned integers?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "They are two interpretations of the same bits. Unsigned treats every bit as a positive power of two, so 8 bits hold 0 to 255. Signed two's complement gives the top bit a negative weight, so 8 bits hold −128 to 127. The bit pattern 11001000 is 200 unsigned and −56 signed. Choose unsigned for sizes, counts and raw bytes, and signed for quantities that can go below zero."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How do I convert a negative number to hexadecimal?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Hexadecimal of a negative number depends on the width. Take the two's-complement bits at that width and group them in fours: −5 is FB in 8 bits, FFFB in 16 bits and FFFFFFFB in 32 bits. In JavaScript, (−5 \u003e\u003e\u003e 0).toString(16) gives the 32-bit form, fffffffb. The number base converter shows every width at once."
+          }
+        }
+      ]
+    }
+  ]
+}
+  </script>

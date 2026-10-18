@@ -1,0 +1,179 @@
+{{HEADER}}
+
+  <nav class="crumbs" aria-label="Breadcrumb">
+    <a href="../">Home</a>
+    <span class="sep">/</span>
+    <a href="../blog.html">Guides</a>
+    <span class="sep">/</span>
+    <span aria-current="page">Markdown cheat sheet</span>
+  </nav>
+
+  <main id="main">
+  <article class="article">
+    <header class="article-head">
+      <span class="article-kicker">Documentation</span>
+      <h1>Markdown Cheat Sheet: GitHub-Flavored Syntax With Examples</h1>
+      <p class="article-standfirst">Markdown is the format of README files, documentation sites, issue trackers, chat apps and note-taking tools. The core syntax fits on a page, but the details that trip people up, such as line breaks, nested lists, tables and escaping, differ between the original specification, CommonMark and GitHub-Flavored Markdown. This sheet shows the syntax that renders the same everywhere, marks the extensions that do not, and explains the rules behind the surprises.</p>
+      <div class="article-meta">
+        <span class="byline">Layerbit Engineering</span>
+        <span><i data-lucide="calendar"></i>Published 18 October 2026</span>
+        <span><i data-lucide="clock"></i>8 min read</span>
+      </div>
+    </header>
+
+    <div class="takeaways">
+      <h2><i data-lucide="list-checks"></i> The short version</h2>
+      <ul>
+        <li>Separate paragraphs, lists, headings and code blocks with a blank line. Most "it didn't render" problems are a missing blank line.</li>
+        <li>A single line break inside a paragraph is ignored; end the line with a backslash or two spaces to force a break.</li>
+        <li>Fenced code blocks (three backticks plus a language name) are the reliable way to show code.</li>
+        <li>Tables, task lists, strikethrough and automatic links are GitHub-Flavored Markdown extensions, supported by most modern renderers.</li>
+        <li>Escape any special character with a backslash: <code>\*</code>, <code>\_</code>, <code>\#</code>, <code>\|</code>.</li>
+      </ul>
+    </div>
+
+    <div class="prose">
+      <h2 id="flavors">Markdown, CommonMark and GFM</h2>
+      <p>John Gruber's original Markdown of 2004 was a short description plus a Perl script, and it left many cases ambiguous, so every implementation behaved slightly differently. <strong>CommonMark</strong>, first published in 2014, is a precise specification with hundreds of examples that resolves those ambiguities; most serious parsers now follow it. <strong>GitHub-Flavored Markdown</strong> (GFM) is CommonMark plus a small set of extensions: tables, task lists, strikethrough, extended autolinks and filtering of some raw HTML. When this sheet says something works "everywhere", it means CommonMark; GFM extensions are labelled.</p>
+
+      <h2 id="text">Text and headings</h2>
+      <div class="table-wrap">
+        <table>
+        <thead><tr><th>You type</th><th>Result</th><th>Notes</th></tr></thead>
+        <tbody>
+          <tr><td><code># Heading 1</code> … <code>###### Heading 6</code></td><td>Six heading levels</td><td>A space after the <code>#</code> is required in CommonMark</td></tr>
+          <tr><td><code>**bold**</code> or <code>__bold__</code></td><td><strong>bold</strong></td><td>Asterisks also work mid-word; underscores do not</td></tr>
+          <tr><td><code>*italic*</code> or <code>_italic_</code></td><td><em>italic</em></td><td></td></tr>
+          <tr><td><code>***bold italic***</code></td><td><strong><em>bold italic</em></strong></td><td></td></tr>
+          <tr><td><code>~~struck~~</code></td><td><del>struck</del></td><td>GFM extension</td></tr>
+          <tr><td><code>`inline code`</code></td><td><code>inline code</code></td><td>Use double backticks to include a backtick: <code>`` a`b ``</code></td></tr>
+          <tr><td><code>&gt; quoted text</code></td><td>Block quote</td><td>Nest with <code>&gt; &gt;</code></td></tr>
+          <tr><td><code>---</code> on its own line</td><td>Horizontal rule</td><td>Needs a blank line above, or it turns the previous line into a heading</td></tr>
+        </tbody>
+      </table>
+      </div>
+      <p>That last note is a classic surprise. A line of text followed directly by <code>---</code> becomes a level-2 heading (a "setext" heading), and one followed by <code>===</code> becomes level 1. Leave a blank line before a horizontal rule.</p>
+
+      <h2 id="breaks">Paragraphs and line breaks</h2>
+      <p>Markdown joins consecutive lines into one paragraph, so text wrapped at 80 columns in the source still flows as a paragraph. Start a new paragraph with a blank line. To force a line break without a new paragraph, for an address or a poem, end the line with a backslash, which is visible and survives editors that trim trailing whitespace, or with two spaces, which works everywhere but is invisible. Some environments, GitHub comments and issues among them, treat every newline as a break; README files on GitHub do not. Our <a href="../tools/markdown-preview.html">Markdown editor</a> has a "Line breaks" switch to preview either behaviour.</p>
+
+      <h2 id="lists">Lists</h2>
+      <pre><code>- Bullets use -, * or +
+- Keep one marker per list
+
+1. Numbered lists use a number and a period
+2. The numbers you type barely matter:
+3. a list starting at 1 renders 1, 2, 3 even if every item says 1.
+
+- Nesting: indent the child to line up
+  with the parent's text (two spaces here)
+  - like this
+    1. and this
+
+- [x] Task lists (GFM)
+- [ ] render as checkboxes</code></pre>
+      <p>The rule behind nesting is that a child item must be indented at least as far as the <em>text</em> of its parent, not its marker. For <code>- item</code> that is two spaces; for <code>1. item</code> it is three. Four spaces always works, which is why many style guides recommend it. A paragraph or code block inside a list item needs the same indentation, plus a blank line before it.</p>
+
+      <h2 id="links">Links and images</h2>
+      <pre><code>[inline link](https://example.com "optional title")
+&lt;https://example.com&gt;                          autolink, works everywhere
+https://example.com                            bare URL, linked by GFM
+
+[reference link][docs]
+[docs]: https://example.com/docs
+
+![alt text describing the image](diagram.png)
+[![image that links](badge.svg)](https://example.com)
+
+[Jump to a heading](#getting-started)</code></pre>
+      <p>Heading anchors are generated by the renderer, not by Markdown itself. GitHub's rule, which most tools copy, lower-cases the text, removes punctuation and replaces spaces with hyphens, so <code>## Getting Started!</code> becomes <code>#getting-started</code>; a repeated heading gets <code>-1</code>, <code>-2</code> and so on. Always write useful alt text for images: it is what screen readers announce and what appears when the image fails to load.</p>
+
+      <h2 id="code">Code blocks</h2>
+      <pre><code>```js
+const answer = 42;
+```
+
+~~~python
+print("tildes work too")
+~~~
+
+    four-space indented code also works,
+    but has no language tag, so no highlighting</code></pre>
+      <p>Put the language name directly after the opening fence for syntax highlighting: <code>js</code>, <code>ts</code>, <code>python</code>, <code>bash</code>, <code>json</code>, <code>yaml</code>, <code>sql</code>, <code>diff</code> and many more are recognised by GitHub, GitLab and most documentation generators. To show a fence inside a code block, open the outer block with four backticks.</p>
+
+      <h2 id="tables">Tables (GFM)</h2>
+      <pre><code>| Endpoint      | Method | Auth   |
+| :------------ | :----: | -----: |
+| /orders       | GET    | token  |
+| /orders/{id}  | DELETE | admin  |</code></pre>
+      <p>The second line is required: it separates the header and sets alignment with colons, left (<code>:---</code>), centre (<code>:---:</code>) or right (<code>---:</code>). The pipes do not need to line up in the source. A literal pipe inside a cell must be escaped as <code>\|</code>, cells cannot contain block content such as lists or multiple paragraphs, and a line break inside a cell needs an HTML <code>&lt;br&gt;</code>. For anything more complex, an HTML table or a link to a spreadsheet is clearer.</p>
+
+      <h2 id="escaping">Escaping and raw HTML</h2>
+      <p>A backslash before any ASCII punctuation character makes it literal: <code>\*not italic\*</code>, <code>\# not a heading</code>, <code>1\. not a list</code>. Inside inline code and code blocks nothing needs escaping. Most renderers also accept raw HTML, such as <code>&lt;details&gt;</code> for collapsible sections, <code>&lt;kbd&gt;</code> for keys and <code>&lt;sup&gt;</code> for superscripts. GitHub and most hosted platforms sanitize it, removing scripts, event handlers and styles. If you render user-written Markdown in your own application, sanitize the generated HTML with a library such as DOMPurify; escaping the input is not enough, because Markdown syntax itself produces HTML. Our guide to <a href="html-escaping-and-xss-contexts.html">HTML escaping and XSS contexts</a> explains why.</p>
+
+      <h2 id="github">GitHub-only extras</h2>
+      <p>Some popular features are specific to GitHub and will appear as plain text elsewhere: <code>@username</code> mentions and <code>#123</code> issue references; footnotes written as <code>[^1]</code>; alerts written as <code>&gt; [!NOTE]</code>, <code>&gt; [!WARNING]</code> and similar; emoji shortcodes such as <code>:rocket:</code>; and Mermaid diagrams in a <code>```mermaid</code> fence. They are worth using in a repository, but avoid them in documentation that will also be rendered by another tool.</p>
+
+      <div class="tool-cta">
+        <div>
+          <strong>Try any snippet with a live preview</strong>
+          <span>GitHub-flavored Markdown with a sanitized live preview, formatting toolbar, heading anchors, table of contents, and HTML export, all in your browser.</span>
+        </div>
+        <a class="btn-cta" href="../tools/markdown-preview.html">Open the Markdown editor <i data-lucide="arrow-right"></i></a>
+      </div>
+
+      <div class="further">
+        <h2>Related guides and tools</h2>
+        <div class="further-grid">
+          <a class="further-card" href="html-escaping-and-xss-contexts.html">
+            <strong>HTML escaping and XSS contexts</strong>
+            <span>Why rendered Markdown must be sanitized.</span>
+          </a>
+          <a class="further-card" href="naming-conventions-camelcase-snake-case.html">
+            <strong>Naming conventions by language</strong>
+            <span>How heading slugs and file names should be written.</span>
+          </a>
+          <a class="further-card" href="../tools/html-escape-unescape.html">
+            <strong>HTML Escape &amp; Unescape</strong>
+            <span>Show HTML as text inside your documentation.</span>
+          </a>
+        </div>
+      </div>
+
+      <h2 id="faq">Frequently asked questions</h2>
+      <div class="faq-container">
+        <div class="faq-item">
+          <button class="faq-question">How do I add a line break in Markdown? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>End the line with a backslash, or with two trailing spaces, and continue on the next line. A plain newline inside a paragraph is treated as a space, and a blank line starts a new paragraph. The backslash is the more robust choice because it is visible in the source and is not removed by editors that strip trailing whitespace. Some platforms, such as GitHub comments, treat every newline as a break automatically.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">How do I create a table in Markdown? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>Write a header row with cells separated by pipes, then a divider row of dashes, then one row per line: | Name | Role | on the first line, | --- | --- | on the second, and | Ada | Engineer | below. Add colons to the divider to align columns: :--- left, :---: centre, ---: right. Tables are a GitHub-Flavored Markdown extension, supported by GitHub, GitLab and most modern renderers.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">Why is my nested list not indenting? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>A child list item must be indented at least as far as the text of its parent item, not just its marker. For a parent written as "- item" that means two spaces; for "1. item" it means three. Using four spaces for each level works in every renderer. Also make sure there is no blank line between items unless you want a loose list with paragraph spacing.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">What is the difference between Markdown and GitHub-Flavored Markdown? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>GitHub-Flavored Markdown is a superset of CommonMark, the standardised form of Markdown. It adds tables, task lists, strikethrough with double tildes, automatic linking of bare URLs, and rules for filtering unsafe raw HTML. GitHub itself adds further features on top, such as mentions, issue references, footnotes, alerts and Mermaid diagrams, that are not part of the GFM specification.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">How do I escape a character in Markdown? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>Put a backslash in front of it. \* shows a literal asterisk, \_ an underscore, \# a hash at the start of a line, \| a pipe inside a table cell and \` a backtick. Any ASCII punctuation character can be escaped this way. Inside inline code or a fenced code block, everything is already literal and needs no escaping.</p></div>
+        </div>
+      </div>
+    </div>
+  </article>
+  </main>
+
+  <a href="../" id="smartBackBtn" class="fab" aria-label="Command Center" title="Command Center">
+    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="filter: drop-shadow(0 0 8px rgba(56, 189, 248, 0.5));">
+      <path d="M12 2L2 7l10 5 10-5-10-5z" stroke="#38bdf8" stroke-width="2" stroke-linejoin="round" fill="rgba(56,189,248,0.2)"/>
+      <path d="M2 17l10 5 10-5M2 12l10 5 10-5" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </a>
+
+  {{FOOTER}}
+
+  <script src="../js/shared.js"></script>

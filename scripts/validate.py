@@ -121,6 +121,12 @@ def check_seo(text, f):
     return errs, title, desc
 
 
+def is_redirect(path):
+    """Redirect stubs for removed pages (see REDIRECTS in build.py)."""
+    with open(path, encoding="utf-8") as f:
+        return 'http-equiv="refresh"' in f.read(2000)
+
+
 def check_registry():
     """js/kernel.js lists every tool and guide for the command palette and the
     send-to menu; a page missing there is unreachable from the palette, and a
@@ -128,7 +134,7 @@ def check_registry():
     errs = []
     k = open("js/kernel.js", encoding="utf-8").read()
     tools = set(re.findall(r"^\s+\['([a-z0-9-]+)', ['\"]", k, re.M))
-    pages = {os.path.basename(f)[:-5] for f in glob.glob("tools/*.html")}
+    pages = {os.path.basename(f)[:-5] for f in glob.glob("tools/*.html") if not is_redirect(f)}
     guides = {os.path.basename(f)[:-5] for f in glob.glob("guides/*.html")}
     for p in sorted(pages - tools):
         errs.append(f"tools/{p}.html is not in the kernel registry")
@@ -136,6 +142,22 @@ def check_registry():
         errs.append(f"guides/{g}.html is not in the kernel registry")
     for t in sorted(tools - pages - guides):
         errs.append(f"kernel registry entry '{t}' has no page")
+    return errs
+
+
+def check_icons():
+    """Every data-lucide name in the sources must be in the subset bundle
+    (js/vendor/lucide.min.js is built from js/vendor/lucide-icons.json)."""
+    import glob, json
+    try:
+        bundled = set(json.load(open(os.path.join(ROOT, "js/vendor/lucide-icons.json"))))
+    except FileNotFoundError:
+        return []
+    errs = []
+    for f in sorted(glob.glob(os.path.join(ROOT, "src/pages/*.html")) + glob.glob(os.path.join(ROOT, "src/partials/*.html"))):
+        for name in sorted(set(re.findall(r'data-lucide="([a-z0-9-]+)"', open(f, encoding="utf-8").read()))):
+            if name not in bundled:
+                errs.append(f"{os.path.relpath(f, ROOT)}: icon '{name}' is not in js/vendor/lucide.min.js; run scripts/build_lucide_subset.py")
     return errs
 
 
@@ -196,8 +218,8 @@ def main():
     if not node_available:
         print("warning: node not found on PATH, skipping inline JS syntax checks", file=sys.stderr)
 
-    files = sorted(glob.glob("*.html") + glob.glob("tools/*.html")
-                   + glob.glob("guides/*.html"))
+    files = sorted(f for f in glob.glob("*.html") + glob.glob("tools/*.html") + glob.glob("guides/*.html")
+                   if not is_redirect(f))
     failures = []
     seen_titles, seen_descs = {}, {}
     for f in files:
@@ -213,7 +235,7 @@ def main():
         if errs:
             failures.append((f, errs))
 
-    graph_errs = check_link_graph(files) + check_registry()
+    graph_errs = check_link_graph(files) + check_registry() + check_icons()
     if graph_errs:
         failures.append(("(site-wide link graph)", graph_errs))
 

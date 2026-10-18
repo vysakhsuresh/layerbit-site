@@ -40,7 +40,7 @@ def main():
     graph = [app,
              {"@type": "BreadcrumbList", "@id": url + "#breadcrumb", "itemListElement": [
                  {"@type": "ListItem", "position": 1, "name": "Home", "item": "https://layerbit.co.in/"},
-                 {"@type": "ListItem", "position": 2, "name": "Tools", "item": "https://layerbit.co.in/blog.html"},
+                 {"@type": "ListItem", "position": 2, "name": "Developer tools", "item": "https://layerbit.co.in/#tools"},
                  {"@type": "ListItem", "position": 3, "name": crumb or name, "item": url}]}]
     if faqs:
         graph.append({"@type": "FAQPage", "@id": url + "#faq", "mainEntity": [

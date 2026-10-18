@@ -5,11 +5,18 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="description" content="Convert YAML to JSON and JSON to YAML in your browser, live in both directions, with YAML 1.2 semantics and syntax errors reported with line and column." />
   <title>YAML to JSON Converter Online (and Back) | Layerbit</title>
-  <!-- Google tag (gtag.js) -->
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-ERX8MNPPP5"></script>
+  <meta name="google-adsense-account" content="ca-pub-6072772587431629" />
+  <link rel="preload" href="../fonts/space-grotesk-latin.woff2" as="font" type="font/woff2" crossorigin />
   <script>
     window.dataLayer = window.dataLayer || [];
     function gtag(){dataLayer.push(arguments);}
+    gtag('consent', 'default', {ad_storage: 'denied', ad_user_data: 'denied', ad_personalization: 'denied', analytics_storage: 'denied', wait_for_update: 500, region: ["AT", "BE", "BG", "HR", "CY", "CZ", "DK", "EE", "FI", "FR", "DE", "GR", "HU", "IE", "IT", "LV", "LT", "LU", "MT", "NL", "PL", "PT", "RO", "SK", "SI", "ES", "SE", "IS", "LI", "NO", "GB", "CH"]});
+    gtag('consent', 'default', {ad_storage: 'granted', ad_user_data: 'granted', ad_personalization: 'granted', analytics_storage: 'granted'});
+    try { var lbc = localStorage.getItem('layerbit-cookie-consent'); if (!lbc && navigator.globalPrivacyControl === true) lbc = 'rejected'; if (lbc === 'accepted' || lbc === 'rejected') { var v = lbc === 'accepted' ? 'granted' : 'denied'; gtag('consent', 'update', {ad_storage: v, ad_user_data: v, ad_personalization: v, analytics_storage: v}); } } catch (e) {}
+  </script>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-ERX8MNPPP5"></script>
+  <script>
     gtag('js', new Date());
     gtag('config', 'G-ERX8MNPPP5');
   </script>
@@ -20,16 +27,17 @@
   <meta property="og:site_name" content="Layerbit" />
   <meta property="og:title" content="YAML to JSON Converter Online (and Back) | Layerbit" />
   <meta property="og:description" content="Convert YAML to JSON and JSON to YAML in your browser, live in both directions, with YAML 1.2 semantics and syntax errors reported with line and column." />
-  <meta property="og:image" content="https://layerbit.co.in/og-image.png" />
+  <meta property="og:image" content="https://layerbit.co.in/images/og/tools-yaml-json-converter.jpg" />
+  <meta property="og:image:type" content="image/jpeg" />
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
-  <meta property="og:image:alt" content="Layerbit - free browser-based developer tools" />
+  <meta property="og:image:alt" content="YAML to JSON Converter Online (and Back)" />
   <meta property="og:locale" content="en" />
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="YAML to JSON Converter Online (and Back) | Layerbit" />
   <meta name="twitter:description" content="Convert YAML to JSON and JSON to YAML in your browser, live in both directions, with YAML 1.2 semantics and syntax errors reported with line and column." />
-  <meta name="twitter:image" content="https://layerbit.co.in/og-image.png" />
-  <meta name="twitter:image:alt" content="Layerbit - free browser-based developer tools" />
+  <meta name="twitter:image" content="https://layerbit.co.in/images/og/tools-yaml-json-converter.jpg" />
+  <meta name="twitter:image:alt" content="YAML to JSON Converter Online (and Back)" />
   <meta name="theme-color" content="#0a0c10" />
   <script type="application/ld+json">
 {
@@ -67,13 +75,13 @@
         {
           "@type": "ListItem",
           "position": 2,
-          "name": "Tools",
-          "item": "https://layerbit.co.in/blog.html"
+          "name": "Developer tools",
+          "item": "https://layerbit.co.in/#tools"
         },
         {
           "@type": "ListItem",
           "position": 3,
-          "name": "YAML to JSON Converter",
+          "name": "YAML ⇄ JSON Converter",
           "item": "https://layerbit.co.in/tools/yaml-json-converter.html"
         }
       ]
@@ -115,12 +123,13 @@
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6072772587431629" crossorigin="anonymous"></script>
 
   <script src="../js/vendor/lucide.min.js" async></script>
-  <script src="../js/kernel.js"></script>
   <script src="../js/vendor/js-yaml.min.js"></script>
 
-  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet" />
-  <link href="../layerbit-logo.png" rel="icon" type="image/x-icon" />
+  <link rel="icon" href="../favicon.ico" sizes="16x16 32x32 48x48" />
+  <link rel="icon" href="../favicon-48.png" type="image/png" sizes="48x48" />
+  <link rel="icon" href="../icon-192.png" type="image/png" sizes="192x192" />
   <link rel="manifest" href="../manifest.json" />
+  <link rel="alternate" type="application/atom+xml" title="Layerbit developer guides" href="https://layerbit.co.in/feed.xml" />
   <link rel="apple-touch-icon" href="../apple-touch-icon.png" />
   <link rel="stylesheet" href="../css/base.css" />
 
@@ -289,6 +298,14 @@
       Layerbit
     </a>
   </header>
+
+  <nav class="crumbs tool-crumbs" aria-label="Breadcrumb">
+    <a href="../">Home</a>
+    <span class="sep">/</span>
+    <a href="../#tools">Developer tools</a>
+    <span class="sep">/</span>
+    <span aria-current="page">YAML ⇄ JSON Converter</span>
+  </nav>
 
   <main class="hero">
     <h1>YAML to JSON Converter</h1>
@@ -477,17 +494,96 @@
   </a>
 
   <footer>
-    <div style="margin-bottom: 15px;">
-      &copy; 2025 - 2026 <strong>Layerbit Technologies</strong>. All rights reserved.
-    </div>
-    <div>
-      <a href="../about.html">About</a>
-      <a href="../privacy.html">Privacy Policy</a>
-      <a href="../terms.html">Terms of Service</a>
-      <a href="../blog.html">Developer Blog</a>
-      <a href="../contact.html">Contact</a>
+    <nav class="site-dir" aria-label="Site directory">
+      <div class="site-dir-col">
+        <h2 class="site-dir-title">Developer tools</h2>
+        <ul>
+          <li><a href="../tools/json-validator.html">JSON Formatter &amp; Validator</a></li>
+          <li><a href="../tools/text-diff-checker.html">Text Diff Checker &amp; Merge Tool</a></li>
+          <li><a href="../tools/regex-tester.html">Regex Tester &amp; Debugger</a></li>
+          <li><a href="../tools/jwt-decoder.html">JWT Decoder &amp; Verifier</a></li>
+          <li><a href="../tools/flow.html">Flow: Data Pipeline Builder</a></li>
+          <li><a href="../tools/sql-formatter.html">SQL Formatter &amp; Beautifier</a></li>
+          <li><a href="../tools/base64.html">Base64 Encoder &amp; Decoder</a></li>
+          <li><a href="../tools/url-encoder.html">URL Encoder &amp; Decoder</a></li>
+          <li><a href="../tools/html-escape-unescape.html">HTML Escape &amp; Unescape</a></li>
+          <li><a href="../tools/hash-generator.html">Hash &amp; HMAC Generator</a></li>
+          <li><a href="../tools/json-to-table.html">JSON to Table Viewer</a></li>
+          <li><a href="../tools/csv-to-json.html">CSV to JSON Converter</a></li>
+          <li><a href="../tools/yaml-json-converter.html">YAML ⇄ JSON Converter</a></li>
+          <li><a href="../tools/xml-formatter.html">XML Formatter &amp; XPath Tester</a></li>
+          <li><a href="../tools/cron-generator.html">Cron Expression Generator</a></li>
+          <li><a href="../tools/timestamp-converter.html">Unix Timestamp Converter</a></li>
+          <li><a href="../tools/uuid-generator.html">UUID &amp; ULID Generator</a></li>
+          <li><a href="../tools/subnet-calculator.html">CIDR &amp; Subnet Calculator</a></li>
+          <li><a href="../tools/unicode-inspector.html">Unicode &amp; Invisible Character Inspector</a></li>
+          <li><a href="../tools/log-analyzer.html">Log File Analyzer</a></li>
+          <li><a href="../tools/qr-barcode.html">QR Code &amp; Barcode Generator</a></li>
+          <li><a href="../tools/password-generator.html">Strong Password Generator</a></li>
+          <li><a href="../tools/color-converter.html">Color Converter &amp; Contrast Checker</a></li>
+          <li><a href="../tools/number-base-converter.html">Number Base Converter</a></li>
+          <li><a href="../tools/text-case-converter.html">Text Case Converter &amp; Word Counter</a></li>
+          <li><a href="../tools/markdown-preview.html">Markdown Editor &amp; Preview</a></li>
+          <li><a href="../tools/pint-ae-checker.html">UAE PINT-AE E-Invoice Checker</a></li>
+          <li><a href="../tools/layerlink-sharer.html">LayerLink Screen Sharing</a></li>
+        </ul>
+      </div>
+      <div class="site-dir-col">
+        <h2 class="site-dir-title">Guides</h2>
+        <ul>
+          <li><a href="../guides/how-to-create-a-strong-password.html">Strong passwords: length beats symbols</a></li>
+          <li><a href="../guides/wcag-color-contrast-explained.html">WCAG color contrast explained</a></li>
+          <li><a href="../guides/twos-complement-explained.html">Two's complement explained</a></li>
+          <li><a href="../guides/naming-conventions-camelcase-snake-case.html">Naming conventions by language</a></li>
+          <li><a href="../guides/markdown-cheat-sheet.html">Markdown cheat sheet</a></li>
+          <li><a href="../guides/json-syntax-errors-explained.html">JSON syntax errors explained</a></li>
+          <li><a href="../guides/json-schema-validation-explained.html">JSON Schema validation explained</a></li>
+          <li><a href="../guides/jsonpath-cheat-sheet.html">JSONPath cheat sheet</a></li>
+          <li><a href="../guides/three-way-merge-explained.html">Three-way merge explained</a></li>
+          <li><a href="../guides/jwt-signing-algorithms-compared.html">JWT signing algorithms compared</a></li>
+          <li><a href="../guides/jwt-decode-vs-verify.html">Decoding a JWT is not verifying it</a></li>
+          <li><a href="../guides/regex-catastrophic-backtracking.html">Regex catastrophic backtracking</a></li>
+          <li><a href="../guides/base64-explained.html">What Base64 actually does</a></li>
+          <li><a href="../guides/percent-encoding-explained.html">URL encoding explained</a></li>
+          <li><a href="../guides/html-escaping-and-xss-contexts.html">HTML escaping and XSS contexts</a></li>
+          <li><a href="../guides/hashing-vs-encryption-vs-encoding.html">Hashing vs encryption vs encoding</a></li>
+          <li><a href="../guides/csv-edge-cases.html">Why CSV is not really a format</a></li>
+          <li><a href="../guides/yaml-gotchas.html">YAML's sharpest edges</a></li>
+          <li><a href="../guides/sql-formatting-and-dialects.html">SQL dialects compared</a></li>
+          <li><a href="../guides/cron-expressions-explained.html">Cron expression rules</a></li>
+          <li><a href="../guides/unix-time-and-time-zones.html">Unix time and time zones</a></li>
+          <li><a href="../guides/uuid-v4-vs-v7-database-keys.html">UUID v4 vs v7 for database keys</a></li>
+          <li><a href="../guides/subnetting-explained.html">Subnetting explained</a></li>
+          <li><a href="../guides/invisible-unicode-characters.html">Invisible Unicode characters</a></li>
+          <li><a href="../guides/xpath-cheat-sheet.html">XPath cheat sheet</a></li>
+          <li><a href="../guides/uae-einvoicing-pint-ae.html">UAE e-invoicing: PINT-AE</a></li>
+        </ul>
+      </div>
+      <div class="site-dir-col">
+        <h2 class="site-dir-title">Services</h2>
+        <ul>
+          <li><a href="../tools/erp-development.html">Custom ERP development</a></li>
+          <li><a href="../tools/api-automation.html">API integration &amp; automation</a></li>
+          <li><a href="../tools/app-development.html">Mobile app development</a></li>
+          <li><a href="../tools/custom-scripts.html">Custom scripts &amp; automation</a></li>
+          <li><a href="../tools/static-sites.html">Static website engineering</a></li>
+          <li><a href="../tools/portfolio-design.html">Portfolio website design</a></li>
+        </ul>
+      </div>
+    </nav>
+    <div class="footer-bottom">
+      <div class="footer-copy">&copy; 2025 - 2026 <strong>Layerbit Technologies</strong>. All rights reserved.</div>
+      <div class="footer-links">
+        <a href="../about.html">About</a>
+        <a href="../blog.html">Developer Blog</a>
+        <a href="../contact.html">Contact</a>
+        <a href="../privacy.html">Privacy Policy</a>
+        <a href="../terms.html">Terms of Service</a>
+        <a href="#" data-cookie-settings>Your privacy choices</a>
+      </div>
     </div>
   </footer>
+  <script src="../js/kernel.js"></script>
 
   <script src="../js/shared.js"></script>
 
