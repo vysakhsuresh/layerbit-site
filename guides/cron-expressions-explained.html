@@ -360,6 +360,30 @@ Gaps:  7 7 7 7 7 7 7 7  then 4  ← the boundary jump</code></pre>
           </a>
         </div>
       </div>
+
+      <h2 id="faq">Frequently asked questions</h2>
+      <div class="faq-container">
+        <div class="faq-item">
+          <button class="faq-question">Why does my cron job run on both the day of month and the day of week? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>POSIX cron specifies that when neither the day-of-month nor the day-of-week field is a wildcard, the job runs whenever either field matches. It is an OR, not an AND. An expression like 0 0 13 * 5 fires on the 13th of every month and also every Friday. There is no standard cron syntax for a true AND, so you must schedule the superset and add a date guard inside the job.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">Does */7 mean every seven minutes in cron? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>Not exactly. A step means every nth value within the field's range, counting from the range start. Because the minute range 0-59 is not divisible by 7, */7 fires at 0, 7, 14, 21, 28, 35, 42, 49 and 56, then resets to 0 - leaving a four-minute gap at the hour boundary. Only steps that divide 60 evenly, such as 1, 2, 3, 4, 5, 6, 10, 12, 15, 20 and 30, produce a uniform interval.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">How does daylight saving time affect cron jobs? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>Classic cron evaluates local time. When clocks spring forward, a job scheduled inside the skipped hour usually does not run at all. When clocks fall back, that hour occurs twice and the job may run twice. The reliable fix is to run the host in UTC, or set CRON_TZ=UTC in the crontab, and handle timezone conversion inside the application.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">Why do L, W and # not work in my crontab? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>Those are Quartz scheduler extensions, not POSIX cron. Quartz is the Java scheduler used by Spring and many enterprise products, and much cron documentation online is actually Quartz documentation. Standard Linux crontabs do not support L, W, # or ?, and also use five fields rather than Quartz's six or seven.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">How do I stop a cron job running on top of itself? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>Cron has no awareness of previous invocations, so a job that runs longer than its interval will overlap. Wrap it in a non-blocking lock, for example flock -n /tmp/job.lock /path/to/job.sh, which skips the run if the previous one is still active. Use the non-blocking flag so you skip rather than queue up waiting processes.</p></div>
+        </div>
+      </div>
     </div>
   </article>
   </main>

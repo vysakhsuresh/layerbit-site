@@ -339,6 +339,30 @@ UAE"</code></pre>
           </a>
         </div>
       </div>
+
+      <h2 id="faq">Frequently asked questions</h2>
+      <div class="faq-container">
+        <div class="faq-item">
+          <button class="faq-question">Why can I not just split a CSV file on commas? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>Because RFC 4180 allows a field to contain commas, double quotes and even line breaks as long as the field is wrapped in double quotes, with internal quotes escaped by doubling them. Splitting on commas breaks any such record, and splitting on newlines breaks records containing embedded line breaks. Correct parsing requires a small state machine, so use your language's CSV library rather than string splitting.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">Why does my CSV open as a single column in Excel? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>Excel uses the list separator from the operating system's regional settings rather than assuming a comma. In locales where the decimal mark is a comma, such as Germany, France and Spain, the list separator is a semicolon, so a comma-delimited file is not split. You can emit a sep=, line as the first row, which Excel honours, or ship an .xlsx file instead.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">Why does Excel strip the leading zeros from my CSV data? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>Excel runs type inference on every cell when opening a CSV. A value like 01234 is read as the number 1234 because a leading zero has no numeric meaning. Long digit strings also become scientific notation, and values resembling dates are converted. The corruption happens on open, not export, so the file on disk is correct until someone saves it.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">What is CSV injection? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>If an exported cell begins with =, +, - or @, spreadsheet applications treat it as a formula. An attacker who can store text in your database can plant a payload that executes when an administrator exports the data and opens it, potentially exfiltrating other cells. Mitigate it by prefixing any such value with an apostrophe or space before writing. Quoting the field alone is not sufficient.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">Can CSV distinguish an empty string from null? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>No. CSV has a single representation for absent data - nothing between two delimiters - so empty strings, nulls and missing values all collapse to the same thing. Parsers differ on whether they return an empty string or null. If the distinction matters you need an agreed sentinel value, or a format with a real type system such as JSON or Parquet.</p></div>
+        </div>
+      </div>
     </div>
   </article>
   </main>

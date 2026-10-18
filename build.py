@@ -265,6 +265,7 @@ def redirect_page(src, dest, label):
         "  <meta charset=\"utf-8\" />\n"
         "  <title>Moved to %s | Layerbit</title>\n"
         "  <link rel=\"canonical\" href=\"%s\" />\n"
+        "  <meta name=\"robots\" content=\"noindex\" />\n"
         "  <meta http-equiv=\"refresh\" content=\"0; url=%s\" />\n"
         "  <script>location.replace(%s + location.search + location.hash);</script>\n"
         "</head>\n<body>\n  <p>This page has moved to <a href=\"%s\">%s</a>.</p>\n</body>\n</html>\n"

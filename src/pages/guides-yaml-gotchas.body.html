@@ -182,6 +182,30 @@ c: bare string           # no escapes processed at all</code></pre>
           </a>
         </div>
       </div>
+
+      <h2 id="faq">Frequently asked questions</h2>
+      <div class="faq-container">
+        <div class="faq-item">
+          <button class="faq-question">Why does NO become false in YAML? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>YAML 1.1 resolves a long list of bare words to booleans, including y, n, yes, no, on and off in several capitalisations. Norway's ISO country code NO therefore parses as the boolean false. PyYAML still implements YAML 1.1 by default, so this happens in production today. Quoting the value as "NO" makes it unambiguously a string in every YAML version.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">Why did my YAML version number 1.10 become 1.1? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>Unquoted 1.10 is a valid float, so the parser converts it and the trailing zero is lost. Confusingly, 1.2.3 stays a string because two dots cannot form a number. Always quote version strings, for example version: "1.10", so they are preserved exactly.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">Why does 0755 become 493 in my YAML file? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>Under YAML 1.1 a leading zero marks an octal literal, so 0755 is parsed as octal and becomes decimal 493. YAML 1.2 dropped bare octal and requires the 0o prefix. Because file modes in Ansible and Kubernetes manifests are commonly written as 0644 or 0755, both tools recommend quoting them as strings.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">What is the difference between yaml.load and yaml.safe_load? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>yaml.safe_load only constructs plain data types. The unsafe loader honours typed tags that can instantiate arbitrary objects, which allows remote code execution from a crafted document. Always use safe_load for YAML you did not author, and treat untrusted YAML as code rather than data.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">Why does my YAML secret fail authentication with an invalid key error? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>A block scalar written with | keeps exactly one trailing newline, so the value ends in \n and no longer matches the real key. Use the strip indicator |- for secrets and tokens, or quote the value inline, so no trailing newline is included.</p></div>
+        </div>
+      </div>
     </div>
   </article>
   </main>
