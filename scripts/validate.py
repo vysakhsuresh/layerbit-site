@@ -74,6 +74,44 @@ def check_jsonld(text):
             json.loads(block)
         except Exception as e:
             errs.append(f"JSON-LD block #{i}: {e}")
+    return errs + check_faq_visible(text)
+
+
+def check_faq_visible(text):
+    """Google requires FAQPage markup to match text a reader can see on the
+    page; markup for hidden content counts as spammy structured data."""
+    def squash(s, markup=False):
+        # FAQ text in JSON-LD is plain text (it may mention "</script>"), so
+        # only strip tags from the page markup side
+        if markup:
+            s = re.sub(r"<[^>]+>", "", s)
+        return re.sub(r"\s+", "", html_unescape(s))
+
+    def nodes(x):
+        if isinstance(x, dict):
+            yield x
+            for v in x.values():
+                yield from nodes(v)
+        elif isinstance(x, list):
+            for v in x:
+                yield from nodes(v)
+
+    visible = squash(re.sub(r"<script\b.*?</script>", "", text, flags=re.S), markup=True)
+    errs = []
+    for block in re.findall(r'<script type="application/ld\+json">(.*?)</script>', text, re.S):
+        try:
+            data = json.loads(block)
+        except Exception:
+            continue
+        for n in nodes(data):
+            if n.get("@type") != "Question":
+                continue
+            q = n.get("name", "")
+            a = (n.get("acceptedAnswer") or {}).get("text", "")
+            if squash(q) not in visible:
+                errs.append(f"FAQ question in JSON-LD is not visible on the page: {q[:60]!r}")
+            elif squash(a)[:80] not in visible:
+                errs.append(f"FAQ answer in JSON-LD does not match the page: {q[:60]!r}")
     return errs
 
 
@@ -108,6 +146,20 @@ def check_seo(text, f):
     h1s = re.findall(r"<h1\b", markup)
     if len(h1s) != 1:
         errs.append(f"expected exactly one <h1>, found {len(h1s)}")
+    # the main landmark must hold the page's primary content, not just a banner
+    mains = re.findall(r"<main\b", markup)
+    if len(mains) != 1:
+        errs.append(f"expected exactly one <main>, found {len(mains)}")
+    elif h1s:
+        m_open, m_close = markup.find("<main"), markup.find("</main>")
+        h1_at = markup.find("<h1")
+        if not m_open < h1_at < m_close:
+            errs.append("<h1> is not inside <main>")
+        else:
+            words_in = len(re.findall(r"\w+", re.sub(r"<[^>]+>", " ", markup[m_open:m_close])))
+            words_all = len(re.findall(r"\w+", re.sub(r"<[^>]+>", " ", markup[markup.find("<body"):])))
+            if f not in ("404.html", "offline.html") and words_in < 0.5 * words_all:
+                errs.append(f"<main> holds only {words_in} of {words_all} words; wrap the page content in it")
     if not re.search(r'<link rel="canonical"', text) and "noindex" not in text:
         errs.append("missing canonical link")
     t = re.search(r"<title>(.*?)</title>", text, re.S)

@@ -163,6 +163,34 @@
           </a>
         </div>
       </div>
+
+      <h2 id="faq">Frequently asked questions</h2>
+      <div class="faq-container">
+        <div class="faq-item">
+          <button class="faq-question">What is PINT-AE? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>PINT-AE is the United Arab Emirates profile of Peppol PINT, OpenPeppol's international invoice specification. Technically it is UBL 2.1 XML that must satisfy both the PINT business rules and the additional requirements the UAE Federal Tax Authority imposes, such as local identifiers and tax categories. A document can be valid UBL and still fail PINT-AE validation.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">Is a PDF invoice valid under UAE e-invoicing? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>No. A PDF is an image of an invoice, and the e-invoicing programme requires a structured XML document in the PINT-AE format exchanged through an accredited provider. Attaching XML to a PDF is also not the same thing as issuing a structured e-invoice.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">What is the five-corner model? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>Standard Peppol is a four-corner network: sender, sender's access point, receiver's access point, receiver. The UAE adds the tax authority as a fifth corner, so your Accredited Service Provider both delivers the invoice to your customer's provider and reports the transaction to the Federal Tax Authority. Reporting becomes a by-product of exchange rather than a separate periodic filing.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">Can I send PINT-AE invoices myself? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>No. Exchange must go through an Accredited Service Provider, so you need a contract with one. That also means validation happens outside your control: if your XML fails a business rule it is rejected at the provider and the invoice has not legally been issued.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">What should I do now to prepare for UAE e-invoicing? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>Start with data rather than integration. Audit every counterparty for a valid tax identifier and a structured address, classify each product and service with a tax category and a valid UN/ECE unit code, make rounding consistent in one place, confirm invoice numbers are genuinely unique, and select a provider early. Then try to express your ten most complicated real invoices as PINT-AE XML to find your actual gaps.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">How do corrections work under e-invoicing? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>You cannot edit an issued e-invoice. A correction is itself a structured document - a credit note with invoice type code 381 - that carries a mandatory reference to the original invoice. Your system must therefore retain original document identifiers and be able to link a correction to them, which informal reissue-the-PDF workflows have no equivalent for.</p></div>
+        </div>
+      </div>
     </div>
   </article>
   </main>

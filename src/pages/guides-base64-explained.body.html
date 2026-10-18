@@ -152,6 +152,30 @@ function decodeUtf8Base64(b64) {
           </a>
         </div>
       </div>
+
+      <h2 id="faq">Frequently asked questions</h2>
+      <div class="faq-container">
+        <div class="faq-item">
+          <button class="faq-question">Is Base64 a form of encryption? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>No. Base64 has no key and no secret - the same input always produces the same output, and any decoder reverses it instantly. HTTP Basic authentication sends base64(user:password), which is why Basic auth over plain HTTP is equivalent to sending the password in clear text. Base64 in a cookie, config file or app bundle protects nothing.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">How much larger does Base64 make my data? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>Exactly one third larger. Every 3 bytes of input become 4 output characters, a ratio of 4/3 or 33.3% growth, plus up to two padding characters. MIME email adds line breaks every 76 characters, pushing the practical overhead to roughly 37%. This is why inlining large images as data URIs is often a poor trade.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">What is the equals sign at the end of a Base64 string? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>It is padding. When the input length is not a multiple of 3 the final group is short, so the output is padded with = to reach a multiple of 4. One leftover byte produces two characters plus ==; two leftover bytes produce three characters plus =. The padding carries no data and some formats, including JWT, omit it entirely.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">When should I use base64url instead of Base64? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>Whenever the value goes in a URL, a filename or a cookie. Standard Base64 uses + and /, and in a query string form-decoding turns + into a space while in a path / acts as a separator. Base64url substitutes - and _ for those two characters and usually drops the padding. JWTs use base64url for exactly this reason.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">Why does btoa throw an error on non-English text? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>btoa operates on binary strings where every character must be in the range U+0000 to U+00FF, so anything above that - accented letters, CJK characters, emoji - throws InvalidCharacterError. Convert the string to UTF-8 bytes with TextEncoder first, then map those bytes into the Latin-1 range before calling btoa. Base64 encodes bytes, not text.</p></div>
+        </div>
+      </div>
     </div>
   </article>
   </main>

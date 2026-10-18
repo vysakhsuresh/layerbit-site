@@ -163,6 +163,30 @@ url = data:text/html,&lt;script&gt;alert(1)&lt;/script&gt;</code></pre>
           </a>
         </div>
       </div>
+
+      <h2 id="faq">Frequently asked questions</h2>
+      <div class="faq-container">
+        <div class="faq-item">
+          <button class="faq-question">Is HTML escaping enough to prevent XSS? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>Only in element text and quoted attribute values. It does nothing for a JavaScript block, a URL attribute or CSS, because the dangerous characters in those contexts are not the five that HTML escaping replaces. A javascript: URL, for example, contains no character that HTML escaping touches. Output encoding must match the context the value is rendered into.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">Why are unquoted HTML attributes dangerous? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>An unquoted attribute value ends at the first whitespace, so a payload needs no angle brackets or quotes at all. A value such as x onfocus=alert(1) autofocus survives HTML escaping completely intact and adds a new event-handler attribute. The fix is not more escaping but always quoting attributes, so the closing quote is the only exit and that character is escaped.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">Why does &lt;/script&gt; break out of a JavaScript string? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>The HTML tokeniser runs before the JavaScript parser and has no concept of being inside a string literal. It ends the script block at the first literal &lt;/script&gt; sequence it sees, even mid-string. Serialise data into a JSON script block or data attribute instead, and when inlining JSON escape &lt;, &gt; and &amp; as \u003c, \u003e and \u0026.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">Should I escape user input before storing it in the database? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>No. At input time you do not know which context the value will be rendered into - HTML, a plain-text email, a JSON response or a CSV export each need different treatment. Escaping on input also corrupts the stored data and causes double-escaped output like &amp;amp;amp;lt;. Store what the user typed and escape at the moment of rendering.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">What is the difference between escaping and sanitising HTML? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>Escaping renders a value as inert text, so markup is displayed literally - correct for usernames, titles and comments. Sanitising parses the value as HTML and strips everything not on an allowlist while keeping the rest live - correct only when users are genuinely meant to submit formatting. Use a maintained library such as DOMPurify for sanitising, never a regular expression.</p></div>
+        </div>
+      </div>
     </div>
   </article>
   </main>

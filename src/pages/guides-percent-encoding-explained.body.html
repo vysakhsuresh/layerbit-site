@@ -161,6 +161,30 @@ u.searchParams.set("page", n);</code></pre>
           </a>
         </div>
       </div>
+
+      <h2 id="faq">Frequently asked questions</h2>
+      <div class="faq-container">
+        <div class="faq-item">
+          <button class="faq-question">Why is a space sometimes %20 and sometimes a plus sign? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>There are two encodings. RFC 3986 percent-encoding represents a space as %20 and is used in paths and general URIs. The application/x-www-form-urlencoded format used by HTML forms represents a space as +, and a literal plus as %2B. Query strings are form-decoded by most servers, so + reads as a space there, but in a path + is a literal plus character.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">What is the difference between encodeURI and encodeURIComponent? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>encodeURI is for an entire URL and deliberately leaves structural characters such as / ? : @ &amp; = + and # unencoded. encodeURIComponent is for a single value and encodes those characters too. Using encodeURI on a value allows characters in your data to be read as URL structure, which is a parameter-injection bug.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">Why does my filename with a plus sign 404 on download? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>A file named C++ notes.pdf percent-encodes to C%2B%2B%20notes.pdf. If any layer form-decodes the path instead of percent-decoding it, the escaped pluses become spaces and the lookup key no longer matches. Paths must always be percent-decoded, never form-decoded.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">What does %2520 mean in a URL? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>It is the signature of double encoding. A space was encoded once to %20, then the % of that sequence was itself encoded to %25, producing %2520. It means a value was encoded twice, usually because two layers each believed they were responsible for encoding it. Encode once at assembly time and decode once at parse time.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">Should I decode a URL repeatedly until it stops changing? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>No. Repeated decoding is how path-traversal filters get bypassed, because a sequence like %252e%252e%252f passes a check for ../ and then becomes ../ after a second decode. Decode exactly once, then validate the result.</p></div>
+        </div>
+      </div>
     </div>
   </article>
   </main>

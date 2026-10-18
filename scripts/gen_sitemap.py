@@ -5,8 +5,9 @@ The page list comes from src/pages/*.json, so a new page cannot be forgotten
 in the sitemap - which is how tools/*.html drifted out of it previously.
 Pages carrying a noindex robots directive (404.html) are excluded.
 
-lastmod is the date of the last commit that changed the page's own sources
-(src/pages/<slug>.*), or today when those files have uncommitted edits, so it
+lastmod is the date of the last commit that changed the page's text (body
+copy, tool code, title or description; markup-only edits do not count), or
+today when the working tree has such a change, so it
 tells crawlers which pages actually changed instead of stamping every URL
 with the same date (which search engines learn to ignore). Each URL also
 lists its social card under the image sitemap extension. The same run writes
@@ -48,15 +49,36 @@ def _git(*args):
     return subprocess.run(["git", *args], capture_output=True, text=True).stdout.strip()
 
 
+def _text(blob):
+    """What a reader gets from a source file: tags removed, whitespace folded,
+    so markup-only edits (wrappers, classes, icon names) do not count as
+    content changes. Script text stays in, so a tool's behaviour changes do."""
+    return re.sub(r"\s+", " ", re.sub(r"<[^>]+>", " ", blob)).strip()
+
+
 def lastmod(slug):
-    # content only: the body and the title/description; style or schema edits are not "modified" for readers
+    """Date of the last commit that changed what a reader sees: the body text
+    or the title/description. Today if the working tree has such a change."""
     files = [f"src/pages/{slug}.body.html", f"src/pages/{slug}.json"]
-    dirty = subprocess.run(["git", "diff", "--quiet", "HEAD", "--", *files]).returncode != 0 or \
-        bool(_git("ls-files", "--others", "--exclude-standard", "--", *files))
-    if dirty:
+
+    def text_at(rev):
+        out = []
+        for f in files:
+            if rev is None:
+                out.append(_text(open(f, encoding="utf-8").read()) if os.path.exists(f) else "")
+            else:
+                r = subprocess.run(["git", "show", f"{rev}:{f}"], capture_output=True, text=True)
+                out.append(_text(r.stdout) if r.returncode == 0 else "")
+        return out
+
+    if text_at(None) != text_at("HEAD"):
         return date.today().isoformat()
-    d = _git("log", "-1", "--format=%cs", "--", *files)
-    return d or date.today().isoformat()
+    log = _git("log", "--format=%H %cs", "--", *files).splitlines()
+    for line in log:
+        sha, day = line.split()
+        if text_at(sha) != text_at(sha + "^"):
+            return day
+    return log[-1].split()[1] if log else date.today().isoformat()
 
 
 def og_name(rel):

@@ -20,7 +20,7 @@ JS = r"""
     const cs = getComputedStyle(el); const g = el.querySelector('svg, i, img');
     out.floats[sel] = Object.assign(r(el), {pos: cs.position, radius: cs.borderRadius, glyph: g ? Math.round(g.getBoundingClientRect().width) : null});
   }
-  const header = document.querySelector('header'); const main = document.querySelector('main, .container, .hero');
+  const header = document.querySelector('header'); const main = document.querySelector('main:not(.page-main), .container, .hero');
   if (header && main) out.align = { headerX: Math.round(header.getBoundingClientRect().left), mainX: Math.round(main.getBoundingClientRect().left), headerW: Math.round(header.getBoundingClientRect().width), mainW: Math.round(main.getBoundingClientRect().width) };
   for (const el of document.querySelectorAll('body *')) {
     const b = el.getBoundingClientRect(); if (b.width === 0) continue;

@@ -341,6 +341,30 @@ return EMAIL_RE.test(input);</code></pre>
           </a>
         </div>
       </div>
+
+      <h2 id="faq">Frequently asked questions</h2>
+      <div class="faq-container">
+        <div class="faq-item">
+          <button class="faq-question">What is catastrophic backtracking? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>It is the exponential blow-up that occurs when a backtracking regex engine has more than one way to divide the same input between parts of a pattern. With a pattern like ^(a+)+$ the engine must try every possible partition of the input before concluding there is no match, so each extra input character doubles the work. Forty characters can take minutes; fifty can take over a week.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">Which regex patterns are dangerous? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>Three shapes: nested quantifiers such as (a+)+ or ([a-z]+)*; ambiguous alternations under a quantifier such as (a|ab)* or (\w|\d)*, where two branches match the same character; and quantified overlapping sequences such as (\w+\s?)+, where an optional separator sits inside a repeated group. All three give the engine a choice at every character.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">Why does the attack input almost match the pattern? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>A string that matches succeeds on the first attempt and returns immediately. The expensive case is a failed match, because the engine must exhaust every alternative before reporting failure. Attackers therefore send a long repeated run followed by one character that guarantees the match cannot succeed.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">Are Go and Rust vulnerable to ReDoS? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>No. Go's regexp package and the Rust regex crate are built on RE2-style automata that guarantee matching in time linear in the input length, so there is no backtracking to explode. The trade-off is that they cannot support backreferences or lookaround, which are the features that make linear-time matching impossible.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">What is the simplest ReDoS mitigation? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>Cap the input length before the regex runs. Because the blow-up is a function of input length, a hard limit converts an unbounded worst case into a bounded one. It requires no new library, works on every platform, and applies before the dangerous code executes. In JavaScript this matters especially, since regex matching is synchronous and will block the entire event loop.</p></div>
+        </div>
+      </div>
     </div>
   </article>
   </main>

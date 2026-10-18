@@ -80,6 +80,11 @@ html {
       scroll-behavior: smooth;
     }
 
+/* The main landmark wraps the whole page body for screen readers and search
+   engines, but must not add a layout box: page styles lay out its children
+   as if they sat directly in <body>. */
+.page-main { display: contents; }
+
 .brand { font-size: 1.6em; font-weight: 700; display: flex; align-items: center; gap: 12px; text-decoration: none; color: #fff; }
 
 .brand svg {

@@ -408,6 +408,30 @@ jwt.verify(token, publicKeyPem);</code></pre>
           </a>
         </div>
       </div>
+
+      <h2 id="faq">Frequently asked questions</h2>
+      <div class="faq-container">
+        <div class="faq-item">
+          <button class="faq-question">Can anyone read the contents of a JWT? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>Yes. A JWT is signed, not encrypted. The header and payload are only Base64url-encoded, which requires no key to reverse, so any holder of the token can read every claim inside it. Never place secrets in a JWT payload; use JWE or an opaque session identifier if the contents must stay confidential.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">What is the difference between decoding and verifying a JWT? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>Decoding simply Base64url-decodes the header and payload and needs no key, so it proves nothing about authenticity. Verifying recomputes the signature with a key you control and proves the token was issued by the holder of that key and has not been modified. Authorisation decisions must only ever be made from a verified token.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">What is the alg:none JWT attack? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>RFC 7518 defines an algorithm called none for unsecured tokens. An attacker rewrites a token's payload, sets the header algorithm to none, and removes the signature. A server that reads the algorithm from the token's own header concludes no signature is required and accepts the forgery. The fix is to pass an explicit allowlist of accepted algorithms during verification.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">What is JWT algorithm confusion? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>A server expecting RS256 verifies with an RSA public key. If the library takes the algorithm from the token header, an attacker can craft an HS256 token signed with the public key bytes used as an HMAC shared secret. Because the public key is not secret, the forged signature validates. Pinning the algorithm explicitly during verification prevents it.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">Is the JWT exp claim in seconds or milliseconds? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>Seconds. The exp, nbf and iat claims are NumericDate values measured in seconds since the Unix epoch, while JavaScript's Date.now() returns milliseconds. Use Math.floor(Date.now() / 1000) to produce them, otherwise tokens will either never expire or expire immediately.</p></div>
+        </div>
+      </div>
     </div>
   </article>
   </main>
