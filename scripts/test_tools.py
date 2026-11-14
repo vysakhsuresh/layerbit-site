@@ -2541,8 +2541,10 @@ def smoke_all_pages(page, base):
     import glob
     fails, errs = [], []
     page.on("pageerror", lambda e: errs.append(str(e)))
-    pages = sorted(f for f in glob.glob("*.html") + glob.glob("tools/*.html") + glob.glob("guides/*.html")
-                   if 'http-equiv="refresh"' not in open(f, encoding="utf-8").read(2000))
+    # every page the build writes, including folder pages such as stave/privacy.html
+    built = {json.load(open(m, encoding="utf-8"))["file"] for m in glob.glob("src/pages/*.json")}
+    pages = sorted(f for f in set(glob.glob("*.html") + glob.glob("tools/*.html") + glob.glob("guides/*.html")) | built
+                   if os.path.exists(f) and 'http-equiv="refresh"' not in open(f, encoding="utf-8").read(2000))
     for f in pages:
         errs.clear()
         page.set_viewport_size({"width": 1280, "height": 900})
