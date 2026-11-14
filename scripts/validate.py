@@ -213,6 +213,28 @@ def check_icons():
     return errs
 
 
+def check_sitemap():
+    """sitemap.xml must list every indexable page exactly once, and nothing
+    else, so a newly added page cannot be left out of it."""
+    base = "https://layerbit.co.in/"
+    try:
+        locs = re.findall(r"<loc>([^<]+)</loc>", open(os.path.join(ROOT, "sitemap.xml"), encoding="utf-8").read())
+    except FileNotFoundError:
+        return ["sitemap.xml is missing; run scripts/gen_sitemap.py"]
+    pages = [u for u in locs if "/images/" not in u]
+    want = set()
+    for meta in glob.glob(os.path.join(ROOT, "src/pages/*.json")):
+        data = json.load(open(meta, encoding="utf-8"))
+        if "noindex" in (data.get("robots") or "").lower():
+            continue
+        f = data["file"]
+        want.add(base if f == "index.html" else base + f)
+    errs = [f"sitemap.xml is missing {u}; run scripts/gen_sitemap.py" for u in sorted(want - set(pages))]
+    errs += [f"sitemap.xml lists {u}, which is not an indexable page; run scripts/gen_sitemap.py" for u in sorted(set(pages) - want)]
+    errs += [f"sitemap.xml lists {u} more than once" for u in sorted({u for u in pages if pages.count(u) > 1})]
+    return errs
+
+
 def html_unescape(s):
     import html
     return html.unescape(s)
@@ -270,8 +292,11 @@ def main():
     if not node_available:
         print("warning: node not found on PATH, skipping inline JS syntax checks", file=sys.stderr)
 
-    files = sorted(f for f in glob.glob("*.html") + glob.glob("tools/*.html") + glob.glob("guides/*.html")
-                   if not is_redirect(f))
+    # every page the build writes (src/pages/*.json "file"), including ones in
+    # their own folder such as stave/privacy.html, plus any stray root pages
+    built = {json.load(open(m, encoding="utf-8"))["file"] for m in glob.glob(os.path.join(ROOT, "src/pages/*.json"))}
+    files = sorted(f for f in set(glob.glob("*.html") + glob.glob("tools/*.html") + glob.glob("guides/*.html")) | built
+                   if os.path.exists(f) and not is_redirect(f))
     failures = []
     seen_titles, seen_descs = {}, {}
     for f in files:
@@ -287,7 +312,7 @@ def main():
         if errs:
             failures.append((f, errs))
 
-    graph_errs = check_link_graph(files) + check_registry() + check_icons()
+    graph_errs = check_link_graph(files) + check_registry() + check_icons() + check_sitemap()
     if graph_errs:
         failures.append(("(site-wide link graph)", graph_errs))
 
