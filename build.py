@@ -165,6 +165,13 @@ def build_page(slug_file):
                     if data.get("robots") else SERP_DIRECTIVES)
     robots_tag = f'  <meta name="robots" content="{robots_value}" />\n'
     og_url = data["og_url"]
+    # Ads only on pages that are content for readers. Google's publisher
+    # policies do not allow ads on pages without publisher content (error and
+    # offline pages), and pages kept out of search (app privacy policies) are
+    # not content either, so a noindex page never loads the AdSense script.
+    show_ads = data.get("ads", True) and "noindex" not in (data.get("robots") or "")
+    adsense_tag = ('  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?'
+                   'client=ca-pub-6072772587431629" crossorigin="anonymous"></script>\n') if show_ads else ""
     # indent the JSON-LD block's first line to match the head partial's 2-space
     # style (its own internal lines already carry their own indentation from
     # Phase 2); empty when the page has no JSON-LD, leaving no stray line
@@ -200,6 +207,7 @@ def build_page(slug_file):
         ROBOTS_TAG=robots_tag,
         OG_URL=og_url,
         JSONLD=jsonld_block,
+        ADSENSE_TAG=adsense_tag,
         FONTS_FAMILY=data["fonts_family"],
         PREFIX=prefix,
         PAGE_STYLE=style,
