@@ -2535,6 +2535,52 @@ def launch(p):
         raise
 
 
+AUTOSAMPLE_TOOLS = ["base64", "csv-to-json", "html-escape-unescape", "json-to-table", "json-validator",
+                    "jwt-decoder", "log-analyzer", "sql-formatter", "text-diff-checker", "url-encoder",
+                    "yaml-json-converter", "regex-tester", "xml-formatter", "unicode-inspector", "subnet-calculator"]
+
+
+def autosample_checks(browser, base):
+    """A first visit opens each tool on a worked example; a second visit and a
+    shared link do not get one."""
+    out = []
+    filled_js = """() => [...document.querySelectorAll('textarea, input[type=text], input:not([type])')]
+        .filter(e => e.offsetParent !== null && e.value.trim() !== '').length"""
+    ctx = browser.new_context(viewport={"width": 1280, "height": 900})
+    ctx.route("**/*", lambda route, req: route.abort()
+              if any(h in req.url for h in BLOCKED_HOSTS) else route.continue_())
+    page = ctx.new_page()
+    errors = []
+    page.on("pageerror", lambda e: errors.append(str(e)))
+    empty = []
+    for slug in AUTOSAMPLE_TOOLS:
+        page.goto(f"{base}/tools/{slug}.html", wait_until="load")
+        page.wait_for_timeout(500)
+        if page.evaluate(filled_js) == 0:
+            empty.append(slug)
+    out.append(("first visit shows a worked example on every marked tool", not empty and not errors,
+                f"still empty: {empty}; page errors: {errors[:2]}"))
+    page.goto(f"{base}/tools/json-validator.html", wait_until="load")
+    page.wait_for_timeout(500)
+    val = page.evaluate("document.getElementById('jsonInput') ? document.getElementById('jsonInput').value : [...document.querySelectorAll('textarea')][0].value")
+    out.append(("second visit opens the tool empty", val.strip() == "", f"value on second visit: {val[:80]!r}"))
+    ctx.close()
+    # a shared link carries its own input, which the example must never replace
+    ctx = browser.new_context(viewport={"width": 1280, "height": 900})
+    page = ctx.new_page()
+    page.goto(f"{base}/tools/json-validator.html#x", wait_until="load")
+    frag = page.evaluate("Layerbit.state.encode({input: '{\"shared\": 1}'})")
+    ctx.close()
+    ctx = browser.new_context(viewport={"width": 1280, "height": 900})
+    page = ctx.new_page()
+    page.goto(f"{base}/tools/json-validator.html#s={frag}", wait_until="load")
+    page.wait_for_timeout(700)
+    vals = page.evaluate("[...document.querySelectorAll('textarea')].map(t => t.value).join(' ')")
+    out.append(("a shared link keeps its own input", '"shared"' in vals and "Logging" not in vals, f"textareas: {vals[:120]!r}"))
+    ctx.close()
+    return out
+
+
 def smoke_all_pages(page, base):
     """Every page loads with zero uncaught errors and lucide icons rendered,
     and nothing overflows the viewport horizontally at phone width."""
@@ -2591,6 +2637,10 @@ def main():
         ctx = browser.new_context(viewport={"width": 1280, "height": 900})
         ctx.route("**/*", lambda route, req: route.abort()
                   if any(h in req.url for h in BLOCKED_HOSTS) else route.continue_())
+        # the cases below exercise each tool from an empty state, so the
+        # first-visit example (kernel autoSample) is switched off here and
+        # tested on its own in autosample_checks()
+        ctx.add_init_script("try { localStorage.setItem('layerbit-autosample', 'off') } catch (e) {}")
 
         if not args.no_smoke and not args.only:
             page = ctx.new_page()
@@ -2627,6 +2677,10 @@ def main():
                 mark = "PASS" if ok else "FAIL"
                 print(f"{mark}  {slug:22s} {level:8s} {dur:5.2f}s  {name}" + ("" if ok else f"\n        -> {err[:300]}"))
                 page.close()
+        if not args.only:
+            for name, ok, err in autosample_checks(browser, base):
+                results.append(("autosample", "typical", name, ok, 0.0, err))
+                print(("PASS" if ok else "FAIL") + f"  {'autosample':22s} typical  {name}" + ("" if ok else f"\n        -> {err[:300]}"))
         browser.close()
 
     failed = [r for r in results if not r[3]]

@@ -584,6 +584,25 @@
     try { navigator.serviceWorker.register(PREFIX + 'sw.js', { scope: PREFIX || './' }).catch(function () { }); } catch (e) { /* ignore */ }
   }
 
+  // --------------------------------------------------------- first-visit example
+  // The first time someone opens a tool in this browser, press the sample
+  // button the page marks with data-lb-autosample, so the tool opens showing
+  // a worked example instead of an empty box. Never when a shared link brought
+  // its own input, never over text already in the page, and once per tool:
+  // returning visitors get the empty tool they expect.
+  function autoSample() {
+    var btn = document.querySelector('[data-lb-autosample]');
+    if (!btn || !SLUG || readFragment()) return;
+    var key = 'layerbit-sampled:' + SLUG;
+    try {
+      if (localStorage.getItem('layerbit-autosample') === 'off' || localStorage.getItem(key)) return;
+      localStorage.setItem(key, '1');
+    } catch (e) { return; }
+    var typed = Array.prototype.some.call(document.querySelectorAll('textarea'), function (t) { return t.value.trim() !== ''; });
+    if (typed) return;
+    btn.click();
+  }
+
   // --------------------------------------------------------------------- boot
   function boot() {
     installHeader();
@@ -602,6 +621,8 @@
   }
   installNetWatch();
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
+  // after the page's own start-up code has run
+  if (document.readyState === 'complete') setTimeout(autoSample, 60); else window.addEventListener('load', function () { setTimeout(autoSample, 60); });
 
   window.Layerbit = {
     version: '1.0.0', prefix: PREFIX, slug: SLUG, tools: TOOLS, guides: GUIDES,
