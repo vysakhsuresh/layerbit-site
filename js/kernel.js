@@ -46,7 +46,7 @@
     ['subnet-calculator', 'CIDR & Subnet Calculator', 'subnet cidr ip ipv4 ipv6 mask', ['text']],
     ['unicode-inspector', 'Unicode & Invisible Character Inspector', 'unicode invisible zero-width code point utf-8', ['text']],
     ['log-analyzer', 'Log File Analyzer', 'log errors warnings filter', ['text']],
-    ['qr-barcode', 'QR Code & Barcode Generator', 'qr code barcode ean svg', ['text', 'url']],
+    ['qr-barcode', 'QR Code & Barcode Generator', 'qr code barcode ean svg upi payment wifi whatsapp', ['text', 'url']],
     ['password-generator', 'Strong Password Generator', 'password passphrase diceware pin random strength entropy', ['text']],
     ['color-converter', 'Color Converter & Contrast Checker', 'color colour hex rgb hsl oklch contrast wcag apca palette', ['text']],
     ['number-base-converter', 'Number Base Converter', 'binary hex decimal octal base twos complement bits bytes float ieee', ['text']],
