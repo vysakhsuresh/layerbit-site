@@ -1,0 +1,12 @@
+# GitHub Pages builds this site with Jekyll. Publish only the built site:
+# page sources, build scripts and repository notes stay in the repository
+# and are never served (src/pages/*.body.html are unfinished fragments with
+# {{HEADER}} placeholders and must not be reachable on the domain).
+include:
+  - .well-known
+exclude:
+  - src/
+  - scripts/
+  - build.py
+  - readme.txt
+  - _config.yml

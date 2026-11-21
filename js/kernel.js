@@ -482,6 +482,14 @@
   function installHeader() {
     var header = document.querySelector('body > header, header');
     if (!header) return;
+    // Mark the current section in the main navigation.
+    var path = location.pathname;
+    var navEnd = /^\/(guides\/|blog\.html)/.test(path) ? 'blog.html' : /^\/tools\//.test(path) ? '#tools'
+      : /^\/(about|author)\.html$/.test(path) ? 'about.html' : /^\/(work|contact)\.html$/.test(path) ? path.slice(1) : '';
+    if (navEnd) header.querySelectorAll('.site-nav a').forEach(function (a) {
+      var h = a.getAttribute('href') || '';
+      if (h.slice(-navEnd.length) === navEnd) a.setAttribute('aria-current', 'page');
+    });
     // The homepage has its own search (bottom-left pill) and the Support button
     // top-right, so it gets no header pills; Ctrl+K still opens the palette.
     if (/^\/(index\.html)?$/.test(location.pathname)) return;

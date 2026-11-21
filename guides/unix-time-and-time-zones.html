@@ -24,7 +24,7 @@
   <meta name="robots" content="max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
   <meta property="og:type" content="article" />
   <meta property="article:published_time" content="2026-09-27" />
-  <meta property="article:modified_time" content="2026-09-27" />
+  <meta property="article:modified_time" content="2026-11-21" />
   <meta property="article:author" content="https://layerbit.co.in/author.html" />
   <meta property="og:url" content="https://layerbit.co.in/guides/unix-time-and-time-zones.html" />
   <meta property="og:site_name" content="Layerbit" />
@@ -58,9 +58,9 @@
         "@id": "https://layerbit.co.in/guides/unix-time-and-time-zones.html"
       },
       "datePublished": "2026-09-27",
-      "dateModified": "2026-09-27",
+      "dateModified": "2026-11-21",
       "inLanguage": "en",
-      "wordCount": 1877,
+      "wordCount": 2720,
       "keywords": "unix timestamp, ISO 8601, time zones, UTC, daylight saving, epoch milliseconds, year 2038",
       "articleSection": "Time \u0026 Dates",
       "author": {
@@ -139,7 +139,7 @@
           "name": "Should I store dates in UTC or local time?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "Store instants — things that have happened — in UTC, and convert to local time only when displaying. Store future appointments as a wall-clock time together with the IANA zone name, because the zone's offset rules may change before the date arrives. Never store just an offset like +04:00 in place of a zone name."
+            "text": "Store instants \u2014 things that have happened \u2014 in UTC, and convert to local time only when displaying. Store future appointments as a wall-clock time together with the IANA zone name, because the zone's offset rules may change before the date arrives. Never store just an offset like +04:00 in place of a zone name."
           }
         },
         {
@@ -148,6 +148,22 @@
           "acceptedAnswer": {
             "@type": "Answer",
             "text": "A historical quirk of the ECMAScript specification: date-only ISO strings are parsed as UTC midnight, while date-time strings without a zone designator are parsed as local time. The inconsistency causes many off-by-one-day bugs. Avoid it by always including a Z or an explicit offset in any date-time string you exchange, and by treating date-only values as plain dates rather than timestamps."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How do I convert a Unix timestamp to a date in Excel?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Divide the seconds by 86,400 (the number of seconds in a day) and add the spreadsheet's date for 1 January 1970: =A2/86400 + DATE(1970,1,1), then format the cell as a date and time. Use 86,400,000 instead for millisecond timestamps. The result is in UTC; add the offset as a fraction of a day, such as +4/24 for Dubai, to show local time in a zone without daylight saving."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How do I convert a Unix timestamp to a date in SQL Server?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "SQL Server has no epoch function, so add the seconds to 1 January 1970: SELECT DATEADD(SECOND, 1727438400, '1970-01-01'). The result is UTC. DATEADD only accepts a 32-bit integer, so split millisecond values into whole seconds plus the remaining milliseconds, and use DATEDIFF_BIG(SECOND, '1970-01-01', SYSUTCDATETIME()) to get the current timestamp."
           }
         },
         {
@@ -194,6 +210,13 @@
       </svg>
       Layerbit
     </a>
+    <nav class="site-nav" aria-label="Main">
+      <a href="../#tools">Tools</a>
+      <a href="../blog.html">Guides</a>
+      <a href="../work.html">Apps</a>
+      <a href="../about.html">About</a>
+      <a href="../contact.html">Contact</a>
+    </nav>
   </header>
 
   <nav class="crumbs" aria-label="Breadcrumb">
@@ -213,7 +236,8 @@
       <div class="article-meta">
         <span class="byline">By <a href="../author.html" rel="author">Vysakh Suresh</a></span>
         <span><i data-lucide="calendar"></i>Published 27 September 2026</span>
-        <span><i data-lucide="clock"></i>12 min read</span>
+        <span><i data-lucide="refresh-cw"></i>Updated 21 November 2026</span>
+        <span><i data-lucide="clock"></i>16 min read</span>
       </div>
     </header>
 
@@ -275,6 +299,91 @@
       </div>
       <p>Two database notes. MySQL's <code>TIMESTAMP</code> column silently converts to and from the session time zone, so the same row reads differently from two connections with different settings; <code>DATETIME</code> stores what you give it with no conversion. PostgreSQL's <code>timestamptz</code> stores UTC and converts on the way out, which is the behaviour you want, while plain <code>timestamp</code> stores a naked wall-clock time and is almost never what you want.</p>
 
+      <h2 id="code">Converting Unix time in code, SQL and Excel</h2>
+      <p>Every language and database can do the conversion; the differences are in which unit it expects and which zone it silently applies. The examples below all use the same instant, <code>1727438400</code>, which is 12:00 UTC on Friday 27 September 2024, or 16:00 in Dubai. Each one was run to check the output shown.</p>
+
+      <h3>JavaScript</h3>
+      <pre><code>Math.floor(Date.now() / 1000)                  // now, in seconds (Date.now() is milliseconds)
+new Date(1727438400 * 1000).toISOString()      // "2024-09-27T12:00:00.000Z"
+Math.floor(Date.parse("2024-09-27T12:00:00Z") / 1000)   // 1727438400
+new Date(1727438400 * 1000).toLocaleString("en-GB", { timeZone: "Asia/Dubai" })
+                                               // "27/09/2024, 16:00:00"</code></pre>
+      <p>The multiply and divide by 1000 is the whole story in JavaScript: <code>Date</code> works in milliseconds and almost everything it talks to works in seconds.</p>
+
+      <h3>Python</h3>
+      <pre><code>import time
+from datetime import datetime, timezone
+from zoneinfo import ZoneInfo
+
+int(time.time())                                          # now, in seconds
+datetime.fromtimestamp(1727438400, tz=timezone.utc)       # 2024-09-27 12:00:00+00:00
+datetime.fromtimestamp(1727438400, tz=ZoneInfo("Asia/Dubai"))   # 2024-09-27 16:00:00+04:00
+int(datetime(2024, 9, 27, 12, tzinfo=timezone.utc).timestamp()) # 1727438400</code></pre>
+      <p>Always pass <code>tz</code>. Without it, <code>fromtimestamp</code> returns a naive time in the server's local zone, and the older <code>utcfromtimestamp</code> returns a naive UTC time that is deprecated since Python 3.12 because it is so easily mistaken for local time.</p>
+
+      <h3>PostgreSQL</h3>
+      <pre><code>SELECT to_timestamp(1727438400);                          -- 2024-09-27 12:00:00+00
+SELECT to_timestamp(1727438400) AT TIME ZONE 'Asia/Dubai'; -- 2024-09-27 16:00:00
+SELECT extract(epoch FROM now())::bigint;                 -- now, in seconds
+SELECT to_timestamp(1727438400123 / 1000.0);              -- from milliseconds</code></pre>
+      <p><code>to_timestamp</code> returns a <code>timestamptz</code>, which is displayed in the session's <code>TimeZone</code> setting; the first line shows <code>+00</code> only because the session is in UTC.</p>
+
+      <h3>MySQL</h3>
+      <pre><code>SELECT FROM_UNIXTIME(1727438400);             -- in the session time zone
+SELECT UNIX_TIMESTAMP();                      -- now, in seconds
+SELECT CONVERT_TZ(FROM_UNIXTIME(1727438400), @@session.time_zone, '+04:00');</code></pre>
+      <p>Both <code>FROM_UNIXTIME</code> and <code>UNIX_TIMESTAMP('2024-09-27 12:00:00')</code> use the session time zone, so the same query gives different answers on two connections. Run <code>SET time_zone = '+00:00'</code> first if you want UTC. Named zones such as <code>'Asia/Dubai'</code> in <code>CONVERT_TZ</code> only work once the time zone tables have been loaded on the server.</p>
+
+      <h3>SQL Server</h3>
+      <pre><code>SELECT DATEADD(SECOND, 1727438400, '1970-01-01');               -- 2024-09-27 12:00:00.000
+SELECT DATEDIFF_BIG(SECOND, '1970-01-01', SYSUTCDATETIME());    -- now, in seconds
+
+-- milliseconds: DATEADD takes an int, so add whole seconds first
+SELECT DATEADD(MILLISECOND, 1727438400123 % 1000,
+       DATEADD(SECOND, 1727438400123 / 1000, CAST('1970-01-01' AS datetime2(3))));
+
+-- Dubai time (SQL Server 2016 and later)
+SELECT CAST(DATEADD(SECOND, 1727438400, '1970-01-01') AS datetime2)
+       AT TIME ZONE 'UTC' AT TIME ZONE 'Arabian Standard Time';</code></pre>
+      <p>SQL Server has no built-in epoch function, so <code>DATEADD</code> from 1970 is the standard idiom. Its number argument is a 32-bit <code>int</code>, which is why a 13-digit millisecond value fails with an arithmetic overflow and has to be split as shown. <code>AT TIME ZONE</code> uses Windows zone names, so Dubai is <code>'Arabian Standard Time'</code>, not <code>'Asia/Dubai'</code>.</p>
+
+      <h3>Oracle</h3>
+      <pre><code>SELECT DATE '1970-01-01' + 1727438400 / 86400 FROM dual;      -- 2024-09-27 12:00:00, in UTC
+
+SELECT (TIMESTAMP '1970-01-01 00:00:00 UTC'
+        + NUMTODSINTERVAL(1727438400, 'SECOND')) AT TIME ZONE 'Asia/Dubai' FROM dual;
+
+-- now, in seconds
+SELECT ROUND((CAST(SYS_EXTRACT_UTC(SYSTIMESTAMP) AS DATE) - DATE '1970-01-01') * 86400)
+FROM dual;</code></pre>
+      <p>Oracle date arithmetic is in days, hence the division and multiplication by 86,400. A plain <code>DATE</code> carries no zone, so remember that the first result is UTC; use <code>SYS_EXTRACT_UTC(SYSTIMESTAMP)</code> rather than <code>SYSDATE</code> for "now", because <code>SYSDATE</code> is the database server's local time.</p>
+
+      <h3>C# and Java</h3>
+      <pre><code>// C# (.NET)
+DateTimeOffset.FromUnixTimeSeconds(1727438400)          // 2024-09-27 12:00:00 +00:00
+DateTimeOffset.UtcNow.ToUnixTimeSeconds()               // now, in seconds
+DateTimeOffset.FromUnixTimeMilliseconds(1727438400123)
+
+// Java (java.time)
+Instant.ofEpochSecond(1727438400)                       // 2024-09-27T12:00:00Z
+Instant.now().getEpochSecond()                          // now, in seconds
+Instant.ofEpochSecond(1727438400).atZone(ZoneId.of("Asia/Dubai"))
+                                                        // 2024-09-27T16:00+04:00[Asia/Dubai]</code></pre>
+      <p>In .NET prefer <code>DateTimeOffset</code> over <code>DateTime</code>, whose <code>Kind</code> property is easy to lose; in Java avoid the legacy <code>java.util.Date</code> and <code>SimpleDateFormat</code> in new code.</p>
+
+      <h3>Command line</h3>
+      <pre><code>date +%s                              # now, in seconds
+date -u -d @1727438400                # Fri Sep 27 12:00:00 UTC 2024  (Linux, GNU date)
+TZ=Asia/Dubai date -d @1727438400     # Fri Sep 27 16:00:00 +04 2024
+date -u -r 1727438400                 # the same on macOS and BSD</code></pre>
+
+      <h3>Excel and Google Sheets</h3>
+      <pre><code>=A2/86400 + DATE(1970,1,1)              seconds in A2, result in UTC
+=A2/86400000 + DATE(1970,1,1)           milliseconds in A2
+=A2/86400 + DATE(1970,1,1) + 4/24       shifted to UTC+4 (Dubai)
+=(B2 - DATE(1970,1,1)) * 86400          a date-time in B2 back to seconds</code></pre>
+      <p>Format the result cell as a date and time, or it will show a serial number such as 45562.5. Spreadsheets have no time zones, so the fixed <code>+4/24</code> shift is only correct for zones without daylight saving; for London or New York the offset depends on the date.</p>
+
       <h2 id="edges">The edges: 2038, leap seconds, negative time</h2>
       <p>A signed 32-bit integer of seconds overflows at 03:14:07 UTC on 19 January 2038. Modern systems use 64 bits, but embedded firmware, older file formats, some database schemas and a surprising amount of C code with <code>int</code> where <code>time_t</code> was meant do not. If a system will still be running in 2038 — and industrial and medical equipment often is — check the width now. Leap seconds are simpler than they sound: Unix time ignores them by definition, pretending every day is exactly 86,400 seconds, which keeps arithmetic simple at the cost of drifting from atomic time by 27 seconds so far. Negative timestamps are legal and mean before 1970; they work almost everywhere except MySQL's <code>TIMESTAMP</code> type, which cannot represent them.</p>
 
@@ -316,6 +425,14 @@
         <div class="faq-item">
           <button class="faq-question">Why does JavaScript treat "2026-09-27" as UTC but "2026-09-27T12:00" as local? <i data-lucide="chevron-down"></i></button>
           <div class="faq-answer"><p>A historical quirk of the ECMAScript specification: date-only ISO strings are parsed as UTC midnight, while date-time strings without a zone designator are parsed as local time. The inconsistency causes many off-by-one-day bugs. Avoid it by always including a Z or an explicit offset in any date-time string you exchange, and by treating date-only values as plain dates rather than timestamps.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">How do I convert a Unix timestamp to a date in Excel? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>Divide the seconds by 86,400 (the number of seconds in a day) and add the spreadsheet's date for 1 January 1970: =A2/86400 + DATE(1970,1,1), then format the cell as a date and time. Use 86,400,000 instead for millisecond timestamps. The result is in UTC; add the offset as a fraction of a day, such as +4/24 for Dubai, to show local time in a zone without daylight saving.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">How do I convert a Unix timestamp to a date in SQL Server? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>SQL Server has no epoch function, so add the seconds to 1 January 1970: SELECT DATEADD(SECOND, 1727438400, '1970-01-01'). The result is UTC. DATEADD only accepts a 32-bit integer, so split millisecond values into whole seconds plus the remaining milliseconds, and use DATEDIFF_BIG(SECOND, '1970-01-01', SYSUTCDATETIME()) to get the current timestamp.</p></div>
         </div>
         <div class="faq-item">
           <button class="faq-question">What is the year 2038 problem and does it still matter? <i data-lucide="chevron-down"></i></button>
