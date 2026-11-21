@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="Instants vs wall-clock times, seconds vs milliseconds, why a zone is not an offset, what DST does to schedules, and what to store for events and dates." />
-  <title>Unix Time, ISO 8601 and Time Zones Explained | Layerbit</title>
+  <meta name="description" content="Convert Unix timestamps in SQL Server, Oracle, MySQL, PostgreSQL, Excel, Python and JavaScript, and avoid the time zone, DST and milliseconds bugs." />
+  <title>Unix Timestamp to Date in SQL, Excel & Code | Layerbit</title>
   <meta name="google-adsense-account" content="ca-pub-6072772587431629" />
   <link rel="preload" href="../fonts/space-grotesk-latin.woff2" as="font" type="font/woff2" crossorigin />
   <script>
@@ -28,19 +28,19 @@
   <meta property="article:author" content="https://layerbit.co.in/author.html" />
   <meta property="og:url" content="https://layerbit.co.in/guides/unix-time-and-time-zones.html" />
   <meta property="og:site_name" content="Layerbit" />
-  <meta property="og:title" content="Unix Time, ISO 8601 and Time Zones Explained | Layerbit" />
-  <meta property="og:description" content="Instants vs wall-clock times, seconds vs milliseconds, why a zone is not an offset, what DST does to schedules, and what to store for events and dates." />
+  <meta property="og:title" content="Unix Timestamp to Date in SQL, Excel & Code | Layerbit" />
+  <meta property="og:description" content="Convert Unix timestamps in SQL Server, Oracle, MySQL, PostgreSQL, Excel, Python and JavaScript, and avoid the time zone, DST and milliseconds bugs." />
   <meta property="og:image" content="https://layerbit.co.in/images/og/guides-unix-time-and-time-zones.jpg" />
   <meta property="og:image:type" content="image/jpeg" />
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
-  <meta property="og:image:alt" content="Unix Time, ISO 8601 and Time Zones Explained" />
+  <meta property="og:image:alt" content="Unix Timestamp to Date in SQL, Excel & Code" />
   <meta property="og:locale" content="en" />
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="Unix Time, ISO 8601 and Time Zones Explained | Layerbit" />
-  <meta name="twitter:description" content="Instants vs wall-clock times, seconds vs milliseconds, why a zone is not an offset, what DST does to schedules, and what to store for events and dates." />
+  <meta name="twitter:title" content="Unix Timestamp to Date in SQL, Excel & Code | Layerbit" />
+  <meta name="twitter:description" content="Convert Unix timestamps in SQL Server, Oracle, MySQL, PostgreSQL, Excel, Python and JavaScript, and avoid the time zone, DST and milliseconds bugs." />
   <meta name="twitter:image" content="https://layerbit.co.in/images/og/guides-unix-time-and-time-zones.jpg" />
-  <meta name="twitter:image:alt" content="Unix Time, ISO 8601 and Time Zones Explained" />
+  <meta name="twitter:image:alt" content="Unix Timestamp to Date in SQL, Excel & Code" />
   <meta name="theme-color" content="#0a0c10" />
   <script type="application/ld+json">
 {
@@ -51,7 +51,7 @@
       "@id": "https://layerbit.co.in/guides/unix-time-and-time-zones.html#article",
       "headline": "Unix Time, ISO 8601 and Time Zones: The Rules Behind Every Off-by-One-Day Bug",
       "name": "Unix Time, ISO 8601 and Time Zones: The Rules Behind Every Off-by-One-Day Bug",
-      "description": "Instants vs wall-clock times, seconds vs milliseconds, why a zone is not an offset, what DST does to schedules, and what to store for events and dates.",
+      "description": "Convert Unix timestamps in SQL Server, Oracle, MySQL, PostgreSQL, Excel, Python and JavaScript, and avoid the time zone, DST and milliseconds bugs.",
       "url": "https://layerbit.co.in/guides/unix-time-and-time-zones.html",
       "mainEntityOfPage": {
         "@type": "WebPage",
