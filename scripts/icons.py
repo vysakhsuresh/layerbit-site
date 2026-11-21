@@ -91,6 +91,10 @@ ICONS = {
     f'<rect x="4" y="8" width="30" height="30" rx="5" fill="{F}" stroke="{A}" stroke-width="2.4"/>',
     f'<path d="M4 16h30M12 4v7M26 4v7" stroke="{A}" stroke-width="2.4" stroke-linecap="round"/>',
     f'<circle cx="34" cy="34" r="10" fill="#0a0c10" stroke="{C}" stroke-width="2.4"/><path d="M34 29v5.5l3.5 2" stroke="{C}" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" fill="none"/>'),
+  "time-zone-converter": s(
+    f'<circle cx="21" cy="22" r="16" fill="{F}" stroke="{A}" stroke-width="2.4"/>',
+    f'<path d="M5 22h32M21 6c-5 4.5-7 10-7 16s2 11.5 7 16M21 6c5 4.5 7 10 7 16" stroke="{A}" stroke-width="2.2" stroke-linecap="round" fill="none"/>',
+    f'<circle cx="35" cy="35" r="10" fill="#0a0c10" stroke="{C}" stroke-width="2.4"/><path d="M35 30v5.5l3.5 2" stroke="{C}" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" fill="none"/>'),
   "xml-formatter": s(
     f'<path d="M14 9 5 18l9 9M34 9l9 9-9 9M27 6l-6 24" stroke="{A}" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" fill="none"/>',
     f'<path d="M24 32v4M14 40v-4h20v4" stroke="{A}" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>',

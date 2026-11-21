@@ -2271,6 +2271,86 @@ def _(t):
     eq(t.count("#cvd .cvd-cell"), 5, "vision simulations")
 
 
+# ----------------------------------------------------------------------------
+# time-zone-converter
+# ----------------------------------------------------------------------------
+TZ_CARD = "document.querySelector('.tz-card[data-zone=\"%s\"] %s').textContent"
+
+
+@case("time-zone-converter", "minimal", "opens with the current time in several cities")
+def _(t):
+    expect(t.count(".tz-card") >= 4, "default cities missing")
+    expect(t.call("document.getElementById('date').value").startswith("20"), "date not filled")
+    expect(t.count("#planner tbody tr") >= 23, "planner rows missing")
+
+
+@case("time-zone-converter", "typical", "3pm IST to EST in winter is 4:30 AM, in summer 5:30 AM EDT")
+def _(t):
+    t.set("date", "2026-01-15")
+    t.set("quick", "3pm IST to EST")
+    t.call("quick()")
+    eq(t.call(TZ_CARD % ("America/New_York", ".tz-time")), "4:30 AM", "winter")
+    expect("EST" in t.call(TZ_CARD % ("America/New_York", ".tz-meta")), "EST label missing")
+    eq(t.val("fromZone"), "India", "source zone")
+    t.set("date", "2026-07-15")
+    eq(t.call(TZ_CARD % ("America/New_York", ".tz-time")), "5:30 AM", "summer")
+    expect("EDT" in t.call(TZ_CARD % ("America/New_York", ".tz-meta")), "EDT label missing")
+
+
+@case("time-zone-converter", "typical", "Dubai to India is 1 h 30 min ahead; LA to Tokyo crosses the date")
+def _(t):
+    t.set("fromZone", "Dubai", "change")
+    t.set("date", "2026-11-21"); t.set("time", "10:00")
+    t.call("addZone('Asia/Kolkata'); render()")
+    eq(t.call(TZ_CARD % ("Asia/Kolkata", ".tz-time")), "11:30 AM", "India time")
+    expect("1 h 30 min ahead" in t.call(TZ_CARD % ("Asia/Kolkata", ".tz-meta")), "relative difference missing")
+    t.set("quick", "10pm Los Angeles to Tokyo")
+    t.call("quick()")
+    expect("next day" in t.call(TZ_CARD % ("Asia/Tokyo", ".tz-date")), "next-day tag missing")
+
+
+@case("time-zone-converter", "edge", "skipped and repeated times on clock-change nights are explained")
+def _(t):
+    t.set("fromZone", "New York", "change")
+    t.set("date", "2026-03-08"); t.set("time", "02:30")
+    expect("does not exist" in t.text("dstNote") and "3:30 AM" in t.text("dstNote"), "gap note: " + t.text("dstNote"))
+    t.set("date", "2026-11-01"); t.set("time", "01:30")
+    expect("happens twice" in t.text("dstNote"), "overlap note: " + t.text("dstNote"))
+    t.set("time", "12:00")
+    expect(not t.visible("#dstNote"), "note should hide on an ordinary time")
+
+
+@case("time-zone-converter", "edge", "unknown zones are reported, not thrown")
+def _(t):
+    t.set("quick", "3pm IST to Atlantis")
+    t.call("quick()")
+    expect("Atlantis" in t.text("quickError"), "quick error missing")
+    t.set("fromZone", "Narnia", "change")
+    expect("Narnia" in t.text("zoneError"), "zone error missing")
+
+
+@case("time-zone-converter", "typical", "planner finds the Dubai, India and London overlap")
+def _(t):
+    t.call("setState({ d: '2026-11-23', t: '13:00', src: 'Asia/Dubai', zones: ['Asia/Kolkata', 'Europe/London'], h12: true })")
+    summary = t.text("overlapText")
+    expect("1:00 PM and 4:00 PM" in summary, "overlap summary: " + summary)
+    eq(t.count("#planner tr.all"), 3, "highlighted rows")
+    t.call("document.querySelector('#planner tr[data-hour=\"15\"]').click()")
+    eq(t.val("time"), "15:00", "row click sets the time")
+
+
+@case("time-zone-converter", "maximal", "twelve places at once, then capped")
+def _(t):
+    t.call("setState({ d: '2026-06-01', t: '09:00', src: 'UTC', zones: [], h12: false })")
+    for z in ["Asia/Dubai", "Asia/Kolkata", "Europe/London", "America/New_York", "America/Los_Angeles", "Asia/Singapore",
+              "Australia/Sydney", "Asia/Tokyo", "Europe/Paris", "America/Sao_Paulo", "Africa/Lagos", "Pacific/Auckland", "Asia/Karachi"]:
+        t.call(f"addZone('{z}')")
+    t.call("render()")
+    eq(t.count(".tz-card"), 12, "cards")
+    eq(t.count("#planner thead th"), 12, "planner columns")
+    eq(t.call(TZ_CARD % ("Asia/Kolkata", ".tz-time")), "14:30", "24-hour clock")
+
+
 @case("number-base-converter", "minimal", "255 converts to every base")
 def _(t):
     h = t.html("outTable")

@@ -1,0 +1,364 @@
+{{HEADER}}
+
+  <main id="main" class="page-main">
+  <div class="hero">
+    <div class="hero-badge"><i data-lucide="shield-check"></i> Runs entirely in your browser</div>
+    <h1>Time Zone Converter &amp; Meeting Planner</h1>
+    <p>Convert any time between time zones, such as Dubai to India, IST to EST or London to New York, with daylight saving handled for the exact date, then see at a glance which hours suit everyone for a call.</p>
+  </div>
+
+  <div class="ide-container single">
+    <div class="pane">
+      <div class="pane-header">
+        <div class="pane-title"><i data-lucide="globe"></i> Convert a time</div>
+        <div class="btn-group">
+          <button class="btn" type="button" id="btnNow"><i data-lucide="clock"></i> Now</button>
+          <label class="check"><input type="checkbox" id="opt12" checked> 12-hour clock</label>
+        </div>
+      </div>
+      <div class="pane-body">
+        <div class="field">
+          <label for="quick"><i data-lucide="search"></i> Type it the way you would say it</label>
+          <div class="in-row">
+            <input type="text" id="quick" class="text-input big" placeholder="e.g. 3pm IST to EST, 9:30 Dubai in London" spellcheck="false" autocomplete="off">
+            <button class="btn btn-primary" type="button" id="btnQuick" data-lb-primary><i data-lucide="arrow-right-left"></i> Convert</button>
+          </div>
+        </div>
+        <div class="error-inline" id="quickError" role="alert" hidden></div>
+
+        <div class="tz-inputs">
+          <div class="field"><label for="date"><i data-lucide="calendar"></i> Date</label><input type="date" id="date" class="text-input"></div>
+          <div class="field"><label for="time"><i data-lucide="clock"></i> Time</label><input type="time" id="time" class="text-input"></div>
+          <div class="field grow"><label for="fromZone"><i data-lucide="map-pin"></i> In this time zone</label><input type="text" id="fromZone" class="text-input" list="tzList" spellcheck="false" autocomplete="off" placeholder="City, country or zone"></div>
+        </div>
+        <div class="error-inline" id="zoneError" role="alert" hidden></div>
+        <div class="dst-note" id="dstNote" hidden></div>
+
+        <div class="tz-results" id="results" aria-live="polite"></div>
+
+        <div class="field add-field">
+          <label for="addZone"><i data-lucide="plus"></i> Add a city or time zone</label>
+          <div class="in-row">
+            <input type="text" id="addZone" class="text-input" list="tzList" spellcheck="false" autocomplete="off" placeholder="e.g. Singapore, PST, Toronto, Europe/Berlin">
+            <button class="btn" type="button" id="btnAdd"><i data-lucide="plus"></i> Add</button>
+          </div>
+        </div>
+        <div class="chips" id="chips">
+          <button type="button" class="chip" data-add="Asia/Dubai">Dubai</button>
+          <button type="button" class="chip" data-add="Asia/Kolkata">India</button>
+          <button type="button" class="chip" data-add="Europe/London">London</button>
+          <button type="button" class="chip" data-add="America/New_York">New York</button>
+          <button type="button" class="chip" data-add="America/Los_Angeles">Los Angeles</button>
+          <button type="button" class="chip" data-add="Asia/Riyadh">Riyadh</button>
+          <button type="button" class="chip" data-add="Asia/Karachi">Pakistan</button>
+          <button type="button" class="chip" data-add="Asia/Singapore">Singapore</button>
+          <button type="button" class="chip" data-add="Australia/Sydney">Sydney</button>
+          <button type="button" class="chip" data-add="America/Toronto">Toronto</button>
+          <button type="button" class="chip" data-add="UTC">UTC</button>
+        </div>
+        <datalist id="tzList"></datalist>
+      </div>
+    </div>
+  </div>
+
+  <div class="ide-container single">
+    <div class="pane">
+      <div class="pane-header">
+        <div class="pane-title"><i data-lucide="users"></i> Meeting planner</div>
+        <div class="legend"><span class="sw work"></span> working hours <span class="sw edge"></span> early or late <span class="sw night"></span> night</div>
+      </div>
+      <div class="pane-body">
+        <p class="planner-summary" id="overlapText"></p>
+        <div class="planner-wrap"><table class="planner" id="planner"></table></div>
+        <div class="hint-bar inline">Each row is one hour on the chosen date in the first city. Green means the whole hour falls between 09:00 and 18:00 there; a highlighted row works for every city. Click a row to convert that time.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="docs-container">
+    <div class="info-panel">
+      <h2><i data-lucide="book-open"></i> How time zone conversion works</h2>
+      <p>Every time zone is defined by its offset from Coordinated Universal Time (UTC). Dubai is UTC+4, India is UTC+5:30 and New York is UTC−5 in winter. To convert a time, you subtract the first zone's offset to get UTC and add the second zone's offset. 3:00 PM in Dubai is 11:00 UTC, which is 4:30 PM in India and 6:00 AM in New York. The converter does this for every city at once, and shows when the result falls on the previous or next day.</p>
+      <p>The hard part is that offsets are not fixed. Many countries move their clocks forward an hour in summer, on dates that differ between countries, so the gap between two cities can change several times a year. This tool does not use a hand-made table of offsets. It asks your browser's built-in copy of the IANA time zone database, the same data used by phones, operating systems and servers, for the offset in force on the exact date you choose. That is how it knows that India is 10 hours 30 minutes ahead of New York in January but 9 hours 30 minutes ahead in July.</p>
+
+      <h2><i data-lucide="table"></i> Time differences people look up most</h2>
+      <p>These are worked out by the same code as the converter, for winter (January) and summer (July) in the northern hemisphere. A positive number means the second city is ahead.</p>
+      <table>
+        <thead><tr><th>From</th><th>To</th><th>January</th><th>July</th></tr></thead>
+        <tbody>
+          <tr><td>Dubai (GST)</td><td>India (IST)</td><td>+1 h 30 min</td><td>+1 h 30 min</td></tr>
+          <tr><td>India (IST)</td><td>London (GMT / BST)</td><td>−5 h 30 min</td><td>−4 h 30 min</td></tr>
+          <tr><td>India (IST)</td><td>New York (EST / EDT)</td><td>−10 h 30 min</td><td>−9 h 30 min</td></tr>
+          <tr><td>India (IST)</td><td>Los Angeles (PST / PDT)</td><td>−13 h 30 min</td><td>−12 h 30 min</td></tr>
+          <tr><td>Dubai (GST)</td><td>London (GMT / BST)</td><td>−4 h</td><td>−3 h</td></tr>
+          <tr><td>Dubai (GST)</td><td>New York (EST / EDT)</td><td>−9 h</td><td>−8 h</td></tr>
+          <tr><td>Dubai (GST)</td><td>Riyadh (AST)</td><td>−1 h</td><td>−1 h</td></tr>
+          <tr><td>Dubai (GST)</td><td>Pakistan (PKT)</td><td>+1 h</td><td>+1 h</td></tr>
+          <tr><td>India (IST)</td><td>Singapore (SGT)</td><td>+2 h 30 min</td><td>+2 h 30 min</td></tr>
+          <tr><td>India (IST)</td><td>Pakistan (PKT)</td><td>−30 min</td><td>−30 min</td></tr>
+          <tr><td>India (IST)</td><td>Sydney (AEDT / AEST)</td><td>+5 h 30 min</td><td>+4 h 30 min</td></tr>
+          <tr><td>London (GMT / BST)</td><td>New York (EST / EDT)</td><td>−5 h</td><td>−5 h</td></tr>
+        </tbody>
+      </table>
+
+      <h2><i data-lucide="sun"></i> Daylight saving: why the difference changes</h2>
+      <p>India, the UAE, Saudi Arabia, Qatar, Oman, Pakistan, Singapore, China and Japan do not change their clocks, so the gap between any two of them is the same all year. The United States, Canada, the UK and most of Europe do, and so do Sydney and Melbourne in the opposite season. In 2026 the US moves forward on 8 March and back on 1 November; the UK and the EU move forward on 29 March and back on 25 October; Sydney moves back on 5 April and forward on 4 October.</p>
+      <p>Because the US and Europe switch on different Sundays, the London to New York gap is four hours instead of five for about three weeks in March and one week around the end of October. Recurring meetings between the two drift by an hour in those weeks, which catches out calendars that store a fixed offset instead of a zone. Pick a date in one of those weeks in the converter to see it.</p>
+      <p>On the night clocks go forward, an hour of local time never happens: in New York, 2:30 AM on 8 March 2026 does not exist. On the night they go back, an hour happens twice. If you enter one of those times, the converter says so, shows how it was interpreted, and gives the second occurrence of a repeated time.</p>
+
+      <h2><i data-lucide="briefcase"></i> Finding a meeting time across zones</h2>
+      <p>The planner shows every hour of the chosen day in the first city, next to the local time in each other city, and highlights the hours that fall inside 09:00 to 18:00 everywhere. A few patterns worth knowing:</p>
+      <ul>
+        <li><strong>India and the US East Coast:</strong> there is almost no overlap in office hours. US mornings, 8:00 to 10:00 AM in New York, are 6:30 to 8:30 PM in India in winter, so calls usually happen in the Indian evening.</li>
+        <li><strong>Dubai and India:</strong> almost a full shared day, since India is only an hour and a half ahead. Meetings starting between 9:00 AM and 3:00 PM Dubai time fit both offices.</li>
+        <li><strong>Dubai or India and London:</strong> London's morning is the Gulf and India's afternoon, so 9:00 AM in London is 1:00 PM in Dubai and 2:30 PM in India in winter.</li>
+        <li><strong>The Gulf work week:</strong> the UAE works Monday to Friday, but Saudi Arabia, Qatar, Kuwait and Oman take Friday and Saturday off, so check the day as well as the hour.</li>
+      </ul>
+    </div>
+
+    <div class="info-panel">
+      <h2><i data-lucide="help-circle"></i> Frequently asked questions</h2>
+      <div class="faq-container">
+        <div class="faq-item">
+          <button class="faq-question">What is the time difference between Dubai and India? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>India is 1 hour 30 minutes ahead of Dubai all year. Dubai and the rest of the UAE use Gulf Standard Time, UTC+4, and India uses Indian Standard Time, UTC+5:30. Neither country changes its clocks for daylight saving, so the difference never varies: 10:00 AM in Dubai is always 11:30 AM in India.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">What is 3 PM IST in EST? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>3:00 PM in India is 4:30 AM Eastern Standard Time, from early November to early March. While the US is on daylight saving time, from early March to early November, it is 5:30 AM Eastern Daylight Time, because New York moves an hour closer to India. Type "3pm IST to EST" in the converter to see it for any date.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">Does the UAE or India have daylight saving time? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>No. The UAE stays on UTC+4 and India on UTC+5:30 throughout the year, and India uses a single time zone for the whole country. The difference between either of them and the UK, Europe or North America therefore changes by an hour when those regions change their clocks, even though nothing changes locally.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">What do GST, IST, EST, PST and BST stand for? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>GST is Gulf Standard Time (UTC+4) in the UAE and Oman. IST is Indian Standard Time (UTC+5:30). EST and EDT are US Eastern Standard and Daylight Time (UTC−5 and UTC−4), PST and PDT are US Pacific (UTC−8 and UTC−7), and GMT and BST are the UK's winter and summer time (UTC+0 and UTC+1). Abbreviations are ambiguous, since IST is also used in Ireland and Israel, so the converter reads IST as India and also accepts city names, which are never ambiguous.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">Why does the gap between the UK and the US change for a few weeks? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>The US moves its clocks forward on the second Sunday of March and back on the first Sunday of November, while the UK and the EU change on the last Sundays of March and October. In the weeks between those dates only one side has changed, so London is four hours ahead of New York instead of the usual five.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">How do I find a good meeting time for India and the US? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>Add India and the US city to the converter and look at the meeting planner. Office hours barely overlap, so the usual compromise is early morning on the US East Coast, which is evening in India: 8:00 AM in New York is 6:30 PM in India in winter and 5:30 PM in summer. For the US West Coast the gap is three hours wider, and calls tend to be in the US late afternoon and India's early morning.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">Is my time or location sent anywhere? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>No. The converter reads your device's time zone from the browser to choose a starting city, and every conversion is done by JavaScript on this page using the browser's own time zone data. Nothing is sent to a server, and the page keeps working offline once it has loaded.</p></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="info-panel related-panel">
+      <h2><i data-lucide="link"></i> Related guides and tools</h2>
+      <p>Working with times in code and data rather than calendars.</p>
+      <div class="use-cases-grid">
+        <div class="use-case-card">
+          <h3><i data-lucide="book-open"></i> <a href="../guides/unix-time-and-time-zones.html">Unix time and time zones explained</a></h3>
+          <p>Why a zone is not an offset, and what to store in a database.</p>
+        </div>
+        <div class="use-case-card">
+          <h3><i data-lucide="wrench"></i> <a href="timestamp-converter.html">Unix Timestamp &amp; Epoch Converter</a></h3>
+          <p>Epoch seconds and milliseconds to dates in any zone.</p>
+        </div>
+        <div class="use-case-card">
+          <h3><i data-lucide="wrench"></i> <a href="cron-generator.html">Cron Expression Generator</a></h3>
+          <p>Schedules with the next run times in your server's zone.</p>
+        </div>
+        <div class="use-case-card">
+          <h3><i data-lucide="book-open"></i> <a href="../guides/cron-expressions-explained.html">Cron expressions explained</a></h3>
+          <p>How daylight saving skips or repeats scheduled jobs.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="info-panel">
+      <h2><i data-lucide="git-commit"></i> Changelog</h2>
+      <ul class="changelog-list">
+        <li><span class="changelog-tag">v1.0.0</span> Initial release: conversion between any IANA time zones with daylight saving for the chosen date, plain-English input such as "3pm IST to EST", search by city, country or abbreviation, warnings for skipped and repeated times, a 24-hour meeting planner with shared working hours, and share links.</li>
+      </ul>
+    </div>
+  </div>
+
+  </main>
+
+  <a id="smartBackBtn" class="fab home-fab-premium" aria-label="Command Center" title="Command Center" href="../">
+    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="filter: drop-shadow(0 0 8px rgba(56, 189, 248, 0.5));">
+      <path d="M12 2L2 7l10 5 10-5-10-5z" stroke="#38bdf8" stroke-width="2" stroke-linejoin="round" fill="rgba(56,189,248,0.2)"/>
+      <path d="M2 17l10 5 10-5M2 12l10 5 10-5" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </a>
+
+  {{FOOTER}}
+
+  <script src="../js/shared.js"></script>
+  <script src="../js/engines/tz.js"></script>
+  <script>
+    const $ = id => document.getElementById(id);
+    const Z = window.LBTz;
+    const icons = () => { if (window.lucide) lucide.createIcons(); };
+    const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+    const pad = n => String(n).padStart(2, '0');
+    const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const DEFAULTS = ['Asia/Dubai', 'Asia/Kolkata', 'Europe/London', 'America/New_York', 'America/Los_Angeles', 'Asia/Singapore'];
+    const MAX_ZONES = 12;
+
+    function localZone() {
+      let z = 'UTC';
+      try { z = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC'; } catch (e) { /* old browser */ }
+      return Z.resolve(z) || (Z.isZone(z) ? z : 'UTC');
+    }
+    let src = localZone();
+    let targets = DEFAULTS.filter(z => z !== src).slice(0, 5);
+    let flash = null;
+
+    function duration(min) {
+      const h = Math.floor(min / 60), m = min % 60;
+      return (h ? h + ' h' : '') + (h && m ? ' ' : '') + (m ? m + ' min' : '');
+    }
+    function setNow() {
+      const w = Z.wall(Date.now(), src);
+      $('date').value = w.date; $('time').value = w.time;
+    }
+    function syncFrom() { $('fromZone').value = Z.label(src); $('zoneError').hidden = true; $('fromZone').classList.remove('bad'); }
+    function readSource() {
+      const d = $('date').value, t = $('time').value;
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(d) || !/^\d{2}:\d{2}/.test(t)) return null;
+      const [y, mo, da] = d.split('-').map(Number), [h, mi] = t.split(':').map(Number);
+      return Z.toInstant(y, mo, da, h, mi, src);
+    }
+
+    function card(z, ms, sw, isSrc) {
+      const w = Z.wall(ms, z), dd = Z.dayDiff(sw.date, w.date), d = w.offset - sw.offset, h12 = $('opt12').checked;
+      const rel = d === 0 ? 'same time' : `${duration(Math.abs(d))} ${d > 0 ? 'ahead' : 'behind'}`;
+      const day = dd ? ` <span class="tag ${dd > 0 ? 'next' : 'prev'}">${dd > 0 ? 'next day' : 'previous day'}</span>` : '';
+      const actions = isSrc ? '<span class="tag src-tag">from</span>'
+        : `<button type="button" class="icon-btn" data-act="src" title="Convert from ${esc(Z.label(z))}" aria-label="Convert from ${esc(Z.label(z))}"><i data-lucide="repeat"></i></button><button type="button" class="icon-btn" data-act="rm" title="Remove ${esc(Z.label(z))}" aria-label="Remove ${esc(Z.label(z))}"><i data-lucide="x"></i></button>`;
+      return `<div class="tz-card${isSrc ? ' src' : ''}${flash === z ? ' flash' : ''}" data-zone="${esc(z)}">
+        <div class="tz-head"><span class="tz-name">${esc(Z.label(z))}</span><span class="tz-actions">${actions}</span></div>
+        <div class="tz-time">${Z.clock(w.h, w.mi, h12)}</div>
+        <div class="tz-date">${w.wd}, ${w.d} ${MONTHS[w.mo - 1]} ${w.y}${day}</div>
+        <div class="tz-meta">${w.abbr ? esc(w.abbr) + ' · ' : ''}${w.offsetLabel}${w.dst ? ' · summer time' : ''}${isSrc ? '' : ` · <span class="rel">${rel}</span>`}</div>
+        <div class="tz-zone">${esc(z)}</div>
+      </div>`;
+    }
+
+    function render() {
+      const r = readSource();
+      if (!r) { $('results').innerHTML = ''; $('planner').innerHTML = ''; $('overlapText').textContent = 'Choose a date and a time.'; return; }
+      const sw = Z.wall(r.ms, src), h12 = $('opt12').checked, typed = $('time').value.slice(0, 5);
+      const note = $('dstNote');
+      if (r.status === 'gap') {
+        note.hidden = false;
+        note.textContent = `${typed} does not exist in ${Z.label(src)} on this date: clocks jump forward ${duration(r.shift)} that night, so it is read as ${Z.clock(sw.h, sw.mi, h12)} ${sw.abbr || sw.offsetLabel}.`;
+      } else if (r.status === 'overlap') {
+        const later = Z.wall(r.later, src);
+        note.hidden = false;
+        note.textContent = `${typed} happens twice in ${Z.label(src)} on this date because clocks go back. This shows the first one (${sw.abbr || sw.offsetLabel}); the second is an hour later in real time (${later.abbr || later.offsetLabel}).`;
+      } else note.hidden = true;
+      $('results').innerHTML = [src].concat(targets).map((z, i) => card(z, r.ms, sw, i === 0)).join('');
+      flash = null;
+      renderPlanner(sw.h);
+      icons();
+    }
+
+    function renderPlanner(selHour) {
+      const list = [src].concat(targets), h12 = $('opt12').checked;
+      const rows = Z.planner($('date').value, src, list);
+      const head = '<thead><tr>' + list.map(z => `<th scope="col">${esc(Z.label(z))}</th>`).join('') + '</tr></thead>';
+      const body = '<tbody>' + rows.map(r => `<tr class="${r.allWork ? 'all' : ''}${r.hour === selHour ? ' sel' : ''}" data-hour="${r.hour}" tabindex="0">` +
+        r.cells.map(c => `<td class="b-${c.band}">${Z.clock(c.h, c.mi, h12)}${c.day ? `<small>${c.day > 0 ? '+1' : '−1'}</small>` : ''}</td>`).join('') + '</tr>').join('') + '</tbody>';
+      $('planner').innerHTML = head + body;
+      const ov = Z.overlaps(rows), name = Z.label(src);
+      if (list.length < 2) $('overlapText').textContent = 'Add another city to compare working hours.';
+      else if (ov.length) $('overlapText').innerHTML = `<strong>Everyone is in working hours</strong> for meetings between ${ov.map(o => `${esc(Z.clock(o.from, 0, h12))} and ${esc(Z.clock(o.to % 24, 0, h12))}`).join(', and between ')} ${esc(name)} time.`;
+      else $('overlapText').innerHTML = `<strong>No hour on this date is inside 09:00 to 18:00 in all ${list.length} places.</strong> Amber rows are early or late in at least one of them.`;
+    }
+
+    function setSource(z, keepInstant) {
+      if (!z || z === src) return;
+      const r = keepInstant ? readSource() : null;
+      targets = targets.filter(t => t !== z);
+      if (!targets.includes(src)) targets.unshift(src);
+      targets = targets.slice(0, MAX_ZONES - 1);
+      src = z;
+      if (r) { const w = Z.wall(r.ms, src); $('date').value = w.date; $('time').value = w.time; }
+      syncFrom();
+    }
+    function addZone(z, first) {
+      if (!z || z === src) { flash = z; return; }
+      targets = targets.filter(t => t !== z);
+      if (first) targets.unshift(z); else targets.push(z);
+      if (targets.length > MAX_ZONES - 1) { targets = targets.slice(0, MAX_ZONES - 1); Layerbit.toast('Up to ' + MAX_ZONES + ' places at once.', 'warn'); }
+      flash = z;
+    }
+
+    function quick() {
+      const q = Z.parseQuery($('quick').value);
+      if (q.error) { $('quickError').hidden = false; $('quickError').textContent = q.error; return; }
+      $('quickError').hidden = true;
+      if (q.from) setSource(q.from, !q.time);
+      if (q.time) {
+        if (!$('date').value) $('date').value = Z.wall(Date.now(), src).date;
+        $('time').value = pad(q.time.h) + ':' + pad(q.time.mi);
+      } else if (!q.from) setNow();
+      if (q.to) addZone(q.to, true);
+      render();
+    }
+
+    function fillList() {
+      const now = Date.now();
+      $('tzList').innerHTML = Z.zones().map(z => `<option value="${esc(Z.label(z))}">${esc(z)} · ${Z.offsetLabel(Z.offset(now, z))}</option>`).join('');
+    }
+
+    $('btnQuick').addEventListener('click', quick);
+    $('quick').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); quick(); } });
+    $('btnNow').addEventListener('click', () => { setNow(); render(); });
+    ['date', 'time'].forEach(id => $(id).addEventListener('input', render));
+    $('opt12').addEventListener('change', render);
+    function readFrom() {
+      const v = $('fromZone').value, z = Z.resolve(v);
+      if (!v.trim()) return;
+      if (!z) { $('zoneError').hidden = false; $('zoneError').textContent = `Could not find a time zone called "${v.trim()}". Try a city, a country or an abbreviation such as IST.`; $('fromZone').classList.add('bad'); return; }
+      if (z !== src) { setSource(z, false); render(); } else syncFrom();
+    }
+    $('fromZone').addEventListener('change', readFrom);
+    $('fromZone').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); readFrom(); } });
+    function readAdd() {
+      const v = $('addZone').value, z = Z.resolve(v);
+      if (!v.trim()) return;
+      if (!z) { Layerbit.toast(`No time zone found for "${v.trim()}".`, 'warn'); return; }
+      $('addZone').value = '';
+      addZone(z, false); render();
+    }
+    $('btnAdd').addEventListener('click', readAdd);
+    $('addZone').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); readAdd(); } });
+    $('addZone').addEventListener('change', () => { if (Z.resolve($('addZone').value)) readAdd(); });
+    $('chips').addEventListener('click', e => { const b = e.target.closest('[data-add]'); if (b) { addZone(b.dataset.add, false); render(); } });
+    $('results').addEventListener('click', e => {
+      const b = e.target.closest('[data-act]'); if (!b) return;
+      const z = b.closest('.tz-card').dataset.zone;
+      if (b.dataset.act === 'rm') targets = targets.filter(t => t !== z);
+      else setSource(z, true);
+      render();
+    });
+    function pickRow(tr) { if (!tr) return; $('time').value = pad(+tr.dataset.hour) + ':00'; render(); }
+    $('planner').addEventListener('click', e => pickRow(e.target.closest('tr[data-hour]')));
+    $('planner').addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); pickRow(e.target.closest('tr[data-hour]')); } });
+
+    function getState() { return { d: $('date').value, t: $('time').value, src, zones: targets.slice(), h12: $('opt12').checked }; }
+    function setState(s) {
+      if (!s) return;
+      if (s.src && Z.isZone(s.src)) src = s.src;
+      if (Array.isArray(s.zones)) targets = s.zones.filter(z => typeof z === 'string' && Z.isZone(z) && z !== src).slice(0, MAX_ZONES - 1);
+      if (s.d) $('date').value = s.d;
+      if (s.t) $('time').value = s.t;
+      if (typeof s.h12 === 'boolean') $('opt12').checked = s.h12;
+      syncFrom(); render();
+    }
+    if (window.Layerbit) Layerbit.register({ slug: 'time-zone-converter', getState, setState, run: quick, input: t => { $('quick').value = t.trim(); quick(); } });
+
+    fillList();
+    setNow(); syncFrom(); render();
+  </script>
