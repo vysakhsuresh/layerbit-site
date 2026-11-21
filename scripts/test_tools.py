@@ -2272,6 +2272,76 @@ def _(t):
 
 
 # ----------------------------------------------------------------------------
+# vat-gst-calculator
+# ----------------------------------------------------------------------------
+@case("vat-gst-calculator", "minimal", "opens with UAE VAT on AED 1,000 and a two-line invoice")
+def _(t):
+    expect("AED 1,050.00" in t.text("headline"), t.text("headline"))
+    expect("UAE Dirhams One Thousand Fifty Only" in t.text("calcOut"), "amount in words missing")
+    expect("1/21" in t.text("calcOut"), "tax fraction missing")
+    eq(t.count("#lines tbody tr"), 2, "default lines")
+
+
+@case("vat-gst-calculator", "typical", "remove VAT: 1,050 -> 1,000 + 50; Saudi 15%")
+def _(t):
+    t.click("[data-mode='remove']")
+    t.set("amount", "1050")
+    expect("AED 1,000.00" in t.text("headline") and "AED 50.00" in t.text("headline"), t.text("headline"))
+    t.select("preset", "sa-15")
+    t.set("amount", "2300")
+    expect("SAR 2,000.00" in t.text("headline"), t.text("headline"))
+
+
+@case("vat-gst-calculator", "typical", "India GST 18%: CGST + SGST, then IGST, with lakh grouping")
+def _(t):
+    t.select("preset", "in-18")
+    t.set("amount", "100000")
+    out = t.text("calcOut")
+    expect("CGST 9%" in out and "INR 9,000.00" in out and "SGST 9%" in out, out)
+    expect("INR 1,18,000.00" in out and "Rupees One Lakh Eighteen Thousand Only" in out, out)
+    t.select("supply", "inter")
+    expect("IGST 18%" in t.text("calcOut") and "INR 18,000.00" in t.text("calcOut"), t.text("calcOut"))
+    expect(t.visible("#supplyField"), "supply type hidden for INR")
+    t.select("preset", "ae-5")
+    expect(not t.visible("#supplyField"), "supply type shown for AED")
+
+
+@case("vat-gst-calculator", "typical", "invoice lines with two rates are grouped and split")
+def _(t):
+    t.call("setState({ mode: 'add', currency: 'INR', rate: '18', amount: '100', supply: 'intra', lines: [{d:'Laptop', q:'2', p:'50000', r:'18'}, {d:'Books', q:'3', p:'200', r:'5'}] })")
+    out = t.text("linesOut")
+    expect("CGST 9% on INR 1,00,000.00" in out and "INR 9,000.00" in out, out)
+    expect("CGST 2.5% on INR 600.00" in out and "INR 15.00" in out, out)
+    expect("INR 1,18,630.00" in out, out)
+    t.click("#btnAddLine")
+    eq(t.count("#lines tbody tr"), 3, "line added")
+    t.click("#lines [data-rm='2']")
+    eq(t.count("#lines tbody tr"), 2, "line removed")
+
+
+@case("vat-gst-calculator", "edge", "bad amounts, rates and decimals are reported")
+def _(t):
+    t.set("amount", "12abc")
+    expect("not a number" in t.text("calcError"), t.text("calcError"))
+    t.set("amount", "10.005")
+    expect("2 decimal places" in t.text("calcError"), t.text("calcError"))
+    t.select("preset", "om-5")
+    t.set("amount", "10.5")
+    expect("OMR 11.025" in t.text("headline"), t.text("headline"))
+    t.set("rate", "150")
+    expect("100%" in t.text("calcError"), t.text("calcError"))
+    eq(t.val("preset"), "custom", "preset follows a typed rate")
+
+
+@case("vat-gst-calculator", "maximal", "a 200-line invoice totals exactly")
+def _(t):
+    t.call("setState({ currency: 'AED', rate: '5', amount: '1', lines: Array.from({length: 200}, (_, i) => ({ d: 'Item ' + i, q: '3', p: '0.10', r: '5' })) })")
+    out = t.text("linesOut")
+    # each line: 0.30 net, 0.015 -> 0.02 tax; 200 lines = 60.00 + 4.00
+    expect("AED 64.00" in out, out)
+
+
+# ----------------------------------------------------------------------------
 # date-calculator
 # ----------------------------------------------------------------------------
 @case("date-calculator", "minimal", "opens with today and shows every result")

@@ -99,6 +99,10 @@ ICONS = {
     f'<rect x="5" y="9" width="38" height="33" rx="6" fill="{F}" stroke="{A}" stroke-width="2.4"/>',
     f'<path d="M5 18h38M15 5v8M33 5v8" stroke="{A}" stroke-width="2.4" stroke-linecap="round"/>',
     f'<path d="M14 30h7M17.5 26.5v7M27 30h7" stroke="{C}" stroke-width="2.6" stroke-linecap="round"/>'),
+  "vat-gst-calculator": s(
+    f'<path d="M10 4h22l8 8v32H10z" fill="{F}" stroke="{A}" stroke-width="2.4" stroke-linejoin="round"/>',
+    f'<path d="M32 4v8h8" stroke="{A}" stroke-width="2.4" stroke-linejoin="round" fill="none"/><path d="M17 34l14-14" stroke="{A}" stroke-width="2.6" stroke-linecap="round"/>',
+    f'<circle cx="18.5" cy="21.5" r="3" fill="none" stroke="{C}" stroke-width="2.4"/><circle cx="29.5" cy="32.5" r="3" fill="none" stroke="{C}" stroke-width="2.4"/>'),
   "xml-formatter": s(
     f'<path d="M14 9 5 18l9 9M34 9l9 9-9 9M27 6l-6 24" stroke="{A}" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" fill="none"/>',
     f'<path d="M24 32v4M14 40v-4h20v4" stroke="{A}" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>',

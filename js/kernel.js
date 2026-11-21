@@ -54,6 +54,7 @@
     ['number-base-converter', 'Number Base Converter', 'binary hex decimal octal base twos complement bits bytes float ieee', ['text']],
     ['text-case-converter', 'Text Case Converter & Word Counter', 'camelcase snake_case kebab title case word count characters slug', ['text']],
     ['markdown-preview', 'Markdown Editor & Preview', 'markdown md preview html gfm readme', ['text']],
+    ['vat-gst-calculator', 'VAT & GST Calculator', 'vat gst tax calculator uae 5% saudi 15% india cgst sgst igst invoice amount in words', ['text']],
     ['pint-ae-checker', 'UAE PINT-AE E-Invoice Checker', 'uae invoice pint ubl compliance', ['xml']],
     ['layerlink-sharer', 'LayerLink Screen Sharing', 'screen share remote', []],
     ['layerlink-viewer', 'LayerLink Viewer', 'screen share viewer', []]
