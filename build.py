@@ -14,7 +14,7 @@ Usage:
                                (used by CI to catch hand-edited output that
                                wasn't regenerated from its source)
 """
-import re, glob, os, sys, json
+import hashlib, re, glob, os, sys, json
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
 os.chdir(ROOT)
@@ -247,7 +247,35 @@ def build_page(slug_file):
     # would otherwise survive into the output. Resolving it last lets those
     # fields use root-relative asset paths that work from any directory depth.
     page = page.replace("{{PREFIX}}", prefix)
+    page = version_assets(page, data["file"])
     return page, data["file"]
+
+
+# Every local stylesheet and script is linked as file.css?v=<content hash>.
+# Pages are fetched fresh (network-first) but assets come from the browser and
+# service-worker caches, so without this a returning visitor can get a new
+# page with an old stylesheet. A changed file gets a new URL, which no cache
+# holds yet, so the page and its assets always match.
+_ASSET_HASHES = {}
+_ASSET_RE = re.compile(r'(<(?:link|script)\b[^>]*?\b(?:href|src)=")((?:\.\./)*(?:(?:css|js)/[^"?#]+\.(?:css|js)|main\.js))(")')
+
+
+def asset_hash(path):
+    if path not in _ASSET_HASHES:
+        with open(path, "rb") as f:
+            _ASSET_HASHES[path] = hashlib.sha256(f.read()).hexdigest()[:10]
+    return _ASSET_HASHES[path]
+
+
+def version_assets(page, target_file):
+    base = os.path.dirname(target_file)
+
+    def repl(m):
+        path = os.path.normpath(os.path.join(base, m.group(2)))
+        if not os.path.exists(path):
+            return m.group(0)
+        return m.group(1) + m.group(2) + "?v=" + asset_hash(path) + m.group(3)
+    return _ASSET_RE.sub(repl, page)
 
 
 # Pages that were removed: each old address becomes an instant redirect to
