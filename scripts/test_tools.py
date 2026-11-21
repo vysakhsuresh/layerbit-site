@@ -1407,6 +1407,29 @@ def _(t):
     eq(t.val("dataInput"), "WIFI:T:WPA;S:Cafe\\;Net;P:p\\:ss\\,word;;", "wifi string")
 
 
+@case("qr-barcode", "typical", "UPI builder composes a upi://pay link every UPI app reads")
+def _(t):
+    t.select("payloadType", "upi")
+    t.set("pf-vpa", " shop.owner@okhdfcbank ")
+    t.set("pf-name", "Ravi & Sons")
+    t.set("pf-amount", "₹1,250.5")
+    t.set("pf-note", "Order 42")
+    eq(t.val("dataInput"), "upi://pay?pa=shop.owner@okhdfcbank&pn=Ravi%20%26%20Sons&am=1250.50&cu=INR&tn=Order%2042", "upi link")
+    t.set("pf-amount", "")
+    eq(t.val("dataInput"), "upi://pay?pa=shop.owner@okhdfcbank&pn=Ravi%20%26%20Sons&cu=INR&tn=Order%2042", "upi link without amount")
+
+
+@case("qr-barcode", "typical", "WhatsApp builder composes a wa.me link with the message")
+def _(t):
+    t.select("payloadType", "whatsapp")
+    t.set("pf-num", "+971 50 123 4567")
+    t.set("pf-msg", "Hi, is the table free at 8?")
+    eq(t.val("dataInput"), "https://wa.me/971501234567?text=Hi%2C%20is%20the%20table%20free%20at%208%3F", "whatsapp link")
+    t.set("pf-num", "00919876543210")
+    t.set("pf-msg", "")
+    eq(t.val("dataInput"), "https://wa.me/919876543210", "00 prefix stripped, no message")
+
+
 @case("qr-barcode", "typical", "vCard builder emits N/FN and optional lines")
 def _(t):
     t.select("payloadType", "vcard")
