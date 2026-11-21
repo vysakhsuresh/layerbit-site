@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Count the days or working days between two dates, add or subtract days, months or working days, and calculate an exact age, with Gulf and Indian weekends." />
+  <title>Date Calculator: Days Between Dates, Add Days & Age | Layerbit</title>
+  <meta name="google-adsense-account" content="ca-pub-6072772587431629" />
+  <link rel="preload" href="../fonts/space-grotesk-latin.woff2" as="font" type="font/woff2" crossorigin />
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('consent', 'default', {ad_storage: 'denied', ad_user_data: 'denied', ad_personalization: 'denied', analytics_storage: 'denied', wait_for_update: 500, region: ["AT", "BE", "BG", "HR", "CY", "CZ", "DK", "EE", "FI", "FR", "DE", "GR", "HU", "IE", "IT", "LV", "LT", "LU", "MT", "NL", "PL", "PT", "RO", "SK", "SI", "ES", "SE", "IS", "LI", "NO", "GB", "CH"]});
+    gtag('consent', 'default', {ad_storage: 'granted', ad_user_data: 'granted', ad_personalization: 'granted', analytics_storage: 'granted'});
+    try { var lbc = localStorage.getItem('layerbit-cookie-consent'); if (!lbc && navigator.globalPrivacyControl === true) lbc = 'rejected'; if (lbc === 'accepted' || lbc === 'rejected') { var v = lbc === 'accepted' ? 'granted' : 'denied'; gtag('consent', 'update', {ad_storage: v, ad_user_data: v, ad_personalization: v, analytics_storage: v}); } } catch (e) {}
+  </script>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-ERX8MNPPP5"></script>
+  <script>
+    gtag('js', new Date());
+    gtag('config', 'G-ERX8MNPPP5');
+  </script>
+  <link rel="canonical" href="https://layerbit.co.in/tools/date-calculator.html" />
+  <meta name="robots" content="max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://layerbit.co.in/tools/date-calculator.html" />
+  <meta property="og:site_name" content="Layerbit" />
+  <meta property="og:title" content="Date Calculator: Days Between Dates, Add Days & Age | Layerbit" />
+  <meta property="og:description" content="Count the days or working days between two dates, add or subtract days, months or working days, and calculate an exact age, with Gulf and Indian weekends." />
+  <meta property="og:image" content="https://layerbit.co.in/images/og/tools-date-calculator.jpg" />
+  <meta property="og:image:type" content="image/jpeg" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="Date Calculator: Days Between Dates, Add Days & Age" />
+  <meta property="og:locale" content="en" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Date Calculator: Days Between Dates, Add Days & Age | Layerbit" />
+  <meta name="twitter:description" content="Count the days or working days between two dates, add or subtract days, months or working days, and calculate an exact age, with Gulf and Indian weekends." />
+  <meta name="twitter:image" content="https://layerbit.co.in/images/og/tools-date-calculator.jpg" />
+  <meta name="twitter:image:alt" content="Date Calculator: Days Between Dates, Add Days & Age" />
+  <meta name="theme-color" content="#0a0c10" />
+  <script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "SoftwareApplication",
+      "@id": "https://layerbit.co.in/tools/date-calculator.html#app",
+      "name": "Date Calculator: Days Between Dates, Add Days \u0026 Age",
+      "url": "https://layerbit.co.in/tools/date-calculator.html",
+      "description": "Count the days or working days between two dates, add or subtract days, months or working days, and calculate an exact age, with Gulf and Indian weekends.",
+      "applicationCategory": "UtilitiesApplication",
+      "operatingSystem": "Any (runs in the browser)",
+      "browserRequirements": "Requires JavaScript",
+      "isAccessibleForFree": true,
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "publisher": {
+        "@id": "https://layerbit.co.in/#organization"
+      },
+      "featureList": [
+        "Days, weeks, months and years between two dates",
+        "Optional counting of the end date",
+        "Working days with five weekend patterns and a holiday list",
+        "Add or subtract days, weeks, months, years or working days",
+        "Exact age in years, months and days with the next birthday",
+        "ISO 8601 week numbers",
+        "Shareable links"
+      ]
+    },
+    {
+      "@type": "BreadcrumbList",
+      "@id": "https://layerbit.co.in/tools/date-calculator.html#breadcrumb",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://layerbit.co.in/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Developer tools",
+          "item": "https://layerbit.co.in/#tools"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": "Date Calculator",
+          "item": "https://layerbit.co.in/tools/date-calculator.html"
+        }
+      ]
+    },
+    {
+      "@type": "FAQPage",
+      "@id": "https://layerbit.co.in/tools/date-calculator.html#faq",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "How many days are there between two dates?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Enter the two dates in the first panel. The calculator shows the total number of days, the same span in weeks, months and years, and the number of working days. By default it counts the days from the start date up to the end date without including the end date, so 1 January to 31 December 2026 is 364 days; tick \"Count the end date too\" to include both, which gives 365."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What date is 30, 60 or 90 days from today?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Use the second panel: it starts from today, and the 30, 60 and 90 day buttons fill in the amount. The result shows the date, its day of the week and its ISO week number. Note that 90 days is not the same as 3 months; choose months as the unit if a document says \"three months\" rather than \"90 days\"."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How do I calculate my exact age?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Enter your date of birth in the age calculator. It shows your age in years, months and days, your age in total months, weeks and days, the day of the week you were born, and how many days remain until your next birthday. Change \"Age on\" to find your age on any other date, such as a deadline for an exam or a job application."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How do I count working days in the UAE or Saudi Arabia?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Choose the weekend that applies: Saturday and Sunday for the UAE, or Friday and Saturday for Saudi Arabia, Qatar, Kuwait, Oman and Bahrain. Then paste the public holidays for the period into the holidays box. The working-day count excludes both, and adding working days in the second panel skips them as well."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What happens when you add one month to 31 January?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "There is no 31 February, so the result is the last day of February: the 28th, or the 29th in a leap year. The same rule applies to any month-end, so 31 March minus one month is 28 or 29 February, and 31 August plus one month is 30 September. Spreadsheet functions such as EDATE in Excel and Google Sheets behave the same way."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How is a 29 February birthday handled?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "In years without a 29 February, the calculator treats 28 February as the birthday, so the age goes up on that day and the next birthday countdown points to it. In leap years the birthday is 29 February as usual."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Are the dates I enter sent anywhere?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "No. All the arithmetic runs in JavaScript on this page, and dates of birth and holiday lists never leave your device. The page keeps working offline once it has loaded."
+          }
+        }
+      ]
+    }
+  ]
+}
+  </script>
+
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6072772587431629" crossorigin="anonymous"></script>
+
+  <script src="../js/vendor/lucide.min.js?v=d32e4bd2ea" async></script>
+
+  <link rel="icon" href="../favicon.ico" sizes="16x16 32x32 48x48" />
+  <link rel="icon" href="../favicon-48.png" type="image/png" sizes="48x48" />
+  <link rel="icon" href="../icon-192.png" type="image/png" sizes="192x192" />
+  <link rel="manifest" href="../manifest.json" />
+  <link rel="alternate" type="application/atom+xml" title="Layerbit developer guides" href="https://layerbit.co.in/feed.xml" />
+  <link rel="apple-touch-icon" href="../apple-touch-icon.png" />
+  <link rel="stylesheet" href="../css/base.css?v=3a758638ad" />
+  <link rel="stylesheet" href="../css/tool.css?v=9cec66c40e" />
+
+  <style>
+
+    .in-row { display: flex; gap: 8px; align-items: stretch; }
+    .in-row .text-input { flex: 1; min-width: 0; }
+    .text-input[type="date"] { color-scheme: dark; }
+    .error-inline { font-size: 0.85em; color: #fca5a5; background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.3); padding: 8px 12px; border-radius: 8px; }
+    .date-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .date-row .field, .add-row .field { margin: 0; }
+    .add-row { display: grid; grid-template-columns: 1.4fr 0.9fr 0.8fr 1fr; gap: 12px; align-items: end; }
+    .opts-row { align-items: flex-end; gap: 18px; flex-wrap: wrap; }
+    .opts-row .check { padding-bottom: 10px; }
+    .weekend-field { flex: 1 1 320px; margin: 0; }
+    textarea.holidays { min-height: 70px; resize: vertical; font-family: 'Fira Code', monospace; font-size: 0.88em; }
+    .big-result { margin: 0; font-size: 1.15em; color: var(--text-muted); line-height: 1.5; }
+    .big-result strong { color: #fff; font-size: 1.25em; }
+    .big-result:empty { display: none; }
+    .kv-grid dt { font-family: 'Space Grotesk', sans-serif; }
+    .kv-grid:empty { display: none; }
+    .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+    .chip { border: 1px solid var(--card-border); background: rgba(255,255,255,0.03); color: var(--text-muted); border-radius: 999px; padding: 5px 12px; font: 500 0.82em 'Space Grotesk', sans-serif; cursor: pointer; }
+    .chip:hover { color: #fff; border-color: var(--card-hover-border); }
+    .hint-bar.inline { border-top: 0; padding: 0; }
+    @media (max-width: 700px) {
+      .date-row { grid-template-columns: 1fr; }
+      .add-row { grid-template-columns: 1fr 1fr; }
+      .add-row .field:first-child { grid-column: 1 / -1; }
+    }
+
+  </style>
+</head>
+<body>
+  <header>
+    <a href="../" class="brand">
+      <svg width="36" height="36" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <polygon points="32,20 54,28 32,36 10,28" stroke="#f8fafc" stroke-width="4" stroke-linejoin="round"/>
+        <polyline points="10,38 32,46 54,38" stroke="#f8fafc" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+        <polyline points="10,48 32,56 54,48" stroke="#f8fafc" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+        <rect x="50" y="10" width="10" height="10" rx="2" fill="#00f2fe" />
+      </svg>
+      Layerbit
+    </a>
+    <nav class="site-nav" aria-label="Main">
+      <a href="../#tools">Tools</a>
+      <a href="../blog.html">Guides</a>
+      <a href="../work.html">Apps</a>
+      <a href="../about.html">About</a>
+      <a href="../contact.html">Contact</a>
+    </nav>
+  </header>
+
+  <nav class="crumbs tool-crumbs" aria-label="Breadcrumb">
+    <a href="../">Home</a>
+    <span class="sep">/</span>
+    <a href="../#tools">Developer tools</a>
+    <span class="sep">/</span>
+    <span aria-current="page">Date Calculator</span>
+  </nav>
+
+  <main id="main" class="page-main">
+  <div class="hero">
+    <div class="hero-badge"><i data-lucide="shield-check"></i> Runs entirely in your browser</div>
+    <h1>Date Calculator: Days Between Dates, Add Days &amp; Age</h1>
+    <p>Count the days or working days between two dates, find the date 30, 60 or 90 days from today, and work out an exact age in years, months and days, with the weekend your country actually uses.</p>
+  </div>
+
+  <div class="ide-container single">
+    <div class="pane">
+      <div class="pane-header">
+        <div class="pane-title"><i data-lucide="calendar-range"></i> Days between two dates</div>
+      </div>
+      <div class="pane-body">
+        <div class="date-row">
+          <div class="field"><label for="start"><i data-lucide="calendar"></i> Start date</label><div class="in-row"><input type="date" id="start" class="text-input"><button class="btn" type="button" data-today="start">Today</button></div></div>
+          <div class="field"><label for="end"><i data-lucide="calendar"></i> End date</label><div class="in-row"><input type="date" id="end" class="text-input"><button class="btn" type="button" data-today="end">Today</button></div></div>
+        </div>
+        <div class="row opts-row">
+          <label class="check"><input type="checkbox" id="inclusive"> Count the end date too</label>
+          <div class="field weekend-field">
+            <label for="weekend"><i data-lucide="briefcase"></i> Weekend</label>
+            <select id="weekend" class="select-input">
+              <option value="sat-sun">Saturday and Sunday (UAE, UK, US, Europe)</option>
+              <option value="fri-sat">Friday and Saturday (Saudi Arabia, Qatar, Kuwait, Oman, Bahrain)</option>
+              <option value="sun">Sunday only (six-day week, common in India)</option>
+              <option value="fri">Friday only</option>
+              <option value="none">No weekend</option>
+            </select>
+          </div>
+        </div>
+        <div class="field">
+          <label for="holidays"><i data-lucide="calendar-x"></i> Holidays to skip (optional, one per line)</label>
+          <textarea id="holidays" class="text-input holidays" rows="3" spellcheck="false" placeholder="2026-12-02 National Day&#10;2026-12-03"></textarea>
+        </div>
+        <div class="error-inline" id="betweenError" role="alert" hidden></div>
+        <p class="big-result" id="betweenHeadline"></p>
+        <dl class="kv-grid" id="betweenOut"></dl>
+      </div>
+    </div>
+  </div>
+
+  <div class="ide-container single">
+    <div class="pane">
+      <div class="pane-header">
+        <div class="pane-title"><i data-lucide="calendar-plus"></i> Add or subtract days, months or working days</div>
+      </div>
+      <div class="pane-body">
+        <div class="add-row">
+          <div class="field"><label for="addBase"><i data-lucide="calendar"></i> From</label><div class="in-row"><input type="date" id="addBase" class="text-input"><button class="btn" type="button" data-today="addBase">Today</button></div></div>
+          <div class="field"><label for="addOp">Add or subtract</label><select id="addOp" class="select-input"><option value="1">+ add</option><option value="-1">− subtract</option></select></div>
+          <div class="field"><label for="addN">Amount</label><input type="number" id="addN" class="text-input" value="90" min="0" max="100000" step="1"></div>
+          <div class="field"><label for="addUnit">Unit</label><select id="addUnit" class="select-input"><option value="days">days</option><option value="weeks">weeks</option><option value="months">months</option><option value="years">years</option><option value="working">working days</option></select></div>
+        </div>
+        <div class="chips" id="addChips">
+          <button type="button" class="chip" data-n="30" data-u="days">30 days</button>
+          <button type="button" class="chip" data-n="45" data-u="days">45 days</button>
+          <button type="button" class="chip" data-n="60" data-u="days">60 days</button>
+          <button type="button" class="chip" data-n="90" data-u="days">90 days</button>
+          <button type="button" class="chip" data-n="180" data-u="days">180 days</button>
+          <button type="button" class="chip" data-n="6" data-u="months">6 months</button>
+          <button type="button" class="chip" data-n="1" data-u="years">1 year</button>
+          <button type="button" class="chip" data-n="10" data-u="working">10 working days</button>
+        </div>
+        <div class="error-inline" id="addError" role="alert" hidden></div>
+        <p class="big-result" id="addHeadline"></p>
+        <dl class="kv-grid" id="addOut"></dl>
+        <div class="hint-bar inline">Working days use the weekend and holidays chosen above.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="ide-container single">
+    <div class="pane">
+      <div class="pane-header">
+        <div class="pane-title"><i data-lucide="user"></i> Age calculator</div>
+      </div>
+      <div class="pane-body">
+        <div class="date-row">
+          <div class="field"><label for="dob"><i data-lucide="calendar-heart"></i> Date of birth</label><input type="date" id="dob" class="text-input"></div>
+          <div class="field"><label for="asOf"><i data-lucide="calendar-check"></i> Age on</label><div class="in-row"><input type="date" id="asOf" class="text-input"><button class="btn" type="button" data-today="asOf">Today</button></div></div>
+        </div>
+        <div class="error-inline" id="ageError" role="alert" hidden></div>
+        <p class="big-result" id="ageHeadline"></p>
+        <dl class="kv-grid" id="ageOut"></dl>
+      </div>
+    </div>
+  </div>
+
+  <div class="docs-container">
+    <div class="info-panel">
+      <h2><i data-lucide="book-open"></i> How the days are counted</h2>
+      <p>The difference between two dates is the number of midnights between them. From 1 January to 2 January is one day, and from 1 January to 31 December 2026 is 364 days. That is the right answer for questions like "how long until" or "how old is this invoice", and it matches what spreadsheets return when you subtract one date from another. When you are counting days that are used up, such as days of leave, nights booked or days a contract runs, you usually want both the first and the last day included. Tick <em>Count the end date too</em> and the same range becomes 365 days.</p>
+      <p>Months and years are counted on the calendar, not as a fixed number of days, because months run from 28 to 31 days. The calculator finds the largest number of whole months that fits between the dates and then counts the days left over, so 15 January to 20 March is 2 months and 5 days. It never uses an average month of 30 or 30.44 days, which is why its answers agree with how people count birthdays and anniversaries.</p>
+
+      <h2><i data-lucide="briefcase"></i> Working days in the UAE, Saudi Arabia and India</h2>
+      <p>"Working days" means the days that are not weekends or holidays, and the weekend depends on the country. Since January 2022 the UAE works Monday to Friday with a Saturday and Sunday weekend, as most of the world does. Saudi Arabia, Qatar, Kuwait, Oman and Bahrain keep a Friday and Saturday weekend, so a deadline of ten working days lands on a different date in Riyadh than in Dubai. In India many offices, shops and factories work six days with only Sunday off, while most banks also close on the second and fourth Saturday of each month.</p>
+      <p>Public holidays change every year, and Islamic holidays such as Eid move with the lunar calendar and are confirmed only days in advance. Paste the official list for your country and year into the holidays box, one date per line, and the calculator leaves them out of the count. A holiday that falls on a weekend is counted once, as a weekend day. Notice periods, visa validity and legal deadlines often have their own counting rules, so check the wording of the contract or regulation as well.</p>
+
+      <h2><i data-lucide="calendar-plus"></i> Adding days or months</h2>
+      <p>Adding days is exact: 90 days from 21 November 2026 is 19 February 2027. Adding months keeps the same day of the month, and when that day does not exist the result moves back to the last day of the shorter month, so 31 January plus one month is 28 February, or 29 February in a leap year. That is why 90 days and 3 months are not the same thing: from 21 November, 3 months later is 21 February. Working days skip weekends and listed holidays, and adding one working day to a Friday gives Monday with a Saturday and Sunday weekend, but Sunday with a Friday and Saturday weekend.</p>
+
+      <h2><i data-lucide="cake-slice"></i> Exact age and leap-day birthdays</h2>
+      <p>Age is counted the way birthdays are: the number of complete years since the date of birth, then the complete months since the last birthday, then the remaining days. Someone born on 15 May 1990 is 36 years, 6 months and 6 days old on 21 November 2026, which is 13,339 days. People born on 29 February have a real birthday only in leap years; in other years the calculator treats 28 February as the birthday, which is the convention most software uses. Some countries' laws use 1 March instead for legal age, so check if the exact day matters.</p>
+
+      <h2><i data-lucide="calendar-days"></i> Leap years and week numbers</h2>
+      <p>A year is a leap year if it divides by 4, except for years that divide by 100, which are leap years only if they also divide by 400. So 2000 and 2024 were leap years, 1900 was not, and 2026 is not. Week numbers follow ISO 8601, used across Europe and by most business software: weeks start on Monday, and week 1 is the week that contains the year's first Thursday. That is why 1 January 2027, a Friday, belongs to week 53 of 2026.</p>
+    </div>
+
+    <div class="info-panel">
+      <h2><i data-lucide="help-circle"></i> Frequently asked questions</h2>
+      <div class="faq-container">
+        <div class="faq-item">
+          <button class="faq-question">How many days are there between two dates? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>Enter the two dates in the first panel. The calculator shows the total number of days, the same span in weeks, months and years, and the number of working days. By default it counts the days from the start date up to the end date without including the end date, so 1 January to 31 December 2026 is 364 days; tick "Count the end date too" to include both, which gives 365.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">What date is 30, 60 or 90 days from today? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>Use the second panel: it starts from today, and the 30, 60 and 90 day buttons fill in the amount. The result shows the date, its day of the week and its ISO week number. Note that 90 days is not the same as 3 months; choose months as the unit if a document says "three months" rather than "90 days".</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">How do I calculate my exact age? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>Enter your date of birth in the age calculator. It shows your age in years, months and days, your age in total months, weeks and days, the day of the week you were born, and how many days remain until your next birthday. Change "Age on" to find your age on any other date, such as a deadline for an exam or a job application.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">How do I count working days in the UAE or Saudi Arabia? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>Choose the weekend that applies: Saturday and Sunday for the UAE, or Friday and Saturday for Saudi Arabia, Qatar, Kuwait, Oman and Bahrain. Then paste the public holidays for the period into the holidays box. The working-day count excludes both, and adding working days in the second panel skips them as well.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">What happens when you add one month to 31 January? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>There is no 31 February, so the result is the last day of February: the 28th, or the 29th in a leap year. The same rule applies to any month-end, so 31 March minus one month is 28 or 29 February, and 31 August plus one month is 30 September. Spreadsheet functions such as EDATE in Excel and Google Sheets behave the same way.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">How is a 29 February birthday handled? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>In years without a 29 February, the calculator treats 28 February as the birthday, so the age goes up on that day and the next birthday countdown points to it. In leap years the birthday is 29 February as usual.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">Are the dates I enter sent anywhere? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>No. All the arithmetic runs in JavaScript on this page, and dates of birth and holiday lists never leave your device. The page keeps working offline once it has loaded.</p></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="info-panel related-panel">
+      <h2><i data-lucide="link"></i> Related guides and tools</h2>
+      <p>Other tools for dates and times.</p>
+      <div class="use-cases-grid">
+        <div class="use-case-card">
+          <h3><i data-lucide="wrench"></i> <a href="time-zone-converter.html">Time Zone Converter &amp; Meeting Planner</a></h3>
+          <p>The same moment in Dubai, India, London and New York.</p>
+        </div>
+        <div class="use-case-card">
+          <h3><i data-lucide="wrench"></i> <a href="timestamp-converter.html">Unix Timestamp &amp; Epoch Converter</a></h3>
+          <p>Epoch seconds and milliseconds to dates, and date arithmetic in code.</p>
+        </div>
+        <div class="use-case-card">
+          <h3><i data-lucide="book-open"></i> <a href="../guides/unix-time-and-time-zones.html">Unix time and time zones explained</a></h3>
+          <p>Why a date with no time should be stored as a plain date.</p>
+        </div>
+        <div class="use-case-card">
+          <h3><i data-lucide="wrench"></i> <a href="cron-generator.html">Cron Expression Generator</a></h3>
+          <p>Schedules that repeat on days of the month or week.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="info-panel">
+      <h2><i data-lucide="git-commit"></i> Changelog</h2>
+      <ul class="changelog-list">
+        <li><span class="changelog-tag">v1.0.0</span> Initial release: days, weeks, months and years between dates with optional end-date counting; working days with five weekend patterns and a holiday list; adding or subtracting days, weeks, months, years or working days; exact age with next birthday; ISO week numbers; share links.</li>
+      </ul>
+    </div>
+  </div>
+
+  </main>
+
+  <a id="smartBackBtn" class="fab home-fab-premium" aria-label="Command Center" title="Command Center" href="../">
+    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="filter: drop-shadow(0 0 8px rgba(56, 189, 248, 0.5));">
+      <path d="M12 2L2 7l10 5 10-5-10-5z" stroke="#38bdf8" stroke-width="2" stroke-linejoin="round" fill="rgba(56,189,248,0.2)"/>
+      <path d="M2 17l10 5 10-5M2 12l10 5 10-5" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </a>
+
+  <footer>
+    <nav class="site-dir" aria-label="Site directory">
+      <div class="site-dir-col">
+        <h2 class="site-dir-title">Developer tools</h2>
+        <ul>
+          <li><a href="../tools/json-validator.html">JSON Formatter &amp; Validator</a></li>
+          <li><a href="../tools/text-diff-checker.html">Text Diff Checker &amp; Merge Tool</a></li>
+          <li><a href="../tools/regex-tester.html">Regex Tester &amp; Debugger</a></li>
+          <li><a href="../tools/jwt-decoder.html">JWT Decoder &amp; Verifier</a></li>
+          <li><a href="../tools/flow.html">Flow: Data Pipeline Builder</a></li>
+          <li><a href="../tools/sql-formatter.html">SQL Formatter &amp; Beautifier</a></li>
+          <li><a href="../tools/base64.html">Base64 Encoder &amp; Decoder</a></li>
+          <li><a href="../tools/url-encoder.html">URL Encoder &amp; Decoder</a></li>
+          <li><a href="../tools/html-escape-unescape.html">HTML Escape &amp; Unescape</a></li>
+          <li><a href="../tools/hash-generator.html">Hash &amp; HMAC Generator</a></li>
+          <li><a href="../tools/json-to-table.html">JSON to Table Viewer</a></li>
+          <li><a href="../tools/csv-to-json.html">CSV to JSON Converter</a></li>
+          <li><a href="../tools/yaml-json-converter.html">YAML ⇄ JSON Converter</a></li>
+          <li><a href="../tools/xml-formatter.html">XML Formatter &amp; XPath Tester</a></li>
+          <li><a href="../tools/cron-generator.html">Cron Expression Generator</a></li>
+          <li><a href="../tools/timestamp-converter.html">Unix Timestamp Converter</a></li>
+          <li><a href="../tools/date-calculator.html">Date &amp; Age Calculator</a></li>
+          <li><a href="../tools/time-zone-converter.html">Time Zone Converter</a></li>
+          <li><a href="../tools/uuid-generator.html">UUID &amp; ULID Generator</a></li>
+          <li><a href="../tools/subnet-calculator.html">CIDR &amp; Subnet Calculator</a></li>
+          <li><a href="../tools/unicode-inspector.html">Unicode &amp; Invisible Character Inspector</a></li>
+          <li><a href="../tools/log-analyzer.html">Log File Analyzer</a></li>
+          <li><a href="../tools/qr-barcode.html">QR Code &amp; Barcode Generator</a></li>
+          <li><a href="../tools/password-generator.html">Strong Password Generator</a></li>
+          <li><a href="../tools/color-converter.html">Color Converter &amp; Contrast Checker</a></li>
+          <li><a href="../tools/number-base-converter.html">Number Base Converter</a></li>
+          <li><a href="../tools/text-case-converter.html">Text Case Converter &amp; Word Counter</a></li>
+          <li><a href="../tools/markdown-preview.html">Markdown Editor &amp; Preview</a></li>
+          <li><a href="../tools/pint-ae-checker.html">UAE PINT-AE E-Invoice Checker</a></li>
+          <li><a href="../tools/layerlink-sharer.html">LayerLink Screen Sharing</a></li>
+        </ul>
+      </div>
+      <div class="site-dir-col">
+        <h2 class="site-dir-title">Guides</h2>
+        <ul>
+          <li><a href="../guides/how-to-create-a-strong-password.html">Strong passwords: length beats symbols</a></li>
+          <li><a href="../guides/wcag-color-contrast-explained.html">WCAG color contrast explained</a></li>
+          <li><a href="../guides/twos-complement-explained.html">Two's complement explained</a></li>
+          <li><a href="../guides/naming-conventions-camelcase-snake-case.html">Naming conventions by language</a></li>
+          <li><a href="../guides/markdown-cheat-sheet.html">Markdown cheat sheet</a></li>
+          <li><a href="../guides/json-syntax-errors-explained.html">JSON syntax errors explained</a></li>
+          <li><a href="../guides/json-schema-validation-explained.html">JSON Schema validation explained</a></li>
+          <li><a href="../guides/jsonpath-cheat-sheet.html">JSONPath cheat sheet</a></li>
+          <li><a href="../guides/three-way-merge-explained.html">Three-way merge explained</a></li>
+          <li><a href="../guides/jwt-signing-algorithms-compared.html">JWT signing algorithms compared</a></li>
+          <li><a href="../guides/jwt-decode-vs-verify.html">Decoding a JWT is not verifying it</a></li>
+          <li><a href="../guides/regex-catastrophic-backtracking.html">Regex catastrophic backtracking</a></li>
+          <li><a href="../guides/base64-explained.html">What Base64 actually does</a></li>
+          <li><a href="../guides/percent-encoding-explained.html">URL encoding explained</a></li>
+          <li><a href="../guides/html-escaping-and-xss-contexts.html">HTML escaping and XSS contexts</a></li>
+          <li><a href="../guides/hashing-vs-encryption-vs-encoding.html">Hashing vs encryption vs encoding</a></li>
+          <li><a href="../guides/csv-edge-cases.html">Why CSV is not really a format</a></li>
+          <li><a href="../guides/yaml-gotchas.html">YAML's sharpest edges</a></li>
+          <li><a href="../guides/sql-formatting-and-dialects.html">SQL dialects compared</a></li>
+          <li><a href="../guides/cron-expressions-explained.html">Cron expression rules</a></li>
+          <li><a href="../guides/unix-time-and-time-zones.html">Unix time and time zones</a></li>
+          <li><a href="../guides/uuid-v4-vs-v7-database-keys.html">UUID v4 vs v7 for database keys</a></li>
+          <li><a href="../guides/subnetting-explained.html">Subnetting explained</a></li>
+          <li><a href="../guides/invisible-unicode-characters.html">Invisible Unicode characters</a></li>
+          <li><a href="../guides/xpath-cheat-sheet.html">XPath cheat sheet</a></li>
+          <li><a href="../guides/uae-einvoicing-pint-ae.html">UAE e-invoicing: PINT-AE</a></li>
+        </ul>
+      </div>
+      <div class="site-dir-col">
+        <h2 class="site-dir-title">Services</h2>
+        <ul>
+          <li><a href="../tools/erp-development.html">Custom ERP development</a></li>
+          <li><a href="../tools/api-automation.html">API integration &amp; automation</a></li>
+          <li><a href="../tools/app-development.html">Mobile app development</a></li>
+          <li><a href="../tools/custom-scripts.html">Custom scripts &amp; automation</a></li>
+          <li><a href="../tools/static-sites.html">Static website engineering</a></li>
+          <li><a href="../tools/portfolio-design.html">Portfolio website design</a></li>
+        </ul>
+      </div>
+    </nav>
+    <div class="footer-bottom">
+      <div class="footer-copy">&copy; 2025 - 2026 <strong>Layerbit Technologies</strong>. All rights reserved.</div>
+      <div class="footer-links">
+        <a href="../about.html">About</a>
+        <a href="../work.html">Apps &amp; websites</a>
+        <a href="../blog.html">Developer Blog</a>
+        <a href="../contact.html">Contact</a>
+        <a href="../privacy.html">Privacy Policy</a>
+        <a href="../terms.html">Terms of Service</a>
+        <a href="#" data-cookie-settings>Your privacy choices</a>
+      </div>
+    </div>
+  </footer>
+  <script src="../js/kernel.js?v=e6524136ab"></script>
+
+  <script src="../js/shared.js?v=e2441a1728"></script>
+  <script src="../js/engines/datecalc.js?v=7bf11eac8d"></script>
+  <script>
+    const $ = id => document.getElementById(id);
+    const D = window.LBDate;
+    const icons = () => { if (window.lucide) lucide.createIcons(); };
+    const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+    const num = n => n.toLocaleString('en-US');
+    const plural = (n, w) => num(n) + ' ' + w + (n === 1 ? '' : 's');
+    const kv = (rows, el) => { $(el).innerHTML = rows.map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join(''); };
+    const WEEKEND_NAMES = { 'sat-sun': 'Saturday and Sunday off', 'fri-sat': 'Friday and Saturday off', 'sun': 'Sunday off', 'fri': 'Friday off', 'none': 'no weekend' };
+    function fail(id, msg) { $(id).hidden = !msg; $(id).textContent = msg || ''; }
+    function week(s) { const w = D.isoWeek(s); return `week ${w.week} of ${w.year}`; }
+    function holidays() {
+      const h = D.parseHolidays($('holidays').value);
+      return h;
+    }
+
+    function between() {
+      const a = $('start').value, b = $('end').value;
+      $('betweenHeadline').textContent = ''; $('betweenOut').innerHTML = '';
+      if (!D.parse(a) || !D.parse(b)) { fail('betweenError', a || b ? 'Enter both dates.' : ''); return; }
+      const h = holidays(), inclusive = $('inclusive').checked, weekend = $('weekend').value;
+      const c = D.count(a, b, { inclusive, weekend, holidays: h.dates });
+      const span = c.total, back = D.daysBetween(a, b) < 0;
+      const from = back ? b : a, to = back ? a : b;
+      const dd = D.diff(from, inclusive ? D.addDays(to, 1) : to);
+      fail('betweenError', h.bad.length ? `Skipped ${h.bad.length === 1 ? 'a holiday line' : h.bad.length + ' holiday lines'} that did not start with a date in YYYY-MM-DD form: ${h.bad.slice(0, 3).join('; ')}` : '');
+      $('betweenHeadline').innerHTML = `<strong>${plural(span, 'day')}</strong> ${back ? 'between' : 'from'} ${esc(D.longDate(from))} ${back ? 'and' : 'to'} ${esc(D.longDate(to))}${inclusive ? ', counting both dates' : ''}`;
+      kv([
+        ['Years, months and days', D.words({ years: dd.years, months: dd.months, days: dd.days })],
+        ['Months and days', D.words({ months: dd.totalMonths, days: dd.days })],
+        ['Weeks and days', D.words({ weeks: Math.floor(span / 7), days: span % 7 })],
+        ['Working days', `<strong>${num(c.working)}</strong> <span class="muted">(${WEEKEND_NAMES[weekend]}${c.holidays ? ', ' + plural(c.holidays, 'holiday') + ' skipped' : ''})</span>`],
+        ['Weekend days', num(c.weekend)],
+        ['Hours', num(span * 24)],
+        ['Start', `${esc(D.longDate(from))} <span class="muted">· ${week(from)}</span>`],
+        ['End', `${esc(D.longDate(to))} <span class="muted">· ${week(to)}</span>`]
+      ], 'betweenOut');
+    }
+
+    function addCalc() {
+      const base = $('addBase').value, n = Math.trunc(+$('addN').value), sign = +$('addOp').value, unit = $('addUnit').value;
+      $('addHeadline').textContent = ''; $('addOut').innerHTML = '';
+      if (!D.parse(base)) { fail('addError', 'Enter a start date.'); return; }
+      if (!Number.isFinite(n) || n < 0 || n > 100000) { fail('addError', 'Enter a whole number from 0 to 100,000.'); return; }
+      let out;
+      try {
+        const k = sign * n;
+        out = unit === 'days' ? D.addDays(base, k) : unit === 'weeks' ? D.addDays(base, 7 * k) : unit === 'months' ? D.addMonths(base, k)
+          : unit === 'years' ? D.addYears(base, k) : D.addWorkingDays(base, k, { weekend: $('weekend').value, holidays: holidays().dates });
+      } catch (e) { fail('addError', e.message); return; }
+      fail('addError', '');
+      const words = unit === 'working' ? plural(n, 'working day') : plural(n, unit.slice(0, -1));
+      $('addHeadline').innerHTML = `<strong>${esc(D.longDate(out))}</strong> is ${words} ${sign > 0 ? 'after' : 'before'} ${esc(D.longDate(base))}`;
+      const cal = D.daysBetween(base, out), clamped = (unit === 'months' || unit === 'years') && D.parse(out).d !== D.parse(base).d;
+      kv([
+        ['Date', `<code>${out}</code>`],
+        ['Day of the week', D.WEEKDAYS[D.weekday(out)]],
+        ['ISO week', week(out)],
+        ['Calendar days', `${cal >= 0 ? '+' : '−'}${num(Math.abs(cal))}`]
+      ].concat(clamped ? [['Note', `${D.parse(base).d} ${D.MONTHS[D.parse(out).m - 1]} does not exist, so the last day of the month is used.`]] : []), 'addOut');
+    }
+
+    function ageCalc() {
+      const dob = $('dob').value, asOf = $('asOf').value;
+      $('ageHeadline').textContent = ''; $('ageOut').innerHTML = '';
+      if (!D.parse(dob)) { fail('ageError', ''); $('ageHeadline').innerHTML = '<span class="muted">Enter a date of birth to see the exact age.</span>'; return; }
+      let a;
+      try { a = D.age(dob, D.parse(asOf) ? asOf : D.today()); } catch (e) { fail('ageError', e.message); return; }
+      fail('ageError', '');
+      $('ageHeadline').innerHTML = `<strong>${D.words({ years: a.years, months: a.months, days: a.days })}</strong> old${a.isBirthday ? ' — happy birthday!' : ''}`;
+      kv([
+        ['Age in years', num(a.years)],
+        ['In months', D.words({ months: a.totalMonths, days: a.days })],
+        ['In weeks', D.words({ weeks: a.totalWeeks, days: a.weekRemainder })],
+        ['In days', num(a.totalDays)],
+        ['Born on', `${esc(D.longDate(dob))}`],
+        ['Next birthday', a.isBirthday ? 'Today' : `${esc(D.longDate(a.nextBirthday))}, in ${plural(a.daysToBirthday, 'day')} (turns ${a.nextAge})`]
+      ], 'ageOut');
+    }
+
+    function all() { between(); addCalc(); ageCalc(); icons(); }
+    ['start', 'end', 'inclusive', 'weekend', 'holidays'].forEach(id => $(id).addEventListener('input', () => { between(); addCalc(); }));
+    $('weekend').addEventListener('change', () => { between(); addCalc(); });
+    $('inclusive').addEventListener('change', between);
+    ['addBase', 'addOp', 'addN', 'addUnit'].forEach(id => { $(id).addEventListener('input', addCalc); $(id).addEventListener('change', addCalc); });
+    ['dob', 'asOf'].forEach(id => $(id).addEventListener('input', ageCalc));
+    document.querySelectorAll('[data-today]').forEach(b => b.addEventListener('click', () => { const el = $(b.dataset.today); el.value = D.today(); el.dispatchEvent(new Event('input', { bubbles: true })); }));
+    $('addChips').addEventListener('click', e => { const b = e.target.closest('[data-n]'); if (!b) return; $('addN').value = b.dataset.n; $('addUnit').value = b.dataset.u; $('addOp').value = '1'; addCalc(); });
+
+    const FIELDS = ['start', 'end', 'holidays', 'weekend', 'addBase', 'addOp', 'addN', 'addUnit', 'dob', 'asOf'];
+    function getState() { const s = { inclusive: $('inclusive').checked }; FIELDS.forEach(f => { s[f] = $(f).value; }); return s; }
+    function setState(s) {
+      if (!s) return;
+      FIELDS.forEach(f => { if (typeof s[f] === 'string') $(f).value = s[f]; });
+      if (typeof s.inclusive === 'boolean') $('inclusive').checked = s.inclusive;
+      all();
+    }
+    function input(t) {
+      const dates = (String(t).match(/\d{4}-\d{1,2}-\d{1,2}/g) || []).filter(d => D.parse(d)).map(d => D.format(D.parse(d)));
+      if (dates[0]) $('start').value = dates[0];
+      if (dates[1]) $('end').value = dates[1];
+      all();
+    }
+    if (window.Layerbit) Layerbit.register({ slug: 'date-calculator', getState, setState, run: all, input });
+
+    const t0 = D.today();
+    $('start').value = t0; $('end').value = D.parse(t0).y + '-12-31';
+    $('addBase').value = t0; $('asOf').value = t0;
+    all();
+  </script>
+</body>
+</html>

@@ -42,6 +42,7 @@
     ['xml-formatter', 'XML Formatter & XPath Tester', 'xml format xpath validate', ['xml', 'text']],
     ['cron-generator', 'Cron Expression Generator', 'cron schedule crontab', ['text']],
     ['timestamp-converter', 'Unix Timestamp Converter', 'epoch timestamp date time zone iso 8601', ['text']],
+    ['date-calculator', 'Date & Age Calculator', 'date days between dates add days working days business days age calculator birthday week number', ['text']],
     ['time-zone-converter', 'Time Zone Converter', 'time zone timezone convert world clock meeting planner ist est gst pst bst gmt utc dubai india uk us', ['text']],
     ['uuid-generator', 'UUID & ULID Generator', 'uuid guid ulid v4 v7', ['text']],
     ['subnet-calculator', 'CIDR & Subnet Calculator', 'subnet cidr ip ipv4 ipv6 mask', ['text']],

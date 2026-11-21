@@ -95,6 +95,10 @@ ICONS = {
     f'<circle cx="21" cy="22" r="16" fill="{F}" stroke="{A}" stroke-width="2.4"/>',
     f'<path d="M5 22h32M21 6c-5 4.5-7 10-7 16s2 11.5 7 16M21 6c5 4.5 7 10 7 16" stroke="{A}" stroke-width="2.2" stroke-linecap="round" fill="none"/>',
     f'<circle cx="35" cy="35" r="10" fill="#0a0c10" stroke="{C}" stroke-width="2.4"/><path d="M35 30v5.5l3.5 2" stroke="{C}" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" fill="none"/>'),
+  "date-calculator": s(
+    f'<rect x="5" y="9" width="38" height="33" rx="6" fill="{F}" stroke="{A}" stroke-width="2.4"/>',
+    f'<path d="M5 18h38M15 5v8M33 5v8" stroke="{A}" stroke-width="2.4" stroke-linecap="round"/>',
+    f'<path d="M14 30h7M17.5 26.5v7M27 30h7" stroke="{C}" stroke-width="2.6" stroke-linecap="round"/>'),
   "xml-formatter": s(
     f'<path d="M14 9 5 18l9 9M34 9l9 9-9 9M27 6l-6 24" stroke="{A}" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" fill="none"/>',
     f'<path d="M24 32v4M14 40v-4h20v4" stroke="{A}" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>',
