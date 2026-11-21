@@ -2272,6 +2272,71 @@ def _(t):
 
 
 # ----------------------------------------------------------------------------
+# date-calculator
+# ----------------------------------------------------------------------------
+@case("date-calculator", "minimal", "opens with today and shows every result")
+def _(t):
+    expect(t.call("document.getElementById('start').value") == t.call("LBDate.today()"), "start is not today")
+    expect("day" in t.text("betweenHeadline"), "between result missing")
+    expect("after" in t.text("addHeadline"), "add result missing")
+    expect("date of birth" in t.text("ageHeadline").lower(), "age prompt missing")
+
+
+@case("date-calculator", "typical", "days between: exclusive, inclusive, weeks, months, working days")
+def _(t):
+    t.call("setState({ start: '2026-01-01', end: '2026-12-31', weekend: 'sat-sun', holidays: '', inclusive: false })")
+    expect("364 days" in t.text("betweenHeadline"), t.text("betweenHeadline"))
+    t.click("#inclusive")
+    expect("365 days" in t.text("betweenHeadline") and "counting both" in t.text("betweenHeadline"), t.text("betweenHeadline"))
+    expect("1 year" in t.text("betweenOut"), "calendar difference missing")
+    t.call("setState({ start: '2026-12-01', end: '2026-12-31', inclusive: true, weekend: 'sat-sun', holidays: '2026-12-02 National Day\\n2026-12-03\\n2026-12-05' })")
+    out = t.text("betweenOut")
+    expect("21" in out and "2 holidays skipped" in out, out)
+    t.select("weekend", "fri-sat")
+    expect("Friday and Saturday off" in t.text("betweenOut"), "weekend label did not update")
+
+
+@case("date-calculator", "typical", "90 days, 1 month from 31 Jan, and working days over a weekend")
+def _(t):
+    t.call("setState({ addBase: '2026-11-21', addOp: '1', addN: '90', addUnit: 'days', weekend: 'sat-sun', holidays: '' })")
+    expect("Friday, 19 February 2027" in t.text("addHeadline"), t.text("addHeadline"))
+    t.call("setState({ addBase: '2026-01-31', addN: '1', addUnit: 'months' })")
+    expect("28 February 2026" in t.text("addHeadline") and "does not exist" in t.text("addOut"), t.text("addOut"))
+    t.call("setState({ addBase: '2026-11-20', addN: '1', addUnit: 'working', weekend: 'sat-sun' })")
+    expect("Monday, 23 November 2026" in t.text("addHeadline"), t.text("addHeadline"))
+    t.select("weekend", "fri-sat")
+    expect("Sunday, 22 November 2026" in t.text("addHeadline"), t.text("addHeadline"))
+    t.click("#addChips [data-n='60']")
+    eq(t.val("addN"), "60", "chip sets amount")
+
+
+@case("date-calculator", "typical", "exact age and next birthday")
+def _(t):
+    t.call("setState({ dob: '1990-05-15', asOf: '2026-11-21' })")
+    expect("36 years, 6 months and 6 days" in t.text("ageHeadline"), t.text("ageHeadline"))
+    out = t.text("ageOut")
+    expect("13,339" in out and "Tuesday, 15 May 1990" in out and "in 175 days (turns 37)" in out, out)
+
+
+@case("date-calculator", "edge", "bad input is explained, not thrown")
+def _(t):
+    t.call("setState({ dob: '2030-01-01', asOf: '2026-01-01' })")
+    expect("after" in t.text("ageError"), "future birth date not reported")
+    t.call("setState({ holidays: 'next tuesday\\n2026-12-02', start: '2026-12-01', end: '2026-12-31' })")
+    expect("next tuesday" in t.text("betweenError"), "bad holiday line not reported")
+    t.set("addN", "-5")
+    expect("whole number" in t.text("addError"), "negative amount not reported")
+
+
+@case("date-calculator", "maximal", "a 200-year span counts instantly")
+def _(t):
+    t.call("setState({ start: '1900-01-01', end: '2100-01-01', inclusive: false, weekend: 'sat-sun', holidays: '' })")
+    expect("73,049 days" in t.text("betweenHeadline"), t.text("betweenHeadline"))
+    t.call("setState({ addBase: '2026-01-01', addOp: '1', addN: '5000', addUnit: 'working' })")
+    expect("2045" in t.text("addHeadline"), t.text("addHeadline"))
+
+
+# ----------------------------------------------------------------------------
 # time-zone-converter
 # ----------------------------------------------------------------------------
 TZ_CARD = "document.querySelector('.tz-card[data-zone=\"%s\"] %s').textContent"
