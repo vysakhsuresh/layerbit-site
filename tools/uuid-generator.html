@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="Generate UUID v4, time-ordered v7, namespace v5 and ULIDs in bulk, and decode any UUID or ULID to its version, variant and embedded timestamp. Runs locally." />
-  <title>UUID Generator (v4, v7, v5) & ULID Generator | Layerbit</title>
+  <meta name="description" content="Generate UUIDs (GUIDs) in bulk: random v4, time-ordered v7, namespace v5 and ULIDs, and decode any UUID to its version, variant and timestamp. Runs locally." />
+  <title>UUID / GUID Generator (v4, v7) & ULID Generator | Layerbit</title>
   <meta name="google-adsense-account" content="ca-pub-6072772587431629" />
   <link rel="preload" href="../fonts/space-grotesk-latin.woff2" as="font" type="font/woff2" crossorigin />
   <script>
@@ -25,19 +25,19 @@
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://layerbit.co.in/tools/uuid-generator.html" />
   <meta property="og:site_name" content="Layerbit" />
-  <meta property="og:title" content="UUID Generator (v4, v7, v5) & ULID Generator | Layerbit" />
-  <meta property="og:description" content="Generate UUID v4, time-ordered v7, namespace v5 and ULIDs in bulk, and decode any UUID or ULID to its version, variant and embedded timestamp. Runs locally." />
+  <meta property="og:title" content="UUID / GUID Generator (v4, v7) & ULID Generator | Layerbit" />
+  <meta property="og:description" content="Generate UUIDs (GUIDs) in bulk: random v4, time-ordered v7, namespace v5 and ULIDs, and decode any UUID to its version, variant and timestamp. Runs locally." />
   <meta property="og:image" content="https://layerbit.co.in/images/og/tools-uuid-generator.jpg" />
   <meta property="og:image:type" content="image/jpeg" />
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
-  <meta property="og:image:alt" content="UUID Generator (v4, v7, v5) & ULID Generator" />
+  <meta property="og:image:alt" content="UUID / GUID Generator (v4, v7) & ULID Generator" />
   <meta property="og:locale" content="en" />
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="UUID Generator (v4, v7, v5) & ULID Generator | Layerbit" />
-  <meta name="twitter:description" content="Generate UUID v4, time-ordered v7, namespace v5 and ULIDs in bulk, and decode any UUID or ULID to its version, variant and embedded timestamp. Runs locally." />
+  <meta name="twitter:title" content="UUID / GUID Generator (v4, v7) & ULID Generator | Layerbit" />
+  <meta name="twitter:description" content="Generate UUIDs (GUIDs) in bulk: random v4, time-ordered v7, namespace v5 and ULIDs, and decode any UUID to its version, variant and timestamp. Runs locally." />
   <meta name="twitter:image" content="https://layerbit.co.in/images/og/tools-uuid-generator.jpg" />
-  <meta name="twitter:image:alt" content="UUID Generator (v4, v7, v5) & ULID Generator" />
+  <meta name="twitter:image:alt" content="UUID / GUID Generator (v4, v7) & ULID Generator" />
   <meta name="theme-color" content="#0a0c10" />
   <script type="application/ld+json">
 {
@@ -46,9 +46,9 @@
     {
       "@type": "SoftwareApplication",
       "@id": "https://layerbit.co.in/tools/uuid-generator.html#app",
-      "name": "UUID \u0026 ULID Generator",
+      "name": "UUID (GUID) \u0026 ULID Generator",
       "url": "https://layerbit.co.in/tools/uuid-generator.html",
-      "description": "Generate UUID v4, time-ordered v7, namespace v5 and ULIDs in bulk, and decode any UUID or ULID to its version, variant and embedded timestamp. Runs locally.",
+      "description": "Generate UUIDs (GUIDs) in bulk: random v4, time-ordered v7, namespace v5 and ULIDs, and decode any UUID to its version, variant and timestamp. Runs locally.",
       "applicationCategory": "DeveloperApplication",
       "operatingSystem": "Any (runs in the browser)",
       "browserRequirements": "Requires JavaScript",
@@ -97,7 +97,7 @@
           "name": "Are these UUIDs unique? Could two people get the same one?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "A v4 UUID has 122 random bits from a cryptographic generator. The chance that any two of a billion such ids collide is about 1 in 2.7 quintillion; you would need to generate roughly 2.7 quintillion ids before a duplicate became likely. Nothing is checked against a central registry, and nothing needs to be — the probability is what guarantees uniqueness. The same reasoning applies to the 74 or 80 random bits in a v7 or ULID generated within the same millisecond."
+            "text": "A v4 UUID has 122 random bits from a cryptographic generator. The chance that any two of a billion such ids collide is about 1 in 2.7 quintillion; you would need to generate roughly 2.7 quintillion ids before a duplicate became likely. Nothing is checked against a central registry, and nothing needs to be \u2014 the probability is what guarantees uniqueness. The same reasoning applies to the 74 or 80 random bits in a v7 or ULID generated within the same millisecond."
           }
         },
         {
@@ -121,7 +121,7 @@
           "name": "Can I extract the creation time from a UUID?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "From a v7 or a ULID, yes: the first 48 bits are a Unix millisecond timestamp and the decoder shows it. From a v1 or v6, also yes, as a count of 100-nanosecond intervals since 15 October 1582, which the decoder converts. From a v4, v3 or v5, no — those contain no time information at all, and there is no way to learn when they were made."
+            "text": "From a v7 or a ULID, yes: the first 48 bits are a Unix millisecond timestamp and the decoder shows it. From a v1 or v6, also yes, as a count of 100-nanosecond intervals since 15 October 1582, which the decoder converts. From a v4, v3 or v5, no \u2014 those contain no time information at all, and there is no way to learn when they were made."
           }
         },
         {
@@ -129,7 +129,7 @@
           "name": "How does a v5 UUID work and when would I use one?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "A v5 is SHA-1(namespace UUID bytes + name bytes) with the version and variant bits overwritten, truncated to 128 bits. It is deterministic: the same namespace and name always produce the same UUID, in any language. Use it when independent systems need to agree on the id for the same real-world thing without coordinating — for example, deriving a stable id for \"example.com\" from the DNS namespace, or for a file path from the URL namespace. v3 is the same construction with MD5 and should only be used to match an existing system that requires it."
+            "text": "A v5 is SHA-1(namespace UUID bytes + name bytes) with the version and variant bits overwritten, truncated to 128 bits. It is deterministic: the same namespace and name always produce the same UUID, in any language. Use it when independent systems need to agree on the id for the same real-world thing without coordinating \u2014 for example, deriving a stable id for \"example.com\" from the DNS namespace, or for a file path from the URL namespace. v3 is the same construction with MD5 and should only be used to match an existing system that requires it."
           }
         },
         {
@@ -202,8 +202,8 @@
   <main id="main" class="page-main">
   <div class="hero">
     <div class="hero-badge"><i data-lucide="shield-check"></i> crypto.getRandomValues · generated on your device</div>
-    <h1>UUID &amp; ULID Generator and Decoder</h1>
-    <p>Bulk-generate UUID v4, time-ordered v7, namespace v5/v3 and ULIDs, in the format your system wants. Paste any identifier to decode its version, variant and the timestamp hidden inside it.</p>
+    <h1>UUID (GUID) &amp; ULID Generator and Decoder</h1>
+    <p>Bulk-generate UUID v4, time-ordered v7, namespace v5/v3 and ULIDs, in the format your system wants. A GUID, the name Microsoft and .NET use, is the same 128-bit identifier, so every value here works as a GUID too. Paste any identifier to decode its version, variant and the timestamp hidden inside it.</p>
   </div>
 
   <div class="ide-container">
