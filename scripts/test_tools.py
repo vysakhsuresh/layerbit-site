@@ -2529,7 +2529,7 @@ def launch(p):
     try:
         return p.chromium.launch()
     except Exception:
-        for cand in ("/opt/pw-browsers/chromium-1194/chrome-linux/chrome",):
+        for cand in ("/opt/pw-browsers/chromium", "/opt/pw-browsers/chromium-1194/chrome-linux/chrome"):
             if os.path.exists(cand):
                 return p.chromium.launch(executable_path=cand)
         raise

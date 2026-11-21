@@ -7,8 +7,8 @@
  * - Cross-origin requests (ads, analytics, Google Fonts) are never cached
  *   or touched; they pass straight through.
  * Nothing here reads request bodies or tool input. */
-var VERSION = 'lb-2026-11-21c';
-var SHELL = ['./', 'index.html', 'offline.html', 'css/base.css', 'css/tool.css', 'css/article.css', 'js/kernel.js', 'js/shared.js', 'js/vendor/lucide.min.js', 'main.js', 'layerbit-logo.png', 'icon-192.png', 'icon-512.png', 'manifest.json'];
+var VERSION = 'lb-2026-11-21d';
+var SHELL = ['./', 'index.html', 'offline.html', 'css/base.css', 'css/tool.css', 'css/article.css', 'js/kernel.js', 'js/shared.js', 'js/vendor/lucide.min.js', 'main.js', 'icon-192.png', 'icon-512.png', 'manifest.json'];
 
 self.addEventListener('install', function (e) {
   e.waitUntil(caches.open(VERSION).then(function (c) { return Promise.all(SHELL.map(function (u) { return c.add(u).catch(function () { }); })); }).then(function () { return self.skipWaiting(); }));

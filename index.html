@@ -957,6 +957,8 @@
       .premium-bmc-btn i, .premium-bmc-btn svg.lucide { width: 22px; height: 22px; }
       .premium-bmc-btn span { display: none; } /* icon only on phones: the label collided with the header pills */
       header { padding-right: 80px; flex-wrap: wrap; row-gap: 8px; margin: 5px auto 40px auto; min-height: 50px; }
+      /* the nav row sits below the fixed Support button, so it may use the full width */
+      header .site-nav { flex-basis: calc(100% + 80px); margin-right: -80px; }
       
       .search-pill-wrapper {
         bottom: 20px;
@@ -1037,6 +1039,13 @@
       </svg>
       Layerbit
     </div>
+    <nav class="site-nav" aria-label="Main">
+      <a href="#tools">Tools</a>
+      <a href="blog.html">Guides</a>
+      <a href="work.html">Apps</a>
+      <a href="about.html">About</a>
+      <a href="contact.html">Contact</a>
+    </nav>
   </header>
 
   <main id="main" class="page-main">

@@ -14,9 +14,9 @@
         "@id": "https://layerbit.co.in/guides/unix-time-and-time-zones.html"
       },
       "datePublished": "2026-09-27",
-      "dateModified": "2026-09-27",
+      "dateModified": "2026-11-21",
       "inLanguage": "en",
-      "wordCount": 1877,
+      "wordCount": 2720,
       "keywords": "unix timestamp, ISO 8601, time zones, UTC, daylight saving, epoch milliseconds, year 2038",
       "articleSection": "Time \u0026 Dates",
       "author": {
@@ -95,7 +95,7 @@
           "name": "Should I store dates in UTC or local time?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "Store instants — things that have happened — in UTC, and convert to local time only when displaying. Store future appointments as a wall-clock time together with the IANA zone name, because the zone's offset rules may change before the date arrives. Never store just an offset like +04:00 in place of a zone name."
+            "text": "Store instants \u2014 things that have happened \u2014 in UTC, and convert to local time only when displaying. Store future appointments as a wall-clock time together with the IANA zone name, because the zone's offset rules may change before the date arrives. Never store just an offset like +04:00 in place of a zone name."
           }
         },
         {
@@ -104,6 +104,22 @@
           "acceptedAnswer": {
             "@type": "Answer",
             "text": "A historical quirk of the ECMAScript specification: date-only ISO strings are parsed as UTC midnight, while date-time strings without a zone designator are parsed as local time. The inconsistency causes many off-by-one-day bugs. Avoid it by always including a Z or an explicit offset in any date-time string you exchange, and by treating date-only values as plain dates rather than timestamps."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How do I convert a Unix timestamp to a date in Excel?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Divide the seconds by 86,400 (the number of seconds in a day) and add the spreadsheet's date for 1 January 1970: =A2/86400 + DATE(1970,1,1), then format the cell as a date and time. Use 86,400,000 instead for millisecond timestamps. The result is in UTC; add the offset as a fraction of a day, such as +4/24 for Dubai, to show local time in a zone without daylight saving."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How do I convert a Unix timestamp to a date in SQL Server?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "SQL Server has no epoch function, so add the seconds to 1 January 1970: SELECT DATEADD(SECOND, 1727438400, '1970-01-01'). The result is UTC. DATEADD only accepts a 32-bit integer, so split millisecond values into whole seconds plus the remaining milliseconds, and use DATEDIFF_BIG(SECOND, '1970-01-01', SYSUTCDATETIME()) to get the current timestamp."
           }
         },
         {

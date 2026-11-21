@@ -259,7 +259,6 @@ REDIRECTS = {
     "tools/breachalert.html": ("tools/password-generator.html", "Strong Password Generator"),
     "tools/malicious-url-checker-dns-only.html": ("tools/url-encoder.html", "URL Encoder & Decoder"),
     "tools/insight.html": ("", "Layerbit developer tools"),
-    "tools/SAMPLE.html": ("", "Layerbit developer tools"),
 }
 
 

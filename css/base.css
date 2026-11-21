@@ -383,3 +383,15 @@ a, button, [role="button"], [tabindex], label, summary, select, input, textarea 
 .tool-crumbs a:hover { color: var(--accent-main); }
 .tool-crumbs span[aria-current] { color: var(--text-main); }
 .tool-crumbs .sep { opacity: 0.4; }
+
+/* Main navigation in the header (all pages) */
+.site-nav { display: flex; align-items: center; gap: 26px; margin-left: 44px; }
+.site-nav a { color: var(--text-muted); text-decoration: none; font-weight: 500; font-size: 0.95em; padding: 8px 0; border-bottom: 2px solid transparent; white-space: nowrap; transition: color 0.2s, border-color 0.2s; }
+.site-nav a:hover, .site-nav a[aria-current="page"] { color: #fff; border-bottom-color: var(--accent-main); }
+@media (max-width: 1200px) {
+  body > header, header { flex-wrap: wrap; row-gap: 10px; }
+  .site-nav { order: 3; flex-basis: 100%; margin-left: 0; gap: 22px; overflow-x: auto; scrollbar-width: none; }
+  .site-nav::-webkit-scrollbar { display: none; }
+  .site-nav a { padding: 10px 0; }
+}
+
