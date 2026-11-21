@@ -213,6 +213,30 @@ def check_icons():
     return errs
 
 
+def check_css():
+    """Every stylesheet must have balanced braces. One missing '}' makes the
+    browser treat the rest of the sheet as part of the unclosed block, which
+    silently drops styles without any error."""
+    errs = []
+    for f in sorted(glob.glob(os.path.join(ROOT, "src/pages/*.style.css")) + glob.glob(os.path.join(ROOT, "css/*.css"))):
+        text = re.sub(r"/\*.*?\*/", "", open(f, encoding="utf-8").read(), flags=re.S)
+        text = re.sub(r"\"(?:[^\"\\]|\\.)*\"|'(?:[^'\\]|\\.)*'", "", text)
+        depth, line = 0, 1
+        for ch in text:
+            if ch == "\n":
+                line += 1
+            elif ch == "{":
+                depth += 1
+            elif ch == "}":
+                depth -= 1
+                if depth < 0:
+                    errs.append(f"{os.path.relpath(f, ROOT)}: unexpected '}}' near line {line}")
+                    depth = 0
+        if depth:
+            errs.append(f"{os.path.relpath(f, ROOT)}: {depth} unclosed '{{' (a block is missing its closing brace)")
+    return errs
+
+
 def check_sitemap():
     """sitemap.xml must list every indexable page exactly once, and nothing
     else, so a newly added page cannot be left out of it."""
@@ -312,7 +336,7 @@ def main():
         if errs:
             failures.append((f, errs))
 
-    graph_errs = check_link_graph(files) + check_registry() + check_icons() + check_sitemap()
+    graph_errs = check_link_graph(files) + check_registry() + check_icons() + check_sitemap() + check_css()
     if graph_errs:
         failures.append(("(site-wide link graph)", graph_errs))
 

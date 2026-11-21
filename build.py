@@ -190,7 +190,7 @@ def build_page(slug_file):
         mod = re.search(r'"dateModified":\s*"([^"]+)"', jsonld)
         if pub: og_article += f'  <meta property="article:published_time" content="{pub.group(1)}" />\n'
         if mod: og_article += f'  <meta property="article:modified_time" content="{mod.group(1)}" />\n'
-        og_article += '  <meta property="article:author" content="https://layerbit.co.in/about.html#founder" />\n'
+        og_article += '  <meta property="article:author" content="https://layerbit.co.in/author.html" />\n'
 
     head = render(
         HEAD_TMPL,
