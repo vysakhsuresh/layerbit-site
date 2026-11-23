@@ -42,14 +42,9 @@
     if (v && typeof v === 'object') { var keys = Object.keys(v); return keys.length ? keys.map(function (k) { var val = v[k], key = /^[A-Za-z_][\w-]*$/.test(k) ? k : JSON.stringify(k); return val && typeof val === 'object' && (Array.isArray(val) ? val.length : Object.keys(val).length) ? pad + key + ':\n' + toYaml(val, ind + 1) : pad + key + ': ' + (val && typeof val === 'object' ? (Array.isArray(val) ? '[]' : '{}') : scalar(val)); }).join('\n') : pad + '{}'; }
     return pad + scalar(v);
   }
-  function parseCsv(text, delim) {
-    if (!delim || delim === 'auto') { var head = text.split(/\r?\n/).slice(0, 10).join('\n'), best = ',', bn = -1; [',', ';', '\t', '|'].forEach(function (d) { var n = head.split(d).length - 1; if (n > bn) { bn = n; best = d; } }); delim = best; }
-    if (delim === '\\t') delim = '\t';
-    var rows = [], row = [], cell = '', q = false, i = 0, n = text.length; if (text.charCodeAt(0) === 0xFEFF) i = 1;
-    for (; i < n; i++) { var ch = text[i]; if (q) { if (ch === '"') { if (text[i + 1] === '"') { cell += '"'; i++; } else q = false; } else cell += ch; } else if (ch === '"') q = true; else if (ch === delim) { row.push(cell); cell = ''; } else if (ch === '\n' || ch === '\r') { if (ch === '\r' && text[i + 1] === '\n') i++; row.push(cell); rows.push(row); row = []; cell = ''; } else cell += ch; }
-    if (cell !== '' || row.length) { row.push(cell); rows.push(row); }
-    return rows.filter(function (r) { return !(r.length === 1 && r[0] === ''); });
-  }
+  // the shared CSV engine: a quote opens quoting only at the start of a field
+  var CSV = typeof module === 'object' && module.exports ? require('./csv.js') : G.LBCsv;
+  function parseCsv(text, delim) { return CSV.parseRows(text, !delim || delim === 'auto' ? null : delim); }
   function csvCell(v, delim) { if (v === null || v === undefined) return ''; var s = typeof v === 'object' ? JSON.stringify(v) : String(v); return /[",\r\n]/.test(s) || s.indexOf(delim) >= 0 ? '"' + s.replace(/"/g, '""') + '"' : s; }
   function coerce(s) { if (s === '') return ''; if (/^-?\d+(\.\d+)?([eE][+-]?\d+)?$/.test(s) && s.length < 16 && !/^0\d/.test(s)) return Number(s); if (s === 'true') return true; if (s === 'false') return false; if (s === 'null') return null; return s; }
   function flatten(obj, prefix, out) { out = out || {}; Object.keys(obj).forEach(function (k) { var v = obj[k], key = prefix ? prefix + '.' + k : k; if (v && typeof v === 'object' && !Array.isArray(v)) flatten(v, key, out); else out[key] = v; }); return out; }

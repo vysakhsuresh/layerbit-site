@@ -796,6 +796,32 @@ def _(t):
     expect(out[0]["id"] in (1, "1"), "id parsed")
 
 
+@case("csv-to-json", "edge", "A2: a stray quote inside a field is a literal character, not the start of a quoted block")
+def _(t):
+    t.click("#btnModeToJSON")
+    t.set("csvInput", 'sku,desc,price\n1,5" screen,1.50\n2,stand,9.99')
+    t.click("#btnConvert")
+    out = json.loads(t.text("jsonOutput"))
+    eq(len(out), 2, "rows")
+    eq(out[0]["desc"], '5" screen', "desc with a stray quote")
+    eq(out[1]["desc"], "stand", "second row kept")
+
+
+@case("csv-to-json", "edge", "A2: duplicate headers stay separate columns, single-column blanks are kept, short rows are reported")
+def _(t):
+    t.click("#btnModeToJSON")
+    t.set("csvInput", "id,amount,amount\n1,5,6")
+    t.click("#btnConvert")
+    out = json.loads(t.text("jsonOutput"))
+    eq(sorted(out[0].keys()), ["amount", "amount (2)", "id"], "duplicate header names")
+    t.set("csvInput", "email\na@x.com\n\nb@x.com")
+    t.click("#btnConvert")
+    eq(len(json.loads(t.text("jsonOutput"))), 3, "single-column file lost an empty row")
+    t.set("csvInput", "a,b,c\n1,2,3\n4,5")
+    t.click("#btnConvert")
+    expect("line 3" in t.text("csvIssues").lower(), "short row not reported: " + t.text("csvIssues"))
+
+
 @case("csv-to-json", "edge", "quoted commas, escaped quotes, embedded newlines, CRLF")
 def _(t):
     t.click("#btnModeToJSON")
@@ -1907,6 +1933,13 @@ def _(t):
     t.wait(250)
     expect(not t.visible("#errorBanner"), "error on empty input")
     expect("Paste something" in t.text("magicBar"), t.text("magicBar"))
+
+
+@case("flow", "edge", "A2: CSV operations treat a stray quote inside a field as a literal character")
+def _(t):
+    out = t.call("""LBFlow.run({ v: 1, steps: [{ op: 'csv-to-json', args: { delim: 'auto', types: false } }] }, 'sku,desc\\n1,5" screen\\n2,stand').then(r => r[r.length - 1].output)""")
+    rows = json.loads(out)
+    eq([r["desc"] for r in rows], ['5" screen', "stand"], "rows")
 
 
 @case("flow", "typical", "magic suggests Base64 decode and the chip adds a working step")

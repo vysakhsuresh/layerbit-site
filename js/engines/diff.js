@@ -10,9 +10,9 @@
  * directory reader built on DecompressionStream.
  */
 (function (root, factory) {
-  if (typeof module === 'object' && module.exports) module.exports = factory(require('../vendor/diff.min.js'));
-  else root.LBDiff = factory(root.Diff);
-})(typeof self !== 'undefined' ? self : this, function (Diff) {
+  if (typeof module === 'object' && module.exports) module.exports = factory(require('../vendor/diff.min.js'), require('./csv.js'));
+  else root.LBDiff = factory(root.Diff, root.LBCsv);
+})(typeof self !== 'undefined' ? self : this, function (Diff, CSV) {
   'use strict';
 
   // ------------------------------------------------------------ normalisation
@@ -687,30 +687,10 @@
   function canonicalJson(v) { return stringifyLossless(sortKeys(v), '  '); }
 
   // --------------------------------------------------------------------- CSV
-  function detectDelimiter(text) {
-    var head = text.split(/\r?\n/).slice(0, 10).join('\n');
-    var best = ',', bestN = -1;
-    [',', ';', '\t', '|'].forEach(function (d) { var n = (head.match(new RegExp(d === '|' ? '\\|' : d, 'g')) || []).length; if (n > bestN) { bestN = n; best = d; } });
-    return best;
-  }
-  function parseCsv(text, delim) {
-    delim = delim || detectDelimiter(text);
-    var rows = [], row = [], cell = '', i = 0, q = false, started = false, n = text.length;
-    if (text.charCodeAt(0) === 0xFEFF) i = 1;
-    for (; i < n; i++) {
-      var ch = text[i];
-      if (q) {
-        if (ch === '"') { if (text[i + 1] === '"') { cell += '"'; i++; } else q = false; }
-        else cell += ch;
-      } else if (ch === '"' && cell === '' && !started) q = true; // quoting only opens at the start of a field, as in Excel
-      else if (ch === delim) { row.push(cell); cell = ''; started = false; continue; }
-      else if (ch === '\n' || ch === '\r') { if (ch === '\r' && text[i + 1] === '\n') i++; row.push(cell); rows.push(row); row = []; cell = ''; started = false; continue; }
-      else cell += ch;
-      started = true;
-    }
-    if (cell !== '' || row.length) { row.push(cell); rows.push(row); }
-    return rows.filter(function (r) { return !(r.length === 1 && r[0] === ''); });
-  }
+  // CSV reading is the shared engine (js/engines/csv.js), so every tool
+  // splits a file into rows the same way.
+  function detectDelimiter(text) { return CSV.detectDelimiter(text); }
+  function parseCsv(text, delim) { return CSV.parseRows(text, delim); }
   /** Table diff. rowsA/rowsB are arrays of arrays whose first row is the
    *  header. opts.keys lists key column NAMES, looked up in each file's own
    *  header, so a file whose columns were reordered still matches row for
@@ -771,18 +751,7 @@
 
   /** Makes header names unique and non-empty so no column shadows another:
    *  amount, amount -> amount, amount (2); a blank header becomes (column N). */
-  function uniqueHeaders(hdr) {
-    var taken = {}, out = [];
-    hdr.forEach(function (h) { h = String(h == null ? '' : h); if (h) taken[h] = (taken[h] || 0) + 1; });
-    var used = {};
-    hdr.forEach(function (h, i) {
-      h = String(h == null ? '' : h);
-      var name = h || '(column ' + (i + 1) + ')';
-      if (used[name]) { var n = 2; while (used[h + ' (' + n + ')'] || (taken[h + ' (' + n + ')'] && h + ' (' + n + ')' !== name)) n++; name = h + ' (' + n + ')'; }
-      used[name] = true; out.push(name);
-    });
-    return out;
-  }
+  function uniqueHeaders(hdr) { return CSV.uniqueHeaders(hdr); }
   function tableDiff(rowsA, rowsB, opts) {
     var ha = uniqueHeaders(rowsA[0] || []), hb = uniqueHeaders(rowsB[0] || []);
     if (typeof opts === 'number') opts = { keys: opts >= 0 && ha[opts] != null ? [ha[opts]] : [] };
