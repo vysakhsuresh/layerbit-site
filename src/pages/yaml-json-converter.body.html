@@ -14,6 +14,7 @@
         <div class="btn-group">
           <span id="yamlError" class="error-text"><i data-lucide="alert-circle"></i> Invalid Syntax</span>
           <label class="yaml-opt" title="Off: dates such as 2026-01-01 stay exactly as written. On: they become ISO timestamps (2026-01-01T00:00:00.000Z), as js-yaml's default schema does."><input type="checkbox" id="yamlDates"> Dates → timestamps</label>
+          <label class="yaml-opt" title="On: a file with several documents (--- separators) becomes a JSON array, and a JSON array is written back as separate documents. Off: only the first document is converted, and a JSON array stays a YAML list."><input type="checkbox" id="yamlDocs" checked> Documents ↔ array</label>
           <input type="file" id="yamlFile" accept=".yaml,.yml" style="display:none;">
           <button class="btn" onclick="document.getElementById('yamlFile').click()"><i data-lucide="upload"></i> Upload</button>
           <button class="btn" onclick="copyContent('yamlInput', this)"><i data-lucide="copy"></i> Copy</button>
@@ -173,7 +174,7 @@
     <div class="info-panel">
       <h2><i data-lucide="git-merge"></i> Deployment Changelog</h2>
       <ul class="changelog-list">
-        <li><span class="changelog-tag">v2.3.0</span> Files with several documents separated by --- (every Kubernetes manifest) are converted to a JSON array instead of being rejected; dates such as 2026-01-01 stay exactly as written unless you switch on Dates → timestamps.</li>
+        <li><span class="changelog-tag">v2.3.0</span> Files with several documents separated by --- (every Kubernetes manifest) are converted to a JSON array instead of being rejected, and a JSON array goes back out as separate documents (switch off Documents ↔ array to convert only the first); dates such as 2026-01-01 stay exactly as written unless you switch on Dates → timestamps.</li>
         <li><span class="changelog-tag">v2.2.0</span> Integers and numbers a JavaScript number cannot hold exactly (12345678901234567890, 1e400) keep every digit in both directions, YAML to JSON and JSON to YAML.</li>
         <li><span class="changelog-tag">v2.1.0</span> Syntax errors now say what went wrong and where: the YAML side reports the parser's reason with line and column, the JSON side the engine message with the position resolved to line and column.</li>
         <li><span class="changelog-tag">v1.3.0</span> Added file upload, drag-and-drop, and line-number gutters to both panes.</li>
@@ -266,9 +267,12 @@
         // every document in the file (--- separators, as in Kubernetes
         // manifests); more than one becomes a JSON array
         const docs = jsyaml.loadAll(val, null, { schema: losslessSchema() });
-        const obj = docs.length > 1 ? docs : docs[0];
-        if (docs.length <= 1 && (typeof obj !== 'object' || obj === null)) throw new Error("Not a valid object");
-        $note.textContent = docs.length > 1 ? `${docs.length} documents (separated by ---), shown as a JSON array in the same order.` : '';
+        const asArray = document.getElementById('yamlDocs').checked;
+        const obj = docs.length > 1 && asArray ? docs : docs[0];
+        if ((docs.length <= 1 || !asArray) && (typeof obj !== 'object' || obj === null)) throw new Error("Not a valid object");
+        const more = docs.length - 1;
+        $note.textContent = docs.length <= 1 ? '' : asArray ? `${docs.length} documents (separated by ---), shown as a JSON array in the same order.`
+          : `First document only: ${more} more document${more === 1 ? '' : 's'} not converted. Turn on "Documents ↔ array" to get them all.`;
 
         isSyncing = true;
         jsonInput.value = LBLossless.stringify(obj === undefined ? null : obj, 4);
@@ -312,6 +316,7 @@
     }
 
     document.getElementById('yamlDates').addEventListener('change', () => yamlInput.dispatchEvent(new Event('input')));
+    document.getElementById('yamlDocs').addEventListener('change', () => yamlInput.dispatchEvent(new Event('input')));
 
     // JSON to YAML
     jsonInput.addEventListener("input", () => {
@@ -332,7 +337,11 @@
         JSON.parse(val);  // the browser's own parser reports syntax errors
         const obj = LBLossless.parse(val);
         isSyncing = true;
-        yamlInput.value = jsyaml.dump(obj, { indent: 2, lineWidth: -1, schema: losslessSchema() });
+        const dumpOpts = { indent: 2, lineWidth: -1, schema: losslessSchema() };
+        // a JSON array of objects goes back out as separate documents, so a
+        // multi-document file survives the round trip
+        const asDocs = document.getElementById('yamlDocs').checked && Array.isArray(obj) && obj.length > 1 && obj.every(d => d !== null && typeof d === 'object' && !LBLossless.isLosslessNumber(d));
+        yamlInput.value = asDocs ? obj.map(d => jsyaml.dump(d, dumpOpts)).join('---\n') : jsyaml.dump(obj, dumpOpts);
         jsonError.classList.remove("active");
         yamlError.classList.remove("active");
       } catch (err) {

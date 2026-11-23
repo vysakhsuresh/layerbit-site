@@ -992,6 +992,22 @@ def _(t):
     eq(json.loads(t.val("jsonInput")), [{"a": 1}, None], "empty document kept as null")
 
 
+@case("yaml-json-converter", "edge", "B4: documents switch: array <-> --- documents, or the first document only")
+def _(t):
+    expect(t.page.is_checked("#yamlDocs"), "the documents switch should be on by default")
+    t.set("jsonInput", '[{"kind": "Service"}, {"kind": "Deployment"}]')
+    y = t.val("yamlInput")
+    expect(y.count("---") == 1 and "kind: Service" in y and "kind: Deployment" in y and not y.lstrip().startswith("-"), "array not written as documents: " + y)
+    t.set("yamlInput", y)
+    eq(json.loads(t.val("jsonInput")), [{"kind": "Service"}, {"kind": "Deployment"}], "documents read back as the array")
+    t.page.uncheck("#yamlDocs")
+    eq(json.loads(t.val("jsonInput")), {"kind": "Service"}, "switch off: first document only")
+    expect("1 more document" in t.text("yamlNote"), "no note about the skipped document: " + t.text("yamlNote"))
+    t.set("jsonInput", '[1, 2]')
+    eq(t.val("yamlInput").strip(), "- 1\n- 2", "switch off: a JSON array stays a YAML list")
+    t.page.check("#yamlDocs")
+
+
 @case("yaml-json-converter", "edge", "B4: dates stay as written unless conversion is asked for")
 def _(t):
     t.set("yamlInput", "when: 2026-01-01\nat: 2026-01-01T10:30:00Z\n")
