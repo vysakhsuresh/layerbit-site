@@ -245,6 +245,20 @@ def _(t):
     t.page.uncheck("#sortKeys")
 
 
+@case("json-validator", "edge", "A4: CSV conversion is safe for spreadsheets by default; the switch gives the exact text")
+def _(t):
+    t.set("jsonInput", '[{"name": "=HYPERLINK(\\"http://x\\")", "cmd": "@SUM(A1)", "n": -5, "id": 12345678901234567890}]')
+    t.click("#btnFormat")
+    t.call("setOutputView('convert')"); t.select("convTarget", "csv"); t.wait(100)
+    out = t.text("convOut")
+    expect("'=HYPERLINK" in out and "'@SUM(A1)" in out and ",-5," in out and "12345678901234567890" in out, out)
+    expect(t.page.is_checked("#csvSafe"), "Safe for Excel is not on by default")
+    t.page.uncheck("#csvSafe"); t.wait(100)
+    out = t.text("convOut")
+    expect("'=HYPERLINK" not in out and "@SUM(A1)" in out, out)
+    t.page.check("#csvSafe")
+
+
 @case("json-validator", "typical", "path query evaluates dot, bracket and length")
 def _(t):
     t.set("jsonInput", '{"users":[{"id":1,"tags":["a","b"]},{"id":2}],"meta":{"a b":true}}')
@@ -850,6 +864,20 @@ def _(t):
     t.select("colType-n", "auto")
 
 
+@case("csv-to-json", "edge", "A4: JSON to CSV is safe for spreadsheets by default and keeps long numbers")
+def _(t):
+    t.click("#btnModeToCSV")
+    t.set("csvInput", '[{"name": "=HYPERLINK(\\"http://x\\")", "cmd": "@SUM(A1)", "n": -5, "id": 12345678901234567890}]')
+    t.click("#btnConvert")
+    out = t.text("jsonOutput")
+    expect("'=HYPERLINK" in out and "'@SUM(A1)" in out and ",-5," in out and "12345678901234567890" in out, out)
+    expect(t.visible("#csvSafe") and t.page.is_checked("#csvSafe"), "Safe for Excel switch missing or off")
+    t.page.uncheck("#csvSafe"); t.click("#btnConvert")
+    expect("'=HYPERLINK" not in t.text("jsonOutput"), t.text("jsonOutput"))
+    t.page.check("#csvSafe")
+    t.click("#btnModeToJSON")
+
+
 @case("csv-to-json", "edge", "quoted commas, escaped quotes, embedded newlines, CRLF")
 def _(t):
     t.click("#btnModeToJSON")
@@ -1317,6 +1345,23 @@ def _(t):
     t.call("processJSON()")
     body = t.text("tableBody")
     expect("12345678901234567890" in body and "1e400" in body, body)
+
+
+@case("json-to-table", "edge", "A4: Export CSV is safe for spreadsheets by default")
+def _(t):
+    t.set("jsonInput", '[{"name": "=HYPERLINK(\\"http://x\\")", "cmd": "@SUM(A1)", "n": -5, "id": 12345678901234567890}]')
+    t.call("processJSON()")
+    expect(t.page.is_checked("#csvSafe"), "Safe for Excel is not on by default")
+    with t.page.expect_download() as dl:
+        t.click("#btnExport")
+    csv = open(dl.value.path(), encoding="utf-8").read()
+    expect("'=HYPERLINK" in csv and "'@SUM(A1)" in csv and "-5" in csv and "'-5" not in csv and "12345678901234567890" in csv, csv)
+    t.page.uncheck("#csvSafe")
+    with t.page.expect_download() as dl:
+        t.click("#btnExport")
+    csv = open(dl.value.path(), encoding="utf-8").read()
+    expect("'=HYPERLINK" not in csv and "=HYPERLINK" in csv, csv)
+    t.page.check("#csvSafe")
 
 
 @case("json-to-table", "edge", "single object and ragged keys")
@@ -1998,6 +2043,14 @@ def _(t):
     expect("12345678901234567890" in run("json-flatten", {"mode": "flatten"}, src), "json-flatten")
     rows = json.loads(run("csv-to-json", {"delim": "auto", "types": True}, "zip,phone,n\n00123,+971,42"))
     eq(rows, [{"zip": "00123", "phone": "+971", "n": 42}], "csv-to-json types")
+
+
+@case("flow", "edge", "A4: JSON to CSV guards formula-like values unless switched off")
+def _(t):
+    src = json.dumps('[{"a": "=1+1", "n": -5}]')
+    run = lambda args: t.call(f"LBFlow.run({{ v: 1, steps: [{{ op: 'json-to-csv', args: {json.dumps(args)} }}] }}, {src}).then(r => r[r.length - 1].output)")
+    eq(run({"delim": ","}).split("\n")[1], "'=1+1,-5", "safe by default")
+    eq(run({"delim": ",", "safe": False}).split("\n")[1], "=1+1,-5", "exact when switched off")
 
 
 @case("flow", "typical", "magic suggests Base64 decode and the chip adds a working step")

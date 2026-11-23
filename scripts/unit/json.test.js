@@ -81,4 +81,11 @@ t('stats, sortKeysDeep, bigIntWarnings', () => {
   assert.strictEqual(JSON.stringify(J.sortKeysDeep({ b: { z: 1, a: [3, 1] }, a: 0 })), '{"a":0,"b":{"a":[3,1],"z":1}}');
   assert.deepStrictEqual(J.bigIntWarnings('{"id": 9007199254740993, "ok": 123, "s": "12345678901234567890"}'), ['9007199254740993']);
 });
+t('A4: toCsv is safe for spreadsheets by default and exact when asked', () => {
+  const v = [{ a: '=1+1', b: '@SUM(A1)', c: -5, d: '+971 50', e: '-x', f: 'plain', g: '\tTAB' }];
+  const safe = J.toCsv(v).split('\n')[1];
+  assert.strictEqual(safe, "'=1+1,'@SUM(A1),-5,'+971 50,'-x,plain,'\tTAB");
+  const raw = J.toCsv(v, ',', { safe: false }).split('\n')[1];
+  assert.strictEqual(raw, '=1+1,@SUM(A1),-5,+971 50,-x,plain,\tTAB');
+});
 console.log(`json engine: ${n} unit tests passed`);

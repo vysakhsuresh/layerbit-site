@@ -368,18 +368,24 @@
   };
 
   // -------------------------------------------------------------- SQL/CSV
+  // A lossless number (js/engines/lossless-json.js) holds its digits as text.
+  function isLN(v) { return !!(v && v.isLosslessNumber === true); }
+  function jsonText(v) { return JSON.stringify(v, function (k, x) { return isLN(x) ? '\u0000LN' + x.value + '\u0000' : x; }).replace(/"\\u0000LN([^"\\]*)\\u0000"/g, '$1'); }
+  // A value a spreadsheet would run as a formula: =, @, tab or CR first, or
+  // + / - followed by something that is not a plain number (-5 stays -5).
+  function formulaLike(s) { return /^[=@\t\r]/.test(s) || (/^[+-]/.test(s) && !/^[+-]?(\d[\d,]*)?(\.\d+)?([eE][+-]?\d+)?$/.test(s)); }
   function flatten(obj, prefix, out, sep) {
     out = out || {}; sep = sep || '_';
     Object.keys(obj).forEach(function (k) {
       var v = obj[k], key = prefix ? prefix + sep + k : k;
-      if (v && typeof v === 'object' && !Array.isArray(v)) flatten(v, key, out, sep);
-      else out[key] = Array.isArray(v) ? JSON.stringify(v) : v;
+      if (v && typeof v === 'object' && !Array.isArray(v) && !isLN(v)) flatten(v, key, out, sep);
+      else out[key] = Array.isArray(v) ? jsonText(v) : v;
     });
     return out;
   }
   function rowsOf(value) {
     var arr = Array.isArray(value) ? value : value && typeof value === 'object' ? (function () { var k = Object.keys(value).filter(function (x) { return Array.isArray(value[x]) && value[x].length && typeof value[x][0] === 'object'; }); return k.length === 1 ? value[k[0]] : [value]; })() : [value];
-    var rows = arr.map(function (r) { return r && typeof r === 'object' && !Array.isArray(r) ? flatten(r) : { value: r }; });
+    var rows = arr.map(function (r) { return r && typeof r === 'object' && !Array.isArray(r) && !isLN(r) ? flatten(r) : { value: r }; });
     var cols = []; rows.forEach(function (r) { Object.keys(r).forEach(function (c) { if (cols.indexOf(c) < 0) cols.push(c); }); });
     return { rows: rows, cols: cols };
   }
@@ -405,9 +411,12 @@
     }
     return { sql: out, rows: rc.rows.length, columns: rc.cols };
   }
-  function toCsv(value, delim) {
+  /** CSV from an array of objects. opts.safe (default true) prefixes values
+   *  a spreadsheet would run as a formula with ' so they open as text. */
+  function toCsv(value, delim, opts) {
     delim = delim || ',';
-    var rc = rowsOf(value), q = function (v) { if (v === null || v === undefined) return ''; var s = typeof v === 'object' ? JSON.stringify(v) : String(v); return /[",\n\r]/.test(s) || s.indexOf(delim) >= 0 ? '"' + s.replace(/"/g, '""') + '"' : s; };
+    var safe = !opts || opts.safe !== false;
+    var rc = rowsOf(value), q = function (v) { if (v === null || v === undefined) return ''; var s = isLN(v) ? v.value : typeof v === 'object' ? jsonText(v) : String(v); if (safe && formulaLike(s)) s = "'" + s; return /[",\n\r]/.test(s) || s.indexOf(delim) >= 0 ? '"' + s.replace(/"/g, '""') + '"' : s; };
     return rc.cols.map(q).join(delim) + '\n' + rc.rows.map(function (r) { return rc.cols.map(function (c) { return q(r[c]); }).join(delim); }).join('\n') + '\n';
   }
   function parseNdjson(text) {

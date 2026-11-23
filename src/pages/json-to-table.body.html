@@ -32,6 +32,7 @@
         </div>
         <div class="action-row">
           <span class="grid-meta" id="rowCount">0 Rows</span>
+          <label class="toggle-label safe-csv" title="Spreadsheets run a cell that starts with =, +, - or @ as a formula. On: such values get a leading apostrophe so they open as text (plain numbers like -5 are left alone). Off: the exact text."><input type="checkbox" id="csvSafe" checked> Safe for Excel</label>
           <button class="btn" id="btnExport" onclick="exportCSV()" disabled><i data-lucide="download"></i> Export CSV</button>
         </div>
       </div>
@@ -105,6 +106,10 @@
         </div>
 
         <div class="faq-item">
+          <button class="faq-question">What does &quot;Safe for Excel&quot; do to the CSV? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>Excel, LibreOffice and Google Sheets treat a cell that begins with <code>=</code>, <code>+</code>, <code>-</code> or <code>@</code> as a formula, so a value such as <code>=HYPERLINK(&quot;http://…&quot;)</code> in your data can run when someone opens the file (CSV or formula injection). With Safe for Excel on, which is the default, such values are written with a leading apostrophe (<code>'=HYPERLINK(…)</code>); spreadsheets show them as text. Plain numbers such as <code>-5</code> or <code>+3.5</code> are left alone. Turn it off when the CSV feeds another program that must receive the exact text.</p></div>
+        </div>
+        <div class="faq-item">
           <button class="faq-question">Can I export the filtered data? <i data-lucide="chevron-down"></i></button>
           <div class="faq-answer">
             <p>Yes. The CSV export feature intelligently respects your active search filter. If you search for a specific term and click Export CSV, only the rows currently visible on your screen will be downloaded.</p>
@@ -169,7 +174,7 @@
     <div class="info-panel">
       <h2><i data-lucide="git-commit"></i> Changelog</h2>
       <ul class="changelog-list">
-        <li><span class="changelog-tag">v2.2.0</span> Numbers are read losslessly: 19-digit IDs, 1e400 and -0 appear and export exactly as written instead of rounded, as Infinity or as 0.</li>
+        <li><span class="changelog-tag">v2.2.0</span> Numbers are read losslessly: 19-digit IDs, 1e400 and -0 appear and export exactly as written instead of rounded, as Infinity or as 0. Export CSV has a Safe for Excel switch, on by default, that writes formula-like values with a leading apostrophe.</li>
         <li><span class="changelog-tag">v2.1.0</span> Columns sort on click (numeric where every value is a number, natural-order text otherwise; empty cells sink to the bottom), and the sort composes with the live filter and CSV export.</li>
         <li><span class="changelog-tag">v1.2.0</span> Integrated nested object flattening and robust client-side filtering via the grid toolbar.</li>
         <li><span class="changelog-tag">v1.1.0</span> Added the CSV export functionality with strict quote escaping for spreadsheet compatibility.</li>
@@ -191,6 +196,7 @@
 
   <script src="../js/shared.js"></script>
   <script src="../js/engines/lossless-json.js"></script>
+  <script src="../js/engines/csv.js"></script>
 
 
   <script>
@@ -390,6 +396,7 @@
         const cells = Array.from(row.querySelectorAll("td"));
         const rowText = cells.map(cell => {
           let text = cell.innerText;
+          if (document.getElementById('csvSafe').checked && LBCsv.isFormulaLike(text)) text = "'" + text;
           // Escape quotes and wrap in quotes for CSV safety
           return `"${text.replace(/"/g, '""')}"`;
         }).join(",");

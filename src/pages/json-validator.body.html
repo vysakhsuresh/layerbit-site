@@ -104,6 +104,7 @@
           <label class="toggle-wrapper">Target
             <select id="convTarget" class="mini-select"><option value="sql">SQL (CREATE + INSERT)</option><option value="csv">CSV (flattened)</option><option value="ndjson">NDJSON (one object per line)</option><option value="yaml">YAML</option><option value="string">JSON as a string literal</option><option value="unescape">Decode a JSON string literal</option></select>
           </label>
+          <label class="toggle-wrapper" id="csvSafeOpt" title="Spreadsheets run a cell that starts with =, +, - or @ as a formula. On: such values get a leading apostrophe so they open as text (plain numbers like -5 are left alone). Off: the exact text."><input type="checkbox" id="csvSafe" checked> Safe for Excel</label>
           <label class="toggle-wrapper" id="sqlOpts">Dialect
             <select id="sqlDialect" class="mini-select"><option value="postgres">PostgreSQL</option><option value="mysql">MySQL</option><option value="sqlite">SQLite</option></select>
             Table <input type="text" id="sqlTable" class="mini-input" value="data" size="10">
@@ -246,6 +247,10 @@
           </div>
         </div>
         <div class="faq-item">
+          <button class="faq-question">What does &quot;Safe for Excel&quot; do to the CSV? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>Excel, LibreOffice and Google Sheets treat a cell that begins with <code>=</code>, <code>+</code>, <code>-</code> or <code>@</code> as a formula, so a value such as <code>=HYPERLINK(&quot;http://…&quot;)</code> in your data can run when someone opens the file (CSV or formula injection). With Safe for Excel on, which is the default, such values are written with a leading apostrophe (<code>'=HYPERLINK(…)</code>); spreadsheets show them as text. Plain numbers such as <code>-5</code> or <code>+3.5</code> are left alone. Turn it off when the CSV feeds another program that must receive the exact text.</p></div>
+        </div>
+        <div class="faq-item">
           <button class="faq-question">What does the Tree view offer over the raw text output? <i data-lucide="chevron-down"></i></button>
           <div class="faq-answer">
             <p>The Tree view renders the same parsed payload as a collapsible outline, letting you fold entire objects or arrays down to a single line and expand only the branches you need. This is especially useful for deeply nested API responses, where the plain formatted text can run to thousands of lines. Use Expand All or Collapse All to jump between a full overview and a fully drilled-in view.</p>
@@ -292,7 +297,7 @@
     <div class="info-panel">
       <h2><i data-lucide="git-commit"></i> Changelog</h2>
       <ul class="changelog-list">
-        <li><span class="changelog-tag">v3.1.0</span> History is off by default: with the Save to history switch on, only Beautify saves a run; typing never does. Beautify, Minify and Sort keys keep every number exactly as written (12345678901234567890, 1e400, -0) instead of rounding them; the warning names the views that still show the JavaScript value.</li>
+        <li><span class="changelog-tag">v3.1.0</span> History is off by default: with the Save to history switch on, only Beautify saves a run; typing never does. Beautify, Minify and Sort keys keep every number exactly as written (12345678901234567890, 1e400, -0) instead of rounding them; the warning names the views that still show the JavaScript value. CSV conversion has a Safe for Excel switch, on by default, that writes formula-like values (=, +, -, @) with a leading apostrophe, and keeps long numbers exact.</li>
         <li><span class="changelog-tag">v3.0.0</span> Added Fix for almost-JSON with a list of changes made, full JSONPath (wildcards, recursive descent, slices, unions, filters) with every match and its path, JSON Schema validation and inference, type generation for TypeScript, Go, C#, Kotlin, Python, Java and Rust, SQL and CSV export with flattening, NDJSON detection and conversion, YAML output, string-literal escape and decode, a big-integer precision warning, indentation choice, file open, and share links.</li>
         <li><span class="changelog-tag">v2.1.0</span> Added a path query box, a structure readout, an optional deep key sort, and syntax errors with line and column that move the caret to the offending character.</li>
         <li><span class="changelog-tag">v1.4.0</span> Added a collapsible Tree view alongside the raw text output, with Expand All / Collapse All controls.</li>
@@ -324,7 +329,7 @@
     const J = LBJson;
     const jsonInput = $('jsonInput'), jsonOutput = $('jsonOutput'), jsonTree = $('jsonTree'), errorBanner = $('errorBanner'), errorText = $('errorText');
     const sortKeys = $('sortKeys'), jsonStats = $('jsonStats'), pathInput = $('pathInput'), pathResult = $('pathResult');
-    let outputView = 'text', lastParsed = null, lastAction = 'format', lastResultText = '', isNdjson = false;
+    let outputView = 'text', lastParsed = null, lastLossless = null, lastAction = 'format', lastResultText = '', isNdjson = false;
 
     const escapeHTMLText = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
     function syntaxHighlight(jsonStr) {
@@ -391,7 +396,7 @@
     function processJSON(action) {
       const raw = jsonInput.value.trim();
       errorBanner.classList.remove('active'); $('noticeBanner').classList.remove('active');
-      jsonOutput.innerHTML = ''; jsonTree.innerHTML = ''; lastParsed = null; lastResultText = ''; isNdjson = false;
+      jsonOutput.innerHTML = ''; jsonTree.innerHTML = ''; lastParsed = null; lastLossless = null; lastResultText = ''; isNdjson = false;
       $('inMeta').textContent = raw ? Layerbit.fmtBytes(new Blob([raw]).size) : '';
       if (!raw) { jsonStats.textContent = ''; pathInput.disabled = true; return; }
       let parsed;
@@ -418,7 +423,7 @@
       if (sortKeys.checked) lossless = LBLossless.sortKeys(lossless);
       lastResultText = action === 'minify' ? LBLossless.stringify(lossless) : LBLossless.stringify(lossless, indentArg());
       jsonOutput.innerHTML = lastResultText.length > 3000000 ? escapeHTMLText(lastResultText) : syntaxHighlight(lastResultText);
-      lastParsed = parsed;
+      lastParsed = parsed; lastLossless = lossless;
       renderTree(parsed);
       renderStats(parsed, raw);
       pathInput.disabled = false;
@@ -501,18 +506,19 @@
     function renderConvert() {
       const target = $('convTarget').value;
       $('sqlOpts').style.display = target === 'sql' ? '' : 'none';
+      $('csvSafeOpt').style.display = target === 'csv' ? '' : 'none';
       const out = $('convOut'), note = $('convNote');
       if (target === 'unescape') { const raw = jsonInput.value.trim(); try { const s = JSON.parse(raw); if (typeof s !== 'string') throw new Error('input is not a JSON string literal'); out.textContent = s; note.textContent = 'The input was read as a JSON string literal and decoded.'; } catch (e) { out.textContent = ''; note.textContent = 'Paste a JSON string literal (in double quotes, with \\n and \\" escapes) as the input to decode it. ' + e.message; } return; }
       if (lastParsed === null) { out.textContent = ''; note.textContent = 'Beautify a document first.'; return; }
       try {
         if (target === 'sql') { const r = J.toSql(lastParsed, { table: $('sqlTable').value || 'data', dialect: $('sqlDialect').value }); out.textContent = r.sql; note.textContent = `${r.rows} row${r.rows === 1 ? '' : 's'}, ${r.columns.length} columns: ${r.columns.join(', ')}`; }
-        else if (target === 'csv') { const rc = J.rowsOf(lastParsed); out.textContent = J.toCsv(lastParsed); note.textContent = `${rc.rows.length} rows, ${rc.cols.length} columns. Nested objects are flattened; arrays are kept as JSON text.`; }
+        else if (target === 'csv') { const rc = J.rowsOf(lastParsed); out.textContent = J.toCsv(lastLossless != null ? lastLossless : lastParsed, ',', { safe: $('csvSafe').checked }); note.textContent = `${rc.rows.length} rows, ${rc.cols.length} columns. Nested objects are flattened; arrays are kept as JSON text.`; }
         else if (target === 'ndjson') { const arr = Array.isArray(lastParsed) ? lastParsed : [lastParsed]; out.textContent = arr.map(x => JSON.stringify(x)).join('\n') + '\n'; note.textContent = `${arr.length} line${arr.length === 1 ? '' : 's'}.`; }
         else if (target === 'yaml') { out.textContent = toYaml(lastParsed, 0); note.textContent = 'Block-style YAML; strings that YAML would reinterpret (yes, no, on, off, numbers, dates) are quoted.'; }
         else if (target === 'string') { out.textContent = JSON.stringify(lastResultText || JSON.stringify(lastParsed)); note.textContent = 'The formatted JSON escaped as a single JSON string literal, for embedding in another JSON document or a config value.'; }
       } catch (e) { out.textContent = ''; note.textContent = e.message; }
     }
-    ['convTarget', 'sqlDialect'].forEach(id => $(id).addEventListener('change', renderConvert)); $('sqlTable').addEventListener('input', renderConvert);
+    ['convTarget', 'sqlDialect', 'csvSafe'].forEach(id => $(id).addEventListener('change', renderConvert)); $('sqlTable').addEventListener('input', renderConvert);
     function toYaml(v, ind) {
       const pad = '  '.repeat(ind);
       const scalar = x => x === null ? 'null' : typeof x === 'string' ? (/^(true|false|yes|no|on|off|null|~|y|n|-?\d[\d_.eE+-]*|0x[0-9a-f]+|\d{4}-\d{2}-\d{2}.*)$/i.test(x) || /[:#{}\[\],&*?|<>=!%@`'"\\]/.test(x) || /^\s|\s$/.test(x) || x === '' || x.includes('\n') ? JSON.stringify(x) : x) : String(x);

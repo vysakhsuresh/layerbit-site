@@ -116,6 +116,14 @@
         },
         {
           "@type": "Question",
+          "name": "What does \"Safe for Excel\" do to the CSV?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Excel, LibreOffice and Google Sheets treat a cell that begins with =, +, - or @ as a formula, so a value such as =HYPERLINK(\"http://…\") in your data can run when someone opens the file (CSV or formula injection). With Safe for Excel on, which is the default, such values are written with a leading apostrophe ('=HYPERLINK(…)); spreadsheets show them as text. Plain numbers such as -5 or +3.5 are left alone. Turn it off when the CSV feeds another program that must receive the exact text."
+          }
+        },
+        {
+          "@type": "Question",
           "name": "Can it convert JSON back to CSV too?",
           "acceptedAnswer": {
             "@type": "Answer",
@@ -420,6 +428,7 @@
           <label class="toggle-wrapper" id="inferTypesWrapper" title="Automatically convert '123' to numbers and 'true' to booleans">
             <input type="checkbox" id="inferTypes" checked> Smart Types
           </label>
+          <label class="toggle-wrapper" id="csvSafeWrapper" style="display:none;" title="Spreadsheets run a cell that starts with =, +, - or @ as a formula. On: such values get a leading apostrophe so they open as text (plain numbers like -5 are left alone). Off: the exact text."><input type="checkbox" id="csvSafe" checked> Safe for Excel</label>
           <input type="file" id="csvFile" accept=".csv" style="display: none;">
           <button class="btn" onclick="document.getElementById('csvFile').click()"><i data-lucide="upload"></i> Upload</button>
           <button class="btn btn-primary" id="btnConvert" onclick="convert()"><i data-lucide="arrow-right-left"></i> Convert</button>
@@ -510,6 +519,10 @@
         </div>
 
         <div class="faq-item">
+          <button class="faq-question">What does &quot;Safe for Excel&quot; do to the CSV? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>Excel, LibreOffice and Google Sheets treat a cell that begins with <code>=</code>, <code>+</code>, <code>-</code> or <code>@</code> as a formula, so a value such as <code>=HYPERLINK(&quot;http://…&quot;)</code> in your data can run when someone opens the file (CSV or formula injection). With Safe for Excel on, which is the default, such values are written with a leading apostrophe (<code>'=HYPERLINK(…)</code>); spreadsheets show them as text. Plain numbers such as <code>-5</code> or <code>+3.5</code> are left alone. Turn it off when the CSV feeds another program that must receive the exact text.</p></div>
+        </div>
+        <div class="faq-item">
           <button class="faq-question">Can it convert JSON back to CSV too? <i data-lucide="chevron-down"></i></button>
           <div class="faq-answer">
             <p>Yes. Switch to "JSON &rarr; CSV" mode and paste a JSON array of objects. The header row is built from the union of every key across all objects, so records with slightly different fields (an optional <code>notes</code> column on some rows, for example) still produce one clean table instead of dropping data. Nested objects or arrays inside a field are stringified into that cell rather than breaking the export.</p>
@@ -578,7 +591,7 @@
     <div class="info-panel">
       <h2><i data-lucide="git-commit"></i> Changelog</h2>
       <ul class="changelog-list">
-        <li><span class="changelog-tag">v2.2.0</span> One shared CSV reader for every tool: a quote inside a field (5" screen) is a literal character instead of swallowing the rest of the file, the delimiter is detected without counting the ones inside quotes, repeated header names become separate keys (amount, amount (2)), a one-column file keeps rows whose value is empty, and rows with the wrong number of values are listed with their line. Smart Types never change a value (leading zeros, + signs and numbers over 15 digits stay text), an empty cell stays an empty string instead of becoming null, and each column's type can be set to text, number or true/false; long numbers forced to number keep every digit.</li>
+        <li><span class="changelog-tag">v2.2.0</span> One shared CSV reader for every tool: a quote inside a field (5" screen) is a literal character instead of swallowing the rest of the file, the delimiter is detected without counting the ones inside quotes, repeated header names become separate keys (amount, amount (2)), a one-column file keeps rows whose value is empty, and rows with the wrong number of values are listed with their line. Smart Types never change a value (leading zeros, + signs and numbers over 15 digits stay text), an empty cell stays an empty string instead of becoming null, and each column's type can be set to text, number or true/false; long numbers forced to number keep every digit. JSON to CSV keeps long numbers exact and has a Safe for Excel switch, on by default, that writes formula-like values with a leading apostrophe.</li>
         <li><span class="changelog-tag">v2.1.0</span> Delimiter handling: automatic detection picks the separator that is most consistent across the first lines (comma, semicolon, tab or pipe), which is what European-locale exports from Excel need, and a manual override is a click away. A file that yields one column is now refused with a hint instead of producing a single mangled field.</li>
         <li><span class="changelog-tag">v1.5.0</span> Added a JSON &rarr; CSV reverse mode, building the header row from the union of keys across all objects so heterogeneous records don't lose columns.</li>
         <li><span class="changelog-tag">v1.4.0</span> Added direct-to-disk download capability for generating <code>.json</code> files natively in the browser.</li>
@@ -737,6 +750,7 @@
         inputPaneTitle.innerHTML = '<i data-lucide="sheet"></i> Raw CSV Data';
         outputPaneTitle.innerHTML = '<i data-lucide="braces"></i> JSON Array';
         inferTypesWrapper.style.display = 'flex';
+        document.getElementById('csvSafeWrapper').style.display = 'none';
         document.getElementById('delimWrapper').style.display = 'flex';
         csvFile.setAttribute('accept', '.csv');
         csvInput.placeholder = 'Paste CSV data or drag & drop a .csv file here...\n\nid,name,role,active\n1,John Doe,Admin,true\n2,"Smith, Jane",User,false';
@@ -745,6 +759,7 @@
         inputPaneTitle.innerHTML = '<i data-lucide="braces"></i> Raw JSON Array';
         outputPaneTitle.innerHTML = '<i data-lucide="sheet"></i> CSV Data';
         inferTypesWrapper.style.display = 'none';
+        document.getElementById('csvSafeWrapper').style.display = 'flex';
         document.getElementById('delimWrapper').style.display = 'none';
         csvFile.setAttribute('accept', '.json');
         csvInput.placeholder = 'Paste a JSON array of objects here...\n\n[\n  { "id": 1, "name": "John Doe", "role": "Admin" },\n  { "id": 2, "name": "Smith, Jane", "role": "User" }\n]';
@@ -875,8 +890,10 @@
     // if the value contains a comma, quote, or newline - standard CSV rules
     function csvEscape(val) {
       if (val === null || val === undefined) return '';
-      if (typeof val === 'object') val = JSON.stringify(val);
-      const str = String(val);
+      if (LBLossless.isLosslessNumber(val)) val = val.value;
+      else if (typeof val === 'object') val = LBLossless.stringify(val);
+      let str = String(val);
+      if (document.getElementById('csvSafe').checked && LBCsv.isFormulaLike(str)) str = "'" + str;
       if (/[",\n\r]/.test(str)) {
         return '"' + str.replace(/"/g, '""') + '"';
       }
@@ -897,7 +914,8 @@
       }
 
       try {
-        const parsed = JSON.parse(input);
+        JSON.parse(input);  // the browser's parser reports syntax errors
+        const parsed = LBLossless.parse(input);  // numbers keep every digit
         const rows = Array.isArray(parsed) ? parsed : [parsed];
         if (!rows.length) throw new Error("JSON array is empty - nothing to convert.");
         if (rows.some(r => typeof r !== 'object' || r === null || Array.isArray(r))) {
@@ -914,7 +932,7 @@
           }
         }
 
-        const lines = [headers.map(csvEscape).join(',')];
+        const lines = [headers.map(h => csvEscape(h)).join(',')];
         for (const row of rows) {
           lines.push(headers.map(h => csvEscape(row[h])).join(','));
         }
