@@ -2569,6 +2569,112 @@ def _(t):
     expect("Drop any file" in t.text("hexAInfo"), "hex input not cleared")
 
 
+DIFF_IMG_JS = """() => {
+  // draw(ctx) paints the picture; type is a MIME type the canvas can encode
+  window._mkimg = (w, h, draw, type, name) => new Promise(res => { const c = document.createElement('canvas'); c.width = w; c.height = h; const x = c.getContext('2d'); draw(x); c.toBlob(b => res(new File([b], name, { type: b.type })), type, 1); });
+  window._bmp = (w, h, rgb) => { const row = Math.ceil(w * 3 / 4) * 4, size = 54 + row * h, u = new Uint8Array(size), v = new DataView(u.buffer);
+    u[0] = 66; u[1] = 77; v.setUint32(2, size, true); v.setUint32(10, 54, true); v.setUint32(14, 40, true); v.setInt32(18, w, true); v.setInt32(22, h, true); v.setUint16(26, 1, true); v.setUint16(28, 24, true); v.setUint32(34, row * h, true);
+    for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) { const o = 54 + y * row + x * 3; u[o] = rgb[2]; u[o + 1] = rgb[1]; u[o + 2] = rgb[0]; } return u; };
+  window._gif1 = () => Uint8Array.from(atob('R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=='), c => c.charCodeAt(0));
+  window._setImg = (side, file) => { const dt = new DataTransfer(); dt.items.add(file); const i = document.getElementById(side === 'a' ? 'imgAFile' : 'imgBFile'); i.files = dt.files; i.dispatchEvent(new Event('change')); };
+}"""
+IMG_RED = "x => { x.fillStyle = 'rgb(200,0,0)'; x.fillRect(0, 0, 100, 100); }"
+
+
+@case("text-diff-checker", "typical", "feature 25: image compare: side by side, slider, onion skin, difference, % changed and the details of both files")
+def _(t):
+    t.page.evaluate(DIFF_IMG_JS)
+    t.call("setMode('image')")
+    expect(t.visible("#imgAPane") and t.visible("#imgBPane"), "image inputs not shown")
+    t.page.evaluate(f"""async () => {{ _setImg('a', await _mkimg(100, 100, {IMG_RED}, 'image/png', 'before.png'));
+      _setImg('b', await _mkimg(100, 100, x => {{ ({IMG_RED})(x); x.fillStyle = 'rgb(0,0,255)'; x.fillRect(10, 20, 10, 10); }}, 'image/png', 'after.png')); }}""")
+    t.wait_for("() => document.getElementById('imgBInfo').textContent.includes('after.png')")
+    t.call("compare()")
+    t.wait_for("() => /changed|identical/i.test(document.getElementById('diffStats').innerText)")
+    s = t.text("diffStats")
+    expect("1% of pixels changed" in s and "100 of 10,000" in s, s)
+    info = t.text("imgInfo")
+    expect(info.count("PNG") == 2 and info.count("100 × 100") == 2 and "File size" in info, info)
+    expect("dimensions differ" not in t.text("imagePanel").lower(), "false dimension warning")
+    # side by side shows both images
+    eq(t.count("#imgStage canvas"), 2, "side by side")
+    # slider / swipe
+    t.select("imgView", "slider"); t.wait(100)
+    t.set("imgSlider", "30", "input"); t.wait(50)
+    expect("30%" in t.call("document.getElementById('imgTop').style.clipPath"), t.call("document.getElementById('imgTop').style.clipPath"))
+    # swipe: pointer down on the picture and drag (coordinates read at the moment of the event)
+    t.call("""(() => { const st = document.getElementById('imgStage'), o = st.querySelector('.img-overlay');
+      const at = f => { const r = o.getBoundingClientRect(); return { clientX: r.left + r.width * f, clientY: r.top + r.height / 2, pointerId: 1, bubbles: true, isPrimary: true }; };
+      o.dispatchEvent(new PointerEvent('pointerdown', at(0.8))); st.dispatchEvent(new PointerEvent('pointermove', at(0.75))); st.dispatchEvent(new PointerEvent('pointerup', at(0.75))); })()""")
+    v = float(t.val("imgSlider"))
+    expect(74 <= v <= 76, f"dragging the picture did not move the slider: {v}")
+    expect("75" in t.call("document.getElementById('imgHandle').style.left"), "handle did not follow")
+    # onion skin
+    t.select("imgView", "onion"); t.wait(100)
+    expect(t.visible("#imgOpacityLabel"), "opacity control hidden in onion view")
+    t.set("imgOpacity", "25", "input"); t.wait(50)
+    eq(t.call("document.getElementById('imgTop').style.opacity"), "0.25", "onion opacity")
+    # difference image
+    t.select("imgView", "diff"); t.wait(100)
+    px = t.call("(() => { const c = document.querySelector('#imgStage canvas.img-diff'); const d = c.getContext('2d').getImageData(15, 25, 1, 1).data; const e = c.getContext('2d').getImageData(60, 60, 1, 1).data; return [c.width, Array.from(d), Array.from(e)]; })()")
+    eq(px[0], 100, "diff canvas width"); eq(px[1], [255, 0, 160, 255], "changed pixel marked"); expect(px[2] != [255, 0, 160, 255], "unchanged pixel marked")
+
+
+@case("text-diff-checker", "typical", "feature 25: the pixel tolerance ignores small colour shifts such as re-compression")
+def _(t):
+    t.page.evaluate(DIFF_IMG_JS)
+    t.call("setMode('image')")
+    t.page.evaluate(f"""async () => {{ _setImg('a', await _mkimg(100, 100, {IMG_RED}, 'image/png', 'a.png'));
+      _setImg('b', await _mkimg(100, 100, x => {{ ({IMG_RED})(x); x.fillStyle = 'rgb(203,2,0)'; x.fillRect(0, 0, 20, 20); x.fillStyle = 'rgb(0,0,255)'; x.fillRect(50, 50, 10, 10); }}, 'image/png', 'b.png')); }}""")
+    t.wait_for("() => document.getElementById('imgBInfo').textContent.includes('b.png')")
+    t.call("compare()"); t.wait_for("() => /changed/i.test(document.getElementById('diffStats').innerText)")
+    expect("5% of pixels changed" in t.text("diffStats"), t.text("diffStats"))
+    t.set("imgTol", "5", "input"); t.wait_for("() => /\\b1% of pixels changed/.test(document.getElementById('diffStats').innerText)")
+    expect("tolerance 5" in t.text("diffStats"), "tolerance not stated: " + t.text("diffStats"))
+
+
+@case("text-diff-checker", "edge", "feature 25: JPEG, WebP, GIF, BMP and SVG; mismatched dimensions, misnamed files and non-images")
+def _(t):
+    t.page.evaluate(DIFF_IMG_JS)
+    t.call("setMode('image')")
+    t.page.evaluate(f"""async () => {{ _setImg('a', await _mkimg(100, 100, {IMG_RED}, 'image/jpeg', 'a.jpg')); _setImg('b', await _mkimg(120, 100, {IMG_RED}, 'image/webp', 'b.webp')); }}""")
+    t.wait_for("() => document.getElementById('imgBInfo').textContent.includes('b.webp')")
+    t.call("compare()"); t.wait_for("() => /changed|identical/i.test(document.getElementById('diffStats').innerText)")
+    info = t.text("imgInfo")
+    expect("JPEG" in info and "WebP" in info and "100 × 100" in info and "120 × 100" in info, info)
+    expect("dimensions differ" in t.text("imagePanel").lower(), "no dimension warning")
+    # GIF and BMP
+    t.page.evaluate("() => { _setImg('a', new File([_gif1()], 'dot.gif')); _setImg('b', new File([_bmp(2, 2, [10, 200, 30])], 'tile.bmp')); }")
+    t.wait_for("() => document.getElementById('imgBInfo').textContent.includes('tile.bmp')")
+    t.call("compare()"); t.wait_for("() => /GIF/.test(document.getElementById('imgInfo').innerText) && /BMP/.test(document.getElementById('imgInfo').innerText)")
+    expect("1 × 1" in t.text("imgInfo") and "2 × 2" in t.text("imgInfo"), t.text("imgInfo"))
+    # SVG, compared as rendered; the source can also be compared as text
+    t.page.evaluate("""() => { const svg = f => new File([`<?xml version="1.0"?>\n<svg xmlns="http://www.w3.org/2000/svg" width="40" height="20"><rect width="40" height="20" fill="${f}"/></svg>`], 'logo.svg');
+      _setImg('a', svg('#ff0000')); _setImg('b', svg('#0000ff')); }""")
+    t.wait_for("() => document.getElementById('imgAInfo').textContent.includes('logo.svg') && document.getElementById('imgBInfo').textContent.includes('logo.svg')")
+    t.call("compare()"); t.wait_for("() => /SVG/.test(document.getElementById('imgInfo').innerText)")
+    expect("40 × 20" in t.text("imgInfo") and "100% of pixels changed" in t.text("diffStats"), t.text("imgInfo") + " | " + t.text("diffStats"))
+    t.click("#btnSvgText"); t.wait(200)
+    eq(t.call("mode"), "text", "SVG source compared as text")
+    expect("#ff0000" in t.val("text1") and "#0000ff" in t.val("text2"), "SVG source not loaded")
+    # a PNG named .jpg is labelled by its bytes, and the name mismatch is noted
+    t.call("setMode('image')")
+    t.page.evaluate(f"""async () => {{ const f = await _mkimg(10, 10, x => {{}}, 'image/png', 'x.png'); _setImg('a', new File([f], 'photo.jpg')); _setImg('b', new File([f], 'photo.png')); }}""")
+    t.wait_for("() => document.getElementById('imgAInfo').textContent.includes('photo.jpg')")
+    t.call("compare()"); t.wait_for("() => /identical/i.test(document.getElementById('diffStats').innerText)")
+    expect("named .jpg" in t.text("imagePanel"), "misnamed file not noted: " + t.text("imagePanel")[:300])
+    # not an image at all
+    t.page.evaluate("() => _setImg('b', new File(['just text'], 'notes.txt'))")
+    t.wait_for("() => document.getElementById('imgBInfo').textContent.includes('notes.txt')")
+    t.call("compare()"); t.wait_for("() => document.getElementById('errorBanner').classList.contains('active')")
+    expect("notes.txt" in t.text("errorText") and "image" in t.text("errorText"), t.text("errorText"))
+    # images opened from a folder comparison
+    t.call("clearInputs()")
+    t.page.evaluate(f"""async () => {{ const a = new Uint8Array(await (await _mkimg(4, 4, {IMG_RED}, 'image/png', 'i.png')).arrayBuffer()); openImages(a, a, 'img/icon.png', 'img/icon.png'); }}""")
+    t.wait_for("() => /identical/i.test(document.getElementById('diffStats').innerText)")
+    expect("img/icon.png" in t.text("resultTitle"), t.text("resultTitle"))
+
+
 @case("text-diff-checker", "typical", "audit: ignore-whitespace/case and highlight options re-run the diff live")
 def _(t):
     t.set("text1", "Hello  World\nsecond line\n")

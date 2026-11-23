@@ -182,7 +182,7 @@
 
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6072772587431629" crossorigin="anonymous"></script>
 
-  <script src="../js/vendor/lucide.min.js?v=b5700af31b" async></script>
+  <script src="../js/vendor/lucide.min.js?v=3420988081" async></script>
   <!-- High-Performance Diff Engine -->
   <script src="../js/vendor/diff.min.js?v=3a29bd9374"></script>
 
@@ -546,6 +546,29 @@
       .hx-hex.r { grid-column: 2; grid-row: 2; } .hx-asc.r { grid-column: 3; grid-row: 2; }
       .hx-row { border-bottom: 1px solid rgba(255,255,255,0.04); }
     }
+    .img-thumb { width: 56px; height: 56px; object-fit: contain; border-radius: 6px; flex-shrink: 0; background: repeating-conic-gradient(#1f2937 0% 25%, #111827 0% 50%) 50% / 12px 12px; }
+    .image-output { padding: 0 0 12px; }
+    .img-info-wrap { overflow-x: auto; padding: 0 12px; }
+    .img-info { width: 100%; font-size: 0.88em; }
+    .img-info th:first-child { color: var(--text-muted); font-weight: 500; width: 110px; }
+    .img-info td, .img-info thead th { overflow-wrap: anywhere; }
+    .img-info tr.img-mismatch td { color: #fbbf24; }
+    .img-svg-row { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; padding: 6px 12px 0; font-size: 0.88em; }
+    .img-stage-wrap { padding: 12px; }
+    .img-stage { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
+    .img-fig { margin: 0; flex: 1 1 260px; max-width: min(100%, var(--img-w)); min-width: 0; display: flex; flex-direction: column; gap: 6px; }
+    .img-stage.view-side .img-fig { max-width: min(calc(50% - 7px), var(--img-w)); }
+    .img-fig figcaption { font-size: 0.82em; color: var(--text-muted); text-align: center; overflow-wrap: anywhere; }
+    .img-fig.l figcaption { color: #fca5a5; } .img-fig.r figcaption { color: #86efac; }
+    .img-stage canvas { display: block; width: 100%; height: auto; image-rendering: pixelated; background: repeating-conic-gradient(#1f2937 0% 25%, #111827 0% 50%) 50% / 16px 16px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.08); }
+    .img-overlay { position: relative; width: min(100%, var(--img-w)); touch-action: none; }
+    .img-overlay canvas.img-top { position: absolute; inset: 0; background: none; border-color: transparent; }
+    .view-slider .img-overlay { cursor: ew-resize; }
+    .img-handle { position: absolute; top: 0; bottom: 0; width: 2px; margin-left: -1px; background: var(--accent-main); box-shadow: 0 0 6px rgba(56,189,248,0.8); pointer-events: none; }
+    .img-slider-row { padding: 0 12px; display: flex; justify-content: center; }
+    .img-slider-row[hidden] { display: none; }
+    .img-slider-row input { width: min(100%, 640px); }
+    @media (max-width: 760px) { .img-stage.view-side .img-fig { max-width: min(100%, var(--img-w)); } }
 
   </style>
 </head>
@@ -591,6 +614,7 @@
     <button type="button" class="mode-tab" data-mode="patch" role="tab" aria-selected="false"><i data-lucide="file-plus-2"></i> Apply a patch</button>
     <button type="button" class="mode-tab" data-mode="zip" role="tab" aria-selected="false"><i data-lucide="folder-git-2"></i> Folders</button>
     <button type="button" class="mode-tab" data-mode="hex" role="tab" aria-selected="false"><i data-lucide="binary"></i> Hex / binary</button>
+    <button type="button" class="mode-tab" data-mode="image" role="tab" aria-selected="false"><i data-lucide="image"></i> Images</button>
   </div>
 
   <!-- Two-sided inputs: text, struct and table modes share them -->
@@ -697,6 +721,26 @@
     </div>
   </div>
 
+  <!-- Image inputs -->
+  <div class="ide-container mode-only" data-for="image" style="display:none;">
+    <div class="pane zip-pane" id="imgAPane">
+      <div class="pane-header"><div class="pane-title title-red"><i data-lucide="image"></i> Left image</div>
+        <div class="btn-group">
+          <input type="file" id="imgAFile" accept="image/*,.svg,.bmp,.webp" style="display:none;">
+          <button class="btn" type="button" onclick="document.getElementById('imgAFile').click()"><i data-lucide="upload"></i> Open image</button>
+        </div></div>
+      <div class="zip-drop" id="imgAInfo"><i data-lucide="image"></i><span>Drop a PNG, JPG, GIF, WebP, BMP or SVG here</span></div>
+    </div>
+    <div class="pane zip-pane" id="imgBPane">
+      <div class="pane-header"><div class="pane-title title-green"><i data-lucide="image"></i> Right image</div>
+        <div class="btn-group">
+          <input type="file" id="imgBFile" accept="image/*,.svg,.bmp,.webp" style="display:none;">
+          <button class="btn" type="button" onclick="document.getElementById('imgBFile').click()"><i data-lucide="upload"></i> Open image</button>
+        </div></div>
+      <div class="zip-drop" id="imgBInfo"><i data-lucide="image"></i><span>Drop a PNG, JPG, GIF, WebP, BMP or SVG here</span></div>
+    </div>
+  </div>
+
   <div class="action-bar" id="actionBar">
     <div class="opt-group mode-only" data-for="text three patch">
       <label class="toggle-label" title="Collapse runs of spaces and tabs and ignore leading/trailing whitespace"><input type="checkbox" id="ignoreWhitespace"> Ignore whitespace</label>
@@ -748,6 +792,17 @@
       </label>
       <span class="muted hex-jump-msg" id="hexJumpMsg" role="status"></span>
     </div>
+    <div class="opt-group mode-only" data-for="image" style="display:none;">
+      <label class="toggle-label">View
+        <select id="imgView" class="mini-select"><option value="side" selected>side by side</option><option value="slider">slider</option><option value="onion">onion skin</option><option value="diff">difference</option></select>
+      </label>
+      <label class="toggle-label" title="A pixel counts as changed when a colour channel differs by more than this (0-255). A few levels hides re-compression noise.">Tolerance
+        <input type="range" id="imgTol" min="0" max="64" step="1" value="0"> <output id="imgTolVal" for="imgTol">0</output>
+      </label>
+      <label class="toggle-label" id="imgOpacityLabel" hidden>Right image opacity
+        <input type="range" id="imgOpacity" min="0" max="100" step="1" value="50">
+      </label>
+    </div>
     <div class="opt-group mode-only" data-for="table" style="display:none;">
       <label class="toggle-label" id="sheetValuesLabel" hidden title="Displayed: the text Excel shows (formats such as 0.00 or dates applied). Raw: the stored values.">Spreadsheet values
         <select id="sheetValues" class="mini-select"><option value="displayed" selected>as displayed</option><option value="raw">raw values</option></select>
@@ -779,7 +834,7 @@
       </details>
     </div>
     <div class="opt-group">
-      <button class="btn mode-only" data-for="text struct table hex" type="button" onclick="swapInputs()"><i data-lucide="arrow-left-right"></i> Swap</button>
+      <button class="btn mode-only" data-for="text struct table hex image" type="button" onclick="swapInputs()"><i data-lucide="arrow-left-right"></i> Swap</button>
       <button class="btn" type="button" onclick="clearInputs()"><i data-lucide="trash-2"></i> Clear</button>
       <label class="toggle-label save-switch" title="Off: nothing is stored. On: each Compare you click is saved to this browser's history (IndexedDB) so you can reopen it with Ctrl+H. Edits while typing are never saved."><input type="checkbox" id="saveHistory"> Save to history</label>
       <button class="btn btn-primary" type="button" id="btnRun" data-lb-primary onclick="compare()"><i data-lucide="search"></i> <span id="btnRunLabel">Compare</span></button>
@@ -831,6 +886,13 @@
       <div id="threePanel" class="three-output" style="display:none;"></div>
       <!-- zip view -->
       <div id="zipPanel" class="struct-output" style="display:none;"></div>
+      <!-- image view -->
+      <div id="imagePanel" class="image-output" style="display:none;">
+        <div id="imgNotes"></div>
+        <div class="img-info-wrap"><table class="data-table img-info" id="imgInfo"></table></div>
+        <div class="img-stage-wrap"><div class="img-stage" id="imgStage"></div></div>
+        <div class="img-slider-row" id="imgSliderRow" hidden><input type="range" id="imgSlider" min="0" max="100" step="0.5" value="50" aria-label="Slider position: left image to the left, right image to the right"></div>
+      </div>
       <!-- hex view: a virtual list, so any file size scrolls -->
       <div id="hexPanel" class="hex-output" style="display:none;">
         <div id="hexNotes"></div>
@@ -1163,7 +1225,7 @@
   <script src="../js/kernel.js?v=40b2047872"></script>
 
   <script src="../js/shared.js?v=e2441a1728"></script>
-  <script src="../js/engines/diff.js?v=b5683a2b15"></script>
+  <script src="../js/engines/diff.js?v=651d71a8b4"></script>
 
   <script>
     // ------------------------------------------------------------ state
@@ -1243,6 +1305,7 @@
     // Kernel drop fallback: a file dropped outside a pane goes to whichever side is empty.
     Layerbit.onDrop(files => {
       if (mode === 'zip') { loadZip(folders.a ? 'b' : 'a', files[0]); if (files[1]) loadZip('b', files[1]); return; }
+      if (mode === 'image') { imgFromFile(imgSrc.a ? 'b' : 'a', files[0]); if (files[1]) imgFromFile('b', files[1]); return; }
       if (mode === 'hex') { setHexSide(hexSrc.a ? 'b' : 'a', srcFromFile(files[0])); if (files[1]) setHexSide('b', srcFromFile(files[1])); return; }
       const target = mode === 'three' ? ($('baseText').value ? ($('oursText').value ? 'theirsText' : 'oursText') : 'baseText') : mode === 'patch' ? ($('patchOriginal').value ? 'patchText' : 'patchOriginal') : ($('text1').value ? 'text2' : 'text1');
       loadFileInto(target, files[0], target === 'text1' ? 'a' : target === 'text2' ? 'b' : null);
@@ -1284,7 +1347,7 @@
       return Promise.all([a ? loadWorkbookBytes('text1', a, nameA) : null, b ? loadWorkbookBytes('text2', b, nameB) : null]).then(() => { names = { a: nameA, b: nameB }; run(); });
     };
 
-    function swapInputs() { if (mode === 'hex') { const x = hexSrc.a; setHexSide('a', hexSrc.b); setHexSide('b', x); if (hex) run(true); return; } const t = $('text1').value; $('text1').value = $('text2').value; $('text2').value = t; const n = names.a; names.a = names.b; names.b = n; updateMeta(); if ($('outputSection').style.display !== 'none') run(true); }
+    function swapInputs() { if (mode === 'image') { const x = imgSrc.a; setImgSide('a', imgSrc.b); setImgSide('b', x); if (imgState) run(true); return; } if (mode === 'hex') { const x = hexSrc.a; setHexSide('a', hexSrc.b); setHexSide('b', x); if (hex) run(true); return; } const t = $('text1').value; $('text1').value = $('text2').value; $('text2').value = t; const n = names.a; names.a = names.b; names.b = n; updateMeta(); if ($('outputSection').style.display !== 'none') run(true); }
     function clearInputs() {
       keyUserChoice = null; sideInfo = {}; patchState = null;
       // a file input keeps its last value, and choosing the same file again
@@ -1295,6 +1358,7 @@
       names = { a: 'original', b: 'modified' }; folders = { a: null, b: null }; folderView = null; folderReturn = false; $('btnBackFolder').hidden = true;
       $('zipAInfo').innerHTML = $('zipBInfo').innerHTML = '<i data-lucide="folder-input"></i><span>Drop a folder or a .zip here</span>';
       hexJob++; hex = null; setHexSide('a', null); setHexSide('b', null); $('hexJumpMsg').textContent = '';
+      imgJob++; imgState = null; setImgSide('a', null); setImgSide('b', null);
       $('outputSection').style.display = 'none'; $('mergedSection').style.display = 'none'; updateMeta(); Layerbit.state.clear(); icons();
     }
     function showError(msg) { $('errorBanner').classList.add('active'); $('errorText').textContent = msg; $('outputSection').style.display = 'grid'; }
@@ -1303,7 +1367,7 @@
       if (mode !== 'patch') $('patchFiles').hidden = true;
       $('splitWrap').style.display = which === 'split' ? '' : 'none';
       $('inlinePanel').style.display = which === 'unified' ? '' : 'none';
-      ['structPanel', 'tablePanel', 'threePanel', 'zipPanel', 'hexPanel'].forEach(p => $(p).style.display = which === p ? '' : 'none');
+      ['structPanel', 'tablePanel', 'threePanel', 'zipPanel', 'hexPanel', 'imagePanel'].forEach(p => $(p).style.display = which === p ? '' : 'none');
     }
     function opts() {
       return { ignoreWhitespace: $('ignoreWhitespace').checked, ignoreCase: $('ignoreCase').checked, trimTrailing: $('trimTrailing').checked, ignoreBlank: $('ignoreBlank').checked, granularity: $('granularity').value };
@@ -1328,6 +1392,7 @@
         else if (mode === 'patch') runPatch();
         else if (mode === 'zip') runZip();
         else if (mode === 'hex') runHex();
+        else if (mode === 'image') runImages();
       } catch (e) { showError(e.message || String(e)); }
       if (quiet !== true) $('outputSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
@@ -1339,7 +1404,7 @@
     let liveTimer = null;
     function rerunSoon(delay) {
       clearTimeout(liveTimer);
-      liveTimer = setTimeout(() => { if (hasResult() && mode !== 'zip' && mode !== 'hex') run(true); }, delay || 0);
+      liveTimer = setTimeout(() => { if (hasResult() && mode !== 'zip' && mode !== 'hex' && mode !== 'image') run(true); }, delay || 0);
     }
     ['ignoreWhitespace', 'ignoreCase', 'trimTrailing', 'ignoreBlank', 'granularity', 'arrMode', 'keyCol']
       .forEach(id => $(id).addEventListener('change', () => rerunSoon(0)));
@@ -2295,6 +2360,136 @@
     $('btnHexJump').addEventListener('click', hexJump);
     $('hexJump').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); hexJump(); } });
     $('btnCancelDiff').addEventListener('click', () => { if (mode === 'hex') { hexJob++; $('diffProgress').hidden = true; $('diffStats').innerHTML = '<span>Cancelled</span>'; } });
+
+
+    // ------------------------------------------------------------ images
+    // Both images are drawn top-left aligned on canvases the size of the
+    // union of their areas, so every view (side by side, slider, onion skin,
+    // difference) lines them up the same way. The format comes from the
+    // bytes, not the name. Very large images are scaled to 40 megapixels for
+    // the pixel comparison, and the page says so.
+    const imgSrc = { a: null, b: null };
+    let imgState = null, imgJob = 0;
+    const IMG_EMPTY = '<i data-lucide="image"></i><span>Drop a PNG, JPG, GIF, WebP, BMP or SVG here</span>';
+    const IMG_MIME = { PNG: 'image/png', JPEG: 'image/jpeg', GIF: 'image/gif', WebP: 'image/webp', BMP: 'image/bmp', SVG: 'image/svg+xml', ICO: 'image/x-icon', AVIF: 'image/avif' };
+    const IMG_EXT = { PNG: ['png'], JPEG: ['jpg', 'jpeg', 'jfif'], GIF: ['gif'], WebP: ['webp'], BMP: ['bmp', 'dib'], SVG: ['svg'], ICO: ['ico'], AVIF: ['avif'] };
+    const IMG_MAX_PX = 40e6;
+    function setImgSide(side, src) {
+      if (imgSrc[side] && imgSrc[side].thumb) URL.revokeObjectURL(imgSrc[side].thumb);
+      imgSrc[side] = src;
+      if (src) { const fmt = E.imageFormat(src.bytes, src.name); src.format = fmt; if (fmt) src.thumb = URL.createObjectURL(new Blob([src.bytes], { type: IMG_MIME[fmt] })); }
+      $(side === 'a' ? 'imgAInfo' : 'imgBInfo').innerHTML = src ? `${src.thumb ? `<img class="img-thumb" src="${src.thumb}" alt="">` : '<i data-lucide="file-question"></i>'}<span><strong>${E.esc(src.name)}</strong><br><span class="muted">${src.format || 'not a recognised image'} · ${Layerbit.fmtBytes(src.bytes.length)}</span></span>` : IMG_EMPTY;
+      icons();
+    }
+    function imgFromFile(side, f) { return f.arrayBuffer().then(b => setImgSide(side, { name: f.name, bytes: new Uint8Array(b) })).catch(e => showError(`${f.name}: ${e.message}`)); }
+    [['imgAFile', 'a'], ['imgBFile', 'b']].forEach(([id, side]) => $(id).addEventListener('change', e => { const f = e.target.files[0]; if (f) imgFromFile(side, f); e.target.value = ''; }));
+    [['imgAPane', 'a'], ['imgBPane', 'b']].forEach(([id, side]) => {
+      const pane = $(id);
+      pane.addEventListener('dragover', e => { e.preventDefault(); pane.classList.add('dragover'); });
+      pane.addEventListener('dragleave', () => pane.classList.remove('dragover'));
+      pane.addEventListener('drop', e => { e.preventDefault(); e.stopPropagation(); pane.classList.remove('dragover'); const f = e.dataTransfer.files && e.dataTransfer.files[0]; if (f) imgFromFile(side, f); });
+    });
+    window.openImages = function (a, b, nameA, nameB) {
+      setImgSide('a', a ? { name: nameA, bytes: a } : null); setImgSide('b', b ? { name: nameB, bytes: b } : null);
+      setMode('image'); run();
+    };
+    function decodeImage(src) {
+      return new Promise((res, rej) => {
+        const bad = () => rej(new Error(`${src.name} is not an image this browser can read (PNG, JPG, GIF, WebP, BMP or SVG).`));
+        if (!src.format) return bad();
+        const img = new Image();
+        img.onload = () => {
+          let w = img.naturalWidth, h = img.naturalHeight;
+          if (src.format === 'SVG' && (!w || !h)) { const m = /viewBox\s*=\s*["']\s*[-\d.]+[\s,]+[-\d.]+[\s,]+([\d.]+)[\s,]+([\d.]+)/i.exec(E.decodeBytes(src.bytes).text); w = m ? Math.round(+m[1]) : 300; h = m ? Math.round(+m[2]) : 150; }
+          res({ img, w, h });
+        };
+        img.onerror = bad;
+        img.src = src.thumb;
+      });
+    }
+    async function runImages() {
+      if (!imgSrc.a || !imgSrc.b) { showError('Choose or drop the two images to compare.'); return; }
+      const job = ++imgJob, A = imgSrc.a, B = imgSrc.b;
+      $('resultTitle').textContent = `Image comparison: ${A.name} ↔ ${B.name}`;
+      $('diffStats').innerHTML = ''; $('imgNotes').innerHTML = ''; $('imgInfo').innerHTML = ''; $('imgStage').innerHTML = '';
+      $('outputSection').style.display = 'grid'; $('mergedSection').style.display = 'none'; showPanel('imagePanel');
+      let da, db;
+      try { [da, db] = await Promise.all([decodeImage(A), decodeImage(B)]); } catch (e) { if (job === imgJob) { imgState = null; showError(e.message); } return; }
+      if (job !== imgJob) return;
+      const W = Math.max(da.w, db.w), H = Math.max(da.h, db.h), scale = Math.min(1, Math.sqrt(IMG_MAX_PX / Math.max(1, W * H)));
+      const cw = Math.max(1, Math.round(W * scale)), ch = Math.max(1, Math.round(H * scale));
+      const paint = d => { const c = document.createElement('canvas'); c.width = cw; c.height = ch; c.getContext('2d').drawImage(d.img, 0, 0, Math.round(d.w * scale), Math.round(d.h * scale)); return c; };
+      const ca = paint(da), cb = paint(db);
+      let pa = null, pb = null;
+      try { pa = ca.getContext('2d').getImageData(0, 0, cw, ch); pb = cb.getContext('2d').getImageData(0, 0, cw, ch); } catch (e) { /* a tainted SVG: views still work */ }
+      imgState = { A, B, da, db, ca, cb, pa, pb, cw, ch, scale, aw: Math.round(da.w * scale), ah: Math.round(da.h * scale), bw: Math.round(db.w * scale), bh: Math.round(db.h * scale) };
+      // details of both files
+      const row = (label, x, y) => `<tr${x !== y ? ' class="img-mismatch"' : ''}><th>${label}</th><td>${x}</td><td>${y}</td></tr>`;
+      $('imgInfo').innerHTML = `<thead><tr><th></th><th class="t-removed">${E.esc(A.name)}</th><th class="t-added">${E.esc(B.name)}</th></tr></thead><tbody>` +
+        row('Format', A.format, B.format) + row('Dimensions', `${da.w} × ${da.h}`, `${db.w} × ${db.h}`) + row('File size', E.esc(fmtB(A.bytes.length)), E.esc(fmtB(B.bytes.length))) + '</tbody>';
+      const notes = [];
+      if (da.w !== db.w || da.h !== db.h) notes.push(`The dimensions differ (${da.w} × ${da.h} and ${db.w} × ${db.h}). The images are lined up at the top-left corner; the area only one of them covers counts as changed.`);
+      [A, B].forEach(x => { const ext = EXT(x.name); if (ext && x.format && !IMG_EXT[x.format].includes(ext)) notes.push(`${E.esc(x.name)} is named .${E.esc(ext)} but its bytes are ${x.format}.`); });
+      if (scale < 1) notes.push(`These images are large, so the pixel comparison runs on a copy scaled to ${cw} × ${ch}.`);
+      if (!pa) notes.push('This browser will not read the pixels of these SVGs, so only the visual views are available.');
+      const svg = A.format === 'SVG' && B.format === 'SVG';
+      $('imgNotes').innerHTML = (notes.length ? `<div class="diff-notes"><i data-lucide="alert-triangle"></i><div>${notes.join('<br>')}</div></div>` : '') +
+        (svg ? `<div class="img-svg-row"><span class="muted">SVGs are compared as rendered.</span> <button type="button" class="btn mini-btn" id="btnSvgText"><i data-lucide="file-diff"></i> Compare the SVG source as text</button></div>` : '');
+      if (svg) $('btnSvgText').addEventListener('click', () => { bytesToSide('text1', A.bytes, A.name); bytesToSide('text2', B.bytes, B.name); names = { a: A.name, b: B.name }; updateMeta(); setMode('text'); run(); });
+      imgDiff(); imgRender();
+      remember(`${A.name} ↔ ${B.name} (images)`);
+      icons();
+    }
+    function imgDiff() {
+      const S = imgState; if (!S) return;
+      const tol = +$('imgTol').value;
+      $('imgTolVal').textContent = tol;
+      if (!S.pa) { $('diffStats').innerHTML = '<span>Pixels not readable</span>'; return; }
+      S.dc = document.createElement('canvas'); S.dc.width = S.cw; S.dc.height = S.ch; S.dc.className = 'img-diff';
+      const ctx = S.dc.getContext('2d'), out = ctx.createImageData(S.cw, S.ch);
+      // both canvases are the union size; pixels outside an image are transparent,
+      // so the compare uses each image's own area to count uncovered pixels
+      const crop = (p, w, h) => { if (w === S.cw && h === S.ch) return p.data; const d = new Uint8ClampedArray(w * h * 4); for (let y = 0; y < h; y++) d.set(p.data.subarray(y * S.cw * 4, (y * S.cw + w) * 4), y * w * 4); return d; };
+      const r = E.pixelDiff(crop(S.pa, S.aw, S.ah), S.aw, S.ah, crop(S.pb, S.bw, S.bh), S.bw, S.bh, tol, out.data);
+      ctx.putImageData(out, 0, 0);
+      S.result = r;
+      $('diffStats').innerHTML = r.changed
+        ? `<span class="st-del">${r.percent.toLocaleString()}% of pixels changed</span><span>${r.changed.toLocaleString()} of ${r.total.toLocaleString()} pixels</span><span>tolerance ${tol}</span>${r.bbox ? `<span>in x ${r.bbox[0]}–${r.bbox[2]}, y ${r.bbox[1]}–${r.bbox[3]}</span>` : ''}`
+        : `<span class="st-add">Identical pixels</span><span>${r.total.toLocaleString()} pixels</span><span>tolerance ${tol}</span>`;
+    }
+    function imgRender() {
+      const S = imgState; if (!S) return;
+      const v = $('imgView').value, stage = $('imgStage');
+      $('imgOpacityLabel').hidden = v !== 'onion'; $('imgSliderRow').hidden = v !== 'slider';
+      stage.className = 'img-stage view-' + v; stage.innerHTML = '';
+      stage.style.setProperty('--img-w', S.cw + 'px'); stage.style.setProperty('--img-ar', `${S.cw} / ${S.ch}`);
+      const fig = (c, label, cls) => { const f = document.createElement('figure'); f.className = 'img-fig ' + (cls || ''); f.appendChild(c); const cap = document.createElement('figcaption'); cap.textContent = label; f.appendChild(cap); return f; };
+      if (v === 'side') { stage.appendChild(fig(S.ca, imgSrc.a.name, 'l')); stage.appendChild(fig(S.cb, imgSrc.b.name, 'r')); return; }
+      if (v === 'diff') { if (S.dc) stage.appendChild(fig(S.dc, 'Changed pixels in magenta')); return; }
+      const box = document.createElement('div'); box.className = 'img-overlay';
+      S.ca.id = ''; S.cb.id = 'imgTop'; S.cb.classList.add('img-top');
+      box.appendChild(S.ca); box.appendChild(S.cb);
+      if (v === 'slider') { const h = document.createElement('div'); h.className = 'img-handle'; h.id = 'imgHandle'; box.appendChild(h); }
+      stage.appendChild(box);
+      imgApply();
+    }
+    function imgApply() {
+      const top = $('imgTop'); if (!top) return;
+      const v = $('imgView').value;
+      if (v === 'slider') { const x = +$('imgSlider').value; top.style.opacity = ''; top.style.clipPath = `inset(0 0 0 ${x}%)`; const h = $('imgHandle'); if (h) h.style.left = x + '%'; }
+      else if (v === 'onion') { top.style.clipPath = ''; top.style.opacity = String(+$('imgOpacity').value / 100); }
+    }
+    $('imgView').addEventListener('change', () => { $('imgOpacityLabel').hidden = $('imgView').value !== 'onion'; imgRender(); });
+    $('imgSlider').addEventListener('input', imgApply);
+    $('imgOpacity').addEventListener('input', imgApply);
+    let imgTolTimer = null;
+    $('imgTol').addEventListener('input', () => { $('imgTolVal').textContent = $('imgTol').value; clearTimeout(imgTolTimer); imgTolTimer = setTimeout(() => { if (imgState) { imgDiff(); if ($('imgView').value === 'diff') imgRender(); } }, 120); });
+    // swipe: drag anywhere on the picture in slider view
+    let imgDrag = false;
+    function imgDragTo(e) { const box = $('imgStage').querySelector('.img-overlay'); if (!box) return; const r = box.getBoundingClientRect(); $('imgSlider').value = Math.max(0, Math.min(100, (e.clientX - r.left) / r.width * 100)); imgApply(); }
+    $('imgStage').addEventListener('pointerdown', e => { if ($('imgView').value !== 'slider') return; imgDrag = true; try { $('imgStage').setPointerCapture(e.pointerId); } catch (x) { /* synthetic events */ } imgDragTo(e); e.preventDefault(); });
+    $('imgStage').addEventListener('pointermove', e => { if (imgDrag) imgDragTo(e); });
+    ['pointerup', 'pointercancel'].forEach(t => $('imgStage').addEventListener(t, () => { imgDrag = false; }));
 
     // ------------------------------------------------------------ share / history state
     function getState() {

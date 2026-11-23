@@ -348,3 +348,26 @@
       .hx-hex.r { grid-column: 2; grid-row: 2; } .hx-asc.r { grid-column: 3; grid-row: 2; }
       .hx-row { border-bottom: 1px solid rgba(255,255,255,0.04); }
     }
+    .img-thumb { width: 56px; height: 56px; object-fit: contain; border-radius: 6px; flex-shrink: 0; background: repeating-conic-gradient(#1f2937 0% 25%, #111827 0% 50%) 50% / 12px 12px; }
+    .image-output { padding: 0 0 12px; }
+    .img-info-wrap { overflow-x: auto; padding: 0 12px; }
+    .img-info { width: 100%; font-size: 0.88em; }
+    .img-info th:first-child { color: var(--text-muted); font-weight: 500; width: 110px; }
+    .img-info td, .img-info thead th { overflow-wrap: anywhere; }
+    .img-info tr.img-mismatch td { color: #fbbf24; }
+    .img-svg-row { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; padding: 6px 12px 0; font-size: 0.88em; }
+    .img-stage-wrap { padding: 12px; }
+    .img-stage { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
+    .img-fig { margin: 0; flex: 1 1 260px; max-width: min(100%, var(--img-w)); min-width: 0; display: flex; flex-direction: column; gap: 6px; }
+    .img-stage.view-side .img-fig { max-width: min(calc(50% - 7px), var(--img-w)); }
+    .img-fig figcaption { font-size: 0.82em; color: var(--text-muted); text-align: center; overflow-wrap: anywhere; }
+    .img-fig.l figcaption { color: #fca5a5; } .img-fig.r figcaption { color: #86efac; }
+    .img-stage canvas { display: block; width: 100%; height: auto; image-rendering: pixelated; background: repeating-conic-gradient(#1f2937 0% 25%, #111827 0% 50%) 50% / 16px 16px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.08); }
+    .img-overlay { position: relative; width: min(100%, var(--img-w)); touch-action: none; }
+    .img-overlay canvas.img-top { position: absolute; inset: 0; background: none; border-color: transparent; }
+    .view-slider .img-overlay { cursor: ew-resize; }
+    .img-handle { position: absolute; top: 0; bottom: 0; width: 2px; margin-left: -1px; background: var(--accent-main); box-shadow: 0 0 6px rgba(56,189,248,0.8); pointer-events: none; }
+    .img-slider-row { padding: 0 12px; display: flex; justify-content: center; }
+    .img-slider-row[hidden] { display: none; }
+    .img-slider-row input { width: min(100%, 640px); }
+    @media (max-width: 760px) { .img-stage.view-side .img-fig { max-width: min(100%, var(--img-w)); } }

@@ -1080,6 +1080,57 @@
   }
   function asciiByte(c) { return c >= 32 && c < 127 ? String.fromCharCode(c) : '.'; }
 
+  /* ---- images ---- */
+  // Format from the file's first bytes (a .png that is really a JPEG says so).
+  function imageFormat(u8, name) {
+    if (!u8 || !u8.length) return null;
+    var h = function (i) { return u8[i]; }, asc = function (s, e) { var r = ''; for (var i = s; i < Math.min(e, u8.length); i++) r += String.fromCharCode(u8[i]); return r; };
+    if (h(0) === 0x89 && asc(1, 4) === 'PNG') return 'PNG';
+    if (h(0) === 0xFF && h(1) === 0xD8 && h(2) === 0xFF) return 'JPEG';
+    if (asc(0, 4) === 'GIF8') return 'GIF';
+    if (asc(0, 4) === 'RIFF' && asc(8, 12) === 'WEBP') return 'WebP';
+    if (asc(0, 2) === 'BM') return 'BMP';
+    if (h(0) === 0 && h(1) === 0 && h(2) === 1 && h(3) === 0) return 'ICO';
+    if (asc(4, 12) === 'ftypavif') return 'AVIF';
+    var head = decodeBytes(u8.subarray(0, 4096)).text.replace(/^\uFEFF/, '');
+    head = head.replace(/^\s*(<\?xml[\s\S]*?\?>)?(\s*<!--[\s\S]*?-->|\s*<!DOCTYPE[^>]*>)*\s*/i, '');
+    if (/^<svg[\s>/]/i.test(head)) return 'SVG';
+    return null;
+  }
+  // Compares two RGBA images (each with its own size) on the union of their
+  // areas. A pixel is changed when any channel differs by more than `tol`
+  // (0-255); fully transparent pixels are equal whatever their colour; a
+  // pixel covered by only one image is changed. `out`, if given, receives a
+  // width x height RGBA difference image: changed pixels magenta, the rest a
+  // dimmed grey of the original. Returns { width, height, changed, total,
+  // percent, bbox } where bbox is [x0, y0, x1, y1] of the changes or null.
+  function pixelDiff(a, aw, ah, b, bw, bh, tol, out) {
+    var W = Math.max(aw, bw), H = Math.max(ah, bh), changed = 0, x0 = W, y0 = H, x1 = -1, y1 = -1;
+    tol = tol || 0;
+    for (var y = 0; y < H; y++) {
+      for (var x = 0; x < W; x++) {
+        var inA = x < aw && y < ah, inB = x < bw && y < bh, ia = (y * aw + x) * 4, ib = (y * bw + x) * 4, d;
+        if (inA && inB) {
+          var al = a[ia + 3], bl = b[ib + 3];
+          if (al === 0 && bl === 0) d = false;
+          else d = Math.abs(a[ia] - b[ib]) > tol || Math.abs(a[ia + 1] - b[ib + 1]) > tol || Math.abs(a[ia + 2] - b[ib + 2]) > tol || Math.abs(al - bl) > tol;
+        } else d = inA || inB;
+        if (d) { changed++; if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y; }
+        if (out) {
+          var o = (y * W + x) * 4;
+          if (d) { out[o] = 255; out[o + 1] = 0; out[o + 2] = 160; out[o + 3] = 255; }
+          else {
+            var src = inA ? a : inB ? b : null, i = inA ? ia : ib, g = 18;
+            if (src) { var al2 = src[i + 3] / 255; g = Math.round((0.3 * src[i] + 0.59 * src[i + 1] + 0.11 * src[i + 2]) * al2 * 0.35 + 18 * (1 - al2)); }
+            out[o] = out[o + 1] = out[o + 2] = g; out[o + 3] = 255;
+          }
+        }
+      }
+    }
+    var total = W * H;
+    return { width: W, height: H, changed: changed, total: total, percent: total ? Math.round(changed / total * 10000) / 100 : 0, bbox: changed ? [x0, y0, x1, y1] : null };
+  }
+
   function isProbablyText(u8) {
     var n = Math.min(u8.length, 4000), ctl = 0;
     for (var i = 0; i < n; i++) { var c = u8[i]; if (c === 0) return false; if (c < 7 || (c > 13 && c < 32)) ctl++; }
@@ -1088,5 +1139,5 @@
 
   return { lineDiff: lineDiff, foldContext: foldContext, intraline: intraline, tokenize: tokenize, detectLang: detectLang, renderLine: renderLine, esc: esc,
     unifiedPatch: unifiedPatch, applyPatch: applyPatch, parsePatchFiles: parsePatchFiles, applyPatchFile: applyPatchFile, diff3: diff3, structuralDiff: structuralDiff, canonicalJson: canonicalJson, canon: canon,
-    parseCsv: parseCsv, detectDelimiter: detectDelimiter, tableDiff: tableDiff, readZip: readZip, isProbablyText: isProbablyText, decodeBytes: decodeBytes, bytesEqual: bytesEqual, stripCommonRoot: stripCommonRoot, uniqueHeaders: uniqueHeaders, pairSheets: pairSheets, normaliseDate: normaliseDate, cellEq: cellEq, DEFAULT_IGNORE: DEFAULT_IGNORE, compileIgnore: compileIgnore, folderDiff: folderDiff, buildTree: buildTree, flattenTree: flattenTree, folderCsv: folderCsv, csvLine: csvLine, dosTime: dosTime, textFacts: textFacts, textNotes: textNotes, parseJsonLossless: parseJsonLossless, stringifyLossless: stringifyLossless, canonicalNumber: canonicalNumber, splitLines: splitLines, byteRanges: byteRanges, parseOffset: parseOffset, hexOffset: hexOffset, asciiByte: asciiByte, normalizeLine: normalizeLine, DEFAULT_OPTS: DEFAULT_OPTS };
+    parseCsv: parseCsv, detectDelimiter: detectDelimiter, tableDiff: tableDiff, readZip: readZip, isProbablyText: isProbablyText, decodeBytes: decodeBytes, bytesEqual: bytesEqual, stripCommonRoot: stripCommonRoot, uniqueHeaders: uniqueHeaders, pairSheets: pairSheets, normaliseDate: normaliseDate, cellEq: cellEq, DEFAULT_IGNORE: DEFAULT_IGNORE, compileIgnore: compileIgnore, folderDiff: folderDiff, buildTree: buildTree, flattenTree: flattenTree, folderCsv: folderCsv, csvLine: csvLine, dosTime: dosTime, textFacts: textFacts, textNotes: textNotes, parseJsonLossless: parseJsonLossless, stringifyLossless: stringifyLossless, canonicalNumber: canonicalNumber, splitLines: splitLines, byteRanges: byteRanges, parseOffset: parseOffset, hexOffset: hexOffset, asciiByte: asciiByte, imageFormat: imageFormat, pixelDiff: pixelDiff, normalizeLine: normalizeLine, DEFAULT_OPTS: DEFAULT_OPTS };
 });

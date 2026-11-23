@@ -484,3 +484,41 @@ t('feature 24: hexOffset pads to the width the file needs', () => {
   assert.strictEqual(D.hexOffset(0x123456789, 0x200000000), '123456789');
   assert.strictEqual(D.asciiByte(65), 'A'); assert.strictEqual(D.asciiByte(0), '.'); assert.strictEqual(D.asciiByte(200), '.');
 });
+t('feature 25: imageFormat sniffs PNG, JPEG, GIF, WebP, BMP and SVG by their bytes, not the name', () => {
+  const b = a => Uint8Array.from(a), enc = s => new TextEncoder().encode(s);
+  assert.strictEqual(D.imageFormat(b([0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, 0]), 'x.jpg'), 'PNG');
+  assert.strictEqual(D.imageFormat(b([0xFF, 0xD8, 0xFF, 0xE0, 0]), 'photo.png'), 'JPEG');
+  assert.strictEqual(D.imageFormat(enc('GIF89a....'), 'a.gif'), 'GIF');
+  assert.strictEqual(D.imageFormat(enc('RIFF\0\0\0\0WEBPVP8 '), 'a'), 'WebP');
+  assert.strictEqual(D.imageFormat(enc('BM\0\0\0\0'), 'a.bmp'), 'BMP');
+  assert.strictEqual(D.imageFormat(enc('<svg xmlns="http://www.w3.org/2000/svg"/>'), 'icon'), 'SVG');
+  assert.strictEqual(D.imageFormat(enc('﻿<?xml version="1.0"?>\n<!-- logo -->\n<!DOCTYPE svg>\n<svg/>'), 'logo.svg'), 'SVG');
+  assert.strictEqual(D.imageFormat(enc('hello'), 'notes.txt'), null);
+  assert.strictEqual(D.imageFormat(new Uint8Array(0), 'empty.png'), null);
+});
+t('feature 25: pixelDiff counts changed pixels with a tolerance and draws a difference image', () => {
+  const W = 10, H = 10, mk = (w, h, f) => { const d = new Uint8ClampedArray(w * h * 4); for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) { const c = f(x, y), i = (y * w + x) * 4; d[i] = c[0]; d[i + 1] = c[1]; d[i + 2] = c[2]; d[i + 3] = c[3] == null ? 255 : c[3]; } return d; };
+  const a = mk(W, H, () => [200, 0, 0]);
+  // 2x2 block clearly different, a 4x1 strip off by 3 levels
+  const b = mk(W, H, (x, y) => x < 2 && y < 2 ? [0, 0, 255] : y === 9 && x < 4 ? [203, 0, 0] : [200, 0, 0]);
+  const out = new Uint8ClampedArray(W * H * 4);
+  const r0 = D.pixelDiff(a, W, H, b, W, H, 0, out);
+  assert.strictEqual(r0.changed, 8); assert.strictEqual(r0.total, 100); assert.strictEqual(r0.percent, 8);
+  assert.deepStrictEqual(r0.bbox, [0, 0, 3, 9]);
+  assert.deepStrictEqual(Array.from(out.subarray(0, 4)), [255, 0, 160, 255]);      // changed pixel marked
+  assert.notDeepStrictEqual(Array.from(out.subarray(4 * 55, 4 * 55 + 4)), [255, 0, 160, 255]);
+  const r5 = D.pixelDiff(a, W, H, b, W, H, 5);
+  assert.strictEqual(r5.changed, 4); assert.deepStrictEqual(r5.bbox, [0, 0, 1, 1]);
+  // identical images, and fully transparent pixels whatever their colour
+  assert.strictEqual(D.pixelDiff(a, W, H, a.slice(), W, H, 0).changed, 0);
+  const t1 = mk(2, 1, () => [1, 2, 3, 0]), t2 = mk(2, 1, () => [9, 9, 9, 0]);
+  assert.strictEqual(D.pixelDiff(t1, 2, 1, t2, 2, 1, 0).changed, 0);
+  assert.strictEqual(D.pixelDiff(a, W, H, a.slice(), W, H, 0).bbox, null);
+});
+t('feature 25: pixelDiff with different dimensions compares the union and counts the uncovered area', () => {
+  const a = new Uint8ClampedArray(4 * 2 * 4).fill(255), b = new Uint8ClampedArray(2 * 4 * 4).fill(255);
+  const r = D.pixelDiff(a, 4, 2, b, 2, 4, 0);
+  assert.strictEqual(r.width, 4); assert.strictEqual(r.height, 4); assert.strictEqual(r.total, 16);
+  // covered by both: 2x2 same; covered by one only: 4 + 4 = 8 changed; covered by neither: 4, same
+  assert.strictEqual(r.changed, 8); assert.strictEqual(r.percent, 50);
+});
