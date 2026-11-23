@@ -2034,6 +2034,27 @@ ZOHO = """Invoice Date,Invoice ID,Invoice Number,Invoice Status,Customer Name,Cu
 2026-09-03,4410000000124,INV-000232,Draft,"Gulf Star Logistics, FZE",100987654300003,2026-10-03,AED,1,API integration,ERP sync,10,600.00,5,300.00,6000.00,6300.00,6300.00"""
 
 
+# --- v4 bug fixes and features --------------------------------------------
+DIFF_HIST = "Layerbit.history.list('text-diff-checker', 100).then(r => r.length)"
+
+
+@case("text-diff-checker", "edge", "bug 1: history is saved only on an explicit Compare with the switch on")
+def _(t):
+    t.call("Layerbit.history.clear()")
+    t.set("text1", "user=admin\n"); t.set("text2", "user=admin\npassword=")
+    t.click("#btnRun"); t.wait(200)
+    for v in ["password=h", "password=hu", "password=hun", "password=hunter2"]:
+        t.set("text2", "user=admin\n" + v); t.wait(600)
+    eq(t.call(DIFF_HIST), 0, "runs saved while the switch is off")
+    expect(t.visible("#saveHistory"), "no visible Save to history switch")
+    t.page.check("#saveHistory")
+    t.click("#btnRun"); t.wait(200)
+    eq(t.call(DIFF_HIST), 1, "explicit Compare with the switch on")
+    t.set("text2", "user=admin\npassword=x"); t.wait(700)
+    eq(t.call(DIFF_HIST), 1, "live re-run while typing saved a copy")
+    t.page.uncheck("#saveHistory")
+
+
 @case("text-diff-checker", "typical", "audit: ignore-whitespace/case and highlight options re-run the diff live")
 def _(t):
     t.set("text1", "Hello  World\nsecond line\n")

@@ -625,7 +625,8 @@
     <div class="opt-group">
       <button class="btn mode-only" data-for="text struct table" type="button" onclick="swapInputs()"><i data-lucide="arrow-left-right"></i> Swap</button>
       <button class="btn" type="button" onclick="clearInputs()"><i data-lucide="trash-2"></i> Clear</button>
-      <button class="btn btn-primary" type="button" id="btnRun" data-lb-primary onclick="run()"><i data-lucide="search"></i> <span id="btnRunLabel">Compare</span></button>
+      <label class="toggle-label save-switch" title="Off: nothing is stored. On: each Compare you click is saved to this browser's history (IndexedDB) so you can reopen it with Ctrl+H. Edits while typing are never saved."><input type="checkbox" id="saveHistory"> Save to history</label>
+      <button class="btn btn-primary" type="button" id="btnRun" data-lb-primary onclick="compare()"><i data-lucide="search"></i> <span id="btnRunLabel">Compare</span></button>
     </div>
   </div>
 
@@ -822,7 +823,7 @@
         </div>
         <div class="faq-item">
           <button class="faq-question">Is anything uploaded when I compare files or zip folders? <i data-lucide="chevron-down"></i></button>
-          <div class="faq-answer"><p>No. Files are read with the browser's FileReader, zip archives are unpacked with the browser's own DecompressionStream, and every algorithm on this page is JavaScript running in the tab. The privacy indicator in the header counts any network request the page makes; it stays at zero while you work. Closing the tab discards everything unless you chose to save a run to the local history.</p></div>
+          <div class="faq-answer"><p>No. Files are read with the browser's FileReader, zip archives are unpacked with the browser's own DecompressionStream, and every algorithm on this page is JavaScript running in the tab. The privacy indicator in the header counts any network request the page makes; it stays at zero while you work. Nothing is stored either: the <strong>Save to history</strong> switch next to Compare is off by default. If you turn it on, each comparison you run with the Compare button is kept in this browser's own storage so you can reopen it later; edits made while typing are never saved, and the history can be cleared at any time. Closing the tab otherwise discards everything.</p></div>
         </div>
         <div class="faq-item">
           <button class="faq-question">How large a file can it handle? <i data-lucide="chevron-down"></i></button>
@@ -1093,6 +1094,14 @@
     }
 
     // ------------------------------------------------------------ run
+    // History: a run is stored only when the visitor clicks Compare (or presses
+    // Ctrl+Enter) with "Save to history" switched on. Live re-runs while typing,
+    // samples and share links never write anything.
+    let explicitRun = false;
+    try { $('saveHistory').checked = localStorage.getItem('lb-diff-save-history') === '1'; } catch (e) { /* storage blocked */ }
+    $('saveHistory').addEventListener('change', () => { try { localStorage.setItem('lb-diff-save-history', $('saveHistory').checked ? '1' : '0'); } catch (e) { /* ignore */ } });
+    function remember(label) { if (explicitRun && $('saveHistory').checked) Layerbit.history.push('text-diff-checker', getState(), label); }
+    function compare() { explicitRun = true; try { run(); } finally { setTimeout(() => { explicitRun = false; }, 0); } }
     function run(quiet) {
       clearError();
       try {
@@ -1139,7 +1148,7 @@
       renderText();
       renderMerged();
       $('mergedSection').style.display = res.hunks.length ? 'grid' : 'none';
-      Layerbit.history.push('text-diff-checker', getState(), `${nameA} → ${nameB}: +${res.stats.added + res.stats.modified} −${res.stats.removed + res.stats.modified}`);
+      remember(`${nameA} → ${nameB}: +${res.stats.added + res.stats.modified} −${res.stats.removed + res.stats.modified}`);
     }
     function renderText() {
       const { rows, hunks, stats, lang } = last;
@@ -1259,7 +1268,7 @@
       $('outputSection').style.display = 'grid';
       renderThree();
       $('mergedSection').style.display = 'grid';
-      Layerbit.history.push('text-diff-checker', getState(), `3-way merge: ${three.conflicts} conflict${three.conflicts === 1 ? '' : 's'}`);
+      remember(`3-way merge: ${three.conflicts} conflict${three.conflicts === 1 ? '' : 's'}`);
     }
     function renderThree() {
       const unresolved = three.chunks.filter((c, i) => c.type === 'conflict' && !three.resolutions[i]).length;
@@ -1304,6 +1313,7 @@
       }
     }
     function runStruct() {
+      const wasExplicit = explicitRun;
       Promise.all([parseDoc($('text1').value, 'Original'), parseDoc($('text2').value, 'Modified')]).then(([a, b]) => {
         const o = { arrays: $('arrMode').value, keyField: $('keyField').value.trim() || 'id' };
         const d = E.structuralDiff(a, b, o);
@@ -1318,7 +1328,7 @@
         last = null; three = null; window._structDocs = [a, b];
         $('outputSection').style.display = 'grid'; $('mergedSection').style.display = 'none';
         showPanel('structPanel'); icons();
-        Layerbit.history.push('text-diff-checker', getState(), `structural: ${d.length} change${d.length === 1 ? '' : 's'}`);
+        if (wasExplicit && $('saveHistory').checked) Layerbit.history.push('text-diff-checker', getState(), `structural: ${d.length} change${d.length === 1 ? '' : 's'}`);
       }).catch(e => showError(e.message));
     }
     function structAsText() { const [a, b] = window._structDocs; $('text1').value = E.canonicalJson(a); $('text2').value = E.canonicalJson(b); names = { a: 'original.json', b: 'modified.json' }; updateMeta(); setMode('text'); run(); }
@@ -1351,7 +1361,7 @@
       last = null; three = null;
       $('outputSection').style.display = 'grid'; $('mergedSection').style.display = 'none';
       showPanel('tablePanel'); icons();
-      Layerbit.history.push('text-diff-checker', getState(), `rows: +${r.added.length} −${r.removed.length} ~${r.changed.length}`);
+      remember(`rows: +${r.added.length} −${r.removed.length} ~${r.changed.length}`);
     }
 
     // ---- patch
@@ -1438,7 +1448,7 @@
       $('keyFieldLabel').style.display = $('arrMode').value === 'key' ? '' : 'none';
       if ((s.a || s.base || s.b) && s.mode !== 'zip') run();
     }
-    Layerbit.register({ slug: 'text-diff-checker', getState, setState, run, input: (text, name) => { const t = $('text1').value ? 'text2' : 'text1'; $(t).value = text; if (name) names[t === 'text1' ? 'a' : 'b'] = name; updateMeta(); } });
+    Layerbit.register({ slug: 'text-diff-checker', getState, setState, run: compare, input: (text, name) => { const t = $('text1').value ? 'text2' : 'text1'; $(t).value = text; if (name) names[t === 'text1' ? 'a' : 'b'] = name; updateMeta(); } });
 
     // ------------------------------------------------------------ samples
     function loadSample(type) {
