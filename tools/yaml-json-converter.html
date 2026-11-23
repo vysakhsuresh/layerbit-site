@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="Convert YAML to JSON and JSON to YAML in your browser, live in both directions, with YAML 1.2 semantics and syntax errors reported with line and column." />
+  <meta name="description" content="Convert YAML to JSON and back in your browser: YAML 1.1/1.2 switch with Norway-problem warnings, lint, comment-keeping format, Kubernetes and Compose schemas." />
   <title>YAML to JSON Converter Online (and Back) | Layerbit</title>
   <meta name="google-adsense-account" content="ca-pub-6072772587431629" />
   <link rel="preload" href="../fonts/space-grotesk-latin.woff2" as="font" type="font/woff2" crossorigin />
@@ -26,7 +26,7 @@
   <meta property="og:url" content="https://layerbit.co.in/tools/yaml-json-converter.html" />
   <meta property="og:site_name" content="Layerbit" />
   <meta property="og:title" content="YAML to JSON Converter Online (and Back) | Layerbit" />
-  <meta property="og:description" content="Convert YAML to JSON and JSON to YAML in your browser, live in both directions, with YAML 1.2 semantics and syntax errors reported with line and column." />
+  <meta property="og:description" content="Convert YAML to JSON and back in your browser: YAML 1.1/1.2 switch with Norway-problem warnings, lint, comment-keeping format, Kubernetes and Compose schemas." />
   <meta property="og:image" content="https://layerbit.co.in/images/og/tools-yaml-json-converter.jpg" />
   <meta property="og:image:type" content="image/jpeg" />
   <meta property="og:image:width" content="1200" />
@@ -35,7 +35,7 @@
   <meta property="og:locale" content="en" />
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="YAML to JSON Converter Online (and Back) | Layerbit" />
-  <meta name="twitter:description" content="Convert YAML to JSON and JSON to YAML in your browser, live in both directions, with YAML 1.2 semantics and syntax errors reported with line and column." />
+  <meta name="twitter:description" content="Convert YAML to JSON and back in your browser: YAML 1.1/1.2 switch with Norway-problem warnings, lint, comment-keeping format, Kubernetes and Compose schemas." />
   <meta name="twitter:image" content="https://layerbit.co.in/images/og/tools-yaml-json-converter.jpg" />
   <meta name="twitter:image:alt" content="YAML to JSON Converter Online (and Back)" />
   <meta name="theme-color" content="#0a0c10" />
@@ -48,7 +48,7 @@
       "@id": "https://layerbit.co.in/tools/yaml-json-converter.html#app",
       "name": "YAML to JSON Converter",
       "url": "https://layerbit.co.in/tools/yaml-json-converter.html",
-      "description": "Convert YAML to JSON and JSON to YAML in your browser, live in both directions, with YAML 1.2 semantics and syntax errors reported with line and column.",
+      "description": "Convert YAML to JSON and back in your browser: YAML 1.1/1.2 switch with Norway-problem warnings, lint, comment-keeping format, Kubernetes, Compose, Actions schemas.",
       "applicationCategory": "DeveloperApplication",
       "operatingSystem": "Any (runs in the browser)",
       "browserRequirements": "Requires JavaScript",
@@ -60,7 +60,18 @@
       },
       "publisher": {
         "@id": "https://layerbit.co.in/#organization"
-      }
+      },
+      "featureList": [
+        "YAML to JSON and JSON to YAML, live",
+        "Multi-document files",
+        "YAML 1.1 and 1.2 with Norway-problem warnings",
+        "Lint for duplicate keys and tabs",
+        "Formatting that keeps comments",
+        "Kubernetes, Docker Compose and GitHub Actions schema validation",
+        "Dates kept as written",
+        "Long numbers kept exactly",
+        "Runs entirely in the browser"
+      ]
     },
     {
       "@type": "BreadcrumbList",
@@ -81,7 +92,7 @@
         {
           "@type": "ListItem",
           "position": 3,
-          "name": "YAML ⇄ JSON Converter",
+          "name": "YAML to JSON Converter",
           "item": "https://layerbit.co.in/tools/yaml-json-converter.html"
         }
       ]
@@ -90,6 +101,30 @@
       "@type": "FAQPage",
       "@id": "https://layerbit.co.in/tools/yaml-json-converter.html#faq",
       "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "Should I use YAML 1.1 or 1.2?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Use the version the program that reads your file uses. YAML 1.2 (the default here, and in js-yaml, Go's yaml.v3 and current Kubernetes) reads yes, no, on and off as strings and 0777 as 777. YAML 1.1 (PyYAML, Ruby's Psych, older tools) reads them as booleans and an octal number, and 1:30 as 90. Whichever you pick, the Checks panel lists each plain value the two versions read differently, with its line, so you can quote it and get the same result everywhere. GitHub Actions' on: key is the classic case."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What does the lint check?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "As you type, it reports duplicate keys (YAML forbids them, but many parsers silently keep only one value), tab characters used for indentation, syntax errors with their line, and values that YAML 1.1 and 1.2 read differently. Format YAML re-indents the file (2 or 4 spaces) and keeps comments, key order and the document separators."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Can it validate Kubernetes, Docker Compose or GitHub Actions files?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes, without a network call. Choose a schema under Checks, or detect to pick it from the content: Kubernetes 1.30 schemas for Deployment, Service, ConfigMap, Secret, Ingress, Pod, StatefulSet, DaemonSet, Job and CronJob (each document of a multi-document manifest is checked on its own), the Docker Compose specification, and the GitHub Actions workflow schema. Each error names the path, such as /spec/replicas, and what is wrong. The schemas are copies of the published ones (Apache-2.0), dated on this page's changelog."
+          }
+        },
         {
           "@type": "Question",
           "name": "How does real-time synchronization prevent infinite loops?",
@@ -122,7 +157,7 @@
 
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6072772587431629" crossorigin="anonymous"></script>
 
-  <script src="../js/vendor/lucide.min.js?v=3420988081" async></script>
+  <script src="../js/vendor/lucide.min.js?v=1e48b7de34" async></script>
   <script src="../js/vendor/js-yaml.min.js?v=45dc3dd03d"></script>
 
   <link rel="icon" href="../favicon.ico" sizes="16x16 32x32 48x48" />
@@ -131,7 +166,7 @@
   <link rel="manifest" href="../manifest.json" />
   <link rel="alternate" type="application/atom+xml" title="Layerbit developer guides" href="https://layerbit.co.in/feed.xml" />
   <link rel="apple-touch-icon" href="../apple-touch-icon.png" />
-  <link rel="stylesheet" href="../css/base.css?v=7bd41a021f" />
+  <link rel="stylesheet" href="../css/base.css?v=2b24d32e4f" />
 
   <style>
 
@@ -287,6 +322,23 @@
     .yaml-note { padding: 6px 16px; font-size: 0.82em; color: #fde68a; background: rgba(245,158,11,0.08); }
     .yaml-note:empty { display: none; }
 
+    /* checks: version, lint, format, schemas */
+    .yaml-checks { max-width: 1400px; width: 100%; margin: -30px auto 50px; }
+    .yaml-checks .pane { height: auto; }
+    .checks-body { padding: 12px 20px 16px; font-size: 0.9em; }
+    .yaml-lint:empty, .yaml-schema-result:empty { display: none; }
+    .yaml-schema-result { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--card-border); }
+    .yl-head { font-weight: 600; margin-bottom: 6px; }
+    .yl-list { list-style: none; padding: 0; margin: 4px 0 0; max-height: 260px; overflow: auto; }
+    .yl-list li { padding: 5px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
+    .yl-list code { color: var(--accent-main); }
+    .yl-tag { display: inline-block; font-size: 0.8em; padding: 1px 7px; border-radius: 6px; margin-right: 4px; }
+    .yl-err { background: rgba(239,68,68,0.15); color: #fca5a5; }
+    .yl-warn { background: rgba(245,158,11,0.15); color: #fde68a; }
+    .yl-ok { color: #4ade80; }
+    .ys-row { margin: 6px 0; }
+    .mini-select { background: rgba(0,0,0,0.3); border: 1px solid var(--card-border); color: var(--text-main); border-radius: 6px; padding: 3px 6px; font-family: inherit; font-size: 0.95em; }
+
   </style>
 </head>
 <body>
@@ -314,13 +366,13 @@
     <span class="sep">/</span>
     <a href="../#tools">Developer tools</a>
     <span class="sep">/</span>
-    <span aria-current="page">YAML ⇄ JSON Converter</span>
+    <span aria-current="page">YAML to JSON Converter</span>
   </nav>
 
   <main id="main" class="page-main">
   <div class="hero">
     <h1>YAML to JSON Converter</h1>
-    <p>Convert configuration between YAML and JSON in real time, both ways, with errors pinpointed to the line.</p>
+    <p>Convert configuration between YAML and JSON in real time, both ways, with errors pinpointed to the line. Switch between YAML 1.1 and 1.2 and see every value they read differently, catch duplicate keys and tabs, format YAML without losing comments, and validate Kubernetes, Docker Compose and GitHub Actions files against their schemas, offline.</p>
   </div>
 
   <div class="ide-container">
@@ -368,6 +420,24 @@
     <button class="btn-clear" onclick="clearAll()"><i data-lucide="trash-2"></i> Clear Workspace</button>
   </div>
 
+  <div class="yaml-checks">
+    <div class="pane">
+      <div class="pane-header">
+        <div class="pane-title"><i data-lucide="list-checks"></i> Checks</div>
+        <div class="btn-group">
+          <label class="yaml-opt" title="YAML 1.2 (the default here, and in most current tools) reads yes, no, on and off as strings and 0777 as 777. YAML 1.1 (PyYAML, older Kubernetes and Ruby tools) reads them as booleans and an octal number.">YAML <select id="yamlVersion" class="mini-select" aria-label="YAML version"><option value="1.2" selected>1.2</option><option value="1.1">1.1</option></select></label>
+          <label class="yaml-opt">Indent <select id="yamlIndent" class="mini-select" aria-label="Indent"><option value="2" selected>2</option><option value="4">4</option></select></label>
+          <button class="btn" id="btnYamlFormat" type="button" title="Re-indent the YAML, keeping comments and the order of keys"><i data-lucide="sparkles"></i> Format YAML</button>
+          <label class="yaml-opt" title="Validate against a vendored schema: Kubernetes 1.30 (10 common kinds), the Docker Compose specification, or the GitHub Actions workflow schema">Schema <select id="yamlSchema" class="mini-select" aria-label="Schema"><option value="none" selected>none</option><option value="auto">detect</option><option value="k8s">Kubernetes 1.30</option><option value="compose">Docker Compose</option><option value="actions">GitHub Actions</option></select></label>
+        </div>
+      </div>
+      <div class="checks-body">
+        <div class="yaml-lint" id="yamlLint" role="status"></div>
+        <div class="yaml-schema-result" id="yamlSchemaResult" role="status"></div>
+      </div>
+    </div>
+  </div>
+
   <div class="docs-container">
     <div class="info-panel">
       <h2><i data-lucide="workflow"></i> Bidirectional Architecture</h2>
@@ -409,6 +479,18 @@
       <div class="faq-container">
         
         <div class="faq-item">
+          <button class="faq-question">Should I use YAML 1.1 or 1.2? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>Use the version the program that reads your file uses. YAML 1.2 (the default here, and in js-yaml, Go's yaml.v3 and current Kubernetes) reads <code>yes</code>, <code>no</code>, <code>on</code> and <code>off</code> as strings and <code>0777</code> as 777. YAML 1.1 (PyYAML, Ruby's Psych, older tools) reads them as booleans and an octal number, and <code>1:30</code> as 90. Whichever you pick, the Checks panel lists each plain value the two versions read differently, with its line, so you can quote it and get the same result everywhere. GitHub Actions' <code>on:</code> key is the classic case.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">What does the lint check? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>As you type, it reports duplicate keys (YAML forbids them, but many parsers silently keep only one value), tab characters used for indentation, syntax errors with their line, and values that YAML 1.1 and 1.2 read differently. <strong>Format YAML</strong> re-indents the file (2 or 4 spaces) and keeps comments, key order and the document separators.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">Can it validate Kubernetes, Docker Compose or GitHub Actions files? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>Yes, without a network call. Choose a schema under Checks, or <strong>detect</strong> to pick it from the content: Kubernetes 1.30 schemas for Deployment, Service, ConfigMap, Secret, Ingress, Pod, StatefulSet, DaemonSet, Job and CronJob (each document of a multi-document manifest is checked on its own), the Docker Compose specification, and the GitHub Actions workflow schema. Each error names the path, such as <code>/spec/replicas</code>, and what is wrong. The schemas are copies of the published ones (Apache-2.0), dated on this page's changelog.</p></div>
+        </div>
+        <div class="faq-item">
           <button class="faq-question">How does real-time synchronization prevent infinite loops? <i data-lucide="chevron-down"></i></button>
           <div class="faq-answer">
             <p>Layerbit's serializer utilizes an `isSyncing` boolean flag. When you type in the YAML editor, it locks the JSON editor from firing its own event listener until the conversion finishes. This completely eliminates feedback loops and browser crashing.</p>
@@ -440,7 +522,7 @@
       <div class="use-cases-grid">
         <div class="use-case-card">
           <h3><i data-lucide="flag"></i> The Norway problem</h3>
-          <p>YAML 1.1 resolves <code>y</code>, <code>n</code>, <code>yes</code>, <code>no</code>, <code>on</code> and <code>off</code> to booleans. A list of country codes containing <code>NO</code> for Norway silently becomes <code>false</code>. Convert to JSON and you see <code>false</code> where you expected <code>"NO"</code>.</p>
+          <p>YAML 1.1 resolves <code>y</code>, <code>n</code>, <code>yes</code>, <code>no</code>, <code>on</code> and <code>off</code> to booleans. A list of country codes containing <code>NO</code> for Norway silently becomes <code>false</code>. This converter reads YAML 1.2 by default, so <code>NO</code> stays a string; switch to 1.1 to see what PyYAML would produce, and the Checks panel lists every such value with its line in either mode.</p>
         </div>
         <div class="use-case-card">
           <h3><i data-lucide="hash"></i> Versions and leading zeros</h3>
@@ -491,6 +573,7 @@
     <div class="info-panel">
       <h2><i data-lucide="git-merge"></i> Deployment Changelog</h2>
       <ul class="changelog-list">
+        <li><span class="changelog-tag">v3.0.0</span> YAML 1.1 / 1.2 switch, with every value the two versions read differently listed by line (the Norway problem, octal, base 60). Lint for duplicate keys, tab indentation and syntax errors. Format YAML that keeps comments. Validation against vendored schemas: Kubernetes 1.30 (10 kinds), the Docker Compose specification and the GitHub Actions workflow schema, copied on 23 November 2026.</li>
         <li><span class="changelog-tag">v2.3.0</span> Files with several documents separated by --- (every Kubernetes manifest) are converted to a JSON array instead of being rejected, and a JSON array goes back out as separate documents (switch off Documents ↔ array to convert only the first); dates such as 2026-01-01 stay exactly as written unless you switch on Dates → timestamps.</li>
         <li><span class="changelog-tag">v2.2.0</span> Integers and numbers a JavaScript number cannot hold exactly (12345678901234567890, 1e400) keep every digit in both directions, YAML to JSON and JSON to YAML.</li>
         <li><span class="changelog-tag">v2.1.0</span> Syntax errors now say what went wrong and where: the YAML side reports the parser's reason with line and column, the JSON side the engine message with the position resolved to line and column.</li>
@@ -672,13 +755,16 @@
         jsonError.classList.remove("active");
         isSyncing = false;
         updateGutters();
+        lastDocs = null; scheduleChecks();
         return;
       }
 
+      if (yver() === '1.1' && !window.YAML) { lib('yaml').then(() => yamlInput.dispatchEvent(new Event('input'))); return; }
       try {
         // every document in the file (--- separators, as in Kubernetes
         // manifests); more than one becomes a JSON array
-        const docs = jsyaml.loadAll(val, null, { schema: losslessSchema() });
+        const docs = yver() === '1.1' ? loadAll11(val) : jsyaml.loadAll(val, null, { schema: losslessSchema() });
+        lastDocs = docs;
         const asArray = document.getElementById('yamlDocs').checked;
         const obj = docs.length > 1 && asArray ? docs : docs[0];
         if ((docs.length <= 1 || !asArray) && (typeof obj !== 'object' || obj === null)) throw new Error("Not a valid object");
@@ -691,6 +777,7 @@
         yamlError.classList.remove("active");
         jsonError.classList.remove("active");
       } catch (err) {
+        lastDocs = null;
         // js-yaml attaches a mark with the 0-based line/column of the failure.
         const where = err.mark ? ` — line ${err.mark.line + 1}, col ${err.mark.column + 1}` : '';
         yamlError.innerHTML = `<i data-lucide="alert-circle"></i> ${escapeErr(err.reason || err.message)}${where}`;
@@ -699,8 +786,117 @@
       } finally {
         isSyncing = false;
         updateGutters();
+        scheduleChecks();
       }
     });
+
+
+    // ---- YAML checks: version, lint, format, schemas (eemeli/yaml + Ajv, loaded on first use)
+    const LIBS = { yaml: ['../js/vendor/yaml.min.js', () => window.YAML], ajv: ['../js/vendor/ajv.min.js', () => window.LBAjv] }, libP = {};
+    function lib(name) { const [src, ok] = LIBS[name]; if (ok()) return Promise.resolve(); return libP[name] || (libP[name] = new Promise((res, rej) => { const sc = document.createElement('script'); sc.src = src; sc.onload = res; sc.onerror = () => { delete libP[name]; rej(new Error('Could not load ' + name)); }; document.head.appendChild(sc); })); }
+    const yver = () => document.getElementById('yamlVersion').value;
+    const escH = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    // plain values (YAML 1.1 parsing) into the lossless form the JSON side uses
+    function fromNative(v) {
+      if (typeof v === 'bigint') return new LBLossless.LosslessNumber(v.toString());
+      if (v instanceof Date) return isNaN(v) ? String(v) : v.toISOString();
+      if (v instanceof Map) { const o = {}; v.forEach((x, k) => { o[String(k)] = fromNative(x); }); return o; }
+      if (v instanceof Set) return [...v].map(fromNative);
+      if (Array.isArray(v)) return v.map(fromNative);
+      if (v && typeof v === 'object' && !LBLossless.isLosslessNumber(v)) { const o = {}; Object.keys(v).forEach(k => { o[k] = fromNative(v[k]); }); return o; }
+      return v;
+    }
+    // YAML 1.1: the yaml library with the 1.1 schema (yes/no/on/off booleans, 0777 octal, 1:20 base 60)
+    function loadAll11(text) {
+      const docs = YAML.parseAllDocuments(text, { version: '1.1', intAsBigInt: true, uniqueKeys: false });
+      const bad = docs.find(d => d.errors.length);
+      if (bad) { const e = bad.errors[0]; const err = new Error(e.message.split('\n')[0]); err.mark = e.linePos ? { line: e.linePos[0].line - 1, column: e.linePos[0].col - 1 } : null; err.reason = e.message.split('\n')[0]; throw err; }
+      return docs.map(d => fromNative(d.toJS({ maxAliasCount: 1000 })));
+    }
+    let checkTimer = null, lastDocs = null;
+    function scheduleChecks() { clearTimeout(checkTimer); checkTimer = setTimeout(runChecks, 250); }
+    async function runChecks() {
+      const text = yamlInput.value, box = document.getElementById('yamlLint');
+      if (!text.trim()) { box.innerHTML = ''; document.getElementById('yamlSchemaResult').innerHTML = ''; return; }
+      await lib('yaml');
+      const lc = new YAML.LineCounter(), items = [];
+      const docs = YAML.parseAllDocuments(text, { version: yver(), uniqueKeys: true, lineCounter: lc });
+      const lineOf = e => e.linePos ? e.linePos[0].line : lc.linePos(e.pos[0]).line;
+      docs.forEach(d => {
+        d.errors.forEach(e => items.push({ line: lineOf(e), kind: e.code === 'DUPLICATE_KEY' ? 'duplicate key' : /TAB/.test(e.code) ? 'tab' : 'error', message: e.code === 'DUPLICATE_KEY' ? 'Duplicate key: a map has the same key twice, and only one value can survive (which one depends on the parser).' : /TAB/.test(e.code) ? 'Tab used for indentation: YAML allows only spaces.' : e.message.split('\n')[0] }));
+        d.warnings.forEach(e => items.push({ line: lineOf(e), kind: 'warning', message: e.message.split('\n')[0] }));
+        // the Norway problem: a plain scalar that YAML 1.1 and 1.2 read differently
+        YAML.visit(d, { Scalar(key, node) {
+          if (node.type !== 'PLAIN' || !node.range || typeof node.source !== 'string') return;
+          const src = node.source;
+          if (!/^(y|Y|yes|Yes|YES|n|N|no|No|NO|on|On|ON|off|Off|OFF|true|True|TRUE|false|False|FALSE|[-+]?0[0-7]+|[-+]?0b[01_]+|[-+]?[0-9][0-9_]*(:[0-5]?[0-9])+(\.[0-9_]*)?|[-+]?[0-9][0-9_,]+)$/.test(src)) return;
+          let a, b; try { a = YAML.parse(src, { version: '1.1' }); b = YAML.parse(src, { version: '1.2' }); } catch (e) { return; }
+          if (JSON.stringify(a) === JSON.stringify(b)) return;
+          const show = v => typeof v === 'string' ? `the string "${v}"` : String(v);
+          items.push({ line: lc.linePos(node.range[0]).line, kind: 'YAML 1.1 vs 1.2', message: `${key === 'key' ? 'The key ' : ''}${src} is ${show(b)} in YAML 1.2 but ${show(a)} in YAML 1.1 (PyYAML, older Kubernetes and Ruby tools). Quote it to mean the same everywhere.` });
+        } });
+      });
+      items.sort((x, y) => x.line - y.line);
+      box.innerHTML = items.length ? `<div class="yl-head">${items.length} finding${items.length === 1 ? '' : 's'} (YAML ${yver()})</div><ul class="yl-list">` + items.slice(0, 300).map(i => `<li><span class="yl-tag yl-${i.kind === 'warning' || i.kind === 'YAML 1.1 vs 1.2' ? 'warn' : 'err'}">${escH(i.kind)}</span> line ${i.line}: ${escH(i.message)}</li>`).join('') + '</ul>'
+        : `<div class="yl-ok">No problems found: no duplicate keys, no tabs, and nothing that YAML 1.1 and 1.2 read differently.</div>`;
+      runSchema();
+    }
+    async function formatYaml() {
+      const text = yamlInput.value; if (!text.trim()) return;
+      await lib('yaml');
+      const docs = YAML.parseAllDocuments(text, { version: yver() });
+      const bad = docs.find(d => d.errors.length);
+      if (bad) { Layerbit.toast('Fix the errors listed under Checks before formatting', 'warn'); runChecks(); return; }
+      const indent = +document.getElementById('yamlIndent').value;
+      yamlInput.value = docs.map(d => d.toString({ indent, lineWidth: 0 })).join('');
+      yamlInput.dispatchEvent(new Event('input'));
+      Layerbit.toast('Formatted; comments kept');
+    }
+    // ---- schema validation with vendored schemas
+    const K8S = ['deployment', 'service', 'configmap', 'secret', 'ingress', 'pod', 'statefulset', 'daemonset', 'job', 'cronjob'];
+    const schemaCache = {};
+    function schemaFor(file) {
+      if (schemaCache[file]) return schemaCache[file];
+      return (schemaCache[file] = Promise.all([lib('ajv'), fetch('../js/vendor/schemas/' + file + '.json').then(r => { if (!r.ok) throw new Error('Could not load the ' + file + ' schema'); return r.json(); })]).then(([, schema]) => {
+        const ajv = file === 'compose-spec' ? new LBAjv.Ajv2020({ allErrors: true, strict: false }) : new LBAjv.Ajv({ allErrors: true, strict: false });
+        LBAjv.addFormats(ajv);
+        return ajv.compile(schema);
+      }).catch(e => { delete schemaCache[file]; throw e; }));
+    }
+    function detect(doc, pick) {
+      if (!doc || typeof doc !== 'object' || Array.isArray(doc)) return null;
+      const k8s = () => { const kind = String(doc.kind || '').toLowerCase(); return K8S.includes(kind) ? { file: 'k8s-' + kind, label: `Kubernetes 1.30 ${doc.kind}` } : { missing: `Kubernetes kind "${doc.kind || '?'}" (schemas included: ${K8S.join(', ')})` }; };
+      if (pick === 'k8s') return k8s();
+      if (pick === 'compose') return { file: 'compose-spec', label: 'Docker Compose specification' };
+      if (pick === 'actions') return { file: 'github-workflow', label: 'GitHub Actions workflow' };
+      if (doc.apiVersion && doc.kind) return k8s();
+      if (doc.services && typeof doc.services === 'object') return { file: 'compose-spec', label: 'Docker Compose specification' };
+      if (doc.jobs && (doc.on !== undefined || doc[true] !== undefined)) return { file: 'github-workflow', label: 'GitHub Actions workflow' };
+      return null;
+    }
+    let schemaSeq = 0;
+    async function runSchema() {
+      const pick = document.getElementById('yamlSchema').value, box = document.getElementById('yamlSchemaResult'), seq = ++schemaSeq;
+      if (pick === 'none' || !lastDocs) { box.innerHTML = ''; return; }
+      const parts = [];
+      for (let i = 0; i < lastDocs.length; i++) {
+        const doc = LBLossless.toNative(lastDocs[i]), d = detect(doc, pick), label = lastDocs.length > 1 ? `Document ${i + 1}: ` : '';
+        if (!d) { parts.push(`<div class="ys-row"><span class="yl-tag yl-warn">not recognised</span> ${label}not a Kubernetes manifest, Compose file or GitHub Actions workflow; pick the schema in the menu.</div>`); continue; }
+        if (d.missing) { parts.push(`<div class="ys-row"><span class="yl-tag yl-warn">no schema</span> ${label}${escH(d.missing)}</div>`); continue; }
+        try {
+          const v = await schemaFor(d.file);
+          if (seq !== schemaSeq) return;
+          const ok = v(doc);
+          const errs = ok ? [] : [...new Map((v.errors || []).map(e => [(e.instancePath || '/') + ' ' + e.message, e])).values()];
+          parts.push(ok ? `<div class="ys-row yl-ok">${label}Valid against the ${escH(d.label)} schema.</div>`
+            : `<div class="ys-row"><span class="yl-tag yl-err">${errs.length} error${errs.length === 1 ? '' : 's'}</span> ${label}against the ${escH(d.label)} schema</div><ul class="yl-list">` + errs.slice(0, 25).map(e => `<li><code>${escH(e.instancePath || '/')}</code> ${escH(e.message)}${e.params && e.params.additionalProperty ? ` (<code>${escH(e.params.additionalProperty)}</code>)` : ''}${e.params && e.params.allowedValues ? `: ${escH(e.params.allowedValues.join(', '))}` : ''}</li>`).join('') + '</ul>');
+        } catch (e) { parts.push(`<div class="ys-row"><span class="yl-tag yl-err">error</span> ${escH(e.message)}</div>`); }
+      }
+      if (seq === schemaSeq) box.innerHTML = parts.join('');
+    }
+    document.getElementById('yamlVersion').addEventListener('change', () => { lib('yaml').then(() => { yamlInput.dispatchEvent(new Event('input')); }); });
+    document.getElementById('yamlSchema').addEventListener('change', runSchema);
+    document.getElementById('btnYamlFormat').addEventListener('click', formatYaml);
 
     // Numbers a JavaScript number cannot hold exactly (12345678901234567890,
     // 1e400) are kept as their text in both directions: the YAML int and

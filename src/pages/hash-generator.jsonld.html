@@ -7,8 +7,8 @@
       "@id": "https://layerbit.co.in/tools/hash-generator.html#app",
       "name": "Hash \u0026 HMAC Generator",
       "url": "https://layerbit.co.in/tools/hash-generator.html",
-      "description": "Compute SHA-1, SHA-256, SHA-384, SHA-512 and MD5 hashes of text or files, generate HMACs with a key, and verify a checksum, all in your browser.",
-      "applicationCategory": "SecurityApplication",
+      "description": "Hash text or files of any size with SHA-2, SHA-3, BLAKE3, MD5, xxHash and CRC32, HMACs, whole folders, folder compare and SHA256SUMS checks. In your browser.",
+      "applicationCategory": "DeveloperApplication",
       "operatingSystem": "Any (runs in the browser)",
       "browserRequirements": "Requires JavaScript",
       "isAccessibleForFree": true,
@@ -17,11 +17,23 @@
         "price": "0",
         "priceCurrency": "USD"
       },
-      "keywords": "sha256 generator, hash generator, hmac generator, md5 checksum, file hash, verify checksum",
       "publisher": {
         "@id": "https://layerbit.co.in/#organization"
       },
-      "datePublished": "2026-09-27"
+      "featureList": [
+        "MD5, SHA-1, SHA-256, SHA-384, SHA-512",
+        "SHA3-256 and SHA3-512",
+        "BLAKE2b, BLAKE2s and BLAKE3",
+        "RIPEMD-160",
+        "XXH64, XXH3, XXH128, CRC32 and CRC32C checksums",
+        "HMAC with any cryptographic hash",
+        "Files of any size, hashed by streaming",
+        "Hash many files or a folder with reports",
+        "Compare two folders by content",
+        "Check files against SHA256SUMS lists",
+        "Constant-time checksum verification",
+        "Runs entirely in the browser"
+      ]
     },
     {
       "@type": "BreadcrumbList",
@@ -53,10 +65,34 @@
       "mainEntity": [
         {
           "@type": "Question",
+          "name": "Which algorithms are included, and which should I use?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Cryptographic hashes: MD5 and SHA-1 (both broken for collisions, so only for matching old checksums), SHA-256/384/512, SHA3-256/512, BLAKE2b-512, BLAKE2s-256, BLAKE3 and RIPEMD-160. Checksums, listed separately: XXH64, XXH3 and XXH128 (very fast, used by tools that index or deduplicate files) and CRC32/CRC32C (zip files, Ethernet, storage systems). Use SHA-256 to publish or verify a download, BLAKE3 when speed matters and both sides support it, and a checksum only for spotting accidental changes: anyone can forge one."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How large a file can I hash?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Any size. The file is read in 4 MB slices by a background worker that feeds all sixteen algorithms in one pass, so it never has to fit in memory and the page stays responsive; progress is shown as it goes. In our tests a 64 MB file took about 3 seconds for all of them."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Can I hash a whole folder, compare two folders, or check a SHA256SUMS file?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes, under Files and folders. Many files hashes everything you choose or drop (folders included) with one algorithm and saves a checksum file in the sha256sum format, a CSV or HTML report, or all three as a zip. Compare matches the files of two folders by their path and tells you which are identical, different, or present on one side only. Check a list reads SHA256SUMS, *.sha256, *.md5, b2sum or BSD-style lists and reports each file as OK, FAILED or missing, like sha256sum -c."
+          }
+        },
+        {
+          "@type": "Question",
           "name": "Is my text or file uploaded to compute the hash?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "No. Hashing is done by the Web Crypto API built into your browser, and the MD5 implementation is JavaScript in the page. There is no request to any server. You can verify this in the Network tab of your browser's developer tools, or by loading the page and then disconnecting from the internet before hashing a file."
+            "text": "No. Hashing is done by the Web Crypto API built into your browser and by hash-wasm, an open-source library compiled to WebAssembly that loads from this site; files are read in slices by a background worker. There is no request to any server. You can verify this in the Network tab of your browser's developer tools, or by loading the page and then disconnecting from the internet before hashing a file."
           }
         },
         {

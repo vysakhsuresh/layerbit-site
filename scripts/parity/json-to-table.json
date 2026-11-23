@@ -1,0 +1,84 @@
+{
+  "tool": "json-to-table",
+  "page": "tools/json-to-table.html",
+  "competitors": [
+    {
+      "name": "JSON Editor Online (table mode)",
+      "price": "free; paid ad-free / cloud tiers",
+      "checked": "2026-11"
+    },
+    {
+      "name": "JSON Crack",
+      "price": "Premium $5/mo billed yearly",
+      "checked": "2026-11"
+    },
+    {
+      "name": "Datasette",
+      "price": "free, open source (needs Python)",
+      "checked": "2026-11"
+    }
+  ],
+  "claims": [
+    {
+      "feature": "Cell editing with JSON re-export",
+      "competitor": "JSON Editor Online",
+      "tests": [
+        "ui:json-to-table:2.3: edit a cell, keep its type, and export the edited JSON"
+      ]
+    },
+    {
+      "feature": "Virtualised grid for 100k+ rows",
+      "competitor": "JSON Editor Online / Datasette",
+      "tests": [
+        "ui:json-to-table:2.3: 100,000 rows render virtually, scroll to the end, and filter"
+      ]
+    },
+    {
+      "feature": "Hide, reorder and resize columns",
+      "competitor": "JSON Editor Online",
+      "tests": [
+        "ui:json-to-table:2.3: hide, reorder and resize columns",
+        "unit:tabular:column plan: rename, drop and reorder survive new data; new columns are appended"
+      ]
+    },
+    {
+      "feature": "Group-by and aggregates",
+      "competitor": "Datasette",
+      "tests": [
+        "ui:json-to-table:2.3: group by a column with count, sum, average, min and max",
+        "unit:tabular:groupBy: count, sum, average, min and max per group, in first-seen order; non-numbers ignored"
+      ]
+    },
+    {
+      "feature": "Per-column filters",
+      "competitor": "Datasette",
+      "tests": [
+        "ui:json-to-table:2.3: per-column filters with numbers and text, combined with the search",
+        "unit:tabular:filters: numeric comparisons, exact, not, empty, and contains; lossless numbers compared by value"
+      ]
+    },
+    {
+      "feature": ".xlsx export",
+      "competitor": "JSON Editor Online",
+      "tests": [
+        "ui:json-to-table:2.3: .xlsx export with typed cells"
+      ]
+    },
+    {
+      "feature": "Safe CSV export",
+      "competitor": "JSON Editor Online",
+      "tests": [
+        "ui:json-to-table:A4: Export CSV is safe for spreadsheets by default"
+      ]
+    },
+    {
+      "feature": "Sorting by value, long numbers exact",
+      "competitor": "JSON Editor Online",
+      "tests": [
+        "ui:json-to-table:column sort is numeric and toggles direction",
+        "ui:json-to-table:A3: long numbers are shown and exported exactly",
+        "unit:tabular:sortRows: numbers by value (lossless too), text naturally, blanks last both ways"
+      ]
+    }
+  ]
+}

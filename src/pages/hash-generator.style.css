@@ -10,3 +10,25 @@
     .muted { color: var(--text-muted); font-weight: 400; }
     .field label .muted { font-weight: 400; }
     .eol-hint { padding: 8px 16px; font-size: 0.82em; color: var(--text-muted); border-top: 1px solid var(--border-color, rgba(255,255,255,0.06)); }
+
+    /* more digests, files and folders */
+    #digestTable .group-row th { font-size: 0.75em; font-weight: 600; color: var(--text-muted); text-transform: none; padding-top: 14px; border-bottom: 1px solid var(--card-border); }
+    .files-section { margin-top: -20px; }
+    .ftab { background: transparent; border: 1px solid var(--card-border); color: var(--text-muted); border-radius: 8px; padding: 6px 12px; font: inherit; font-size: 0.85em; cursor: pointer; }
+    .ftab.active { background: rgba(56,189,248,0.15); color: var(--accent-main); border-color: rgba(56,189,248,0.4); }
+    .fpanel[hidden] { display: none; }
+    .fbar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin: 10px 0; }
+    .drop-zone { border: 1px dashed var(--card-border); border-radius: 10px; padding: 18px; text-align: center; color: var(--text-muted); font-size: 0.9em; }
+    .drop-zone.small { padding: 10px; margin-top: 8px; }
+    .drop-zone.over { border-color: var(--accent-main); color: var(--accent-main); background: rgba(56,189,248,0.06); }
+    .cmp-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .cmp-side { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 10px; border: 1px solid var(--card-border); border-radius: 10px; }
+    .cmp-side .drop-zone { flex-basis: 100%; }
+    @media (max-width: 760px) { .cmp-grid { grid-template-columns: 1fr; } }
+    .fresult { overflow-x: auto; }
+    .ftable { margin-top: 8px; font-size: 0.85em; }
+    .ftable td.digest { font-family: 'Fira Code', monospace; word-break: break-all; }
+    .ftable tr.st-different td:nth-child(2), .ftable tr.st-FAILED td:nth-child(2) { color: #fca5a5; }
+    .ftable tr.st-same td:nth-child(2), .ftable tr.st-OK td:nth-child(2) { color: #4ade80; }
+    .ftable tr.st-onlyA td:nth-child(2), .ftable tr.st-onlyB td:nth-child(2), .ftable tr.st-MISSING td:nth-child(2) { color: #fde68a; }
+    .fbar[hidden] { display: none; }

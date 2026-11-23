@@ -23,7 +23,7 @@ Usage:
 Requires: pip install playwright && playwright install chromium
 Set LAYERBIT_CHROMIUM=/path/to/chrome to use a specific binary.
 """
-import argparse, functools, http.server, json, os, socket, socketserver, sys
+import argparse, base64, functools, http.server, json, os, socket, socketserver, sys
 import threading, time, traceback
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -962,6 +962,179 @@ def _(t):
     expect("delimiter" in t.text("errorText").lower(), f"no hint: {t.text('errorText')}")
 
 
+@case("csv-to-json", "typical", "2.4: JSON Lines out, and JSON Lines in for JSON -> CSV")
+def _(t):
+    t.click("#btnModeToJSON")
+    t.select("outFormat", "jsonl")
+    t.set("csvInput", 'id,name\n1,Ada\n2,"Smith, Jane"')
+    t.click("#btnConvert")
+    lines = t.text("jsonOutput").strip().splitlines()
+    eq([json.loads(x) for x in lines], [{"id": 1, "name": "Ada"}, {"id": 2, "name": "Smith, Jane"}], "JSON Lines out")
+    expect(".jsonl" in t.text("btnDownload"), "download label: " + t.text("btnDownload"))
+    t.select("outFormat", "json")
+    t.click("#btnModeToCSV")
+    t.set("csvInput", '{"id":1,"name":"Ada"}\n\n{"id":2,"tag":"x"}\n')
+    t.click("#btnConvert")
+    eq(t.text("jsonOutput").strip().splitlines(), ["id,name,tag", "1,Ada,", "2,,x"], "JSON Lines in")
+    t.set("csvInput", '{"id":1}\n{"id":')
+    t.click("#btnConvert")
+    expect("line" in t.text("errorText").lower(), "broken JSON Lines not reported by line: " + t.text("errorText"))
+    t.click("#btnModeToJSON")
+
+
+@case("csv-to-json", "typical", "2.4: dotted headers nest into objects and arrays, and flatten back")
+def _(t):
+    t.click("#btnModeToJSON")
+    expect(not t.page.is_checked("#nestKeys"), "nesting should be off by default")
+    t.page.check("#nestKeys")
+    t.set("csvInput", "id,user.name,user.city,tags.0,tags.1\n1,Ada,Dubai,a,b")
+    t.click("#btnConvert")
+    eq(json.loads(t.text("jsonOutput")), [{"id": 1, "user": {"name": "Ada", "city": "Dubai"}, "tags": ["a", "b"]}], "nested")
+    t.set("csvInput", "a,a.b\n1,2")
+    t.click("#btnConvert")
+    eq(json.loads(t.text("jsonOutput")), [{"a": 1, "a.b": 2}], "conflict kept flat")
+    expect("a.b" in t.text("csvIssues"), "conflict not reported: " + t.text("csvIssues"))
+    t.page.uncheck("#nestKeys")
+    t.click("#btnModeToCSV")
+    expect(t.page.is_checked("#flattenKeys"), "flattening should be on by default")
+    t.set("csvInput", '[{"id":1,"user":{"name":"Ada","city":"Dubai"},"tags":["a","b"]}]')
+    t.click("#btnConvert")
+    eq(t.text("jsonOutput").strip().splitlines(), ["id,user.name,user.city,tags.0,tags.1", "1,Ada,Dubai,a,b"], "flattened")
+    t.page.uncheck("#flattenKeys"); t.wait(100)
+    expect('"{""name"":""Ada""' in t.text("jsonOutput"), "objects should stay JSON in one cell: " + t.text("jsonOutput"))
+    t.page.check("#flattenKeys")
+    t.click("#btnModeToJSON")
+
+
+@case("csv-to-json", "typical", "2.4: choose, rename and reorder columns in both directions")
+def _(t):
+    t.click("#btnModeToJSON")
+    t.set("csvInput", "id,name,email\n1,Ada,ada@x.com")
+    t.click("#btnConvert")
+    t.page.uncheck("#colInc-email")
+    t.page.fill("#colName-name", "full_name"); t.page.press("#colName-name", "Enter")
+    t.click("#colUp-name")
+    out = json.loads(t.text("jsonOutput"))
+    eq(list(out[0].items()), [("full_name", "Ada"), ("id", 1)], "columns chosen, renamed, reordered")
+    t.set("csvInput", "id,name,email,phone\n2,Bob,b@x.com,+971")
+    t.click("#btnConvert")
+    eq(list(json.loads(t.text("jsonOutput"))[0].keys()), ["full_name", "id", "phone"], "the plan survives new data")
+    t.click("#btnModeToCSV")
+    t.set("csvInput", '[{"id":1,"name":"Ada","secret":"x"}]')
+    t.click("#btnConvert")
+    t.page.uncheck("#colInc-secret"); t.click("#colDown-id")
+    eq(t.text("jsonOutput").strip().splitlines(), ["name,id", "Ada,1"], "JSON -> CSV columns")
+    t.click("#btnModeToJSON")
+
+
+@case("csv-to-json", "typical", "2.4: an Excel workbook: every sheet listed, one sheet or all converted")
+def _(t):
+    t.click("#btnModeToJSON")
+    t.page.evaluate(LOAD_SCRIPT, "../js/vendor/xlsx.full.min.js")
+    t.call("""() => { const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([['id', 'zip', 'name'], [1, '00123', 'Ada'], [2, '94107', 'Bob, Jr.']]), 'Customers');
+      XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([['sku', 'price'], ['A-1', 9.5]]), 'Prices');
+      handleFile(new File([XLSX.write(wb, { type: 'array', bookType: 'xlsx' })], 'book.xlsx')); }""")
+    t.wait_for("!document.getElementById('sheetWrap').hidden && document.getElementById('jsonOutput').textContent.includes('Ada')")
+    opts = t.call("[...document.getElementById('sheetSelect').options].map(o => o.textContent)")
+    expect(any("Customers" in o for o in opts) and any("Prices" in o for o in opts) and any("All sheets" in o for o in opts), f"{opts}")
+    out = json.loads(t.text("jsonOutput"))
+    eq(out[0], {"id": 1, "zip": "00123", "name": "Ada"}, "first sheet, text kept")
+    eq(out[1]["name"], "Bob, Jr.", "comma inside a cell")
+    t.select("sheetSelect", "Prices")
+    eq(json.loads(t.text("jsonOutput")), [{"sku": "A-1", "price": 9.5}], "second sheet")
+    t.select("sheetSelect", "*")
+    both = json.loads(t.text("jsonOutput"))
+    eq(list(both.keys()), ["Customers", "Prices"], "all sheets, keyed by name")
+    eq(both["Prices"], [{"sku": "A-1", "price": 9.5}], "all sheets: Prices")
+    t.click("#btnModeToCSV"); t.click("#btnModeToJSON")
+    expect(t.call("document.getElementById('sheetWrap').hidden"), "sheet picker stays after leaving the workbook")
+
+
+@case("csv-to-json", "typical", "2.4: .xlsx out keeps text as text and numbers as numbers, and never writes a formula")
+def _(t):
+    t.click("#btnModeToCSV")
+    t.set("csvInput", '[{"zip":"00123","n":42,"big":12345678901234567890,"f":"=1+1","ok":true,"user":{"name":"Ada"}}]')
+    t.click("#btnConvert")
+    with t.page.expect_download() as dl:
+        t.click("#btnXlsx")
+    expect(dl.value.suggested_filename.endswith(".xlsx"), dl.value.suggested_filename)
+    b64 = base64.b64encode(open(dl.value.path(), "rb").read()).decode()
+    t.page.evaluate(LOAD_SCRIPT, "../js/vendor/xlsx.full.min.js")
+    res = t.call("""() => { const wb = XLSX.read(Uint8Array.from(atob('%s'), c => c.charCodeAt(0)), { type: 'array' });
+      const ws = wb.Sheets[wb.SheetNames[0]];
+      return ['A1', 'A2', 'B2', 'C2', 'D2', 'E2', 'F1', 'F2'].map(a => ws[a] ? [ws[a].t, String(ws[a].v), ws[a].f || ''] : null); }""" % b64)
+    eq(res, [["s", "zip", ""], ["s", "00123", ""], ["n", "42", ""], ["s", "12345678901234567890", ""], ["s", "=1+1", ""], ["b", "true", ""], ["s", "user.name", ""], ["s", "Ada", ""]], "cells")
+    t.click("#btnModeToJSON")
+
+
+@case("csv-to-json", "typical", "2.4: the table preview is editable and edits go back into the input")
+def _(t):
+    t.click("#btnModeToJSON")
+    t.set("csvInput", "id,name\n1,Ada\n2,Bob")
+    t.click("#btnConvert")
+    expect(t.visible("#gridSection"), "no table preview")
+    t.page.dblclick("#grid .lb-vrow[data-row='1'] .lb-vcell[data-col='1']")
+    t.page.fill("#grid input.lb-vedit", 'Bob "the builder", Jr.')
+    t.page.press("#grid input.lb-vedit", "Enter")
+    t.wait(150)
+    expect(t.text("jsonOutput").strip().startswith("["), "output after the edit: " + t.text("jsonOutput")[:100] + " ; " + t.text("errorText") + " | input: " + t.val("csvInput")[:200])
+    eq(json.loads(t.text("jsonOutput"))[1]["name"], 'Bob "the builder", Jr.', "edited output")
+    eq(t.val("csvInput").splitlines()[2], '2,"Bob ""the builder"", Jr."', "edited input, quoted")
+    t.page.dblclick("#grid .lb-vrow[data-row='0'] .lb-vcell[data-col='0']")
+    t.page.press("#grid input.lb-vedit", "Escape")
+    expect(t.text("jsonOutput").strip().startswith("["), "output after Escape: " + t.text("jsonOutput")[:100] + t.text("errorText"))
+    eq(json.loads(t.text("jsonOutput"))[0]["id"], 1, "Escape leaves the cell as it was")
+    t.click("#btnModeToCSV")
+    t.set("csvInput", '[{"id":7,"user":{"name":"Ada"}}]')
+    t.click("#btnConvert")
+    t.page.dblclick("#grid .lb-vrow[data-row='0'] .lb-vcell[data-col='1']")
+    t.page.fill("#grid input.lb-vedit", "Grace"); t.page.press("#grid input.lb-vedit", "Enter"); t.wait(150)
+    expect(t.val("csvInput").strip().startswith("["), "JSON input after the edit: " + t.val("csvInput")[:120] + " ; output: " + t.text("jsonOutput") + " | " + t.text("errorText"))
+    eq(json.loads(t.val("csvInput")), [{"id": 7, "user": {"name": "Grace"}}], "nested value edited in the JSON input")
+    t.click("#btnModeToJSON")
+
+
+@case("csv-to-json", "edge", "2.4: streaming in a Worker gives exactly the in-memory result, for messy CSV and for JSON Lines")
+def _(t):
+    t.click("#btnModeToJSON")
+    # (a text box turns CRLF inside a value into LF; the stream keeps the bytes)
+    messy = '\ufeffid;name;note\r\n1;"Smith; Jane";"multi\nline"\r\n2;5" screen;\r\n\r\n3;"say ""hi""";00123\r\n4;x\r\n'
+    t.set("csvInput", messy); t.click("#btnConvert")
+    want = t.call("finalOutputString")
+    t.call("window.csvStreamMin = 0")
+    t.page.evaluate("text => handleFile(new File([text], 'messy.csv'))", messy)
+    t.wait_for("window.csvBig && window.csvBig.done", 10000)
+    got = t.call("window.csvBig.text")
+    eq(got, want, "stream result equals the in-memory conversion")
+    expect("line 7" in t.text("csvIssues").lower(), "short row not reported by the stream: " + t.text("csvIssues"))
+    t.click("#btnModeToCSV")
+    t.page.evaluate("text => handleFile(new File([text], 'r.jsonl'))", '{"a":1,"b":{"c":12345678901234567890}}\n{"a":2,"d":"=x"}\n')
+    t.wait_for("window.csvBig && window.csvBig.done", 10000)
+    eq(t.call("window.csvBig.text").strip().splitlines(), ["a,b.c,d", "1,12345678901234567890,", "2,,'=x"], "JSON Lines streamed to CSV")
+    t.call("window.csvStreamMin = undefined")
+    t.click("#btnModeToJSON")
+
+
+@case("csv-to-json", "maximal", "2.4: a 40 MB CSV streams through a Worker with progress and a preview; Save holds every record")
+def _(t):
+    t.click("#btnModeToJSON")
+    t.call("""() => { const row = i => i + ',name ' + i + ',"note, with a comma and some more text here",' + (i % 2 ? 'true' : 'false') + '\\n';
+      const parts = ['id,name,note,flag\\n']; for (let i = 0; i < 600000; i++) parts.push(row(i));
+      window.__big = new File(parts, 'big.csv'); handleFile(window.__big); }""")
+    t.wait_for("window.csvBig && window.csvBig.done", 60000)
+    expect(t.call("window.__big.size") > 30e6, "file not large enough")
+    eq(t.call("window.csvBig.records"), 600000, "records")
+    expect(t.call("window.csvBig.progress") >= 10, "progress reported %s times" % t.call("window.csvBig.progress"))
+    expect("600,000" in t.text("bigNote"), "summary: " + t.text("bigNote"))
+    expect('"name 0"' in t.text("jsonOutput") and '"name 599999"' not in t.text("jsonOutput"), "preview should show the first records only")
+    expect(t.call("window.csvBig.blob.size") > 40e6, "saved output too small")
+    tail = t.call("() => window.csvBig.blob.slice(window.csvBig.blob.size - 200).text()")
+    expect('"name 599999"' in tail and tail.rstrip().endswith("]"), tail)
+    expect(t.call("document.getElementById('csvInput').value.length") == 0, "the big file was put into the text box")
+    t.click("#btnModeToCSV"); t.click("#btnModeToJSON")
+
+
 # ----------------------------------------------------------------------------
 # yaml-json-converter
 # ----------------------------------------------------------------------------
@@ -990,6 +1163,55 @@ def _(t):
     expect("2 documents" in t.text("yamlNote"), "no note about the documents: " + t.text("yamlNote"))
     t.set("yamlInput", "---\na: 1\n---\n")
     eq(json.loads(t.val("jsonInput")), [{"a": 1}, None], "empty document kept as null")
+
+
+@case("yaml-json-converter", "typical", "2.6: YAML 1.1 vs 1.2: the Norway problem is flagged by line, and the switch changes the result")
+def _(t):
+    t.set("yamlInput", "country: no\nport: 0777\nok: yes\nname: Ada\n")
+    t.wait_for("document.getElementById('yamlLint').textContent.includes('line 1')", 8000)
+    lint = t.text("yamlLint")
+    expect("line 1" in lint and "line 2" in lint and "line 3" in lint and "line 4" not in lint, lint)
+    eq(json.loads(t.val("jsonInput")), {"country": "no", "port": 777, "ok": "yes", "name": "Ada"}, "YAML 1.2 (default)")
+    t.select("yamlVersion", "1.1")
+    t.wait_for("JSON.parse(document.getElementById('jsonInput').value).country === false", 8000)
+    eq(json.loads(t.val("jsonInput")), {"country": False, "port": 511, "ok": True, "name": "Ada"}, "YAML 1.1")
+    t.select("yamlVersion", "1.2")
+
+
+@case("yaml-json-converter", "typical", "2.6: Format re-indents and keeps comments")
+def _(t):
+    t.set("yamlInput", "# service config\nserver:\n      port: 8080   # the port\n      hosts:\n        - a\n        - b\n")
+    t.click("#btnYamlFormat")
+    t.wait_for("document.getElementById('yamlInput').value.includes('\\n  port: 8080')", 8000)
+    y = t.val("yamlInput")
+    expect("# service config" in y and "# the port" in y, y)
+    expect("\n  port: 8080" in y and "\n    - a" in y, "not re-indented to 2 spaces: " + y)
+
+
+@case("yaml-json-converter", "edge", "2.6: lint reports duplicate keys and tab indentation with their lines")
+def _(t):
+    t.set("yamlInput", "name: a\nport: 1\nname: b\n")
+    t.wait_for("/duplicate/i.test(document.getElementById('yamlLint').textContent)", 8000)
+    expect("line 3" in t.text("yamlLint"), t.text("yamlLint"))
+    t.set("yamlInput", "server:\n\tport: 1\n")
+    t.wait_for("/tab/i.test(document.getElementById('yamlLint').textContent)", 8000)
+    expect("line 2" in t.text("yamlLint"), t.text("yamlLint"))
+
+
+@case("yaml-json-converter", "typical", "2.6: Kubernetes, Compose and GitHub Actions schemas from vendored copies")
+def _(t):
+    t.set("yamlInput", "apiVersion: apps/v1\nkind: Deployment\nmetadata:\n  name: web\nspec:\n  replicas: \"3\"\n  selector:\n    matchLabels: {app: web}\n  template:\n    metadata: {labels: {app: web}}\n    spec:\n      containers:\n        - name: web\n          image: nginx\n          ports:\n            - containerPort: 80\n")
+    t.select("yamlSchema", "auto")
+    t.wait_for("/replicas/.test(document.getElementById('yamlSchemaResult').textContent)", 15000)
+    r = t.text("yamlSchemaResult")
+    expect("Deployment" in r and "/spec/replicas" in r and "integer" in r, r)
+    t.set("yamlInput", "services:\n  web:\n    image: nginx\n    ports: 80\n")
+    t.wait_for("/Compose/.test(document.getElementById('yamlSchemaResult').textContent) && /ports/.test(document.getElementById('yamlSchemaResult').textContent)", 15000)
+    t.set("yamlInput", "on: push\njobs:\n  build:\n    steps:\n      - run: make\n")
+    t.wait_for("/Actions/.test(document.getElementById('yamlSchemaResult').textContent) && /runs-on/.test(document.getElementById('yamlSchemaResult').textContent)", 15000)
+    t.set("yamlInput", "on: push\njobs:\n  build:\n    runs-on: ubuntu-latest\n    steps:\n      - run: make\n")
+    t.wait_for("/Valid/.test(document.getElementById('yamlSchemaResult').textContent)", 15000)
+    t.select("yamlSchema", "none")
 
 
 @case("yaml-json-converter", "edge", "B4: documents switch: array <-> --- documents, or the first document only")
@@ -1488,6 +1710,107 @@ def _(t):
     eq(col, ["100", "10", "9"], "numeric descending")
 
 
+@case("json-to-table", "maximal", "2.3: 100,000 rows render virtually, scroll to the end, and filter")
+def _(t):
+    t.set("jsonInput", json.dumps([{"id": i, "name": f"row{i}", "grp": f"g{i % 7}"} for i in range(100000)]))
+    t.call("processJSON()")
+    n = t.count("#tableBody tr")
+    expect(0 < n < 200, f"{n} rows in the DOM")
+    eq(t.text("rowCount"), "100,000 Rows", "row count")
+    t.call("() => { const c = document.querySelector('.table-container'); c.scrollTop = c.scrollHeight; }")
+    t.wait(200)
+    expect("row99999" in t.text("tableBody"), "last row not reachable")
+    t.set("searchInput", "row77777", event="keyup"); t.wait(150)
+    eq(t.text("rowCount"), "1 Row", "global filter")
+
+
+@case("json-to-table", "typical", "2.3: per-column filters with numbers and text, combined with the search")
+def _(t):
+    t.set("jsonInput", '[{"n":5,"s":"apple"},{"n":12,"s":"banana"},{"n":30,"s":"cherry"},{"n":12345678901234567890,"s":"date"},{"n":null,"s":""}]')
+    t.call("processJSON()")
+    t.set("filter-n", ">10", event="input"); t.wait(100)
+    eq(t.text("rowCount"), "3 Rows", "n > 10")
+    t.set("filter-s", "!an", event="input"); t.wait(100)
+    eq(t.text("rowCount"), "2 Rows", "and s does not contain 'an'")
+    t.set("filter-n", ">12345678901234567889", event="input"); t.wait(100)
+    eq(t.text("rowCount"), "1 Row", "big numbers by value")
+    t.set("filter-n", "", event="input"); t.set("filter-s", "empty", event="input"); t.wait(100)
+    eq(t.text("rowCount"), "1 Row", "empty")
+    t.set("filter-s", "", event="input"); t.wait(100)
+    eq(t.text("rowCount"), "5 Rows", "cleared")
+
+
+@case("json-to-table", "typical", "2.3: hide, reorder and resize columns")
+def _(t):
+    t.set("jsonInput", '[{"a":1,"b":2,"c":3}]')
+    t.call("processJSON()")
+    t.click("#btnColumns")
+    t.page.uncheck("#colInc-b")
+    eq(t.call("[...document.querySelectorAll('#tableHead th[data-col]')].map(th => th.dataset.col)"), ["a", "c"], "b hidden")
+    t.click("#colDown-a")
+    eq(t.call("[...document.querySelectorAll('#tableHead th[data-col]')].map(th => th.dataset.col)"), ["c", "a"], "a moved right")
+    eq(t.call("[...document.querySelectorAll('#tableBody tr:first-child td')].map(td => td.textContent)"), ["3", "1"], "cells follow")
+    w0 = t.call("document.querySelector(\"th[data-col='a']\").getBoundingClientRect().width")
+    box = t.page.locator("th[data-col='a'] .col-resize").bounding_box()
+    t.page.mouse.move(box["x"] + 2, box["y"] + 5); t.page.mouse.down(); t.page.mouse.move(box["x"] + 122, box["y"] + 5, steps=4); t.page.mouse.up()
+    w1 = t.call("document.querySelector(\"th[data-col='a']\").getBoundingClientRect().width")
+    expect(w1 > w0 + 60, f"column not resized: {w0} -> {w1}")
+    t.page.check("#colInc-b")
+
+
+@case("json-to-table", "typical", "2.3: group by a column with count, sum, average, min and max")
+def _(t):
+    t.set("jsonInput", '[{"cat":"tools","price":10},{"cat":"books","price":5},{"cat":"tools","price":2.5},{"cat":"books","price":"n/a"}]')
+    t.call("processJSON()")
+    t.select("groupBy", "cat"); t.select("aggCol", "price")
+    heads = t.call("[...document.querySelectorAll('#tableHead th')].map(th => th.textContent.trim())")
+    eq(heads, ["cat", "count", "sum of price", "average", "min", "max"], "group header")
+    rows = t.call("[...document.querySelectorAll('#tableBody tr')].map(tr => [...tr.children].map(td => td.textContent))")
+    eq(rows, [["tools", "2", "12.5", "6.25", "2.5", "10"], ["books", "2", "5", "5", "5", "5"]], "groups")
+    with t.page.expect_download() as dl:
+        t.click("#btnExport")
+    csv = open(dl.value.path(), encoding="utf-8").read()
+    expect(csv.splitlines()[0] == "cat,count,sum of price,average,min,max" and "tools,2,12.5,6.25,2.5,10" in csv, csv)
+    t.select("groupBy", "")
+    eq(t.text("rowCount"), "4 Rows", "back to rows")
+
+
+@case("json-to-table", "typical", "2.3: edit a cell, keep its type, and export the edited JSON")
+def _(t):
+    t.set("jsonInput", '{"header":{"src":"api"},"body":[{"id":1,"user":{"name":"Ann"},"ok":true},{"id":2,"user":{"name":"Bob"},"ok":false}]}')
+    t.call("processJSON()")
+    t.page.dblclick("#tableBody tr:nth-child(2) td[data-col='user.name']")
+    t.page.fill("#tableBody input.cell-edit", "Grace"); t.page.press("#tableBody input.cell-edit", "Enter"); t.wait(100)
+    t.page.dblclick("#tableBody tr:nth-child(1) td[data-col='id']")
+    t.page.fill("#tableBody input.cell-edit", "12345678901234567890"); t.page.press("#tableBody input.cell-edit", "Enter"); t.wait(100)
+    t.page.dblclick("#tableBody tr:nth-child(1) td[data-col='ok']")
+    t.page.fill("#tableBody input.cell-edit", "false"); t.page.press("#tableBody input.cell-edit", "Enter"); t.wait(100)
+    expect("Grace" in t.text("tableBody"), "grid not updated")
+    with t.page.expect_download() as dl:
+        t.click("#btnExportJson")
+    raw = open(dl.value.path(), encoding="utf-8").read()
+    doc = json.loads(raw)
+    eq(doc["header"], {"src": "api"}, "shape kept")
+    eq(doc["body"][1]["user"]["name"], "Grace", "nested edit")
+    eq(doc["body"][0]["ok"], False, "boolean stays boolean")
+    expect('"id": 12345678901234567890' in raw, "number stays an exact number: " + raw[:120])
+    expect("Grace" in t.val("jsonInput"), "edit not written into the input")
+
+
+@case("json-to-table", "typical", "2.3: .xlsx export with typed cells")
+def _(t):
+    t.set("jsonInput", '[{"zip":"00123","n":42,"big":12345678901234567890,"f":"=1+1","ok":true}]')
+    t.call("processJSON()")
+    with t.page.expect_download() as dl:
+        t.click("#btnXlsx")
+    expect(dl.value.suggested_filename.endswith(".xlsx"), dl.value.suggested_filename)
+    b64 = base64.b64encode(open(dl.value.path(), "rb").read()).decode()
+    t.page.evaluate(LOAD_SCRIPT, "../js/vendor/xlsx.full.min.js")
+    res = t.call("""() => { const wb = XLSX.read(Uint8Array.from(atob('%s'), c => c.charCodeAt(0)), { type: 'array' }); const ws = wb.Sheets[wb.SheetNames[0]];
+      return ['A2', 'B2', 'C2', 'D2', 'E2'].map(a => [ws[a].t, String(ws[a].v), ws[a].f || '']); }""" % b64)
+    eq(res, [["s", "00123", ""], ["n", "42", ""], ["s", "12345678901234567890", ""], ["s", "=1+1", ""], ["b", "true", ""]], "typed cells")
+
+
 # ----------------------------------------------------------------------------
 # html-escape-unescape
 # ----------------------------------------------------------------------------
@@ -1874,6 +2197,102 @@ def _(t):
     expect("hello.txt" in t.text("inputMeta"), "file name not shown")
 
 
+@case("hash-generator", "typical", "2.10: SHA-3, BLAKE2, BLAKE3, RIPEMD-160, xxHash, XXH3 and CRC32/CRC32C known vectors")
+def _(t):
+    t.set("textInput", "abc")
+    want = {"SHA3-256": "3a985da74fe225b2045c172d6bd390bd855f086e3e9d525b46bfe24511431532",
+            "BLAKE2b-512": "ba80a53f981c4d0d6a2797b69f12f6e94c212f14685ac4b74b12bb6fdbffa2d17d87c5392aab792dc252d5de4533cc9518d38aa8dbf1925ab92386edd4009923",
+            "BLAKE2s-256": "508c5e8c327c14e2e1a72ba34eeb452f37458b209ed63a294d999b4c86675982",
+            "BLAKE3": "6437b3ac38465133ffb63b75273a8db548c558465d79db03fd359c6cd5bd9d85",
+            "RIPEMD-160": "8eb208f7e05d987a9b044a8e98c6b087f15a0bfc", "XXH64": "44bc2cf5ad770999", "XXH3": "78af5f94892f3950",
+            "XXH128": "06b05ab6733a618578af5f94892f3950", "CRC32": "352441c2", "CRC32C": "364b3fb7"}
+    t.wait_for("() => document.getElementById('d-BLAKE3').textContent === '6437b3ac38465133ffb63b75273a8db548c558465d79db03fd359c6cd5bd9d85'", 10000)
+    for alg, d in want.items():
+        eq(t.text("d-" + alg), d, alg)
+    t.set("expectInput", "364B3FB7")
+    expect("Match" in t.text("verifyResult") and "CRC32C" in t.text("verifyResult"), t.text("verifyResult"))
+    t.set("expectInput", "")
+
+
+@case("hash-generator", "typical", "2.10: HMAC for SHA-3 and the other cryptographic hashes; checksums have no keyed form")
+def _(t):
+    t.set("textInput", "abc"); t.set("hmacKey", "key")
+    t.wait_for("() => document.getElementById('d-SHA3-256').textContent === '%s'" % __import__("hmac").new(b"key", b"abc", __import__("hashlib").sha3_256).hexdigest(), 10000)
+    expect(t.text("d-CRC32").strip() in ("—", "-", "n/a"), "a checksum shown with a key: " + t.text("d-CRC32"))
+    t.set("hmacKey", "")
+
+
+@case("hash-generator", "maximal", "2.10: a 64 MB file is hashed by streaming through a Worker, every algorithm in one pass")
+def _(t):
+    import hashlib
+    t.call("""() => { const chunk = new Uint8Array(1 << 20); for (let i = 0; i < chunk.length; i++) chunk[i] = (i * 31 + 7) & 255;
+      window.__hf = new File(Array(64).fill(chunk), 'big.bin'); loadFile(window.__hf); }""")
+    chunk = bytes(((i * 31 + 7) & 255) for i in range(1 << 20))
+    want = hashlib.sha256(chunk * 64).hexdigest()
+    t.wait_for("() => document.getElementById('d-SHA-256').textContent === '%s'" % want, 30000)
+    t.wait_for("() => document.getElementById('d-XXH3').textContent.length === 16", 30000)
+    eq(t.text("d-SHA3-256"), hashlib.sha3_256(chunk * 64).hexdigest(), "SHA3-256 of the file")
+    expect("big.bin" in t.text("inputMeta"), t.text("inputMeta"))
+    t.click("#btnClear")
+
+
+def _hash_files(spec):
+    return [{"name": n, "mimeType": "application/octet-stream", "buffer": c.encode() if isinstance(c, str) else c} for n, c in spec]
+
+
+@case("hash-generator", "edge", "2.10: the report buttons appear only after a run (the audit found them clickable before)")
+def _(t):
+    t.click("[data-ftab='batch']")
+    expect(not t.visible("#btnBatchCsv"), "report buttons shown before any files were hashed")
+
+
+@case("hash-generator", "typical", "2.10: many files at once, with CSV and HTML reports and a checksum file")
+def _(t):
+    import hashlib
+    t.click("[data-ftab='batch']")
+    t.page.set_input_files("#batchFiles", _hash_files([("a.txt", "alpha"), ("b.txt", "beta"), ("=evil.csv", "z")]))
+    t.select("batchAlg", "SHA-256")
+    t.click("#btnBatchRun")
+    t.wait_for("document.querySelectorAll('#batchResult tbody tr').length === 3", 15000)
+    expect(hashlib.sha256(b"alpha").hexdigest() in t.text("batchResult"), t.text("batchResult"))
+    with t.page.expect_download() as dl:
+        t.click("#btnBatchSums")
+    sums = open(dl.value.path(), encoding="utf-8").read()
+    expect(hashlib.sha256(b"beta").hexdigest() + "  b.txt" in sums, sums)
+    expect(dl.value.suggested_filename.upper().startswith("SHA256SUMS"), dl.value.suggested_filename)
+    with t.page.expect_download() as dl:
+        t.click("#btnBatchCsv")
+    csv = open(dl.value.path(), encoding="utf-8").read()
+    expect("a.txt,5," + hashlib.sha256(b"alpha").hexdigest() in csv, csv)
+    expect("'=evil.csv" in csv, "a file name a spreadsheet would run as a formula is not guarded: " + csv)
+
+
+@case("hash-generator", "typical", "2.10: compare two sets of files by content")
+def _(t):
+    t.click("[data-ftab='compare']")
+    t.page.set_input_files("#cmpFilesA", _hash_files([("a.txt", "same"), ("b.txt", "old"), ("only-a.txt", "x")]))
+    t.page.set_input_files("#cmpFilesB", _hash_files([("a.txt", "same"), ("b.txt", "new"), ("only-b.txt", "y")]))
+    t.click("#btnCompareRun")
+    t.wait_for("document.querySelectorAll('#cmpResult tbody tr').length === 4", 15000)
+    rows = t.call("[...document.querySelectorAll('#cmpResult tbody tr')].map(tr => tr.children[0].textContent + ' ' + tr.children[1].textContent)")
+    eq(rows, ["a.txt identical", "b.txt different", "only-a.txt only in A", "only-b.txt only in B"], "compare rows")
+    expect("1 identical" in t.text("cmpResult") and "1 different" in t.text("cmpResult"), t.text("cmpResult"))
+
+
+@case("hash-generator", "typical", "2.10: check files against a SHA256SUMS list")
+def _(t):
+    import hashlib
+    t.click("[data-ftab='verify']")
+    sums = hashlib.sha256(b"good").hexdigest() + "  dist/good.bin\n" + hashlib.sha256(b"other").hexdigest() + " *bad.bin\n" + "SHA256 (gone.bin) = " + "0" * 64 + "\n"
+    t.page.set_input_files("#sumsFile", _hash_files([("SHA256SUMS", sums)]))
+    t.page.set_input_files("#sumsFiles", _hash_files([("good.bin", "good"), ("bad.bin", "tampered")]))
+    t.click("#btnSumsRun")
+    t.wait_for("document.querySelectorAll('#sumsResult tbody tr').length === 3", 15000)
+    rows = t.call("[...document.querySelectorAll('#sumsResult tbody tr')].map(tr => tr.children[0].textContent + ' ' + tr.children[1].textContent)")
+    eq(rows, ["dist/good.bin OK", "bad.bin FAILED", "gone.bin MISSING"], "check rows")
+    expect("1 OK" in t.text("sumsResult") and "1 FAILED" in t.text("sumsResult") and "1 missing" in t.text("sumsResult"), t.text("sumsResult"))
+
+
 @case("hash-generator", "maximal", "8 MB input hashes under budget")
 def _(t):
     t.set("textInput", "x" * 8_000_000)
@@ -2081,6 +2500,103 @@ def _(t):
     t.wait_for("() => document.getElementById('statsStrip').innerText.includes('15,001')", 10000)
     t.set("xpathInput", "count(//item[qty > 5])")
     expect("number: 714" in t.text("xpathHint"), t.text("xpathHint"))
+
+
+XML_ORDER = '<?xml version="1.0"?>\n<order id="7">\n  <qty>0</qty>\n  <sku>A</sku>\n</order>'
+XSD_ORDER = '<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"><xs:element name="order"><xs:complexType><xs:sequence><xs:element name="qty" type="xs:positiveInteger"/><xs:element name="sku" type="xs:string"/></xs:sequence><xs:attribute name="id" type="xs:int" use="required"/></xs:complexType></xs:element></xs:schema>'
+
+
+@case("xml-formatter", "typical", "2.5: XSD validation with libxml2 in WebAssembly lists each error with its line")
+def _(t):
+    t.set("xmlInput", XML_ORDER); t.wait(150)
+    t.select("schemaKind", "xsd"); t.set("schemaInput", XSD_ORDER)
+    t.click("#btnValidate")
+    t.wait_for("document.getElementById('validateResult').textContent.length > 0 && !/Validating/.test(document.getElementById('validateResult').textContent)", 20000)
+    r = t.text("validateResult")
+    expect("line 3" in r.lower() and "positiveInteger" in r, r)
+    t.set("xmlInput", XML_ORDER.replace("<qty>0</qty>", "<qty>2</qty>")); t.wait(150)
+    t.click("#btnValidate")
+    t.wait_for("/Valid/.test(document.getElementById('validateResult').textContent) && !/error/i.test(document.getElementById('validateResult').textContent)", 20000)
+
+
+@case("xml-formatter", "typical", "2.5: RelaxNG validation")
+def _(t):
+    t.set("xmlInput", XML_ORDER); t.wait(150)
+    t.select("schemaKind", "rng")
+    t.set("schemaInput", '<element name="order" xmlns="http://relaxng.org/ns/structure/1.0"><attribute name="id"/><element name="qty"><text/></element><element name="sku"><text/></element><element name="note"><text/></element></element>')
+    t.click("#btnValidate")
+    t.wait_for("document.getElementById('validateResult').textContent.length > 0 && !/Validating/.test(document.getElementById('validateResult').textContent)", 20000)
+    expect("note" in t.text("validateResult") or "line" in t.text("validateResult").lower(), t.text("validateResult"))
+
+
+@case("xml-formatter", "typical", "2.5: DTD validation from the internal subset or a pasted DTD")
+def _(t):
+    t.set("xmlInput", '<!DOCTYPE order [\n<!ELEMENT order (sku, qty)>\n<!ATTLIST order id ID #REQUIRED>\n<!ELEMENT qty (#PCDATA)>\n<!ELEMENT sku (#PCDATA)>\n]>\n<order>\n  <qty>1</qty>\n  <sku>A</sku>\n</order>'); t.wait(150)
+    t.select("schemaKind", "dtd"); t.set("schemaInput", "")
+    t.click("#btnValidate"); t.wait(300)
+    r = t.text("validateResult")
+    expect("required attribute id" in r and "content of <order>" in r and "line 7" in r.lower(), r)
+
+
+@case("xml-formatter", "typical", "2.5: Schematron asserts and reports name the node")
+def _(t):
+    t.set("xmlInput", XML_ORDER); t.wait(150)
+    t.select("schemaKind", "sch")
+    t.set("schemaInput", '<schema xmlns="http://purl.oclc.org/dsdl/schematron"><pattern><rule context="order"><assert test="number(qty) &gt; 0">qty must be positive, got <value-of select="qty"/></assert><report test="sku = \'A\'">sku A is discontinued</report></rule></pattern></schema>')
+    t.click("#btnValidate"); t.wait(300)
+    r = t.text("validateResult")
+    expect("qty must be positive, got 0" in r and "sku A is discontinued" in r and "/order" in r, r)
+
+
+@case("xml-formatter", "typical", "2.5: XSLT 1.0 and XQuery 3.1 transforms")
+def _(t):
+    t.set("xmlInput", '<list><i n="2">b</i><i n="1">a</i></list>'); t.wait(150)
+    t.click("[data-xtab='transform']")
+    t.select("xfKind", "xslt")
+    t.set("xfInput", '<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform"><xsl:output method="text"/><xsl:template match="/"><xsl:for-each select="list/i"><xsl:sort select="@n"/><xsl:value-of select="."/></xsl:for-each></xsl:template></xsl:stylesheet>')
+    t.click("#btnTransform"); t.wait(200)
+    eq(t.text("xfOutput").strip(), "ab", "XSLT 1.0")
+    t.select("xfKind", "xquery")
+    t.set("xfInput", 'string-join(for $i in /list/i order by xs:integer($i/@n) descending return upper-case($i), "-")')
+    t.click("#btnTransform")
+    t.wait_for("document.getElementById('xfOutput').textContent.includes('B-A')", 15000)
+    t.click("[data-xtab='validate']")
+
+
+@case("xml-formatter", "typical", "2.5: JSON -> XML mode")
+def _(t):
+    t.select("modeSelect", "fromjson")
+    t.set("xmlInput", '{"order":{"@id":"7","item":[{"sku":"A&B"},{"sku":"C"}]}}'); t.wait(200)
+    out = t.text("xmlOutput")
+    expect('<order id="7">' in out and "<sku>A&amp;B</sku>" in out and out.count("<item>") == 2, out)
+    t.select("modeSelect", "pretty")
+
+
+@case("xml-formatter", "typical", "2.5: compare two XML documents; the Diff Checker opens with both")
+def _(t):
+    t.set("xmlInput", '<order id="7"><sku>A</sku><qty>1</qty></order>'); t.wait(150)
+    t.click("[data-xtab='compare']")
+    t.set("cmpInput", '<order id="8"><sku>A</sku><qty>2</qty><note>x</note></order>')
+    t.click("#btnCompareXml"); t.wait(150)
+    r = t.text("cmpResult")
+    expect("@id" in r and "qty" in r and "note" in r and "$.order.sku" not in r, r)
+    expect("3 difference" in r, r)
+    expect("text-diff-checker.html#s=" in t.call("document.getElementById('cmpLink').href"), "no hand-off link")
+    t.click("[data-xtab='validate']")
+
+
+@case("xml-formatter", "maximal", "2.5: a 30 MB XML file is formatted in a Worker and shown virtually")
+def _(t):
+    t.call("""() => { const parts = ['<?xml version="1.0"?>\\n<rows>']; for (let i = 0; i < 250000; i++) parts.push('<row id="' + i + '"><name>user ' + i + '</name><email>u' + i + '@example.com</email><score>' + i * 2 + '</score></row>');
+      parts.push('</rows>'); window.__xf = new File(parts, 'big.xml'); handleFile(window.__xf); }""")
+    t.wait_for("window.xmlBig && window.xmlBig.done", 60000)
+    expect(t.call("window.__xf.size") > 25e6, "file not large enough")
+    expect(not t.call("window.xmlBig.error"), "error: %s" % t.call("window.xmlBig.error"))
+    n = t.count("#xmlOutput .lb-vrow")
+    expect(0 < n < 300, f"{n} rows in the DOM")
+    expect("<rows>" in t.text("xmlOutput"), t.text("xmlOutput")[:200])
+    expect(t.call("xmlInput.value.length") == 0, "the big file was put into the text box")
+    t.call("closeBigXml()")
 
 
 # ----------------------------------------------------------------------------
@@ -3823,6 +4339,174 @@ def _(t):
     t.page.keyboard.press("Control+Enter"); t.wait(300)
     eq(t.call(HIST("jwt-decoder")), 1, "Ctrl+Enter is an explicit run")
     sw.uncheck(); t.call("Layerbit.history.clear()")
+
+
+@case("json-validator", "typical", "2.2: input modes: JSON5, JSONC and JSON Lines read explicitly; YAML, TOML and XML convert in")
+def _(t):
+    t.select("inMode", "json5")
+    t.set("jsonInput", "// cfg\n{name: 'Ada', id: 0x1F, big: 12345678901234567890, inf: Infinity, list: [1, 2,],}")
+    t.click("#btnFormat")
+    out = t.text("jsonOutput")
+    eq(json.loads(out), {"name": "Ada", "id": 31, "big": 12345678901234567890, "inf": None, "list": [1, 2]}, "JSON5")
+    expect("12345678901234567890" in out, "big number rounded")
+    expect("Infinity" in t.text("noticeText"), "no note about Infinity: " + t.text("noticeText"))
+    t.select("inMode", "jsonc")
+    t.set("jsonInput", '{"a": 1, // one\n "b": [2,],}'); t.click("#btnFormat")
+    eq(json.loads(t.text("jsonOutput")), {"a": 1, "b": [2]}, "JSONC")
+    t.set("jsonInput", "{a: 1}"); t.click("#btnFormat")
+    expect("JSONC" in t.text("errorText") and "line 1" in t.text("errorText"), t.text("errorText"))
+    t.select("inMode", "jsonl")
+    t.set("jsonInput", '{"a":1}\n{"a":2}\n'); t.click("#btnFormat")
+    eq(json.loads(t.text("jsonOutput")), [{"a": 1}, {"a": 2}], "JSON Lines")
+    t.select("inMode", "yaml")
+    t.set("jsonInput", "name: Ada\ntags: [a, b]\nzip: '00123'\n"); t.click("#btnFormat")
+    eq(json.loads(t.text("jsonOutput")), {"name": "Ada", "tags": ["a", "b"], "zip": "00123"}, "YAML in")
+    t.select("inMode", "toml")
+    t.set("jsonInput", 'title = "x"\n[owner]\nname = "Ada"\n'); t.click("#btnFormat")
+    eq(json.loads(t.text("jsonOutput")), {"title": "x", "owner": {"name": "Ada"}}, "TOML in")
+    t.select("inMode", "xml")
+    t.set("jsonInput", '<a id="1"><b>x</b><b>y</b></a>'); t.click("#btnFormat")
+    eq(json.loads(t.text("jsonOutput")), {"a": {"@id": "1", "b": ["x", "y"]}}, "XML in")
+    t.select("inMode", "auto")
+
+
+@case("json-validator", "edge", "2.2 / A3: tree, JSONPath, types and conversions keep long numbers exactly")
+def _(t):
+    t.select("inMode", "auto")
+    t.set("jsonInput", '{"id": 12345678901234567890, "items": [{"n": 1e400}]}'); t.click("#btnFormat")
+    t.call("setOutputView('tree')")
+    expect("12345678901234567890" in t.text("jsonTree") and "1e400" in t.text("jsonTree"), t.text("jsonTree"))
+    t.call("setPath('$.id')")
+    expect("12345678901234567890" in t.text("pathResult"), t.text("pathResult"))
+    t.call("setOutputView('convert')"); t.select("convTarget", "ndjson")
+    expect("12345678901234567890" in t.text("convOut"), t.text("convOut"))
+    t.select("convTarget", "yaml")
+    expect("12345678901234567890" in t.text("convOut"), t.text("convOut"))
+    t.select("convTarget", "sql")
+    t.call("setOutputView('text')")
+
+
+@case("json-validator", "typical", "2.2: Transform with JMESPath, JSON Query and jq, then use the result")
+def _(t):
+    t.set("jsonInput", '{"items":[{"name":"a","price":5},{"name":"b","price":12},{"name":"c","price":30}]}'); t.click("#btnFormat")
+    t.call("setOutputView('transform')")
+    t.select("xfLang", "jmespath"); t.set("xfExpr", "items[?price > `10`].name")
+    t.wait_for("document.getElementById('xfOut').textContent.includes('\"c\"')")
+    eq(json.loads(t.text("xfOut")), ["b", "c"], "JMESPath")
+    t.select("xfLang", "jsonquery"); t.set("xfExpr", ".items | filter(.price > 10) | map(.name)")
+    t.wait_for("document.getElementById('xfOut').textContent.includes('\"c\"')")
+    eq(json.loads(t.text("xfOut")), ["b", "c"], "JSON Query")
+    t.select("xfLang", "jq"); t.set("xfExpr", "[.items[] | select(.price > 10) | .name]")
+    t.wait_for("document.getElementById('xfOut').textContent.includes('\"c\"')", 20000)
+    eq(json.loads(t.text("xfOut")), ["b", "c"], "jq")
+    t.set("xfExpr", ".items[ | bad"); t.wait_for("document.getElementById('xfErr').textContent.length > 0", 8000)
+    t.set("xfExpr", "[.items[].price] | add"); t.wait_for("document.getElementById('xfOut').textContent.trim() === '47'", 8000)
+    t.click("#btnXfUse")
+    eq(t.val("jsonInput").strip(), "47", "result used as the new input")
+    t.call("setOutputView('text')")
+
+
+@case("json-validator", "typical", "2.2: Table view of an array of objects, editable, written back into the document")
+def _(t):
+    t.set("jsonInput", '{"meta":{"n":2},"rows":[{"id":1,"user":{"name":"Ada"},"ok":true},{"id":2,"user":{"name":"Bob"},"ok":false}]}'); t.click("#btnFormat")
+    t.call("setOutputView('table')")
+    eq(t.val("tablePath"), "$.rows", "the array of objects is found")
+    heads = t.call("[...document.querySelectorAll('#tableGrid .lb-vgrid-head .lb-vcell')].map(c => c.textContent)")
+    eq(heads, ["id", "user.name", "ok"], "flattened columns")
+    t.page.dblclick("#tableGrid .lb-vrow[data-row='1'] .lb-vcell[data-col='1']")
+    t.page.fill("#tableGrid input.lb-vedit", "Grace"); t.page.press("#tableGrid input.lb-vedit", "Enter"); t.wait(150)
+    t.page.dblclick("#tableGrid .lb-vrow[data-row='0'] .lb-vcell[data-col='0']")
+    t.page.fill("#tableGrid input.lb-vedit", "12345678901234567890"); t.page.press("#tableGrid input.lb-vedit", "Enter"); t.wait(150)
+    doc = t.val("jsonInput")
+    eq(json.loads(doc)["rows"][1]["user"]["name"], "Grace", "edit written back")
+    expect('"id": 12345678901234567890' in doc, "a number typed into a number cell stays an exact number: " + doc[:200])
+    t.call("setOutputView('text')")
+
+
+@case("json-validator", "typical", "2.2: Graph view draws objects and arrays as linked nodes; a value is edited on the graph")
+def _(t):
+    t.set("jsonInput", '{"id":1,"user":{"name":"Ada","tags":["x","y"]},"items":[{"sku":"A"},{"sku":"B"}]}'); t.click("#btnFormat")
+    t.call("setOutputView('graph')")
+    eq(t.count("#graphView .g-node"), 6, "nodes")
+    eq(t.count("#graphView .g-edge"), 5, "edges")
+    t.page.dblclick("#graphView .g-field[data-path=\"$.user.name\"] .g-val")
+    t.page.fill("#graphView input.g-edit", "Grace"); t.page.press("#graphView input.g-edit", "Enter"); t.wait(200)
+    eq(json.loads(t.val("jsonInput"))["user"]["name"], "Grace", "edited on the graph")
+    eq(t.count("#graphView .g-node"), 6, "graph redrawn")
+    t.call("setOutputView('text')")
+
+
+@case("json-validator", "typical", "2.2: Compare two documents by path; the Diff Checker's structure mode opens with both")
+def _(t):
+    t.set("jsonInput", '{"id": 12345678901234567890, "name": "Ada", "gone": 1}'); t.click("#btnFormat")
+    t.call("setOutputView('compare')")
+    t.set("compareInput", '{"id": 12345678901234567891, "name": "Ada", "new": true}')
+    t.click("#btnCompare")
+    rows = t.text("compareResult")
+    expect("$.id" in rows and "$.gone" in rows and "$.new" in rows and "$.name" not in rows, rows)
+    expect("12345678901234567891" in rows, "numbers compared and shown exactly: " + rows)
+    href = t.call("document.getElementById('compareLink').href")
+    expect("text-diff-checker.html#s=" in href, href)
+    st = t.page.evaluate("h => Layerbit.state.decode(decodeURIComponent(h.split('#s=')[1]))", href)
+    eq(st["mode"], "struct", "structure mode")
+    expect("12345678901234567891" in st["b"], st["b"])
+    t.call("setOutputView('text')")
+
+
+@case("json-validator", "typical", "2.2: XML and TOML out")
+def _(t):
+    t.select("inMode", "auto")
+    t.set("jsonInput", '{"order":{"@id":"7","item":[{"sku":"A&B"},{"sku":"C"}]}}'); t.click("#btnFormat")
+    t.call("setOutputView('convert')")
+    t.select("convTarget", "xml")
+    x = t.text("convOut")
+    expect('<order id="7">' in x and "<sku>A&amp;B</sku>" in x and x.count("<item>") == 2, x)
+    t.select("convTarget", "toml")
+    t.wait_for("document.getElementById('convOut').textContent.includes('order')")
+    expect('[order]' in t.text("convOut") or '[[order.item]]' in t.text("convOut"), t.text("convOut"))
+    t.select("convTarget", "sql")
+    t.call("setOutputView('text')")
+
+
+@case("json-validator", "typical", "2.2: sample JSON generated from a schema validates; the visual schema editor writes the schema")
+def _(t):
+    t.call("setOutputView('schema')")
+    t.set("schemaInput", '{"type":"object","required":["id","email","tags"],"properties":{"id":{"type":"integer","minimum":1},"email":{"type":"string","format":"email"},"tags":{"type":"array","items":{"type":"string"},"minItems":2},"status":{"enum":["new","done"]}}}')
+    t.click("#btnSample")
+    doc = json.loads(t.val("jsonInput"))
+    expect(doc["id"] >= 1 and "@" in doc["email"] and len(doc["tags"]) == 2 and doc["status"] == "new", f"{doc}")
+    t.click("#btnValidate")
+    expect("Valid" in t.text("schemaResult"), t.text("schemaResult"))
+    t.click("#btnSchemaVisual")
+    expect(t.visible("#schemaVisual"), "visual editor not shown")
+    t.page.select_option("#schemaVisual [data-se-path='properties.email'] select.se-type", "integer")
+    eq(json.loads(t.val("schemaInput"))["properties"]["email"]["type"], "integer", "type changed in the schema")
+    t.page.uncheck("#schemaVisual [data-se-path='properties.tags'] input.se-req")
+    expect("tags" not in json.loads(t.val("schemaInput"))["required"], "required not updated")
+    t.click("#schemaVisual [data-se-path=''] .se-add")
+    props = json.loads(t.val("schemaInput"))["properties"]
+    expect(len(props) == 5, f"property not added: {list(props)}")
+    t.call("setOutputView('text')")
+
+
+@case("json-validator", "maximal", "2.2: a 60 MB file is read in a Worker; text and tree are virtual")
+def _(t):
+    t.call("""() => { const parts = ['{"meta":{"note":"big"},"rows":[']; for (let i = 0; i < 500000; i++) parts.push((i ? ',' : '') + '{"id":' + i + ',"name":"user ' + i + '","email":"u' + i + '@example.com","score":' + (i * 1.5) + ',"tags":["a","b"],"big":1234567890123456789' + (i % 10) + '}');
+      parts.push(']}'); window.__jf = new File(parts, 'big.json'); handleFile(window.__jf); }""")
+    t.wait_for("window.jsonBig && window.jsonBig.done", 60000)
+    expect(t.call("window.__jf.size") > 50e6, "file not large enough: %s" % t.call("window.__jf.size"))
+    expect(not t.call("window.jsonBig.error"), "worker error: %s" % t.call("window.jsonBig.error"))
+    expect("500,000" in t.text("jsonStats"), t.text("jsonStats"))
+    expect(t.count("#jsonOutput .lb-vrow") < 300, "text view not virtual")
+    t.call("setOutputView('tree')")
+    expect(0 < t.count("#jsonTree .lb-vrow") < 300, "tree not virtual: %s" % t.count("#jsonTree .lb-vrow"))
+    t.click("#jsonTree .lb-vrow[data-tree-path='$.rows'] .vt-caret")
+    t.wait(200)
+    expect("user 0" in t.text("jsonTree") or '"id"' in t.text("jsonTree") or "[0]" in t.text("jsonTree"), t.text("jsonTree")[:300])
+    t.call("setPath('$.rows[499999].big')")
+    expect("12345678901234567899" in t.text("pathResult"), t.text("pathResult"))
+    t.call("closeBig()")
+    t.call("setOutputView('text')")
 
 
 @case("json-validator", "edge", "A1: typing never saves; with the switch on, Beautify saves once")

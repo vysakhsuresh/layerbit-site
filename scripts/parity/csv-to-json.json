@@ -1,0 +1,109 @@
+{
+  "tool": "csv-to-json",
+  "page": "tools/csv-to-json.html",
+  "competitors": [
+    {
+      "name": "Modern CSV",
+      "price": "free version; Premium licences listed at $39 Personal / $59 Business",
+      "source": "vendor's pricing page",
+      "checked": "2026-11"
+    },
+    {
+      "name": "ConvertCSV",
+      "price": "free, web",
+      "checked": "2026-11"
+    },
+    {
+      "name": "Tablecruncher",
+      "price": "free / paid desktop editions",
+      "checked": "2026-11"
+    }
+  ],
+  "claims": [
+    {
+      "feature": "Correct CSV parsing: quotes, embedded newlines, stray quotes, BOM, delimiter detection, wrong row lengths reported",
+      "competitor": "Modern CSV",
+      "tests": [
+        "ui:csv-to-json:A2: a stray quote inside a field is a literal character, not the start of a quoted block",
+        "ui:csv-to-json:quoted commas, escaped quotes, embedded newlines, CRLF",
+        "ui:csv-to-json:A2: duplicate headers stay separate columns, single-column blanks are kept, short rows are reported",
+        "ui:csv-to-json:semicolon delimiter is auto-detected; tab can be forced",
+        "unit:csv:A2: a quote that does not start a field is a literal character (Excel behaviour)"
+      ]
+    },
+    {
+      "feature": "Type inference that never changes a value (leading zeros, + signs, long numbers), with per-column types",
+      "competitor": "ConvertCSV",
+      "tests": [
+        "ui:csv-to-json:A3: Smart Types never change a value: leading zeros, + signs and long numbers stay text; a column can be forced to text",
+        "unit:tabular:records: types per column, never changing a value; nesting; plan"
+      ]
+    },
+    {
+      "feature": "Every sheet of an Excel workbook in",
+      "competitor": "Modern CSV Premium",
+      "tests": [
+        "ui:csv-to-json:2.4: an Excel workbook: every sheet listed, one sheet or all converted"
+      ]
+    },
+    {
+      "feature": ".xlsx out with typed cells and no formulas",
+      "competitor": "Modern CSV Premium",
+      "tests": [
+        "ui:csv-to-json:2.4: .xlsx out keeps text as text and numbers as numbers, and never writes a formula"
+      ]
+    },
+    {
+      "feature": "JSON Lines in and out",
+      "competitor": "ConvertCSV",
+      "tests": [
+        "ui:csv-to-json:2.4: JSON Lines out, and JSON Lines in for JSON -> CSV",
+        "unit:tabular:JSON Lines: blank lines skipped, errors carry their line, numbers stay exact",
+        "unit:tabular:detectJSON: an array, an object, JSON Lines, and broken JSON stays JSON (for its error)"
+      ]
+    },
+    {
+      "feature": "Nested JSON from dotted headers, and flattening back",
+      "competitor": "ConvertCSV",
+      "tests": [
+        "ui:csv-to-json:2.4: dotted headers nest into objects and arrays, and flatten back",
+        "unit:tabular:nest: dotted headers become nested objects, numeric parts become arrays",
+        "unit:tabular:nest: a key that is both a value and a parent is reported and kept flat",
+        "unit:tabular:flatten: nested objects and arrays become dotted keys; nest(flatten(x)) is x"
+      ]
+    },
+    {
+      "feature": "Choose, rename and reorder columns",
+      "competitor": "Modern CSV",
+      "tests": [
+        "ui:csv-to-json:2.4: choose, rename and reorder columns in both directions",
+        "unit:tabular:column plan: rename, drop and reorder survive new data; new columns are appended"
+      ]
+    },
+    {
+      "feature": "Files of 100 MB and more, streamed",
+      "competitor": "Modern CSV",
+      "tests": [
+        "ui:csv-to-json:2.4: a 40 MB CSV streams through a Worker with progress and a preview; Save holds every record",
+        "ui:csv-to-json:2.4: streaming in a Worker gives exactly the in-memory result, for messy CSV and for JSON Lines",
+        "unit:tabular:stream reader: same rows and issues as the in-memory parser at every split size",
+        "unit:tabular:stream reader: a random 5,000-row file with quotes and newlines, random slices"
+      ]
+    },
+    {
+      "feature": "Editable grid preview",
+      "competitor": "Modern CSV / Tablecruncher",
+      "tests": [
+        "ui:csv-to-json:2.4: the table preview is editable and edits go back into the input"
+      ]
+    },
+    {
+      "feature": "Formula-safe CSV export (CSV injection)",
+      "competitor": "Modern CSV",
+      "tests": [
+        "ui:csv-to-json:A4: JSON to CSV is safe for spreadsheets by default and keeps long numbers",
+        "unit:tabular:csvRow: the escape rule of the CSV writer, formulas guarded when asked"
+      ]
+    }
+  ]
+}

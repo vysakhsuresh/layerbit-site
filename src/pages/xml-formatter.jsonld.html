@@ -5,9 +5,9 @@
     {
       "@type": "SoftwareApplication",
       "@id": "https://layerbit.co.in/tools/xml-formatter.html#app",
-      "name": "XML Formatter \u0026 XPath Tester",
+      "name": "XML Formatter, Validator \u0026 XPath Tester",
       "url": "https://layerbit.co.in/tools/xml-formatter.html",
-      "description": "Format, minify and validate XML with errors at line and column, run XPath 1.0 queries with namespace support, and convert XML to JSON, all in your browser.",
+      "description": "Format and minify XML, validate against XSD, RelaxNG, DTD or Schematron, run XSLT, XQuery and XPath, compare documents, convert XML and JSON. In your browser.",
       "applicationCategory": "DeveloperApplication",
       "operatingSystem": "Any (runs in the browser)",
       "browserRequirements": "Requires JavaScript",
@@ -17,11 +17,23 @@
         "price": "0",
         "priceCurrency": "USD"
       },
-      "keywords": "xml formatter, xml validator, xpath tester, xpath online, xml to json, xml beautifier",
       "publisher": {
         "@id": "https://layerbit.co.in/#organization"
       },
-      "datePublished": "2026-09-27"
+      "featureList": [
+        "Pretty-print and minify XML",
+        "Well-formedness errors with line and column",
+        "XSD and RelaxNG validation with libxml2 in WebAssembly",
+        "DTD validation",
+        "ISO Schematron validation",
+        "XSLT 1.0 transforms with libxslt in WebAssembly",
+        "XQuery 3.1 and XPath 3.1",
+        "XPath 1.0 with namespace support",
+        "Compare two XML documents",
+        "XML to JSON and JSON to XML",
+        "Large files formatted in a background worker",
+        "Runs entirely in the browser"
+      ]
     },
     {
       "@type": "BreadcrumbList",
@@ -56,7 +68,7 @@
           "name": "Does this validate against an XSD or DTD schema?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "No. It checks well-formedness — that the document is syntactically correct XML with balanced, properly nested tags, quoted attributes and escaped characters — using the browser's parser. Validation against a schema (whether the elements and values are the ones a particular XSD allows) needs a schema processor, which browsers do not include. For that, use xmllint with --schema, or your platform's XML library."
+            "text": "Yes. Open Validate, pick the schema language, paste the schema and press Validate; each error is listed with its line, and clicking the line selects it in the input. XSD and RelaxNG are checked by libxml2 (the library behind xmllint), compiled to WebAssembly and loaded the first time you use it. DTD checks content models, required, fixed and enumerated attributes, and ID/IDREF links; leave the box empty to use the DOCTYPE inside the document. Schematron (ISO, XPath 1.0) runs on your browser's XPath engine and reports every failed assert and fired report with the node's path. Well-formedness is always checked as you type."
           }
         },
         {
@@ -93,10 +105,34 @@
         },
         {
           "@type": "Question",
+          "name": "Can I run XSLT or XQuery?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes, in the Transform tab. XSLT 1.0 runs in libxslt, the library behind xsltproc, compiled to WebAssembly and loaded on first use (Chrome is removing the XSLT engine browsers used to include). XQuery 3.1 (which includes XPath 3.1, maps, arrays and FLWOR expressions) runs in fontoxpath, an open-source engine loaded on first use. XSLT 2.0 and 3.0 are not offered: the only browser engine for them, Saxon-JS, is not openly licensed, so it cannot be bundled here. Use as input replaces the document with the result."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Can I compare two XML documents, or turn JSON into XML?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Both. The Compare tab lists changed, added and removed elements, attributes and text by path, ignoring attribute order and formatting, and Open in Diff Checker carries both documents to the Diff Checker's structure mode. For JSON, choose JSON → XML in the output menu and paste JSON: keys starting with @ become attributes, #text becomes text and arrays repeat their element, the same convention as XML → JSON."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How large an XML file can it handle?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Files of 8 MB and more are formatted by libxml2 in a background worker and shown a screenful of lines at a time, so the page stays responsive; a 30 MB file with 250,000 records formats in a few seconds in our tests. Validation and transforms work on these files too. XPath needs the document inside the page, so it is available for files under 8 MB."
+          }
+        },
+        {
+          "@type": "Question",
           "name": "Is my XML sent anywhere?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "No. Parsing uses DOMParser, XPath uses document.evaluate, and serialisation is JavaScript in the page; there is no server request. You can confirm this in the Network tab of your browser's developer tools or by using the tool offline. That matters for XML in particular, because SOAP responses, SAML assertions and configuration files routinely contain credentials and personal data."
+            "text": "No. Parsing uses DOMParser, XPath uses document.evaluate, schema validation runs in libxml2 compiled to WebAssembly, XQuery runs in fontoxpath, and serialisation is JavaScript in the page; the WebAssembly and script files come from this site and nothing is sent to a server. You can confirm this in the Network tab of your browser's developer tools or by using the tool offline. That matters for XML in particular, because SOAP responses, SAML assertions and configuration files routinely contain credentials and personal data."
           }
         }
       ]

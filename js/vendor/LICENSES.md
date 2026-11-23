@@ -17,7 +17,23 @@ offline, and sends no visitor IP to a CDN operator).
 | `marked.umd.js` | marked (`lib/marked.umd.js`) | 18.0.14 | MIT |
 | `purify.min.js` | dompurify | 3.4.16 | MPL-2.0 OR Apache-2.0 |
 | `eff-wordlist.js` | EFF Large Wordlist (via diceware-wordlist-en-eff 1.0.1), repackaged as one script | 2016 | CC BY 3.0 US |
+| `jmespath.min.js` | jmespath (`jmespath.js`, minified with esbuild) | 0.16.0 | Apache-2.0 |
+| `jsonquery.min.js` | @jsonquerylang/jsonquery (`lib/jsonquery.js` bundled as `window.JSONQuery` with esbuild) | 5.1.1 | ISC |
+| `smol-toml.min.js` | smol-toml (`dist/index.js` bundled as `window.TOML` with esbuild) | 1.9.1 | BSD-3-Clause |
+| `wasm/jq.js`, `wasm/jq.wasm` | jq-web (jq 1.7 compiled to WebAssembly; jq itself is MIT) | 0.6.2 | ISC (jq-web), MIT (jq) |
+| `fontoxpath.min.js` | fontoxpath (XPath 3.1 / XQuery 3.1; bundled as `window.fontoxpath` with esbuild, with its dependencies) | 3.34.0 | MIT |
+| `xmllint/` (`index-browser.mjs`, `xmllint-browser.mjs`, `xmllint.wasm`, `COPYING`) | xmllint-wasm (libxml2 2.13.8 compiled to WebAssembly), files copied unchanged | 5.3.0 | MIT |
+| `yaml.min.js` | yaml (eemeli/yaml; bundled as `window.YAML` with esbuild) | 2.9.1 | ISC |
+| `ajv.min.js` | ajv + ajv-formats (bundled as `window.LBAjv` with esbuild) | 8.20.0 / 3.0.1 | MIT |
+| `schemas/k8s-*.json` | yannh/kubernetes-json-schema v1.30.0-standalone-strict, annotations stripped (see `schemas/README.md`) | Kubernetes 1.30.0 | Apache-2.0 |
+| `schemas/compose-spec.json` | compose-spec/compose-spec, annotations stripped | 2026-11 | Apache-2.0 |
+| `schemas/github-workflow.json` | SchemaStore github-workflow, annotations stripped | 2026-11 | Apache-2.0 |
+| `hash-wasm.min.js` | hash-wasm (`dist/index.umd.min.js`, WebAssembly embedded; `window.hashwasm`) | 4.12.0 | MIT |
+| `xslt-polyfill.min.js` | xslt-polyfill (libxslt/libxml2 compiled to WebAssembly; replaces `window.XSLTProcessor`, file copied unchanged) | 1.0.37 | BSD-3-Clause (libxslt, libxml2: MIT) |
 | `wasm/selftest.wasm` | Layerbit's own 41-byte test module for the WebAssembly loader | n/a | AGPL-3.0 |
 
 To upgrade one: download the same `dist/` file from the new version's npm
-tarball, replace it here, and update this table.
+tarball, replace it here, and update this table. Packages published only as
+ES modules are bundled into one browser script with
+`npx esbuild entry.js --bundle --minify --format=iife --global-name=NAME`,
+where `entry.js` re-exports the functions the page uses.

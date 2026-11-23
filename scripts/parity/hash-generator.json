@@ -1,0 +1,67 @@
+{
+  "tool": "hash-generator",
+  "page": "tools/hash-generator.html",
+  "competitors": [
+    {
+      "name": "QuickHash GUI",
+      "price": "free, open source (desktop)",
+      "checked": "2026-11"
+    },
+    {
+      "name": "OpenHashTab",
+      "price": "free (Windows shell extension)",
+      "checked": "2026-11"
+    }
+  ],
+  "claims": [
+    {
+      "feature": "SHA-3, BLAKE2/3, xxHash/XXH3, CRC32/CRC32C, RIPEMD-160",
+      "competitor": "QuickHash GUI / OpenHashTab",
+      "tests": [
+        "ui:hash-generator:2.10: SHA-3, BLAKE2, BLAKE3, RIPEMD-160, xxHash, XXH3 and CRC32/CRC32C known vectors",
+        "ui:hash-generator:2.10: HMAC for SHA-3 and the other cryptographic hashes; checksums have no keyed form"
+      ]
+    },
+    {
+      "feature": "Streaming hashing for files of any size",
+      "competitor": "QuickHash GUI",
+      "tests": [
+        "ui:hash-generator:2.10: a 64 MB file is hashed by streaming through a Worker, every algorithm in one pass"
+      ]
+    },
+    {
+      "feature": "Many files and whole folders, with CSV/HTML reports",
+      "competitor": "QuickHash GUI",
+      "tests": [
+        "ui:hash-generator:2.10: many files at once, with CSV and HTML reports and a checksum file",
+        "ui:hash-generator:shared batch: a dropped folder is walked, hashed with limited concurrency, reported and zipped",
+        "unit:hashx:formatSums: sha256sum style with escaping, BSD style"
+      ]
+    },
+    {
+      "feature": "Compare two files or two folders",
+      "competitor": "QuickHash GUI",
+      "tests": [
+        "ui:hash-generator:2.10: compare two sets of files by content",
+        "unit:hashx:compareSets: same, different, only in one side; sorted by path",
+        "unit:hashx:relPaths: the common top folder is dropped, Windows separators normalised"
+      ]
+    },
+    {
+      "feature": "Checking against .sha256 / .md5 / SHA256SUMS files",
+      "competitor": "OpenHashTab",
+      "tests": [
+        "ui:hash-generator:2.10: check files against a SHA256SUMS list",
+        "unit:hashx:parseSums: GNU text and binary markers, BSD tags, comments, CRLF, escaped names",
+        "unit:hashx:checkSums: OK, FAILED and missing, matching by path then by name"
+      ]
+    },
+    {
+      "feature": "Exact-byte text mode (line endings)",
+      "competitor": "QuickHash GUI",
+      "tests": [
+        "ui:hash-generator:A6: text can be hashed with CRLF line endings, as a Windows file would have"
+      ]
+    }
+  ]
+}

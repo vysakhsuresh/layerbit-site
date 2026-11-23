@@ -1,0 +1,62 @@
+{
+  "tool": "yaml-json-converter",
+  "page": "tools/yaml-json-converter.html",
+  "competitors": [
+    {
+      "name": "yamllint",
+      "price": "free, command line",
+      "checked": "2026-11"
+    },
+    {
+      "name": "IDE YAML plugins with Kubernetes schema validation",
+      "price": "free / bundled with paid IDEs",
+      "checked": "2026-11"
+    }
+  ],
+  "claims": [
+    {
+      "feature": "Multi-document files",
+      "competitor": "yamllint",
+      "tests": [
+        "ui:yaml-json-converter:B4: multi-document YAML (Kubernetes) becomes a JSON array",
+        "ui:yaml-json-converter:B4: documents switch: array <-> --- documents, or the first document only"
+      ]
+    },
+    {
+      "feature": "Dates kept as written, numbers lossless",
+      "competitor": "IDE plugins",
+      "tests": [
+        "ui:yaml-json-converter:B4: dates stay as written unless conversion is asked for",
+        "ui:yaml-json-converter:A3: long integers survive YAML to JSON and JSON to YAML"
+      ]
+    },
+    {
+      "feature": "YAML 1.1 / 1.2 switch with Norway-problem warnings",
+      "competitor": "yamllint (truthy rule)",
+      "tests": [
+        "ui:yaml-json-converter:2.6: YAML 1.1 vs 1.2: the Norway problem is flagged by line, and the switch changes the result"
+      ]
+    },
+    {
+      "feature": "Comment-preserving formatting",
+      "competitor": "IDE plugins",
+      "tests": [
+        "ui:yaml-json-converter:2.6: Format re-indents and keeps comments"
+      ]
+    },
+    {
+      "feature": "Lint: duplicate keys and tabs",
+      "competitor": "yamllint",
+      "tests": [
+        "ui:yaml-json-converter:2.6: lint reports duplicate keys and tab indentation with their lines"
+      ]
+    },
+    {
+      "feature": "Kubernetes, Compose and GitHub Actions schema validation",
+      "competitor": "IDE plugins",
+      "tests": [
+        "ui:yaml-json-converter:2.6: Kubernetes, Compose and GitHub Actions schemas from vendored copies"
+      ]
+    }
+  ]
+}

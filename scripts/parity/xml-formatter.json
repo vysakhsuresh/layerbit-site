@@ -1,0 +1,77 @@
+{
+  "tool": "xml-formatter",
+  "page": "tools/xml-formatter.html",
+  "competitors": [
+    {
+      "name": "Oxygen XML Editor",
+      "price": "paid licences",
+      "checked": "2026-11"
+    },
+    {
+      "name": "Altova XMLSpy",
+      "price": "Professional from $679, Enterprise higher",
+      "checked": "2026-11"
+    }
+  ],
+  "claims": [
+    {
+      "feature": "XSD validation",
+      "competitor": "Altova XMLSpy / Oxygen",
+      "tests": [
+        "ui:xml-formatter:2.5: XSD validation with libxml2 in WebAssembly lists each error with its line"
+      ]
+    },
+    {
+      "feature": "RelaxNG validation",
+      "competitor": "Oxygen",
+      "tests": [
+        "ui:xml-formatter:2.5: RelaxNG validation"
+      ]
+    },
+    {
+      "feature": "DTD validation",
+      "competitor": "Altova XMLSpy / Oxygen",
+      "tests": [
+        "ui:xml-formatter:2.5: DTD validation from the internal subset or a pasted DTD",
+        "unit:xmlv:DTD: content model, required, fixed, enumeration, undeclared, ID and IDREF errors",
+        "unit:xmlv:DTD: choice and nesting in content models"
+      ]
+    },
+    {
+      "feature": "Schematron (ISO)",
+      "competitor": "Oxygen",
+      "tests": [
+        "ui:xml-formatter:2.5: Schematron asserts and reports name the node"
+      ]
+    },
+    {
+      "feature": "XSLT 1.0 and XQuery 3.1 transformation",
+      "competitor": "Altova XMLSpy / Oxygen",
+      "tests": [
+        "ui:xml-formatter:2.5: XSLT 1.0 and XQuery 3.1 transforms"
+      ]
+    },
+    {
+      "feature": "JSON to XML (and XML to JSON)",
+      "competitor": "Altova XMLSpy",
+      "tests": [
+        "ui:xml-formatter:2.5: JSON -> XML mode",
+        "unit:jsonx:JSON -> XML: attributes, arrays repeat, names made valid, text escaped; round trip"
+      ]
+    },
+    {
+      "feature": "XML compare",
+      "competitor": "Altova XMLSpy (DiffDog) / Oxygen",
+      "tests": [
+        "ui:xml-formatter:2.5: compare two XML documents; the Diff Checker opens with both"
+      ]
+    },
+    {
+      "feature": "Large files in a Worker",
+      "competitor": "Oxygen",
+      "tests": [
+        "ui:xml-formatter:2.5: a 30 MB XML file is formatted in a Worker and shown virtually"
+      ]
+    }
+  ]
+}
