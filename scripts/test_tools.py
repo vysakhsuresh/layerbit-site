@@ -2460,6 +2460,9 @@ def _(t):
     expect("2 of 2 files applied" in t.text("patchFiles"), t.text("patchFiles"))
     t.call("showPatchFile(1)"); t.wait(150)
     eq(t.val("mergedText"), "gamma\ndelta\n", "second file applied")
+    # the live re-run after typing must not jump back to the first file
+    t.call("run()"); t.wait(100)
+    eq(t.val("mergedText"), "gamma\ndelta\n", "still on the second file after a re-run")
 
 
 @case("text-diff-checker", "edge", "bug 12: a fuzzy patch shows the mismatched context lines and needs confirmation")
