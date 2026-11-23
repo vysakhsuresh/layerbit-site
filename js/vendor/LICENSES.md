@@ -23,6 +23,11 @@ offline, and sends no visitor IP to a CDN operator).
 | `wasm/jq.js`, `wasm/jq.wasm` | jq-web (jq 1.7 compiled to WebAssembly; jq itself is MIT) | 0.6.2 | ISC (jq-web), MIT (jq) |
 | `fontoxpath.min.js` | fontoxpath (XPath 3.1 / XQuery 3.1; bundled as `window.fontoxpath` with esbuild, with its dependencies) | 3.34.0 | MIT |
 | `xmllint/` (`index-browser.mjs`, `xmllint-browser.mjs`, `xmllint.wasm`, `COPYING`) | xmllint-wasm (libxml2 2.13.8 compiled to WebAssembly), files copied unchanged | 5.3.0 | MIT |
+| `yaml.min.js` | yaml (eemeli/yaml; bundled as `window.YAML` with esbuild) | 2.9.1 | ISC |
+| `ajv.min.js` | ajv + ajv-formats (bundled as `window.LBAjv` with esbuild) | 8.20.0 / 3.0.1 | MIT |
+| `schemas/k8s-*.json` | yannh/kubernetes-json-schema v1.30.0-standalone-strict, annotations stripped (see `schemas/README.md`) | Kubernetes 1.30.0 | Apache-2.0 |
+| `schemas/compose-spec.json` | compose-spec/compose-spec, annotations stripped | 2026-11 | Apache-2.0 |
+| `schemas/github-workflow.json` | SchemaStore github-workflow, annotations stripped | 2026-11 | Apache-2.0 |
 | `wasm/selftest.wasm` | Layerbit's own 41-byte test module for the WebAssembly loader | n/a | AGPL-3.0 |
 
 To upgrade one: download the same `dist/` file from the new version's npm

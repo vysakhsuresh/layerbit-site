@@ -7,7 +7,7 @@
       "@id": "https://layerbit.co.in/tools/yaml-json-converter.html#app",
       "name": "YAML to JSON Converter",
       "url": "https://layerbit.co.in/tools/yaml-json-converter.html",
-      "description": "Convert YAML to JSON and JSON to YAML in your browser, live in both directions, with YAML 1.2 semantics and syntax errors reported with line and column.",
+      "description": "Convert YAML to JSON and back in your browser: YAML 1.1/1.2 switch with Norway-problem warnings, lint, comment-keeping format, Kubernetes, Compose, Actions schemas.",
       "applicationCategory": "DeveloperApplication",
       "operatingSystem": "Any (runs in the browser)",
       "browserRequirements": "Requires JavaScript",
@@ -19,7 +19,18 @@
       },
       "publisher": {
         "@id": "https://layerbit.co.in/#organization"
-      }
+      },
+      "featureList": [
+        "YAML to JSON and JSON to YAML, live",
+        "Multi-document files",
+        "YAML 1.1 and 1.2 with Norway-problem warnings",
+        "Lint for duplicate keys and tabs",
+        "Formatting that keeps comments",
+        "Kubernetes, Docker Compose and GitHub Actions schema validation",
+        "Dates kept as written",
+        "Long numbers kept exactly",
+        "Runs entirely in the browser"
+      ]
     },
     {
       "@type": "BreadcrumbList",
@@ -40,7 +51,7 @@
         {
           "@type": "ListItem",
           "position": 3,
-          "name": "YAML ⇄ JSON Converter",
+          "name": "YAML to JSON Converter",
           "item": "https://layerbit.co.in/tools/yaml-json-converter.html"
         }
       ]
@@ -49,6 +60,30 @@
       "@type": "FAQPage",
       "@id": "https://layerbit.co.in/tools/yaml-json-converter.html#faq",
       "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "Should I use YAML 1.1 or 1.2?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Use the version the program that reads your file uses. YAML 1.2 (the default here, and in js-yaml, Go's yaml.v3 and current Kubernetes) reads yes, no, on and off as strings and 0777 as 777. YAML 1.1 (PyYAML, Ruby's Psych, older tools) reads them as booleans and an octal number, and 1:30 as 90. Whichever you pick, the Checks panel lists each plain value the two versions read differently, with its line, so you can quote it and get the same result everywhere. GitHub Actions' on: key is the classic case."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What does the lint check?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "As you type, it reports duplicate keys (YAML forbids them, but many parsers silently keep only one value), tab characters used for indentation, syntax errors with their line, and values that YAML 1.1 and 1.2 read differently. Format YAML re-indents the file (2 or 4 spaces) and keeps comments, key order and the document separators."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Can it validate Kubernetes, Docker Compose or GitHub Actions files?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes, without a network call. Choose a schema under Checks, or detect to pick it from the content: Kubernetes 1.30 schemas for Deployment, Service, ConfigMap, Secret, Ingress, Pod, StatefulSet, DaemonSet, Job and CronJob (each document of a multi-document manifest is checked on its own), the Docker Compose specification, and the GitHub Actions workflow schema. Each error names the path, such as /spec/replicas, and what is wrong. The schemas are copies of the published ones (Apache-2.0), dated on this page's changelog."
+          }
+        },
         {
           "@type": "Question",
           "name": "How does real-time synchronization prevent infinite loops?",

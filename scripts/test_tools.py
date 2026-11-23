@@ -1165,6 +1165,55 @@ def _(t):
     eq(json.loads(t.val("jsonInput")), [{"a": 1}, None], "empty document kept as null")
 
 
+@case("yaml-json-converter", "typical", "2.6: YAML 1.1 vs 1.2: the Norway problem is flagged by line, and the switch changes the result")
+def _(t):
+    t.set("yamlInput", "country: no\nport: 0777\nok: yes\nname: Ada\n")
+    t.wait_for("document.getElementById('yamlLint').textContent.includes('line 1')", 8000)
+    lint = t.text("yamlLint")
+    expect("line 1" in lint and "line 2" in lint and "line 3" in lint and "line 4" not in lint, lint)
+    eq(json.loads(t.val("jsonInput")), {"country": "no", "port": 777, "ok": "yes", "name": "Ada"}, "YAML 1.2 (default)")
+    t.select("yamlVersion", "1.1")
+    t.wait_for("JSON.parse(document.getElementById('jsonInput').value).country === false", 8000)
+    eq(json.loads(t.val("jsonInput")), {"country": False, "port": 511, "ok": True, "name": "Ada"}, "YAML 1.1")
+    t.select("yamlVersion", "1.2")
+
+
+@case("yaml-json-converter", "typical", "2.6: Format re-indents and keeps comments")
+def _(t):
+    t.set("yamlInput", "# service config\nserver:\n      port: 8080   # the port\n      hosts:\n        - a\n        - b\n")
+    t.click("#btnYamlFormat")
+    t.wait_for("document.getElementById('yamlInput').value.includes('\\n  port: 8080')", 8000)
+    y = t.val("yamlInput")
+    expect("# service config" in y and "# the port" in y, y)
+    expect("\n  port: 8080" in y and "\n    - a" in y, "not re-indented to 2 spaces: " + y)
+
+
+@case("yaml-json-converter", "edge", "2.6: lint reports duplicate keys and tab indentation with their lines")
+def _(t):
+    t.set("yamlInput", "name: a\nport: 1\nname: b\n")
+    t.wait_for("/duplicate/i.test(document.getElementById('yamlLint').textContent)", 8000)
+    expect("line 3" in t.text("yamlLint"), t.text("yamlLint"))
+    t.set("yamlInput", "server:\n\tport: 1\n")
+    t.wait_for("/tab/i.test(document.getElementById('yamlLint').textContent)", 8000)
+    expect("line 2" in t.text("yamlLint"), t.text("yamlLint"))
+
+
+@case("yaml-json-converter", "typical", "2.6: Kubernetes, Compose and GitHub Actions schemas from vendored copies")
+def _(t):
+    t.set("yamlInput", "apiVersion: apps/v1\nkind: Deployment\nmetadata:\n  name: web\nspec:\n  replicas: \"3\"\n  selector:\n    matchLabels: {app: web}\n  template:\n    metadata: {labels: {app: web}}\n    spec:\n      containers:\n        - name: web\n          image: nginx\n          ports:\n            - containerPort: 80\n")
+    t.select("yamlSchema", "auto")
+    t.wait_for("/replicas/.test(document.getElementById('yamlSchemaResult').textContent)", 15000)
+    r = t.text("yamlSchemaResult")
+    expect("Deployment" in r and "/spec/replicas" in r and "integer" in r, r)
+    t.set("yamlInput", "services:\n  web:\n    image: nginx\n    ports: 80\n")
+    t.wait_for("/Compose/.test(document.getElementById('yamlSchemaResult').textContent) && /ports/.test(document.getElementById('yamlSchemaResult').textContent)", 15000)
+    t.set("yamlInput", "on: push\njobs:\n  build:\n    steps:\n      - run: make\n")
+    t.wait_for("/Actions/.test(document.getElementById('yamlSchemaResult').textContent) && /runs-on/.test(document.getElementById('yamlSchemaResult').textContent)", 15000)
+    t.set("yamlInput", "on: push\njobs:\n  build:\n    runs-on: ubuntu-latest\n    steps:\n      - run: make\n")
+    t.wait_for("/Valid/.test(document.getElementById('yamlSchemaResult').textContent)", 15000)
+    t.select("yamlSchema", "none")
+
+
 @case("yaml-json-converter", "edge", "B4: documents switch: array <-> --- documents, or the first document only")
 def _(t):
     expect(t.page.is_checked("#yamlDocs"), "the documents switch should be on by default")
