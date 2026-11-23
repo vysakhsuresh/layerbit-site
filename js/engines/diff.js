@@ -804,6 +804,98 @@
     return { columns: cols, colsAdded: colsAdded, colsRemoved: colsRemoved, added: added, removed: removed, changed: changed, unchanged: unchanged, keyName: o.keys.length ? o.keys.join(' + ') : null, keys: o.keys, duplicates: o.keys.length ? duplicates : [] };
   }
 
+  // ----------------------------------------------------------------- folders
+  var DEFAULT_IGNORE = ['.git', 'node_modules', 'bin', 'obj', '.vs', '*.log', '.DS_Store', 'Thumbs.db'];
+  function globRe(g) { return new RegExp('^' + g.replace(/[.+^${}()|[\]\\]/g, '\\$&').replace(/\*\*/g, '\u0001').replace(/\*/g, '[^/]*').replace(/\?/g, '[^/]').replace(/\u0001/g, '.*') + '$', 'i'); }
+  /** Ignore patterns: a pattern without "/" matches any file or folder name
+   *  at any depth (node_modules, *.log); one with "/" matches a path from the
+   *  root (docs/*.pdf); a trailing "/" means "this folder". */
+  function compileIgnore(patterns) {
+    var names = [], paths = [];
+    (patterns || []).map(function (p) { return String(p).trim(); }).filter(Boolean).forEach(function (p) {
+      var dir = /\/$/.test(p); p = p.replace(/^\/+|\/+$/g, '');
+      if (!p) return;
+      if (p.indexOf('/') < 0) names.push(globRe(p)); else paths.push({ re: globRe(p), dir: dir });
+    });
+    return function (path) {
+      var seg = path.split('/');
+      for (var i = 0; i < seg.length; i++) for (var j = 0; j < names.length; j++) if (names[j].test(seg[i])) return true;
+      for (var k = 0; k < paths.length; k++) {
+        if (paths[k].re.test(path)) return true;
+        for (var d = 1; d < seg.length; d++) if (paths[k].re.test(seg.slice(0, d).join('/'))) return true;
+      }
+      return false;
+    };
+  }
+  /** File-level comparison of two listings [{path, size, mtime, hash, crc}].
+   *  by: 'content' (hash, or zip CRC when both sides have one; equal sizes
+   *  without either are 'pending', never guessed), 'size', or 'date'
+   *  (same when modified times are within 2 s, the resolution of zip and
+   *  FAT timestamps). Rows are sorted by path. */
+  function folderDiff(A, B, by) {
+    var ma = {}, mb = {}, all = {};
+    A.forEach(function (e) { ma[e.path] = e; all[e.path] = 1; }); B.forEach(function (e) { mb[e.path] = e; all[e.path] = 1; });
+    return Object.keys(all).sort(function (x, y) { return x < y ? -1 : x > y ? 1 : 0; }).map(function (p) {
+      var a = ma[p], b = mb[p], row = { path: p, a: a || null, b: b || null };
+      if (!a) row.status = 'added'; else if (!b) row.status = 'removed';
+      else if (by === 'size') row.status = a.size === b.size ? 'same' : 'modified';
+      else if (by === 'date') {
+        var ta = a.mtime || 0, tb = b.mtime || 0;
+        row.status = Math.abs(ta - tb) <= 2000 && a.size === b.size ? 'same' : 'modified';
+        if (Math.abs(ta - tb) > 2000) row.newer = ta > tb ? 'a' : 'b';
+      } else if (a.size !== b.size) row.status = 'modified';
+      else if (a.hash && b.hash) row.status = a.hash === b.hash ? 'same' : 'modified';
+      else if (a.crc != null && b.crc != null) row.status = a.crc === b.crc ? 'same' : 'modified';
+      else row.status = 'pending';
+      return row;
+    });
+  }
+  function emptyCounts() { return { added: 0, removed: 0, modified: 0, same: 0, pending: 0 }; }
+  /** Folder tree of folderDiff rows with per-folder status counts. */
+  function buildTree(rows) {
+    var root = { name: '', path: '', dir: true, children: [], index: {}, counts: emptyCounts() };
+    rows.forEach(function (r) {
+      var seg = r.path.split('/'), node = root;
+      node.counts[r.status]++;
+      for (var i = 0; i < seg.length - 1; i++) {
+        var p = seg.slice(0, i + 1).join('/'), next = node.index[seg[i]];
+        if (!next) { next = { name: seg[i], path: p, dir: true, children: [], index: {}, counts: emptyCounts() }; node.index[seg[i]] = next; node.children.push(next); }
+        next.counts[r.status]++; node = next;
+      }
+      node.children.push({ name: seg[seg.length - 1], path: r.path, dir: false, row: r });
+    });
+    (function sort(n) { n.children.sort(function (x, y) { return x.dir !== y.dir ? (x.dir ? -1 : 1) : x.name < y.name ? -1 : x.name > y.name ? 1 : 0; }); n.children.forEach(function (c) { if (c.dir) sort(c); }); })(root);
+    return root;
+  }
+  /** Visible rows of the tree: open folders' contents, with identical items
+   *  hidden or only one status shown when asked. Folders with nothing left
+   *  to show are hidden too. Returns [{node, depth}]. */
+  function flattenTree(root, open, opts) {
+    var o = opts || {}, out = [];
+    var keep = function (st) { return (!o.hideIdentical || st !== 'same') && (!o.status || o.status === 'all' || o.status === st); };
+    var dirKeep = function (n) { var c = n.counts; return ['added', 'removed', 'modified', 'same', 'pending'].some(function (st) { return c[st] && keep(st); }); };
+    (function walk(n, depth) {
+      n.children.forEach(function (c) {
+        if (c.dir) { if (!dirKeep(c)) return; out.push({ node: c, depth: depth }); if (open.has(c.path)) walk(c, depth + 1); }
+        else if (keep(c.row.status)) out.push({ node: c, depth: depth });
+      });
+    })(root, 0);
+    return out;
+  }
+  function csvCell(v) { v = v == null ? '' : String(v); return /[",\r\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v; }
+  function csvLine(cells) { return cells.map(csvCell).join(',') + '\r\n'; }
+  function isoTime(t) { return t ? new Date(t).toISOString() : ''; }
+  /** Folder comparison report as CSV, starting with the options and date. */
+  function folderCsv(rows, meta) {
+    var m = meta || {}, out = csvLine(['Report', 'Layerbit folder comparison']) + csvLine(['Generated', m.generated || new Date().toISOString()]) +
+      csvLine(['Left', m.left || '']) + csvLine(['Right', m.right || '']) + csvLine(['Compared by', m.by || '']) + csvLine(['Ignored', (m.ignore || []).join(' ')]) + '\r\n' +
+      csvLine(['Path', 'Status', 'Size left', 'Size right', 'Modified left', 'Modified right']);
+    rows.forEach(function (r) { out += csvLine([r.path, r.status === 'same' ? 'identical' : r.status, r.a ? r.a.size : '', r.b ? r.b.size : '', r.a ? isoTime(r.a.mtime) : '', r.b ? isoTime(r.b.mtime) : '']); });
+    return out;
+  }
+  /** MS-DOS date and time fields (zip headers) to a local timestamp. */
+  function dosTime(date, time) { return new Date(((date >> 9) & 127) + 1980, ((date >> 5) & 15) - 1, date & 31, (time >> 11) & 31, (time >> 5) & 63, (time & 31) * 2).getTime(); }
+
   // --------------------------------------------------------------------- zip
   /** Reads a zip's central directory. Returns [{name, size, crc, dir, read():Promise<Uint8Array>}]. Browser only (DecompressionStream). */
   function readZip(buf) {
@@ -815,10 +907,10 @@
     var entries = [], p = cdOff, td = new TextDecoder();
     for (var k = 0; k < count; k++) {
       if (dv.getUint32(p, true) !== 0x02014b50) throw new Error('Corrupt central directory');
-      var method = dv.getUint16(p + 10, true), crc = dv.getUint32(p + 16, true), csize = dv.getUint32(p + 20, true), usize = dv.getUint32(p + 24, true);
+      var method = dv.getUint16(p + 10, true), mtime = dosTime(dv.getUint16(p + 14, true), dv.getUint16(p + 12, true)), crc = dv.getUint32(p + 16, true), csize = dv.getUint32(p + 20, true), usize = dv.getUint32(p + 24, true);
       var nlen = dv.getUint16(p + 28, true), elen = dv.getUint16(p + 30, true), clen = dv.getUint16(p + 32, true), loff = dv.getUint32(p + 42, true);
       var name = td.decode(u8.subarray(p + 46, p + 46 + nlen));
-      entries.push(makeEntry(name, usize, csize, crc, method, loff));
+      var ent = makeEntry(name, usize, csize, crc, method, loff); ent.mtime = mtime; entries.push(ent);
       p += 46 + nlen + elen + clen;
     }
     function makeEntry(name, usize, csize, crc, method, loff) {
@@ -878,5 +970,5 @@
 
   return { lineDiff: lineDiff, foldContext: foldContext, intraline: intraline, tokenize: tokenize, detectLang: detectLang, renderLine: renderLine, esc: esc,
     unifiedPatch: unifiedPatch, applyPatch: applyPatch, parsePatchFiles: parsePatchFiles, applyPatchFile: applyPatchFile, diff3: diff3, structuralDiff: structuralDiff, canonicalJson: canonicalJson, canon: canon,
-    parseCsv: parseCsv, detectDelimiter: detectDelimiter, tableDiff: tableDiff, readZip: readZip, isProbablyText: isProbablyText, decodeBytes: decodeBytes, bytesEqual: bytesEqual, stripCommonRoot: stripCommonRoot, uniqueHeaders: uniqueHeaders, textFacts: textFacts, textNotes: textNotes, parseJsonLossless: parseJsonLossless, stringifyLossless: stringifyLossless, canonicalNumber: canonicalNumber, splitLines: splitLines, normalizeLine: normalizeLine, DEFAULT_OPTS: DEFAULT_OPTS };
+    parseCsv: parseCsv, detectDelimiter: detectDelimiter, tableDiff: tableDiff, readZip: readZip, isProbablyText: isProbablyText, decodeBytes: decodeBytes, bytesEqual: bytesEqual, stripCommonRoot: stripCommonRoot, uniqueHeaders: uniqueHeaders, DEFAULT_IGNORE: DEFAULT_IGNORE, compileIgnore: compileIgnore, folderDiff: folderDiff, buildTree: buildTree, flattenTree: flattenTree, folderCsv: folderCsv, csvLine: csvLine, dosTime: dosTime, textFacts: textFacts, textNotes: textNotes, parseJsonLossless: parseJsonLossless, stringifyLossless: stringifyLossless, canonicalNumber: canonicalNumber, splitLines: splitLines, normalizeLine: normalizeLine, DEFAULT_OPTS: DEFAULT_OPTS };
 });

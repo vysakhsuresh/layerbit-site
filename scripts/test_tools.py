@@ -2095,9 +2095,10 @@ def _(t):
       setMode('zip');
       loadZip('a', _mkzip([['src/app.js', 'a'], ['lib/app.js', 'b']], 'a.zip'));
       loadZip('b', _mkzip([['src/app.js', 'a'], ['lib/app.js', 'B']], 'b.zip')); }""")
-    t.wait_for("() => /lib\\/app\\.js/.test(document.getElementById('zipPanel').innerText)")
+    t.wait_for("() => window._zipRows && window._zipRows.length >= 2 && /lib\\//.test(document.getElementById('zipPanel').innerText)")
+    eq(t.call("window._zipRows.map(r => r.path + ':' + r.status)"), ["lib/app.js:modified", "src/app.js:same"], "a file vanished")
     text = t.text("zipPanel")
-    expect("src/app.js" in text and "lib/app.js" in text, "a file vanished: " + text)
+    expect("src/" in text and "lib/" in text and text.count("app.js") == 2, "tree does not show both files: " + text)
 
 
 @case("text-diff-checker", "edge", "bug 6: duplicate keys are reported in table and JSON results")
@@ -2336,6 +2337,82 @@ def _(t):
     t.wait(300)
     zr = t.count("#zipPanel tbody tr")
     expect(zr < 2000, f"{zr} folder rows in the DOM for 5,000 files")
+
+
+DIFF_FOLDER_JS = """
+  window._mkdir = (spec, t) => Object.entries(spec).map(([path, text]) => ({ path, file: new File([text], path.split('/').pop(), { lastModified: t || 1767225600000 }) }));
+"""
+
+
+@case("text-diff-checker", "typical", "feature 21: real folders: tree with counts, default ignores, filters, open a file and come back")
+def _(t):
+    t.call("() => {" + DIFF_FOLDER_JS + """
+      setMode('zip');
+      setFolderFromFiles('a', 'app-v1', _mkdir({ 'app/src/main.js': 'let a = 1;\\n', 'app/src/util/fmt.js': 'same', 'app/README.md': 'hello', 'app/node_modules/x/index.js': 'dep', 'app/old.txt': 'bye', 'app/build.log': 'log' }));
+      setFolderFromFiles('b', 'app-v2', _mkdir({ 'app/src/main.js': 'let a = 2;\\n', 'app/src/util/fmt.js': 'same', 'app/README.md': 'hello', 'app/node_modules/x/index.js': 'dep2', 'app/new.txt': 'hi' })); }""")
+    t.wait_for("() => window._zipRows && !window._zipRows.some(r => r.status === 'pending') && /identical/.test(document.getElementById('diffStats').innerText)", 15000)
+    s = t.text("diffStats")
+    expect("+1 added" in s and "−1 removed" in s and "~1 modified" in s and "2 identical" in s and "ignored" in s, s)
+    eq(sorted(t.call("window._zipRows.map(r => r.path)")), ["README.md", "new.txt", "old.txt", "src/main.js", "src/util/fmt.js"], "node_modules and *.log are not ignored")
+    src = t.call("[...document.querySelectorAll('#zipPanel tr.z-dir')].map(r => r.innerText.replace(/\\s+/g, ' ').trim())")
+    expect(any(x.startswith("src/") for x in src), str(src))
+    t.page.check("#hideSame"); t.wait(150)
+    expect("fmt.js" not in t.text("zipPanel") and "README.md" not in t.text("zipPanel"), "identical files still shown")
+    t.page.uncheck("#hideSame"); t.select("folderStatus", "added"); t.wait(150)
+    expect("new.txt" in t.text("zipPanel") and "old.txt" not in t.text("zipPanel"), "status filter")
+    t.select("folderStatus", "all"); t.wait(100)
+    # collapse src, open main.js, then come back with the tree state kept
+    t.call("toggleDir('src')"); t.wait(100)
+    expect("main.js" not in t.text("zipPanel"), "collapse failed")
+    t.call("toggleDir('src')"); t.call("toggleDir('src/util')"); t.wait(100)
+    i = t.call("window._zipRows.findIndex(r => r.path === 'src/main.js')")
+    t.call(f"zipOpen({i})")
+    t.wait_for("() => document.getElementById('resultTitle').textContent.includes('main.js') && document.querySelectorAll('#splitPanel .word-added').length")
+    expect(t.visible("#btnBackFolder"), "no Back to folder button")
+    t.click("#btnBackFolder"); t.wait(200)
+    expect("main.js" in t.text("zipPanel") and "fmt.js" not in t.text("zipPanel"), "tree state lost: " + t.text("zipPanel")[:200])
+
+
+@case("text-diff-checker", "typical", "feature 21: compare by size and by date, CSV report, folder drag and drop")
+def _(t):
+    t.call("() => {" + DIFF_FOLDER_JS + """
+      setMode('zip'); document.getElementById('folderBy').value = 'size';
+      setFolderFromFiles('a', 'L', _mkdir({ 'a.txt': 'abc', 'b.txt': 'xyz' }, 1767225600000));
+      setFolderFromFiles('b', 'R', _mkdir({ 'a.txt': 'ABC', 'b.txt': 'xyzw' }, 1767312000000)); }""")
+    t.wait(300)
+    eq(t.call("window._zipRows.map(r => r.path + ':' + r.status)"), ["a.txt:same", "b.txt:modified"], "by size")
+    t.select("folderBy", "date"); t.wait(300)
+    eq(t.call("window._zipRows.map(r => r.path + ':' + r.status + ':' + r.newer)"), ["a.txt:modified:b", "b.txt:modified:b"], "by date")
+    expect("right newer" in t.text("zipPanel"), "newer side not shown")
+    with t.page.expect_download() as dl:
+        t.click("#btnCsv")
+    csv = open(dl.value.path(), encoding="utf-8").read()
+    expect("Compared by,modified date" in csv and "Generated," in csv and "Ignored," in csv and "b.txt,modified,3,4" in csv, csv[:400])
+    # a dropped folder (directory entries as the browser provides them)
+    t.call("""() => {
+      const fe = (name, text) => ({ isFile: true, isDirectory: false, name, fullPath: '/drop/' + name, file: cb => cb(new File([text], name)) });
+      const dir = { isFile: false, isDirectory: true, name: 'drop', fullPath: '/drop', createReader: () => { let done = false; return { readEntries: cb => { const out = done ? [] : [fe('x.txt', 'one'), fe('y.txt', 'two')]; done = true; setTimeout(() => cb(out), 0); } }; } };
+      dropInto('a', { items: [{ webkitGetAsEntry: () => dir }], files: [] }); }""")
+    t.wait_for("() => document.getElementById('zipAInfo').innerText.includes('2 files')", 5000)
+
+
+@case("text-diff-checker", "maximal", "feature 21: 20,000 files hash in a worker with progress and Cancel, never guessing")
+def _(t):
+    t.call("""() => { setMode('zip'); document.getElementById('folderBy').value = 'content';
+      // slices of one Blob: cheap to build, read like files (12 bytes each)
+      const mk = s => { const parts = Array.from({length: 20000}, (_, i) => String(i % 7 === 0 ? i + s : i).padStart(12, '0')); const big = new Blob(parts);
+        return parts.map((p, i) => ({ path: 'd' + (i % 50) + '/f' + i + '.txt', file: big.slice(i * 12, i * 12 + 12) })); };
+      setFolderFromFiles('a', 'big-a', mk('a')); setFolderFromFiles('b', 'big-b', mk('b')); }""")
+    t.wait(400)
+    expect(t.visible("#diffProgress") and "Hashing" in t.text("diffProgressLabel"), "no hashing progress")
+    ticks = t.call("new Promise(res => { let n = 0; const id = setInterval(() => n++, 20); setTimeout(() => { clearInterval(id); res(n); }, 300); })")
+    expect(ticks >= 8, f"main thread blocked while hashing: {ticks} ticks")
+    t.click("#btnCancelDiff"); t.wait(300)
+    expect("not compared" in t.text("diffStats") and "Hashing was cancelled" in t.text("zipPanel"), t.text("diffStats"))
+    t.call("run()")
+    t.wait_for("() => !/not compared/.test(document.getElementById('diffStats').innerText) && /identical/.test(document.getElementById('diffStats').innerText)", 120000)
+    eq(t.call("window._zipRows.filter(r => r.status === 'modified').length"), 2858, "modified count")
+    expect(t.count("#zipPanel tbody tr") < 2000, f"{t.count('#zipPanel tbody tr')} rows in the DOM")
 
 
 @case("text-diff-checker", "typical", "audit: ignore-whitespace/case and highlight options re-run the diff live")

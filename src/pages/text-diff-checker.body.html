@@ -12,7 +12,7 @@
     <button type="button" class="mode-tab" data-mode="struct" role="tab" aria-selected="false"><i data-lucide="braces"></i> JSON / YAML structure</button>
     <button type="button" class="mode-tab" data-mode="table" role="tab" aria-selected="false"><i data-lucide="table"></i> CSV / spreadsheet cells</button>
     <button type="button" class="mode-tab" data-mode="patch" role="tab" aria-selected="false"><i data-lucide="file-plus-2"></i> Apply a patch</button>
-    <button type="button" class="mode-tab" data-mode="zip" role="tab" aria-selected="false"><i data-lucide="folder-git-2"></i> Folders (.zip)</button>
+    <button type="button" class="mode-tab" data-mode="zip" role="tab" aria-selected="false"><i data-lucide="folder-git-2"></i> Folders</button>
   </div>
 
   <!-- Two-sided inputs: text, struct and table modes share them -->
@@ -75,17 +75,27 @@
     </div>
   </div>
 
-  <!-- Zip inputs -->
+  <!-- Folder inputs: a real folder (picker, folder input or drag and drop) or a .zip -->
   <div class="ide-container mode-only" data-for="zip" style="display:none;">
     <div class="pane zip-pane" id="zipAPane">
-      <div class="pane-header"><div class="pane-title title-red"><i data-lucide="folder-archive"></i> Folder A (.zip)</div>
-        <div class="btn-group"><input type="file" id="zipAFile" accept=".zip,application/zip" style="display:none;"><button class="btn" type="button" onclick="document.getElementById('zipAFile').click()"><i data-lucide="upload"></i> Choose zip</button></div></div>
-      <div class="zip-drop" id="zipAInfo"><i data-lucide="folder-input"></i><span>Drop a .zip of the first folder here</span></div>
+      <div class="pane-header"><div class="pane-title title-red"><i data-lucide="folder"></i> Left folder</div>
+        <div class="btn-group">
+          <input type="file" id="dirAInput" webkitdirectory multiple style="display:none;">
+          <input type="file" id="zipAFile" accept=".zip,application/zip" style="display:none;">
+          <button class="btn" type="button" onclick="pickFolder('a')"><i data-lucide="folder-open"></i> Choose folder</button>
+          <button class="btn" type="button" onclick="document.getElementById('zipAFile').click()"><i data-lucide="file-archive"></i> Zip</button>
+        </div></div>
+      <div class="zip-drop" id="zipAInfo"><i data-lucide="folder-input"></i><span>Drop a folder or a .zip here</span></div>
     </div>
     <div class="pane zip-pane" id="zipBPane">
-      <div class="pane-header"><div class="pane-title title-green"><i data-lucide="folder-archive"></i> Folder B (.zip)</div>
-        <div class="btn-group"><input type="file" id="zipBFile" accept=".zip,application/zip" style="display:none;"><button class="btn" type="button" onclick="document.getElementById('zipBFile').click()"><i data-lucide="upload"></i> Choose zip</button></div></div>
-      <div class="zip-drop" id="zipBInfo"><i data-lucide="folder-input"></i><span>Drop a .zip of the second folder here</span></div>
+      <div class="pane-header"><div class="pane-title title-green"><i data-lucide="folder"></i> Right folder</div>
+        <div class="btn-group">
+          <input type="file" id="dirBInput" webkitdirectory multiple style="display:none;">
+          <input type="file" id="zipBFile" accept=".zip,application/zip" style="display:none;">
+          <button class="btn" type="button" onclick="pickFolder('b')"><i data-lucide="folder-open"></i> Choose folder</button>
+          <button class="btn" type="button" onclick="document.getElementById('zipBFile').click()"><i data-lucide="file-archive"></i> Zip</button>
+        </div></div>
+      <div class="zip-drop" id="zipBInfo"><i data-lucide="folder-input"></i><span>Drop a folder or a .zip here</span></div>
     </div>
   </div>
 
@@ -116,6 +126,19 @@
         <select id="arrMode" class="mini-select"><option value="index" selected>by position</option><option value="set">as sets (order ignored)</option><option value="key">by key field</option></select>
       </label>
       <label class="toggle-label" id="keyFieldLabel" style="display:none;">Key field <input type="text" id="keyField" class="mini-input" value="id" size="8"></label>
+    </div>
+    <div class="opt-group mode-only" data-for="zip" style="display:none;">
+      <label class="toggle-label">Compare by
+        <select id="folderBy" class="mini-select"><option value="content" selected>content (SHA-256)</option><option value="size">size</option><option value="date">modified date</option></select>
+      </label>
+      <label class="toggle-label">Show
+        <select id="folderStatus" class="mini-select"><option value="all" selected>all files</option><option value="modified">modified</option><option value="added">added</option><option value="removed">removed</option><option value="same">identical</option></select>
+      </label>
+      <label class="toggle-label"><input type="checkbox" id="hideSame"> Hide identical</label>
+      <label class="toggle-label ignore-label" title="Names or globs, separated by commas. A name matches at any depth (node_modules, *.log); a pattern with / matches from the top folder (docs/*.pdf).">Ignore
+        <input type="text" id="ignoreList" class="mini-input ignore-input" spellcheck="false" autocomplete="off">
+        <button type="button" class="btn mini-btn" id="btnIgnoreReset" title="Restore the default ignore list">Reset</button>
+      </label>
     </div>
     <div class="opt-group mode-only" data-for="table" style="display:none;">
       <label class="toggle-label">Match rows by
@@ -149,6 +172,8 @@
             <button class="btn" type="button" id="btnPatch" onclick="copyPatch()" title="Copy a unified diff (git apply / patch -p0 compatible)"><i data-lucide="copy"></i> Copy patch</button>
             <button class="btn" type="button" id="btnPatchDl" onclick="downloadPatch()" title="Download as .patch"><i data-lucide="download"></i> .patch</button>
             <button class="btn" type="button" id="btnReport" onclick="downloadReport()" title="Download a standalone HTML report of this comparison"><i data-lucide="file-code-2"></i> HTML report</button>
+            <button class="btn mode-only" data-for="zip table struct" type="button" id="btnCsv" onclick="downloadCsv()" title="Download the differences as CSV"><i data-lucide="file-spreadsheet"></i> CSV</button>
+            <button class="btn" type="button" id="btnBackFolder" onclick="backToFolder()" hidden><i data-lucide="folder-tree"></i> Back to folder</button>
           </span>
         </div>
       </div>
@@ -415,16 +440,17 @@
     let decisions = [];         // per hunk: 'left' | 'right' | 'both'
     let currentHunk = -1;
     let three = null;           // last three-way result
-    let zips = { a: null, b: null };
+    let folders = { a: null, b: null }, folderView = null, folderReturn = false;
     let tableRowsCache = { a: null, b: null };
 
-    const MODE_LABEL = { text: 'Compare', three: 'Merge', struct: 'Compare structure', table: 'Compare rows', patch: 'Apply patch', zip: 'Compare folders' };
+    const MODE_LABEL = { text: 'Compare', three: 'Merge', struct: 'Compare structure', table: 'Compare rows', patch: 'Apply patch', zip: 'Compare folders', hex: 'Compare bytes', image: 'Compare images' };
 
     function setMode(m) {
       mode = m;
       document.querySelectorAll('#modeTabs .mode-tab').forEach(b => { const on = b.dataset.mode === m; b.classList.toggle('active', on); b.setAttribute('aria-selected', on ? 'true' : 'false'); });
       document.querySelectorAll('.mode-only').forEach(el => { el.style.display = el.dataset.for.split(' ').includes(m) ? '' : 'none'; });
       $('btnRunLabel').textContent = MODE_LABEL[m];
+      $('btnBackFolder').hidden = !(folderReturn && folderView && m !== 'zip');
       $('outputSection').style.display = 'none';
       $('mergedSection').style.display = 'none';
       if (m === 'table') refreshKeyColumns();
@@ -478,7 +504,7 @@
     });
     // Kernel drop fallback: a file dropped outside a pane goes to whichever side is empty.
     Layerbit.onDrop(files => {
-      if (mode === 'zip') { loadZip(zips.a ? 'b' : 'a', files[0]); if (files[1]) loadZip('b', files[1]); return; }
+      if (mode === 'zip') { loadZip(folders.a ? 'b' : 'a', files[0]); if (files[1]) loadZip('b', files[1]); return; }
       const target = mode === 'three' ? ($('baseText').value ? ($('oursText').value ? 'theirsText' : 'oursText') : 'baseText') : mode === 'patch' ? ($('patchOriginal').value ? 'patchText' : 'patchOriginal') : ($('text1').value ? 'text2' : 'text1');
       loadFileInto(target, files[0], target === 'text1' ? 'a' : target === 'text2' ? 'b' : null);
       if (files[1] && target === 'text1') loadFileInto('text2', files[1], 'b');
@@ -505,8 +531,8 @@
       // would then fire no change event
       document.querySelectorAll('input[type="file"]').forEach(i => { i.value = ''; });
       ['text1', 'text2', 'baseText', 'oursText', 'theirsText', 'patchOriginal', 'patchText', 'mergedText'].forEach(id => $(id).value = '');
-      names = { a: 'original', b: 'modified' }; zips = { a: null, b: null };
-      $('zipAInfo').innerHTML = '<i data-lucide="folder-input"></i><span>Drop a .zip of the first folder here</span>'; $('zipBInfo').innerHTML = '<i data-lucide="folder-input"></i><span>Drop a .zip of the second folder here</span>';
+      names = { a: 'original', b: 'modified' }; folders = { a: null, b: null }; folderView = null; folderReturn = false; $('btnBackFolder').hidden = true;
+      $('zipAInfo').innerHTML = $('zipBInfo').innerHTML = '<i data-lucide="folder-input"></i><span>Drop a folder or a .zip here</span>';
       $('outputSection').style.display = 'none'; $('mergedSection').style.display = 'none'; updateMeta(); Layerbit.state.clear(); icons();
     }
     function showError(msg) { $('errorBanner').classList.add('active'); $('errorText').textContent = msg; $('outputSection').style.display = 'grid'; }
@@ -834,11 +860,29 @@
       if (!last || last.tooDifferent || !last.renderAll) return $('splitPanel').outerHTML;
       return `<div class="diff-output ${$('viewMode').value === 'unified' ? 'unified' : 'split'}">${last.renderAll()}</div>`;
     }
+    // Options line stated in every export, so a report is an honest record.
+    function optionsSummary() {
+      if (mode === 'zip') return `Compared by ${$('folderBy').selectedOptions[0].textContent}; ignored: ${ignoreList().join(', ') || 'nothing'}`;
+      if (mode === 'table') return `Rows matched by ${$('keyCol').selectedOptions[0] ? $('keyCol').selectedOptions[0].textContent : 'row order'}`;
+      if (mode === 'struct') return `Arrays compared ${$('arrMode').selectedOptions[0].textContent}${$('arrMode').value === 'key' ? ' (' + $('keyField').value + ')' : ''}`;
+      const o = opts(), on = ['ignoreWhitespace', 'ignoreCase', 'trimTrailing', 'ignoreBlank'].filter(k => o[k]).map(k => ({ ignoreWhitespace: 'ignore whitespace', ignoreCase: 'ignore case', trimTrailing: 'trim trailing whitespace', ignoreBlank: 'ignore blank lines' }[k]));
+      return `Options: ${on.length ? on.join(', ') : 'exact comparison'}; highlight ${o.granularity}`;
+    }
+    function folderReportHtml() {
+      const V = folderView; if (!V) return '';
+      return `<table class="data-table"><thead><tr><th>Path</th><th>Status</th><th>Left size</th><th>Right size</th><th>Left modified</th><th>Right modified</th></tr></thead><tbody>${V.rows.map(r => `<tr><td class="t-path">${E.esc(r.path)}</td><td class="t-${r.status === 'modified' ? 'changed' : r.status}">${r.status === 'same' ? 'identical' : STATUS_WORD[r.status]}</td><td>${r.a ? r.a.size : ''}</td><td>${r.b ? r.b.size : ''}</td><td>${r.a ? fmtTime(r.a.mtime) : ''}</td><td>${r.b ? fmtTime(r.b.mtime) : ''}</td></tr>`).join('')}</tbody></table>`;
+    }
+    function downloadCsv() {
+      const stamp = new Date().toISOString();
+      if (mode === 'zip' && folderView) { download('folder-comparison.csv', E.folderCsv(folderView.rows, { by: $('folderBy').selectedOptions[0].textContent, ignore: ignoreList(), generated: stamp, left: folders.a.name, right: folders.b.name }), 'text/csv'); return; }
+      if (window.exportCsv) return exportCsv(stamp);
+      Layerbit.toast('Run a comparison first');
+    }
     function downloadReport() {
       const panel = $('outputSection').querySelector('.result-pane');
-      const body = mode === 'text' || mode === 'patch' || mode === 'zip' ? fullTextHtml() : mode === 'struct' ? $('structPanel').outerHTML : mode === 'table' ? $('tablePanel').outerHTML : $('threePanel').outerHTML;
+      const body = mode === 'zip' ? folderReportHtml() : mode === 'text' || mode === 'patch' ? fullTextHtml() : mode === 'struct' ? $('structPanel').outerHTML : mode === 'table' ? $('tablePanel').outerHTML : $('threePanel').outerHTML;
       const css = `body{font-family:system-ui,sans-serif;background:#0a0c10;color:#f8fafc;margin:0;padding:24px}h1{font-size:1.2em}.meta{color:#94a3b8;font-size:.9em;margin-bottom:16px}.drow{display:grid;grid-template-columns:1fr 1fr}.sd-l{border-right:1px solid #222}.dside{min-width:0}.diff-output{font-family:ui-monospace,Menlo,monospace;font-size:12px;line-height:1.5;background:rgba(0,0,0,.4);border:1px solid #222;border-radius:8px;overflow:auto;max-height:none}.diff-line{display:flex}.diff-num{width:48px;flex-shrink:0;text-align:right;padding-right:8px;color:#94a3b8;border-right:1px solid #222;user-select:none}.unified .diff-num{width:80px;display:flex}.unified .diff-num span{flex:1}.diff-text{padding-left:8px;white-space:pre-wrap;word-break:break-all;flex:1}.line-removed{background:rgba(239,68,68,.15)}.line-added{background:rgba(34,197,94,.15)}.word-removed{background:rgba(239,68,68,.45);text-decoration:line-through}.word-added{background:rgba(34,197,94,.45)}.hunk-bar,.hunk-bar-spacer,.hunk-anchor{display:none}.diff-skip{color:#94a3b8;padding:4px 12px;background:rgba(255,255,255,.03)}.tk-kw{color:#38bdf8}.tk-str{color:#a7f3d0}.tk-num{color:#fdba74}.tk-cmt{color:#64748b;font-style:italic}.tk-key{color:#c084fc}.tk-tag{color:#f472b6}.tk-attr{color:#fdba74}.tk-fn{color:#f472b6}.tk-prop{color:#38bdf8}table{border-collapse:collapse;width:100%;font-size:.9em}th,td{text-align:left;padding:6px 10px;border-bottom:1px solid #222;vertical-align:top;font-family:ui-monospace,monospace}th{color:#38bdf8}.t-added{color:#4ade80}.t-removed{color:#f87171}.t-changed{color:#fbbf24}.t-type{color:#c084fc}.cell-old{color:#f87171;text-decoration:line-through}.cell-new{color:#4ade80}.three-chunk{border-left:3px solid #333;padding:4px 10px;margin:4px 0;white-space:pre-wrap;font-family:ui-monospace,monospace;font-size:12px}.three-chunk.conflict{border-color:#ef4444}.three-chunk.ours{border-color:#f87171}.three-chunk.theirs{border-color:#4ade80}.three-chunk .cb{display:none}.ws{opacity:.4}`;
-      const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Layerbit diff report</title><style>${css}</style></head><body><h1>Comparison report</h1><div class="meta">${E.esc($('resultTitle').textContent)} · ${E.esc($('diffStats').innerText.replace(/\n/g, ' · '))} · generated ${new Date().toISOString()} with layerbit.co.in/tools/text-diff-checker.html</div>${body}</body></html>`;
+      const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Layerbit diff report</title><style>${css}</style></head><body><h1>Comparison report</h1><div class="meta">${E.esc($('resultTitle').textContent)} · ${E.esc($('diffStats').innerText.replace(/\n/g, ' · '))}<br>${E.esc(optionsSummary())}<br>Generated ${new Date().toISOString()} with layerbit.co.in/tools/text-diff-checker.html</div>${body}</body></html>`;
       download('diff-report.html', html, 'text/html');
     }
 
@@ -1031,57 +1075,222 @@
         .then(() => { $('mergedTitle').textContent = 'Patched file: ' + name; $('mergedSection').style.display = 'grid'; renderPatchFiles(); icons(); });
     }
 
-    // ---- zip
+    // ---- folders
+    // A side is a list of entries {path, size, mtime, crc?, file?, read()}
+    // from a real folder (picker, folder input, drag and drop) or a .zip.
+    const IGNORE_KEY = 'lb-diff-ignore';
+    function ignoreList() { return $('ignoreList').value.split(',').map(x => x.trim()).filter(Boolean); }
+    try { $('ignoreList').value = localStorage.getItem(IGNORE_KEY) || E.DEFAULT_IGNORE.join(', '); } catch (e) { $('ignoreList').value = E.DEFAULT_IGNORE.join(', '); }
+    $('ignoreList').addEventListener('change', () => { try { localStorage.setItem(IGNORE_KEY, $('ignoreList').value); } catch (e) { /* ignore */ } if (folders.a && folders.b) run(true); });
+    $('btnIgnoreReset').addEventListener('click', () => { $('ignoreList').value = E.DEFAULT_IGNORE.join(', '); $('ignoreList').dispatchEvent(new Event('change')); });
+    $('folderBy').addEventListener('change', () => { if (folders.a && folders.b) run(true); });
+    ['folderStatus', 'hideSame'].forEach(id => $(id).addEventListener('change', () => { if (folderView) renderFolder(); }));
+
+    function setFolder(side, name, entries, kind) {
+      const shown = E.stripCommonRoot(entries.map(e => e.path));
+      entries.forEach((e, i) => { e.path = shown[i]; });
+      folders[side] = { name, entries, kind };
+      const bytes = entries.reduce((t, e) => t + (e.size || 0), 0);
+      $(side === 'a' ? 'zipAInfo' : 'zipBInfo').innerHTML = `<i data-lucide="${kind === 'zip' ? 'folder-archive' : 'folder-check'}"></i><span><strong>${E.esc(name)}</strong> · ${entries.length.toLocaleString()} files · ${Layerbit.fmtBytes(bytes)}</span>`;
+      icons();
+      if (folders.a && folders.b) run();
+    }
     function loadZip(side, file) {
       if (!file) return;
+      if (!/\.zip$/i.test(file.name) && file.type !== 'application/zip' && file.type !== 'application/x-zip-compressed') { setFolder(side, file.name, [{ path: file.name, size: file.size, mtime: file.lastModified, file }], 'files'); return; }
       file.arrayBuffer().then(buf => {
-        const entries = E.readZip(buf);
-        const shown = E.stripCommonRoot(entries.map(e => e.name));
-        zips[side] = { name: file.name, entries, map: new Map(entries.map((e, i) => [shown[i], e])) };
-        $(side === 'a' ? 'zipAInfo' : 'zipBInfo').innerHTML = `<i data-lucide="folder-check"></i><span><strong>${E.esc(file.name)}</strong> · ${entries.length} files · ${Layerbit.fmtBytes(buf.byteLength)}</span>`;
-        icons();
-        if (zips.a && zips.b) run();
+        const entries = E.readZip(buf).map(e => ({ path: e.name, size: e.size, mtime: e.mtime, crc: e.crc, read: e.read }));
+        setFolder(side, file.name, entries, 'zip');
       }).catch(e => showError(`${file.name}: ${e.message}`));
     }
+    function setFolderFromFiles(side, name, files) {
+      setFolder(side, name, files.map(f => { const F = f.file || f; return { path: f.path || F.webkitRelativePath || F.name, size: F.size, mtime: F.lastModified, file: F }; }), 'folder');
+    }
+    async function walkHandle(handle, prefix, out) {
+      for await (const [n, h] of handle.entries()) {
+        if (h.kind === 'directory') await walkHandle(h, prefix + n + '/', out);
+        else { const f = await h.getFile(); out.push({ path: prefix + n, size: f.size, mtime: f.lastModified, file: f }); }
+      }
+      return out;
+    }
+    function pickFolder(side) {
+      if (window.showDirectoryPicker) {
+        window.showDirectoryPicker().then(h => { $(side === 'a' ? 'zipAInfo' : 'zipBInfo').innerHTML = '<span>Reading folder…</span>'; return walkHandle(h, '', []).then(list => setFolder(side, h.name, list, 'folder')); })
+          .catch(e => { if (e.name !== 'AbortError') $(side === 'a' ? 'dirAInput' : 'dirBInput').click(); });
+      } else $(side === 'a' ? 'dirAInput' : 'dirBInput').click();
+    }
+    [['dirAInput', 'a'], ['dirBInput', 'b']].forEach(([id, side]) => $(id).addEventListener('change', e => {
+      const files = [...e.target.files]; e.target.value = '';
+      if (files.length) setFolderFromFiles(side, (files[0].webkitRelativePath || files[0].name).split('/')[0], files);
+    }));
     $('zipAFile').addEventListener('change', e => { loadZip('a', e.target.files[0]); e.target.value = ''; });
     $('zipBFile').addEventListener('change', e => { loadZip('b', e.target.files[0]); e.target.value = ''; });
-    [['zipAPane', 'a'], ['zipBPane', 'b']].forEach(([id, side]) => { const p = $(id); p.addEventListener('dragover', e => { e.preventDefault(); p.classList.add('dragover'); }); p.addEventListener('dragleave', () => p.classList.remove('dragover')); p.addEventListener('drop', e => { e.preventDefault(); p.classList.remove('dragover'); loadZip(side, e.dataTransfer.files[0]); }); });
+    // Drag and drop: whole folders (recursively), a zip, or loose files.
+    function readEntry(entry, out) {
+      return new Promise(res => {
+        if (entry.isFile) entry.file(f => { out.push({ path: entry.fullPath.replace(/^\//, ''), size: f.size, mtime: f.lastModified, file: f }); res(); }, () => res());
+        else { const r = entry.createReader(), all = []; const next = () => r.readEntries(batch => { if (!batch.length) Promise.all(all.map(en => readEntry(en, out))).then(res); else { all.push(...batch); Promise.resolve().then(next); } }, () => res()); next(); }
+      });
+    }
+    function dropInto(side, dt) {
+      const items = [...(dt.items || [])].map(i => i.webkitGetAsEntry && i.webkitGetAsEntry()).filter(Boolean);
+      if (items.length === 1 && items[0].isFile && /\.zip$/i.test(items[0].name)) { loadZip(side, dt.files[0]); return; }
+      if (!items.length) { if (dt.files && dt.files[0]) loadZip(side, dt.files[0]); return; }
+      const out = []; $(side === 'a' ? 'zipAInfo' : 'zipBInfo').innerHTML = '<span>Reading folder…</span>';
+      Promise.all(items.map(en => readEntry(en, out))).then(() => setFolder(side, items.length === 1 ? items[0].name : `${items.length} items`, out, 'folder'));
+    }
+    [['zipAPane', 'a'], ['zipBPane', 'b']].forEach(([id, side]) => { const p = $(id); p.addEventListener('dragover', e => { e.preventDefault(); p.classList.add('dragover'); }); p.addEventListener('dragleave', () => p.classList.remove('dragover')); p.addEventListener('drop', e => { e.preventDefault(); e.stopPropagation(); p.classList.remove('dragover'); dropInto(side, e.dataTransfer); }); });
+
+    // SHA-256 in a worker, one file at a time, with progress and Cancel.
+    let hashWorker = null, hashJob = 0;
+    function cancelHashing() { if (hashWorker) { hashWorker.terminate(); hashWorker = null; } hashJob++; stopProgress(); }
+    function readEntryBytes(e) { return e.file ? e.file.arrayBuffer() : e.read().then(u => u.buffer.slice(u.byteOffset, u.byteOffset + u.byteLength)); }
+    // Files are sent to the worker in batches (it reads them itself); zip
+    // entries are inflated here first. A batch holds at most 256 files or
+    // 64 MB, and two batches are in flight, so memory stays bounded.
+    function hashEntries(list) {
+      if (!list.length) return Promise.resolve(true);
+      if (!(window.crypto && crypto.subtle)) return Promise.resolve(false);
+      if (!hashWorker) hashWorker = new Worker(URL.createObjectURL(new Blob([`
+        const hex = d => { let h = ''; for (const x of new Uint8Array(d)) h += x.toString(16).padStart(2, '0'); return h; };
+        // reading one Blob made of many small files costs one round trip
+        // instead of one per file, which is most of the time for small files
+        onmessage = async e => { const { id, items } = e.data, out = [];
+          const files = items.filter(it => it.file), bufs = items.filter(it => !it.file);
+          try {
+            const big = await new Blob(files.map(it => it.file)).arrayBuffer(); let off = 0;
+            for (const it of files) { out.push([it.k, hex(await crypto.subtle.digest('SHA-256', new Uint8Array(big, off, it.file.size)))]); off += it.file.size; }
+          } catch (err) { for (const it of files) { try { out.push([it.k, hex(await crypto.subtle.digest('SHA-256', await it.file.arrayBuffer()))]); } catch (e2) { out.push([it.k, 'unreadable:' + it.k]); } } }
+          for (const it of bufs) out.push([it.k, hex(await crypto.subtle.digest('SHA-256', it.buf))]);
+          postMessage({ id, out }); };`], { type: 'text/javascript' })));
+      const job = ++hashJob, w = hashWorker, t0 = Date.now();
+      $('outputSection').style.display = 'grid';
+      $('diffProgress').hidden = false; $('diffProgressFill').classList.remove('indeterminate'); $('diffProgressFill').style.width = '0%';
+      $('diffProgressLabel').textContent = `Hashing 0 of ${list.length.toLocaleString()} files…`; $('diffProgressTime').textContent = '';
+      clearInterval(workerTimer); workerTimer = setInterval(() => { $('diffProgressTime').textContent = ((Date.now() - t0) / 1000).toFixed(1) + ' s'; }, 100);
+      icons();
+      const batches = []; let cur = [], bytes = 0;
+      list.forEach((e, k) => { if (cur.length && (cur.length >= 512 || bytes + (e.size || 0) > 64 * 1048576)) { batches.push(cur); cur = []; bytes = 0; } cur.push(k); bytes += e.size || 0; });
+      if (cur.length) batches.push(cur);
+      return new Promise(resolve => {
+        let nextBatch = 0, done = 0;
+        const send = async () => {
+          if (job !== hashJob || nextBatch >= batches.length) return;
+          const ks = batches[nextBatch++], items = [], transfer = [];
+          for (const k of ks) {
+            const e = list[k];
+            if (e.file) items.push({ k, file: e.file });
+            else { const u = await e.read().catch(() => new Uint8Array(0)); const buf = u.buffer.slice(u.byteOffset, u.byteOffset + u.byteLength); items.push({ k, buf }); transfer.push(buf); }
+          }
+          if (job === hashJob) w.postMessage({ id: job, items }, transfer);
+        };
+        w.onmessage = e => {
+          if (e.data.id !== job) return;
+          e.data.out.forEach(([k, h]) => { list[k].hash = h; });
+          done += e.data.out.length;
+          $('diffProgressFill').style.width = Math.round(100 * done / list.length) + '%';
+          $('diffProgressLabel').textContent = `Hashing ${done.toLocaleString()} of ${list.length.toLocaleString()} files…`;
+          if (done >= list.length) { stopProgress(); resolve(true); } else send();
+        };
+        const watch = setInterval(() => { if (job !== hashJob) { clearInterval(watch); resolve(false); } else if (done >= list.length) clearInterval(watch); }, 100);
+        send(); send();
+      });
+    }
+    // the shared Cancel button stops hashing too
+    $('btnCancelDiff').addEventListener('click', () => { if (mode === 'zip') { cancelHashing(); if (folderView) { folderView.cancelled = true; renderFolder(); } } });
+
     async function runZip() {
-      if (!zips.a || !zips.b) { showError('Choose or drop two zip archives.'); return; }
-      const namesAll = new Set([...zips.a.map.keys(), ...zips.b.map.keys()]);
-      const rows = [];
-      for (const n of [...namesAll].sort()) {
-        const ea = zips.a.map.get(n), eb = zips.b.map.get(n);
-        if (!ea) rows.push({ n, s: 'added', size: eb.size }); else if (!eb) rows.push({ n, s: 'removed', size: ea.size });
-        else if (ea.crc === eb.crc && ea.size === eb.size) rows.push({ n, s: 'same', size: ea.size });
-        else rows.push({ n, s: 'modified', size: eb.size, da: ea.size, db: eb.size });
+      if (!folders.a || !folders.b) { showError('Choose, drop or open a folder or a zip on each side.'); return; }
+      const ign = E.compileIgnore(ignoreList()), by = $('folderBy').value;
+      const A = folders.a.entries.filter(e => !ign(e.path)), B = folders.b.entries.filter(e => !ign(e.path));
+      const ignored = folders.a.entries.length - A.length + folders.b.entries.length - B.length;
+      let rows = E.folderDiff(A, B, by);
+      const prevOpen = folderView ? folderView.open : null;
+      const tree0 = E.buildTree(rows), open0 = prevOpen || new Set();
+      if (!prevOpen && rows.length <= 300) (function all(n) { n.children.forEach(c => { if (c.dir) { open0.add(c.path); all(c); } }); })(tree0);
+      folderView = { rows, tree: tree0, open: open0, by, ignored, cancelled: false };
+      renderFolder();
+      if (by === 'content') {
+        const pend = rows.filter(r => r.status === 'pending');
+        if (pend.length) {
+          const need = []; pend.forEach(r => { if (!r.a.hash) need.push(r.a); if (!r.b.hash) need.push(r.b); });
+          const ok = await hashEntries(need);
+          if (!ok && !need.every(e => e.hash)) { folderView.cancelled = true; folderView.noHash = !(window.crypto && crypto.subtle); renderFolder(); return; }
+          rows = E.folderDiff(A, B, by);
+          folderView.rows = rows; folderView.tree = E.buildTree(rows); renderFolder();
+        }
       }
-      const c = { added: 0, removed: 0, modified: 0, same: 0 }; rows.forEach(r => c[r.s]++);
-      $('resultTitle').textContent = `${zips.a.name} vs ${zips.b.name}`;
-      $('diffStats').innerHTML = `<span class="st-add">+${c.added} added</span><span class="st-del">−${c.removed} removed</span><span class="st-mod">~${c.modified} modified</span><span>${c.same} identical</span>`;
-      $('zipPanel').innerHTML = '<table class="data-table zip-table" id="zipTable"><thead><tr><th>File</th><th>Status</th><th>Size</th><th></th></tr></thead></table>';
-      const zipRow = i => { const r = rows[i]; return `<tr class="z-${r.s}"><td class="t-path">${E.esc(r.n)}</td><td class="t-${r.s === 'modified' ? 'changed' : r.s}">${r.s}${r.s === 'modified' ? ` (${Layerbit.fmtBytes(r.da)} → ${Layerbit.fmtBytes(r.db)})` : ''}</td><td class="muted">${Layerbit.fmtBytes(r.size)}</td><td>${r.s === 'modified' ? `<button type="button" class="btn" onclick="zipOpen(${i})"><i data-lucide="file-diff"></i> Diff</button>` : r.s !== 'same' ? `<button type="button" class="btn" onclick="zipView(${i})"><i data-lucide="eye"></i> View</button>` : ''}</td></tr>`; };
-      mountList('zip', $('zipTable'), rows.length, zipRow, { root: $('zipPanel'), blockTag: 'tbody', rowHeight: 45, onFill: icons, spacer: h => `<tr class="vspacer"><td colspan="4" style="height:${h}px;padding:0;border:0"></td></tr>` });
-      window._zipRows = rows;
+    }
+    function toggleDir(path) { if (folderView.open.has(path)) folderView.open.delete(path); else folderView.open.add(path); renderFolder(); }
+    const fmtTime = t => t ? new Date(t).toLocaleString(undefined, { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : '';
+    const STATUS_WORD = { same: 'same', added: 'added', removed: 'removed', modified: 'modified', pending: 'not compared' };
+    function renderFolder() {
+      const V = folderView, c = V.tree.counts;
+      $('resultTitle').textContent = `${folders.a.name} vs ${folders.b.name}`;
+      $('diffStats').innerHTML = `<span class="st-add">+${c.added} added</span><span class="st-del">−${c.removed} removed</span><span class="st-mod">~${c.modified} modified</span><span>${c.same} identical</span>${c.pending ? `<span class="st-del">${c.pending} not compared</span>` : ''}${V.ignored ? `<span class="muted">${V.ignored} ignored</span>` : ''}`;
+      const list = E.flattenTree(V.tree, V.open, { hideIdentical: $('hideSame').checked, status: $('folderStatus').value });
+      window._zipRows = V.rows;
+      const idx = new Map(V.rows.map((r, i) => [r, i]));
+      const badge = (n, cls, label) => n ? `<span class="zc ${cls}" title="${n} ${label}">${n}</span>` : '';
+      const row = i => {
+        const { node, depth } = list[i], pad = `style="padding-left:${depth * 18}px"`;
+        if (node.dir) {
+          const k = node.counts, isOpen = V.open.has(node.path);
+          return `<tr class="z-dir" data-dir="${E.esc(node.path)}"><td class="t-path"><span class="ztog" ${pad}><i data-lucide="${isOpen ? 'chevron-down' : 'chevron-right'}"></i>${E.esc(node.name)}/</span></td><td>${badge(k.added, 't-added', 'added')}${badge(k.removed, 't-removed', 'removed')}${badge(k.modified, 't-changed', 'modified')}${badge(k.same, 't-same', 'identical')}${badge(k.pending, 't-removed', 'not compared')}</td><td></td><td></td><td></td><td></td><td></td></tr>`;
+        }
+        const r = node.row, n = idx.get(r), st = r.status;
+        const act = st === 'modified' || st === 'pending' ? `<button type="button" class="btn" data-open="${n}"><i data-lucide="file-diff"></i> Compare</button>` : st !== 'same' ? `<button type="button" class="btn" data-open="${n}"><i data-lucide="eye"></i> View</button>` : `<button type="button" class="btn ghost" data-open="${n}" title="Open both copies"><i data-lucide="eye"></i></button>`;
+        return `<tr class="z-${st}"><td class="t-path"><span ${pad}>${E.esc(node.name)}</span></td><td class="t-${st === 'modified' ? 'changed' : st === 'pending' ? 'removed' : st}">${STATUS_WORD[st]}${r.newer ? ` <span class="muted">(${r.newer === 'a' ? 'left' : 'right'} newer)</span>` : ''}</td><td class="muted">${r.a ? Layerbit.fmtBytes(r.a.size) : ''}</td><td class="muted">${r.b ? Layerbit.fmtBytes(r.b.size) : ''}</td><td class="muted">${r.a ? fmtTime(r.a.mtime) : ''}</td><td class="muted">${r.b ? fmtTime(r.b.mtime) : ''}</td><td>${act}</td></tr>`;
+      };
+      const keep = $('zipPanel').scrollTop;
+      $('zipPanel').innerHTML = (V.cancelled && c.pending ? `<div class="diff-notes" role="status"><i data-lucide="alert-triangle"></i><div><strong>${V.noHash ? 'This browser cannot hash files on this page.' : 'Hashing was cancelled.'}</strong> Files of equal size that were not hashed are listed as "not compared", never as identical. ${V.noHash ? 'Compare by size or date instead, or open the page over https.' : 'Press Compare to finish.'}</div></div>` : '') +
+        '<table class="data-table zip-table" id="zipTable"><thead><tr><th>Name</th><th>Status</th><th>Left size</th><th>Right size</th><th>Left modified</th><th>Right modified</th><th></th></tr></thead></table>' +
+        (list.length ? '' : '<div class="diff-identical"><i data-lucide="check-circle-2"></i> Nothing to show with the current filters.</div>');
+      mountList('zip', $('zipTable'), list.length, row, { root: $('zipPanel'), blockTag: 'tbody', rowHeight: 45, onFill: icons, spacer: h => `<tr class="vspacer"><td colspan="7" style="height:${h}px;padding:0;border:0"></td></tr>` });
       last = null; three = null;
       $('outputSection').style.display = 'grid'; $('mergedSection').style.display = 'none';
-      showPanel('zipPanel'); icons();
+      showPanel('zipPanel'); $('zipPanel').scrollTop = keep; icons();
+    }
+    $('zipPanel').addEventListener('click', e => {
+      const d = e.target.closest('tr[data-dir]'); if (d) { toggleDir(d.dataset.dir); return; }
+      const b = e.target.closest('[data-open]'); if (b) zipOpen(+b.dataset.open);
+    });
+    // Opening a file picks the comparison that suits its type.
+    const EXT = n => (n.match(/\.([^./]+)$/) || [, ''])[1].toLowerCase();
+    function fileKind(name, a, b) {
+      const x = EXT(name);
+      if (['png', 'jpg', 'jpeg', 'gif', 'webp', 'bmp', 'svg', 'ico', 'avif'].includes(x)) return 'image';
+      if (['xlsx', 'xls', 'ods', 'xlsm'].includes(x)) return 'sheet';
+      if (['csv', 'tsv'].includes(x)) return 'table';
+      if (['json', 'yaml', 'yml'].includes(x)) return 'struct';
+      if ((!a || E.isProbablyText(a) || /^UTF-16/.test(E.decodeBytes(a.subarray(0, 4096)).encoding)) && (!b || E.isProbablyText(b) || /^UTF-16/.test(E.decodeBytes(b.subarray(0, 4096)).encoding))) return 'text';
+      return 'hex';
+    }
+    function bytesToSide(id, bytes, name) {
+      if (!bytes) { $(id).value = ''; delete sideInfo[id]; return; }
+      const d = E.decodeBytes(bytes);
+      sideInfo[id] = { name, bytes, encoding: d.encoding, bom: d.bom, raw: d.text }; $(id).value = d.text;
     }
     async function zipOpen(i) {
       const r = window._zipRows[i];
       try {
-        const [a, b] = await Promise.all([zips.a.map.get(r.n).read(), zips.b.map.get(r.n).read()]);
-        if (!E.isProbablyText(a) || !E.isProbablyText(b)) { Layerbit.toast(`${r.n} is binary; sizes and checksums differ but there is no text to show.`, 'warn'); return; }
-        const td = new TextDecoder();
-        $('text1').value = td.decode(a); $('text2').value = td.decode(b); names = { a: r.n, b: r.n }; updateMeta();
-        setMode('text'); run();
-      } catch (e) { showError(e.message); }
+        const [a, b] = await Promise.all([r.a ? readEntryBytes(r.a).then(x => new Uint8Array(x)) : null, r.b ? readEntryBytes(r.b).then(x => new Uint8Array(x)) : null]);
+        const kind = fileKind(r.path, a, b);
+        folderReturn = true;
+        if (kind === 'hex' && window.openHex) return openHex(a, b, r.path, r.path);
+        if (kind === 'image' && window.openImages) return openImages(a, b, r.path, r.path);
+        if (kind === 'sheet' && window.openSheets) return openSheets(a, b, r.path, r.path);
+        if (kind === 'hex' || kind === 'image' || kind === 'sheet') { Layerbit.toast(`${r.path} is not a text file.`, 'warn'); folderReturn = false; return; }
+        bytesToSide('text1', a, r.path); bytesToSide('text2', b, r.path); names = { a: r.path, b: r.path }; updateMeta();
+        setMode(kind === 'table' ? 'table' : kind === 'struct' ? 'struct' : 'text');
+        if (kind === 'table') refreshKeyColumns();
+        run();
+      } catch (e) { folderReturn = false; showError(e.message); }
     }
-    async function zipView(i) {
-      const r = window._zipRows[i]; const z = r.s === 'added' ? zips.b : zips.a;
-      const u = await z.map.get(r.n).read();
-      if (!E.isProbablyText(u)) { Layerbit.toast(`${r.n} is binary.`, 'warn'); return; }
-      $('text1').value = r.s === 'added' ? '' : new TextDecoder().decode(u); $('text2').value = r.s === 'added' ? new TextDecoder().decode(u) : ''; names = { a: r.n, b: r.n }; updateMeta(); setMode('text'); run();
+    function zipView(i) { return zipOpen(i); }
+    function backToFolder() {
+      if (!folderView) return;
+      folderReturn = false; setMode('zip'); renderFolder();
     }
 
     // ------------------------------------------------------------ share / history state

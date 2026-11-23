@@ -352,3 +352,54 @@ t('bug 20: foldContext can keep chosen folds open', () => {
   assert.deepStrictEqual(open1.filter(r => r.type === 'skip').map(r => r.from), [skips[0].from, skips[2].from]);
   assert.strictEqual(open1.length, folded.length - 1 + skips[1].count);
 });
+
+// ---- v4 feature 21: folder compare
+t('feature 21: ignore filters', () => {
+  const ign = D.compileIgnore(D.DEFAULT_IGNORE);
+  ['.git/config', 'src/node_modules/x/y.js', 'bin/app.dll', 'proj/obj/Debug/a.o', '.vs/settings', 'logs/run.log', 'a/.DS_Store', 'Thumbs.db'].forEach(p => assert.ok(ign(p), p));
+  ['src/app.js', 'binary.txt', 'object.cs', 'catalog.txt', 'README.md'].forEach(p => assert.ok(!ign(p), p));
+  const custom = D.compileIgnore(['dist/', 'docs/*.pdf', '*.min.js']);
+  assert.ok(custom('dist/a.js') && custom('docs/x.pdf') && custom('lib/jquery.min.js'));
+  assert.ok(!custom('src/dist.js') && !custom('docs/sub/x.pdf') && !custom('docs/x.md'));
+});
+t('feature 21: folder diff by size, date and content', () => {
+  const A = [{ path: 'a.txt', size: 3, mtime: 1000, hash: 'h1' }, { path: 'dir/b.txt', size: 5, mtime: 1000, hash: 'h2' }, { path: 'gone.txt', size: 1, mtime: 0 }];
+  const B = [{ path: 'a.txt', size: 3, mtime: 9000, hash: 'h1' }, { path: 'dir/b.txt', size: 5, mtime: 1000, hash: 'hX' }, { path: 'new.txt', size: 2, mtime: 0 }];
+  const st = rows => Object.fromEntries(rows.map(r => [r.path, r.status]));
+  assert.deepStrictEqual(st(D.folderDiff(A, B, 'content')), { 'a.txt': 'same', 'dir/b.txt': 'modified', 'gone.txt': 'removed', 'new.txt': 'added' });
+  assert.deepStrictEqual(st(D.folderDiff(A, B, 'size')), { 'a.txt': 'same', 'dir/b.txt': 'same', 'gone.txt': 'removed', 'new.txt': 'added' });
+  const byDate = D.folderDiff(A, B, 'date');
+  assert.strictEqual(st(byDate)['a.txt'], 'modified'); assert.strictEqual(byDate.find(r => r.path === 'a.txt').newer, 'b');
+  assert.strictEqual(st(byDate)['dir/b.txt'], 'same');
+  // equal sizes without hashes are reported as needing a hash, never guessed
+  const pend = D.folderDiff([{ path: 'x', size: 4 }], [{ path: 'x', size: 4 }], 'content');
+  assert.strictEqual(pend[0].status, 'pending');
+  assert.strictEqual(D.folderDiff([{ path: 'x', size: 4 }], [{ path: 'x', size: 5 }], 'content')[0].status, 'modified');
+  assert.strictEqual(D.folderDiff([{ path: 'x', size: 4, crc: 7 }], [{ path: 'x', size: 4, crc: 7 }], 'content')[0].status, 'same');
+});
+t('feature 21: tree with per-folder counts, hide identical and status filter', () => {
+  const rows = D.folderDiff(
+    [{ path: 'src/a.js', size: 1, hash: 'x' }, { path: 'src/lib/b.js', size: 1, hash: 'x' }, { path: 'README', size: 1, hash: 'r' }],
+    [{ path: 'src/a.js', size: 1, hash: 'y' }, { path: 'src/lib/b.js', size: 1, hash: 'x' }, { path: 'src/c.js', size: 1, hash: 'c' }, { path: 'README', size: 1, hash: 'r' }], 'content');
+  const tree = D.buildTree(rows);
+  assert.deepStrictEqual(tree.counts, { added: 1, removed: 0, modified: 1, same: 2, pending: 0 });
+  const src = tree.children.find(c => c.name === 'src');
+  assert.deepStrictEqual(src.counts, { added: 1, removed: 0, modified: 1, same: 1, pending: 0 });
+  const all = D.flattenTree(tree, new Set(['src', 'src/lib']), {});
+  assert.deepStrictEqual(all.map(x => '  '.repeat(x.depth) + x.node.name), ['src', '  lib', '    b.js', '  a.js', '  c.js', 'README']);
+  const changed = D.flattenTree(tree, new Set(['src', 'src/lib']), { hideIdentical: true });
+  assert.deepStrictEqual(changed.map(x => x.node.name), ['src', 'a.js', 'c.js']);
+  assert.deepStrictEqual(D.flattenTree(tree, new Set(['src']), { status: 'added' }).map(x => x.node.name), ['src', 'c.js']);
+  assert.deepStrictEqual(D.flattenTree(tree, new Set(), {}).map(x => x.node.name), ['src', 'README']);
+});
+t('feature 21: folder report as CSV states the options and date', () => {
+  const rows = D.folderDiff([{ path: 'a,b.txt', size: 1, mtime: Date.UTC(2026, 0, 1), hash: 'x' }], [{ path: 'a,b.txt', size: 2, mtime: Date.UTC(2026, 0, 2), hash: 'y' }], 'content');
+  const csv = D.folderCsv(rows, { by: 'content (SHA-256)', ignore: ['.git'], generated: '2026-11-23T10:00:00Z', left: 'v1', right: 'v2' });
+  assert.ok(csv.startsWith('Report,Layerbit folder comparison\r\nGenerated,2026-11-23T10:00:00Z\r\nLeft,v1\r\nRight,v2\r\nCompared by,content (SHA-256)\r\nIgnored,.git\r\n\r\nPath,Status,Size left,Size right,Modified left,Modified right\r\n'), csv);
+  assert.ok(csv.includes('"a,b.txt",modified,1,2,2026-01-01T00:00:00.000Z,2026-01-02T00:00:00.000Z'), csv);
+});
+t('feature 21: zip entries carry their modified time', () => {
+  // DOS date 2026-11-23 (year 46, month 11, day 23) time 10:30:20 (seconds/2 = 10)
+  const date = (46 << 9) | (11 << 5) | 23, time = (10 << 11) | (30 << 5) | 10;
+  assert.strictEqual(D.dosTime(date, time), new Date(2026, 10, 23, 10, 30, 20).getTime());
+});
