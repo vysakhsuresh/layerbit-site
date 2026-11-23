@@ -3243,6 +3243,17 @@ def _(t):
 # ----------------------------------------------------------------------------
 # vat-gst-calculator
 # ----------------------------------------------------------------------------
+@case("vat-gst-calculator", "edge", "B2: CGST and SGST are equal halves worked out on the taxable value, with a note on the paisa")
+def _(t):
+    t.select("preset", "in-18")
+    t.select("supply", "intra")
+    t.set("amount", "100.05")
+    out = t.text("calcOut")
+    expect(out.count("INR 9.00") == 2 and "9.01" not in out, "halves not equal: " + out)
+    expect("INR 118.05" in out, out)
+    expect(t.count("#gstNote") == 1 and "0.01" in t.text("gstNote"), "no note about the paisa: " + out)
+
+
 @case("vat-gst-calculator", "minimal", "opens with UAE VAT on AED 1,000 and a two-line invoice")
 def _(t):
     expect("AED 1,050.00" in t.text("headline"), t.text("headline"))

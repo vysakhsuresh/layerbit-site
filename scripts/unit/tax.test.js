@@ -3,7 +3,7 @@ const T = require('../../js/engines/tax.js');
 const assert = require('assert');
 let pass = 0, fail = 0;
 function t(name, fn) { try { fn(); pass++; } catch (e) { fail++; console.log('FAIL', name, '\n  ', e.message); } }
-const calc = o => { const r = T.calc(o); return { net: T.format(r.net, r.decimals, r.system), tax: T.format(r.tax, r.decimals, r.system), gross: T.format(r.gross, r.decimals, r.system), split: r.split && r.split.map(s => s.name + ' ' + T.rateText(s.rate) + ' ' + T.format(s.amount, r.decimals, r.system)) }; };
+const calc = o => { const r = T.calc(o); return { net: T.format(r.net, r.decimals, r.system), tax: T.format(r.tax, r.decimals, r.system), gross: T.format(r.gross, r.decimals, r.system), split: r.split && r.split.map(s => s.name + ' ' + T.rateText(s.rate) + ' ' + T.format(s.amount, r.decimals, r.system)), ...(r.note ? { note: r.note } : {}) }; };
 
 t('parse amounts in any common form', () => {
   assert.strictEqual(T.parseAmount('₹1,23,456.78', 2), 12345678n);
@@ -38,13 +38,32 @@ t('Saudi 15% and three-decimal currencies', () => {
   assert.deepStrictEqual(calc({ amount: '10.5', rate: '5', currency: 'OMR', mode: 'add' }), { net: '10.500', tax: '0.525', gross: '11.025', split: null });
   assert.strictEqual(calc({ amount: '110', rate: '10', currency: 'BHD', mode: 'remove' }).net, '100.000');
 });
+t('B2: CGST and SGST are each worked out on the taxable value, so they are equal', () => {
+  const r = calc({ amount: '100.05', rate: '18', currency: 'INR', mode: 'add', kind: 'gst', supply: 'intra' });
+  assert.deepStrictEqual(r.split, ['CGST 9% 9.00', 'SGST 9% 9.00']);
+  assert.strictEqual(r.tax, '18.00'); assert.strictEqual(r.gross, '118.05');
+  assert.ok(/0\.01/.test(r.note || ''), 'no note about the one-paisa difference: ' + r.note);
+  const u = calc({ amount: '100.05', rate: '18', currency: 'INR', mode: 'add', kind: 'gst', supply: 'ut' });
+  assert.deepStrictEqual(u.split, ['CGST 9% 9.00', 'UTGST 9% 9.00']);
+  // IGST is one tax on the whole rate
+  assert.deepStrictEqual(calc({ amount: '100.05', rate: '18', currency: 'INR', mode: 'add', kind: 'gst', supply: 'inter' }).split, ['IGST 18% 18.01']);
+  // inclusive price: halves equal, and net + halves = the amount shown as gross
+  const g = calc({ amount: '118.10', rate: '18', currency: 'INR', mode: 'remove', kind: 'gst', supply: 'intra' });
+  const [c, s2] = g.split.map(x => x.split(' ').pop());
+  assert.strictEqual(c, s2);
+  const n = x => Number(x.replace(/,/g, ''));
+  assert.strictEqual(Math.round((n(g.net) + n(c) + n(s2)) * 100), Math.round(n(g.gross) * 100));
+  // no note when the halves add up to rate x value exactly
+  assert.ok(!calc({ amount: '10000', rate: '18', currency: 'INR', mode: 'add', kind: 'gst' }).note);
+});
 t('India GST: CGST + SGST, UTGST and IGST', () => {
   assert.deepStrictEqual(calc({ amount: '10000', rate: '18', currency: 'INR', mode: 'add', kind: 'gst', supply: 'intra' }),
     { net: '10,000.00', tax: '1,800.00', gross: '11,800.00', split: ['CGST 9% 900.00', 'SGST 9% 900.00'] });
   assert.deepStrictEqual(calc({ amount: '10000', rate: '18', currency: 'INR', mode: 'add', kind: 'gst', supply: 'inter' }).split, ['IGST 18% 1,800.00']);
   assert.deepStrictEqual(calc({ amount: '10000', rate: '5', currency: 'INR', mode: 'add', kind: 'gst', supply: 'ut' }).split, ['CGST 2.5% 250.00', 'UTGST 2.5% 250.00']);
   assert.deepStrictEqual(calc({ amount: '1,18,000', rate: '18', currency: 'INR', mode: 'remove', kind: 'gst' }).net, '1,00,000.00');
-  assert.deepStrictEqual(calc({ amount: '0.05', rate: '18', currency: 'INR', mode: 'add', kind: 'gst' }).split, ['CGST 9% 0.01', 'SGST 9% 0.00']);
+  // each half is worked out on the taxable value, so the two halves are always equal (B2)
+  assert.deepStrictEqual(calc({ amount: '0.05', rate: '18', currency: 'INR', mode: 'add', kind: 'gst' }).split, ['CGST 9% 0.00', 'SGST 9% 0.00']);
   assert.strictEqual(calc({ amount: '100000', rate: '0.25', currency: 'INR', mode: 'add', kind: 'gst' }).tax, '250.00');
 });
 t('rounding tax to whole units', () => {

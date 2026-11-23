@@ -173,6 +173,22 @@
     var r = o.mode === 'remove' ? removeTax(amt, rate, opts) : addTax(amt, rate, opts);
     r.rate = rate; r.currency = c.code; r.decimals = c.decimals; r.system = c.system;
     r.split = o.kind === 'gst' ? gstSplit(r.tax, rate, o.supply || 'intra') : null;
+    // GST within a state or Union Territory: CGST and SGST/UTGST are each
+    // charged on the taxable value at half the rate and rounded on their
+    // own, so the two are always equal and the tax is their sum. That sum
+    // can differ by a paisa from rate x value; the note says so.
+    var supply = o.supply || 'intra';
+    if (o.kind === 'gst' && supply !== 'inter' && !opts.wholeUnits) {
+      var halfA = rate / 2n, halfB = rate - halfA;
+      var a = divRound(r.net * halfA, SCALE), b = divRound(r.net * halfB, SCALE), whole = divRound(r.net * rate, SCALE);
+      r.split = [{ name: 'CGST', rate: halfA, amount: a }, { name: supply === 'ut' ? 'UTGST' : 'SGST', rate: halfB, amount: b }];
+      var entered = r.gross;
+      r.tax = a + b; r.gross = r.net + r.tax;
+      var parts = [];
+      if (r.tax !== whole) parts.push('CGST and ' + r.split[1].name + ' are each worked out on the taxable value, so together they are ' + format(r.tax, c.decimals, c.system) + ', ' + format(abs(r.tax - whole), c.decimals, c.system) + ' ' + (r.tax < whole ? 'less' : 'more') + ' than ' + rateText(rate) + ' of the value (' + format(whole, c.decimals, c.system) + ').');
+      if (o.mode === 'remove' && r.gross !== entered) parts.push('Taxable value plus both halves comes to ' + format(r.gross, c.decimals, c.system) + ', ' + format(abs(r.gross - entered), c.decimals, c.system) + ' ' + (r.gross < entered ? 'less' : 'more') + ' than the price entered.');
+      if (parts.length) r.note = parts.join(' ');
+    }
     return r;
   }
 
