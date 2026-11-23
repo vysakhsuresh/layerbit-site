@@ -3917,6 +3917,47 @@ def _(t):
     expect("no-such-engine" in res[3] and "404" in res[3], res[3])
 
 
+@case("csv-to-json", "typical", "PWA: the manifest opens every planned file type in the right tool, and an opened file loads")
+def _(t):
+    man = t.call("fetch('/manifest.json').then(r => r.json())")
+    handlers = man.get("file_handlers") or []
+    exts = {}
+    for h in handlers:
+        for types in h["accept"].values():
+            for e in types:
+                exts[e] = h["action"]
+    for e in [".json", ".csv", ".tsv", ".xml", ".yaml", ".yml", ".log", ".md", ".patch", ".diff", ".txt"]:
+        expect(e in exts, f"{e} has no file handler")
+        status = t.call(f"fetch({json.dumps(exts[e])}).then(r => r.status)")
+        eq(status, 200, f"{e} -> {exts[e]}")
+    eq(exts[".csv"], "/tools/csv-to-json.html", "csv handler")
+    t.call("Layerbit.openFiles([new File(['id,name\\n1,Ann'], 'people.csv')])")
+    t.wait_for("() => document.getElementById('csvInput').value.startsWith('id,name')")
+
+
+@case("csv-to-json", "maximal", "PWA: after the service worker warms its cache, a tool page never visited opens offline")
+def _(t):
+    try:
+        ok = t.call("""async () => {
+          const reg = await navigator.serviceWorker.register('/sw.js', { scope: '/' });
+          await navigator.serviceWorker.ready;
+          const sw = reg.active || reg.waiting || reg.installing;
+          const done = new Promise(res => navigator.serviceWorker.addEventListener('message', e => { if (e.data && e.data.type === 'warmed') res(e.data); }));
+          sw.postMessage({ type: 'warm' });
+          return await Promise.race([done, new Promise(res => setTimeout(() => res({ timeout: true }), 10000))]);
+        }""")
+        expect(ok.get("count", 0) > 30, f"warmed {ok}")
+        t.page.context.set_offline(True)
+        t.page.goto(t.page.url.replace("csv-to-json", "xml-formatter"), wait_until="load")
+        expect("XML" in t.page.title(), "offline page did not load: " + t.page.title())
+        t.page.goto(t.page.url.replace("xml-formatter", "no-such-tool"), wait_until="load")
+        expect("offline" in t.page.content().lower(), "no offline fallback")
+    finally:
+        t.page.context.set_offline(False)
+        t.page.goto(t.page.url.split("/tools/")[0] + "/tools/csv-to-json.html", wait_until="load")
+        t.call("navigator.serviceWorker.getRegistrations().then(rs => Promise.all(rs.map(r => r.unregister()))).then(() => caches.keys()).then(ks => Promise.all(ks.map(k => caches.delete(k))))")
+
+
 # ----------------------------------------------------------------------------
 # runner
 # ----------------------------------------------------------------------------

@@ -600,7 +600,14 @@
       if (!hasFiles(e)) return;
       if (e.defaultPrevented && e.target.closest && e.target.closest('.pane, [data-lb-drop]')) return; // a pane handled it
       e.preventDefault();
-      var files = Array.prototype.slice.call(e.dataTransfer.files);
+      openFiles(Array.prototype.slice.call(e.dataTransfer.files), e);
+    });
+  }
+  // A dropped file and a file the operating system opens with Layerbit (the
+  // installed app's file handlers) arrive here and go where a drop would.
+  function openFiles(files, e) {
+      files = Array.prototype.slice.call(files || []);
+      if (!files.length) return;
       if (dropHandler) { dropHandler(files, e); return; }
       if (TOOL && TOOL.files) { TOOL.files(files); return; }
       var f = files[0];
@@ -609,6 +616,12 @@
         if (TOOL && TOOL.input) TOOL.input(text, f.name);
         else { var ta = firstTextarea(); if (!ta) { toast('This page has nowhere to drop a file'); return; } ta.value = text; ta.dispatchEvent(new Event('input', { bubbles: true })); ta.dispatchEvent(new Event('change', { bubbles: true })); }
       });
+  }
+  function installLaunchQueue() {
+    if (!('launchQueue' in window)) return;
+    window.launchQueue.setConsumer(function (params) {
+      if (!params.files || !params.files.length) return;
+      Promise.all(params.files.map(function (h) { return h.getFile(); })).then(function (files) { openFiles(files); }).catch(function () { });
     });
   }
   function hasFiles(e) { var t = e.dataTransfer && e.dataTransfer.types; return !!t && Array.prototype.indexOf.call(t, 'Files') >= 0; }
@@ -763,9 +776,21 @@
   }
 
   // ------------------------------------------------------------------- PWA
+  // After the page has loaded, ask the service worker to fetch every tool
+  // (and its scripts and WebAssembly) in the background so the whole site
+  // works offline: at most once a day, and never with Data Saver on.
   function installSw() {
     if (!('serviceWorker' in navigator) || location.protocol !== 'https:') return;
-    try { navigator.serviceWorker.register(PREFIX + 'sw.js', { scope: PREFIX || './' }).catch(function () { }); } catch (e) { /* ignore */ }
+    try {
+      navigator.serviceWorker.register(PREFIX + 'sw.js', { scope: PREFIX || './' }).then(function () { return navigator.serviceWorker.ready; }).then(function (reg) {
+        var c = navigator.connection;
+        if (c && (c.saveData || /2g/.test(c.effectiveType || ''))) return;
+        var last = +(lsGet('lb-sw-warmed') || 0);
+        if (Date.now() - last < 86400000 || !reg.active) return;
+        var go = function () { reg.active.postMessage({ type: 'warm' }); lsSet('lb-sw-warmed', String(Date.now())); };
+        if (window.requestIdleCallback) requestIdleCallback(go, { timeout: 10000 }); else setTimeout(go, 3000);
+      }).catch(function () { });
+    } catch (e) { /* ignore */ }
   }
 
   // --------------------------------------------------------- first-visit example
@@ -793,6 +818,7 @@
     installDrop();
     installKeys();
     installSw();
+    installLaunchQueue();
     installHistorySwitches();
     purgeSilentRuns();
     applyIncomingState();
@@ -817,7 +843,7 @@
     // Line endings for text a tool turns into bytes: a textarea always holds
     // LF, so 'crlf' rewrites every line break as CRLF (Windows files).
     eol: function (text, mode) { return mode === 'crlf' ? String(text).replace(/\r?\n/g, '\r\n') : String(text); },
-    onDrop: function (fn) { dropHandler = fn; }, readFile: readFile, readFileInfo: readFileInfo, decodeBytes: decodeBytes, run: runTool,
+    onDrop: function (fn) { dropHandler = fn; }, openFiles: function (files) { openFiles(files); }, readFile: readFile, readFileInfo: readFileInfo, decodeBytes: decodeBytes, run: runTool,
     register: function (cfg) { TOOL = cfg; window.LB_TOOL = cfg; },
     netRequests: function () { return netLog.slice(); }
   };
