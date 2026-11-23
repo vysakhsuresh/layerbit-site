@@ -2,9 +2,9 @@
 
   <main id="main" class="page-main">
   <div class="hero">
-    <div class="hero-badge"><i data-lucide="shield-check"></i> Browser-native parser · nothing uploaded</div>
+    <div class="hero-badge"><i data-lucide="shield-check"></i> libxml2 in WebAssembly · nothing uploaded</div>
     <h1>XML Formatter, Validator &amp; XPath Tester</h1>
-    <p>Pretty-print or minify XML, see well-formedness errors with their line, run XPath 1.0 queries with namespace support, and convert XML to JSON — all with the parser already inside your browser.</p>
+    <p>Pretty-print or minify XML, see well-formedness errors with their line, validate against XSD, RelaxNG, DTD or Schematron, transform with XSLT 1.0 or XQuery 3.1, run XPath with namespace support, compare two documents, and convert XML to JSON and back. Files of 8 MB and more are formatted in a background worker. Nothing is uploaded.</p>
   </div>
 
   <div class="ide-container">
@@ -33,6 +33,7 @@
             <option value="tabs">Pretty (tabs)</option>
             <option value="minify">Minify</option>
             <option value="json">XML → JSON</option>
+            <option value="fromjson">JSON → XML (input is JSON)</option>
           </select>
           <label class="check" title="Drop comments and processing instructions from the output"><input type="checkbox" id="optStripComments"> strip comments</label>
           <button class="btn" type="button" id="btnCopy"><i data-lucide="copy"></i> Copy</button>
@@ -57,6 +58,52 @@
           <div class="hint" id="xpathHint">Load a document to enable queries. Prefixes declared on the root element are available; the default namespace is bound to <code>ns</code>.</div>
         </div>
         <div class="xpath-results" id="xpathResults"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="ide-container single">
+    <div class="pane">
+      <div class="pane-header">
+        <div class="pane-title"><i data-lucide="shield-check"></i> Validate, transform, compare</div>
+        <div class="btn-group view-tabs" role="tablist" aria-label="Tools">
+          <button class="xtab active" type="button" role="tab" data-xtab="validate" aria-selected="true">Validate</button>
+          <button class="xtab" type="button" role="tab" data-xtab="transform" aria-selected="false">Transform</button>
+          <button class="xtab" type="button" role="tab" data-xtab="compare" aria-selected="false">Compare</button>
+        </div>
+      </div>
+      <div class="pane-body xpanel" data-xpanel="validate">
+        <div class="xbar">
+          <label class="check">Against
+            <select id="schemaKind" class="mini-select" aria-label="Schema language">
+              <option value="xsd">XML Schema (XSD)</option><option value="rng">RelaxNG</option><option value="dtd">DTD</option><option value="sch">Schematron (ISO)</option>
+            </select>
+          </label>
+          <button class="btn btn-primary" type="button" id="btnValidate"><i data-lucide="shield-check"></i> Validate</button>
+          <span class="hint" id="schemaHint">XSD and RelaxNG run in libxml2, compiled to WebAssembly and loaded on first use.</span>
+        </div>
+        <textarea id="schemaInput" class="editor small-editor" spellcheck="false" placeholder="Paste the schema here (for a DTD, leave this empty to use the document's own DOCTYPE)..."></textarea>
+        <div class="validate-result" id="validateResult" role="status"></div>
+      </div>
+      <div class="pane-body xpanel" data-xpanel="transform" hidden>
+        <div class="xbar">
+          <label class="check">Language
+            <select id="xfKind" class="mini-select" aria-label="Transform language"><option value="xslt">XSLT 1.0</option><option value="xquery">XQuery 3.1</option></select>
+          </label>
+          <button class="btn btn-primary" type="button" id="btnTransform"><i data-lucide="play"></i> Run</button>
+          <button class="btn" type="button" id="btnXfUse" title="Replace the input with this result"><i data-lucide="corner-up-left"></i> Use as input</button>
+        </div>
+        <textarea id="xfInput" class="editor small-editor" spellcheck="false" placeholder="Paste an XSLT 1.0 stylesheet, or an XQuery 3.1 expression..."></textarea>
+        <div class="validate-result bad" id="xfError" role="status"></div>
+        <pre class="output-area small-out" id="xfOutput"></pre>
+      </div>
+      <div class="pane-body xpanel" data-xpanel="compare" hidden>
+        <textarea id="cmpInput" class="editor small-editor" spellcheck="false" placeholder="Paste the other XML document (the input above is the original)..."></textarea>
+        <div class="xbar">
+          <button class="btn btn-primary" type="button" id="btnCompareXml"><i data-lucide="git-compare"></i> Compare</button>
+          <a class="btn" id="cmpLink" href="text-diff-checker.html" target="_blank" rel="noopener" title="Open both documents in the Diff Checker's structure mode"><i data-lucide="external-link"></i> Open in Diff Checker</a>
+        </div>
+        <div class="validate-result" id="cmpResult"></div>
       </div>
     </div>
   </div>
@@ -112,7 +159,7 @@
       <div class="faq-container">
         <div class="faq-item">
           <button class="faq-question">Does this validate against an XSD or DTD schema? <i data-lucide="chevron-down"></i></button>
-          <div class="faq-answer"><p>No. It checks well-formedness — that the document is syntactically correct XML with balanced, properly nested tags, quoted attributes and escaped characters — using the browser's parser. Validation against a schema (whether the elements and values are the ones a particular XSD allows) needs a schema processor, which browsers do not include. For that, use xmllint with --schema, or your platform's XML library.</p></div>
+          <div class="faq-answer"><p>Yes. Open <strong>Validate</strong>, pick the schema language, paste the schema and press Validate; each error is listed with its line, and clicking the line selects it in the input. <strong>XSD</strong> and <strong>RelaxNG</strong> are checked by libxml2 (the library behind xmllint), compiled to WebAssembly and loaded the first time you use it. <strong>DTD</strong> checks content models, required, fixed and enumerated attributes, and ID/IDREF links; leave the box empty to use the DOCTYPE inside the document. <strong>Schematron</strong> (ISO, XPath 1.0) runs on your browser's XPath engine and reports every failed assert and fired report with the node's path. Well-formedness is always checked as you type.</p></div>
         </div>
         <div class="faq-item">
           <button class="faq-question">Why does my XPath return no results when the element is clearly there? <i data-lucide="chevron-down"></i></button>
@@ -131,8 +178,20 @@
           <div class="faq-answer"><p>XPath 1.0, because that is what document.evaluate() in browsers implements. It covers the full 1.0 axis set, predicates, and the core function library (contains, starts-with, substring, normalize-space, count, sum, position, last, local-name, name and the rest). Functions and syntax added in XPath 2.0 and later, such as regular-expression matching, sequences and for-expressions, are not available.</p></div>
         </div>
         <div class="faq-item">
+          <button class="faq-question">Can I run XSLT or XQuery? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>Yes, in the <strong>Transform</strong> tab. XSLT 1.0 runs in your browser's built-in processor. XQuery 3.1 (which includes XPath 3.1, maps, arrays and FLWOR expressions) runs in fontoxpath, an open-source engine loaded on first use. XSLT 2.0 and 3.0 are not offered: the only browser engine for them, Saxon-JS, is not openly licensed, so it cannot be bundled here. <strong>Use as input</strong> replaces the document with the result.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">Can I compare two XML documents, or turn JSON into XML? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>Both. The <strong>Compare</strong> tab lists changed, added and removed elements, attributes and text by path, ignoring attribute order and formatting, and <strong>Open in Diff Checker</strong> carries both documents to the Diff Checker's structure mode. For JSON, choose <strong>JSON → XML</strong> in the output menu and paste JSON: keys starting with <code>@</code> become attributes, <code>#text</code> becomes text and arrays repeat their element, the same convention as XML → JSON.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">How large an XML file can it handle? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>Files of 8 MB and more are formatted by libxml2 in a background worker and shown a screenful of lines at a time, so the page stays responsive; a 30 MB file with 250,000 records formats in a few seconds in our tests. Validation and transforms work on these files too. XPath needs the document inside the page, so it is available for files under 8 MB.</p></div>
+        </div>
+        <div class="faq-item">
           <button class="faq-question">Is my XML sent anywhere? <i data-lucide="chevron-down"></i></button>
-          <div class="faq-answer"><p>No. Parsing uses DOMParser, XPath uses document.evaluate, and serialisation is JavaScript in the page; there is no server request. You can confirm this in the Network tab of your browser's developer tools or by using the tool offline. That matters for XML in particular, because SOAP responses, SAML assertions and configuration files routinely contain credentials and personal data.</p></div>
+          <div class="faq-answer"><p>No. Parsing uses DOMParser, XPath uses document.evaluate, schema validation runs in libxml2 compiled to WebAssembly, XQuery runs in fontoxpath, and serialisation is JavaScript in the page; the WebAssembly and script files come from this site and nothing is sent to a server. You can confirm this in the Network tab of your browser's developer tools or by using the tool offline. That matters for XML in particular, because SOAP responses, SAML assertions and configuration files routinely contain credentials and personal data.</p></div>
         </div>
       </div>
     </div>
@@ -159,6 +218,7 @@
     <div class="info-panel">
       <h2><i data-lucide="git-commit"></i> Changelog</h2>
       <ul class="changelog-list">
+        <li><span class="changelog-tag">v2.0.0</span> Validation against XSD and RelaxNG (libxml2 2.13 in WebAssembly), DTD (content models, attributes, ID/IDREF; internal subset or pasted) and ISO Schematron, with each error's line. XSLT 1.0 and XQuery 3.1 transforms. Compare two documents by path, with a hand-off to the Diff Checker. JSON to XML. Files of 8 MB and more formatted in a background worker and shown virtually.</li>
         <li><span class="changelog-tag">v1.0.0</span> Initial release: whitespace-aware pretty-printing and minification, well-formedness errors with line and column, XPath 1.0 with automatic namespace binding from the root element, typed results with node paths, XML to JSON, document statistics, file upload and drag-and-drop.</li>
       </ul>
     </div>
@@ -176,6 +236,10 @@
   {{FOOTER}}
 
   <script src="../js/shared.js"></script>
+  <script src="../js/engines/lossless-json.js"></script>
+  <script src="../js/engines/jsonx.js"></script>
+  <script src="../js/engines/xmlv.js"></script>
+  <script src="../js/ui/virtual.js"></script>
 
   <script>
     const xmlInput = document.getElementById('xmlInput');
@@ -288,6 +352,7 @@
       const text = xmlInput.value;
       errorBanner.classList.remove('active');
       if (!text.trim()) { doc = null; xmlOutput.textContent = ''; statsStrip.innerHTML = ''; xpathInput.disabled = true; nsBadge.textContent = ''; xpathResults.innerHTML = ''; return; }
+      if (modeSelect.value === 'fromjson') return renderFromJson(text);
       const r = parse(text);
       if (r.error) { doc = null; errorText.textContent = r.error; errorBanner.classList.add('active'); xmlOutput.textContent = ''; statsStrip.innerHTML = ''; xpathInput.disabled = true; nsBadge.textContent = ''; xpathResults.innerHTML = ''; return; }
       doc = r.doc;
@@ -306,6 +371,20 @@
       nsBadge.innerHTML = Object.keys(nsMap).length ? Object.entries(nsMap).map(([p, u]) => `<span class="tag" title="${escAttr(u)}">${esc(p)}:</span>`).join(' ') : '<span class="muted">no namespaces</span>';
       xpathInput.disabled = false;
       runXPath();
+    }
+
+    // JSON in, XML out: keys starting with @ are attributes, #text is text,
+    // arrays repeat their element
+    function renderFromJson(text) {
+      let v;
+      try { JSON.parse(text); v = LBLossless.parse(text); }
+      catch (e) { doc = null; errorText.textContent = 'Invalid JSON: ' + e.message; errorBanner.classList.add('active'); xmlOutput.textContent = ''; statsStrip.innerHTML = ''; return; }
+      lastOutput = LBJsonX.jsonToXml(v);
+      xmlOutput.textContent = lastOutput;
+      const r = parse(lastOutput); doc = r.doc || null;
+      statsStrip.innerHTML = doc ? stats(doc) : '';
+      nsMap = {}; nsBadge.innerHTML = '<span class="muted">no namespaces</span>';
+      xpathInput.disabled = !doc; if (doc) runXPath();
     }
 
     // ---- XPath ----
@@ -349,22 +428,211 @@
       }).join('');
     }
 
+
+    // ---- validate, transform, compare
+    const $ = id => document.getElementById(id);
+    document.querySelectorAll('.xtab').forEach(b => b.addEventListener('click', () => {
+      document.querySelectorAll('.xtab').forEach(x => { x.classList.toggle('active', x === b); x.setAttribute('aria-selected', x === b); });
+      document.querySelectorAll('.xpanel').forEach(p => { p.hidden = p.dataset.xpanel !== b.dataset.xtab; });
+    }));
+    // the XML the tools work on: the input, the JSON -> XML result, or a big file
+    function currentXml() { return bigXml && bigXml.text ? bigXml.text : modeSelect.value === 'fromjson' ? lastOutput : xmlInput.value; }
+    let xmllintMod = null;
+    const xmllint = () => xmllintMod || (xmllintMod = import('../js/vendor/xmllint/index-browser.mjs').catch(e => { xmllintMod = null; throw new Error('Could not load libxml2 (WebAssembly): ' + e.message); }));
+    function memFor(size) { const p = Math.min(32768, Math.max(256, Math.ceil(size * 12 / 65536))); return { initialMemoryPages: p, maxMemoryPages: Math.min(65536, p * 2) }; }
+    function goLine(n) {
+      if (bigXml) return;
+      const lines = xmlInput.value.split('\n'), pos = lines.slice(0, n - 1).join('\n').length + (n > 1 ? 1 : 0);
+      xmlInput.focus(); try { xmlInput.setSelectionRange(pos, pos + (lines[n - 1] || '').length); } catch (e) {}
+    }
+    function showFindings(box, title, items, okText) {
+      if (!items.length) { box.innerHTML = `<div class="ok"><i data-lucide="check-circle-2"></i> ${esc(okText)}</div>`; if (window.lucide) lucide.createIcons(); return; }
+      box.innerHTML = `<div class="bad"><i data-lucide="x-circle"></i> ${esc(title)}</div><ul class="findings">` + items.slice(0, 500).map(it =>
+        `<li>${it.line ? `<button type="button" class="line-link" data-line="${it.line}">line ${it.line}</button> ` : ''}${it.path ? `<code>${esc(it.path)}</code> ` : ''}${it.kind ? `<span class="tag">${esc(it.kind)}</span> ` : ''}${esc(it.message)}</li>`).join('') + '</ul>' + (items.length > 500 ? `<div class="hint">First 500 of ${items.length} shown.</div>` : '');
+      if (window.lucide) lucide.createIcons();
+    }
+    $('validateResult').addEventListener('click', e => { const b = e.target.closest('.line-link'); if (b) goLine(+b.dataset.line); });
+    const KIND_NAME = { xsd: 'XML Schema', rng: 'RelaxNG schema', dtd: 'DTD', sch: 'Schematron rules' };
+    $('schemaKind').addEventListener('change', () => {
+      const k = $('schemaKind').value;
+      $('schemaHint').textContent = k === 'dtd' ? 'Leave the box empty to use the DOCTYPE inside the document.' : k === 'sch' ? 'ISO Schematron with XPath 1.0, run by your browser\'s XPath engine.' : 'XSD and RelaxNG run in libxml2, compiled to WebAssembly and loaded on first use.';
+      $('validateResult').innerHTML = '';
+    });
+    async function validate() {
+      const kind = $('schemaKind').value, xml = currentXml(), sch = $('schemaInput').value, box = $('validateResult');
+      if (!xml.trim()) { box.innerHTML = '<div class="bad">Paste or open an XML document first.</div>'; return; }
+      if (kind === 'dtd') {
+        try { const errs = LBXmlV.validateDtd(xml, sch); showFindings(box, `${errs.length} error${errs.length === 1 ? '' : 's'} against the DTD`, errs, 'Valid: the document matches the DTD.'); }
+        catch (e) { box.innerHTML = `<div class="bad">${esc(e.message)}</div>`; }
+        return;
+      }
+      if (kind === 'sch') { try { const f = schematron(xml, sch); showFindings(box, `${f.length} Schematron finding${f.length === 1 ? '' : 's'}`, f, 'Valid: every assert holds and no report fired.'); } catch (e) { box.innerHTML = `<div class="bad">${esc(e.message)}</div>`; } return; }
+      if (!sch.trim()) { box.innerHTML = `<div class="bad">Paste the ${KIND_NAME[kind]} first.</div>`; return; }
+      box.textContent = 'Validating…';
+      try {
+        const { validateXML } = await xmllint();
+        const schemaName = kind === 'rng' ? 'schema.rng' : 'schema.xsd';
+        const r = await validateXML(Object.assign({ xml: [{ fileName: 'document.xml', contents: xml }], schema: [{ fileName: schemaName, contents: sch }], extension: kind === 'rng' ? 'relaxng' : 'schema' }, memFor(xml.length + sch.length)));
+        const items = r.errors.map(e => ({ line: e.loc && e.loc.fileName === 'document.xml' ? e.loc.lineNumber : null, message: (e.loc && e.loc.fileName === schemaName ? 'In the schema (line ' + e.loc.lineNumber + '): ' : '') + e.message.replace(/(Schemas|Relax-NG) (validity|parser) error : /, '') }));
+        if (!r.valid && !items.length) items.push({ message: (r.rawOutput || 'The document did not validate.').trim() });
+        showFindings(box, `${items.length} error${items.length === 1 ? '' : 's'} against the ${KIND_NAME[kind]}`, items, `Valid: the document matches the ${KIND_NAME[kind]}.`);
+      } catch (e) { box.innerHTML = `<div class="bad">libxml2 could not use the ${KIND_NAME[kind]}: ${esc(String(e.message || e).trim().slice(0, 400))}</div>`; }
+    }
+    $('btnValidate').addEventListener('click', validate);
+
+    // ISO Schematron on the browser's XPath 1.0 engine: in each pattern a
+    // node is checked by the first rule whose context matches it; an assert
+    // whose test is false, or a report whose test is true, is a finding.
+    function schematron(xmlText, schText) {
+      const d = parse(xmlText); if (d.error) throw new Error('The document is not well-formed: ' + d.error);
+      const s = new DOMParser().parseFromString(schText, 'application/xml');
+      if (s.getElementsByTagName('parsererror')[0]) throw new Error('The Schematron schema is not well-formed XML.');
+      const NS = ['http://purl.oclc.org/dsdl/schematron', 'http://www.ascc.net/xml/schematron'], root = s.documentElement;
+      if (root.localName !== 'schema' || !NS.includes(root.namespaceURI)) throw new Error('This is not a Schematron schema: the root must be <schema xmlns="http://purl.oclc.org/dsdl/schematron">.');
+      const sch = (el, name) => [...el.children].filter(c => c.localName === name && NS.includes(c.namespaceURI));
+      const ns = {}; sch(root, 'ns').forEach(n => { ns[n.getAttribute('prefix')] = n.getAttribute('uri'); });
+      const resolver = p => ns[p] || null, doc = d.doc;
+      const lets = {}; const addLets = el => sch(el, 'let').forEach(l => { lets[l.getAttribute('name')] = l.getAttribute('value'); });
+      const expand = x => { let y = x; for (let k = 0; k < 5; k++) y = y.replace(/\$([\w.-]+)/g, (m, n) => lets[n] !== undefined ? '(' + lets[n] + ')' : m); return y; };
+      const ev = (x, node, type) => doc.evaluate(expand(x), node, resolver, type, null);
+      addLets(root);
+      const out = [];
+      sch(root, 'pattern').forEach(pat => {
+        addLets(pat);
+        const seen = new Set();
+        sch(pat, 'rule').forEach(rule => {
+          addLets(rule);
+          const ctx = rule.getAttribute('context') || '';
+          const path = ctx.split('|').map(p => p.trim()).map(p => p.startsWith('/') ? p : '//' + p).join(' | ');
+          let it; try { it = ev(path, doc, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE); } catch (e) { throw new Error(`Bad rule context "${ctx}": ${e.message}`); }
+          for (let i = 0; i < it.snapshotLength; i++) {
+            const node = it.snapshotItem(i); if (seen.has(node)) continue; seen.add(node);
+            [...rule.children].filter(c => NS.includes(c.namespaceURI) && (c.localName === 'assert' || c.localName === 'report')).forEach(chk => {
+              let ok; try { ok = ev('boolean(' + chk.getAttribute('test') + ')', node, XPathResult.BOOLEAN_TYPE).booleanValue; } catch (e) { throw new Error(`Bad test "${chk.getAttribute('test')}": ${e.message}`); }
+              if (chk.localName === 'assert' ? ok : !ok) return;
+              let msg = '';
+              chk.childNodes.forEach(c => {
+                if (c.nodeType === 3) msg += c.nodeValue;
+                else if (c.localName === 'value-of') msg += ev('string(' + c.getAttribute('select') + ')', node, XPathResult.STRING_TYPE).stringValue;
+                else if (c.localName === 'name') msg += c.getAttribute('path') ? ev('name(' + c.getAttribute('path') + ')', node, XPathResult.STRING_TYPE).stringValue : node.nodeName;
+                else msg += c.textContent;
+              });
+              out.push({ kind: chk.localName === 'assert' ? 'assert failed' : 'report', path: pathOf(node), message: msg.replace(/\s+/g, ' ').trim() || chk.getAttribute('test') });
+            });
+          }
+        });
+      });
+      return out;
+    }
+
+    // ---- transforms: XSLT 1.0 in the browser, XQuery 3.1 with fontoxpath
+    let fontoxLoading = null;
+    const loadFontox = () => window.fontoxpath ? Promise.resolve() : fontoxLoading || (fontoxLoading = new Promise((res, rej) => { const sc = document.createElement('script'); sc.src = '../js/vendor/fontoxpath.min.js'; sc.onload = res; sc.onerror = () => { fontoxLoading = null; rej(new Error('Could not load the XQuery engine.')); }; document.head.appendChild(sc); }));
+    function ser(v) {
+      if (v === null || v === undefined) return '';
+      if (Array.isArray(v)) return v.map(ser).join('\n');
+      if (v.nodeType) return v.nodeType === 2 ? v.value : v.nodeType === 3 ? v.nodeValue : new XMLSerializer().serializeToString(v);
+      if (typeof v === 'object') return JSON.stringify(v, null, 2);
+      return String(v);
+    }
+    async function transform() {
+      const kind = $('xfKind').value, xml = currentXml(), code = $('xfInput').value, out = $('xfOutput'), err = $('xfError');
+      out.textContent = ''; err.textContent = '';
+      const d = parse(xml); if (d.error) { err.textContent = 'The document is not well-formed: ' + d.error; return; }
+      if (!code.trim()) { err.textContent = kind === 'xslt' ? 'Paste an XSLT 1.0 stylesheet.' : 'Type an XQuery expression.'; return; }
+      if (kind === 'xslt') {
+        const xsl = new DOMParser().parseFromString(code, 'application/xml');
+        if (xsl.getElementsByTagName('parsererror')[0]) { err.textContent = 'The stylesheet is not well-formed XML.'; return; }
+        const v = xsl.documentElement.getAttribute('version');
+        if (v && parseFloat(v) >= 2) { err.textContent = `This stylesheet is XSLT ${v}. Browsers run XSLT 1.0 only, and there is no openly licensed XSLT 2.0/3.0 engine that can be bundled here; XQuery 3.1 (the other option) covers most of what 2.0 and 3.0 add.`; return; }
+        try {
+          const p = new XSLTProcessor(); p.importStylesheet(xsl);
+          const frag = p.transformToFragment(d.doc, document);
+          if (!frag) { err.textContent = 'The browser could not apply this stylesheet (its XSLT 1.0 engine gives no detail). Check the XPath expressions and that it uses only XSLT 1.0.'; return; }
+          out.textContent = [...frag.childNodes].some(n => n.nodeType === 1) ? [...frag.childNodes].map(n => n.nodeType === 1 ? new XMLSerializer().serializeToString(n) : n.textContent).join('') : frag.textContent;
+        } catch (e) { err.textContent = 'XSLT: ' + e.message; }
+        return;
+      }
+      out.textContent = 'Loading XQuery 3.1 (fontoxpath)…';
+      try {
+        await loadFontox();
+        const r = fontoxpath.evaluateXPath(code, d.doc, null, null, fontoxpath.evaluateXPath.ANY_TYPE, { language: fontoxpath.evaluateXPath.XQUERY_3_1_LANGUAGE });
+        out.textContent = ser(r);
+      } catch (e) { out.textContent = ''; err.textContent = 'XQuery: ' + String(e.message || e).split('\n').slice(0, 6).join('\n'); }
+    }
+    $('btnTransform').addEventListener('click', transform);
+    $('btnXfUse').addEventListener('click', () => { const t = $('xfOutput').textContent; if (!t.trim()) return; closeBigXml(); modeSelect.value = 'pretty'; xmlInput.value = t; render(); Layerbit.toast('The result is now the input'); });
+
+    // ---- compare: both documents as JSON (attributes @name), by path
+    function b64url(text) { const bytes = new TextEncoder().encode(text); let bin = ''; for (let i = 0; i < bytes.length; i += 0x8000) bin += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000)); return btoa(bin).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, ''); }
+    $('btnCompareXml').addEventListener('click', () => {
+      const box = $('cmpResult');
+      let a, b;
+      try { a = LBJsonX.xmlToJson(currentXml()); } catch (e) { box.innerHTML = `<div class="bad">The original: ${esc(e.message)}</div>`; return; }
+      try { b = LBJsonX.xmlToJson($('cmpInput').value); } catch (e) { box.innerHTML = `<div class="bad">The other document: ${esc(e.message)}</div>`; return; }
+      const d = LBJsonX.compare(a, b), short = v => { const t = JSON.stringify(v); return t === undefined ? '' : t.length > 100 ? t.slice(0, 97) + '…' : t; };
+      box.innerHTML = !d.length ? '<div class="ok">Same content: elements, attributes and text match (attribute order and formatting are ignored).</div>'
+        : `<div class="bad">${d.length} difference${d.length === 1 ? '' : 's'}</div><ul class="findings">` + d.slice(0, 500).map(x => `<li><span class="tag">${x.kind}</span> <code>${esc(x.path)}</code> ${x.kind !== 'added' ? esc(short(x.from)) : ''}${x.kind === 'changed' ? ' → ' : ''}${x.kind !== 'removed' ? esc(short(x.to)) : ''}</li>`).join('') + '</ul>';
+      const st = { mode: 'struct', a: JSON.stringify(a, null, 2), b: JSON.stringify(b, null, 2) };
+      $('cmpLink').href = 'text-diff-checker.html#s=j:' + b64url(JSON.stringify(st));
+      Layerbit.state.encode(st).then(z => { $('cmpLink').href = 'text-diff-checker.html#s=' + z; });
+    });
+
+    // ---- big files: formatted by libxml2 in its own worker, shown virtually
+    const BIG_XML = 8 * 1024 * 1024;
+    let bigXml = null, bigList = null;
+    async function handleFile(file) {
+      if (!file) return;
+      if (file.size < BIG_XML) { closeBigXml(); xmlInput.value = await Layerbit.readFile(file); render(); return; }
+      closeBigXml();
+      xmlInput.value = ''; render();
+      bigXml = { file }; window.xmlBig = { done: false };
+      const job = bigXml;
+      errorBanner.classList.remove('active');
+      xmlOutput.textContent = `Reading ${file.name} (${Layerbit.fmtBytes(file.size)}) with libxml2 in a background worker…`;
+      try {
+        const text = await file.text();
+        const { validateXML } = await xmllint();
+        const r = await validateXML(Object.assign({ xml: [{ fileName: 'document.xml', contents: text }], normalization: modeSelect.value === 'minify' ? '' : 'format' }, memFor(text.length)));
+        if (bigXml !== job) return;
+        job.text = text;
+        const out = r.normalized || text;
+        lastOutput = out;
+        const starts = [0]; for (let i = out.indexOf('\n'); i >= 0; i = out.indexOf('\n', i + 1)) starts.push(i + 1);
+        xmlOutput.textContent = ''; xmlOutput.classList.add('vtext');
+        bigList = LBVirtual.list(xmlOutput, { count: starts.length, rowHeight: 20, render: i => out.slice(starts[i], i + 1 < starts.length ? starts[i + 1] - 1 : out.length) });
+        statsStrip.innerHTML = `<span><strong>${esc(file.name)}</strong> ${Layerbit.fmtBytes(file.size)}</span><span><strong>${starts.length.toLocaleString()}</strong> lines formatted</span><span>well-formed</span> <button type="button" class="btn btn-inline" onclick="closeBigXml()">Close file</button>`;
+        xpathInput.disabled = true; xpathHint.textContent = 'XPath needs the document inside the page; it is available for files under 8 MB. Validation and transforms work on this file.';
+        window.xmlBig = { done: true };
+      } catch (e) {
+        if (bigXml !== job) return;
+        const msg = String(e.message || e).trim().split('\n').slice(0, 3).join(' ');
+        xmlOutput.textContent = ''; errorText.textContent = `${file.name} is not well-formed: ${msg}`; errorBanner.classList.add('active');
+        window.xmlBig = { done: true, error: msg };
+      }
+    }
+    function closeBigXml() {
+      if (bigList) { bigList.destroy(); bigList = null; }
+      xmlOutput.classList.remove('vtext');
+      if (bigXml) { bigXml = null; window.xmlBig = null; xmlOutput.textContent = ''; statsStrip.innerHTML = ''; xpathHint.innerHTML = 'Load a document to enable queries. Prefixes declared on the root element are available; the default namespace is bound to <code>ns</code>.'; }
+    }
+
     // ---- wiring ----
     let t = null;
-    xmlInput.addEventListener('input', () => { clearTimeout(t); t = setTimeout(render, 80); });
+    xmlInput.addEventListener('input', () => { if (bigXml) closeBigXml(); clearTimeout(t); t = setTimeout(render, 80); });
     modeSelect.addEventListener('change', render);
     optStripComments.addEventListener('change', render);
     xpathInput.addEventListener('input', runXPath);
     document.getElementById('btnCopy').addEventListener('click', () => lastOutput && navigator.clipboard.writeText(lastOutput));
-    document.getElementById('btnDownload').addEventListener('click', () => { if (!lastOutput) return; const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([lastOutput], { type: modeSelect.value === 'json' ? 'application/json' : 'application/xml' })); a.download = modeSelect.value === 'json' ? 'converted.json' : 'formatted.xml'; a.click(); });
-    document.getElementById('btnClear').addEventListener('click', () => { xmlInput.value = ''; xpathInput.value = ''; render(); });
+    document.getElementById('btnDownload').addEventListener('click', () => { if (!lastOutput) return; const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([lastOutput], { type: modeSelect.value === 'json' ? 'application/json' : 'application/xml' })); a.download = modeSelect.value === 'json' ? 'converted.json' : modeSelect.value === 'fromjson' ? 'converted.xml' : 'formatted.xml'; a.click(); });
+    document.getElementById('btnClear').addEventListener('click', () => { closeBigXml(); xmlInput.value = ''; xpathInput.value = ''; render(); });
     document.getElementById('btnSample').addEventListener('click', () => {
       xmlInput.value = `<?xml version="1.0" encoding="UTF-8"?>\n<feed xmlns="http://www.w3.org/2005/Atom" xmlns:media="http://search.yahoo.com/mrss/"><title>Layerbit Engineering Guides</title><updated>2026-09-27T09:00:00Z</updated><!-- three most recent --><entry><id>urn:uuid:018f4a6c-9e3b-7c4d-8a2e-1f3b5c7d9e0f</id><title>Decoding a JWT Is Not Verifying It</title><link href="https://layerbit.co.in/guides/jwt-decode-vs-verify.html"/><published>2026-09-22T00:00:00Z</published><category term="security"/><media:thumbnail url="https://layerbit.co.in/og-image.png" width="1200" height="630"/><summary>Why a decoded payload proves nothing about who issued it &amp; what verification actually checks.</summary></entry><entry><id>urn:uuid:018f4a6c-9e3b-7c4d-8a2e-1f3b5c7d9e10</id><title>Why CSV Is Not Really a Format</title><link href="https://layerbit.co.in/guides/csv-edge-cases.html"/><published>2026-09-22T00:00:00Z</published><category term="data"/><summary><![CDATA[Quotes, embedded newlines & the "Excel dialect".]]></summary></entry></feed>`;
       xpathInput.value = '//ns:entry[ns:category/@term="security"]/ns:title';
       render();
     });
-    fileInput.addEventListener('change', async e => { const f = e.target.files[0]; if (f) { xmlInput.value = await Layerbit.readFile(f); render(); } });
+    fileInput.addEventListener('change', e => { handleFile(e.target.files[0]); e.target.value = ''; });
     inputPane.addEventListener('dragover', e => { e.preventDefault(); inputPane.classList.add('dragover'); });
     inputPane.addEventListener('dragleave', () => inputPane.classList.remove('dragover'));
-    inputPane.addEventListener('drop', async e => { e.preventDefault(); inputPane.classList.remove('dragover'); const f = e.dataTransfer.files[0]; if (f) { xmlInput.value = await Layerbit.readFile(f); render(); } });
+    inputPane.addEventListener('drop', e => { e.preventDefault(); inputPane.classList.remove('dragover'); handleFile(e.dataTransfer.files[0]); });
   </script>

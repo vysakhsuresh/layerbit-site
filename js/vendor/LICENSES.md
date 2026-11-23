@@ -21,6 +21,8 @@ offline, and sends no visitor IP to a CDN operator).
 | `jsonquery.min.js` | @jsonquerylang/jsonquery (`lib/jsonquery.js` bundled as `window.JSONQuery` with esbuild) | 5.1.1 | ISC |
 | `smol-toml.min.js` | smol-toml (`dist/index.js` bundled as `window.TOML` with esbuild) | 1.9.1 | BSD-3-Clause |
 | `wasm/jq.js`, `wasm/jq.wasm` | jq-web (jq 1.7 compiled to WebAssembly; jq itself is MIT) | 0.6.2 | ISC (jq-web), MIT (jq) |
+| `fontoxpath.min.js` | fontoxpath (XPath 3.1 / XQuery 3.1; bundled as `window.fontoxpath` with esbuild, with its dependencies) | 3.34.0 | MIT |
+| `xmllint/` (`index-browser.mjs`, `xmllint-browser.mjs`, `xmllint.wasm`, `COPYING`) | xmllint-wasm (libxml2 2.13.8 compiled to WebAssembly), files copied unchanged | 5.3.0 | MIT |
 | `wasm/selftest.wasm` | Layerbit's own 41-byte test module for the WebAssembly loader | n/a | AGPL-3.0 |
 
 To upgrade one: download the same `dist/` file from the new version's npm

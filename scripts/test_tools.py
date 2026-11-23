@@ -2357,6 +2357,103 @@ def _(t):
     expect("number: 714" in t.text("xpathHint"), t.text("xpathHint"))
 
 
+XML_ORDER = '<?xml version="1.0"?>\n<order id="7">\n  <qty>0</qty>\n  <sku>A</sku>\n</order>'
+XSD_ORDER = '<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"><xs:element name="order"><xs:complexType><xs:sequence><xs:element name="qty" type="xs:positiveInteger"/><xs:element name="sku" type="xs:string"/></xs:sequence><xs:attribute name="id" type="xs:int" use="required"/></xs:complexType></xs:element></xs:schema>'
+
+
+@case("xml-formatter", "typical", "2.5: XSD validation with libxml2 in WebAssembly lists each error with its line")
+def _(t):
+    t.set("xmlInput", XML_ORDER); t.wait(150)
+    t.select("schemaKind", "xsd"); t.set("schemaInput", XSD_ORDER)
+    t.click("#btnValidate")
+    t.wait_for("document.getElementById('validateResult').textContent.length > 0 && !/Validating/.test(document.getElementById('validateResult').textContent)", 20000)
+    r = t.text("validateResult")
+    expect("line 3" in r.lower() and "positiveInteger" in r, r)
+    t.set("xmlInput", XML_ORDER.replace("<qty>0</qty>", "<qty>2</qty>")); t.wait(150)
+    t.click("#btnValidate")
+    t.wait_for("/Valid/.test(document.getElementById('validateResult').textContent) && !/error/i.test(document.getElementById('validateResult').textContent)", 20000)
+
+
+@case("xml-formatter", "typical", "2.5: RelaxNG validation")
+def _(t):
+    t.set("xmlInput", XML_ORDER); t.wait(150)
+    t.select("schemaKind", "rng")
+    t.set("schemaInput", '<element name="order" xmlns="http://relaxng.org/ns/structure/1.0"><attribute name="id"/><element name="qty"><text/></element><element name="sku"><text/></element><element name="note"><text/></element></element>')
+    t.click("#btnValidate")
+    t.wait_for("document.getElementById('validateResult').textContent.length > 0 && !/Validating/.test(document.getElementById('validateResult').textContent)", 20000)
+    expect("note" in t.text("validateResult") or "line" in t.text("validateResult").lower(), t.text("validateResult"))
+
+
+@case("xml-formatter", "typical", "2.5: DTD validation from the internal subset or a pasted DTD")
+def _(t):
+    t.set("xmlInput", '<!DOCTYPE order [\n<!ELEMENT order (sku, qty)>\n<!ATTLIST order id ID #REQUIRED>\n<!ELEMENT qty (#PCDATA)>\n<!ELEMENT sku (#PCDATA)>\n]>\n<order>\n  <qty>1</qty>\n  <sku>A</sku>\n</order>'); t.wait(150)
+    t.select("schemaKind", "dtd"); t.set("schemaInput", "")
+    t.click("#btnValidate"); t.wait(300)
+    r = t.text("validateResult")
+    expect("required attribute id" in r and "content of <order>" in r and "line 7" in r.lower(), r)
+
+
+@case("xml-formatter", "typical", "2.5: Schematron asserts and reports name the node")
+def _(t):
+    t.set("xmlInput", XML_ORDER); t.wait(150)
+    t.select("schemaKind", "sch")
+    t.set("schemaInput", '<schema xmlns="http://purl.oclc.org/dsdl/schematron"><pattern><rule context="order"><assert test="number(qty) &gt; 0">qty must be positive, got <value-of select="qty"/></assert><report test="sku = \'A\'">sku A is discontinued</report></rule></pattern></schema>')
+    t.click("#btnValidate"); t.wait(300)
+    r = t.text("validateResult")
+    expect("qty must be positive, got 0" in r and "sku A is discontinued" in r and "/order" in r, r)
+
+
+@case("xml-formatter", "typical", "2.5: XSLT 1.0 and XQuery 3.1 transforms")
+def _(t):
+    t.set("xmlInput", '<list><i n="2">b</i><i n="1">a</i></list>'); t.wait(150)
+    t.click("[data-xtab='transform']")
+    t.select("xfKind", "xslt")
+    t.set("xfInput", '<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform"><xsl:output method="text"/><xsl:template match="/"><xsl:for-each select="list/i"><xsl:sort select="@n"/><xsl:value-of select="."/></xsl:for-each></xsl:template></xsl:stylesheet>')
+    t.click("#btnTransform"); t.wait(200)
+    eq(t.text("xfOutput").strip(), "ab", "XSLT 1.0")
+    t.select("xfKind", "xquery")
+    t.set("xfInput", 'string-join(for $i in /list/i order by xs:integer($i/@n) descending return upper-case($i), "-")')
+    t.click("#btnTransform")
+    t.wait_for("document.getElementById('xfOutput').textContent.includes('B-A')", 15000)
+    t.click("[data-xtab='validate']")
+
+
+@case("xml-formatter", "typical", "2.5: JSON -> XML mode")
+def _(t):
+    t.select("modeSelect", "fromjson")
+    t.set("xmlInput", '{"order":{"@id":"7","item":[{"sku":"A&B"},{"sku":"C"}]}}'); t.wait(200)
+    out = t.text("xmlOutput")
+    expect('<order id="7">' in out and "<sku>A&amp;B</sku>" in out and out.count("<item>") == 2, out)
+    t.select("modeSelect", "pretty")
+
+
+@case("xml-formatter", "typical", "2.5: compare two XML documents; the Diff Checker opens with both")
+def _(t):
+    t.set("xmlInput", '<order id="7"><sku>A</sku><qty>1</qty></order>'); t.wait(150)
+    t.click("[data-xtab='compare']")
+    t.set("cmpInput", '<order id="8"><sku>A</sku><qty>2</qty><note>x</note></order>')
+    t.click("#btnCompareXml"); t.wait(150)
+    r = t.text("cmpResult")
+    expect("@id" in r and "qty" in r and "note" in r and "$.order.sku" not in r, r)
+    expect("3 difference" in r, r)
+    expect("text-diff-checker.html#s=" in t.call("document.getElementById('cmpLink').href"), "no hand-off link")
+    t.click("[data-xtab='validate']")
+
+
+@case("xml-formatter", "maximal", "2.5: a 30 MB XML file is formatted in a Worker and shown virtually")
+def _(t):
+    t.call("""() => { const parts = ['<?xml version="1.0"?>\\n<rows>']; for (let i = 0; i < 250000; i++) parts.push('<row id="' + i + '"><name>user ' + i + '</name><email>u' + i + '@example.com</email><score>' + i * 2 + '</score></row>');
+      parts.push('</rows>'); window.__xf = new File(parts, 'big.xml'); handleFile(window.__xf); }""")
+    t.wait_for("window.xmlBig && window.xmlBig.done", 60000)
+    expect(t.call("window.__xf.size") > 25e6, "file not large enough")
+    expect(not t.call("window.xmlBig.error"), "error: %s" % t.call("window.xmlBig.error"))
+    n = t.count("#xmlOutput .lb-vrow")
+    expect(0 < n < 300, f"{n} rows in the DOM")
+    expect("<rows>" in t.text("xmlOutput"), t.text("xmlOutput")[:200])
+    expect(t.call("xmlInput.value.length") == 0, "the big file was put into the text box")
+    t.call("closeBigXml()")
+
+
 # ----------------------------------------------------------------------------
 # unicode-inspector
 # ----------------------------------------------------------------------------
