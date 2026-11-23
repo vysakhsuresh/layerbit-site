@@ -1351,6 +1351,27 @@ def _(t):
     eq(t.text("countErr").strip().replace(",", ""), "5000", "error count at scale")
 
 
+@case("log-analyzer", "edge", "B7: a stack trace belongs to its log line: counts, filters and export are per event")
+def _(t):
+    log = "\n".join([
+        "2026-01-01 10:00:00 INFO started",
+        "2026-01-01 10:00:01 ERROR request failed",
+        "java.lang.NullPointerException: user is null",
+        "\tat com.acme.Api.handle(Api.java:42)",
+        "\tat com.acme.Server.run(Server.java:7)",
+        "2026-01-01 10:00:02 INFO recovered"])
+    t.set("logInput", log); t.wait(450); t.call("analyzeLogs()")
+    eq(t.text("countAll").strip(), "3", "events")
+    eq(t.text("countErr").strip(), "1", "errors")
+    t.call("setFilter('ERROR')"); t.wait(150)
+    rows = t.call("[...document.querySelectorAll('#logOutput .log-line')].filter(l => l.style.display !== 'none').map(l => l.innerText)")
+    eq(len(rows), 1, "error rows")
+    expect("NullPointerException" in rows[0] and "Api.java:42" in rows[0], rows[0])
+    py = "2026-01-01 10:00:00 ERROR boom\nTraceback (most recent call last):\n  File \"app.py\", line 3, in <module>\nValueError: bad\n2026-01-01 10:00:01 INFO ok"
+    t.set("logInput", py); t.wait(450); t.call("analyzeLogs()")
+    eq(t.text("countAll").strip(), "2", "python traceback grouped")
+
+
 @case("log-analyzer", "typical", "DEBUG filter, regex grep and repeated-message tally")
 def _(t):
     lines = ["2026-01-01 10:00:00 DEBUG cache miss key=%d" % i for i in range(3)] + \
