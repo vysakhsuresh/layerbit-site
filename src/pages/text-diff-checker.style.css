@@ -213,9 +213,10 @@
     .error-banner.active { display: flex; }
     .error-banner i, .error-banner svg { color: #f87171; width: 18px; flex-shrink: 0; margin-top: 2px; }
 
-    .split-wrap { display: grid; grid-template-columns: 1fr 1fr; gap: 0; }
-    .split-wrap .diff-output { border-right: 1px solid var(--card-border); }
-    .split-wrap .diff-output:last-child { border-right: none; }
+    .split-wrap { display: block; }
+    .drow { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+    .dside { min-width: 0; }
+    .dside.sd-l { border-right: 1px solid var(--card-border); }
     .diff-output { height: 560px; max-height: 70vh; }
     .diff-output:focus { outline: 2px solid var(--accent-main); outline-offset: -2px; }
     .diff-output.unified .diff-num { width: 84px; text-align: center; padding: 0; display: flex; }
@@ -269,7 +270,7 @@
     .cb { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-bottom: 6px; font-family: 'Space Grotesk', sans-serif; white-space: normal; }
 
     @media (max-width: 1100px) { .ide-container.three-col { grid-template-columns: 1fr; } }
-    @media (max-width: 900px) { .split-wrap { grid-template-columns: 1fr; } .split-wrap .diff-output { border-right: none; border-bottom: 1px solid var(--card-border); height: 360px; } .result-header { flex-direction: column; align-items: flex-start; } }
+    @media (max-width: 900px) { .split-wrap .diff-output { height: 420px; } .drow .diff-num { width: 34px; } .result-header { flex-direction: column; align-items: flex-start; } }
     @media (max-width: 480px) { .mode-tab { padding: 8px 12px; font-size: 0.82em; } .opt-group { gap: 8px 12px; } .action-bar .btn, .action-bar .btn-primary { width: auto; } .hunk-bar-spacer { display: none; } }
 
     .diff-notes { display: flex; gap: 10px; align-items: flex-start; margin: 8px; padding: 10px 12px; border-radius: 8px; border: 1px solid rgba(245,158,11,0.4); background: rgba(245,158,11,0.08); color: #fde68a; font-family: 'Space Grotesk', sans-serif; font-size: 0.86rem; white-space: normal; }

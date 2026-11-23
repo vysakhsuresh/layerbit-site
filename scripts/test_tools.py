@@ -951,8 +951,8 @@ def _(t):
     t.set("text2", "same")
     t.call("run()")
     t.wait(100)
-    expect(t.count("#rightPanel .line-added") == 0, "identical text produced additions")
-    expect("No differences" in t.text("leftPanel"), "identical notice missing")
+    expect(t.count("#splitPanel .sd-r.line-added") == 0, "identical text produced additions")
+    expect("No differences" in t.text("splitPanel"), "identical notice missing")
     expect(not t.visible("#mergedSection"), "merge pane shown with nothing to merge")
 
 
@@ -960,7 +960,7 @@ def _(t):
 def _(t):
     t.call("run()")
     t.wait(50)
-    expect("empty" in t.text("leftPanel"), t.text("leftPanel"))
+    expect("empty" in t.text("splitPanel"), t.text("splitPanel"))
 
 
 @case("text-diff-checker", "typical", "one changed line is highlighted with stats and a hunk bar")
@@ -969,9 +969,9 @@ def _(t):
     t.set("text2", "a\nB\nc")
     t.call("run()")
     t.wait(100)
-    expect(t.count("#rightPanel .line-added") == 1 and t.count("#leftPanel .line-removed") == 1, "changed line not shown")
+    expect(t.count("#splitPanel .sd-r.line-added") == 1 and t.count("#splitPanel .sd-l.line-removed") == 1, "changed line not shown")
     expect("1 change block" in t.text("diffStats"), t.text("diffStats"))
-    expect(t.count("#leftPanel .hunk-bar") == 1, "hunk bar missing")
+    expect(t.count("#splitPanel .hunk-bar") == 1, "hunk bar missing")
 
 
 @case("text-diff-checker", "typical", "merge: per-hunk decisions and accept/keep all")
@@ -993,7 +993,7 @@ def _(t):
 def _(t):
     t.call("loadSample('code')")
     t.wait(150)
-    expect(t.count("#rightPanel .tk-kw") > 0, "no syntax tokens")
+    expect(t.count("#splitPanel .sd-r .tk-kw") > 0, "no syntax tokens")
     expect("js" in t.text("diffStats"), "language not detected")
     t.select("viewMode", "unified")
     t.wait(50)
@@ -1005,14 +1005,14 @@ def _(t):
     t.select("contextLines", "3")
     t.call("run()")
     t.wait(100)
-    expect(t.count("#rightPanel .diff-skip") == 2, f"expected 2 folds, got {t.count('#rightPanel .diff-skip')}")
-    expect(t.count("#rightPanel .diff-line") <= 10, "context folding did not reduce rows")
+    expect(t.count("#splitPanel .diff-skip") == 2, f"expected 2 folds, got {t.count('#splitPanel .diff-skip')}")
+    expect(t.count("#splitPanel .sd-r") <= 10, "context folding did not reduce rows")
     t.call("expandSkip()")
     t.wait(50)
-    expect(t.count("#rightPanel .diff-line") >= 60, "expand did not restore rows")
+    expect(t.count("#splitPanel .sd-r") >= 60, "expand did not restore rows")
     t.click("#showWs")
     t.wait(50)
-    expect(t.count("#rightPanel .ws") > 0, "whitespace markers missing")
+    expect(t.count("#splitPanel .sd-r .ws") > 0, "whitespace markers missing")
 
 
 @case("text-diff-checker", "typical", "character granularity isolates a one-letter change")
@@ -1022,12 +1022,12 @@ def _(t):
     t.select("granularity", "char")
     t.call("run()")
     t.wait(100)
-    spans = t.call("Array.from(document.querySelectorAll('#rightPanel .word-added')).map(e => e.textContent)")
+    spans = t.call("Array.from(document.querySelectorAll('#splitPanel .sd-r .word-added')).map(e => e.textContent)")
     eq(spans, ["D"], "char-level added span")
     t.select("granularity", "none")
     t.call("run()")
     t.wait(100)
-    eq(t.count("#rightPanel .word-added"), 0, "lines-only mode still highlighted words")
+    eq(t.count("#splitPanel .sd-r .word-added"), 0, "lines-only mode still highlighted words")
 
 
 @case("text-diff-checker", "edge", "normalisation options: whitespace, case, trailing, blank, CRLF")
@@ -1138,7 +1138,7 @@ def _(t):
     eq(rows, ["a.txt:modified", "gone.txt:removed", "new.txt:added", "same.txt:same"], "zip rows")
     t.call("zipOpen(0)")
     t.wait_for("() => document.getElementById('resultTitle').textContent.includes('a.txt')")
-    eq(t.call("[...document.querySelectorAll('#rightPanel .word-added')].map(e=>e.textContent)"), ["there"], "file diff from zip")
+    eq(t.call("[...document.querySelectorAll('#splitPanel .sd-r .word-added')].map(e=>e.textContent)"), ["there"], "file diff from zip")
 
 
 @case("text-diff-checker", "typical", "share link restores mode, inputs and options and re-runs")
@@ -1159,7 +1159,7 @@ def _(t):
     t.select("contextLines", "3")
     t.call("run()")
     t.wait_for("() => document.getElementById('diffStats').innerText.includes('40 change blocks')")
-    expect(t.count("#rightPanel .diff-line") < 400, "folding not applied")
+    expect(t.count("#splitPanel .sd-r") < 400, "folding not applied")
     t.call("navDiff(1)")
     eq(t.text("hunkCounter"), "1 / 40", "navigation counter")
 
@@ -2204,6 +2204,20 @@ def _(t):
     eq(t.val("mergedText"), "one\nTWO\nTHREE\nfour\nfive\n", "confirmed fuzzy result")
 
 
+@case("text-diff-checker", "edge", "bug 13: side-by-side rows stay aligned after a long wrapped line")
+def _(t):
+    t.select("viewMode", "split")
+    t.set("text1", "start\n" + ("lorem ipsum dolor " * 150) + "\nend line\n")
+    t.set("text2", "start\nshort\nend line\n")
+    t.call("run()"); t.wait(150)
+    tops = t.call("""(() => { const rows = [...document.querySelectorAll('#splitPanel .drow')].filter(r => r.innerText.includes('end line'));
+      if (!rows.length) return null; const r = rows[0]; const l = r.querySelector('.sd-l'), rt = r.querySelector('.sd-r');
+      return [Math.round(l.getBoundingClientRect().top), Math.round(rt.getBoundingClientRect().top), Math.round(l.getBoundingClientRect().height), Math.round(rt.getBoundingClientRect().height)]; })()""")
+    expect(tops is not None, "rows are not single elements with left and right cells")
+    eq(tops[0], tops[1], "left and right cells of the same row start at different heights")
+    eq(tops[2], tops[3], "left and right cells of the same row have different heights")
+
+
 @case("text-diff-checker", "typical", "audit: ignore-whitespace/case and highlight options re-run the diff live")
 def _(t):
     t.set("text1", "Hello  World\nsecond line\n")
@@ -2224,7 +2238,7 @@ def _(t):
     t.set("text1", "x();\nmodule.exports = { calculateTotal };\n")
     t.set("text2", "x();\nfunction round2(n) { return Math.round(n * 100) / 100; }\n\nmodule.exports = { calculateTotal, round2 };\n")
     t.click("#btnRun"); t.wait(200)
-    pairs = t.call("[...document.querySelectorAll('#leftPanel .diff-line, #leftPanel tr, #leftPanel > div')].map(e=>e.innerText).join('\\n')")
+    pairs = t.call("[...document.querySelectorAll('#splitPanel .sd-l')].map(e=>e.innerText).join('\\n')")
     rows = t.call("(() => { const r = []; document.querySelectorAll('.word-removed, .w-del, del, .seg-del').forEach(e => r.push(e.textContent)); return r; })()")
     # 'module.exports' itself must not be marked removed: only the inserted ', round2' differs
     expect(not any('module.exports' in x for x in rows), f"module.exports was highlighted as removed: {rows}")

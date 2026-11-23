@@ -161,8 +161,7 @@
 
       <!-- text / patch / zip-file views -->
       <div class="split-wrap" id="splitWrap">
-        <div id="leftPanel" class="diff-output" tabindex="0" aria-label="Original with removals"></div>
-        <div id="rightPanel" class="diff-output" tabindex="0" aria-label="Modified with additions"></div>
+        <div id="splitPanel" class="diff-output split" tabindex="0" aria-label="Side-by-side comparison: original on the left, modified on the right"></div>
       </div>
       <div id="inlinePanel" class="diff-output unified" style="display:none;" tabindex="0" aria-label="Unified diff"></div>
 
@@ -589,7 +588,7 @@
     function cancelDiff() {
       if (!worker) return;
       worker.terminate(); worker = null; workerJob++; textJob++; stopProgress();
-      $('leftPanel').innerHTML = $('rightPanel').innerHTML = $('inlinePanel').innerHTML = '<div class="diff-empty">Comparison cancelled. Change the options or press Compare to run it again.</div>';
+      $('splitPanel').innerHTML = $('inlinePanel').innerHTML = '<div class="diff-empty">Comparison cancelled. Change the options or press Compare to run it again.</div>';
       $('diffStats').innerHTML = '';
     }
     $('btnCancelDiff').addEventListener('click', cancelDiff);
@@ -641,7 +640,7 @@
         const S = last.summary, n = v => v.toLocaleString();
         $('diffStats').innerHTML = `<span class="st-del">too different to align</span><span>${n(S.common)} lines in common</span>`;
         const html = `<div class="diff-notes too-different" role="status"><i data-lucide="alert-triangle"></i><div><strong>These files are too different to align line by line</strong> within the time limit, so no line-by-line view is shown rather than a misleading one.<ul><li>${n(S.onlyA)} only in the original (of ${n(S.linesA)} lines)</li><li>${n(S.onlyB)} only in the modified file (of ${n(S.linesB)} lines)</li><li>${n(S.common)} lines appear in both</li></ul><button class="btn" type="button" onclick="alignAnyway()"><i data-lucide="play"></i> Align anyway (no time limit, can be cancelled)</button></div></div>`;
-        $('leftPanel').innerHTML = html; $('rightPanel').innerHTML = ''; $('inlinePanel').innerHTML = html;
+        $('splitPanel').innerHTML = html; $('inlinePanel').innerHTML = html;
         $('hunkCounter').textContent = '0 / 0';
         showPanel($('viewMode').value === 'unified' ? 'unified' : 'split'); icons();
         return;
@@ -656,30 +655,32 @@
       // index row -> hunk
       const rowHunk = new Map(); hunks.forEach((h, i) => { for (let r = h.start; r < h.end; r++) rowHunk.set(r, i); });
       const rowIndex = new Map(); rows.forEach((r, i) => rowIndex.set(r, i));
-      let L = '', R = '', U = '', lastHunk = -1;
+      // Each side-by-side row is ONE element holding the left and right cells,
+      // so a long wrapped line on one side makes both cells the same height.
+      const S = [], U = []; let lastHunk = -1;
       const hunkBar = i => `<div class="hunk-bar" data-hunk="${i}"><span class="hunk-label">Change ${i + 1}</span>` +
         `<button type="button" class="hb ${decisions[i] === 'left' ? 'on' : ''}" onclick="decide(${i},'left')" title="Revert this block to the original">Keep original</button>` +
         `<button type="button" class="hb ${decisions[i] === 'right' ? 'on' : ''}" onclick="decide(${i},'right')" title="Keep the modified version of this block">Accept change</button>` +
         `<button type="button" class="hb ${decisions[i] === 'both' ? 'on' : ''}" onclick="decide(${i},'both')" title="Keep original lines followed by modified lines">Both</button></div>`;
+      const cell = (side, kind, n, html) => `<div class="dside sd-${side} diff-line line-${kind}${kind !== 'match' && kind !== 'blank' ? ' has-diff' : ''}"><div class="diff-num">${n}</div><div class="diff-text">${html}</div></div>`;
       shown.forEach(row => {
-        if (row.type === 'skip') { const s = `<div class="diff-skip" onclick="expandSkip(${row.from},${row.to})" title="Show these lines"><i data-lucide="unfold-vertical"></i> ${row.count.toLocaleString()} unchanged lines</div>`; L += s; R += s; U += s; lastHunk = -1; return; }
+        if (row.type === 'skip') { const s = `<div class="diff-skip" data-from="${row.from}" data-to="${row.to}" onclick="expandSkip(${row.from},${row.to})" title="Show these lines"><i data-lucide="unfold-vertical"></i> ${row.count.toLocaleString()} unchanged lines</div>`; S.push(s); U.push(s); lastHunk = -1; return; }
         const ri = rowIndex.get(row), hi = rowHunk.has(ri) ? rowHunk.get(ri) : -1;
-        if (hi >= 0 && hi !== lastHunk) { const hb = hunkBar(hi); L += `<div class="hunk-anchor" id="hL${hi}"></div>${hb}`; R += `<div class="hunk-anchor" id="hR${hi}"></div><div class="hunk-bar-spacer"></div>`; U += `<div class="hunk-anchor" id="hU${hi}"></div>${hb}`; }
+        if (hi >= 0 && hi !== lastHunk) { const hb = hunkBar(hi); S.push(`<div class="hunk-anchor" id="hS${hi}"></div>${hb}`); U.push(`<div class="hunk-anchor" id="hU${hi}"></div>${hb}`); }
         lastHunk = hi;
         const lh = row.l ? E.renderLine(row.l.text, row.l.segs, lang, showWs) : '';
         const rh = row.r ? E.renderLine(row.r.text, row.r.segs, lang, showWs) : '';
         const lt = row.type === 'eq' ? 'match' : row.type === 'ins' ? 'blank' : 'removed';
         const rt = row.type === 'eq' ? 'match' : row.type === 'del' ? 'blank' : 'added';
-        L += `<div class="diff-line line-${lt}${lt !== 'match' && lt !== 'blank' ? ' has-diff' : ''}"><div class="diff-num">${row.l ? row.l.n : ''}</div><div class="diff-text">${row.l ? lh : '&nbsp;'}</div></div>`;
-        R += `<div class="diff-line line-${rt}${rt !== 'match' && rt !== 'blank' ? ' has-diff' : ''}"><div class="diff-num">${row.r ? row.r.n : ''}</div><div class="diff-text">${row.r ? rh : '&nbsp;'}</div></div>`;
-        if (row.type === 'eq') U += `<div class="diff-line line-match"><div class="diff-num"><span>${row.l.n}</span><span>${row.r.n}</span></div><div class="diff-text">${lh}</div></div>`;
-        else { if (row.l) U += `<div class="diff-line line-removed has-diff"><div class="diff-num"><span>${row.l.n}</span><span></span></div><div class="diff-text">${lh}</div></div>`; if (row.r) U += `<div class="diff-line line-added has-diff"><div class="diff-num"><span></span><span>${row.r.n}</span></div><div class="diff-text">${rh}</div></div>`; }
+        S.push(`<div class="drow">${cell('l', lt, row.l ? row.l.n : '', row.l ? lh : '&nbsp;')}${cell('r', rt, row.r ? row.r.n : '', row.r ? rh : '&nbsp;')}</div>`);
+        if (row.type === 'eq') U.push(`<div class="diff-line line-match"><div class="diff-num"><span>${row.l.n}</span><span>${row.r.n}</span></div><div class="diff-text">${lh}</div></div>`);
+        else { let u = ''; if (row.l) u += `<div class="diff-line line-removed has-diff"><div class="diff-num"><span>${row.l.n}</span><span></span></div><div class="diff-text">${lh}</div></div>`; if (row.r) u += `<div class="diff-line line-added has-diff"><div class="diff-num"><span></span><span>${row.r.n}</span></div><div class="diff-text">${rh}</div></div>`; U.push(u); }
       });
-      if (!rows.length) { L = R = U = '<div class="diff-empty">Both inputs are empty.</div>'; }
-      else if (!hunks.length && !(last.notes || []).length) { const s = '<div class="diff-identical"><i data-lucide="check-circle-2"></i> No differences with the current options.</div>'; L = s + L; R = R; U = s + U; }
+      if (!rows.length) { S.length = 0; U.length = 0; S.push('<div class="diff-empty">Both inputs are empty.</div>'); U.push(S[0]); }
+      else if (!hunks.length && !(last.notes || []).length) { const s = '<div class="diff-identical"><i data-lucide="check-circle-2"></i> No differences with the current options.</div>'; S.unshift(s); U.unshift(s); }
       const notesHtml = (last.notes || []).length ? `<div class="diff-notes" role="status"><i data-lucide="alert-triangle"></i><div><strong>${hunks.length ? 'Also' : 'No line differences with the current options, but the files are not byte-identical'}:</strong><ul>${last.notes.map(n => `<li>${E.esc(n)}</li>`).join('')}</ul></div></div>` : '';
-      L = notesHtml + L; U = notesHtml + U;
-      $('leftPanel').innerHTML = L; $('rightPanel').innerHTML = R; $('inlinePanel').innerHTML = U;
+      if (notesHtml) { S.unshift(notesHtml); U.unshift(notesHtml); }
+      $('splitPanel').innerHTML = S.join(''); $('inlinePanel').innerHTML = U.join('');
       showPanel(view === 'unified' ? 'unified' : 'split');
       icons();
     }
@@ -719,11 +720,10 @@
       currentHunk = (currentHunk + dir + last.hunks.length) % last.hunks.length;
       $('hunkCounter').textContent = `${currentHunk + 1} / ${last.hunks.length}`;
       const unified = $('viewMode').value === 'unified';
-      const id = (unified ? 'hU' : 'hR') + currentHunk;
-      const panel = unified ? $('inlinePanel') : $('rightPanel');
+      const id = (unified ? 'hU' : 'hS') + currentHunk;
+      const panel = unified ? $('inlinePanel') : $('splitPanel');
       const a = $(id); if (!a) { $('contextLines').value = 'all'; renderText(); return navDiff(0); }
       panel.scrollTop = a.offsetTop - 40;
-      if (!unified) $('leftPanel').scrollTop = panel.scrollTop;
       document.querySelectorAll('.hunk-bar.current').forEach(x => x.classList.remove('current'));
       document.querySelectorAll(`.hunk-bar[data-hunk="${currentHunk}"]`).forEach(x => x.classList.add('current'));
     }
@@ -731,9 +731,6 @@
       if (e.target.tagName === 'TEXTAREA' || e.target.tagName === 'INPUT' || e.ctrlKey || e.metaKey || e.altKey) return;
       if (e.key === 'n' || e.key === 'j') navDiff(1); else if (e.key === 'p' || e.key === 'k') navDiff(-1);
     });
-    // sync scroll
-    let syncing = false;
-    [['leftPanel', 'rightPanel'], ['rightPanel', 'leftPanel']].forEach(([a, b]) => $(a).addEventListener('scroll', function () { if (syncing) return; syncing = true; $(b).scrollTop = this.scrollTop; $(b).scrollLeft = this.scrollLeft; syncing = false; }));
     ['viewMode', 'contextLines', 'showWs', 'syntaxMode'].forEach(id => $(id).addEventListener('change', () => { if (last && (mode === 'text' || mode === 'zip' || mode === 'patch') && $('outputSection').style.display !== 'none') { if (id === 'syntaxMode') last.lang = $('syntaxMode').value === 'auto' ? E.detectLang(last.a || last.b, last.nameA) : $('syntaxMode').value; renderText(); } }));
 
     // ---- patch export / report
@@ -755,7 +752,7 @@
     function downloadReport() {
       const panel = $('outputSection').querySelector('.result-pane');
       const body = mode === 'text' || mode === 'patch' || mode === 'zip' ? ($('viewMode').value === 'unified' ? $('inlinePanel').outerHTML : $('splitWrap').outerHTML) : mode === 'struct' ? $('structPanel').outerHTML : mode === 'table' ? $('tablePanel').outerHTML : $('threePanel').outerHTML;
-      const css = `body{font-family:system-ui,sans-serif;background:#0a0c10;color:#f8fafc;margin:0;padding:24px}h1{font-size:1.2em}.meta{color:#94a3b8;font-size:.9em;margin-bottom:16px}.split-wrap{display:grid;grid-template-columns:1fr 1fr;gap:12px}.diff-output{font-family:ui-monospace,Menlo,monospace;font-size:12px;line-height:1.5;background:rgba(0,0,0,.4);border:1px solid #222;border-radius:8px;overflow:auto;max-height:none}.diff-line{display:flex}.diff-num{width:48px;flex-shrink:0;text-align:right;padding-right:8px;color:#94a3b8;border-right:1px solid #222;user-select:none}.unified .diff-num{width:80px;display:flex}.unified .diff-num span{flex:1}.diff-text{padding-left:8px;white-space:pre-wrap;word-break:break-all;flex:1}.line-removed{background:rgba(239,68,68,.15)}.line-added{background:rgba(34,197,94,.15)}.word-removed{background:rgba(239,68,68,.45);text-decoration:line-through}.word-added{background:rgba(34,197,94,.45)}.hunk-bar,.hunk-bar-spacer,.hunk-anchor{display:none}.diff-skip{color:#94a3b8;padding:4px 12px;background:rgba(255,255,255,.03)}.tk-kw{color:#38bdf8}.tk-str{color:#a7f3d0}.tk-num{color:#fdba74}.tk-cmt{color:#64748b;font-style:italic}.tk-key{color:#c084fc}.tk-tag{color:#f472b6}.tk-attr{color:#fdba74}.tk-fn{color:#f472b6}.tk-prop{color:#38bdf8}table{border-collapse:collapse;width:100%;font-size:.9em}th,td{text-align:left;padding:6px 10px;border-bottom:1px solid #222;vertical-align:top;font-family:ui-monospace,monospace}th{color:#38bdf8}.t-added{color:#4ade80}.t-removed{color:#f87171}.t-changed{color:#fbbf24}.t-type{color:#c084fc}.cell-old{color:#f87171;text-decoration:line-through}.cell-new{color:#4ade80}.three-chunk{border-left:3px solid #333;padding:4px 10px;margin:4px 0;white-space:pre-wrap;font-family:ui-monospace,monospace;font-size:12px}.three-chunk.conflict{border-color:#ef4444}.three-chunk.ours{border-color:#f87171}.three-chunk.theirs{border-color:#4ade80}.three-chunk .cb{display:none}.ws{opacity:.4}`;
+      const css = `body{font-family:system-ui,sans-serif;background:#0a0c10;color:#f8fafc;margin:0;padding:24px}h1{font-size:1.2em}.meta{color:#94a3b8;font-size:.9em;margin-bottom:16px}.drow{display:grid;grid-template-columns:1fr 1fr}.sd-l{border-right:1px solid #222}.dside{min-width:0}.diff-output{font-family:ui-monospace,Menlo,monospace;font-size:12px;line-height:1.5;background:rgba(0,0,0,.4);border:1px solid #222;border-radius:8px;overflow:auto;max-height:none}.diff-line{display:flex}.diff-num{width:48px;flex-shrink:0;text-align:right;padding-right:8px;color:#94a3b8;border-right:1px solid #222;user-select:none}.unified .diff-num{width:80px;display:flex}.unified .diff-num span{flex:1}.diff-text{padding-left:8px;white-space:pre-wrap;word-break:break-all;flex:1}.line-removed{background:rgba(239,68,68,.15)}.line-added{background:rgba(34,197,94,.15)}.word-removed{background:rgba(239,68,68,.45);text-decoration:line-through}.word-added{background:rgba(34,197,94,.45)}.hunk-bar,.hunk-bar-spacer,.hunk-anchor{display:none}.diff-skip{color:#94a3b8;padding:4px 12px;background:rgba(255,255,255,.03)}.tk-kw{color:#38bdf8}.tk-str{color:#a7f3d0}.tk-num{color:#fdba74}.tk-cmt{color:#64748b;font-style:italic}.tk-key{color:#c084fc}.tk-tag{color:#f472b6}.tk-attr{color:#fdba74}.tk-fn{color:#f472b6}.tk-prop{color:#38bdf8}table{border-collapse:collapse;width:100%;font-size:.9em}th,td{text-align:left;padding:6px 10px;border-bottom:1px solid #222;vertical-align:top;font-family:ui-monospace,monospace}th{color:#38bdf8}.t-added{color:#4ade80}.t-removed{color:#f87171}.t-changed{color:#fbbf24}.t-type{color:#c084fc}.cell-old{color:#f87171;text-decoration:line-through}.cell-new{color:#4ade80}.three-chunk{border-left:3px solid #333;padding:4px 10px;margin:4px 0;white-space:pre-wrap;font-family:ui-monospace,monospace;font-size:12px}.three-chunk.conflict{border-color:#ef4444}.three-chunk.ours{border-color:#f87171}.three-chunk.theirs{border-color:#4ade80}.three-chunk .cb{display:none}.ws{opacity:.4}`;
       const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Layerbit diff report</title><style>${css}</style></head><body><h1>Comparison report</h1><div class="meta">${E.esc($('resultTitle').textContent)} · ${E.esc($('diffStats').innerText.replace(/\n/g, ' · '))} · generated ${new Date().toISOString()} with layerbit.co.in/tools/text-diff-checker.html</div>${body}</body></html>`;
       download('diff-report.html', html, 'text/html');
     }
@@ -934,7 +931,7 @@
       if (!r || !r.ok || (r.fuzzy && !P.confirmed[i])) {
         if (r && !r.ok) showError(r.error);
         $('mergedSection').style.display = 'none';
-        $('leftPanel').innerHTML = $('rightPanel').innerHTML = $('inlinePanel').innerHTML = ''; $('diffStats').innerHTML = '';
+        $('splitPanel').innerHTML = $('inlinePanel').innerHTML = ''; $('diffStats').innerHTML = '';
         $('resultTitle').textContent = !r ? `${name}: choose its original file` : r.ok ? `${name}: confirm the fuzzy match` : `${name}: patch does not apply`;
         showPanel($('viewMode').value === 'unified' ? 'unified' : 'split'); icons();
         return;
