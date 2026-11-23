@@ -404,6 +404,7 @@
         const order = [...box.querySelectorAll('.ct-item')].map(i => i.dataset.key);
         if (order.join('\u0000') !== plan.map(p => p.key).join('\u0000')) plan.forEach(p => { const item = box.querySelector(`.ct-item[data-key="${CSS.escape(p.key)}"]`); if (item) box.appendChild(item); });
         if (active && box.contains(active) && document.activeElement !== active) active.focus();
+        edgeMoves();
         return;
       }
       box.dataset.cols = sig;
@@ -417,6 +418,12 @@
           `<button type="button" class="ct-move" id="colUp-${k}" data-col-move="-1" data-key="${k}" title="Move left" aria-label="Move ${k} left">&lsaquo;</button>` +
           `<button type="button" class="ct-move" id="colDown-${k}" data-col-move="1" data-key="${k}" title="Move right" aria-label="Move ${k} right">&rsaquo;</button></span>`;
       }).join('');
+      edgeMoves();
+    }
+    // the first column cannot move left nor the last one right
+    function edgeMoves() {
+      const items = [...$('colTypes').querySelectorAll('.ct-item')];
+      items.forEach((it, i) => { it.querySelector('[data-col-move="-1"]').disabled = i === 0; it.querySelector('[data-col-move="1"]').disabled = i === items.length - 1; });
     }
     $('colTypes').addEventListener('change', e => {
       const el = e.target;

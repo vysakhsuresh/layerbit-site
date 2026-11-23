@@ -88,4 +88,20 @@ t('A4: toCsv is safe for spreadsheets by default and exact when asked', () => {
   const raw = J.toCsv(v, ',', { safe: false }).split('\n')[1];
   assert.strictEqual(raw, '=1+1,@SUM(A1),-5,+971 50,-x,plain,\tTAB');
 });
+t('A3: every view works on lossless numbers: JSONPath, filters, schema, inference, types, stats, CSV, SQL', () => {
+  const L = require('../../js/engines/lossless-json.js');
+  const v = L.parse('{"items":[{"id":12345678901234567890,"price":9.5,"n":3},{"id":2,"price":20,"n":1.0}]}');
+  const ids = J.query(v, '$.items[*].id').map(r => L.stringify(r.value));
+  assert.deepStrictEqual(ids, ['12345678901234567890', '2'], 'JSONPath keeps the digits');
+  assert.deepStrictEqual(J.query(v, '$.items[?(@.price > 10)]').map(r => r.path), ['$.items[1]'], 'filters compare numbers');
+  assert.deepStrictEqual(J.query(v, '$..*').filter(r => r.path.endsWith('.value')), [], 'a number is not walked into');
+  assert.strictEqual(J.typeOf(v.items[0].id), 'integer'); assert.strictEqual(J.typeOf(v.items[0].price), 'number'); assert.strictEqual(J.typeOf(v.items[1].n), 'integer');
+  assert.deepStrictEqual(J.validate({ type: 'object', properties: { items: { type: 'array', items: { properties: { price: { type: 'number', maximum: 10 }, n: { type: 'integer', enum: [3, 1] } } } } } }, v).map(e => e.path + ' ' + e.keyword), ['$.items[1].price maximum']);
+  const s = J.inferSchema(v, { ranges: true });
+  assert.strictEqual(s.properties.items.items.properties.id.type, 'integer');
+  assert.ok(/id: number/.test(J.genTypes(v, 'typescript', 'Root')), 'types');
+  const st = J.stats(v); assert.strictEqual(st.numbers, 6); assert.strictEqual(st.objects, 3);
+  assert.ok(J.toCsv(v.items).includes('12345678901234567890'), 'CSV');
+  assert.ok(J.toSql(v.items).sql.includes('12345678901234567890'), 'SQL keeps the digits');
+});
 console.log(`json engine: ${n} unit tests passed`);

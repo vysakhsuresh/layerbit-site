@@ -16,3 +16,4 @@ Rules for adding one:
 | File | What it is | Licence |
 |---|---|---|
 | `selftest.wasm` | 41-byte module exporting `add(a, b)`, used by the loader's tests | AGPL-3.0 (Layerbit) |
+| `jq.wasm` + `jq.js` | jq 1.7 compiled to WebAssembly by jq-web 0.6.2 (npm `jq-web`, files copied unchanged). Emscripten's own loader in `jq.js` fetches `jq.wasm` from this folder, so it is loaded with a script tag rather than `LBWasm.load`; the service worker pre-caches both. | MIT (jq), ISC (jq-web) |

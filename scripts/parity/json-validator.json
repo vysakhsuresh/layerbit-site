@@ -1,0 +1,110 @@
+{
+  "tool": "json-validator",
+  "page": "tools/json-validator.html",
+  "competitors": [
+    {
+      "name": "JSON Crack Premium",
+      "price": "$5/mo billed yearly",
+      "source": "vendor's pricing page",
+      "checked": "2026-11"
+    },
+    {
+      "name": "JSON Editor Online",
+      "price": "free; paid ad-free / cloud tiers",
+      "checked": "2026-11"
+    },
+    {
+      "name": "BracketView Pro",
+      "price": "paid (Performance Mode)",
+      "checked": "2026-11"
+    },
+    {
+      "name": "Altova XMLSpy",
+      "price": "Professional from $679",
+      "checked": "2026-11"
+    }
+  ],
+  "claims": [
+    {
+      "feature": "Graph view with editing on the graph",
+      "competitor": "JSON Crack Premium",
+      "tests": [
+        "ui:json-validator:2.2: Graph view draws objects and arrays as linked nodes; a value is edited on the graph",
+        "unit:jsonx:graph: one node per object/array, primitives as fields, edges labelled, laid out left to right",
+        "unit:jsonx:graph: big documents are capped with a count of what was left out"
+      ]
+    },
+    {
+      "feature": "Table mode with editing",
+      "competitor": "JSON Editor Online",
+      "tests": [
+        "ui:json-validator:2.2: Table view of an array of objects, editable, written back into the document",
+        "unit:jsonx:findTables: arrays of objects anywhere, largest first"
+      ]
+    },
+    {
+      "feature": "Data-level compare, with hand-off to the Diff Checker's structure mode",
+      "competitor": "JSON Crack Premium / JSON Editor Online",
+      "tests": [
+        "ui:json-validator:2.2: Compare two documents by path; the Diff Checker's structure mode opens with both",
+        "unit:jsonx:compare: added, removed and changed paths; numbers compared exactly"
+      ]
+    },
+    {
+      "feature": "JMESPath, JSON Query and jq transforms",
+      "competitor": "JSON Editor Online",
+      "tests": [
+        "ui:json-validator:2.2: Transform with JMESPath, JSON Query and jq, then use the result"
+      ]
+    },
+    {
+      "feature": "Explicit JSON5, JSONC and JSON Lines modes",
+      "competitor": "Altova XMLSpy",
+      "tests": [
+        "ui:json-validator:2.2: input modes: JSON5, JSONC and JSON Lines read explicitly; YAML, TOML and XML convert in",
+        "unit:jsonx:JSON5: comments, unquoted keys, single quotes, trailing commas, hex, signs, .5, line continuation",
+        "unit:jsonx:JSONC: comments and trailing commas only; JSON5 features are refused"
+      ]
+    },
+    {
+      "feature": "50 MB+ files in a Worker with a virtualised tree",
+      "competitor": "BracketView Pro (Performance Mode, 50 MB)",
+      "tests": [
+        "ui:json-validator:2.2: a 60 MB file is read in a Worker; text and tree are virtual"
+      ]
+    },
+    {
+      "feature": "XML / YAML / TOML conversion",
+      "competitor": "Altova XMLSpy",
+      "tests": [
+        "ui:json-validator:2.2: input modes: JSON5, JSONC and JSON Lines read explicitly; YAML, TOML and XML convert in",
+        "ui:json-validator:2.2: XML and TOML out",
+        "unit:jsonx:XML -> JSON: attributes, repeated elements, text, CDATA, entities, namespaces",
+        "unit:jsonx:JSON -> XML: attributes, arrays repeat, names made valid, text escaped; round trip"
+      ]
+    },
+    {
+      "feature": "Sample JSON generated from a schema",
+      "competitor": "Altova XMLSpy",
+      "tests": [
+        "ui:json-validator:2.2: sample JSON generated from a schema validates; the visual schema editor writes the schema",
+        "unit:jsonx:sample from schema: types, required, enum, const, default, formats, ranges, $ref, allOf, oneOf"
+      ]
+    },
+    {
+      "feature": "Visual schema editor",
+      "competitor": "Altova XMLSpy",
+      "tests": [
+        "ui:json-validator:2.2: sample JSON generated from a schema validates; the visual schema editor writes the schema"
+      ]
+    },
+    {
+      "feature": "Lossless numbers in every view",
+      "competitor": "JSON Editor Online",
+      "tests": [
+        "ui:json-validator:2.2 / A3: tree, JSONPath, types and conversions keep long numbers exactly",
+        "unit:json:A3: every view works on lossless numbers: JSONPath, filters, schema, inference, types, stats, CSV, SQL"
+      ]
+    }
+  ]
+}

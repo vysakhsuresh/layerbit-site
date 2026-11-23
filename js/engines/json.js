@@ -124,7 +124,7 @@
   function matchBracket(p, i) { var depth = 0, inStr = null; for (var j = i; j < p.length; j++) { var c = p[j]; if (inStr) { if (c === '\\') j++; else if (c === inStr) inStr = null; continue; } if (c === '"' || c === "'") inStr = c; else if (c === '[' || c === '(') depth++; else if (c === ']' || c === ')') { depth--; if (depth === 0 && c === ']') return j; } } throw new Error('unclosed "["'); }
   function childPath(base, key) { return typeof key === 'number' ? base + '[' + key + ']' : /^[A-Za-z_$][\w$]*$/.test(key) ? base + '.' + key : base + "['" + String(key).replace(/'/g, "\\'") + "']"; }
   function applySeg(seg, item, out) {
-    var v = item.value, isArr = Array.isArray(v), isObj = v && typeof v === 'object';
+    var v = item.value, isArr = Array.isArray(v), isObj = !!v && typeof v === 'object' && !isLN(v);
     switch (seg.type) {
       case 'key':
         if (seg.key === 'length' && (isArr || typeof v === 'string')) { out.push({ path: item.path + '.length', value: v.length }); return; }
@@ -135,7 +135,7 @@
       case 'wild': if (isArr) v.forEach(function (x, k) { out.push({ path: childPath(item.path, k), value: x }); }); else if (isObj) Object.keys(v).forEach(function (k) { out.push({ path: childPath(item.path, k), value: v[k] }); }); return;
       case 'slice': if (isArr) { var s = seg.start == null ? 0 : seg.start < 0 ? Math.max(0, v.length + seg.start) : seg.start, e = seg.end == null ? v.length : seg.end < 0 ? v.length + seg.end : Math.min(v.length, seg.end); for (var k2 = s; k2 < e; k2 += seg.step || 1) out.push({ path: childPath(item.path, k2), value: v[k2] }); } return;
       case 'union': seg.keys.forEach(function (k) { if (typeof k === 'number' && isArr) { var ix2 = k < 0 ? v.length + k : k; if (v[ix2] !== undefined) out.push({ path: childPath(item.path, ix2), value: v[ix2] }); } else if (isObj && !isArr && k in v) out.push({ path: childPath(item.path, k), value: v[k] }); }); return;
-      case 'desc': (function walk(node, path) { if (!node || typeof node !== 'object') return; if (Array.isArray(node)) node.forEach(function (x, k) { if (seg.key === '*') out.push({ path: childPath(path, k), value: x }); walk(x, childPath(path, k)); }); else Object.keys(node).forEach(function (k) { if (k === seg.key || seg.key === '*') out.push({ path: childPath(path, k), value: node[k] }); walk(node[k], childPath(path, k)); }); })(v, item.path); return;
+      case 'desc': (function walk(node, path) { if (!node || typeof node !== 'object' || isLN(node)) return; if (Array.isArray(node)) node.forEach(function (x, k) { if (seg.key === '*') out.push({ path: childPath(path, k), value: x }); walk(x, childPath(path, k)); }); else Object.keys(node).forEach(function (k) { if (k === seg.key || seg.key === '*') out.push({ path: childPath(path, k), value: node[k] }); walk(node[k], childPath(path, k)); }); })(v, item.path); return;
       case 'filter': { var list = isArr ? v.map(function (x, k) { return [k, x]; }) : isObj ? Object.keys(v).map(function (k) { return [k, v[k]]; }) : []; list.forEach(function (kv) { if (evalFilter(seg.expr, kv[1])) out.push({ path: childPath(item.path, kv[0]), value: kv[1] }); }); return; }
     }
   }
@@ -148,7 +148,7 @@
     function peek() { return toks[pos]; }
     function val(t) {
       if (t === undefined) throw new Error('unexpected end of filter');
-      if (t[0] === '@') { var cur = ctx, segs = t.slice(1).match(/\.[A-Za-z_$][\w$-]*|\[\d+\]|\['[^']*'\]/g) || []; for (var k = 0; k < segs.length; k++) { var sgm = segs[k]; var key = sgm[0] === '.' ? sgm.slice(1) : sgm[1] === "'" ? sgm.slice(2, -2) : +sgm.slice(1, -1); if (cur == null) return undefined; cur = cur[key]; } return cur; }
+      if (t[0] === '@') { var cur = ctx, segs = t.slice(1).match(/\.[A-Za-z_$][\w$-]*|\[\d+\]|\['[^']*'\]/g) || []; for (var k = 0; k < segs.length; k++) { var sgm = segs[k]; var key = sgm[0] === '.' ? sgm.slice(1) : sgm[1] === "'" ? sgm.slice(2, -2) : +sgm.slice(1, -1); if (cur == null || isLN(cur)) return undefined; cur = cur[key]; } return isLN(cur) ? Number(cur.value) : cur; }
       if (t[0] === "'" || t[0] === '"') return t.slice(1, -1).replace(/\\(.)/g, '$1');
       if (/^-?\d/.test(t)) return +t;
       if (t === 'true') return true; if (t === 'false') return false; if (t === 'null') return null;
@@ -178,10 +178,10 @@
     email: /^[^\s@]+@[^\s@]+\.[^\s@]+$/, uri: /^[a-zA-Z][a-zA-Z0-9+.-]*:[^\s]*$/, 'uri-reference': /^[^\s]*$/, uuid: /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i,
     ipv4: /^(25[0-5]|2[0-4]\d|1?\d?\d)(\.(25[0-5]|2[0-4]\d|1?\d?\d)){3}$/, ipv6: /^[0-9a-f:]+$/i, hostname: /^(?=.{1,253}$)([a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)*[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$/i, regex: null
   };
-  function typeOf(v) { return v === null ? 'null' : Array.isArray(v) ? 'array' : typeof v === 'number' ? (Number.isInteger(v) ? 'integer' : 'number') : typeof v; }
+  function typeOf(v) { if (isLN(v)) return /^-?\d+$/.test(v.value) || Number.isInteger(Number(v.value)) ? 'integer' : 'number'; return v === null ? 'null' : Array.isArray(v) ? 'array' : typeof v === 'number' ? (Number.isInteger(v) ? 'integer' : 'number') : typeof v; }
   function typeMatches(t, v) { var tv = typeOf(v); return t === tv || (t === 'number' && tv === 'integer'); }
   function deepEqual(a, b) { return JSON.stringify(canon(a)) === JSON.stringify(canon(b)); }
-  function canon(v) { if (Array.isArray(v)) return v.map(canon); if (v && typeof v === 'object') { var o = {}; Object.keys(v).sort().forEach(function (k) { o[k] = canon(v[k]); }); return o; } return v; }
+  function canon(v) { if (isLN(v)) return Number(v.value); if (Array.isArray(v)) return v.map(canon); if (v && typeof v === 'object') { var o = {}; Object.keys(v).sort().forEach(function (k) { o[k] = canon(v[k]); }); return o; } return v; }
   function resolveRef(ref, rootSchema) {
     if (ref[0] !== '#') throw new Error('Only local $ref (#/...) is supported: ' + ref);
     var parts = ref.slice(1).split('/').filter(Boolean).map(function (p) { return decodeURIComponent(p).replace(/~1/g, '/').replace(/~0/g, '~'); });
@@ -202,6 +202,7 @@
     }
     if (schema.enum !== undefined && !schema.enum.some(function (e) { return deepEqual(e, value); })) errs.push({ path: path, keyword: 'enum', message: 'must be one of ' + schema.enum.map(function (e) { return JSON.stringify(e); }).join(', ') });
     if (schema.const !== undefined && !deepEqual(schema.const, value)) errs.push({ path: path, keyword: 'const', message: 'must equal ' + JSON.stringify(schema.const) });
+    if (isLN(value)) value = Number(value.value);
     if (typeof value === 'number') {
       if (schema.minimum !== undefined && value < schema.minimum) errs.push({ path: path, keyword: 'minimum', message: value + ' is below the minimum ' + schema.minimum });
       if (schema.maximum !== undefined && value > schema.maximum) errs.push({ path: path, keyword: 'maximum', message: value + ' is above the maximum ' + schema.maximum });
@@ -262,6 +263,7 @@
   }
   /** Merges a sample into an accumulating "shape" record, then renders a schema. */
   function shapeOf(v, acc) {
+    if (isLN(v)) v = Number(v.value);
     acc = acc || { types: {}, count: 0 };
     acc.count++;
     var t = typeOf(v);
@@ -370,7 +372,7 @@
   // -------------------------------------------------------------- SQL/CSV
   // A lossless number (js/engines/lossless-json.js) holds its digits as text.
   function isLN(v) { return !!(v && v.isLosslessNumber === true); }
-  function jsonText(v) { return JSON.stringify(v, function (k, x) { return isLN(x) ? '\u0000LN' + x.value + '\u0000' : x; }).replace(/"\\u0000LN([^"\\]*)\\u0000"/g, '$1'); }
+  function jsonText(v, ind) { return JSON.stringify(v, function (k, x) { return isLN(x) ? '\u0000LN' + x.value + '\u0000' : x; }, ind).replace(/"\\u0000LN([^"\\]*)\\u0000"/g, '$1'); }
   // A value a spreadsheet would run as a formula: =, @, tab or CR first, or
   // + / - followed by something that is not a plain number (-5 stays -5).
   function formulaLike(s) { return /^[=@\t\r]/.test(s) || (/^[+-]/.test(s) && !/^[+-]?(\d[\d,]*)?(\.\d+)?([eE][+-]?\d+)?$/.test(s)); }
@@ -390,7 +392,7 @@
     return { rows: rows, cols: cols };
   }
   function sqlType(values, dialect) {
-    var ts = {}; values.forEach(function (v) { if (v === null || v === undefined) return; ts[typeof v === 'number' ? (Number.isInteger(v) ? 'int' : 'num') : typeof v === 'boolean' ? 'bool' : /^\d{4}-\d{2}-\d{2}([T ]\d{2}:\d{2})?/.test(String(v)) ? 'ts' : 'str'] = 1; });
+    var ts = {}; values.forEach(function (v) { if (v === null || v === undefined) return; if (isLN(v)) v = /^-?\d+$/.test(v.value) ? 1 : 0.5; ts[typeof v === 'number' ? (Number.isInteger(v) ? 'int' : 'num') : typeof v === 'boolean' ? 'bool' : /^\d{4}-\d{2}-\d{2}([T ]\d{2}:\d{2})?/.test(String(v)) ? 'ts' : 'str'] = 1; });
     var k = Object.keys(ts);
     var maxLen = values.reduce(function (m, v) { return Math.max(m, v == null ? 0 : String(v).length); }, 0);
     if (k.length === 1 && k[0] === 'int') return dialect === 'sqlite' ? 'INTEGER' : 'BIGINT';
@@ -403,7 +405,7 @@
     opts = Object.assign({ table: 'data', dialect: 'postgres', batch: 500 }, opts || {});
     var rc = rowsOf(value), q = opts.dialect === 'mysql' ? function (s) { return '`' + s.replace(/`/g, '``') + '`'; } : function (s) { return '"' + s.replace(/"/g, '""') + '"'; };
     var ident = function (s) { return q(snake(s)); };
-    var lit = function (v) { if (v === null || v === undefined) return 'NULL'; if (typeof v === 'number') return String(v); if (typeof v === 'boolean') return opts.dialect === 'sqlite' ? (v ? '1' : '0') : opts.dialect === 'mysql' ? (v ? '1' : '0') : (v ? 'TRUE' : 'FALSE'); return "'" + String(v).replace(/'/g, "''").replace(/\\/g, opts.dialect === 'mysql' ? '\\\\' : '\\') + "'"; };
+    var lit = function (v) { if (v === null || v === undefined) return 'NULL'; if (isLN(v)) return v.value; if (typeof v === 'number') return String(v); if (typeof v === 'boolean') return opts.dialect === 'sqlite' ? (v ? '1' : '0') : opts.dialect === 'mysql' ? (v ? '1' : '0') : (v ? 'TRUE' : 'FALSE'); return "'" + String(v).replace(/'/g, "''").replace(/\\/g, opts.dialect === 'mysql' ? '\\\\' : '\\') + "'"; };
     var out = 'CREATE TABLE ' + ident(opts.table) + ' (\n' + rc.cols.map(function (c) { var vals = rc.rows.map(function (r) { return r[c]; }); var nn = vals.every(function (v) { return v !== null && v !== undefined; }); return '  ' + ident(c) + ' ' + sqlType(vals, opts.dialect) + (nn ? ' NOT NULL' : ''); }).join(',\n') + '\n);\n\n';
     for (var i = 0; i < rc.rows.length; i += opts.batch) {
       var chunk = rc.rows.slice(i, i + opts.batch);
@@ -432,15 +434,15 @@
     (function walk(v, d) {
       depth = Math.max(depth, d);
       if (Array.isArray(v)) { arrays++; maxArr = Math.max(maxArr, v.length); v.forEach(function (x) { walk(x, d + 1); }); }
-      else if (v && typeof v === 'object') { objects++; var ks = Object.keys(v); keys += ks.length; ks.forEach(function (k) { walk(v[k], d + 1); }); }
-      else { primitives++; if (typeof v === 'string') strings++; else if (typeof v === 'number') numbers++; else if (v === null) nulls++; else bools++; }
+      else if (v && typeof v === 'object' && !isLN(v)) { objects++; var ks = Object.keys(v); keys += ks.length; ks.forEach(function (k) { walk(v[k], d + 1); }); }
+      else { primitives++; if (typeof v === 'string') strings++; else if (typeof v === 'number' || isLN(v)) numbers++; else if (v === null) nulls++; else bools++; }
     })(value, 1);
     var enc = typeof TextEncoder !== 'undefined' ? new TextEncoder() : null;
     var bytes = function (s) { return enc ? enc.encode(s).length : Buffer.byteLength(s); };
-    var minified = JSON.stringify(value);
-    return { objects: objects, arrays: arrays, keys: keys, primitives: primitives, strings: strings, numbers: numbers, nulls: nulls, booleans: bools, depth: depth, maxArray: maxArr, bytesIn: raw != null ? bytes(raw) : null, bytesMin: bytes(minified), bytesPretty: bytes(JSON.stringify(value, null, 2)) };
+    var minified = jsonText(value);
+    return { objects: objects, arrays: arrays, keys: keys, primitives: primitives, strings: strings, numbers: numbers, nulls: nulls, booleans: bools, depth: depth, maxArray: maxArr, bytesIn: raw != null ? bytes(raw) : null, bytesMin: bytes(minified), bytesPretty: bytes(jsonText(value, 2)) };
   }
-  function sortKeysDeep(v) { if (Array.isArray(v)) return v.map(sortKeysDeep); if (v && typeof v === 'object') return Object.keys(v).sort().reduce(function (o, k) { o[k] = sortKeysDeep(v[k]); return o; }, {}); return v; }
+  function sortKeysDeep(v) { if (Array.isArray(v)) return v.map(sortKeysDeep); if (v && typeof v === "object" && !isLN(v)) return Object.keys(v).sort().reduce(function (o, k) { o[k] = sortKeysDeep(v[k]); return o; }, {}); return v; }
   /** Finds integers beyond 2^53 in the raw text, which JSON.parse silently rounds. */
   function bigIntWarnings(raw) {
     var out = [], re = /(?:^|[:,\[\s])(-?\d{16,})(?![\d.eE"])/g, m;

@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="Format, beautify and validate JSON online, fix common errors, query with JSONPath, validate or infer a JSON Schema, and generate TypeScript, Go and C# types." />
+  <meta name="description" content="Format, beautify and validate JSON online: fix errors, JSON5, JSONC and JSON Lines, tree, table and graph views, JSONPath, JMESPath and jq, 50 MB+ files." />
   <title>JSON Formatter & Validator Online: Beautify & Fix | Layerbit</title>
   <meta name="google-adsense-account" content="ca-pub-6072772587431629" />
   <link rel="preload" href="../fonts/space-grotesk-latin.woff2" as="font" type="font/woff2" crossorigin />
@@ -26,7 +26,7 @@
   <meta property="og:url" content="https://layerbit.co.in/tools/json-validator.html" />
   <meta property="og:site_name" content="Layerbit" />
   <meta property="og:title" content="JSON Formatter & Validator Online: Beautify & Fix | Layerbit" />
-  <meta property="og:description" content="Format, beautify and validate JSON online, fix common errors, query with JSONPath, validate or infer a JSON Schema, and generate TypeScript, Go and C# types." />
+  <meta property="og:description" content="Format, beautify and validate JSON online: fix errors, JSON5, JSONC and JSON Lines, tree, table and graph views, JSONPath, JMESPath and jq, 50 MB+ files." />
   <meta property="og:image" content="https://layerbit.co.in/images/og/tools-json-validator.jpg" />
   <meta property="og:image:type" content="image/jpeg" />
   <meta property="og:image:width" content="1200" />
@@ -35,7 +35,7 @@
   <meta property="og:locale" content="en" />
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="JSON Formatter & Validator Online: Beautify & Fix | Layerbit" />
-  <meta name="twitter:description" content="Format, beautify and validate JSON online, fix common errors, query with JSONPath, validate or infer a JSON Schema, and generate TypeScript, Go and C# types." />
+  <meta name="twitter:description" content="Format, beautify and validate JSON online: fix errors, JSON5, JSONC and JSON Lines, tree, table and graph views, JSONPath, JMESPath and jq, 50 MB+ files." />
   <meta name="twitter:image" content="https://layerbit.co.in/images/og/tools-json-validator.jpg" />
   <meta name="twitter:image:alt" content="JSON Formatter & Validator Online: Beautify & Fix" />
   <meta name="theme-color" content="#0a0c10" />
@@ -48,7 +48,7 @@
       "@id": "https://layerbit.co.in/tools/json-validator.html#app",
       "name": "JSON Formatter, Validator \u0026 Schema Tool",
       "url": "https://layerbit.co.in/tools/json-validator.html",
-      "description": "Format, beautify and validate JSON online, fix common errors, query with JSONPath, validate or infer a JSON Schema, and generate TypeScript, Go and C# types.",
+      "description": "Format, beautify and validate JSON online: fix errors, JSON5, JSONC and JSON Lines, tree, table and graph views, JSONPath, JMESPath and jq, 50 MB+ files.",
       "applicationCategory": "DeveloperApplication",
       "operatingSystem": "Any (runs in the browser)",
       "browserRequirements": "Requires JavaScript",
@@ -62,16 +62,22 @@
         "@id": "https://layerbit.co.in/#organization"
       },
       "featureList": [
-        "Validate, beautify and minify with line and column errors",
-        "Fix almost-JSON with a list of changes",
-        "JSONPath queries with wildcards, recursion, slices and filters",
-        "JSON Schema validation and inference",
-        "Type generation for TypeScript, Go, C#, Kotlin, Python, Java and Rust",
+        "Format, beautify and minify JSON",
+        "Validate with line and column errors",
+        "Repair almost-JSON",
+        "JSON5, JSONC and JSON Lines input",
+        "YAML, TOML and XML to JSON and back",
+        "Tree view, virtual for large documents",
+        "Editable table view",
+        "Editable graph view",
+        "JSONPath, JMESPath, JSON Query and jq",
+        "Compare two documents by path",
+        "JSON Schema validation, inference, visual editing and sample data",
+        "Types for TypeScript, Go, C#, Kotlin, Python, Java and Rust",
         "SQL and CSV export",
-        "NDJSON and YAML conversion",
-        "Collapsible tree view",
-        "Big-integer precision warning",
-        "Share links and local history"
+        "Numbers kept exactly in every view",
+        "Files of 50 MB and more in a background worker",
+        "Runs entirely in the browser"
       ]
     },
     {
@@ -160,10 +166,58 @@
         },
         {
           "@type": "Question",
+          "name": "Can it read JSON5, JSONC, JSON Lines, YAML, TOML or XML?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes: pick the format in the menu beside Sort keys (opening a file picks it from the extension). JSONC is JSON with comments and trailing commas, as in VS Code settings and tsconfig.json. JSON5 also allows unquoted keys, single quotes, hexadecimal numbers, leading or trailing decimal points and Infinity/NaN; JSON has no way to write the last two, so they become null and the notice says where. JSON Lines reads one object per line; a broken line is reported with its number. YAML, TOML and XML are converted to JSON (XML attributes become keys starting with @, repeated elements become arrays), and the Convert tab writes YAML, TOML and XML back out."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Which query languages can I use besides JSONPath?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "The Transform tab runs JMESPath (the query language of the AWS CLI), JSON Query and jq on the document as you type, with example expressions for each. jq is the real jq 1.7 compiled to WebAssembly: it loads once (2.8 MB) the first time you choose it and then works offline. Use as input replaces the document with the result, so transforms can be chained."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Can I edit the data in a table or a graph?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes. The Table tab finds every array of objects in the document and shows the one you pick as a grid, with nested values as columns named by their path; double-click a cell to edit it. The Graph tab draws each object and array as a box linked to its parent; drag to move, scroll to zoom, and double-click a value to edit it. Either way the edit is written back into the document, and a number you type into a number keeps every digit."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How do I compare two JSON documents?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Open the Compare tab, paste the other document and press Compare. Differences are listed by path as changed, added or removed; key order is ignored, and numbers are compared by value, so 1.0 equals 1 while 12345678901234567890 and 12345678901234567891 differ. Open in Diff Checker carries both documents to the Diff Checker's JSON / YAML structure mode, with array matching by key and exports."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Can it create sample data from a schema, or edit a schema without writing JSON?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Both, in the Schema tab. Sample document writes a document that satisfies the schema into the input, honouring types, required fields, enum, const, defaults and examples, formats such as email, UUID and date-time, ranges and lengths, $ref, allOf and oneOf. Visual editor shows the schema as a form where you rename properties, change types, mark them required, add descriptions, allowed values and formats, and add or remove properties; the JSON Schema updates as you go."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How large a JSON file can it open?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Files of 8 MB and more are parsed in a background worker, so the page never freezes, and are kept out of the text box. The formatted text and the tree draw only the lines on screen. In our tests a 62 MB file with 500,000 records opened in about 10 seconds, and JSONPath, Table and the other tabs worked on the whole document. The limit is your device's memory."
+          }
+        },
+        {
+          "@type": "Question",
           "name": "What does the Tree view offer over the raw text output?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "The Tree view renders the same parsed payload as a collapsible outline, letting you fold entire objects or arrays down to a single line and expand only the branches you need. This is especially useful for deeply nested API responses, where the plain formatted text can run to thousands of lines. Use Expand All or Collapse All to jump between a full overview and a fully drilled-in view."
+            "text": "The Tree view renders the same parsed payload as a collapsible outline, letting you fold entire objects or arrays down to a single line and expand only the branches you need. This is especially useful for deeply nested API responses, where the plain formatted text can run to thousands of lines. Use Expand All or Collapse All to jump between a full overview and a fully drilled-in view. For documents with more than 60,000 values the tree is virtual: only the rows on screen are drawn, so a branch with 500,000 items opens instantly."
           }
         }
       ]
@@ -535,6 +589,45 @@
     .pane-title { white-space: nowrap; }
     .btn-group { flex-wrap: wrap; align-items: center; }
 
+    /* table, graph, transform, compare, schema editor, large-file views */
+    .table-grid { height: 420px; font-family: 'Fira Code', monospace; font-size: 0.85em; border-top: 1px solid var(--card-border); }
+    .graph-view { position: relative; height: 480px; overflow: hidden; cursor: grab; border-top: 1px solid var(--card-border); background: rgba(0,0,0,0.15); touch-action: none; }
+    .graph-view:active { cursor: grabbing; }
+    .g-svg { width: 100%; height: 100%; display: block; }
+    .g-edge { fill: none; stroke: rgba(148,163,184,0.45); stroke-width: 1.4; }
+    .g-elabel { fill: var(--text-muted); font-size: 11px; font-family: 'Fira Code', monospace; }
+    .g-box { fill: #0d1117; stroke: rgba(56,189,248,0.35); }
+    .g-head { fill: rgba(56,189,248,0.14); }
+    .g-title { fill: var(--accent-main); font-size: 12px; font-weight: 600; font-family: 'Fira Code', monospace; }
+    .g-key { fill: #e2e8f0; font-size: 12px; font-family: 'Fira Code', monospace; }
+    .g-val { font-size: 12px; font-family: 'Fira Code', monospace; cursor: text; }
+    .g-string { fill: #a5d6a7; } .g-number { fill: #fbbf24; } .g-boolean { fill: #c084fc; } .g-null { fill: #94a3b8; }
+    .g-more { fill: var(--text-muted); font-size: 11px; font-style: italic; }
+    .g-edit { position: absolute; width: 180px; z-index: 3; font: 12px 'Fira Code', monospace; color: #e2e8f0; background: #0d1117; border: 1px solid var(--accent-main); border-radius: 4px; padding: 3px 6px; outline: none; }
+    .g-trunc { position: absolute; left: 10px; bottom: 10px; right: 10px; font-size: 0.8em; color: #fde68a; background: rgba(0,0,0,0.6); padding: 6px 10px; border-radius: 6px; }
+    .xf-expr { width: calc(100% - 40px); margin: 0 20px 8px; box-sizing: border-box; background: rgba(0,0,0,0.3); border: 1px solid var(--card-border); color: var(--text-main); border-radius: 8px; padding: 10px 12px; font: 0.9em 'Fira Code', monospace; outline: none; }
+    .xf-expr:focus { border-color: var(--accent-main); }
+    .xf-hints { display: flex; flex-wrap: wrap; gap: 6px; padding: 0 20px 8px; }
+    #xfErr:empty { display: none; }
+    .compare-result { padding: 0 0 10px; }
+    .cmp-added td:first-child { color: #4ade80; } .cmp-removed td:first-child { color: #f87171; } .cmp-changed td:first-child { color: #fbbf24; }
+    .schema-visual { padding: 8px 0 12px; max-height: 420px; overflow: auto; border-top: 1px solid var(--card-border); }
+    .schema-visual[hidden] { display: none; }
+    .se-row { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding: 4px 12px; border-bottom: 1px solid rgba(255,255,255,0.04); font-size: 0.85em; }
+    .se-row input:not([type=checkbox]) { background: rgba(0,0,0,0.3); border: 1px solid var(--card-border); color: var(--text-main); border-radius: 6px; padding: 4px 6px; font: inherit; outline: none; }
+    .se-row input:focus { border-color: var(--accent-main); }
+    .se-name { width: 9em; font-family: 'Fira Code', monospace !important; }
+    .se-desc { flex: 1 1 10em; min-width: 8em; }
+    .se-enum { flex: 1 1 10em; min-width: 8em; }
+    .se-format { width: 7em; }
+    .se-root { color: var(--accent-main); font-weight: 600; font-family: 'Fira Code', monospace; min-width: 4em; }
+    .se-reqlab { display: inline-flex; align-items: center; gap: 4px; color: var(--text-muted); }
+    .se-row .btn { padding: 4px 8px; }
+    .vt-row { display: flex; align-items: center; gap: 4px; white-space: pre; font-family: 'Fira Code', monospace; font-size: 0.85em; }
+    .vt-caret { display: inline-block; width: 14px; cursor: pointer; color: var(--text-muted); }
+    .vt-leaf { cursor: default; }
+    .output-area.vtext .lb-vrow { font-family: 'Fira Code', monospace; font-size: 0.85em; white-space: pre; padding: 0 12px; }
+
   </style>
 </head>
 <body>
@@ -568,7 +661,7 @@
   <main id="main" class="page-main">
   <div class="hero">
     <h1>JSON Formatter, Validator &amp; Schema Tool</h1>
-    <p>Format and beautify (pretty-print) JSON, validate it, view it as a tree, minify it and repair common errors; query it with JSONPath; validate against or infer a JSON Schema; generate TypeScript, Go, C#, Kotlin, Python, Java or Rust types; export SQL and CSV — all client-side.</p>
+    <p>Format, validate, minify and repair JSON, JSON5, JSONC and JSON Lines, or convert YAML, TOML and XML in. View it as a tree, an editable table or an editable graph; query it with JSONPath, JMESPath, JSON Query or jq; compare two documents; validate, infer, edit or sample a JSON Schema; generate types for 7 languages; export SQL, CSV, YAML, TOML and XML. Numbers keep every digit, files of 50 MB and more open in a background worker, and nothing leaves your browser.</p>
   </div>
 
   <div class="ide-container">
@@ -576,12 +669,15 @@
       <div class="pane-header">
         <div class="pane-title"><i data-lucide="file-json-2"></i> Raw JSON Input <span class="in-meta" id="inMeta"></span></div>
         <div class="btn-group">
+          <select id="inMode" class="mini-select" title="What the input is. Auto reads JSON and recognises JSON Lines; JSON5 and JSONC accept comments and trailing commas (JSON5 also unquoted keys, single quotes and hex); YAML, TOML and XML are converted to JSON." aria-label="Input format">
+            <option value="auto" selected>Auto</option><option value="json">JSON</option><option value="json5">JSON5</option><option value="jsonc">JSONC</option><option value="jsonl">JSON Lines</option><option value="yaml">YAML</option><option value="toml">TOML</option><option value="xml">XML</option>
+          </select>
           <label class="toggle-wrapper" title="Sort object keys alphabetically at every level (arrays keep their order)">
             <input type="checkbox" id="sortKeys"> Sort keys
           </label>
           <select id="indentSel" class="mini-select" title="Indentation for Beautify"><option value="2">2 spaces</option><option value="4" selected>4 spaces</option><option value="tab">tab</option></select>
-          <input type="file" id="jsonFile" style="display:none;">
-          <button class="btn" type="button" onclick="document.getElementById('jsonFile').click()" title="Open a .json / .jsonl file"><i data-lucide="upload"></i></button>
+          <input type="file" id="jsonFile" accept=".json,.jsonl,.ndjson,.json5,.jsonc,.yaml,.yml,.toml,.xml,.txt" style="display:none;">
+          <button class="btn" type="button" onclick="document.getElementById('jsonFile').click()" title="Open a JSON, JSON Lines, JSON5, YAML, TOML or XML file"><i data-lucide="upload"></i></button>
           <button class="btn" id="btnClear" type="button" title="Clear input"><i data-lucide="trash-2"></i></button>
           <button class="btn" id="btnFix" type="button" title="Repair almost-JSON: comments, trailing commas, single quotes, bare keys, NaN"><i data-lucide="wrench"></i> Fix</button>
           <span class="lb-history-slot" data-lb-history-slot></span>
@@ -608,6 +704,10 @@
             <button class="view-tab" id="viewTabQuery" type="button" role="tab" aria-selected="false" onclick="setOutputView('query')">Query</button>
             <button class="view-tab" id="viewTabSchema" type="button" role="tab" aria-selected="false" onclick="setOutputView('schema')">Schema</button>
             <button class="view-tab" id="viewTabTypes" type="button" role="tab" aria-selected="false" onclick="setOutputView('types')">Types</button>
+            <button class="view-tab" id="viewTabTable" type="button" role="tab" aria-selected="false" onclick="setOutputView('table')">Table</button>
+            <button class="view-tab" id="viewTabGraph" type="button" role="tab" aria-selected="false" onclick="setOutputView('graph')">Graph</button>
+            <button class="view-tab" id="viewTabTransform" type="button" role="tab" aria-selected="false" onclick="setOutputView('transform')">Transform</button>
+            <button class="view-tab" id="viewTabCompare" type="button" role="tab" aria-selected="false" onclick="setOutputView('compare')">Compare</button>
             <button class="view-tab" id="viewTabConvert" type="button" role="tab" aria-selected="false" onclick="setOutputView('convert')">Convert</button>
           </div>
           <button class="btn" id="btnExpandAll" type="button" onclick="setAllTreeNodes(false)" title="Expand All" style="display:none;"><i data-lucide="chevrons-down"></i></button>
@@ -649,7 +749,10 @@
           <label class="toggle-wrapper"><input type="checkbox" id="inferClosed"> additionalProperties: false</label>
           <label class="toggle-wrapper"><input type="checkbox" id="inferRanges"> min/max for numbers</label>
           <button type="button" class="btn btn-primary" id="btnValidate" onclick="validateSchema()"><i data-lucide="shield-check"></i> Validate document</button>
+          <button type="button" class="btn" id="btnSample" onclick="sampleFromSchema()" title="Write a document that satisfies this schema into the input"><i data-lucide="file-plus-2"></i> Sample document</button>
+          <button type="button" class="btn" id="btnSchemaVisual" onclick="toggleSchemaVisual()" title="Edit the schema as a form: names, types, required, descriptions, enums"><i data-lucide="list-tree"></i> Visual editor</button>
         </div>
+        <div id="schemaVisual" class="schema-visual" hidden></div>
         <textarea id="schemaInput" class="editor schema-editor" spellcheck="false" placeholder='Paste a JSON Schema (draft-07 / 2020-12) here, or click "Infer schema from document"...'></textarea>
         <div class="schema-result" id="schemaResult"></div>
       </div>
@@ -663,11 +766,49 @@
         </div>
         <pre class="code-out" id="typesOut"></pre>
       </div>
+      <!-- table -->
+      <div id="viewTable" class="output-area view-panel" style="display:none;">
+        <div class="schema-bar">
+          <label class="toggle-wrapper">Array <select id="tablePath" class="mini-select" aria-label="Which array to show"></select></label>
+          <span class="conv-note" id="tableNote"></span>
+        </div>
+        <div id="tableGrid" class="table-grid"></div>
+      </div>
+      <!-- graph -->
+      <div id="viewGraph" class="output-area view-panel" style="display:none;">
+        <div class="schema-bar">
+          <span class="conv-note" id="graphNote">Drag to move, scroll to zoom, double-click a value to edit it.</span>
+          <button type="button" class="btn" id="btnGraphFit" onclick="graphFit()"><i data-lucide="maximize"></i> Fit</button>
+        </div>
+        <div id="graphView" class="graph-view"></div>
+      </div>
+      <!-- transform -->
+      <div id="viewTransform" class="output-area view-panel" style="display:none;">
+        <div class="schema-bar">
+          <label class="toggle-wrapper">Language
+            <select id="xfLang" class="mini-select"><option value="jmespath">JMESPath</option><option value="jsonquery">JSON Query</option><option value="jq">jq</option></select>
+          </label>
+          <button type="button" class="btn" id="btnXfUse" title="Replace the input with this result"><i data-lucide="corner-up-left"></i> Use as input</button>
+        </div>
+        <input type="text" id="xfExpr" class="xf-expr" spellcheck="false" autocomplete="off" aria-label="Transform expression" placeholder="items[?price > `10`].name">
+        <div class="xf-hints" id="xfHints"></div>
+        <div class="path-result path-miss" id="xfErr"></div>
+        <pre class="code-out" id="xfOut"></pre>
+      </div>
+      <!-- compare -->
+      <div id="viewCompare" class="output-area view-panel" style="display:none;">
+        <textarea id="compareInput" class="editor schema-editor" spellcheck="false" placeholder="Paste the other JSON document (the input on the left is the original)..."></textarea>
+        <div class="schema-bar">
+          <button type="button" class="btn btn-primary" id="btnCompare"><i data-lucide="git-compare"></i> Compare</button>
+          <a class="btn" id="compareLink" href="text-diff-checker.html" target="_blank" rel="noopener" title="Open both documents in the Diff Checker's JSON / YAML structure mode"><i data-lucide="external-link"></i> Open in Diff Checker</a>
+        </div>
+        <div class="compare-result" id="compareResult"></div>
+      </div>
       <!-- convert -->
       <div id="viewConvert" class="output-area view-panel" style="display:none;">
         <div class="schema-bar">
           <label class="toggle-wrapper">Target
-            <select id="convTarget" class="mini-select"><option value="sql">SQL (CREATE + INSERT)</option><option value="csv">CSV (flattened)</option><option value="ndjson">NDJSON (one object per line)</option><option value="yaml">YAML</option><option value="string">JSON as a string literal</option><option value="unescape">Decode a JSON string literal</option></select>
+            <select id="convTarget" class="mini-select"><option value="sql">SQL (CREATE + INSERT)</option><option value="csv">CSV (flattened)</option><option value="ndjson">NDJSON (one object per line)</option><option value="yaml">YAML</option><option value="toml">TOML</option><option value="xml">XML</option><option value="string">JSON as a string literal</option><option value="unescape">Decode a JSON string literal</option></select>
           </label>
           <label class="toggle-wrapper" id="csvSafeOpt" title="Spreadsheets run a cell that starts with =, +, - or @ as a formula. On: such values get a leading apostrophe so they open as text (plain numbers like -5 are left alone). Off: the exact text."><input type="checkbox" id="csvSafe" checked> Safe for Excel</label>
           <label class="toggle-wrapper" id="sqlOpts">Dialect
@@ -816,9 +957,34 @@
           <div class="faq-answer"><p>Excel, LibreOffice and Google Sheets treat a cell that begins with <code>=</code>, <code>+</code>, <code>-</code> or <code>@</code> as a formula, so a value such as <code>=HYPERLINK(&quot;http://…&quot;)</code> in your data can run when someone opens the file (CSV or formula injection). With Safe for Excel on, which is the default, such values are written with a leading apostrophe (<code>'=HYPERLINK(…)</code>); spreadsheets show them as text. Plain numbers such as <code>-5</code> or <code>+3.5</code> are left alone. Turn it off when the CSV feeds another program that must receive the exact text.</p></div>
         </div>
         <div class="faq-item">
+          <button class="faq-question">Can it read JSON5, JSONC, JSON Lines, YAML, TOML or XML? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>Yes: pick the format in the menu beside Sort keys (opening a file picks it from the extension). <strong>JSONC</strong> is JSON with comments and trailing commas, as in VS Code settings and <code>tsconfig.json</code>. <strong>JSON5</strong> also allows unquoted keys, single quotes, hexadecimal numbers, leading or trailing decimal points and <code>Infinity</code>/<code>NaN</code>; JSON has no way to write the last two, so they become <code>null</code> and the notice says where. <strong>JSON Lines</strong> reads one object per line; a broken line is reported with its number. <strong>YAML</strong>, <strong>TOML</strong> and <strong>XML</strong> are converted to JSON (XML attributes become keys starting with <code>@</code>, repeated elements become arrays), and the Convert tab writes YAML, TOML and XML back out.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">Which query languages can I use besides JSONPath? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>The Transform tab runs <strong>JMESPath</strong> (the query language of the AWS CLI), <strong>JSON Query</strong> and <strong>jq</strong> on the document as you type, with example expressions for each. jq is the real jq 1.7 compiled to WebAssembly: it loads once (2.8 MB) the first time you choose it and then works offline. <strong>Use as input</strong> replaces the document with the result, so transforms can be chained.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">Can I edit the data in a table or a graph? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>Yes. The <strong>Table</strong> tab finds every array of objects in the document and shows the one you pick as a grid, with nested values as columns named by their path; double-click a cell to edit it. The <strong>Graph</strong> tab draws each object and array as a box linked to its parent; drag to move, scroll to zoom, and double-click a value to edit it. Either way the edit is written back into the document, and a number you type into a number keeps every digit.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">How do I compare two JSON documents? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>Open the <strong>Compare</strong> tab, paste the other document and press Compare. Differences are listed by path as changed, added or removed; key order is ignored, and numbers are compared by value, so <code>1.0</code> equals <code>1</code> while <code>12345678901234567890</code> and <code>12345678901234567891</code> differ. <strong>Open in Diff Checker</strong> carries both documents to the Diff Checker's JSON / YAML structure mode, with array matching by key and exports.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">Can it create sample data from a schema, or edit a schema without writing JSON? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>Both, in the Schema tab. <strong>Sample document</strong> writes a document that satisfies the schema into the input, honouring types, required fields, <code>enum</code>, <code>const</code>, defaults and examples, formats such as email, UUID and date-time, ranges and lengths, <code>$ref</code>, <code>allOf</code> and <code>oneOf</code>. <strong>Visual editor</strong> shows the schema as a form where you rename properties, change types, mark them required, add descriptions, allowed values and formats, and add or remove properties; the JSON Schema updates as you go.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">How large a JSON file can it open? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>Files of 8 MB and more are parsed in a background worker, so the page never freezes, and are kept out of the text box. The formatted text and the tree draw only the lines on screen. In our tests a 62 MB file with 500,000 records opened in about 10 seconds, and JSONPath, Table and the other tabs worked on the whole document. The limit is your device's memory.</p></div>
+        </div>
+
+        <div class="faq-item">
           <button class="faq-question">What does the Tree view offer over the raw text output? <i data-lucide="chevron-down"></i></button>
           <div class="faq-answer">
-            <p>The Tree view renders the same parsed payload as a collapsible outline, letting you fold entire objects or arrays down to a single line and expand only the branches you need. This is especially useful for deeply nested API responses, where the plain formatted text can run to thousands of lines. Use Expand All or Collapse All to jump between a full overview and a fully drilled-in view.</p>
+            <p>The Tree view renders the same parsed payload as a collapsible outline, letting you fold entire objects or arrays down to a single line and expand only the branches you need. This is especially useful for deeply nested API responses, where the plain formatted text can run to thousands of lines. Use Expand All or Collapse All to jump between a full overview and a fully drilled-in view. For documents with more than 60,000 values the tree is virtual: only the rows on screen are drawn, so a branch with 500,000 items opens instantly.</p>
           </div>
         </div>
       </div>
@@ -862,6 +1028,7 @@
     <div class="info-panel">
       <h2><i data-lucide="git-commit"></i> Changelog</h2>
       <ul class="changelog-list">
+        <li><span class="changelog-tag">v4.0.0</span> JSON5, JSONC and JSON Lines as explicit input formats, and YAML, TOML and XML converted in; TOML and XML added to Convert. Table view (any array of objects, editable) and Graph view (objects and arrays as linked boxes, values editable) that write edits back. Transform tab with JMESPath, JSON Query and jq (jq 1.7 in WebAssembly). Compare tab with differences by path and a hand-off to the Diff Checker's structure mode. Sample documents generated from a schema, and a visual schema editor. Every view now keeps long numbers exactly (tree, JSONPath, schema checks, types, CSV, SQL, YAML). Files of 8 MB and more open in a background worker with a virtual text view and tree, tested at 62 MB.</li>
         <li><span class="changelog-tag">v3.1.0</span> History is off by default: with the Save to history switch on, only Beautify saves a run; typing never does. Beautify, Minify and Sort keys keep every number exactly as written (12345678901234567890, 1e400, -0) instead of rounding them; the warning names the views that still show the JavaScript value. CSV conversion has a Safe for Excel switch, on by default, that writes formula-like values (=, +, -, @) with a leading apostrophe, and keeps long numbers exact.</li>
         <li><span class="changelog-tag">v3.0.0</span> Added Fix for almost-JSON with a list of changes made, full JSONPath (wildcards, recursive descent, slices, unions, filters) with every match and its path, JSON Schema validation and inference, type generation for TypeScript, Go, C#, Kotlin, Python, Java and Rust, SQL and CSV export with flattening, NDJSON detection and conversion, YAML output, string-literal escape and decode, a big-integer precision warning, indentation choice, file open, and share links.</li>
         <li><span class="changelog-tag">v2.1.0</span> Added a path query box, a structure readout, an optional deep key sort, and syntax errors with line and column that move the caret to the offending character.</li>
@@ -980,8 +1147,12 @@
   <script src="../js/kernel.js?v=eb69348d32"></script>
 
   <script src="../js/shared.js?v=e2441a1728"></script>
-  <script src="../js/engines/json.js?v=12081fa9bc"></script>
+  <script src="../js/engines/json.js?v=22c280d000"></script>
   <script src="../js/engines/lossless-json.js?v=88a67e6c17"></script>
+  <script src="../js/engines/csv.js?v=a78b81af7d"></script>
+  <script src="../js/engines/tabular.js?v=a094f5cbcd"></script>
+  <script src="../js/engines/jsonx.js?v=350f9c740a"></script>
+  <script src="../js/ui/virtual.js?v=db3f27d059"></script>
 
   <script>
     const $ = id => document.getElementById(id);
@@ -1007,13 +1178,14 @@
       if (val === null) return `<span class="syn-null">null</span>`;
       if (typeof val === 'boolean') return `<span class="syn-boolean">${val}</span>`;
       if (typeof val === 'number') return `<span class="syn-number">${val}</span>`;
+      if (isLN(val)) return `<span class="syn-number">${escapeHTMLText(val.value)}</span>`;
       return `<span class="syn-string">"${escapeHTMLText(String(val))}"</span>`;
     }
     function buildTreeNode(key, value, isLast, depth, path) {
       const indent = `padding-left:${depth * 18}px`;
       const keyHTML = key !== null ? `<span class="syn-key">"${escapeHTMLText(String(key))}"</span><span class="tree-punct">: </span>` : '';
       const comma = isLast ? '' : '<span class="tree-punct">,</span>';
-      if (value !== null && typeof value === 'object') {
+      if (value !== null && typeof value === 'object' && !isLN(value)) {
         const isArray = Array.isArray(value);
         const entries = isArray ? value.map((v, i) => [i, v]) : Object.entries(value);
         const openBr = isArray ? '[' : '{', closeBr = isArray ? ']' : '}';
@@ -1027,17 +1199,64 @@
     }
     function renderTree(parsed) {
       treeNodeSeq = 0;
-      if (J.stats(parsed).primitives > 60000) { jsonTree.innerHTML = '<div class="tree-note">This document has more than 60,000 values; the tree view is skipped to keep the page responsive. Use the Query tab to drill in.</div>'; return; }
+      // large documents get the virtual tree: only the rows on screen exist
+      if (bigDoc || J.stats(parsed).primitives > 60000) return renderBigTree();
       jsonTree.innerHTML = buildTreeNode(null, parsed, true, 0, '$');
       icons();
     }
     jsonTree.addEventListener('click', e => { const leaf = e.target.closest('.tree-leaf'); if (leaf && leaf.dataset.path) Layerbit.copy(leaf.dataset.path).then(() => Layerbit.toast('Copied path ' + leaf.dataset.path)); });
     function toggleTreeNode(id) { const el = $(id); if (el) el.classList.toggle('collapsed'); }
-    function setAllTreeNodes(collapsed) { jsonTree.querySelectorAll('.tree-node').forEach(el => el.classList.toggle('collapsed', collapsed)); }
+    function setAllTreeNodes(collapsed) {
+      if (jsonTree.classList.contains('vtree')) { bigExpanded = new Set(collapsed ? [] : ['$']); if (!collapsed) Toast('Large documents expand one level at a time'); renderBigTree(); return; }
+      jsonTree.querySelectorAll('.tree-node').forEach(el => el.classList.toggle('collapsed', collapsed));
+    }
+    function Toast(m) { Layerbit.toast(m); }
+
+    // ------------------------------------------------------------ virtual tree (large documents)
+    // Only the rows on screen exist: a row list is built from the nodes that
+    // are expanded, and the virtual list draws the visible part of it.
+    let bigExpanded = new Set(['$']), bigTreeList = null, bigTreeRows = [];
+    function bigRows() {
+      const rows = [];
+      (function walk(v, key, path, depth) {
+        const isC = v !== null && typeof v === 'object' && !isLN(v);
+        rows.push({ v, key, path, depth, isC });
+        if (isC && bigExpanded.has(path)) {
+          if (Array.isArray(v)) for (let i = 0; i < v.length; i++) walk(v[i], i, path + '[' + i + ']', depth + 1);
+          else Object.keys(v).forEach(k => walk(v[k], k, LBJsonX.childPath(path, k), depth + 1));
+        }
+      })(lastParsed, null, '$', 0);
+      return rows;
+    }
+    function renderBigTree() {
+      bigTreeRows = bigRows();
+      if (bigTreeList) { bigTreeList.update(bigTreeRows.length); return; }
+      jsonTree.innerHTML = '';
+      jsonTree.classList.add('vtree');
+      bigTreeList = LBVirtual.list(jsonTree, { count: bigTreeRows.length, rowHeight: 22, render: i => {
+        const r = bigTreeRows[i], d = document.createElement('div');
+        d.className = 'vt-row'; d.dataset.treePath = r.path; d.style.paddingLeft = (r.depth * 18 + 6) + 'px';
+        if (r.isC) { const c = document.createElement('span'); c.className = 'vt-caret'; c.textContent = bigExpanded.has(r.path) ? '▾' : '▸'; d.appendChild(c); }
+        else { const c = document.createElement('span'); c.className = 'vt-caret vt-leaf'; d.appendChild(c); }
+        if (r.key !== null) { const k = document.createElement('span'); k.className = 'syn-key'; k.textContent = (typeof r.key === 'number' ? '[' + r.key + ']' : JSON.stringify(r.key)) + ': '; d.appendChild(k); }
+        const val = document.createElement('span');
+        if (r.isC) { const n = Array.isArray(r.v) ? r.v.length : Object.keys(r.v).length; val.className = 'tree-summary'; val.textContent = Array.isArray(r.v) ? `[ ${n.toLocaleString()} item${n === 1 ? '' : 's'} ]` : `{ ${n.toLocaleString()} key${n === 1 ? '' : 's'} }`; }
+        else { val.className = r.v === null ? 'syn-null' : isLN(r.v) || typeof r.v === 'number' ? 'syn-number' : typeof r.v === 'boolean' ? 'syn-boolean' : 'syn-string'; const t = isLN(r.v) ? r.v.value : typeof r.v === 'string' ? JSON.stringify(r.v.length > 300 ? r.v.slice(0, 297) + '…' : r.v) : String(r.v); val.textContent = t; }
+        d.appendChild(val);
+        return d;
+      } });
+    }
+    jsonTree.addEventListener('click', e => {
+      const c = e.target.closest('.vt-caret'); if (!c || !jsonTree.classList.contains('vtree')) return;
+      const p = c.parentElement.dataset.treePath; if (!p) return;
+      if (bigExpanded.has(p)) bigExpanded.delete(p); else bigExpanded.add(p);
+      renderBigTree();
+    });
 
     function setOutputView(view) {
       outputView = view;
-      ['text', 'tree', 'query', 'schema', 'types', 'convert'].forEach(v => { const t = $('viewTab' + v[0].toUpperCase() + v.slice(1)); t.classList.toggle('active', v === view); t.setAttribute('aria-selected', v === view); });
+      ['text', 'tree', 'query', 'schema', 'types', 'table', 'graph', 'transform', 'compare', 'convert'].forEach(v => { const t = $('viewTab' + v[0].toUpperCase() + v.slice(1)); t.classList.toggle('active', v === view); t.setAttribute('aria-selected', v === view); });
+      ['table', 'graph', 'transform', 'compare'].forEach(v => { $('view' + v[0].toUpperCase() + v.slice(1)).style.display = view === v ? '' : 'none'; });
       jsonOutput.style.display = view === 'text' ? '' : 'none';
       jsonTree.style.display = view === 'tree' ? '' : 'none';
       $('viewQuery').style.display = view === 'query' ? '' : 'none';
@@ -1048,60 +1267,179 @@
       $('btnCollapseAll').style.display = view === 'tree' ? '' : 'none';
       if (view === 'types') renderTypes();
       if (view === 'convert') renderConvert();
+      if (view === 'table') renderTable();
+      if (view === 'graph') renderGraph();
+      if (view === 'transform') runTransform();
       if (view === 'query') pathInput.focus();
     }
 
     // ------------------------------------------------------------ core
     function indentArg() { const v = $('indentSel').value; return v === 'tab' ? '\t' : +v; }
+    // Every view works on one lossless document: numbers keep the digits
+    // they were written with (12345678901234567890, 1e400, -0).
+    const isLN = v => LBLossless.isLosslessNumber(v);
+    const LIBS = { yaml: '../js/vendor/js-yaml.min.js', toml: '../js/vendor/smol-toml.min.js', jmespath: '../js/vendor/jmespath.min.js', jsonquery: '../js/vendor/jsonquery.min.js', jq: '../js/vendor/wasm/jq.js' };
+    const libReady = { yaml: () => !!window.jsyaml, toml: () => !!window.TOML, jmespath: () => !!window.jmespath, jsonquery: () => !!window.JSONQuery, jq: () => !!window.jq };
+    const libLoading = {};
+    function loadLib(name) {
+      if (libReady[name]()) return Promise.resolve();
+      return libLoading[name] || (libLoading[name] = new Promise((res, rej) => { const sc = document.createElement('script'); sc.src = LIBS[name]; sc.onload = res; sc.onerror = () => { delete libLoading[name]; rej(new Error('Could not load the ' + name + ' library.')); }; document.head.appendChild(sc); }));
+    }
+    // plain JavaScript values (from YAML or TOML) into the lossless form
+    function fromNative(v) {
+      if (typeof v === 'bigint') return new LBLossless.LosslessNumber(v.toString());
+      if (v instanceof Date) return typeof v.toISOString === 'function' && !isNaN(v) ? v.toISOString() : String(v);
+      if (Array.isArray(v)) return v.map(fromNative);
+      if (v && typeof v === 'object') { const o = {}; Object.keys(v).forEach(k => LBTable.setKey(o, k, fromNative(v[k]))); return o; }
+      if (typeof v === 'number' && !isFinite(v)) return null;
+      return v;
+    }
+    function jsonError(err, raw) {
+      const e = J.locateError(err.message, raw);
+      return { message: `Invalid JSON: ${e.message}${e.pos >= 0 ? ` — line ${e.line}, column ${e.col}` : ''}`, pos: e.pos };
+    }
+    // -> {value, notes} or throws {message, pos}; null when a library is still loading
+    function parseInput(raw, mode) {
+      if (mode === 'yaml' || mode === 'toml') {
+        if (!libReady[mode]()) { loadLib(mode).then(() => processJSON(lastAction), e => showErr(e.message)); return null; }
+        try { return { value: fromNative(mode === 'yaml' ? jsyaml.load(raw, { schema: jsyaml.CORE_SCHEMA }) : TOML.parse(raw)), notes: [] }; }
+        catch (e) { throw { message: `Invalid ${mode.toUpperCase()}: ${e.reason || e.message}${e.mark ? ` — line ${e.mark.line + 1}, column ${e.mark.column + 1}` : ''}` }; }
+      }
+      if (mode === 'xml') { try { return { value: LBJsonX.xmlToJson(raw), notes: ['XML attributes are keys starting with @; text beside child elements is under #text; repeated elements become arrays.'] }; } catch (e) { throw { message: 'Invalid XML: ' + e.message }; } }
+      if (mode === 'json5' || mode === 'jsonc') { try { return LBJsonX.parseDialect(raw, mode); } catch (e) { throw { message: `Invalid ${mode.toUpperCase()}: ${e.message}`, pos: e.pos }; } }
+      if (mode === 'jsonl' || (mode === 'auto' && (() => { try { JSON.parse(raw); return false; } catch (e) { return J.looksNdjson(raw); } })())) {
+        const lines = raw.split(/\r\n|\n|\r/), values = [], bad = [];
+        lines.forEach((l, i) => { if (!l.trim()) return; try { JSON.parse(l); values.push(LBLossless.parse(l)); } catch (e) { bad.push(`line ${i + 1}: ${e.message}`); } });
+        if (bad.length && (mode === 'jsonl' || !values.length)) throw { message: `Invalid JSON Lines: ${bad[0]}${bad.length > 1 ? ` (and ${bad.length - 1} more)` : ''}` };
+        isNdjson = true;
+        return { value: values, notes: [`${mode === 'jsonl' ? 'JSON Lines' : 'NDJSON detected'}: ${values.length.toLocaleString()} objects parsed line by line${bad.length ? `, ${bad.length} line${bad.length > 1 ? 's' : ''} skipped (first: ${bad[0]})` : ''}. Shown as an array.`] };
+      }
+      try { JSON.parse(raw); } catch (err) { throw jsonError(err, raw); }
+      return { value: LBLossless.parse(raw), notes: [] };
+    }
+    function showErr(msg, pos) {
+      errorText.textContent = msg;
+      if (pos >= 0) { try { jsonInput.setSelectionRange(pos, Math.min(pos + 1, jsonInput.value.length)); } catch (x) {} }
+      errorBanner.classList.add('active'); jsonStats.textContent = ''; pathInput.disabled = true; pathResult.textContent = ''; $('pathList').innerHTML = '';
+    }
     function processJSON(action) {
+      if (bigDoc && !jsonInput.value.trim()) return processBig(action);
+      if (bigDoc) closeBig(true);
       const raw = jsonInput.value.trim();
       errorBanner.classList.remove('active'); $('noticeBanner').classList.remove('active');
+      if (bigTreeList) { bigTreeList.destroy(); bigTreeList = null; jsonTree.classList.remove('vtree'); }
+      bigExpanded = new Set(['$']);
       jsonOutput.innerHTML = ''; jsonTree.innerHTML = ''; lastParsed = null; lastLossless = null; lastResultText = ''; isNdjson = false;
       $('inMeta').textContent = raw ? Layerbit.fmtBytes(new Blob([raw]).size) : '';
       if (!raw) { jsonStats.textContent = ''; pathInput.disabled = true; return; }
-      let parsed;
-      try { parsed = JSON.parse(raw); }
-      catch (err) {
-        if (J.looksNdjson(raw)) {
-          const r = J.parseNdjson(raw);
-          parsed = r.values; isNdjson = true;
-          notice(`NDJSON detected: ${r.values.length.toLocaleString()} objects parsed line by line${r.errors.length ? `, ${r.errors.length} line${r.errors.length > 1 ? 's' : ''} skipped (first: line ${r.errors[0].line}: ${r.errors[0].message})` : ''}. Shown as an array.`);
-        } else {
-          const e = J.locateError(err.message, raw);
-          errorText.textContent = `Invalid JSON: ${e.message}${e.pos >= 0 ? ` — line ${e.line}, column ${e.col}` : ''}`;
-          if (e.pos >= 0) { try { jsonInput.setSelectionRange(e.pos, Math.min(e.pos + 1, raw.length)); } catch (x) {} }
-          errorBanner.classList.add('active'); jsonStats.textContent = ''; pathInput.disabled = true; pathResult.textContent = ''; $('pathList').innerHTML = '';
-          return;
-        }
-      }
-      if (sortKeys.checked) parsed = J.sortKeysDeep(parsed);
-      // The output is written from a lossless parse, so numbers keep the
-      // digits they were written with (12345678901234567890, 1e400, -0).
-      let lossless;
-      try { lossless = isNdjson ? raw.split(/\r?\n/).filter(l => l.trim()).map(l => { try { return LBLossless.parse(l); } catch (e) { return undefined; } }).filter(v => v !== undefined) : LBLossless.parse(raw); }
-      catch (e) { lossless = parsed; }
-      if (sortKeys.checked) lossless = LBLossless.sortKeys(lossless);
-      lastResultText = action === 'minify' ? LBLossless.stringify(lossless) : LBLossless.stringify(lossless, indentArg());
+      let r;
+      try { r = parseInput(raw, $('inMode').value); } catch (e) { showErr(e.message, e.pos); return; }
+      if (!r) return;
+      let value = r.value;
+      if (sortKeys.checked) value = LBLossless.sortKeys(value);
+      lastResultText = action === 'minify' ? LBLossless.stringify(value) : LBLossless.stringify(value, indentArg());
       jsonOutput.innerHTML = lastResultText.length > 3000000 ? escapeHTMLText(lastResultText) : syntaxHighlight(lastResultText);
-      lastParsed = parsed; lastLossless = lossless;
-      renderTree(parsed);
-      renderStats(parsed, raw);
+      afterParse(value, raw, r.notes);
+      Layerbit.history.push('json-validator', getState(), `${J.typeOf(value)} · ${Layerbit.fmtBytes(raw.length)}`);
+    }
+    function afterParse(value, raw, notes) {
+      lastParsed = value; lastLossless = value;
+      renderTree(value);
+      renderStats(value, raw);
       pathInput.disabled = false;
       runPathQuery();
       if (outputView === 'types') renderTypes();
       if (outputView === 'convert') renderConvert();
-      const big = LBLossless.unsafeNumbers(lossless);
-      if (big.length) notice(`${isNdjson ? $('noticeText').textContent + ' ' : ''}Precision warning: ${big.length} number${big.length > 1 ? 's' : ''} (e.g. ${big[0]}) cannot be held exactly by a JavaScript number. The formatted output keeps ${big.length > 1 ? 'them' : 'it'} exactly as written; the tree, JSONPath results, generated types and conversions show the JavaScript value. Most JSON parsers round such numbers, so serialise ids like these as strings.`);
-      Layerbit.history.push('json-validator', getState(), `${J.typeOf(parsed)} · ${Layerbit.fmtBytes(raw.length)}`);
+      if (outputView === 'table') renderTable();
+      if (outputView === 'graph') renderGraph();
+      if (outputView === 'transform') runTransform();
+      const big = LBLossless.unsafeNumbers(value), msgs = (notes || []).slice();
+      if (big.length) msgs.push(`Precision warning: ${big.length} number${big.length > 1 ? 's' : ''} (e.g. ${big[0]}) cannot be held exactly by a JavaScript number. Every view here keeps ${big.length > 1 ? 'them' : 'it'} exactly as written; most JSON parsers round such numbers, so serialise ids like these as strings.`);
+      if (msgs.length) notice(msgs.join(' '));
     }
-    function notice(msg) { $('noticeText').textContent = msg; $('noticeBanner').classList.add('active'); }
+    // ------------------------------------------------------------ large files: parsed in a Worker
+    const BIG_FILE = 8 * 1024 * 1024;
+    let bigDoc = null;
+    function bigWorker() {
+      const src = part => JSON.stringify(document.querySelector(`script[src*="${part}"]`).src);
+      return new Worker(URL.createObjectURL(new Blob([`importScripts(${src('engines/lossless-json.js')}, ${src('engines/json.js')});
+        onmessage = async e => { const o = e.data;
+          try { const text = await o.file.text();
+            try { JSON.parse(text); } catch (err) { const l = LBJson.locateError(err.message, text); postMessage({ error: 'Invalid JSON: ' + l.message + (l.pos >= 0 ? ' — line ' + l.line + ', column ' + l.col : '') }); return; }
+            let v = LBLossless.parse(text); if (o.sort) v = LBLossless.sortKeys(v);
+            const out = o.action === 'minify' ? LBLossless.stringify(v) : LBLossless.stringify(v, o.indent);
+            postMessage({ value: v, out, stats: LBJson.stats(v, text) });
+          } catch (err) { postMessage({ error: err.message || String(err) }); } };`], { type: 'text/javascript' })));
+    }
+    function openBig(file) {
+      if (bigDoc && bigDoc.worker) bigDoc.worker.terminate();
+      jsonInput.value = ''; bigDoc = { file };
+      processBig('format');
+    }
+    function processBig(action) {
+      const job = bigDoc, file = job.file;
+      window.jsonBig = { done: false };
+      errorBanner.classList.remove('active');
+      notice(`${file.name} (${Layerbit.fmtBytes(file.size)}) is being read in the background…`);
+      job.worker = bigWorker();
+      job.worker.onmessage = e => {
+        if (bigDoc !== job) return;
+        job.worker.terminate(); job.worker = null;
+        const m = e.data;
+        if (m.error) { showErr(m.error); window.jsonBig = { done: true, error: m.error }; return; }
+        lastResultText = m.out;
+        showBigText(m.out);
+        bigExpanded = new Set(['$']); if (bigTreeList) { bigTreeList.destroy(); bigTreeList = null; }
+        lastParsed = m.value; lastLossless = m.value;
+        $('inMeta').textContent = Layerbit.fmtBytes(file.size);
+        renderTree(m.value);
+        const s = m.stats, b = Layerbit.fmtBytes;
+        jsonStats.innerHTML = statsHtml(s);
+        pathInput.disabled = false; runPathQuery();
+        if (outputView !== 'text' && outputView !== 'tree') setOutputView(outputView);
+        notice(`${file.name} (${b(file.size)}) was read in a background worker. The text box stays empty to keep the page fast; the formatted text and the tree show only the lines on screen, and every other view works on the whole document. <button type="button" class="btn btn-inline" onclick="closeBig()">Close file</button>`, true);
+        window.jsonBig = { done: true };
+      };
+      job.worker.onerror = e => { showErr(e.message || 'The background reader stopped.'); window.jsonBig = { done: true, error: e.message }; };
+      job.worker.postMessage({ file, action, indent: indentArg(), sort: sortKeys.checked });
+    }
+    let bigTextList = null;
+    function showBigText(text) {
+      // line starts, so a line is sliced only when it is drawn
+      const starts = [0];
+      for (let i = text.indexOf('\n'); i >= 0; i = text.indexOf('\n', i + 1)) starts.push(i + 1);
+      if (bigTextList) bigTextList.destroy();
+      jsonOutput.innerHTML = ''; jsonOutput.classList.add('vtext');
+      bigTextList = LBVirtual.list(jsonOutput, { count: starts.length, rowHeight: 20, render: i => text.slice(starts[i], i + 1 < starts.length ? starts[i + 1] - 1 : text.length) });
+    }
+    function closeBig(keepInput) {
+      if (bigDoc && bigDoc.worker) bigDoc.worker.terminate();
+      bigDoc = null; window.jsonBig = null;
+      if (bigTextList) { bigTextList.destroy(); bigTextList = null; } jsonOutput.classList.remove('vtext');
+      if (bigTreeList) { bigTreeList.destroy(); bigTreeList = null; } jsonTree.classList.remove('vtree');
+      if (!keepInput) { lastParsed = null; lastResultText = ''; jsonStats.textContent = ''; $('noticeBanner').classList.remove('active'); $('inMeta').textContent = ''; }
+    }
+    function handleFile(file) {
+      if (!file) return;
+      const ext = (/\.([a-z0-9]+)$/i.exec(file.name) || [])[1] || '';
+      const byExt = { json: 'auto', jsonl: 'jsonl', ndjson: 'jsonl', json5: 'json5', jsonc: 'jsonc', yaml: 'yaml', yml: 'yaml', toml: 'toml', xml: 'xml' }[ext.toLowerCase()];
+      if (byExt) $('inMode').value = byExt;
+      if (file.size >= BIG_FILE && ['auto', 'json'].includes($('inMode').value)) { openBig(file); return; }
+      if (bigDoc) closeBig();
+      Layerbit.readFile(file).then(t => { jsonInput.value = t; processJSON('format'); });
+    }
+    function notice(msg, html) { if (html) $('noticeText').innerHTML = msg; else $('noticeText').textContent = msg; $('noticeBanner').classList.add('active'); }
     function renderStats(value, raw) {
-      const s = J.stats(value, raw), b = Layerbit.fmtBytes;
-      jsonStats.innerHTML = `<span><strong>${s.keys.toLocaleString()}</strong> keys</span><span><strong>${s.objects.toLocaleString()}</strong> objects</span><span><strong>${s.arrays.toLocaleString()}</strong> arrays</span><span><strong>${s.primitives.toLocaleString()}</strong> values</span><span>depth <strong>${s.depth}</strong></span><span>${b(s.bytesIn)} in, <strong>${b(s.bytesMin)}</strong> minified, ${b(s.bytesPretty)} pretty</span>`;
+      jsonStats.innerHTML = statsHtml(J.stats(value, raw));
+    }
+    function statsHtml(s) {
+      const b = Layerbit.fmtBytes;
+      return `<span><strong>${s.keys.toLocaleString()}</strong> keys</span><span><strong>${s.objects.toLocaleString()}</strong> objects</span><span><strong>${s.arrays.toLocaleString()}</strong> arrays</span>${s.maxArray > 1 ? `<span>largest array <strong>${s.maxArray.toLocaleString()}</strong></span>` : ''}<span><strong>${s.primitives.toLocaleString()}</strong> values</span><span>depth <strong>${s.depth}</strong></span><span>${b(s.bytesIn)} in, <strong>${b(s.bytesMin)}</strong> minified, ${b(s.bytesPretty)} pretty</span>`;
     }
 
     // ------------------------------------------------------------ fix
     function fixJson() {
+      $('inMode').value = 'auto';
       const raw = jsonInput.value;
       if (!raw.trim()) return;
       const r = J.repair(raw);
@@ -1122,16 +1460,16 @@
         const res = J.query(lastParsed, q);
         if (!res.length) { pathResult.textContent = 'No match — undefined at that path'; pathResult.className = 'path-result path-miss'; list.innerHTML = ''; cnt.textContent = '0 matches'; return; }
         pathResult.className = 'path-result';
-        if (res.length === 1) { const s = JSON.stringify(res[0].value, null, 2); pathResult.innerHTML = syntaxHighlight(s.length > 4000 ? s.slice(0, 4000) + '\n… (truncated)' : s); list.innerHTML = ''; cnt.textContent = `1 match · ${escapeHTMLText(res[0].path)}`; }
+        if (res.length === 1) { const s = LBLossless.stringify(res[0].value, 2); pathResult.innerHTML = syntaxHighlight(s.length > 4000 ? s.slice(0, 4000) + '\n… (truncated)' : s); list.innerHTML = ''; cnt.textContent = `1 match · ${escapeHTMLText(res[0].path)}`; }
         else {
           pathResult.textContent = '';
           cnt.textContent = `${res.length.toLocaleString()} matches`;
-          list.innerHTML = res.slice(0, 200).map(r => { const s = JSON.stringify(r.value); return `<div class="path-item"><span class="path-path" title="Click to copy" onclick="Layerbit.copy(this.textContent).then(()=>Layerbit.toast('Copied path'))">${escapeHTMLText(r.path)}</span><span class="path-val">${syntaxHighlight(s.length > 160 ? s.slice(0, 157) + '…' : s)}</span></div>`; }).join('') + (res.length > 200 ? `<div class="tree-note">First 200 of ${res.length} shown. Copy results gives all of them.</div>` : '') + `<div class="path-actions"><button type="button" class="btn" onclick="copyQuery()"><i data-lucide="copy"></i> Copy results as JSON array</button></div>`;
+          list.innerHTML = res.slice(0, 200).map(r => { const s = LBLossless.stringify(r.value); return `<div class="path-item"><span class="path-path" title="Click to copy" onclick="Layerbit.copy(this.textContent).then(()=>Layerbit.toast('Copied path'))">${escapeHTMLText(r.path)}</span><span class="path-val">${syntaxHighlight(s.length > 160 ? s.slice(0, 157) + '…' : s)}</span></div>`; }).join('') + (res.length > 200 ? `<div class="tree-note">First 200 of ${res.length} shown. Copy results gives all of them.</div>` : '') + `<div class="path-actions"><button type="button" class="btn" onclick="copyQuery()"><i data-lucide="copy"></i> Copy results as JSON array</button></div>`;
           icons();
         }
       } catch (e) { pathResult.textContent = `Bad path: ${e.message}`; pathResult.className = 'path-result path-miss'; list.innerHTML = ''; cnt.textContent = ''; }
     }
-    function copyQuery() { const res = J.query(lastParsed, pathInput.value.trim()); Layerbit.copy(JSON.stringify(res.map(r => r.value), null, 2)).then(() => Layerbit.toast(`Copied ${res.length} values`)); }
+    function copyQuery() { const res = J.query(lastParsed, pathInput.value.trim()); Layerbit.copy(LBLossless.stringify(res.map(r => r.value), 2)).then(() => Layerbit.toast(`Copied ${res.length} values`)); }
     pathInput.addEventListener('input', runPathQuery);
 
     // ------------------------------------------------------------ schema
@@ -1173,19 +1511,245 @@
       try {
         if (target === 'sql') { const r = J.toSql(lastParsed, { table: $('sqlTable').value || 'data', dialect: $('sqlDialect').value }); out.textContent = r.sql; note.textContent = `${r.rows} row${r.rows === 1 ? '' : 's'}, ${r.columns.length} columns: ${r.columns.join(', ')}`; }
         else if (target === 'csv') { const rc = J.rowsOf(lastParsed); out.textContent = J.toCsv(lastLossless != null ? lastLossless : lastParsed, ',', { safe: $('csvSafe').checked }); note.textContent = `${rc.rows.length} rows, ${rc.cols.length} columns. Nested objects are flattened; arrays are kept as JSON text.`; }
-        else if (target === 'ndjson') { const arr = Array.isArray(lastParsed) ? lastParsed : [lastParsed]; out.textContent = arr.map(x => JSON.stringify(x)).join('\n') + '\n'; note.textContent = `${arr.length} line${arr.length === 1 ? '' : 's'}.`; }
+        else if (target === 'ndjson') { const arr = Array.isArray(lastParsed) ? lastParsed : [lastParsed]; out.textContent = arr.map(x => LBLossless.stringify(x)).join('\n') + '\n'; note.textContent = `${arr.length} line${arr.length === 1 ? '' : 's'}.`; }
         else if (target === 'yaml') { out.textContent = toYaml(lastParsed, 0); note.textContent = 'Block-style YAML; strings that YAML would reinterpret (yes, no, on, off, numbers, dates) are quoted.'; }
+        else if (target === 'xml') { out.textContent = LBJsonX.jsonToXml(lastParsed); note.textContent = 'Keys starting with @ become attributes and #text becomes the element text; arrays repeat their element; names that are not valid XML are adjusted (spaces to _, a leading digit gets _).'; }
+        else if (target === 'toml') {
+          if (!window.TOML) { out.textContent = ''; note.textContent = 'Loading the TOML writer…'; loadLib('toml').then(renderConvert, e => { note.textContent = e.message; }); return; }
+          if (!lastParsed || typeof lastParsed !== 'object' || Array.isArray(lastParsed) || isLN(lastParsed)) throw new Error('TOML needs an object at the top level; wrap the array in a key first.');
+          const nul = []; const toToml = (v, p) => { if (isLN(v)) return /^-?\d+$/.test(v.value) && LBLossless.isUnsafe(v.value) ? BigInt(v.value) : Number(v.value); if (Array.isArray(v)) return v.filter(x => x !== null).map((x, i) => toToml(x, p + '[' + i + ']')); if (v && typeof v === 'object') { const o = {}; Object.keys(v).forEach(k => { if (v[k] === null) nul.push(p + '.' + k); else o[k] = toToml(v[k], p + '.' + k); }); return o; } return v; };
+          out.textContent = TOML.stringify(toToml(lastParsed, '$'));
+          note.textContent = nul.length ? `TOML has no null: ${nul.length} null value${nul.length > 1 ? 's were' : ' was'} left out (${nul.slice(0, 3).join(', ')}${nul.length > 3 ? ', …' : ''}).` : 'TOML from the document; integers beyond 2^53 keep every digit.';
+        }
         else if (target === 'string') { out.textContent = JSON.stringify(lastResultText || JSON.stringify(lastParsed)); note.textContent = 'The formatted JSON escaped as a single JSON string literal, for embedding in another JSON document or a config value.'; }
       } catch (e) { out.textContent = ''; note.textContent = e.message; }
     }
     ['convTarget', 'sqlDialect', 'csvSafe'].forEach(id => $(id).addEventListener('change', renderConvert)); $('sqlTable').addEventListener('input', renderConvert);
     function toYaml(v, ind) {
       const pad = '  '.repeat(ind);
-      const scalar = x => x === null ? 'null' : typeof x === 'string' ? (/^(true|false|yes|no|on|off|null|~|y|n|-?\d[\d_.eE+-]*|0x[0-9a-f]+|\d{4}-\d{2}-\d{2}.*)$/i.test(x) || /[:#{}\[\],&*?|<>=!%@`'"\\]/.test(x) || /^\s|\s$/.test(x) || x === '' || x.includes('\n') ? JSON.stringify(x) : x) : String(x);
-      if (Array.isArray(v)) return v.length ? v.map(x => pad + '- ' + (x && typeof x === 'object' ? toYaml(x, ind + 1).trimStart() : scalar(x))).join('\n') : pad + '[]';
-      if (v && typeof v === 'object') { const keys = Object.keys(v); return keys.length ? keys.map(k => { const val = v[k]; const key = /^[A-Za-z_][\w-]*$/.test(k) ? k : JSON.stringify(k); return val && typeof val === 'object' && (Array.isArray(val) ? val.length : Object.keys(val).length) ? `${pad}${key}:\n${toYaml(val, ind + 1)}` : `${pad}${key}: ${val && typeof val === 'object' ? (Array.isArray(val) ? '[]' : '{}') : scalar(val)}`; }).join('\n') : pad + '{}'; }
+      if (isLN(v)) return pad + v.value;
+      const scalar = x => x === null ? 'null' : isLN(x) ? x.value : typeof x === 'string' ? (/^(true|false|yes|no|on|off|null|~|y|n|-?\d[\d_.eE+-]*|0x[0-9a-f]+|\d{4}-\d{2}-\d{2}.*)$/i.test(x) || /[:#{}\[\],&*?|<>=!%@`'"\\]/.test(x) || /^\s|\s$/.test(x) || x === '' || x.includes('\n') ? JSON.stringify(x) : x) : String(x);
+      if (Array.isArray(v)) return v.length ? v.map(x => pad + '- ' + (x && typeof x === 'object' && !isLN(x) ? toYaml(x, ind + 1).trimStart() : scalar(x))).join('\n') : pad + '[]';
+      if (v && typeof v === 'object') { const keys = Object.keys(v); return keys.length ? keys.map(k => { const val = v[k]; const key = /^[A-Za-z_][\w-]*$/.test(k) ? k : JSON.stringify(k); return val && typeof val === 'object' && !isLN(val) && (Array.isArray(val) ? val.length : Object.keys(val).length) ? `${pad}${key}:\n${toYaml(val, ind + 1)}` : `${pad}${key}: ${val && typeof val === 'object' && !isLN(val) ? (Array.isArray(val) ? '[]' : '{}') : scalar(val)}`; }).join('\n') : pad + '{}'; }
       return pad + scalar(v);
     }
+
+    // ------------------------------------------------------------ writing edits back
+    // A path such as $.rows[1]['user name'] is resolved into its parts, the
+    // value is set in the document, and the input is rewritten as JSON.
+    function pathParts(path) {
+      const out = [], re = /\.([A-Za-z_$][\w$]*)|\[(\d+)\]|\['((?:[^'\\]|\\.)*)'\]/g; let m;
+      while ((m = re.exec(path))) out.push(m[1] !== undefined ? m[1] : m[2] !== undefined ? +m[2] : m[3].replace(/\\(.)/g, '$1'));
+      return out;
+    }
+    function getAt(parts) { return parts.reduce((o, k) => o == null ? undefined : o[k], lastParsed); }
+    function setAt(parts, v) {
+      if (!parts.length) { lastParsed = v; return; }
+      const parent = getAt(parts.slice(0, -1));
+      LBTable.setKey(parent, parts[parts.length - 1], v);
+    }
+    // an edited value keeps its JSON type when the new text fits it
+    function typedLike(old, v) {
+      const t = v.trim();
+      if ((isLN(old) || typeof old === 'number') && /^-?(0|[1-9]\d*)(\.\d+)?([eE][+-]?\d+)?$/.test(t)) return new LBLossless.LosslessNumber(t);
+      if (typeof old === 'boolean' && /^(true|false)$/i.test(t)) return t.toLowerCase() === 'true';
+      if (old === null && (t === '' || t === 'null')) return null;
+      if (old !== null && typeof old === 'object' && !isLN(old)) { try { JSON.parse(t); return LBLossless.parse(t); } catch (e) { return v; } }
+      return v;
+    }
+    function writeBack() {
+      if (bigDoc) { closeBig(true); }
+      if ($('inMode').value !== 'auto' && $('inMode').value !== 'json') { $('inMode').value = 'auto'; Layerbit.toast('The input is now JSON with your edit'); }
+      jsonInput.value = LBLossless.stringify(lastParsed, indentArg());
+      processJSON(lastAction);
+    }
+
+    // ------------------------------------------------------------ table
+    let tableGrid = null;
+    function renderTable() {
+      const sel = $('tablePath'), note = $('tableNote'), host = $('tableGrid');
+      if (lastParsed === null) { sel.innerHTML = ''; note.textContent = 'Beautify a document first.'; if (tableGrid) { tableGrid.destroy(); tableGrid = null; } return; }
+      const found = LBJsonX.findTables(lastParsed), keep = sel.value;
+      sel.innerHTML = found.map(f => `<option value="${escapeHTMLText(f.path)}">${escapeHTMLText(f.path)} (${f.count.toLocaleString()})</option>`).join('');
+      if (!found.length) { note.textContent = 'No array of objects in this document. The table shows lists of records, such as $.data[*].'; if (tableGrid) { tableGrid.destroy(); tableGrid = null; } host.innerHTML = ''; return; }
+      if (found.some(f => f.path === keep)) sel.value = keep;
+      const parts = pathParts(sel.value), records = getAt(parts);
+      const tbl = LBTable.table(records, { flatten: true });
+      note.textContent = `${records.length.toLocaleString()} rows × ${tbl.names.length} columns. Nested values are columns named by their path. Double-click a cell (or select it and press Enter) to edit it.`;
+      if (tableGrid) tableGrid.destroy();
+      tableGrid = LBVirtual.grid(host, { columns: tbl.names.map(n => ({ label: n })), count: records.length, rowHeight: 30, cell: (r, c) => LBTable.cellText(tbl.rows[r][c]), edit: (r, c, v) => {
+        const key = tbl.keys[tbl.index[c]], rec = records[r];
+        const p = flatPath(rec, key) || [key];
+        const parent = p.slice(0, -1).reduce((o, k) => o[k], rec);
+        LBTable.setKey(parent, p[p.length - 1], typedLike(parent[p[p.length - 1]], v));
+        writeBack();
+      } });
+    }
+    // a flattened column name (user.name) back to its place in the record
+    function flatPath(obj, key) {
+      if (obj === null || typeof obj !== 'object') return null;
+      if (Object.prototype.hasOwnProperty.call(obj, key)) return [key];
+      for (let i = key.indexOf('.'); i > 0; i = key.indexOf('.', i + 1)) {
+        const head = key.slice(0, i), k = Array.isArray(obj) && /^\d+$/.test(head) ? +head : head;
+        if (Object.prototype.hasOwnProperty.call(obj, k)) { const rest = flatPath(obj[k], key.slice(i + 1)); if (rest) return [k].concat(rest); }
+      }
+      return null;
+    }
+    $('tablePath').addEventListener('change', renderTable);
+
+    // ------------------------------------------------------------ graph
+    let graphState = { k: 1, x: 20, y: 20 }, graphData = null;
+    function renderGraph() {
+      const host = $('graphView');
+      if (lastParsed === null || typeof lastParsed !== 'object' || isLN(lastParsed)) { host.innerHTML = '<div class="tree-note">The graph shows objects and arrays; beautify a document with at least one.</div>'; return; }
+      const g = graphData = LBJsonX.graph(lastParsed, { maxNodes: 1500 });
+      const NS = 'http://www.w3.org/2000/svg', esc = escapeHTMLText;
+      const edges = g.edges.map(e => { const a = g.nodes[e.from], b = g.nodes[e.to]; const x1 = a.x + a.w, y1 = a.y + 13, x2 = b.x, y2 = b.y + 13, mx = (x1 + x2) / 2;
+        return `<path class="g-edge" d="M${x1},${y1} C${mx},${y1} ${mx},${y2} ${x2},${y2}"/><text class="g-elabel" x="${x2 - 6}" y="${y2 - 4}" text-anchor="end">${esc(e.label)}</text>`; }).join('');
+      const nodes = g.nodes.map(nd => `<g class="g-node" transform="translate(${nd.x},${nd.y})" data-path="${esc(nd.path)}"><rect class="g-box" width="${nd.w}" height="${nd.h}" rx="8"/><rect class="g-head" width="${nd.w}" height="24" rx="8"/><text class="g-title" x="10" y="16">${esc(nd.label)} ${nd.kind === 'array' ? '[' + nd.count + ']' : '{' + nd.count + '}'}</text>` +
+        nd.fields.map((f, i) => `<g class="g-field" data-path="${esc(f.path)}"><text class="g-key" x="10" y="${42 + i * 20}">${esc(f.key)}</text><text class="g-val g-${f.kind}" x="${nd.w - 10}" y="${42 + i * 20}" text-anchor="end">${esc(f.text)}</text></g>`).join('') +
+        (nd.more ? `<text class="g-more" x="10" y="${42 + nd.fields.length * 20}">+${nd.more} more</text>` : '') + '</g>').join('');
+      host.innerHTML = `<svg class="g-svg" xmlns="${NS}" role="img" aria-label="Graph of the JSON document"><g class="g-vp">${edges}${nodes}</g></svg>` + (g.truncated ? `<div class="g-trunc">Showing the first ${g.nodes.length.toLocaleString()} objects and arrays; ${g.truncated.toLocaleString()} more are not drawn. Use Table or Query for the rest.</div>` : '');
+      if (!graphFitted) { graphFitted = true; requestAnimationFrame(graphFit); }
+      graphApply();
+    }
+    let graphFitted = false;
+    function graphApply() { const vp = $('graphView').querySelector('.g-vp'); if (vp) vp.setAttribute('transform', `translate(${graphState.x},${graphState.y}) scale(${graphState.k})`); }
+    function graphFit() {
+      if (!graphData) return; const host = $('graphView');
+      const k = Math.min(1.5, Math.max(0.05, Math.min((host.clientWidth - 40) / Math.max(1, graphData.width), (host.clientHeight - 40) / Math.max(1, graphData.height))));
+      graphState = { k, x: 20, y: 20 }; graphApply();
+    }
+    (function graphInteract() {
+      const host = $('graphView'); let drag = null;
+      host.addEventListener('wheel', e => { if (!graphData) return; e.preventDefault(); const r = host.getBoundingClientRect(), mx = e.clientX - r.left, my = e.clientY - r.top, f = Math.exp(-e.deltaY * 0.0015), k = Math.min(3, Math.max(0.05, graphState.k * f));
+        graphState.x = mx - (mx - graphState.x) * k / graphState.k; graphState.y = my - (my - graphState.y) * k / graphState.k; graphState.k = k; graphApply(); }, { passive: false });
+      host.addEventListener('pointerdown', e => { if (e.target.closest('input')) return; drag = { x: e.clientX, y: e.clientY, sx: graphState.x, sy: graphState.y }; });
+      window.addEventListener('pointermove', e => { if (!drag) return; graphState.x = drag.sx + e.clientX - drag.x; graphState.y = drag.sy + e.clientY - drag.y; graphApply(); });
+      window.addEventListener('pointerup', () => { drag = null; });
+      host.addEventListener('dblclick', e => {
+        const f = e.target.closest('.g-field'); if (!f) return;
+        const parts = pathParts(f.dataset.path), old = getAt(parts), box = f.querySelector('.g-val').getBoundingClientRect(), hr = host.getBoundingClientRect();
+        const inp = document.createElement('input'); inp.className = 'g-edit'; inp.value = old === null ? 'null' : isLN(old) ? old.value : String(old);
+        inp.setAttribute('aria-label', 'Edit ' + f.dataset.path);
+        inp.style.left = Math.max(0, box.right - hr.left - 180) + 'px'; inp.style.top = (box.top - hr.top - 4) + 'px';
+        host.appendChild(inp); inp.focus(); inp.select();
+        let done = false;
+        const finish = save => { if (done) return; done = true; const v = inp.value; inp.remove(); if (save && v !== (old === null ? 'null' : isLN(old) ? old.value : String(old))) { setAt(parts, typedLike(old, v)); writeBack(); } };
+        inp.addEventListener('keydown', ev => { if (ev.key === 'Enter') finish(true); else if (ev.key === 'Escape') finish(false); ev.stopPropagation(); });
+        inp.addEventListener('blur', () => finish(true));
+      });
+    })();
+
+    // ------------------------------------------------------------ transform
+    const XF_HINTS = {
+      jmespath: ['items[?price > `10`].name', 'length(items)', 'items[*].{n: name, p: price}', 'sort_by(items, &price)[-1]'],
+      jsonquery: ['.items | filter(.price > 10) | map(.name)', '.items | sort(.price) | pick(.name, .price)', '.items | size()', '.items | groupBy(.category)'],
+      jq: ['[.items[] | select(.price > 10) | .name]', '.items | length', '[.items[].price] | add', '.items | map({n: .name}) ']
+    };
+    let xfTimer = null, xfSeq = 0;
+    function showHints() { $('xfHints').innerHTML = XF_HINTS[$('xfLang').value].map(h => `<button type="button" class="hint-btn">${escapeHTMLText(h)}</button>`).join(''); }
+    $('xfHints').addEventListener('click', e => { const b = e.target.closest('.hint-btn'); if (b) { $('xfExpr').value = b.textContent; runTransform(); } });
+    function runTransform() {
+      const lang = $('xfLang').value, expr = $('xfExpr').value.trim(), out = $('xfOut'), err = $('xfErr'), seq = ++xfSeq;
+      $('xfExpr').placeholder = XF_HINTS[lang][0];
+      if (!$('xfHints').children.length || $('xfHints').dataset.lang !== lang) { showHints(); $('xfHints').dataset.lang = lang; }
+      err.textContent = '';
+      if (lastParsed === null) { out.textContent = ''; err.textContent = 'Beautify a document first.'; return; }
+      if (!expr) { out.textContent = ''; return; }
+      if (!libReady[lang]()) { out.textContent = lang === 'jq' ? 'Loading jq (2.8 MB of WebAssembly, once; then it works offline)…' : 'Loading…'; loadLib(lang).then(runTransform, e => { err.textContent = e.message; }); return; }
+      const show = (text) => { if (seq === xfSeq) { out.textContent = text; err.textContent = ''; } };
+      const fail = (e) => { if (seq === xfSeq) { out.textContent = ''; err.textContent = (lang === 'jq' ? 'jq: ' : '') + String(e && e.message || e).replace(/^Error: /, '').trim(); } };
+      try {
+        if (lang === 'jmespath') show(LBLossless.stringify(jmespath.search(LBLossless.toNative(lastParsed), expr), 2) ?? 'null');
+        else if (lang === 'jsonquery') show(LBLossless.stringify(JSONQuery.jsonquery(LBLossless.toNative(lastParsed), expr), 2) ?? 'null');
+        else Promise.resolve(window.jq).then(q => { try { show(q.raw(LBLossless.stringify(lastParsed), expr, []).trim()); } catch (e) { fail(e); } }, fail);
+      } catch (e) { fail(e); }
+    }
+    $('xfExpr').addEventListener('input', () => { clearTimeout(xfTimer); xfTimer = setTimeout(runTransform, 250); });
+    $('xfLang').addEventListener('change', () => { $('xfExpr').value = ''; runTransform(); });
+    $('btnXfUse').addEventListener('click', () => { const t = $('xfOut').textContent.trim(); if (!t) return; if (bigDoc) closeBig(true); $('inMode').value = 'auto'; jsonInput.value = t; processJSON('format'); Layerbit.toast('The transform result is now the input'); });
+
+    // ------------------------------------------------------------ compare
+    function b64url(text) { const bytes = new TextEncoder().encode(text); let bin = ''; for (let i = 0; i < bytes.length; i += 0x8000) bin += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000)); return btoa(bin).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, ''); }
+    $('btnCompare').addEventListener('click', () => {
+      const res = $('compareResult');
+      if (lastParsed === null) { res.innerHTML = '<div class="schema-bad">Beautify the original document (left) first.</div>'; return; }
+      let other;
+      try { other = parseInput($('compareInput').value.trim(), 'auto'); } catch (e) { res.innerHTML = `<div class="schema-bad">The other document: ${escapeHTMLText(e.message)}</div>`; return; }
+      if (!other) return;
+      const d = LBJsonX.compare(lastParsed, other.value), show = v => { const t = LBLossless.stringify(v); return escapeHTMLText(t.length > 120 ? t.slice(0, 117) + '…' : t); };
+      const counts = { added: 0, removed: 0, changed: 0 }; d.forEach(x => counts[x.kind]++);
+      res.innerHTML = !d.length ? '<div class="schema-ok">The documents hold the same data (key order and number spelling such as 1.0 and 1 are ignored).</div>'
+        : `<div class="schema-bad">${d.length} difference${d.length > 1 ? 's' : ''}: ${counts.changed} changed, ${counts.added} added, ${counts.removed} removed</div><table class="err-table"><thead><tr><th>Change</th><th>Path</th><th>Original</th><th>Other</th></tr></thead><tbody>` +
+          d.slice(0, 500).map(x => `<tr class="cmp-${x.kind}"><td>${x.kind}</td><td class="t-path">${escapeHTMLText(x.path)}</td><td>${x.kind === 'added' ? '' : show(x.from)}</td><td>${x.kind === 'removed' ? '' : show(x.to)}</td></tr>`).join('') + '</tbody></table>' + (d.length > 500 ? `<div class="tree-note">First 500 of ${d.length} shown.</div>` : '');
+      const st = { mode: 'struct', a: LBLossless.stringify(lastParsed, 2), b: LBLossless.stringify(other.value, 2) }, link = $('compareLink');
+      link.href = 'text-diff-checker.html#s=j:' + b64url(JSON.stringify(st));
+      Layerbit.state.encode(st).then(z => { link.href = 'text-diff-checker.html#s=' + z; });
+    });
+
+    // ------------------------------------------------------------ schema: sample and visual editor
+    function sampleFromSchema() {
+      let schema; try { schema = JSON.parse($('schemaInput').value); } catch (e) { $('schemaResult').innerHTML = `<div class="schema-bad"><i data-lucide="x-circle"></i> The schema is not valid JSON: ${escapeHTMLText(e.message)}</div>`; icons(); return; }
+      if (bigDoc) closeBig();
+      $('inMode').value = 'auto';
+      jsonInput.value = JSON.stringify(LBJsonX.sampleFromSchema(schema), null, 2);
+      processJSON('format');
+      $('schemaResult').innerHTML = '<div class="schema-ok"><i data-lucide="file-plus-2"></i> A sample document that follows the schema is now the input. Validate it, or edit it.</div>'; icons();
+    }
+    const SE_TYPES = ['string', 'number', 'integer', 'boolean', 'object', 'array', 'null'];
+    let seSchema = null;
+    function toggleSchemaVisual() {
+      const box = $('schemaVisual');
+      if (!box.hidden) { box.hidden = true; $('schemaInput').hidden = false; return; }
+      try { seSchema = JSON.parse($('schemaInput').value || '{"type":"object","properties":{}}'); } catch (e) { $('schemaResult').innerHTML = `<div class="schema-bad"><i data-lucide="x-circle"></i> Fix the schema JSON first: ${escapeHTMLText(e.message)}</div>`; icons(); return; }
+      box.hidden = false; $('schemaInput').hidden = true; renderSchemaVisual();
+    }
+    const seKey = k => String(k).replace(/%/g, '%25').replace(/\./g, '%2E');
+    const seUnkey = k => k.replace(/%2E/g, '.').replace(/%25/g, '%');
+    function seGet(path) { return path === '' ? seSchema : path.split('.').reduce((o, k) => o && o[seUnkey(k)], seSchema); }
+    function seRow(path, name, sch, depth, parentReq) {
+      const t = Array.isArray(sch.type) ? sch.type[0] : sch.type || (sch.properties ? 'object' : sch.items ? 'array' : sch.enum ? 'string' : '');
+      const pad = `style="padding-left:${8 + depth * 18}px"`;
+      let h = `<div class="se-row" data-se-path="${escapeHTMLText(path)}" ${pad}>` +
+        (name !== null ? `<input class="se-name" value="${escapeHTMLText(name)}" aria-label="Property name" spellcheck="false">` : `<span class="se-root">${path === '' ? 'root' : 'items'}</span>`) +
+        `<select class="mini-select se-type" aria-label="Type"><option value="">any</option>${SE_TYPES.map(x => `<option${x === t ? ' selected' : ''}>${x}</option>`).join('')}</select>` +
+        (parentReq ? `<label class="se-reqlab" title="Required"><input type="checkbox" class="se-req"${parentReq.indexOf(name) >= 0 ? ' checked' : ''}> required</label>` : '') +
+        `<input class="se-desc" value="${escapeHTMLText(sch.description || '')}" placeholder="description" aria-label="Description">` +
+        (t === 'string' || t === 'integer' || t === 'number' || sch.enum ? `<input class="se-enum" value="${escapeHTMLText((sch.enum || []).join(', '))}" placeholder="allowed values, comma separated" aria-label="Allowed values">` : '') +
+        (t === 'string' ? `<input class="se-format" value="${escapeHTMLText(sch.format || '')}" placeholder="format" list="seFormats" aria-label="Format">` : '') +
+        (t === 'object' || (!t && sch.properties) ? `<button type="button" class="btn se-add" title="Add a property"><i data-lucide="plus"></i></button>` : '') +
+        (name !== null ? `<button type="button" class="btn se-del" title="Remove this property"><i data-lucide="x"></i></button>` : '') + '</div>';
+      if (sch.properties) Object.keys(sch.properties).forEach(k => { h += seRow((path ? path + '.' : '') + 'properties.' + seKey(k), k, sch.properties[k], depth + 1, sch.required || []); });
+      if (t === 'array') h += seRow((path ? path + '.' : '') + 'items', null, sch.items || (sch.items = {}), depth + 1, null);
+      return h;
+    }
+    function renderSchemaVisual() {
+      $('schemaVisual').innerHTML = seRow('', null, seSchema, 0, null) + '<datalist id="seFormats"><option>email</option><option>uri</option><option>uuid</option><option>date</option><option>date-time</option><option>time</option><option>ipv4</option><option>ipv6</option><option>hostname</option></datalist>';
+      icons();
+    }
+    function seCommit() { $('schemaInput').value = JSON.stringify(seSchema, null, 2); lastInferred = null; renderSchemaVisual(); }
+    function seParent(path) { const parts = path.split('.'); return { parentPath: parts.slice(0, -2).join('.'), key: seUnkey(parts[parts.length - 1]) }; }
+    $('schemaVisual').addEventListener('change', e => {
+      const row = e.target.closest('.se-row'); if (!row) return;
+      const path = row.dataset.sePath, sch = seGet(path), el = e.target;
+      if (el.classList.contains('se-type')) { if (el.value) sch.type = el.value; else delete sch.type; if (el.value === 'object' && !sch.properties) sch.properties = {}; if (el.value !== 'object') { delete sch.properties; delete sch.required; } if (el.value === 'array') sch.items = sch.items || {}; else delete sch.items; }
+      else if (el.classList.contains('se-desc')) { if (el.value) sch.description = el.value; else delete sch.description; }
+      else if (el.classList.contains('se-format')) { if (el.value) sch.format = el.value; else delete sch.format; }
+      else if (el.classList.contains('se-enum')) { const vals = el.value.split(',').map(x => x.trim()).filter(Boolean).map(x => sch.type === 'integer' || sch.type === 'number' ? (isNaN(+x) ? x : +x) : x); if (vals.length) sch.enum = vals; else delete sch.enum; }
+      else if (el.classList.contains('se-req') || el.classList.contains('se-name')) {
+        const { parentPath, key } = seParent(path), parent = seGet(parentPath);
+        if (el.classList.contains('se-req')) { const req = new Set(parent.required || []); if (el.checked) req.add(key); else req.delete(key); if (req.size) parent.required = [...req]; else delete parent.required; }
+        else { const nn = el.value.trim(); if (!nn || nn === key || parent.properties[nn]) { el.value = key; return; } const props = {}; Object.keys(parent.properties).forEach(k => { props[k === key ? nn : k] = parent.properties[k]; }); parent.properties = props; if (parent.required) parent.required = parent.required.map(r => r === key ? nn : r); }
+      } else return;
+      seCommit();
+    });
+    $('schemaVisual').addEventListener('click', e => {
+      const row = e.target.closest('.se-row'); if (!row) return;
+      const path = row.dataset.sePath;
+      if (e.target.closest('.se-add')) { const sch = seGet(path); sch.properties = sch.properties || {}; let k = 'newField', i = 2; while (sch.properties[k]) k = 'newField' + i++; sch.properties[k] = { type: 'string' }; if (!sch.type) sch.type = 'object'; seCommit(); }
+      else if (e.target.closest('.se-del')) { const { parentPath, key } = seParent(path), parent = seGet(parentPath); delete parent.properties[key]; if (parent.required) { parent.required = parent.required.filter(r => r !== key); if (!parent.required.length) delete parent.required; } seCommit(); }
+    });
 
     // ------------------------------------------------------------ buttons
     $('btnFormat').addEventListener('click', () => processJSON(lastAction = 'format'));
@@ -1193,12 +1757,15 @@
     $('btnFix').addEventListener('click', fixJson);
     $('indentSel').addEventListener('change', () => { if (jsonInput.value.trim()) processJSON(lastAction); });
     sortKeys.addEventListener('change', () => { if (jsonInput.value.trim()) processJSON(lastAction); });
-    $('btnClear').addEventListener('click', () => { jsonInput.value = ''; jsonOutput.innerHTML = ''; jsonTree.innerHTML = ''; lastParsed = null; lastResultText = ''; errorBanner.classList.remove('active'); $('noticeBanner').classList.remove('active'); jsonStats.textContent = ''; $('inMeta').textContent = ''; pathInput.value = ''; pathInput.disabled = true; pathResult.textContent = ''; $('pathList').innerHTML = ''; $('schemaResult').innerHTML = ''; $('typesOut').textContent = ''; $('convOut').textContent = ''; Layerbit.state.clear(); });
+    $('btnClear').addEventListener('click', () => { closeBig(); jsonInput.value = ''; jsonOutput.innerHTML = ''; jsonTree.innerHTML = ''; lastParsed = null; lastResultText = ''; errorBanner.classList.remove('active'); $('noticeBanner').classList.remove('active'); jsonStats.textContent = ''; $('inMeta').textContent = ''; pathInput.value = ''; pathInput.disabled = true; pathResult.textContent = ''; $('pathList').innerHTML = ''; $('schemaResult').innerHTML = ''; $('typesOut').textContent = ''; $('convOut').textContent = ''; Layerbit.state.clear(); });
     function currentText() {
       if (outputView === 'types') return $('typesOut').textContent;
       if (outputView === 'convert') return $('convOut').textContent;
       if (outputView === 'schema') return $('schemaInput').value;
-      if (outputView === 'query') return pathResult.textContent || (lastParsed !== null && pathInput.value ? JSON.stringify(J.query(lastParsed, pathInput.value).map(r => r.value), null, 2) : '');
+      if (outputView === 'query') return pathResult.textContent || (lastParsed !== null && pathInput.value ? LBLossless.stringify(J.query(lastParsed, pathInput.value).map(r => r.value), 2) : '');
+      if (outputView === 'transform') return $('xfOut').textContent;
+      if (outputView === 'compare') return $('compareResult').innerText;
+      if (outputView === 'text' && bigDoc) return lastResultText;
       return jsonOutput.textContent;
     }
     $('btnCopy').addEventListener('click', () => {
@@ -1207,19 +1774,21 @@
     });
     $('btnDownload').addEventListener('click', () => {
       const text = currentText(); if (!text) return;
-      const ext = outputView === 'types' ? { typescript: 'ts', go: 'go', csharp: 'cs', kotlin: 'kt', python: 'py', java: 'java', rust: 'rs' }[$('typeLang').value] : outputView === 'convert' ? { sql: 'sql', csv: 'csv', ndjson: 'jsonl', yaml: 'yaml', string: 'txt', unescape: 'txt' }[$('convTarget').value] : outputView === 'schema' ? 'schema.json' : 'json';
+      const ext = outputView === 'types' ? { typescript: 'ts', go: 'go', csharp: 'cs', kotlin: 'kt', python: 'py', java: 'java', rust: 'rs' }[$('typeLang').value] : outputView === 'convert' ? { sql: 'sql', csv: 'csv', ndjson: 'jsonl', yaml: 'yaml', toml: 'toml', xml: 'xml', string: 'txt', unescape: 'txt' }[$('convTarget').value] : outputView === 'schema' ? 'schema.json' : outputView === 'compare' ? 'txt' : 'json';
       const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([text], { type: 'text/plain;charset=utf-8' })); a.download = `layerbit-${Date.now()}.${ext}`; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 500);
     });
-    $('jsonFile').addEventListener('change', e => { const f = e.target.files[0]; if (f) Layerbit.readFile(f).then(t => { jsonInput.value = t; processJSON('format'); }); });
-    Layerbit.onDrop(files => Layerbit.readFile(files[0]).then(t => { jsonInput.value = t; processJSON('format'); Layerbit.toast('Loaded ' + files[0].name); }));
+    $('jsonFile').addEventListener('change', e => { handleFile(e.target.files[0]); e.target.value = ''; });
+    Layerbit.onDrop(files => { handleFile(files[0]); Layerbit.toast('Loaded ' + files[0].name); });
+    $('inMode').addEventListener('change', () => { if (jsonInput.value.trim()) processJSON(lastAction); });
     jsonInput.addEventListener('keydown', e => { if (e.key === 'Tab') { e.preventDefault(); const s = jsonInput.selectionStart, en = jsonInput.selectionEnd; jsonInput.value = jsonInput.value.slice(0, s) + '  ' + jsonInput.value.slice(en); jsonInput.selectionStart = jsonInput.selectionEnd = s + 2; } });
 
     // ------------------------------------------------------------ state
-    function getState() { return { input: jsonInput.value, action: lastAction, sort: sortKeys.checked, indent: $('indentSel').value, path: pathInput.value || undefined, schema: $('schemaInput').value || undefined, view: outputView }; }
+    function getState() { return { input: jsonInput.value, mode: $('inMode').value !== 'auto' ? $('inMode').value : undefined, action: lastAction, sort: sortKeys.checked, indent: $('indentSel').value, path: pathInput.value || undefined, schema: $('schemaInput').value || undefined, view: outputView }; }
     function setState(s) {
       if (!s) return;
       if (typeof s.input === 'string') jsonInput.value = s.input;
       if (s.sort !== undefined) sortKeys.checked = !!s.sort;
+      $('inMode').value = s.mode || 'auto';
       if (s.indent) $('indentSel').value = s.indent;
       if (s.schema) $('schemaInput').value = s.schema;
       if (s.path) pathInput.value = s.path;
