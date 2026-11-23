@@ -675,6 +675,15 @@ def _(t):
     expect(t.count("#railroad svg") == 1 and t.count("#railroad .rr-term") >= 6, "railroad not rendered")
 
 
+@case("regex-tester", "edge", "B3: a domain pattern split by dots is not reported as high-risk nesting")
+def _(t):
+    t.set("regexInput", "^([a-zA-Z0-9]+\\.)*[a-z]+$"); t.set("testInput", "mail.example.com"); t.wait(300)
+    rep = t.text("safetyReport").lower()
+    expect("nested unbounded quantifier" not in rep, rep[:300])
+    t.set("regexInput", "^(\\d+)*$"); t.wait(300)
+    expect("nested unbounded quantifier" in t.text("safetyReport").lower(), "true positive lost")
+
+
 @case("regex-tester", "typical", "safety analysis flags nested quantifiers and clears for safe patterns")
 def _(t):
     t.set("regexInput", r"^(a+)+$")

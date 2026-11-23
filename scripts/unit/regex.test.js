@@ -65,4 +65,16 @@ t('synthesize infers a shape pattern', () => {
   assert.ok(c2.some(x => x.ok), JSON.stringify(c2));
   assert.deepStrictEqual(R.synthesize([], []), []);
 });
+t('B3: a nested repeat split by a delimiter the inner part cannot match is not ReDoS', () => {
+  const kinds = p => R.analyze(R.parse(p), p).findings.filter(f => f.kind === 'nested').length;
+  assert.strictEqual(kinds('^([a-zA-Z0-9]+\\.)*[a-z]+$'), 0, 'domain pattern flagged');
+  assert.strictEqual(kinds('^(\\w+,)*\\w+$'), 0, 'comma-separated list flagged');
+  assert.strictEqual(kinds('(a+b)*'), 0, 'a+ then b flagged');
+  // true positives stay
+  assert.strictEqual(kinds('^(\\d+)*$'), 1, '(\\d+)* not flagged');
+  assert.strictEqual(kinds('(a+)+'), 1);
+  assert.strictEqual(kinds('(a+a)*'), 1, 'delimiter the inner part can match');
+  assert.strictEqual(kinds('(\\w+\\.?)*'), 1, 'optional delimiter');
+  assert.strictEqual(kinds('(.+,)*'), 1, 'dot matches the delimiter');
+});
 console.log(`regex engine: ${n} unit tests passed`);
