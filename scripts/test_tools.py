@@ -675,6 +675,15 @@ def _(t):
     expect(t.count("#railroad svg") == 1 and t.count("#railroad .rr-term") >= 6, "railroad not rendered")
 
 
+@case("regex-tester", "edge", "B3: a domain pattern split by dots is not reported as high-risk nesting")
+def _(t):
+    t.set("regexInput", "^([a-zA-Z0-9]+\\.)*[a-z]+$"); t.set("testInput", "mail.example.com"); t.wait(300)
+    rep = t.text("safetyReport").lower()
+    expect("nested unbounded quantifier" not in rep, rep[:300])
+    t.set("regexInput", "^(\\d+)*$"); t.wait(300)
+    expect("nested unbounded quantifier" in t.text("safetyReport").lower(), "true positive lost")
+
+
 @case("regex-tester", "typical", "safety analysis flags nested quantifiers and clears for safe patterns")
 def _(t):
     t.set("regexInput", r"^(a+)+$")
@@ -970,6 +979,42 @@ def _(t):
     t.set("jsonInput", '{"a": {"b": [1, 2]}}')
     y = t.val("yamlInput")
     expect("a:" in y and "b:" in y and "- 1" in y, f"json->yaml wrong: {y!r}")
+
+
+@case("yaml-json-converter", "edge", "B4: multi-document YAML (Kubernetes) becomes a JSON array")
+def _(t):
+    y = "apiVersion: v1\nkind: Service\nmetadata:\n  name: web\n---\napiVersion: apps/v1\nkind: Deployment\nmetadata:\n  name: web\n"
+    t.set("yamlInput", y)
+    out = json.loads(t.val("jsonInput"))
+    expect(isinstance(out, list) and [d["kind"] for d in out] == ["Service", "Deployment"], f"{out}")
+    expect("2 documents" in t.text("yamlNote"), "no note about the documents: " + t.text("yamlNote"))
+    t.set("yamlInput", "---\na: 1\n---\n")
+    eq(json.loads(t.val("jsonInput")), [{"a": 1}, None], "empty document kept as null")
+
+
+@case("yaml-json-converter", "edge", "B4: documents switch: array <-> --- documents, or the first document only")
+def _(t):
+    expect(t.page.is_checked("#yamlDocs"), "the documents switch should be on by default")
+    t.set("jsonInput", '[{"kind": "Service"}, {"kind": "Deployment"}]')
+    y = t.val("yamlInput")
+    expect(y.count("---") == 1 and "kind: Service" in y and "kind: Deployment" in y and not y.lstrip().startswith("-"), "array not written as documents: " + y)
+    t.set("yamlInput", y)
+    eq(json.loads(t.val("jsonInput")), [{"kind": "Service"}, {"kind": "Deployment"}], "documents read back as the array")
+    t.page.uncheck("#yamlDocs")
+    eq(json.loads(t.val("jsonInput")), {"kind": "Service"}, "switch off: first document only")
+    expect("1 more document" in t.text("yamlNote"), "no note about the skipped document: " + t.text("yamlNote"))
+    t.set("jsonInput", '[1, 2]')
+    eq(t.val("yamlInput").strip(), "- 1\n- 2", "switch off: a JSON array stays a YAML list")
+    t.page.check("#yamlDocs")
+
+
+@case("yaml-json-converter", "edge", "B4: dates stay as written unless conversion is asked for")
+def _(t):
+    t.set("yamlInput", "when: 2026-01-01\nat: 2026-01-01T10:30:00Z\n")
+    eq(json.loads(t.val("jsonInput")), {"when": "2026-01-01", "at": "2026-01-01T10:30:00Z"}, "dates as written")
+    t.page.check("#yamlDates")
+    eq(json.loads(t.val("jsonInput"))["when"], "2026-01-01T00:00:00.000Z", "dates converted on request")
+    t.page.uncheck("#yamlDates")
 
 
 @case("yaml-json-converter", "edge", "A3: long integers survive YAML to JSON and JSON to YAML")
@@ -1322,6 +1367,27 @@ def _(t):
     eq(t.text("countErr").strip().replace(",", ""), "5000", "error count at scale")
 
 
+@case("log-analyzer", "edge", "B7: a stack trace belongs to its log line: counts, filters and export are per event")
+def _(t):
+    log = "\n".join([
+        "2026-01-01 10:00:00 INFO started",
+        "2026-01-01 10:00:01 ERROR request failed",
+        "java.lang.NullPointerException: user is null",
+        "\tat com.acme.Api.handle(Api.java:42)",
+        "\tat com.acme.Server.run(Server.java:7)",
+        "2026-01-01 10:00:02 INFO recovered"])
+    t.set("logInput", log); t.wait(450); t.call("analyzeLogs()")
+    eq(t.text("countAll").strip(), "3", "events")
+    eq(t.text("countErr").strip(), "1", "errors")
+    t.call("setFilter('ERROR')"); t.wait(150)
+    rows = t.call("[...document.querySelectorAll('#logOutput .log-line')].filter(l => l.style.display !== 'none').map(l => l.innerText)")
+    eq(len(rows), 1, "error rows")
+    expect("NullPointerException" in rows[0] and "Api.java:42" in rows[0], rows[0])
+    py = "2026-01-01 10:00:00 ERROR boom\nTraceback (most recent call last):\n  File \"app.py\", line 3, in <module>\nValueError: bad\n2026-01-01 10:00:01 INFO ok"
+    t.set("logInput", py); t.wait(450); t.call("analyzeLogs()")
+    eq(t.text("countAll").strip(), "2", "python traceback grouped")
+
+
 @case("log-analyzer", "typical", "DEBUG filter, regex grep and repeated-message tally")
 def _(t):
     lines = ["2026-01-01 10:00:00 DEBUG cache miss key=%d" % i for i in range(3)] + \
@@ -1478,6 +1544,31 @@ def _(t):
     tr = t.text("cronTranslation").lower()
     expect("09:00" in tr and ("monday" in tr and "friday" in tr), f"translation wrong: {tr!r}")
     expect(t.count("#nextRunsList li, #nextRunsList div, #nextRunsList span") >= 5, "next runs missing")
+
+
+@case("cron-generator", "edge", "B1: month and day names, 7 for Sunday and ? all list next runs")
+def _(t):
+    for expr, check in [("0 9 * JAN *", "Jan"), ("0 9 * * MON-FRI", None), ("0 0 ? * MON", "Mon"), ("0 9 * * 7", "Sun"), ("0 9 * jan-mar sat,sun", None)]:
+        t.set("cronInput", expr); t.wait(80)
+        expect(not t.call("document.getElementById('terminalPane').classList.contains('error')"), expr + " rejected: " + t.text("cronTranslation"))
+        expect(t.visible("#nextRuns") if t.count("#nextRuns") else True, expr + ": next runs hidden")
+        items = t.call("[...document.querySelectorAll('#nextRunsList li')].map(l => l.textContent)")
+        expect(len(items) == 5 and "No matches" not in items[0], f"{expr}: {items}")
+        if check:
+            expect(all(check in i for i in items), f"{expr} runs on the wrong day: {items}")
+
+
+@case("cron-generator", "edge", "B1: @daily-style macros run; @reboot is explained, never a blank area")
+def _(t):
+    for macro in ["@yearly", "@annually", "@monthly", "@weekly", "@daily", "@midnight", "@hourly"]:
+        t.set("cronInput", macro); t.wait(80)
+        expect(not t.call("document.getElementById('terminalPane').classList.contains('error')"), macro + " rejected: " + t.text("cronTranslation"))
+        eq(t.count("#nextRunsList li"), 5, macro + " next runs")
+    t.set("cronInput", "@reboot"); t.wait(80)
+    expect("boot" in t.text("cronTranslation").lower(), t.text("cronTranslation"))
+    expect("no schedule" in t.text("nextRunsList").lower(), "reboot: " + t.text("nextRunsList"))
+    t.set("cronInput", "0 9 * * 1#2"); t.wait(80)
+    expect(t.text("nextRunsList").strip() != "" or t.call("document.getElementById('terminalPane').classList.contains('error')"), "blank next-runs area")
 
 
 @case("cron-generator", "edge", "invalid field is flagged")
@@ -2369,6 +2460,9 @@ def _(t):
     expect("2 of 2 files applied" in t.text("patchFiles"), t.text("patchFiles"))
     t.call("showPatchFile(1)"); t.wait(150)
     eq(t.val("mergedText"), "gamma\ndelta\n", "second file applied")
+    # the live re-run after typing must not jump back to the first file
+    t.call("run()"); t.wait(100)
+    eq(t.val("mergedText"), "gamma\ndelta\n", "still on the second file after a re-run")
 
 
 @case("text-diff-checker", "edge", "bug 12: a fuzzy patch shows the mismatched context lines and needs confirmation")
@@ -3218,6 +3312,17 @@ def _(t):
 # ----------------------------------------------------------------------------
 # vat-gst-calculator
 # ----------------------------------------------------------------------------
+@case("vat-gst-calculator", "edge", "B2: CGST and SGST are equal halves worked out on the taxable value, with a note on the paisa")
+def _(t):
+    t.select("preset", "in-18")
+    t.select("supply", "intra")
+    t.set("amount", "100.05")
+    out = t.text("calcOut")
+    expect(out.count("INR 9.00") == 2 and "9.01" not in out, "halves not equal: " + out)
+    expect("INR 118.05" in out, out)
+    expect(t.count("#gstNote") == 1 and "0.01" in t.text("gstNote"), "no note about the paisa: " + out)
+
+
 @case("vat-gst-calculator", "minimal", "opens with UAE VAT on AED 1,000 and a two-line invoice")
 def _(t):
     expect("AED 1,050.00" in t.text("headline"), t.text("headline"))

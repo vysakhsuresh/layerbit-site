@@ -39,7 +39,7 @@ def INPUTS(c):
         "cron-generator": {"cronInput": "*/15 9-17 * * 1-5"},
         "timestamp-converter": {"tsInput": "1700000000"},
         "uuid-generator": {},
-        "subnet-calculator": {"cidrInput": "10.20.0.0/22"},
+        "subnet-calculator": {"cidrInput": "10.20.0.0/22", "splitSelect": "24"},
         "unicode-inspector": {"textInput": head(j("unicode-sample.txt"), 120)},
         "log-analyzer": {"logInput": open(j("apache.log")).read()},
         "qr-barcode": {"dataInput": "https://layerbit.co.in/tools/qr-barcode.html?utm_source=print"},
@@ -68,13 +68,18 @@ LIST = r"""() => {
   const vis = e => { const r = e.getBoundingClientRect(); return r.width > 0 && r.height > 0 && getComputedStyle(e).visibility !== 'hidden' && (!e.checkVisibility || e.checkVisibility()); };
   // options folded into a <details> panel are part of the tool: open it so they are swept too
   document.querySelectorAll('main details:not([open])').forEach(d => { if (!skip(d)) d.open = true; });
-  const out = [];
-  document.querySelectorAll('button, input[type=checkbox], input[type=radio], select, [role=tab], .tab-btn, .mode-btn').forEach((e, i) => {
+  const out = [], seen = {};
+  // a key that survives a reload: the id, or tag + label + occurrence (an index
+  // would shift when a page adds buttons as it renders)
+  const key = (e, label) => { let sig = e.id ? '#' + e.id : e.tagName + '|' + (e.type || '') + '|' + label; seen[sig] = (seen[sig] || 0) + 1; sig += '|' + seen[sig];
+    let h = 0; for (let i = 0; i < sig.length; i++) h = (h * 31 + sig.charCodeAt(i)) | 0; return 'k' + (h >>> 0).toString(36); };
+  document.querySelectorAll('button, input[type=checkbox], input[type=radio], select, [role=tab], .tab-btn, .mode-btn').forEach(e => {
     if (skip(e) || !vis(e) || e.disabled) return;
     if (e.matches('[role=tab]') && e.tagName !== 'BUTTON') return;
-    e.setAttribute('data-audit', String(i));
     const label = (e.getAttribute('aria-label') || e.title || e.innerText || (e.labels && e.labels[0] && e.labels[0].innerText) || e.id || e.name || '').trim().replace(/\s+/g, ' ').slice(0, 60);
-    out.push({ k: String(i), tag: e.tagName.toLowerCase(), type: e.type || '', id: e.id, label, file: /\.click\(\)/.test(e.getAttribute('onclick') || ''), opts: e.tagName === 'SELECT' ? [...e.options].map(o => o.value) : null });
+    const k = key(e, label);
+    e.setAttribute('data-audit', k);
+    out.push({ k, tag: e.tagName.toLowerCase(), type: e.type || '', id: e.id, label, file: /\.click\(\)/.test(e.getAttribute('onclick') || ''), opts: e.tagName === 'SELECT' ? [...e.options].map(o => o.value) : null });
   });
   return out;
 }"""
@@ -93,6 +98,10 @@ def main():
     with sync_playwright() as p:
         br = launch(p)
         ctx = br.new_context(viewport={"width": a.width, "height": 900}, accept_downloads=True)
+        # the first-visit example runs only once per tool, so the state listed on
+        # the first load could not be rebuilt by later reloads: start every load
+        # from the same state, the corpus input alone
+        ctx.add_init_script("try { localStorage.setItem('layerbit-autosample', 'off'); } catch (e) {}")
         ctx.grant_permissions(["clipboard-read", "clipboard-write"])
         pg = ctx.new_page()
         pg.route("**/*", lambda r: r.abort() if any(h in r.request.url for h in ("googlesyndication", "googletagmanager", "google-analytics", "firebase", "gstatic", "buymeacoffee")) else r.continue_())
@@ -124,6 +133,10 @@ def main():
             inert, done = [], 0
             for c in controls:
                 sel = f"[data-audit='{c['k']}']"
+                # after a reload the page may still be rendering: list again until the control is back
+                for _ in range(12):
+                    if pg.locator(sel).count(): break
+                    pg.wait_for_timeout(250); pg.evaluate(LIST)
                 try:
                     snap = lambda: pg.evaluate(SNAP, c['k'])
                     before = snap(); d0, c0, f0 = events["dl"], pg.evaluate("window.__clip"), events["chooser"]

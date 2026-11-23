@@ -305,13 +305,35 @@
     return kids.some(hasUnboundedQuant);
   }
   function src(node, pattern) { return pattern.slice(node.start, node.end); }
+  // (A+ d)* where every iteration must match a single-character item d that
+  // none of the inner repeats can match: the d's split the input one way
+  // only, so the repeat runs in linear time (e.g. ([a-z0-9]+\.)*).
+  // Conservative: any inner repeat that is not a plain one-character atom,
+  // or a delimiter that is optional, keeps the warning.
+  function isAtom(n) { return n && (n.type === 'char' || n.type === 'set' || n.type === 'class' || n.type === 'dot' || n.type === 'prop'); }
+  function delimitedRepeat(child) {
+    var body = child.type === 'group' ? child.body : child;
+    if (!body || body.type !== 'seq') return false;
+    var inner = [], delims = [];
+    for (var i = 0; i < body.items.length; i++) {
+      var it = body.items[i];
+      if (it.type === 'quant') {
+        if (!isAtom(it.child)) return false;
+        if (it.max === Infinity || it.max > 10) inner.push(it.child);
+        else if (it.min >= 1 && it.max === it.min) delims.push(it.child);
+      } else if (isAtom(it)) delims.push(it);
+      else if (hasUnboundedQuant(it)) return false;
+    }
+    if (!inner.length || !delims.length) return false;
+    return delims.some(function (d) { return inner.every(function (q) { return overlap([q], [d]) === null; }); });
+  }
   function analyze(ast, pattern) {
     var findings = [];
     function walk(node, insideQuant) {
       if (!node) return;
       if (node.type === 'quant') {
         var unbounded = node.max === Infinity || node.max > 10;
-        if (unbounded && hasUnboundedQuant(node.child)) {
+        if (unbounded && hasUnboundedQuant(node.child) && !delimitedRepeat(node.child)) {
           findings.push({ severity: 'high', kind: 'nested', at: src(node, pattern), msg: 'Nested unbounded quantifier: ' + src(node, pattern), advice: 'A repeat inside a repeat lets the engine divide the same input between the two in exponentially many ways. Collapse it (e.g. (a+)+ → a+) or make the inner and outer parts unable to match the same characters.' });
         }
         // alternation under a quantifier with overlapping branches

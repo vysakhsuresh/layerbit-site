@@ -393,6 +393,7 @@
     <div class="info-panel">
       <h2><i data-lucide="git-commit"></i> Changelog</h2>
       <ul class="changelog-list">
+        <li><span class="changelog-tag">v1.1.0</span> CGST and SGST (or UTGST) are now each worked out on the taxable value at half the rate, so the two halves are always equal (18% on 100.05 gave CGST 9.01 and SGST 9.00); the tax is their sum, and a note shows when that differs by a paisa from the rate times the value.</li>
         <li><span class="changelog-tag">v1.0.0</span> Initial release: add or remove VAT or GST for the UAE, Saudi Arabia, Bahrain, Oman and India, or any rate; exact arithmetic in minor units including three-decimal currencies; CGST, SGST, UTGST and IGST split; rounding to whole units; amount in words with lakh and crore; multi-line invoices grouped by rate; share links.</li>
       </ul>
     </div>
@@ -505,7 +506,7 @@
   <script src="../js/kernel.js?v=eb69348d32"></script>
 
   <script src="../js/shared.js?v=e2441a1728"></script>
-  <script src="../js/engines/tax.js?v=a77368eb67"></script>
+  <script src="../js/engines/tax.js?v=e6141b7889"></script>
   <script>
     const $ = id => document.getElementById(id);
     const T = window.LBTax;
@@ -552,7 +553,7 @@
       $('headline').innerHTML = mode === 'add'
         ? `<strong>${money(r.gross, c)}</strong> including ${money(r.tax, c)} ${name}`
         : `<strong>${money(r.net, c)}</strong> before ${name}; the ${name} is ${money(r.tax, c)}`;
-      $('calcOut').innerHTML = rows.map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join('');
+      $('calcOut').innerHTML = rows.map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join('') + (r.note ? `<dt>Note</dt><dd class="gst-note" id="gstNote">${esc(r.note)}</dd>` : '');
       lastSummary = rows.map(([k, v]) => `${k}: ${v.replace(/<[^>]+>/g, '')}`).join('\n');
       renderLines();
     }

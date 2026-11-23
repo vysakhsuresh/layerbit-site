@@ -362,6 +362,7 @@
     <div class="info-panel">
       <h2><i data-lucide="git-merge"></i> Deployment Changelog</h2>
       <ul class="changelog-list">
+        <li><span class="changelog-tag">v3.2.0</span> The safety check no longer reports a nested repeat as high risk when every repetition must match a delimiter the inner part cannot match, as in the domain pattern ^([a-zA-Z0-9]+\.)*[a-z]+$ (it runs in linear time); (\d+)* and similar patterns are still flagged.</li>
         <li><span class="changelog-tag">v3.1.0</span> History is off by default: with the Save to history switch on, runs are saved only with Save run or Ctrl+Enter, never while typing.</li>
         <li><span class="changelog-tag">v3.0.0</span> Rebuilt as a debugger: token-by-token explanation, railroad diagram with SVG export, static catastrophic-backtracking analysis plus a growth measurement, saved unit tests that travel in share links, code generation for ten languages with engine caveats, whole-file batch testing with download, pattern synthesis from examples, a quick reference, match export as text/CSV/JSON, and alternating match colours.</li>
         <li><span class="changelog-tag">v2.4.0</span> Added an engine-time readout that flags slow patterns, and a line-number gutter.</li>

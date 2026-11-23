@@ -177,6 +177,7 @@
     <div class="info-panel">
       <h2><i data-lucide="git-merge"></i> Deployment Methodology Changelog</h2>
       <ul class="changelog-list">
+        <li><span class="changelog-tag">v2.3.0</span> Stack traces and tracebacks stay with their log line: lines with no timestamp that start with whitespace, at, Caused by:, ... N more, Traceback, or an exception name are part of the event before them, so filtering to errors keeps the trace, and counts, copy and export are per event.</li>
         <li><span class="changelog-tag">v2.2.0</span> Dropping a log file onto the page works again (it failed with an error), and files are decoded from their bytes: UTF-8, UTF-16 and Windows-1252 are detected, and the encoding can be changed after loading.</li>
         <li><span class="changelog-tag">v2.1.0</span> Added a DEBUG/TRACE filter with its own count, a regular-expression mode for grep, and a "most repeated messages" readout that collapses timestamps, ids, numbers and quoted values so the same fault logged a thousand times with different ids shows as one line with a count.</li>
         <li><span class="changelog-tag">v1.4.0</span> Added a Copy Filtered button alongside Export, matching the copy-to-clipboard pattern used elsewhere in the suite.</li>
@@ -271,6 +272,12 @@
       return `<div class="log-line ${r.cls}"><div class="line-num">${r.n}</div><div class="line-content">${safe}</div></div>`;
     }
 
+    const TS_START = /^\s*(\[?\d{4}-\d{2}-\d{2}[T ]|\[?\d{1,2}\/\w{3}\/\d{4}|[A-Z][a-z]{2}\s+\d{1,2} \d\d:\d\d|\d{1,3}(\.\d{1,3}){3}\s|\{\s*")/;
+    function isContinuation(line) {
+      if (TS_START.test(line)) return false;
+      return /^\s+\S/.test(line) || /^(at |Caused by:|Suppressed:|\.\.\. \d+ (more|common frames omitted)|Traceback \(most recent call last\))/.test(line)
+        || /^([\w$]+\.)+[\w$]*(Exception|Error|Throwable)\b/.test(line) || /^[A-Z]\w*(Error|Exception|Warning)(:|$)/.test(line);
+    }
     function analyzeLogs() {
       const rawText = (bigLog != null ? bigLog : logInput.value).trim();
       if (!rawText) return;
@@ -278,13 +285,19 @@
       const counts = { 'type-error': 0, 'type-warn': 0, 'type-info': 0, 'type-debug': 0, 'type-normal': 0 };
       messageTally.clear();
       parsed = [];
+      // Events, not lines: a stack trace or traceback (lines with no
+      // timestamp that start with whitespace, 'at ', 'Caused by:', '... N
+      // more', 'Traceback', or an exception name) belongs to the line before.
+      let last = null;
       for (let i = 0; i < lines.length; i++) {
         const line = lines[i];
         if (!line.trim()) continue;
+        if (last && isContinuation(line)) { last.line += '\n' + line; last.extra++; continue; }
         const cls = classify(line);
         counts[cls]++;
         tallyMessage(line);
-        parsed.push({ n: i + 1, line, cls });
+        last = { n: i + 1, line, cls, extra: 0 };
+        parsed.push(last);
       }
       countAll.innerText = parsed.length.toLocaleString();
       countErr.innerText = counts['type-error'].toLocaleString();

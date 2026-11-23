@@ -283,7 +283,10 @@
       .fab { bottom: 20px; left: 20px; width: 50px; height: 50px; }
       .fab svg { width: 22px; height: 22px; }
     }
-  
+      .yaml-opt { display: inline-flex; align-items: center; gap: 6px; font-size: 0.82em; color: var(--text-muted); cursor: pointer; white-space: nowrap; }
+    .yaml-note { padding: 6px 16px; font-size: 0.82em; color: #fde68a; background: rgba(245,158,11,0.08); }
+    .yaml-note:empty { display: none; }
+
   </style>
 </head>
 <body>
@@ -327,12 +330,15 @@
         <div class="pane-title title-yaml"><i data-lucide="file-code-2"></i> YAML Config</div>
         <div class="btn-group">
           <span id="yamlError" class="error-text"><i data-lucide="alert-circle"></i> Invalid Syntax</span>
+          <label class="yaml-opt" title="Off: dates such as 2026-01-01 stay exactly as written. On: they become ISO timestamps (2026-01-01T00:00:00.000Z), as js-yaml's default schema does."><input type="checkbox" id="yamlDates"> Dates → timestamps</label>
+          <label class="yaml-opt" title="On: a file with several documents (--- separators) becomes a JSON array, and a JSON array is written back as separate documents. Off: only the first document is converted, and a JSON array stays a YAML list."><input type="checkbox" id="yamlDocs" checked> Documents ↔ array</label>
           <input type="file" id="yamlFile" accept=".yaml,.yml" style="display:none;">
           <button class="btn" onclick="document.getElementById('yamlFile').click()"><i data-lucide="upload"></i> Upload</button>
           <button class="btn" onclick="copyContent('yamlInput', this)"><i data-lucide="copy"></i> Copy</button>
           <button class="btn" onclick="downloadFile('yamlInput', 'yaml')"><i data-lucide="download"></i> Save</button>
         </div>
       </div>
+      <div class="yaml-note" id="yamlNote" role="status"></div>
       <div class="editor-wrapper">
         <div class="gutter" id="yamlGutterWrap" aria-hidden="true"><div class="gutter-inner" id="yamlGutter">1</div></div>
         <textarea id="yamlInput" class="editor" placeholder="Paste, type, or drag & drop YAML here...&#10;&#10;server:&#10;  port: 8080&#10;  host: localhost&#10;features:&#10;  - logging&#10;  - metrics" spellcheck="false"></textarea>
@@ -485,6 +491,7 @@
     <div class="info-panel">
       <h2><i data-lucide="git-merge"></i> Deployment Changelog</h2>
       <ul class="changelog-list">
+        <li><span class="changelog-tag">v2.3.0</span> Files with several documents separated by --- (every Kubernetes manifest) are converted to a JSON array instead of being rejected, and a JSON array goes back out as separate documents (switch off Documents ↔ array to convert only the first); dates such as 2026-01-01 stay exactly as written unless you switch on Dates → timestamps.</li>
         <li><span class="changelog-tag">v2.2.0</span> Integers and numbers a JavaScript number cannot hold exactly (12345678901234567890, 1e400) keep every digit in both directions, YAML to JSON and JSON to YAML.</li>
         <li><span class="changelog-tag">v2.1.0</span> Syntax errors now say what went wrong and where: the YAML side reports the parser's reason with line and column, the JSON side the engine message with the position resolved to line and column.</li>
         <li><span class="changelog-tag">v1.3.0</span> Added file upload, drag-and-drop, and line-number gutters to both panes.</li>
@@ -669,12 +676,18 @@
       }
 
       try {
-        const obj = jsyaml.load(val, { schema: losslessSchema() });
-        // If parsed object is just a string/number, ignore unless it's a real object
-        if (typeof obj !== 'object' || obj === null) throw new Error("Not a valid object");
+        // every document in the file (--- separators, as in Kubernetes
+        // manifests); more than one becomes a JSON array
+        const docs = jsyaml.loadAll(val, null, { schema: losslessSchema() });
+        const asArray = document.getElementById('yamlDocs').checked;
+        const obj = docs.length > 1 && asArray ? docs : docs[0];
+        if ((docs.length <= 1 || !asArray) && (typeof obj !== 'object' || obj === null)) throw new Error("Not a valid object");
+        const more = docs.length - 1;
+        $note.textContent = docs.length <= 1 ? '' : asArray ? `${docs.length} documents (separated by ---), shown as a JSON array in the same order.`
+          : `First document only: ${more} more document${more === 1 ? '' : 's'} not converted. Turn on "Documents ↔ array" to get them all.`;
 
         isSyncing = true;
-        jsonInput.value = LBLossless.stringify(obj, 4);
+        jsonInput.value = LBLossless.stringify(obj === undefined ? null : obj, 4);
         yamlError.classList.remove("active");
         jsonError.classList.remove("active");
       } catch (err) {
@@ -693,9 +706,13 @@
     // 1e400) are kept as their text in both directions: the YAML int and
     // float types are wrapped so such values become LosslessNumbers, which
     // the JSON writer and the YAML dumper both write back digit for digit.
-    let LSCHEMA = null;
+    let LSCHEMA = null, LSCHEMA_DATES = null;
+    const $note = document.getElementById('yamlNote');
+    // Dates stay as written by default: the core schema has no timestamp
+    // type, so 2026-01-01 is the string "2026-01-01". The switch adds it.
     function losslessSchema() {
-      if (LSCHEMA) return LSCHEMA;
+      const dates = document.getElementById('yamlDates').checked;
+      if (dates ? LSCHEMA_DATES : LSCHEMA) return dates ? LSCHEMA_DATES : LSCHEMA;
       const T = jsyaml.types, keep = (orig, plain) => new jsyaml.Type(orig.tag, {
         kind: 'scalar', resolve: orig.resolve, defaultStyle: orig.defaultStyle,
         construct: data => {
@@ -705,9 +722,13 @@
         predicate: x => LBLossless.isLosslessNumber(x) || orig.predicate(x),
         represent: (x, style) => LBLossless.isLosslessNumber(x) ? x.value : orig.represent[style] ? orig.represent[style](x) : typeof orig.represent === 'function' ? orig.represent(x, style) : String(x)
       });
-      LSCHEMA = jsyaml.DEFAULT_SCHEMA.extend({ implicit: [keep(T.int, /^-?\d+$/), keep(T.float, /^-?\d+(\.\d+)?([eE][-+]?\d+)?$/)] });
-      return LSCHEMA;
+      const nums = [keep(T.int, /^-?\d+$/), keep(T.float, /^-?\d+(\.\d+)?([eE][-+]?\d+)?$/)];
+      if (dates) return (LSCHEMA_DATES = jsyaml.DEFAULT_SCHEMA.extend({ implicit: nums }));
+      return (LSCHEMA = jsyaml.CORE_SCHEMA.extend({ implicit: nums.concat([T.merge]), explicit: [T.binary, T.omap, T.pairs, T.set] }));
     }
+
+    document.getElementById('yamlDates').addEventListener('change', () => yamlInput.dispatchEvent(new Event('input')));
+    document.getElementById('yamlDocs').addEventListener('change', () => yamlInput.dispatchEvent(new Event('input')));
 
     // JSON to YAML
     jsonInput.addEventListener("input", () => {
@@ -728,7 +749,11 @@
         JSON.parse(val);  // the browser's own parser reports syntax errors
         const obj = LBLossless.parse(val);
         isSyncing = true;
-        yamlInput.value = jsyaml.dump(obj, { indent: 2, lineWidth: -1, schema: losslessSchema() });
+        const dumpOpts = { indent: 2, lineWidth: -1, schema: losslessSchema() };
+        // a JSON array of objects goes back out as separate documents, so a
+        // multi-document file survives the round trip
+        const asDocs = document.getElementById('yamlDocs').checked && Array.isArray(obj) && obj.length > 1 && obj.every(d => d !== null && typeof d === 'object' && !LBLossless.isLosslessNumber(d));
+        yamlInput.value = asDocs ? obj.map(d => jsyaml.dump(d, dumpOpts)).join('---\n') : jsyaml.dump(obj, dumpOpts);
         jsonError.classList.remove("active");
         yamlError.classList.remove("active");
       } catch (err) {
