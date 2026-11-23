@@ -327,3 +327,15 @@ t('bug 16: show whitespace labels NBSP, zero-width, BOM and bidi characters', ()
   const seg = D.intraline('ab', 'a​b', 'char');
   assert.ok(D.renderLine('a​b', seg.b, 'text', false).includes('>ZWSP<'));
 });
+
+// ---- v4: bug 17, row order aligned with an LCS
+t('bug 17: by row order, an inserted row is one added row, not 50,000 changes', () => {
+  const head = [['id', 'v']], body = Array.from({ length: 50000 }, (_, i) => [String(i), 'v' + i]);
+  const t0 = Date.now(), r = D.tableDiff(head.concat(body), head.concat([['new', 'x']], body), { keys: [] });
+  assert.ok(Date.now() - t0 < 5000, 'took ' + (Date.now() - t0) + ' ms');
+  assert.strictEqual(r.added.length, 1); assert.strictEqual(r.changed.length, 0); assert.strictEqual(r.removed.length, 0); assert.strictEqual(r.unchanged, 50000);
+  assert.strictEqual(r.added[0].row.id, 'new');
+  const r2 = D.tableDiff([['a'], ['1'], ['2'], ['3']], [['a'], ['1'], ['two'], ['3']], { keys: [] });
+  assert.strictEqual(r2.changed.length, 1); assert.deepStrictEqual(r2.changed[0].cells, [{ col: 'a', old: '2', new: 'two' }]);
+  assert.strictEqual(r2.changed[0].key, 'row 2');
+});

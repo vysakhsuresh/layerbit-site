@@ -97,11 +97,13 @@
     var ids = Object.create(null), next = 0, A = new Int32Array(ka.length), B = new Int32Array(kb.length), i;
     for (i = 0; i < ka.length; i++) { var x = ka[i]; A[i] = x in ids ? ids[x] : (ids[x] = next++); }
     for (i = 0; i < kb.length; i++) { var y = kb[i]; B[i] = y in ids ? ids[y] : (ids[y] = next++); }
-    var pairs = alignIds(A, B, budget), parts = [], ai = 0, bi = 0;
-    function push(kind, from, to, src) { if (to <= from) return; var last = parts[parts.length - 1], v = src.slice(from, to); if (last && last.kind === kind) last.value = last.value.concat(v); else parts.push({ kind: kind, value: v, added: kind === 'i', removed: kind === 'd' }); }
+    var pairs = alignIds(A, B, budget), runs = [], ai = 0, bi = 0;
+    // collect [kind, from, to] runs first and slice once: growing arrays one
+    // matched line at a time would be quadratic on long equal stretches
+    function push(kind, from, to, src) { if (to <= from) return; var last = runs[runs.length - 1]; if (last && last.kind === kind && last.to === from) last.to = to; else runs.push({ kind: kind, from: from, to: to, src: src }); }
     for (i = 0; i < pairs.length; i += 2) { push('d', ai, pairs[i], ka); push('i', bi, pairs[i + 1], kb); push('e', pairs[i], pairs[i] + 1, ka); ai = pairs[i] + 1; bi = pairs[i + 1] + 1; }
     push('d', ai, ka.length, ka); push('i', bi, kb.length, kb);
-    return parts;
+    return runs.map(function (r) { return { kind: r.kind, value: r.src.slice(r.from, r.to), added: r.kind === 'i', removed: r.kind === 'd' }; });
   }
   /** Counts for a pair of files too different to align: lines only on one
    *  side and lines in common, compared as multisets of normalised lines. */
@@ -749,8 +751,36 @@
       objs.forEach(function (obj, i) { var k = keyOf(obj, i); if (!m[k]) { m[k] = []; order.push(k); } m[k].push(obj); });
       return { m: m, order: order };
     }
-    var A = index(OA), B = index(OB);
     var added = [], removed = [], changed = [], unchanged = 0, duplicates = [];
+    var diffCells = function (ra, rb) {
+      var cells = [];
+      cols.forEach(function (c) { var x = ra[c] == null ? '' : ra[c], y = rb[c] == null ? '' : rb[c]; if (x !== y) cells.push({ col: c, old: x, new: y }); });
+      return cells;
+    };
+    if (!o.keys.length) {
+      // Row order: align whole rows with an LCS first, so one inserted row
+      // is one added row; rows in a replaced block are paired by likeness.
+      var sig = function (r) { return cols.map(function (c) { return r[c] == null ? '' : r[c]; }).join('\u241E'); };
+      var SA = OA.map(sig), SB = OB.map(sig), parts = alignParts(SA, SB, Infinity), ia = 0, ib = 0;
+      var emitPair = function (x, y) { var cells = diffCells(OA[x], OB[y]); if (cells.length) changed.push({ key: 'row ' + (y + 1), aRow: x + 1, bRow: y + 1, cells: cells, row: OB[y] }); else unchanged++; };
+      for (var pi = 0; pi < parts.length; pi++) {
+        var part = parts[pi], nx = parts[pi + 1];
+        if (part.kind === 'e') { unchanged += part.value.length; ia += part.value.length; ib += part.value.length; continue; }
+        if (part.kind === 'd' && nx && nx.kind === 'i') {
+          var plan = pairBlock(SA.slice(ia, ia + part.value.length), SB.slice(ib, ib + nx.value.length), SA.slice(ia, ia + part.value.length), SB.slice(ib, ib + nx.value.length));
+          plan.forEach(function (step) {
+            if (step === 'm') { emitPair(ia, ib); ia++; ib++; }
+            else if (step === 'd') { removed.push({ key: 'row ' + (ia + 1), aRow: ia + 1, row: OA[ia] }); ia++; }
+            else { added.push({ key: 'row ' + (ib + 1), bRow: ib + 1, row: OB[ib] }); ib++; }
+          });
+          pi++; continue;
+        }
+        if (part.kind === 'd') part.value.forEach(function () { removed.push({ key: 'row ' + (ia + 1), aRow: ia + 1, row: OA[ia] }); ia++; });
+        else part.value.forEach(function () { added.push({ key: 'row ' + (ib + 1), bRow: ib + 1, row: OB[ib] }); ib++; });
+      }
+      return { columns: cols, colsAdded: colsAdded, colsRemoved: colsRemoved, added: added, removed: removed, changed: changed, unchanged: unchanged, keyName: null, keys: [], duplicates: [] };
+    }
+    var A = index(OA), B = index(OB);
     var label = function (k, i, n) { return n > 1 ? k + ' (#' + (i + 1) + ')' : k; };
     A.order.forEach(function (k) {
       var ra = A.m[k], rb = B.m[k] || [], n = Math.max(ra.length, rb.length);
