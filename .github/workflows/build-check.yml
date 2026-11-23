@@ -28,6 +28,9 @@ jobs:
       - name: Validate HTML structure, JSON-LD, inline JS and link graph
         run: python3 scripts/validate.py
 
+      - name: Parity claims are backed by tests (unit tests run; browser tests must exist)
+        run: python3 scripts/check_parity.py --self-test && python3 scripts/check_parity.py
+
   tool-tests:
     runs-on: ubuntu-latest
     needs: build-check
@@ -44,4 +47,7 @@ jobs:
           python -m playwright install --with-deps chromium
 
       - name: Drive every tool in headless Chromium (minimal -> maximal inputs)
-        run: python3 scripts/test_tools.py
+        run: python3 scripts/test_tools.py --json ui-results.json
+
+      - name: Every parity claim's browser tests passed
+        run: python3 scripts/check_parity.py --ui-results ui-results.json

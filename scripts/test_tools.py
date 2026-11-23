@@ -4036,6 +4036,7 @@ def main():
     ap.add_argument("--only", nargs="*", default=None)
     ap.add_argument("--list", action="store_true")
     ap.add_argument("--no-smoke", action="store_true")
+    ap.add_argument("--json", metavar="PATH", help="also write every result as JSON (for scripts/check_parity.py)")
     args = ap.parse_args()
 
     if args.list:
@@ -4102,6 +4103,9 @@ def main():
 
     failed = [r for r in results if not r[3]]
     print(f"\n{len(results) - len(failed)}/{len(results)} passed in {time.time() - t0:.1f}s")
+    if args.json:
+        with open(args.json, "w", encoding="utf-8") as fh:
+            json.dump([{"slug": r[0], "level": r[1], "name": r[2], "ok": bool(r[3]), "seconds": round(r[4], 2), "error": r[5] or ""} for r in results], fh, indent=1)
     return 1 if failed else 0
 
 

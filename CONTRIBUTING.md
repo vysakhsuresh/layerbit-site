@@ -64,9 +64,12 @@ python3 scripts/validate.py                                      # structure, JS
 LAYERBIT_CHROMIUM=/path/to/chromium python3 scripts/test_tools.py   # every tool in headless Chromium
 python3 scripts/audit_controls.py --corpus DIR                   # options that change nothing
 python3 scripts/audit_layout.py                                  # overflow and geometry, desktop and phone
+python3 scripts/check_parity.py --ui-results results.json       # every competitor claim backed by passing tests
 ```
 
-`--only <slug>` limits `test_tools.py` and `audit_controls.py` to one tool.
+`--only <slug>` limits `test_tools.py` and `audit_controls.py` to one tool; `test_tools.py --json results.json` writes the results that `check_parity.py` reads.
+
+A page may claim a feature that competitors charge for only when `scripts/parity/<slug>.json` lists the claim with the tests that prove it. Comparison pages are published only when those parity files are green.
 `audit_controls.py` needs a folder of real-world files; the names it expects
 are listed in the script.
 
