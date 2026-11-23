@@ -2161,6 +2161,18 @@ def _(t):
     expect("~1 changed" in t.text("diffStats"), "re-sorted file: " + t.text("diffStats"))
 
 
+@case("text-diff-checker", "edge", "bug 11: accept all / keep all give exactly the modified / original text with ignore options on")
+def _(t):
+    t.page.check("#ignoreCase"); t.page.check("#ignoreWhitespace")
+    t.set("text1", "Hello World\nkeep  this\nold\n"); t.set("text2", "hello world\nkeep this\nnew\n")
+    t.call("run()"); t.wait(150)
+    t.call("mergeAll('right')")
+    eq(t.val("mergedText"), "hello world\nkeep this\nnew\n", "accept all")
+    t.call("mergeAll('left')")
+    eq(t.val("mergedText"), "Hello World\nkeep  this\nold\n", "keep all original")
+    t.page.uncheck("#ignoreCase"); t.page.uncheck("#ignoreWhitespace")
+
+
 @case("text-diff-checker", "typical", "audit: ignore-whitespace/case and highlight options re-run the diff live")
 def _(t):
     t.set("text1", "Hello  World\nsecond line\n")

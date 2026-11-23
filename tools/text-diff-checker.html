@@ -1295,16 +1295,21 @@
     function mergeAll(d) { decisions = decisions.map(() => d); renderText(); renderMerged(); }
     function mergedText() {
       if (!last) return '';
+      // Lines that only match because of an ignore option still differ in
+      // their text: they take the modified side, unless every change is
+      // reverted, in which case the result is exactly the original.
       const { rows, hunks } = last; const out = []; let r = 0;
+      const allLeft = decisions.length > 0 && decisions.every(d => d === 'left');
+      const same = row => allLeft ? (row.l || row.r).text : (row.r || row.l).text;
       hunks.forEach((h, i) => {
-        for (; r < h.start; r++) out.push(rows[r].l.text);
+        for (; r < h.start; r++) out.push(same(rows[r]));
         const left = [], right = [];
         for (let k = h.start; k < h.end; k++) { if (rows[k].l) left.push(rows[k].l.text); if (rows[k].r) right.push(rows[k].r.text); }
         const d = decisions[i];
         if (d === 'left') out.push(...left); else if (d === 'both') out.push(...left, ...right); else out.push(...right);
         r = h.end;
       });
-      for (; r < rows.length; r++) out.push((rows[r].l || rows[r].r).text);
+      for (; r < rows.length; r++) out.push(same(rows[r]));
       const nl = (last.b.endsWith('\n') || last.a.endsWith('\n')) && out.length ? '\n' : '';
       return out.join('\n') + nl;
     }
