@@ -314,3 +314,16 @@ t('bug 15: with ignoreBlank, blank lines are left out of the comparison entirely
   // without the option a blank line is a change
   assert.strictEqual(D.lineDiff('a\nb\n', 'a\n\nb\n').hunks.length, 1);
 });
+
+// ---- v4: bug 16, invisible characters
+t('bug 16: show whitespace labels NBSP, zero-width, BOM and bidi characters', () => {
+  const h = D.renderLine('a b​c‍d﻿e‮f⁦g', null, 'text', true);
+  ['NBSP', 'ZWSP', 'ZWJ', 'BOM', 'RLO', 'LRI'].forEach(lbl => assert.ok(h.includes('>' + lbl + '<'), lbl + ' missing in ' + h));
+  assert.ok(/title="U\+00A0 no-break space"/.test(h), h);
+  assert.ok(!/[ ​‍﻿‮⁦]/.test(h), 'raw invisible character left in the output');
+  // without show whitespace, plain text is untouched...
+  assert.strictEqual(D.renderLine('a b', null, 'text', false), 'a b');
+  // ...but an invisible character inside a change is always marked
+  const seg = D.intraline('ab', 'a​b', 'char');
+  assert.ok(D.renderLine('a​b', seg.b, 'text', false).includes('>ZWSP<'));
+});

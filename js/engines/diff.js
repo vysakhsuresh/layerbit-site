@@ -388,6 +388,30 @@
     return out;
   }
 
+  // Characters that render as nothing (or as an ordinary space): shown as a
+  // labelled marker with "Show whitespace", and always inside a change.
+  var INVISIBLE = {
+    '\u00a0': ['NBSP', 'no-break space'], '\u202f': ['NNBSP', 'narrow no-break space'], '\u2007': ['FSP', 'figure space'], '\u00ad': ['SHY', 'soft hyphen'],
+    '\u200b': ['ZWSP', 'zero-width space'], '\u200c': ['ZWNJ', 'zero-width non-joiner'], '\u200d': ['ZWJ', 'zero-width joiner'], '\u2060': ['WJ', 'word joiner'], '\ufeff': ['BOM', 'byte-order mark / zero-width no-break space'],
+    '\u200e': ['LRM', 'left-to-right mark'], '\u200f': ['RLM', 'right-to-left mark'], '\u061c': ['ALM', 'Arabic letter mark'],
+    '\u202a': ['LRE', 'left-to-right embedding'], '\u202b': ['RLE', 'right-to-left embedding'], '\u202c': ['PDF', 'pop directional formatting'], '\u202d': ['LRO', 'left-to-right override'], '\u202e': ['RLO', 'right-to-left override'],
+    '\u2066': ['LRI', 'left-to-right isolate'], '\u2067': ['RLI', 'right-to-left isolate'], '\u2068': ['FSI', 'first strong isolate'], '\u2069': ['PDI', 'pop directional isolate'],
+    '\u2028': ['LS', 'line separator'], '\u2029': ['PS', 'paragraph separator'], '\u180e': ['MVS', 'Mongolian vowel separator'], '\u3000': ['IDSP', 'ideographic space'], '\u205f': ['MMSP', 'medium mathematical space'],
+    '\u2000': ['NQSP', 'en quad'], '\u2001': ['MQSP', 'em quad'], '\u2002': ['ENSP', 'en space'], '\u2003': ['EMSP', 'em space'], '\u2004': ['3/MSP', 'three-per-em space'], '\u2005': ['4/MSP', 'four-per-em space'],
+    '\u2006': ['6/MSP', 'six-per-em space'], '\u2008': ['PUNCSP', 'punctuation space'], '\u2009': ['THSP', 'thin space'], '\u200a': ['HSP', 'hair space'], '\u034f': ['CGJ', 'combining grapheme joiner']
+  };
+  var INVISIBLE_RE = /[\u00a0\u202f\u2007\u00ad\u200b-\u200f\u2060\ufeff\u061c\u202a-\u202e\u2066-\u2069\u2028\u2029\u180e\u3000\u205f\u2000-\u2006\u2008-\u200a\u034f\x00-\x08\x0b\x0c\x0e-\x1f\x7f]/;
+  function hex4(c) { return ('000' + c.charCodeAt(0).toString(16).toUpperCase()).slice(-4); }
+  function markInvisible(raw) {
+    var out = '';
+    for (var i = 0; i < raw.length; i++) {
+      var ch = raw[i], inv = INVISIBLE[ch];
+      if (inv) out += '<span class="inv" title="U+' + hex4(ch) + ' ' + inv[1] + '">' + inv[0] + '</span>';
+      else if (INVISIBLE_RE.test(ch)) out += '<span class="inv" title="U+' + hex4(ch) + ' control character">U+' + hex4(ch) + '</span>';
+      else out += esc(ch);
+    }
+    return out;
+  }
   /** Builds HTML for one line from intra-line segments and syntax ranges. */
   function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
   function renderLine(text, segs, lang, showWs) {
@@ -405,8 +429,9 @@
       var ch = null, tk = null;
       for (var j = 0; j < changes.length; j++) if (changes[j].s <= s && changes[j].e >= e) { ch = changes[j].c; break; }
       for (var k = 0; k < toks.length; k++) if (toks[k].s <= s && toks[k].e >= e) { tk = toks[k].c; break; }
-      var piece = esc(text.slice(s, e));
-      if (showWs) piece = piece.replace(/ /g, '<span class="ws">·</span>').replace(/\t/g, '<span class="ws">→\t</span>');
+      var raw = text.slice(s, e), piece;
+      if ((showWs || (ch && ch !== 'eq')) && INVISIBLE_RE.test(raw)) piece = markInvisible(raw); else piece = esc(raw);
+      if (showWs) piece = piece.replace(/ (?![^<]*>)/g, '<span class="ws">·</span>').replace(/\t/g, '<span class="ws">→\t</span>');
       var cls = [];
       if (ch && ch !== 'eq') cls.push(ch === 'del' ? 'word-removed' : 'word-added');
       if (tk) cls.push('tk-' + tk);

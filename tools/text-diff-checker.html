@@ -494,6 +494,7 @@
     .patch-files .diff-notes { margin: 10px 0 0; }
     .patch-files .diff-notes .data-table { margin: 8px 0; }
     .line-ignored { opacity: 0.55; }
+    .inv { display: inline-block; font: 600 0.62em/1.25 'Space Grotesk', sans-serif; letter-spacing: 0.02em; color: #0a0c10; background: #fbbf24; border-radius: 3px; padding: 0 3px; margin: 0 1px; vertical-align: 0.15em; cursor: help; }
 
   </style>
 </head>
@@ -634,7 +635,7 @@
       <label class="toggle-label">Syntax
         <select id="syntaxMode" class="mini-select"><option value="auto" selected>auto</option><option value="text">none</option><option value="json">JSON</option><option value="js">JS / TS</option><option value="py">Python</option><option value="sql">SQL</option><option value="yaml">YAML</option><option value="xml">XML / HTML</option><option value="css">CSS</option><option value="go">Go</option><option value="java">Java / Kotlin</option><option value="cs">C#</option><option value="sh">Shell</option><option value="rs">Rust</option><option value="ini">INI / .env</option></select>
       </label>
-      <label class="toggle-label" title="Render spaces as · and tabs as →"><input type="checkbox" id="showWs"> Show whitespace</label>
+      <label class="toggle-label" title="Render spaces as ·, tabs as →, and invisible characters (no-break space, zero-width space, BOM, bidi controls) as labelled markers"><input type="checkbox" id="showWs"> Show whitespace</label>
     </div>
     <div class="opt-group mode-only" data-for="struct" style="display:none;">
       <label class="toggle-label">Arrays
@@ -777,7 +778,7 @@
       <div class="use-cases-grid">
         <div class="use-case-card">
           <h3><i data-lucide="eye-off"></i> Invisible differences</h3>
-          <p>The hardest diffs are the ones you cannot see: a trailing space, a tab where the rest of the file uses spaces, a non-breaking space pasted from a document, or a zero-width character from a web page. Turn on <strong>Show whitespace</strong> to render spaces and tabs visibly, and the <a href="unicode-inspector.html">Unicode Inspector</a> for anything stranger.</p>
+          <p>The hardest diffs are the ones you cannot see: a trailing space, a tab where the rest of the file uses spaces, a non-breaking space pasted from a document, or a zero-width character from a web page. Turn on <strong>Show whitespace</strong> to render spaces and tabs visibly and every invisible character as a labelled marker (NBSP, ZWSP, BOM, RLO and so on); inside a changed region those markers appear even with the option off, so a change is never invisible. The <a href="unicode-inspector.html">Unicode Inspector</a> explains any character in detail.</p>
         </div>
         <div class="use-case-card">
           <h3><i data-lucide="corner-down-left"></i> Line endings</h3>
@@ -1021,7 +1022,7 @@
   <script src="../js/kernel.js?v=40b2047872"></script>
 
   <script src="../js/shared.js?v=e2441a1728"></script>
-  <script src="../js/engines/diff.js?v=12c6292a0f"></script>
+  <script src="../js/engines/diff.js?v=ce56b7cf96"></script>
 
   <script>
     // ------------------------------------------------------------ state

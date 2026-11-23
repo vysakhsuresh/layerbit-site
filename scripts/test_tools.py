@@ -2252,6 +2252,19 @@ def _(t):
     t.page.uncheck("#ignoreBlank")
 
 
+@case("text-diff-checker", "edge", "bug 16: invisible characters are shown as labelled markers")
+def _(t):
+    t.set("text1", "price: 10 AED\nkey=value\n"); t.set("text2", "price: 10 AED\nkey=​value\n")
+    t.call("run()"); t.wait(150)
+    marks = t.call("[...document.querySelectorAll('#splitPanel .sd-r .inv')].map(e => e.textContent)")
+    expect("NBSP" in marks and "ZWSP" in marks, f"changed invisible characters not marked: {marks}")
+    t.set("text1", "a​b\n"); t.set("text2", "a​b\nc\n"); t.call("run()"); t.wait(150)
+    eq(t.count("#splitPanel .sd-l .inv"), 0, "unchanged line marked without Show whitespace")
+    t.page.check("#showWs"); t.wait(150)
+    expect(t.count("#splitPanel .sd-l .inv") >= 1, "Show whitespace did not reveal the zero-width space")
+    t.page.uncheck("#showWs")
+
+
 @case("text-diff-checker", "typical", "audit: ignore-whitespace/case and highlight options re-run the diff live")
 def _(t):
     t.set("text1", "Hello  World\nsecond line\n")
