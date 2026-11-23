@@ -380,8 +380,64 @@
   }
   function sameLines(a, b, key) { if (a.length !== b.length) return false; for (var i = 0; i < a.length; i++) if (key(a[i]) !== key(b[i])) return false; return true; }
 
+  // ------------------------------------------------------- lossless JSON
+  /** A JSON number kept as its source text, so 9007199254740993 does not
+   *  become 9007199254740992 the way it does in JSON.parse. */
+  function LosslessNumber(raw) { this.value = raw; this.isLosslessNumber = true; }
+  /** Canonical form of a decimal literal: 1.0, 1e0 and 1 all give "1e0". */
+  function canonicalNumber(raw) {
+    var m = /^(-?)(\d+)(?:\.(\d+))?(?:[eE]([+-]?\d+))?$/.exec(raw);
+    if (!m) return raw;
+    var digits = (m[2] + (m[3] || '')).replace(/^0+/, ''), exp = parseInt(m[4] || '0', 10) - (m[3] || '').length;
+    if (!digits) return '0';
+    var t = digits.replace(/0+$/, ''); exp += digits.length - t.length;
+    return (m[1] ? '-' : '') + t + 'e' + exp;
+  }
+  /** JSON.parse that keeps numbers as LosslessNumber. Throws SyntaxError with
+   *  a position, like JSON.parse. */
+  function parseJsonLossless(text) {
+    var i = 0, n = text.length;
+    function fail(msg) { throw new SyntaxError('Invalid JSON: ' + msg + ' at position ' + i); }
+    function ws() { while (i < n && (text[i] === ' ' || text[i] === '\t' || text[i] === '\n' || text[i] === '\r')) i++; }
+    function value() {
+      ws(); var c = text[i];
+      if (c === '{') { i++; var obj = {}; ws(); if (text[i] === '}') { i++; return obj; }
+        for (;;) { ws(); if (text[i] !== '"') fail('expected a property name'); var k = str(); ws(); if (text[i] !== ':') fail('expected ":"'); i++; obj[k] = value(); ws();
+          if (text[i] === ',') { i++; continue; } if (text[i] === '}') { i++; return obj; } fail('expected "," or "}"'); } }
+      if (c === '[') { i++; var arr = []; ws(); if (text[i] === ']') { i++; return arr; }
+        for (;;) { arr.push(value()); ws(); if (text[i] === ',') { i++; continue; } if (text[i] === ']') { i++; return arr; } fail('expected "," or "]"'); } }
+      if (c === '"') return str();
+      var m = /^-?(?:0|[1-9]\d*)(?:\.\d+)?(?:[eE][+-]?\d+)?/.exec(text.slice(i, i + 400));
+      if (m && m[0]) { i += m[0].length; if (/^[\d.]/.test(text[i] || '')) fail('invalid number'); return new LosslessNumber(m[0]); }
+      if (text.startsWith('true', i)) { i += 4; return true; }
+      if (text.startsWith('false', i)) { i += 5; return false; }
+      if (text.startsWith('null', i)) { i += 4; return null; }
+      fail(i >= n ? 'unexpected end of input' : 'unexpected character ' + JSON.stringify(c));
+    }
+    function str() {
+      var start = i; i++;
+      while (i < n && text[i] !== '"') { if (text[i] === '\\') i++; else if (text.charCodeAt(i) < 32) fail('control character in string'); i++; }
+      if (i >= n) fail('unterminated string');
+      i++;
+      return JSON.parse(text.slice(start, i));
+    }
+    var v = value(); ws();
+    if (i < n) fail('unexpected text after the end');
+    return v;
+  }
+  function isNum(v) { return v instanceof LosslessNumber; }
+  /** JSON.stringify that writes LosslessNumbers as their digits. */
+  function stringifyLossless(v, indent, depth) {
+    depth = depth || 0;
+    var pad = indent ? '\n' + new Array(depth + 2).join(indent) : '', close = indent ? '\n' + new Array(depth + 1).join(indent) : '';
+    if (isNum(v)) return v.value;
+    if (Array.isArray(v)) return v.length ? '[' + v.map(function (x) { return pad + stringifyLossless(x, indent, depth + 1); }).join(',') + close + ']' : '[]';
+    if (v && typeof v === 'object') { var ks = Object.keys(v); return ks.length ? '{' + ks.map(function (k) { return pad + JSON.stringify(k) + (indent ? ': ' : ':') + stringifyLossless(v[k], indent, depth + 1); }).join(',') + close + '}' : '{}'; }
+    return v === undefined ? 'null' : JSON.stringify(v);
+  }
+
   // --------------------------------------------------------------- structural
-  function typeOf(v) { return v === null ? 'null' : Array.isArray(v) ? 'array' : typeof v; }
+  function typeOf(v) { return v === null ? 'null' : isNum(v) ? 'number' : Array.isArray(v) ? 'array' : typeof v; }
   /** Semantic diff of two parsed values. Returns [{path, type:'added'|'removed'|'changed'|'type', old, new}]. Key order is ignored by construction. */
   function structuralDiff(a, b, opts) {
     var o = Object.assign({ arrays: 'index', keyField: null }, opts || {});
@@ -421,6 +477,8 @@
           var n = Math.max(x.length, y.length);
           for (var i = 0; i < n; i++) { var p2 = path + '[' + i + ']'; if (i >= y.length) out.push({ path: p2, type: 'removed', old: x[i] }); else if (i >= x.length) out.push({ path: p2, type: 'added', new: y[i] }); else walk(x[i], y[i], p2); }
         }
+      } else if (tx === 'number' && (isNum(x) || isNum(y))) {
+        if (canonicalNumber(isNum(x) ? x.value : String(x)) !== canonicalNumber(isNum(y) ? y.value : String(y))) out.push({ path: path, type: 'changed', old: x, new: y });
       } else if (x !== y && !(tx === 'number' && isNaN(x) && isNaN(y))) out.push({ path: path, type: 'changed', old: x, new: y });
     }
     walk(a, b, '$');
@@ -428,11 +486,18 @@
   }
   function keyText(v) { return v && typeof v === 'object' && v.isLosslessNumber ? v.value : String(v); }
   function canon(v) {
+    if (isNum(v)) return { '#number': canonicalNumber(v.value) };
     if (Array.isArray(v)) return v.map(canon);
     if (v && typeof v === 'object') { var o = {}; Object.keys(v).sort().forEach(function (k) { o[k] = canon(v[k]); }); return o; }
     return v;
   }
-  function canonicalJson(v) { return JSON.stringify(canon(v), null, 2); }
+  function sortKeys(v) {
+    if (isNum(v)) return v;
+    if (Array.isArray(v)) return v.map(sortKeys);
+    if (v && typeof v === 'object') { var o = {}; Object.keys(v).sort().forEach(function (k) { o[k] = sortKeys(v[k]); }); return o; }
+    return v;
+  }
+  function canonicalJson(v) { return stringifyLossless(sortKeys(v), '  '); }
 
   // --------------------------------------------------------------------- CSV
   function detectDelimiter(text) {
@@ -598,5 +663,5 @@
 
   return { lineDiff: lineDiff, foldContext: foldContext, intraline: intraline, tokenize: tokenize, detectLang: detectLang, renderLine: renderLine, esc: esc,
     unifiedPatch: unifiedPatch, applyPatch: applyPatch, diff3: diff3, structuralDiff: structuralDiff, canonicalJson: canonicalJson, canon: canon,
-    parseCsv: parseCsv, detectDelimiter: detectDelimiter, tableDiff: tableDiff, readZip: readZip, isProbablyText: isProbablyText, decodeBytes: decodeBytes, bytesEqual: bytesEqual, stripCommonRoot: stripCommonRoot, uniqueHeaders: uniqueHeaders, splitLines: splitLines, normalizeLine: normalizeLine, DEFAULT_OPTS: DEFAULT_OPTS };
+    parseCsv: parseCsv, detectDelimiter: detectDelimiter, tableDiff: tableDiff, readZip: readZip, isProbablyText: isProbablyText, decodeBytes: decodeBytes, bytesEqual: bytesEqual, stripCommonRoot: stripCommonRoot, uniqueHeaders: uniqueHeaders, parseJsonLossless: parseJsonLossless, stringifyLossless: stringifyLossless, canonicalNumber: canonicalNumber, splitLines: splitLines, normalizeLine: normalizeLine, DEFAULT_OPTS: DEFAULT_OPTS };
 });

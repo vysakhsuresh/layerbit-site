@@ -738,7 +738,7 @@
     function parseDoc(text, label) {
       const t = text.trim();
       if (!t) throw new Error(`${label} is empty.`);
-      try { return JSON.parse(t); } catch (je) {
+      try { return E.parseJsonLossless(t); } catch (je) {
         if (window.jsyaml) { try { return jsyaml.load(t); } catch (ye) { throw new Error(`${label} is neither valid JSON (${je.message}) nor valid YAML (${ye.message}).`); } }
         if (/^[\[{"]/.test(t)) throw new Error(`${label}: ${je.message}`);
         return new Promise((res, rej) => { const s = document.createElement('script'); s.src = '../js/vendor/js-yaml.min.js'; s.onload = () => { try { res(jsyaml.load(t)); } catch (ye) { rej(new Error(`${label} is neither valid JSON nor valid YAML (${ye.message}).`)); } }; s.onerror = () => rej(new Error('Could not load the YAML parser.')); document.head.appendChild(s); });
@@ -749,7 +749,9 @@
       Promise.all([parseDoc($('text1').value, 'Original'), parseDoc($('text2').value, 'Modified')]).then(([a, b]) => {
         const o = { arrays: $('arrMode').value, keyField: $('keyField').value.trim() || 'id' };
         const d = E.structuralDiff(a, b, o);
-        const fmt = v => v === undefined ? '' : E.esc(JSON.stringify(v).length > 120 ? JSON.stringify(v).slice(0, 117) + '…' : JSON.stringify(v));
+        const fmt = v => { if (v === undefined) return ''; const j = E.stringifyLossless(v); return E.esc(j.length > 120 ? j.slice(0, 117) + '…' : j); };
+        // YAML has no lossless number type here: flag long numbers instead of trusting them
+        const longNum = [$('text1').value, $('text2').value].some(x => !/^\s*[\[{]/.test(x) && /(^|[^\w.])\d{16,}/.test(x));
         const counts = { added: 0, removed: 0, changed: 0, type: 0, duplicate: 0 }; d.forEach(x => counts[x.type]++);
         $('resultTitle').textContent = 'Structural comparison';
         $('diffStats').innerHTML = `<span class="st-add">+${counts.added} added</span><span class="st-del">−${counts.removed} removed</span><span class="st-mod">~${counts.changed} changed</span><span>${counts.type} type changes</span>${counts.duplicate ? `<span class="st-del">${counts.duplicate} duplicate key${counts.duplicate === 1 ? '' : 's'}</span>` : ''}`;
@@ -757,6 +759,7 @@
           d.map(x => `<tr class="t-row"><td class="t-path">${E.esc(x.path)}</td><td class="t-${x.type}">${x.type === 'type' ? `type ${x.oldType} → ${x.newType}` : x.type === 'duplicate' ? `duplicate key: ${x.countA} in original, ${x.countB} in modified` : x.type}</td><td class="cell-old">${fmt(x.old)}</td><td class="cell-new">${fmt(x.new)}</td></tr>`).join('') + '</tbody></table>' +
           `<div class="struct-foot"><button type="button" class="btn" onclick="structAsText()"><i data-lucide="file-diff"></i> Show as normalised text diff</button><span class="muted">Both documents re-serialised with sorted keys and 2-space indentation, then compared line by line.</span></div>`
           : '<div class="diff-identical"><i data-lucide="check-circle-2"></i> Semantically identical: same keys, same values. Formatting and key order may differ.</div>';
+        if (longNum) $('structPanel').insertAdjacentHTML('afterbegin', '<div class="diff-notes" role="status"><i data-lucide="alert-triangle"></i><div><strong>Check long numbers by eye:</strong> YAML numbers with more than 15 digits are read as floating point, so two that differ only in their last digits can compare as equal. JSON input is compared digit for digit.</div></div>');
         last = null; three = null; window._structDocs = [a, b];
         $('outputSection').style.display = 'grid'; $('mergedSection').style.display = 'none';
         showPanel('structPanel'); icons();

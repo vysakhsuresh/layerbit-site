@@ -2114,6 +2114,19 @@ def _(t):
     expect("duplicate key" in t.text("structPanel").lower(), t.text("structPanel"))
 
 
+@case("text-diff-checker", "edge", "bug 8: JSON ids above 2^53 are compared exactly")
+def _(t):
+    t.call("setMode('struct')"); t.select("arrMode", "index")
+    t.set("text1", '{"order_id": 9007199254740993, "total": 1.0}'); t.set("text2", '{"order_id": 9007199254740992, "total": 1}')
+    t.call("run()"); t.wait(200)
+    out = t.text("structPanel")
+    expect("$.order_id" in out and "9007199254740993" in out and "9007199254740992" in out, out[:300])
+    expect("$.total" not in out, "1.0 vs 1 reported as a change")
+    t.set("text1", "a: 12345678901234567890\n"); t.set("text2", "a: 12345678901234567891\n")
+    t.call("run()"); t.wait(600)
+    expect("15 digits" in t.text("outputSection"), "YAML precision warning missing: " + t.text("outputSection")[:300])
+
+
 @case("text-diff-checker", "typical", "audit: ignore-whitespace/case and highlight options re-run the diff live")
 def _(t):
     t.set("text1", "Hello  World\nsecond line\n")

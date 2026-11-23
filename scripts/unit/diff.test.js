@@ -211,3 +211,18 @@ t('bug 7: repeated column names are made unique so every column is compared', ()
   assert.deepStrictEqual(r2.changed[0].cells, [{ col: 'amount (2)', old: '20', new: '21' }]);
   assert.deepStrictEqual(D.uniqueHeaders(['a', 'a', 'a (2)', '', '']), ['a', 'a (3)', 'a (2)', '(column 4)', '(column 5)']);
 });
+
+// ---- v4: bug 8, numbers beyond 2^53
+t('bug 8: JSON numbers are compared by their exact digits', () => {
+  const P = D.parseJsonLossless;
+  const d = D.structuralDiff(P('{"id": 9007199254740993, "n": [1]}'), P('{"id": 9007199254740992, "n": [1]}'));
+  assert.strictEqual(d.length, 1); assert.strictEqual(d[0].path, '$.id');
+  assert.strictEqual(D.stringifyLossless(d[0].old), '9007199254740993'); assert.strictEqual(D.stringifyLossless(d[0].new), '9007199254740992');
+  assert.strictEqual(D.structuralDiff(P('{"a": 1.0, "b": 1e2, "c": -0.50}'), P('{"a": 1, "b": 100, "c": -0.5}')).length, 0);
+  assert.strictEqual(D.structuralDiff(P('[12345678901234567890]'), P('[12345678901234567891]'), { arrays: 'set' }).length, 2);
+  assert.strictEqual(D.structuralDiff(P('{"a": 1}'), P('{"a": "1"}'))[0].type, 'type');
+  assert.strictEqual(D.canonicalJson(P('{"b": 9007199254740993, "a": "x"}')), '{\n  "a": "x",\n  "b": 9007199254740993\n}');
+  assert.deepStrictEqual(D.stringifyLossless(P('{"s":"a\\"b\\u00e9","t":true,"u":null,"v":[]}')), '{"s":"a\\"bé","t":true,"u":null,"v":[]}');
+  assert.throws(() => P('{"a": 1,}'), /JSON/);
+  assert.throws(() => P('[01]'), /JSON/);
+});
