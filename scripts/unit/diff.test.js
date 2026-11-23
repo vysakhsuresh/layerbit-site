@@ -300,3 +300,17 @@ t('bug 14: line-ending and final-newline differences are reported', () => {
   assert.deepStrictEqual(D.lineDiff('a\nb', 'a\nb\n').notes, ['No newline at end of file in the original.']);
   assert.deepStrictEqual(D.lineDiff('a\nb\n', 'a\nb\n').notes, []);
 });
+
+// ---- v4: bug 15, ignore blank lines
+t('bug 15: with ignoreBlank, blank lines are left out of the comparison entirely', () => {
+  const r = D.lineDiff('a\nb\n', 'a\n\n\nb\n', { ignoreBlank: true });
+  assert.strictEqual(r.hunks.length, 0); assert.strictEqual(r.stats.added, 0);
+  assert.deepStrictEqual(r.rows.map(x => [x.type, x.l && x.l.n, x.r && x.r.n]), [['eq', 1, 1], ['blank', null, 2], ['blank', null, 3], ['eq', 2, 4]]);
+  const r2 = D.lineDiff('a\n\nb\nc\n', 'a\nb\n\nC\n', { ignoreBlank: true });
+  assert.strictEqual(r2.hunks.length, 1); assert.strictEqual(r2.stats.modified, 1);
+  assert.deepStrictEqual(r2.rows.filter(x => x.type !== 'blank').map(x => x.type), ['eq', 'eq', 'mod']);
+  // blank lines on both sides at the same place still pair up
+  assert.deepStrictEqual(D.lineDiff('a\n\nb\n', 'a\n\nb\n', { ignoreBlank: true }).rows.map(x => x.type), ['eq', 'eq', 'eq']);
+  // without the option a blank line is a change
+  assert.strictEqual(D.lineDiff('a\nb\n', 'a\n\nb\n').hunks.length, 1);
+});

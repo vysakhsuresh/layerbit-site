@@ -121,11 +121,16 @@
     var la = splitLines(a), lb = splitLines(b);
     var ka = la.map(function (l) { return normalizeLine(l, o); });
     var kb = lb.map(function (l) { return normalizeLine(l, o); });
+    // Ignore blank lines: blank lines take no part in the alignment at all.
+    // They are put back afterwards as 'blank' rows, which are never changes.
+    var full = null;
     if (o.ignoreBlank) {
-      // blank lines still display, but are matched as if absent: give every
-      // blank the same key so runs of them align freely
-      ka = ka.map(function (l) { return l.trim() === '' ? '' : l; });
-      kb = kb.map(function (l) { return l.trim() === '' ? '' : l; });
+      var keepA = [], keepB = [];
+      ka.forEach(function (l, i) { if (l.trim() !== '') keepA.push(i); });
+      kb.forEach(function (l, i) { if (l.trim() !== '') keepB.push(i); });
+      full = { la: la, lb: lb, keepA: keepA, keepB: keepB };
+      la = keepA.map(function (i) { return full.la[i]; }); lb = keepB.map(function (i) { return full.lb[i]; });
+      ka = keepA.map(function (i) { return ka[i]; }); kb = keepB.map(function (i) { return kb[i]; });
     }
     var parts, report = typeof o.onProgress === 'function' ? o.onProgress : null;
     if (report) report(0, 'align');
@@ -162,9 +167,35 @@
         for (var k6 = 0; k6 < p.value.length; k6++) { rows.push({ type: 'ins', l: null, r: { n: bi + 1, text: lb[bi] } }); bi++; }
       }
     }
+    if (full) { rows = withBlanks(rows, full); la = full.la; lb = full.lb; }
     return { rows: rows, hunks: hunksOf(rows), stats: statsOf(rows, la.length, lb.length), notes: textNotes(a, b), facts: { a: textFacts(a), b: textFacts(b) } };
   }
 
+  /** Re-inserts the blank lines left out by ignoreBlank: row numbers are
+   *  mapped back to the real line numbers, blank lines present at the same
+   *  point on both sides pair as 'eq', and the rest become one-sided
+   *  'blank' rows. */
+  function withBlanks(rows, f) {
+    var out = [], na = 0, nb = 0;
+    function flush(toA, toB) {
+      var ba = [], bb = [];
+      while (na < toA) { ba.push(na); na++; }
+      while (nb < toB) { bb.push(nb); nb++; }
+      var m = Math.min(ba.length, bb.length), i;
+      for (i = 0; i < m; i++) out.push({ type: 'eq', l: { n: ba[i] + 1, text: f.la[ba[i]] }, r: { n: bb[i] + 1, text: f.lb[bb[i]] } });
+      for (i = m; i < ba.length; i++) out.push({ type: 'blank', l: { n: ba[i] + 1, text: f.la[ba[i]] }, r: null });
+      for (i = m; i < bb.length; i++) out.push({ type: 'blank', l: null, r: { n: bb[i] + 1, text: f.lb[bb[i]] } });
+    }
+    rows.forEach(function (row) {
+      var ra = row.l ? f.keepA[row.l.n - 1] : null, rb = row.r ? f.keepB[row.r.n - 1] : null;
+      flush(ra == null ? na : ra, rb == null ? nb : rb);
+      if (row.l) { row.l.n = ra + 1; na = ra + 1; }
+      if (row.r) { row.r.n = rb + 1; nb = rb + 1; }
+      out.push(row);
+    });
+    flush(f.la.length, f.lb.length);
+    return out;
+  }
   /** Character-bigram Dice similarity of two lines, 0..1 (whitespace-insensitive). */
   function lineSimilarity(x, y) {
     x = x.replace(/\s+/g, ' ').trim(); y = y.replace(/\s+/g, ' ').trim();
@@ -213,7 +244,7 @@
   function hunksOf(rows) {
     var h = [], cur = null;
     for (var i = 0; i < rows.length; i++) {
-      if (rows[i].type !== 'eq') { if (!cur) cur = { start: i, end: i + 1 }; else cur.end = i + 1; }
+      if (rows[i].type !== 'eq' && rows[i].type !== 'blank') { if (!cur) cur = { start: i, end: i + 1 }; else cur.end = i + 1; }
       else if (cur) { h.push(cur); cur = null; }
     }
     if (cur) h.push(cur);
@@ -250,8 +281,9 @@
     if (context == null || context < 0) return rows;
     var out = [], i = 0;
     while (i < rows.length) {
-      if (rows[i].type !== 'eq') { out.push(rows[i]); i++; continue; }
-      var j = i; while (j < rows.length && rows[j].type === 'eq') j++;
+      var same = function (r) { return r.type === 'eq' || r.type === 'blank'; };
+      if (!same(rows[i])) { out.push(rows[i]); i++; continue; }
+      var j = i; while (j < rows.length && same(rows[j])) j++;
       var run = j - i, head = i === 0 ? 0 : context, tail = j === rows.length ? 0 : context;
       if (run > head + tail + 1) {
         for (var k = 0; k < head; k++) out.push(rows[i + k]);

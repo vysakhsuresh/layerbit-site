@@ -2237,6 +2237,21 @@ def _(t):
     eq(t.call("mergedOutput()"), "x\r\nY\r\n", "merged download lost the CRLF line endings")
 
 
+@case("text-diff-checker", "edge", "bug 15: ignore blank lines reports no change for an added blank line")
+def _(t):
+    t.page.check("#ignoreBlank")
+    t.set("text1", "a\nb\n"); t.set("text2", "a\n\n\nb\n")
+    t.call("run()"); t.wait(150)
+    expect("0 change blocks" in t.text("diffStats"), t.text("diffStats"))
+    eq(t.count("#splitPanel .hunk-bar"), 0, "hunk shown for a blank line")
+    t.set("text2", "a\n\nB\n"); t.call("run()"); t.wait(150)
+    t.call("mergeAll('right')")
+    eq(t.val("mergedText"), "a\n\nB\n", "accept all with blank lines")
+    t.call("mergeAll('left')")
+    eq(t.val("mergedText"), "a\nb\n", "keep all with blank lines")
+    t.page.uncheck("#ignoreBlank")
+
+
 @case("text-diff-checker", "typical", "audit: ignore-whitespace/case and highlight options re-run the diff live")
 def _(t):
     t.set("text1", "Hello  World\nsecond line\n")

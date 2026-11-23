@@ -670,10 +670,11 @@
         lastHunk = hi;
         const lh = row.l ? E.renderLine(row.l.text, row.l.segs, lang, showWs) : '';
         const rh = row.r ? E.renderLine(row.r.text, row.r.segs, lang, showWs) : '';
-        const lt = row.type === 'eq' ? 'match' : row.type === 'ins' ? 'blank' : 'removed';
-        const rt = row.type === 'eq' ? 'match' : row.type === 'del' ? 'blank' : 'added';
+        const ig = row.type === 'blank';
+        const lt = row.type === 'eq' || (ig && row.l) ? 'match' : row.type === 'ins' || ig ? 'blank' : 'removed';
+        const rt = row.type === 'eq' || (ig && row.r) ? 'match' : row.type === 'del' || ig ? 'blank' : 'added';
         S.push(`<div class="drow">${cell('l', lt, row.l ? row.l.n : '', row.l ? lh : '&nbsp;')}${cell('r', rt, row.r ? row.r.n : '', row.r ? rh : '&nbsp;')}</div>`);
-        if (row.type === 'eq') U.push(`<div class="diff-line line-match"><div class="diff-num"><span>${row.l.n}</span><span>${row.r.n}</span></div><div class="diff-text">${lh}</div></div>`);
+        if (row.type === 'eq' || ig) U.push(`<div class="diff-line line-match${ig ? ' line-ignored' : ''}"><div class="diff-num"><span>${row.l ? row.l.n : ''}</span><span>${row.r ? row.r.n : ''}</span></div><div class="diff-text">${row.l ? lh : rh}</div></div>`);
         else { let u = ''; if (row.l) u += `<div class="diff-line line-removed has-diff"><div class="diff-num"><span>${row.l.n}</span><span></span></div><div class="diff-text">${lh}</div></div>`; if (row.r) u += `<div class="diff-line line-added has-diff"><div class="diff-num"><span></span><span>${row.r.n}</span></div><div class="diff-text">${rh}</div></div>`; U.push(u); }
       });
       if (!rows.length) { S.length = 0; U.length = 0; S.push('<div class="diff-empty">Both inputs are empty.</div>'); U.push(S[0]); }
@@ -694,16 +695,18 @@
       // reverted, in which case the result is exactly the original.
       const { rows, hunks } = last; const out = []; let r = 0;
       const allLeft = decisions.length > 0 && decisions.every(d => d === 'left');
-      const same = row => allLeft ? (row.l || row.r).text : (row.r || row.l).text;
+      // a 'blank' row (a blank line ignored by the option) exists on one side only
+      const same = row => row.type === 'blank' ? (allLeft ? row.l : row.r) && (allLeft ? row.l : row.r).text : allLeft ? (row.l || row.r).text : (row.r || row.l).text;
+      const keep = row => { const t = same(row); if (t != null) out.push(t); };
       hunks.forEach((h, i) => {
-        for (; r < h.start; r++) out.push(same(rows[r]));
+        for (; r < h.start; r++) keep(rows[r]);
         const left = [], right = [];
         for (let k = h.start; k < h.end; k++) { if (rows[k].l) left.push(rows[k].l.text); if (rows[k].r) right.push(rows[k].r.text); }
         const d = decisions[i];
         if (d === 'left') out.push(...left); else if (d === 'both') out.push(...left, ...right); else out.push(...right);
         r = h.end;
       });
-      for (; r < rows.length; r++) out.push(same(rows[r]));
+      for (; r < rows.length; r++) keep(rows[r]);
       const facts = last.facts || { a: { finalNewline: /\n$/.test(last.a) }, b: { finalNewline: /\n$/.test(last.b) } };
       const nl = (allLeft ? facts.a.finalNewline : facts.b.finalNewline) && out.length ? '\n' : '';
       return out.join('\n') + nl;
