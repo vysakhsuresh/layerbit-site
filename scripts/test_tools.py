@@ -2148,6 +2148,19 @@ def _(t):
     expect("cancelled" in t.text("outputSection").lower() and not t.visible("#diffProgress"), "cancel did not stop the comparison")
 
 
+@case("text-diff-checker", "edge", "bug 10: pasting into the CSV tab refreshes the key columns")
+def _(t):
+    t.call("setMode('table')")
+    t.set("text1", "id,name,qty\n1,Widget,5\n2,Gadget,6\n3,Doohickey,7\n")
+    t.set("text2", "id,name,qty\n3,Doohickey,7\n1,Widget,9\n2,Gadget,6\n")
+    t.wait(500)
+    opts = t.call("[...document.querySelectorAll('#keyCol option')].map(o => o.textContent)")
+    expect("id" in opts, f"key columns not refreshed: {opts}")
+    eq(t.call("document.querySelector('#keyCol option:checked').textContent"), "id", "id column not chosen")
+    t.call("run()"); t.wait(150)
+    expect("~1 changed" in t.text("diffStats"), "re-sorted file: " + t.text("diffStats"))
+
+
 @case("text-diff-checker", "typical", "audit: ignore-whitespace/case and highlight options re-run the diff live")
 def _(t):
     t.set("text1", "Hello  World\nsecond line\n")

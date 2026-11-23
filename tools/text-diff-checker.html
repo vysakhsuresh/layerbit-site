@@ -1109,6 +1109,7 @@
 
     function swapInputs() { const t = $('text1').value; $('text1').value = $('text2').value; $('text2').value = t; const n = names.a; names.a = names.b; names.b = n; updateMeta(); if ($('outputSection').style.display !== 'none') run(true); }
     function clearInputs() {
+      keyUserChoice = null;
       ['text1', 'text2', 'baseText', 'oursText', 'theirsText', 'patchOriginal', 'patchText', 'mergedText'].forEach(id => $(id).value = '');
       names = { a: 'original', b: 'modified' }; zips = { a: null, b: null };
       $('zipAInfo').innerHTML = '<i data-lucide="folder-input"></i><span>Drop a .zip of the first folder here</span>'; $('zipBInfo').innerHTML = '<i data-lucide="folder-input"></i><span>Drop a .zip of the second folder here</span>';
@@ -1440,20 +1441,25 @@
     function structAsText() { const [a, b] = window._structDocs; $('text1').value = E.canonicalJson(a); $('text2').value = E.canonicalJson(b); names = { a: 'original.json', b: 'modified.json' }; updateMeta(); setMode('text'); run(); }
 
     // ---- table
+    // Key options are column NAMES (the engine looks each one up in both
+    // files' own headers); '-1' means match by row order.
+    let keyUserChoice = null;
     function refreshKeyColumns() {
-      const sel = $('keyCol'), prev = sel.value;
+      const sel = $('keyCol');
       const rows = E.parseCsv($('text1').value || $('text2').value);
       const hdr = E.uniqueHeaders(rows[0] || []);
-      sel.innerHTML = '<option value="-1">row order</option>' + hdr.map((h, i) => `<option value="${i}">${E.esc(h || '(column ' + (i + 1) + ')')}</option>`).join('');
-      // prefer an id-like column
-      const guess = hdr.findIndex(h => /^(id|_id|key|sku|code|email|uuid|guid|ref|no\.?|number)$/i.test(String(h).trim()));
-      sel.value = prev !== '-1' && +prev < hdr.length ? prev : guess >= 0 ? String(guess) : (hdr.length ? '0' : '-1');
+      sel.innerHTML = '<option value="-1">row order</option>' + hdr.map(h => `<option value="${E.esc(h)}">${E.esc(h)}</option>`).join('');
+      const guess = hdr.find(h => /^(id|_id|key|sku|code|email|uuid|guid|ref|no\.?|number)$/i.test(String(h).trim()));
+      sel.value = keyUserChoice != null && (keyUserChoice === '-1' || hdr.includes(keyUserChoice)) ? keyUserChoice : guess != null ? guess : (hdr.length ? hdr[0] : '-1');
     }
+    $('keyCol').addEventListener('change', () => { keyUserChoice = $('keyCol').value; });
+    let keyTimer = null;
+    ['text1', 'text2'].forEach(id => $(id).addEventListener('input', () => { if (mode !== 'table') return; clearTimeout(keyTimer); keyTimer = setTimeout(refreshKeyColumns, 150); }));
     function runTable() {
       const A = E.parseCsv($('text1').value), B = E.parseCsv($('text2').value);
       if (!A.length || !B.length) { showError('Both sides need at least a header row.'); return; }
-      const key = +$('keyCol').value;
-      const r = E.tableDiff(A, B, key);
+      const key = $('keyCol').value;
+      const r = E.tableDiff(A, B, { keys: key === '-1' ? [] : [key] });
       const cell = v => E.esc(v == null ? '' : String(v));
       $('resultTitle').textContent = `Row comparison${r.keyName ? ' keyed by ' + r.keyName : ' by row order'}`;
       $('diffStats').innerHTML = `<span class="st-add">+${r.added.length} rows</span><span class="st-del">−${r.removed.length} rows</span><span class="st-mod">~${r.changed.length} changed</span><span>${r.unchanged} unchanged</span>${r.colsAdded.length ? `<span class="st-add">columns added: ${E.esc(r.colsAdded.join(', '))}</span>` : ''}${r.colsRemoved.length ? `<span class="st-del">columns removed: ${E.esc(r.colsRemoved.join(', '))}</span>` : ''}`;
@@ -1551,7 +1557,13 @@
       else if (s.mode === 'patch') { $('patchOriginal').value = s.a || ''; $('patchText').value = s.patch || ''; }
       else { $('text1').value = s.a || ''; $('text2').value = s.b || ''; }
       updateMeta();
-      if (s.mode === 'table') { refreshKeyColumns(); if (s.opts && s.opts.keyCol) $('keyCol').value = s.opts.keyCol; }
+      if (s.mode === 'table') {
+        refreshKeyColumns();
+        const v = s.opts && s.opts.keyCol, names_ = [...$('keyCol').options].map(o => o.value);
+        // older share links stored a column index
+        const pick = v == null ? null : names_.includes(String(v)) ? String(v) : /^\d+$/.test(String(v)) && names_[+v + 1] ? names_[+v + 1] : null;
+        if (pick) { keyUserChoice = pick; $('keyCol').value = pick; }
+      }
       $('keyFieldLabel').style.display = $('arrMode').value === 'key' ? '' : 'none';
       if ((s.a || s.base || s.b) && s.mode !== 'zip') run();
     }
