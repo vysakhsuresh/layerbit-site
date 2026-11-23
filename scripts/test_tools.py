@@ -3844,6 +3844,41 @@ def _(t):
     expect(res[1] >= 25, f"progress reported {res[1]} times")
 
 
+LOAD_SCRIPT = """src => new Promise((res, rej) => { const s = document.createElement('script'); s.src = new URL(src, location.href).href; s.onload = res; s.onerror = () => rej(new Error('could not load ' + src)); document.head.appendChild(s); })"""
+
+
+@case("json-to-table", "maximal", "shared virtual list: a million rows keep under 100 nodes and scroll to any index")
+def _(t):
+    t.page.evaluate(LOAD_SCRIPT, "../js/ui/virtual.js")
+    t.call("""() => { const host = document.createElement('div'); host.id = 'vtest'; host.style.height = '400px'; document.querySelector('main').prepend(host);
+      window._vl = LBVirtual.list(host, { count: 1000000, rowHeight: 24, render: i => 'row ' + i }); }""")
+    t.wait(100)
+    n = t.count("#vtest .lb-vrow")
+    expect(0 < n < 100, f"{n} rows in the DOM")
+    eq(t.call("document.querySelector('#vtest .lb-vrow').textContent"), "row 0", "first row")
+    t.call("_vl.scrollToIndex(999999)"); t.wait(150)
+    expect(t.call("[...document.querySelectorAll('#vtest .lb-vrow')].some(r => r.textContent === 'row 999999')"), "last row not reachable")
+    t.call("_vl.scrollToIndex(500000)"); t.wait(150)
+    rows = t.call("[...document.querySelectorAll('#vtest .lb-vrow')].map(r => r.textContent)")
+    expect("row 500000" in rows, f"middle row not shown: {rows[:3]}")
+    t.call("_vl.update(3)"); t.wait(100)
+    eq(t.count("#vtest .lb-vrow"), 3, "update(count)")
+
+
+@case("json-to-table", "typical", "shared virtual grid: sticky header, escaped cells, column widths, 200,000 rows")
+def _(t):
+    t.page.evaluate(LOAD_SCRIPT, "../js/ui/virtual.js")
+    t.call("""() => { const host = document.createElement('div'); host.id = 'vgrid'; host.style.height = '300px'; document.querySelector('main').prepend(host);
+      window._vg = LBVirtual.grid(host, { columns: [{ label: 'id', width: 80 }, { label: 'name' }, { label: 'note', width: 200 }], count: 200000, cell: (r, c) => c === 0 ? String(r) : c === 1 ? '<b>user ' + r + '</b>' : 'x' }); }""")
+    t.wait(100)
+    expect(t.count("#vgrid .lb-vgrid-head .lb-vcell") == 3, "header cells")
+    expect(t.count("#vgrid .lb-vrow") < 100, "grid rows are not virtual")
+    eq(t.call("document.querySelector('#vgrid .lb-vrow .lb-vcell:nth-child(2)').textContent"), "<b>user 0</b>", "cells are text, never HTML")
+    eq(t.call("document.querySelector('#vgrid .lb-vrow b')"), None, "HTML was injected")
+    t.call("document.getElementById('vgrid').scrollTop = 5000"); t.wait(150)
+    expect(t.call("document.querySelector('#vgrid .lb-vgrid-head').getBoundingClientRect().top === document.getElementById('vgrid').getBoundingClientRect().top"), "header is not sticky")
+
+
 # ----------------------------------------------------------------------------
 # runner
 # ----------------------------------------------------------------------------
