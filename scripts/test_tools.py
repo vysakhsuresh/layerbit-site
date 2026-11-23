@@ -3827,6 +3827,24 @@ def _(t):
 
 
 # ----------------------------------------------------------------------------
+# Phase 0 shared modules
+# ----------------------------------------------------------------------------
+@case("log-analyzer", "maximal", "shared stream reader: a 30 MB file is counted line by line inside a Worker, with progress")
+def _(t):
+    res = t.call("""() => new Promise((resolve, reject) => {
+      const url = new URL('../js/engines/stream.js', location.href).href;
+      const code = `importScripts(${JSON.stringify(url)});
+        onmessage = async e => { let n = 0, ticks = 0; for await (const l of LBStream.lines(e.data, { chunkSize: 1 << 20, onProgress: () => ticks++ })) n++; postMessage([n, ticks]); };`;
+      const w = new Worker(URL.createObjectURL(new Blob([code], { type: 'text/javascript' })));
+      w.onmessage = e => { w.terminate(); resolve(e.data); }; w.onerror = e => reject(new Error(e.message));
+      const line = '2026-01-01 10:00:00 INFO request served in 12 ms by worker-7\\n';
+      w.postMessage(new Blob(Array(500000).fill(line)));
+    })""")
+    eq(res[0], 500000, "lines counted in the worker")
+    expect(res[1] >= 25, f"progress reported {res[1]} times")
+
+
+# ----------------------------------------------------------------------------
 # runner
 # ----------------------------------------------------------------------------
 def free_port():
