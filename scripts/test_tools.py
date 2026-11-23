@@ -4639,6 +4639,88 @@ def _(t):
 LOAD_SCRIPT = """src => new Promise((res, rej) => { const s = document.createElement('script'); s.src = new URL(src, location.href).href; s.onload = res; s.onerror = () => rej(new Error('could not load ' + src)); document.head.appendChild(s); })"""
 
 
+LOG_JSON = '\n'.join([
+    '{"ts":"2026-11-23T09:00:00Z","level":"info","msg":"started","user":{"id":7}}',
+    '{"ts":"2026-11-23T09:00:05Z","level":50,"msg":"db down","user":{"id":9}}',
+    '{"ts":"2026-11-23T09:00:09Z","level":"warn","msg":"slow"}'])
+
+
+@case("log-analyzer", "typical", "2.13: JSON, logfmt, syslog and Windows logs: level, time and fields are read; a line shows its fields")
+def _(t):
+    t.set("logInput", LOG_JSON); t.wait(450)
+    eq([t.text("countAll"), t.text("countErr"), t.text("countWarn"), t.text("countInfo")], ["3", "1", "1", "1"], "JSON levels (pino 50 = error)")
+    expect("JSON" in t.text("logFormat"), t.text("logFormat"))
+    t.click("#logOutput .log-line:nth-child(2) .line-content")
+    expect("user.id" in t.text("logOutput") and "9" in t.text("logOutput"), "fields not shown: " + t.text("logOutput")[:300])
+    t.set("logInput", 'time=2026-11-23T09:00:00Z level=error msg="disk full" mount=/var\ntime=2026-11-23T09:00:01Z level=info msg=ok'); t.wait(450)
+    eq(t.text("countErr"), "1", "logfmt"); expect("logfmt" in t.text("logFormat"), t.text("logFormat"))
+    t.set("logInput", '<11>1 2026-11-23T09:15:02Z web01 app 123 ID1 - disk full\n<14>1 2026-11-23T09:15:03Z web01 app 123 ID1 - all good'); t.wait(450)
+    eq([t.text("countErr"), t.text("countInfo")], ["1", "1"], "syslog severities")
+    t.set("logInput", 'Error\t11/23/2026 9:15:02 AM\tService Control Manager\t7031\tNone\tThe Print Spooler service terminated unexpectedly.\nInformation\t11/23/2026 9:16:00 AM\tKernel-General\t12\tNone\tThe operating system started.'); t.wait(450)
+    eq([t.text("countErr"), t.text("countInfo")], ["1", "1"], "Windows levels")
+    expect("Windows" in t.text("logFormat"), t.text("logFormat"))
+
+
+@case("log-analyzer", "typical", "2.13: timeline histogram; dragging across it zooms the list to that time range")
+def _(t):
+    lines = [f"2026-11-23T09:{m:02d}:00Z [{'ERROR' if m % 10 == 0 else 'INFO'}] tick {m}" for m in range(60)]
+    t.set("logInput", "\n".join(lines)); t.wait(450)
+    expect(t.visible("#timeline"), "no timeline")
+    box = t.page.locator("#timeline").bounding_box()
+    t.page.mouse.move(box["x"] + box["width"] * 0.02, box["y"] + box["height"] / 2); t.page.mouse.down()
+    t.page.mouse.move(box["x"] + box["width"] * 0.24, box["y"] + box["height"] / 2, steps=5); t.page.mouse.up()
+    t.wait(200)
+    n = t.count("#logOutput .log-line")
+    expect(5 <= n <= 20, f"zoom did not narrow the list: {n} lines")
+    expect("tick 5" in t.text("logOutput") and "tick 0 " not in t.text("logOutput") + " " and "tick 59" not in t.text("logOutput"), "wrong range: " + t.text("logOutput")[:200])
+    t.click("#btnZoomReset"); t.wait(150)
+    eq(t.count("#logOutput .log-line"), 60, "reset")
+
+
+@case("log-analyzer", "typical", "2.13: several files are merged by time, each line tagged with its file")
+def _(t):
+    a = "2026-11-23 09:00:00 [INFO] a1\n2026-11-23 09:00:10 [INFO] a2\n"
+    b = "2026-11-23 09:00:05 [ERROR] b1\n2026-11-23 09:00:15 [INFO] b2\n"
+    t.page.set_input_files("#logFileInput", [{"name": "app.log", "mimeType": "text/plain", "buffer": a.encode()}, {"name": "db.log", "mimeType": "text/plain", "buffer": b.encode()}])
+    t.wait_for("document.querySelectorAll('#logOutput .log-line').length === 4", 8000)
+    order = t.call("[...document.querySelectorAll('#logOutput .line-content')].map(e => e.textContent.match(/[ab][12]/)[0])")
+    eq(order, ["a1", "b1", "a2", "b2"], "merged by time")
+    expect("db.log" in t.text("logOutput") and "app.log" in t.text("logOutput"), "files not named")
+    expect("2 files" in t.text("logFormat"), t.text("logFormat"))
+
+
+@case("log-analyzer", "typical", "2.13: saved searches and highlight rules are kept for next time")
+def _(t):
+    t.call("localStorage.removeItem('layerbit-log-searches'); localStorage.removeItem('layerbit-log-highlights')")
+    t.set("logInput", "2026-11-23 09:00:00 [ERROR] db timeout\n2026-11-23 09:00:01 [INFO] cache warm\n"); t.wait(450)
+    t.set("searchInput", "timeout"); t.click("#btnSaveSearch")
+    t.set("hlPattern", "cache"); t.click("#btnAddHl")
+    t.page.reload(); t.wait(300)
+    t.set("logInput", "2026-11-23 09:00:00 [ERROR] db timeout\n2026-11-23 09:00:01 [INFO] cache warm\n"); t.wait(450)
+    expect("timeout" in t.text("savedSearches"), "saved search lost: " + t.text("savedSearches"))
+    t.click("#savedSearches .saved-chip")
+    eq(t.val("searchInput"), "timeout", "saved search applied")
+    t.set("searchInput", "", event="input"); t.wait(150)
+    hl = t.call("[...document.querySelectorAll('#logOutput .log-line')].filter(l => l.style.getPropertyValue('--hl')).map(l => l.textContent.includes('cache'))")
+    eq(hl, [True], "highlight rule kept and applied")
+    t.call("localStorage.removeItem('layerbit-log-searches'); localStorage.removeItem('layerbit-log-highlights')")
+
+
+@case("log-analyzer", "maximal", "2.13: a 60 MB log streams through a Worker; counts and timeline cover it all and grep scans the whole file")
+def _(t):
+    t.call("""() => { const parts = []; for (let i = 0; i < 800000; i++) parts.push('2026-11-23T' + String(9 + Math.floor(i / 360000)).padStart(2, '0') + ':' + String(Math.floor(i / 6000) % 60).padStart(2, '0') + ':' + String(Math.floor(i / 100) % 60).padStart(2, '0') + 'Z [' + (i % 50 === 0 ? 'ERROR' : 'INFO') + '] request ' + i + ' served by worker-' + (i % 8) + ' in ' + (i % 97) + ' ms\\n');
+      parts.push('2026-11-23T11:00:00Z [ERROR] needle-xyz-final at the very end\\n');
+      window.__lf = new File(parts, 'huge.log'); handleLogFiles([window.__lf]); }""")
+    t.wait_for("window.logBig && window.logBig.done", 60000)
+    expect(t.call("window.__lf.size") > 55e6, "file not large enough: %s" % t.call("window.__lf.size"))
+    eq(t.text("countAll").replace(",", ""), "800001", "every event counted")
+    eq(t.text("countErr").replace(",", ""), "16001", "every error counted")
+    expect(t.visible("#timeline"), "no timeline for the big file")
+    t.set("searchInput", "needle-xyz", event="input")
+    t.wait_for("document.getElementById('logOutput').textContent.includes('needle-xyz-final')", 60000)
+    t.call("clearLogs()")
+
+
 @case("json-to-table", "maximal", "shared virtual list: a million rows keep under 100 nodes and scroll to any index")
 def _(t):
     t.page.evaluate(LOAD_SCRIPT, "../js/ui/virtual.js")

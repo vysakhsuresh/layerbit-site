@@ -65,7 +65,9 @@
 
   function lines(blob, opts) {
     opts = opts || {};
-    var src = chunks(blob, opts), decoder = null, buf = '', number = 0, queue = [], finished = false, pendingCR = false;
+    // queue + qi: lines waiting to be handed out (an index, not shift(), so
+    // a 4 MB chunk of short lines costs linear time, not quadratic)
+    var src = chunks(blob, opts), decoder = null, buf = '', number = 0, queue = [], qi = 0, finished = false, pendingCR = false;
     var it = { encoding: opts.encoding || null };
     function push(text, final) {
       buf += text;
@@ -83,7 +85,8 @@
       if (final && buf.length) { queue.push({ number: ++number, text: buf }); buf = ''; }
     }
     function pull() {
-      if (queue.length) return Promise.resolve({ done: false, value: queue.shift() });
+      if (qi < queue.length) return Promise.resolve({ done: false, value: queue[qi++] });
+      if (qi) { queue = []; qi = 0; }
       if (finished) return Promise.resolve({ done: true, value: undefined });
       // the encoding is decided once, from the first 64 KB of the file
       if (!decoder) return (it.encoding ? Promise.resolve(it.encoding) : readSlice(blob, 0, Math.min(blob.size, 65536)).then(detectEncoding)).then(function (label) {

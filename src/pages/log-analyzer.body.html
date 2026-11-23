@@ -3,7 +3,7 @@
   <main id="main" class="page-main">
   <div class="hero">
     <h1>Log File Analyzer</h1>
-    <p>Parse raw server logs in your browser: count severities, filter and grep lines, and find the messages that repeat most.</p>
+    <p>Parse server logs in your browser: JSON, logfmt, Apache/nginx, syslog and Windows Event Viewer formats are recognised, with fields per line. See a timeline and zoom into it, merge several files by time, grep files of any size streamed from disk, and save searches and highlight rules. Nothing is uploaded.</p>
   </div>
 
   <div class="ide-container">
@@ -12,7 +12,7 @@
       <div class="pane-header">
         <div class="pane-title"><i data-lucide="file-text"></i> Raw Server Dump</div>
         <div class="btn-group">
-          <input type="file" id="logFileInput" style="display: none;" accept=".txt,.log,.csv" />
+          <input type="file" id="logFileInput" style="display: none;" accept=".txt,.log,.csv,.json,.jsonl,.ndjson,.out,.err" multiple />
           <button class="btn" onclick="document.getElementById('logFileInput').click()"><i data-lucide="upload"></i> Upload File</button>
           
           <button class="btn" onclick="clearLogs()"><i data-lucide="trash-2"></i> Clear</button>
@@ -45,6 +45,21 @@
           <input type="text" id="searchInput" class="search-input" placeholder="Grep output..." oninput="grepLogs()">
           <label class="regex-toggle" title="Treat the grep as a regular expression (case-insensitive)"><input type="checkbox" id="grepRegex" onchange="grepLogs()"> .*</label>
         </div>
+      </div>
+      <div class="log-meta"><span id="logFormat" class="log-format"></span></div>
+      <div class="timeline-wrap" id="timelineWrap" hidden>
+        <canvas id="timeline" height="64" aria-label="Events over time; drag across it to zoom the list to that time range"></canvas>
+        <div class="timeline-bar"><span id="zoomLabel" class="zoom-label">Drag across the timeline to zoom to a time range.</span><button type="button" class="btn btn-inline" id="btnZoomReset" hidden>Reset zoom</button></div>
+      </div>
+      <div class="saved-row">
+        <button type="button" class="btn btn-inline" id="btnSaveSearch" title="Keep this search (text, .* and level) in this browser"><i data-lucide="bookmark"></i> Save search</button>
+        <span id="savedSearches" class="chips"></span>
+        <span class="hl-tools">
+          <input type="text" id="hlPattern" class="hl-input" placeholder="highlight text or /regex/" aria-label="Text or /regex/ to highlight" spellcheck="false">
+          <select id="hlColor" class="mini-select" aria-label="Highlight colour"><option value="rgba(250,204,21,0.22)">yellow</option><option value="rgba(56,189,248,0.22)">blue</option><option value="rgba(244,114,182,0.22)">pink</option><option value="rgba(74,222,128,0.20)">green</option></select>
+          <button type="button" class="btn btn-inline" id="btnAddHl"><i data-lucide="highlighter"></i> Highlight</button>
+          <span id="hlRules" class="chips"></span>
+        </span>
       </div>
       <div class="top-messages" id="topMessages"></div>
 
@@ -96,6 +111,18 @@
       <div class="faq-container">
         
         <div class="faq-item">
+          <button class="faq-question">How large a log file can it open? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>Any size. A file of 32 MB or more is read from disk in slices by a background worker: the counts, the timeline and the most repeated messages cover every event, the list holds every error and warning (up to 100,000) and the first 50,000 other events, and a grep scans the whole file again in the background. In our tests a 57 MB log of 800,000 events was counted and searched in about 5 seconds.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">Can I combine logs from several servers? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>Yes. Choose or drop several files at once and their events are merged by time into one list, each line labelled with its file, so you can follow a request from the load balancer to the database. Events at the same moment keep the order of the files, and a line with no time stays right after the line before it. Times with no zone are read as UTC.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">What do the timeline, saved searches and highlights do? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>The timeline shows how many events of each level happened in each slice of time; drag across it to list only that period. <strong>Save search</strong> keeps the current search, its regex switch and level filter as a chip you can click later. <strong>Highlight</strong> colours every line matching a word or <code>/regex/</code>. Saved searches and highlights stay in this browser only, never on a server.</p></div>
+        </div>
+        <div class="faq-item">
           <button class="faq-question">How does Layerbit secure my sensitive production logs? <i data-lucide="chevron-down"></i></button>
           <div class="faq-answer">
             <p>We prioritize zero-trust security architecture. The entire application operates strictly within your browser's DOM. Logs uploaded or pasted are processed locally by JavaScript. Absolutely no data is transmitted over the network, ensuring complete air-gapped security for sensitive production data.</p>
@@ -105,7 +132,7 @@
         <div class="faq-item">
           <button class="faq-question">What log formats does the Forensic Engine support? <i data-lucide="chevron-down"></i></button>
           <div class="faq-answer">
-            <p>Our complex Regex mapping logic automatically structures raw text from standard Nginx (access/error), Apache, Node.js, Spring Boot, and Docker containers. It targets universal markers for severities like ERROR, FATAL, WARN, INFO, NOTICE, and DEBUG, as well as common ISO/UTC timestamps.</p>
+            <p>The format is detected from the first lines: <strong>JSON lines</strong> (level, time and message fields under their usual names, pino's numeric levels too), <strong>logfmt</strong> (<code>key=value</code>), <strong>Apache/nginx access logs</strong> (severity from the HTTP status), <strong>syslog</strong> RFC 3164 and RFC 5424 (severity from the priority), <strong>Windows Event Viewer</strong> text exports, and plain text with level words such as ERROR, FATAL, WARN, INFO and DEBUG. Click a line to see its parsed fields; search a field with <code>status&gt;=500</code> or <code>user.id=7</code>. A stack trace stays with the line it belongs to.</p>
           </div>
         </div>
 
@@ -177,6 +204,7 @@
     <div class="info-panel">
       <h2><i data-lucide="git-merge"></i> Deployment Methodology Changelog</h2>
       <ul class="changelog-list">
+        <li><span class="changelog-tag">v3.0.0</span> Formats recognised: JSON lines, logfmt, Apache/nginx access logs, syslog (RFC 3164 and 5424) and Windows Event Viewer exports, with each line's fields on click and field searches such as status&gt;=500. A timeline of events by level that you drag across to zoom. Several files merged by time. Files of 32 MB and more are streamed from disk with counts, timeline and grep over the whole file (the 150 MB warning is gone). Saved searches and highlight rules, kept in your browser.</li>
         <li><span class="changelog-tag">v2.3.0</span> Stack traces and tracebacks stay with their log line: lines with no timestamp that start with whitespace, at, Caused by:, ... N more, Traceback, or an exception name are part of the event before them, so filtering to errors keeps the trace, and counts, copy and export are per event.</li>
         <li><span class="changelog-tag">v2.2.0</span> Dropping a log file onto the page works again (it failed with an error), and files are decoded from their bytes: UTF-8, UTF-16 and Windows-1252 are detected, and the encoding can be changed after loading.</li>
         <li><span class="changelog-tag">v2.1.0</span> Added a DEBUG/TRACE filter with its own count, a regular-expression mode for grep, and a "most repeated messages" readout that collapses timestamps, ids, numbers and quoted values so the same fault logged a thousand times with different ids shows as one line with a count.</li>
@@ -202,6 +230,8 @@
   {{FOOTER}}
 
   <script src="../js/shared.js"></script>
+  <script src="../js/engines/stream.js"></script>
+  <script src="../js/engines/logs.js"></script>
 
 
   <script>
@@ -215,28 +245,10 @@
     const countWarn = document.getElementById('countWarn');
     const countInfo = document.getElementById('countInfo');
 
-    // File upload. Rendering is capped at RENDER_CAP rows, so large files
-    // stay responsive; only truly huge ones (over 150 MB) get a confirmation.
-    const LARGE_FILE_WARN_BYTES = 150 * 1024 * 1024;
+    // Files: several are merged by time; one of 32 MB or more is streamed
+    // from disk in a Worker (handleLogFiles below).
     const logFileInput = document.getElementById('logFileInput');
-    logFileInput.addEventListener('change', function(e) {
-      const file = e.target.files[0];
-      if (!file) return;
-
-      if (file.size > LARGE_FILE_WARN_BYTES) {
-        const mb = (file.size / (1024 * 1024)).toFixed(0);
-        if (!confirm(`This file is ${mb} MB and will use a lot of memory in this tab. Load it anyway?`)) { this.value = ''; return; }
-      }
-
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        const text = e.target.result;
-        if (text.length > BIG_LOG_CHARS) loadBig(text, file.name);
-        else { setBig(null); logInput.value = text; analyzeLogs(); }
-      };
-      Layerbit.readFile(file).then(t => reader.onload({ target: { result: t } }));  // bytes decoded by the kernel (encoding detected)
-      this.value = ''; // Reset so the same file can be uploaded again if needed
-    });
+    logFileInput.addEventListener('change', function (e) { handleLogFiles(e.target.files); this.value = ''; });
 
     // Regex Patterns
     const rxError = /\b(ERROR|ERR|FATAL|EXCEPTION|CRITICAL|CRIT|SEVERE|EMERG|EMERGENCY|ALERT|PANIC)\b/i;
@@ -263,50 +275,239 @@
       return 'type-normal';
     }
     const BADGE = { 'type-error': [rxError, 'badge-error', new RegExp(rxError.source, 'gi')], 'type-warn': [rxWarn, 'badge-warn', new RegExp(rxWarn.source, 'gi')], 'type-info': [rxInfo, 'badge-info', new RegExp(rxInfo.source, 'gi')], 'type-debug': [rxDebug, 'badge-debug', new RegExp(rxDebug.source, 'gi')] };
-    function lineHtml(r) {
+    function lineHtml(r, i) {
       let safe = escapeHTML(r.line);
       const b = BADGE[r.cls];
       if (b && b[0].test(r.line)) safe = safe.replace(b[2], `<span class="${b[1]}">$&</span>`);
       else if (b) safe = safe.replace(/(&quot;|") (\d{3}) /, (m, q, code) => `${q} <span class="${b[1]}">${code}</span> `);
       safe = safe.replace(rxTime, '<span class="hl-timestamp">$&</span>');
-      return `<div class="log-line ${r.cls}"><div class="line-num">${r.n}</div><div class="line-content">${safe}</div></div>`;
+      const hl = hlRules.find(h => h.re.test(r.line));
+      return `<div class="log-line ${r.cls}${hl ? ' hl-rule' : ''}" data-i="${i}"${hl ? ` style="--hl:${hl.c}"` : ''}><div class="line-num">${r.n}</div><div class="line-content">${r.src ? `<span class="log-src">${escapeHTML(r.src)}</span> ` : ''}${safe}</div></div>`;
     }
 
-    const TS_START = /^\s*(\[?\d{4}-\d{2}-\d{2}[T ]|\[?\d{1,2}\/\w{3}\/\d{4}|[A-Z][a-z]{2}\s+\d{1,2} \d\d:\d\d|\d{1,3}(\.\d{1,3}){3}\s|\{\s*")/;
-    function isContinuation(line) {
-      if (TS_START.test(line)) return false;
-      return /^\s+\S/.test(line) || /^(at |Caused by:|Suppressed:|\.\.\. \d+ (more|common frames omitted)|Traceback \(most recent call last\))/.test(line)
-        || /^([\w$]+\.)+[\w$]*(Exception|Error|Throwable)\b/.test(line) || /^[A-Z]\w*(Error|Exception|Warning)(:|$)/.test(line);
+    // Events, not lines, read by js/engines/logs.js: the format is detected
+    // (JSON, logfmt, Apache/nginx access, syslog, Windows Event Viewer, or
+    // plain text), and each event gets its level, time and fields.
+    const CLS = { ERROR: 'type-error', WARN: 'type-warn', INFO: 'type-info', DEBUG: 'type-debug' };
+    const FORMAT_NAMES = { json: 'JSON lines', logfmt: 'logfmt (key=value)', access: 'Apache / nginx access log', syslog: 'syslog (RFC 3164)', syslog5424: 'syslog (RFC 5424)', windows: 'Windows Event Viewer export', plain: 'plain text' };
+    let multiSources = null;   // several files, merged by time
+    let zoom = null;           // {t0, t1} picked on the timeline
+    function eventsOf(text, name) {
+      const evs = LBLogs.splitEvents(text), year = new Date().getUTCFullYear();
+      const fmt = LBLogs.detectFormat(evs.slice(0, 50).map(e => e.text.split('\n')[0]));
+      return { fmt, list: evs.map(e => { const p = LBLogs.parseEvent(e.text, fmt, year), first = e.text.split('\n')[0];
+        return { n: e.line, line: e.text, cls: (p.level && CLS[p.level]) || classify(first), ts: p.ts, fields: p.fields, src: name || null, extra: e.text.split('\n').length - 1 }; }) };
     }
     function analyzeLogs() {
-      const rawText = (bigLog != null ? bigLog : logInput.value).trim();
-      if (!rawText) return;
-      const lines = rawText.split(/\r?\n/);
+      if (bigMode) return;
+      const sources = multiSources || [{ name: null, text: (bigLog != null ? bigLog : logInput.value) }];
+      if (!sources.some(s => s.text.trim())) return;
       const counts = { 'type-error': 0, 'type-warn': 0, 'type-info': 0, 'type-debug': 0, 'type-normal': 0 };
       messageTally.clear();
-      parsed = [];
-      // Events, not lines: a stack trace or traceback (lines with no
-      // timestamp that start with whitespace, 'at ', 'Caused by:', '... N
-      // more', 'Traceback', or an exception name) belongs to the line before.
-      let last = null;
-      for (let i = 0; i < lines.length; i++) {
-        const line = lines[i];
-        if (!line.trim()) continue;
-        if (last && isContinuation(line)) { last.line += '\n' + line; last.extra++; continue; }
-        const cls = classify(line);
-        counts[cls]++;
-        tallyMessage(line);
-        last = { n: i + 1, line, cls, extra: 0 };
-        parsed.push(last);
-      }
-      countAll.innerText = parsed.length.toLocaleString();
-      countErr.innerText = counts['type-error'].toLocaleString();
-      countWarn.innerText = counts['type-warn'].toLocaleString();
-      countInfo.innerText = counts['type-info'].toLocaleString();
-      document.getElementById('countDebug').innerText = counts['type-debug'].toLocaleString();
+      const streams = sources.map(s => eventsOf(s.text, s.name));
+      parsed = streams.length > 1 ? LBLogs.mergeByTime(streams.map(s => s.list)) : streams[0].list;
+      parsed.forEach(r => { counts[r.cls]++; tallyMessage(r.line.split('\n')[0]); });
+      const fmts = [...new Set(streams.map(s => s.fmt))];
+      document.getElementById('logFormat').textContent = `Format: ${fmts.map(f => FORMAT_NAMES[f]).join(', ')}${streams.length > 1 ? ` · ${streams.length} files merged by time` : ''}`;
+      showCounts(parsed.length, counts['type-error'], counts['type-warn'], counts['type-info'], counts['type-debug']);
       renderTopMessages();
+      zoom = null;
+      drawTimeline(LBLogs.histogram(parsed.map(r => r.ts), parsed.map(r => levelOfCls(r.cls)), 80));
       searchInput.value = '';
       setFilter('ALL');
+    }
+    function showCounts(all, e, w, i, d) {
+      countAll.innerText = all.toLocaleString(); countErr.innerText = e.toLocaleString(); countWarn.innerText = w.toLocaleString(); countInfo.innerText = i.toLocaleString();
+      document.getElementById('countDebug').innerText = d.toLocaleString();
+    }
+    const levelOfCls = c => ({ 'type-error': 'ERROR', 'type-warn': 'WARN', 'type-info': 'INFO', 'type-debug': 'DEBUG' }[c] || null);
+
+    // ---- timeline: stacked bars per time bucket; drag to zoom
+    let hist = null;
+    const TL_COLORS = { ERROR: '#f87171', WARN: '#fbbf24', INFO: '#38bdf8', DEBUG: '#a78bfa', OTHER: '#64748b' };
+    function drawTimeline(h) {
+      hist = h;
+      const wrap = document.getElementById('timelineWrap'), cv = document.getElementById('timeline');
+      wrap.hidden = !h || !h.counts.length;
+      if (wrap.hidden) return;
+      const dpr = window.devicePixelRatio || 1, W = cv.clientWidth || 600, H = 64;
+      cv.width = W * dpr; cv.height = H * dpr;
+      const g = cv.getContext('2d'); g.setTransform(dpr, 0, 0, dpr, 0, 0); g.clearRect(0, 0, W, H);
+      const max = Math.max(1, ...h.counts.map(c => c.ERROR + c.WARN + c.INFO + c.DEBUG + c.OTHER)), bw = W / h.counts.length;
+      h.counts.forEach((c, i) => {
+        let y = H;
+        ['OTHER', 'DEBUG', 'INFO', 'WARN', 'ERROR'].forEach(k => { if (!c[k]) return; const hh = Math.max(1, c[k] / max * (H - 4)); g.fillStyle = TL_COLORS[k]; g.fillRect(i * bw + 0.5, y - hh, Math.max(1, bw - 1), hh); y -= hh; });
+      });
+      if (zoom) { const x0 = (zoom.t0 - h.start) / (h.step * h.counts.length) * W, x1 = (zoom.t1 - h.start) / (h.step * h.counts.length) * W; g.fillStyle = 'rgba(56,189,248,0.18)'; g.fillRect(x0, 0, x1 - x0, H); }
+      updateZoomLabel();
+    }
+    const fmtT = ms => new Date(ms).toISOString().replace('T', ' ').replace(/\.\d{3}Z$/, '').replace(/:00$/, '');
+    function updateZoomLabel() {
+      const lab = document.getElementById('zoomLabel'), btn = document.getElementById('btnZoomReset');
+      btn.hidden = !zoom;
+      if (!hist || !hist.counts.length) return;
+      const end = hist.start + hist.step * hist.counts.length;
+      lab.textContent = zoom ? `Showing ${fmtT(zoom.t0)} to ${fmtT(zoom.t1)} UTC.` : `${fmtT(hist.start)} to ${fmtT(end)} UTC · drag across the timeline to zoom.${hist.untimed ? ` ${hist.untimed.toLocaleString()} events have no time.` : ''}`;
+    }
+    (function timelineDrag() {
+      const cv = document.getElementById('timeline'); let x0 = null;
+      const tAt = x => { const r = cv.getBoundingClientRect(); return hist.start + Math.max(0, Math.min(1, (x - r.left) / r.width)) * hist.step * hist.counts.length; };
+      cv.addEventListener('mousedown', e => { if (!hist) return; x0 = e.clientX; });
+      window.addEventListener('mouseup', e => {
+        if (x0 === null) return;
+        const a = tAt(Math.min(x0, e.clientX)), b = tAt(Math.max(x0, e.clientX)); x0 = null;
+        if (b - a < hist.step / 2) return;
+        zoom = { t0: a, t1: b }; drawTimeline(hist); renderRows();
+      });
+      document.getElementById('btnZoomReset').addEventListener('click', () => { zoom = null; drawTimeline(hist); renderRows(); });
+      window.addEventListener('resize', () => { if (hist) drawTimeline(hist); });
+    })();
+
+    // ---- saved searches and highlight rules (kept in this browser only)
+    const store = { get: k => { try { return JSON.parse(localStorage.getItem(k) || '[]'); } catch (e) { return []; } }, set: (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) { /* storage off */ } } };
+    let hlRules = [];
+    function compileHl(p) { const m = /^\/(.+)\/([a-z]*)$/.exec(p); try { return m ? new RegExp(m[1], m[2].includes('i') ? m[2] : m[2] + 'i') : new RegExp(p.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i'); } catch (e) { return null; } }
+    function loadRules() { hlRules = store.get('layerbit-log-highlights').map(r => Object.assign(r, { re: compileHl(r.p) })).filter(r => r.re); renderChips(); }
+    function renderChips() {
+      document.getElementById('savedSearches').innerHTML = store.get('layerbit-log-searches').map((s, i) => `<span class="chip"><button type="button" class="saved-chip" data-i="${i}" title="Apply this search">${escapeHTML(s.q)}${s.level !== 'ALL' ? ' · ' + s.level : ''}${s.regex ? ' (.*)' : ''}</button><button type="button" class="chip-x" data-del-search="${i}" aria-label="Remove saved search">×</button></span>`).join('');
+      document.getElementById('hlRules').innerHTML = hlRules.map((r, i) => `<span class="chip" style="background:${r.c}"><span>${escapeHTML(r.p)}</span><button type="button" class="chip-x" data-del-hl="${i}" aria-label="Remove highlight">×</button></span>`).join('');
+    }
+    document.getElementById('btnSaveSearch').addEventListener('click', () => {
+      const q = searchInput.value.trim(); if (!q) { Layerbit.toast('Type a search first'); return; }
+      const list = store.get('layerbit-log-searches').filter(s => !(s.q === q && s.level === currentFilter));
+      list.unshift({ q, regex: document.getElementById('grepRegex').checked, level: currentFilter }); store.set('layerbit-log-searches', list.slice(0, 20)); renderChips();
+    });
+    document.getElementById('btnAddHl').addEventListener('click', () => {
+      const p = document.getElementById('hlPattern').value.trim(); if (!p || !compileHl(p)) { Layerbit.toast('Type text or a valid /regex/ to highlight'); return; }
+      const list = store.get('layerbit-log-highlights'); list.push({ p, c: document.getElementById('hlColor').value }); store.set('layerbit-log-highlights', list);
+      document.getElementById('hlPattern').value = ''; loadRules(); renderRows();
+    });
+    document.querySelector('.saved-row').addEventListener('click', e => {
+      const ch = e.target.closest('.saved-chip'), ds = e.target.closest('[data-del-search]'), dh = e.target.closest('[data-del-hl]');
+      if (ch) { const s = store.get('layerbit-log-searches')[+ch.dataset.i]; if (!s) return; searchInput.value = s.q; document.getElementById('grepRegex').checked = !!s.regex; setFilter(s.level || 'ALL'); }
+      if (ds) { const l = store.get('layerbit-log-searches'); l.splice(+ds.dataset.delSearch, 1); store.set('layerbit-log-searches', l); renderChips(); }
+      if (dh) { const l = store.get('layerbit-log-highlights'); l.splice(+dh.dataset.delHl, 1); store.set('layerbit-log-highlights', l); loadRules(); renderRows(); }
+    });
+    loadRules();
+
+    // ---- a line's fields, on click
+    logOutput.addEventListener('click', e => {
+      const line = e.target.closest('.log-line'); if (!line || e.target.closest('button, a')) return;
+      const next = line.nextElementSibling;
+      if (next && next.classList.contains('log-fields')) { next.remove(); return; }
+      const r = lastRows[+line.dataset.i]; if (!r) return;
+      const f = Object.assign({}, r.ts != null ? { time: new Date(r.ts).toISOString() } : {}, r.src ? { file: r.src } : {}, r.fields || {});
+      const keys = Object.keys(f);
+      line.insertAdjacentHTML('afterend', `<div class="log-fields">${keys.length ? keys.map(k => `<span class="f-key">${escapeHTML(k)}</span><span class="f-val">${escapeHTML(String(f[k]))}</span>`).join('') : '<span class="f-val">No fields: this line is plain text.</span>'}</div>`);
+    });
+
+    // ---- several files: merged by time; a big file: streamed in a Worker
+    const STREAM_MIN = 32 * 1024 * 1024;
+    const streamMin = () => typeof window.logStreamMin === 'number' ? window.logStreamMin : STREAM_MIN;
+    let bigMode = null;
+    function handleLogFiles(files) {
+      files = [...files].filter(Boolean); if (!files.length) return;
+      stopBig();
+      const total = files.reduce((n, f) => n + f.size, 0);
+      if (total >= streamMin()) {
+        if (files.length > 1) Layerbit.toast(`Merging files works up to ${Layerbit.fmtBytes(streamMin())} in all; opening ${files[0].name} on its own.`, 'warn');
+        return streamBig(files[0]);
+      }
+      if (files.length === 1) { multiSources = null; return Layerbit.readFile(files[0]).then(t => { if (t.length > BIG_LOG_CHARS) loadBig(t, files[0].name); else { setBig(null); logInput.value = t; analyzeLogs(); } }); }
+      Promise.all(files.map(f => Layerbit.readFile(f))).then(texts => {
+        setBig(null); logInput.value = '';
+        multiSources = files.map((f, i) => ({ name: f.name, text: texts[i] }));
+        const bar = document.getElementById('bigLogBar'); bar.hidden = false;
+        document.getElementById('bigLogLabel').textContent = `${files.length} files merged by time: ${files.map(f => f.name).join(', ')} (${Layerbit.fmtBytes(total)})`;
+        logInput.placeholder = 'Several files are loaded and merged by time. Paste or type to replace them.';
+        analyzeLogs();
+      });
+    }
+    function workerSrc() {
+      const src = p => JSON.stringify(new URL(p, location.href).href);
+      return `importScripts(${src('../js/engines/stream.js')}, ${src('../js/engines/logs.js')});
+        const rxTime = ${rxTime.toString()};
+        ${normaliseMessage.toString()}
+        const KEEP_IMPORTANT = 100000, KEEP_OTHER = 50000, HITS = 100000;
+        async function events(file, fmtRef, onEvent, onProgress, lazy) {
+          const year = new Date().getUTCFullYear(); let cur = null, buf = [];
+          const flush = () => { if (cur) onEvent(cur, lazy ? null : LBLogs.parseEvent(cur.text, fmtRef.fmt, year)); cur = null; };
+          const take = (text, n) => { if (!text.trim()) return; if (cur && LBLogs.isContinuation(text)) { cur.text += '\\n' + text; return; } flush(); cur = { n, text }; };
+          for await (const l of LBStream.lines(file, { onProgress })) {
+            if (!fmtRef.fmt) { buf.push(l); if (buf.length >= 50) { fmtRef.fmt = LBLogs.detectFormat(buf.map(b => b.text)); buf.forEach(b => take(b.text, b.number)); buf = null; } continue; }
+            take(l.text, l.number);
+          }
+          if (!fmtRef.fmt) { fmtRef.fmt = LBLogs.detectFormat(buf.map(b => b.text)); buf.forEach(b => take(b.text, b.number)); }
+          flush();
+        }
+        onmessage = async e => {
+          const o = e.data, fmtRef = { fmt: o.fmt || null }; let last = 0;
+          const prog = (d, t) => { const now = Date.now(); if (now - last > 200) { last = now; postMessage({ progress: t ? d / t : 1 }); } };
+          try {
+            if (o.cmd === 'index') {
+              const counts = { ERROR: 0, WARN: 0, INFO: 0, DEBUG: 0, OTHER: 0 }, ts = [], lv = [], kept = [], tally = new Map(); let other = 0, important = 0, total = 0;
+              await events(o.file, fmtRef, (ev, p) => {
+                const level = p.level || LBLogs.levelOf(ev.text.split('\\n')[0]); total++; counts[level || 'OTHER']++; ts.push(p.ts); lv.push(level);
+                const key = normaliseMessage(ev.text.split('\\n')[0]); if (key) { const t = tally.get(key); if (t) t.count++; else if (tally.size < 50000) tally.set(key, { count: 1, sample: ev.text.split('\\n')[0].trim() }); }
+                const imp = level === 'ERROR' || level === 'WARN';
+                if ((imp && important < KEEP_IMPORTANT) || (!imp && other < KEEP_OTHER)) { if (imp) important++; else other++; kept.push({ n: ev.n, line: ev.text, level, ts: p.ts, fields: p.fields }); }
+              }, prog);
+              const top = [...tally.entries()].filter(([, v]) => v.count > 1).sort((a, b) => b[1].count - a[1].count).slice(0, 6);
+              postMessage({ done: true, counts, total, format: fmtRef.fmt, hist: LBLogs.histogram(ts, lv, 80), top, kept });
+            } else {
+              const re = o.regex ? new RegExp(o.q, 'i') : null, q = o.q.toLowerCase(), hits = []; let found = 0;
+              const year = new Date().getUTCFullYear();
+              // only a matching event is parsed
+              await events(o.file, fmtRef, ev => { if (re ? re.test(ev.text) : ev.text.toLowerCase().includes(q)) { found++; if (hits.length < HITS) { const p = LBLogs.parseEvent(ev.text, fmtRef.fmt, year); hits.push({ n: ev.n, line: ev.text, level: p.level || LBLogs.levelOf(ev.text.split('\\n')[0]), ts: p.ts, fields: p.fields }); } } }, prog, true);
+              postMessage({ done: true, hits, found });
+            }
+          } catch (err) { postMessage({ error: err.message || String(err) }); }
+        };`;
+    }
+    let bigURL = null;
+    function runWorker(msg, onProgress) {
+      if (!bigURL) bigURL = URL.createObjectURL(new Blob([workerSrc()], { type: 'text/javascript' }));
+      const w = new Worker(bigURL);
+      const p = new Promise((res, rej) => { w.onmessage = e => { const m = e.data; if (m.progress !== undefined) { if (onProgress) onProgress(m.progress); return; } w.terminate(); if (m.error) rej(new Error(m.error)); else res(m); }; w.onerror = e => { w.terminate(); rej(new Error(e.message || 'The log reader stopped.')); }; });
+      w.postMessage(msg); p.worker = w; return p;
+    }
+    function stopBig() { if (bigMode && bigMode.job) bigMode.job.worker.terminate(); if (bigMode && bigMode.grep) bigMode.grep.worker.terminate(); bigMode = null; window.logBig = null; }
+    function streamBig(file) {
+      setBig(null); multiSources = null; logInput.value = '';
+      bigMode = { file }; window.logBig = { done: false };
+      const bar = document.getElementById('bigLogBar'), label = document.getElementById('bigLogLabel'), mode = bigMode;
+      bar.hidden = false; logInput.placeholder = `${file.name} is read from disk in slices. Paste or type to replace it.`;
+      label.textContent = `${file.name} · ${Layerbit.fmtBytes(file.size)} · reading…`;
+      mode.job = runWorker({ cmd: 'index', file }, f => { label.textContent = `${file.name} · ${Layerbit.fmtBytes(file.size)} · reading… ${Math.round(f * 100)}%`; });
+      mode.job.then(m => {
+        if (bigMode !== mode) return;
+        mode.format = m.format;
+        parsed = m.kept.map(k => ({ n: k.n, line: k.line, cls: (k.level && CLS[k.level]) || 'type-normal', ts: k.ts, fields: k.fields, src: null, extra: k.line.split('\n').length - 1 }));
+        mode.kept = parsed;
+        showCounts(m.total, m.counts.ERROR, m.counts.WARN, m.counts.INFO, m.counts.DEBUG);
+        messageTally.clear(); m.top.forEach(([k, v]) => messageTally.set(k, v)); renderTopMessages();
+        document.getElementById('logFormat').textContent = `Format: ${FORMAT_NAMES[m.format]} · streamed from disk: counts, the timeline and grep cover all ${m.total.toLocaleString()} events; the list holds every error and warning (up to 100,000) and the first 50,000 other events.`;
+        label.textContent = `${file.name} · ${Layerbit.fmtBytes(file.size)} · ${m.total.toLocaleString()} events`;
+        zoom = null; drawTimeline(m.hist);
+        searchInput.value = ''; setFilter('ALL');
+        window.logBig = { done: true };
+      }, err => { if (bigMode === mode) { label.textContent = `${file.name}: ${err.message}`; window.logBig = { done: true, error: err.message }; } });
+    }
+    // grep on a streamed file scans the whole file again in the worker
+    function bigGrep() {
+      const q = searchInput.value, mode = bigMode;
+      if (mode.grep) mode.grep.worker.terminate();
+      if (!q) { parsed = mode.kept; renderRowsNow(); return; }
+      const rx = document.getElementById('grepRegex').checked;
+      if (rx) { try { new RegExp(q); } catch (e) { searchInput.classList.add('bad'); return; } }
+      logOutput.innerHTML = '<div class="log-empty">Searching the whole file…</div>';
+      mode.grep = runWorker({ cmd: 'grep', file: mode.file, fmt: mode.format, q, regex: rx }, f => { const el = logOutput.querySelector('.log-empty'); if (el) el.textContent = `Searching the whole file… ${Math.round(f * 100)}%`; });
+      mode.grep.then(m => {
+        if (bigMode !== mode || searchInput.value !== q) return;
+        parsed = m.hits.map(k => ({ n: k.n, line: k.line, cls: (k.level && CLS[k.level]) || 'type-normal', ts: k.ts, fields: k.fields, src: null, extra: 0 }));
+        mode.grepNote = m.found > m.hits.length ? `${m.found.toLocaleString()} events match; the first ${m.hits.length.toLocaleString()} are listed.` : '';
+        renderRowsNow(true);
+      }, () => {});
     }
 
     // Rows matching the active severity filter and grep, from the parsed
@@ -320,14 +521,21 @@
         catch (e) { searchInput.classList.add('bad'); return null; }
       } else searchInput.classList.remove('bad');
       const ql = q.toLowerCase(), want = currentFilter === 'ALL' ? null : 'type-' + currentFilter.toLowerCase();
-      return parsed.filter(r => (!want || r.cls === want) && (!q || (re ? re.test(r.line) : r.line.toLowerCase().includes(ql))));
+      // field=value, field!=value, field>n, field<n search a parsed field (status>=500, user.id=7)
+      const fm = /^([\w.@-]+)\s*(=|!=|>=|<=|>|<)\s*(.+)$/.exec(q.trim()), useField = fm && !re && parsed.some(r => r.fields && r.fields[fm[1]] !== undefined);
+      const fieldOk = r => { const v = r.fields ? r.fields[fm[1]] : undefined; if (v === undefined) return false; const a = parseFloat(v), b = parseFloat(fm[3]), num = !isNaN(a) && !isNaN(b) && /^-?[\d.]+$/.test(fm[3]);
+        switch (fm[2]) { case '=': return num ? a === b : String(v).toLowerCase() === fm[3].toLowerCase(); case '!=': return num ? a !== b : String(v).toLowerCase() !== fm[3].toLowerCase(); case '>': return num && a > b; case '<': return num && a < b; case '>=': return num && a >= b; default: return num && a <= b; } };
+      const inZoom = r => !zoom || (r.ts != null && r.ts >= zoom.t0 && r.ts <= zoom.t1);
+      if (bigMode && q) return parsed.filter(r => (!want || r.cls === want) && inZoom(r));
+      return parsed.filter(r => (!want || r.cls === want) && inZoom(r) && (!q || (useField ? fieldOk(r) : re ? re.test(r.line) : r.line.toLowerCase().includes(ql))));
     }
-    function renderRows() {
-      if (!parsed.length) return;
+    function renderRows() { return renderRowsNow(); }
+    function renderRowsNow(fromGrep) {
+      if (!parsed.length && !(bigMode && fromGrep)) { if (bigMode) logOutput.innerHTML = '<div class="log-empty">No events match.</div>'; return; }
       const rows = matchingRows();
       if (!rows) return;
       lastRows = rows; shown = 0;
-      logOutput.innerHTML = rows.length ? '' : '<div class="log-empty">No lines match this filter.</div>';
+      logOutput.innerHTML = rows.length ? (bigMode && bigMode.grepNote && fromGrep ? `<div class="log-empty">${bigMode.grepNote}</div>` : '') : '<div class="log-empty">No lines match this filter.</div>';
       logOutput.setAttribute('data-filter', 'ALL');
       logOutput.scrollTop = 0;
       showMore();
@@ -335,7 +543,7 @@
     function showMore() {
       const more = logOutput.querySelector('.log-more'); if (more) more.remove();
       const next = lastRows.slice(shown, shown + RENDER_STEP);
-      logOutput.insertAdjacentHTML('beforeend', next.map(lineHtml).join(''));
+      logOutput.insertAdjacentHTML('beforeend', next.map((r, k) => lineHtml(r, shown + k)).join(''));
       shown += next.length;
       if (shown < lastRows.length) {
         logOutput.insertAdjacentHTML('beforeend', `<div class="log-empty log-more">Showing ${shown.toLocaleString()} of ${lastRows.length.toLocaleString()} matching lines. <button type="button" class="btn btn-inline" onclick="showMore()">Show ${Math.min(RENDER_STEP, lastRows.length - shown).toLocaleString()} more</button> Copy and Export always include all ${lastRows.length.toLocaleString()}.</div>`);
@@ -363,13 +571,14 @@
       if (t && t.length > BIG_LOG_CHARS) { e.preventDefault(); loadBig(t, 'Pasted log'); }
     });
     document.getElementById('btnEditBig').addEventListener('click', () => { const t = bigLog; setBig(null); logInput.value = t; });
-    if (window.Layerbit) Layerbit.onDrop(files => { const file = files[0]; Layerbit.readFile(file).then(t => { if (t.length > BIG_LOG_CHARS) loadBig(t, file.name); else { setBig(null); logInput.value = t; analyzeLogs(); } }); });
+    if (window.Layerbit) Layerbit.onDrop(files => handleLogFiles(files));
 
     // Parse as soon as a log is pasted or typed; the button stays for re-runs.
     let parseTimer = null;
-    logInput.addEventListener('input', () => { if (bigLog != null) setBig(null); clearTimeout(parseTimer); parseTimer = setTimeout(() => { if (logInput.value.trim()) analyzeLogs(); }, logInput.value.length > 2000000 ? 700 : 300); });
+    logInput.addEventListener('input', () => { if (bigMode) stopBig(); multiSources = null; if (bigLog != null) setBig(null); clearTimeout(parseTimer); parseTimer = setTimeout(() => { if (logInput.value.trim()) analyzeLogs(); }, logInput.value.length > 2000000 ? 700 : 300); });
 
     function clearLogs() {
+      stopBig(); multiSources = null; zoom = null; drawTimeline(null); document.getElementById('logFormat').textContent = '';
       parsed = []; messageTally.clear(); renderTopMessages(); setBig(null);
       logInput.value = '';
       logOutput.innerHTML = '<div style="padding: 20px; color: var(--text-muted); text-align: center; font-style: italic;">Awaiting log ingestion...</div>';
@@ -416,11 +625,12 @@
       currentFilter = type;
       document.querySelectorAll('.stat-badge').forEach(b => b.classList.remove('active'));
       document.getElementById('filter-' + type).classList.add('active');
-      renderRows();
+      if (bigMode && bigMode.kept && searchInput.value && !bigMode.grep) return bigGrep();
+      renderRowsNow(true);
     }
 
     let grepTimer = null;
-    function grepLogs() { clearTimeout(grepTimer); grepTimer = setTimeout(renderRows, parsed.length > 50000 ? 200 : 60); }
+    function grepLogs() { clearTimeout(grepTimer); grepTimer = setTimeout(() => bigMode && bigMode.kept ? bigGrep() : renderRowsNow(), bigMode ? 400 : parsed.length > 50000 ? 200 : 60); }
 
     function getVisibleLogText() {
       const rows = matchingRows();

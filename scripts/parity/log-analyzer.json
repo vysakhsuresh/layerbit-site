@@ -1,0 +1,74 @@
+{
+  "tool": "log-analyzer",
+  "page": "tools/log-analyzer.html",
+  "competitors": [
+    {
+      "name": "klogg",
+      "price": "free, open source (desktop)",
+      "checked": "2026-11"
+    },
+    {
+      "name": "Datadog Log Management",
+      "price": "ingest from $0.10 per GB",
+      "checked": "2026-11"
+    }
+  ],
+  "claims": [
+    {
+      "feature": "Multi-GB streaming (files read from disk in slices)",
+      "competitor": "klogg",
+      "tests": [
+        "ui:log-analyzer:2.13: a 60 MB log streams through a Worker; counts and timeline cover it all and grep scans the whole file",
+        "unit:stream:lines: time grows linearly with the lines in a chunk (no quadratic queue; the Log Analyzer read 50 MB at 4 MB/s)"
+      ]
+    },
+    {
+      "feature": "Encoding detection",
+      "competitor": "klogg",
+      "tests": [
+        "ui:log-analyzer:A5: a dropped log file is read (encoding detected) instead of failing"
+      ]
+    },
+    {
+      "feature": "Multi-line event grouping",
+      "competitor": "Datadog",
+      "tests": [
+        "ui:log-analyzer:B7: a stack trace belongs to its log line: counts, filters and export are per event",
+        "unit:logs:splitEvents: continuation lines join the event before; counts events, not lines"
+      ]
+    },
+    {
+      "feature": "Parsers: JSON, key=value, Apache/Nginx, syslog, Windows events",
+      "competitor": "Datadog (out-of-the-box parsers)",
+      "tests": [
+        "ui:log-analyzer:2.13: JSON, logfmt, syslog and Windows logs: level, time and fields are read; a line shows its fields",
+        "unit:logs:detectFormat: JSON, logfmt, access, syslog 3164 and 5424, Windows, plain",
+        "unit:logs:parseEvent: fields, level and time for each format",
+        "unit:logs:parseTime: ISO, Apache, syslog, Windows, epoch seconds and milliseconds"
+      ]
+    },
+    {
+      "feature": "Timeline histogram with zoom",
+      "competitor": "Datadog",
+      "tests": [
+        "ui:log-analyzer:2.13: timeline histogram; dragging across it zooms the list to that time range",
+        "unit:logs:histogram: nice bucket sizes, counts per level, empty span handled"
+      ]
+    },
+    {
+      "feature": "Merging several files by time",
+      "competitor": "klogg",
+      "tests": [
+        "ui:log-analyzer:2.13: several files are merged by time, each line tagged with its file",
+        "unit:logs:mergeByTime: k-way merge, ties keep file order, untimed events stay after their predecessor"
+      ]
+    },
+    {
+      "feature": "Saved searches and highlight rules",
+      "competitor": "klogg",
+      "tests": [
+        "ui:log-analyzer:2.13: saved searches and highlight rules are kept for next time"
+      ]
+    }
+  ]
+}
