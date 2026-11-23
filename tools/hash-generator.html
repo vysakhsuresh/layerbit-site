@@ -171,6 +171,7 @@
     .hint .bad { color: #f87171; font-weight: 600; }
     .muted { color: var(--text-muted); font-weight: 400; }
     .field label .muted { font-weight: 400; }
+    .eol-hint { padding: 8px 16px; font-size: 0.82em; color: var(--text-muted); border-top: 1px solid var(--border-color, rgba(255,255,255,0.06)); }
 
   </style>
 </head>
@@ -215,12 +216,14 @@
         <div class="pane-title"><i data-lucide="file-input"></i> Input</div>
         <div class="btn-group">
           <label class="check" title="Hash the text as UTF-8 bytes (default) or treat it as hex-encoded bytes"><select id="inputMode" class="mini-select"><option value="utf8">text (UTF-8)</option><option value="hex">hex bytes</option><option value="base64">base64 bytes</option></select></label>
+          <label class="check"><select id="lineEndings" class="mini-select" title="A text box always holds LF line breaks. Choose CRLF to process the text the way a Windows file stores it."><option value="lf">LF line breaks (as typed)</option><option value="crlf">CRLF line breaks (Windows)</option></select></label>
           <input type="file" id="fileInput" style="display:none;">
           <button class="btn" type="button" onclick="document.getElementById('fileInput').click()"><i data-lucide="upload"></i> File</button>
           <button class="btn" type="button" id="btnClear"><i data-lucide="trash-2"></i> Clear</button>
         </div>
       </div>
       <textarea id="textInput" class="editor" placeholder="Type or paste text, or drop a file anywhere on this pane...&#10;&#10;Hashes update as you type." spellcheck="false"></textarea>
+        <div class="eol-hint" id="eolHint">Text is hashed as UTF-8 with the line breaks chosen above. To hash a file exactly as it is on disk, byte for byte, open it with File.</div>
       <div class="hint-bar" id="inputMeta">0 bytes</div>
     </div>
 
@@ -361,6 +364,7 @@
     <div class="info-panel">
       <h2><i data-lucide="git-commit"></i> Changelog</h2>
       <ul class="changelog-list">
+        <li><span class="changelog-tag">v1.1.0</span> A line-endings option: text can be hashed with CRLF line breaks, as a Windows file stores them (a text box always holds LF, so a pasted Windows file used to give the LF hash). For a file's exact bytes, use File.</li>
         <li><span class="changelog-tag">v1.0.0</span> Initial release: MD5, SHA-1, SHA-256, SHA-384, SHA-512 of text (UTF-8, hex or base64 input) and files via drag-and-drop; HMAC with a UTF-8 key; hex or base64 output; constant-time checksum verification.</li>
       </ul>
     </div>
@@ -470,7 +474,7 @@
       </div>
     </div>
   </footer>
-  <script src="../js/kernel.js?v=067599f7e6"></script>
+  <script src="../js/kernel.js?v=8c8726db3d"></script>
 
   <script src="../js/shared.js?v=e2441a1728"></script>
   <script src="../js/md5.js?v=ac86a35839"></script>
@@ -478,6 +482,7 @@
   <script>
     const textInput = document.getElementById('textInput');
     const inputMode = document.getElementById('inputMode');
+    const $eol = document.getElementById('lineEndings');
     const inputMeta = document.getElementById('inputMeta');
     const inputPane = document.getElementById('inputPane');
     const fileInput = document.getElementById('fileInput');
@@ -501,7 +506,7 @@
     function inputBytes() {
       if (fileBytes) return fileBytes;
       const v = textInput.value;
-      if (inputMode.value === 'utf8') return new TextEncoder().encode(v);
+      if (inputMode.value === 'utf8') return new TextEncoder().encode(Layerbit.eol(v, $eol.value));
       if (inputMode.value === 'hex') {
         const h = v.replace(/\s+|0x/gi, '');
         if (h.length % 2 || /[^0-9a-f]/i.test(h)) throw new Error('Hex input must be an even number of hex digits (whitespace is ignored).');
@@ -611,6 +616,7 @@
     const debounced = () => { clearTimeout(timer); timer = setTimeout(digestAll, 60); };
     textInput.addEventListener('input', () => { if (fileBytes) { fileBytes = null; fileName = null; textInput.readOnly = false; } debounced(); });
     inputMode.addEventListener('change', digestAll);
+    $eol.addEventListener('change', digestAll);
     hmacKey.addEventListener('input', debounced);
     outB64.addEventListener('change', () => { renderDigests(); verify(); });
     outUpper.addEventListener('change', () => { renderDigests(); verify(); });

@@ -814,6 +814,9 @@
     version: '1.0.0', prefix: PREFIX, slug: SLUG, tools: TOOLS, guides: GUIDES,
     toast: toast, copy: copy, state: state, history: history_, fmtBytes: fmtBytes,
     palette: openPalette, sendTo: function (text, kind) { openPalette('send', { text: text, kind: kind || 'text' }); },
+    // Line endings for text a tool turns into bytes: a textarea always holds
+    // LF, so 'crlf' rewrites every line break as CRLF (Windows files).
+    eol: function (text, mode) { return mode === 'crlf' ? String(text).replace(/\r?\n/g, '\r\n') : String(text); },
     onDrop: function (fn) { dropHandler = fn; }, readFile: readFile, readFileInfo: readFileInfo, decodeBytes: decodeBytes, run: runTool,
     register: function (cfg) { TOOL = cfg; window.LB_TOOL = cfg; },
     netRequests: function () { return netLog.slice(); }

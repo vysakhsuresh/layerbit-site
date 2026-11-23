@@ -18,6 +18,7 @@
           <div class="pane-title"><i data-lucide="align-left"></i> Plain Text</div>
           <div class="header-actions">
             <span id="decodeError" class="error-text"><i data-lucide="alert-circle" style="width: 14px; display: inline; vertical-align: middle;"></i> Invalid Base64 String</span>
+            <select id="lineEndings" class="mini-select" title="A text box always holds LF line breaks. Choose CRLF to process the text the way a Windows file stores it."><option value="lf">LF line breaks (as typed)</option><option value="crlf">CRLF line breaks (Windows)</option></select>
             <button class="btn-action" onclick="clearContent('plainText', 'base64Text')"><i data-lucide="trash-2"></i> <span>Clear</span></button>
             <button class="btn-action" onclick="copyContent('plainText', this)"><i data-lucide="copy"></i> <span>Copy</span></button>
           </div>
@@ -197,6 +198,7 @@
     <div class="info-panel">
       <h2><i data-lucide="git-commit"></i> Changelog</h2>
       <ul class="changelog-list">
+        <li><span class="changelog-tag">v1.5.0</span> A line-endings option: text can be encoded with CRLF line breaks, as a Windows file stores them.</li>
         <li><span class="changelog-tag">v1.4.1</span> Added a URL-safe output toggle (RFC 4648 §5 alphabet, no padding) and a live byte/character readout, so the 33% overhead is visible on the input you actually have.</li>
         <li><span class="changelog-tag">v1.4.0</span> Decoder now accepts the URL-safe alphabet (<code>-</code> and <code>_</code>), ignores line wrapping and whitespace, and tolerates missing padding, so JWT segments and copied-from-a-log strings decode directly. Encoding and decoding use <code>TextEncoder</code>/<code>TextDecoder</code> for correct UTF-8 on multi-megabyte input.</li>
         <li><span class="changelog-tag">v1.3.0</span> Added deep clipboard API integration with a safe fallback mechanism for mobile devices handling massive image strings.</li>
@@ -391,7 +393,7 @@
     const b64Stats = document.getElementById('b64Stats');
     function encodePlain() {
       try {
-        let enc = encodeUtf8ToBase64(plainText.value);
+        let enc = encodeUtf8ToBase64(Layerbit.eol(plainText.value, document.getElementById('lineEndings').value));
         if (urlSafe.checked) enc = enc.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
         base64Text.value = enc;
         decodeError.classList.remove('active');
@@ -402,6 +404,7 @@
       }
     }
     plainText.addEventListener('input', encodePlain);
+    document.getElementById('lineEndings').addEventListener('change', encodePlain);
     urlSafe.addEventListener('change', encodePlain);
 
     base64Text.addEventListener('input', () => {

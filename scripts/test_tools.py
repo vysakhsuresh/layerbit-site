@@ -130,6 +130,15 @@ def _(t):
     expect(not t.visible("#decodeError"), "error shown for empty input")
 
 
+@case("base64", "edge", "A6: text can be encoded with CRLF line endings")
+def _(t):
+    t.set("plainText", "a\nb")
+    eq(t.val("base64Text"), "YQpi", "LF as typed")
+    t.select("lineEndings", "crlf")
+    eq(t.val("base64Text"), "YQ0KYg==", "CRLF")
+    t.select("lineEndings", "lf")
+
+
 @case("base64", "typical", "encode/decode ASCII")
 def _(t):
     t.set("plainText", "Hello, Layerbit!")
@@ -767,6 +776,15 @@ def _(t):
 def _(t):
     t.set("plainText", "")
     eq(t.val("encodedText"), "", "encoded")
+
+
+@case("url-encoder", "edge", "A6: multi-line text can be encoded with CRLF line endings")
+def _(t):
+    t.set("plainText", "a\nb")
+    eq(t.val("encodedText"), "a%0Ab", "LF as typed")
+    t.select("lineEndings", "crlf")
+    eq(t.val("encodedText"), "a%0D%0Ab", "CRLF")
+    t.select("lineEndings", "lf")
 
 
 @case("url-encoder", "typical", "smart mode keeps URL structure, encodes query values")
@@ -1708,6 +1726,17 @@ def _(t):
     t.wait_for("() => document.getElementById('d-SHA-256').textContent.length === 64")
     eq(t.text("d-SHA-256"), "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855", "sha256('')")
     eq(t.text("d-MD5"), "d41d8cd98f00b204e9800998ecf8427e", "md5('')")
+
+
+@case("hash-generator", "edge", "A6: text can be hashed with CRLF line endings, as a Windows file would have")
+def _(t):
+    t.set("textInput", "a\nb")
+    t.wait_for("() => document.getElementById('d-SHA-256').textContent === '7e18f737311b2dc3b2f269dd78396b0351f14fb66efa879f768cb23181883c78'")
+    expect(t.visible("#lineEndings"), "no line-endings option")
+    t.select("lineEndings", "crlf")
+    t.wait_for("() => document.getElementById('d-SHA-256').textContent === '18745f36a05e29072709042d6062ce54f1b08ff36c27ba80c39f81fb010c8ce2'")
+    expect("file" in t.text("eolHint").lower(), "no pointer to file mode for exact bytes")
+    t.select("lineEndings", "lf")
 
 
 @case("hash-generator", "typical", "known vectors for 'abc' and HMAC-SHA256")
@@ -3622,10 +3651,16 @@ def _(t):
 
 @case("base64", "typical", "kernel: history push/list/drawer and clear")
 def _(t):
-    t.call("Layerbit.history.push('base64', {input:'abc'}, 'first run')")
+    # opt-in (plan A1): nothing is written until the tool's switch is on
+    t.call("Layerbit.history.push('base64', {input:'abc'}, 'first run', {explicit: true})")
+    t.wait(150)
+    eq(t.call("Layerbit.history.list('base64', 5).then(r=>r.length)"), 0, "saved with the switch off")
+    t.call("Layerbit.history.setEnabled('base64', true)")
+    t.call("Layerbit.history.push('base64', {input:'abc'}, 'first run', {explicit: true})")
     t.wait(150)
     labels = t.call("Layerbit.history.list('base64', 5).then(r=>r.map(x=>x.label))")
     expect("first run" in labels, f"history: {labels}")
+    t.call("Layerbit.history.setEnabled('base64', false)")
     t.click("#lbHistoryBtn")
     t.wait(150)
     expect(t.count("#lbHistList .lb-pal-item") >= 1, "drawer empty")
