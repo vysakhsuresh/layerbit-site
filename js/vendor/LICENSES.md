@@ -30,6 +30,7 @@ offline, and sends no visitor IP to a CDN operator).
 | `schemas/github-workflow.json` | SchemaStore github-workflow, annotations stripped | 2026-11 | Apache-2.0 |
 | `hash-wasm.min.js` | hash-wasm (`dist/index.umd.min.js`, WebAssembly embedded; `window.hashwasm`) | 4.12.0 | MIT |
 | `xslt-polyfill.min.js` | xslt-polyfill (libxslt/libxml2 compiled to WebAssembly; replaces `window.XSLTProcessor`, file copied unchanged) | 1.0.37 | BSD-3-Clause (libxslt, libxml2: MIT) |
+| `node-sql-parser.min.js` | node-sql-parser (`umd/index.umd.js`, all 14 database grammars; sets `window.Parser`; loaded on first syntax check; source-map comment removed) | 5.4.0 | Apache-2.0 |
 | `wasm/selftest.wasm` | Layerbit's own 41-byte test module for the WebAssembly loader | n/a | AGPL-3.0 |
 
 To upgrade one: download the same `dist/` file from the new version's npm

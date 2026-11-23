@@ -7,7 +7,7 @@
       "@id": "https://layerbit.co.in/tools/sql-formatter.html#app",
       "name": "SQL Formatter \u0026 Beautifier",
       "url": "https://layerbit.co.in/tools/sql-formatter.html",
-      "description": "Format and beautify SQL for MySQL, PostgreSQL, SQL Server, SQLite, BigQuery and more, with keyword case and indent options, or minify it. Runs in your browser.",
+      "description": "Format SQL in 17 dialects with shareable style profiles, six checks with one-click fixes, syntax errors per database and many files at once, in your browser.",
       "applicationCategory": "DeveloperApplication",
       "operatingSystem": "Any (runs in the browser)",
       "browserRequirements": "Requires JavaScript",
@@ -19,7 +19,17 @@
       },
       "publisher": {
         "@id": "https://layerbit.co.in/#organization"
-      }
+      },
+      "featureList": [
+        "Formatting for 17 SQL dialects",
+        "Named style profiles with JSON import and export",
+        "Six checks with one-click fixes",
+        "Syntax errors per database with line and column",
+        "Format selection only",
+        "Many files to a zip with a report",
+        "Autocomplete from pasted CREATE TABLE statements",
+        "Minify"
+      ]
     },
     {
       "@type": "BreadcrumbList",
@@ -47,6 +57,7 @@
     },
     {
       "@type": "FAQPage",
+      "@id": "https://layerbit.co.in/tools/sql-formatter.html#faq",
       "mainEntity": [
         {
           "@type": "Question",
@@ -66,14 +77,21 @@
         },
         {
           "@type": "Question",
+          "name": "Are my style profiles uploaded anywhere?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "No. Profiles are kept in this browser's local storage. Export writes them to a JSON file you can commit to a repository or send to a colleague, and Import reads that file back. In a private window the browser may discard them when you close it."
+          }
+        },
+        {
+          "@type": "Question",
           "name": "Does this tool validate or execute the queries?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "No. This tool acts strictly as a structural formatter and syntax highlighter. It organizes the text to make it human-readable but does not connect to your database or execute the commands."
+            "text": "It never connects to a database or runs anything. The Every dialect panel parses the query with node-sql-parser's grammar for 14 databases and shows the line and column where each one stops. That catches syntax a database does not have, such as TOP or square brackets outside SQL Server. It cannot catch a missing table or a wrong column type, and a parser can stop at a valid statement it does not cover, so a red row means \"look here\", not \"this is wrong\". Oracle PL/SQL and Spark have no parser here."
           }
         }
-      ],
-      "@id": "https://layerbit.co.in/tools/sql-formatter.html#faq"
+      ]
     }
   ]
 }

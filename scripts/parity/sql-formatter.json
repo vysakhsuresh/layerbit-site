@@ -1,0 +1,63 @@
+{
+  "tool": "sql-formatter",
+  "page": "tools/sql-formatter.html",
+  "competitors": [
+    {
+      "name": "Redgate SQL Prompt",
+      "price": "from $198 per year",
+      "checked": "2026-11"
+    }
+  ],
+  "claims": [
+    {
+      "feature": "Customisable style rules saved as named profiles, shared as JSON",
+      "competitor": "Redgate SQL Prompt",
+      "tests": [
+        "ui:sql-formatter:2.7: named style profiles: save, switch, export and import as JSON"
+      ]
+    },
+    {
+      "feature": "Code analysis with one-click fixes",
+      "competitor": "Redgate SQL Prompt",
+      "tests": [
+        "ui:sql-formatter:2.7: analysis finds the six problems and fixes each in one click",
+        "unit:sqlx:lint + fix: SELECT * becomes the column list when the table is known",
+        "unit:sqlx:lint + fix: UPDATE and DELETE without WHERE get a WHERE that matches nothing",
+        "unit:sqlx:lint + fix: NOT IN with a subquery excludes NULLs",
+        "unit:sqlx:lint + fix: an implicit join becomes an explicit JOIN ... ON",
+        "unit:sqlx:lint + fix: a declared variable that is never used is removed",
+        "unit:sqlx:lint: a leading wildcard in LIKE is reported, with no automatic fix"
+      ]
+    },
+    {
+      "feature": "Bulk formatting and analysis of many files",
+      "competitor": "Redgate SQL Prompt",
+      "tests": [
+        "ui:sql-formatter:2.7: many files at once: formatted, zipped, errors listed per file"
+      ]
+    },
+    {
+      "feature": "Format selection only",
+      "competitor": "Redgate SQL Prompt",
+      "tests": [
+        "ui:sql-formatter:2.7: Format selection formats only the selected text"
+      ]
+    },
+    {
+      "feature": "Syntax errors per dialect",
+      "competitor": "Redgate SQL Prompt",
+      "tests": [
+        "ui:sql-formatter:2.7: syntax checked in every dialect, with line and column",
+        "unit:sqlx:syntax: a real parser per dialect reports line, column and what it found"
+      ]
+    },
+    {
+      "feature": "Autocomplete of tables and columns (from pasted DDL, no connection)",
+      "competitor": "Redgate SQL Prompt",
+      "tests": [
+        "ui:sql-formatter:2.7: autocomplete from pasted DDL: tables after FROM, columns after an alias",
+        "unit:sqlx:complete: tables after FROM/JOIN, columns after alias., columns of the tables in the query"
+      ]
+    }
+  ]
+}

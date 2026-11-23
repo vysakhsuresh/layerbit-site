@@ -1314,6 +1314,105 @@ def _(t):
     expect("[Order Id]" in t.text("sqlOutput"), "bracket identifier mangled")
 
 
+@case("sql-formatter", "typical", "2.7: named style profiles: save, switch, export and import as JSON")
+def _(t):
+    t.call("localStorage.removeItem('layerbit-sql-profiles')")
+    t.set("sqlInput", "select a, b from t where x = 1 and y = 2")
+    t.select("keywordCaseSelect", "lower"); t.select("logicalNewline", "after")
+    t.set("profileName", "team-lower"); t.click("#btnProfileSave")
+    expect("team-lower" in t.call("[...document.getElementById('profileSelect').options].map(o => o.textContent).join('|')"), "profile not listed")
+    t.select("profileSelect", "default")
+    expect("SELECT" in t.text("sqlOutput"), "default profile should uppercase keywords: " + t.text("sqlOutput"))
+    t.select("profileSelect", "team-lower")
+    out = t.text("sqlOutput")
+    expect("select" in out and "SELECT" not in out and "and\n" in out.replace(" \n", "\n"), "profile not applied: " + out)
+    with t.page.expect_download() as dl:
+        t.click("#btnProfileExport")
+    data = json.loads(open(dl.value.path(), encoding="utf-8").read())
+    expect(any(p.get("name") == "team-lower" and p.get("keywordCase") == "lower" for p in data["profiles"]), f"{data}")
+    t.call("localStorage.removeItem('layerbit-sql-profiles')"); t.page.reload(); t.wait(300)
+    t.page.set_input_files("#profileImport", [{"name": "p.json", "mimeType": "application/json", "buffer": json.dumps(data).encode()}])
+    t.wait_for("[...document.getElementById('profileSelect').options].some(o => o.textContent.includes('team-lower'))", 5000)
+    t.call("localStorage.removeItem('layerbit-sql-profiles')")
+    t.select("profileSelect", "default")
+
+
+@case("sql-formatter", "typical", "2.7: analysis finds the six problems and fixes each in one click")
+def _(t):
+    t.set("schemaInput", "CREATE TABLE users (id INT, email TEXT);")
+    sql = ("DECLARE @unused INT = 5;\nSELECT * FROM users;\nUPDATE users SET email = NULL;\n"
+           "SELECT id FROM users WHERE id NOT IN (SELECT user_id FROM orders);\n"
+           "SELECT u.id FROM users u, orders o WHERE u.id = o.user_id;\nSELECT id FROM users WHERE email LIKE '%@x.com';")
+    t.set("sqlInput", sql); t.click("#btnFormat")
+    t.wait_for("document.querySelectorAll('#lintList .lint-item').length === 6", 5000)
+    rules = t.call("[...document.querySelectorAll('#lintList .lint-item')].map(i => i.dataset.rule)")
+    eq(sorted(rules), sorted(["unused-variable", "select-star", "no-where", "not-in-null", "implicit-join", "leading-wildcard"]), "rules")
+    t.click("#lintList .lint-item[data-rule='select-star'] .lint-fix"); t.wait(150)
+    expect("SELECT id, email FROM users" in t.val("sqlInput"), t.val("sqlInput"))
+    t.click("#btnFixAll"); t.wait(200)
+    v = t.val("sqlInput")
+    expect("WHERE 1 = 0" in v and "IS NOT NULL" in v and "JOIN orders o ON" in v and "@unused" not in v, v)
+    eq(t.call("[...document.querySelectorAll('#lintList .lint-item')].map(i => i.dataset.rule)"), ["leading-wildcard"], "only the unfixable one is left")
+    t.set("schemaInput", "")
+
+
+@case("sql-formatter", "typical", "2.7: Format selection formats only the selected text")
+def _(t):
+    t.set("sqlInput", "-- keep this line exactly\nselect a,b from t where x=1;\nselect   c   from   u;")
+    t.call("() => { const e = document.getElementById('sqlInput'); const s = e.value.indexOf('select a'); e.focus(); e.setSelectionRange(s, e.value.indexOf(';') + 1); e.dispatchEvent(new Event('select')); }")
+    t.click("#btnFormatSel"); t.wait(150)
+    v = t.val("sqlInput")
+    expect(v.startswith("-- keep this line exactly\nSELECT") and v.endswith("select   c   from   u;"), "selection not formatted alone: " + v)
+
+
+@case("sql-formatter", "typical", "2.7: many files at once: formatted, zipped, errors listed per file")
+def _(t):
+    t.page.set_input_files("#sqlFiles", [{"name": "a.sql", "mimeType": "text/plain", "buffer": b"select 1 from t"},
+                                         {"name": "b.sql", "mimeType": "text/plain", "buffer": b"select * from users where"},
+                                         {"name": "c.sql", "mimeType": "text/plain", "buffer": b"update t set x = 1"}])
+    t.wait_for("document.querySelectorAll('#filesResult tbody tr').length === 3", 10000)
+    r = t.text("filesResult")
+    expect("a.sql" in r and "formatted" in r and "b.sql" in r and "line 1" in r.lower() and "c.sql" in r and "1 check" in r, r)
+    with t.page.expect_download() as dl:
+        t.click("#btnFilesZip")
+    expect(dl.value.suggested_filename.endswith(".zip"), dl.value.suggested_filename)
+
+
+@case("sql-formatter", "typical", "2.7: syntax checked in every dialect, with line and column")
+def _(t):
+    t.set("sqlInput", "SELECT TOP 5 [id] FROM [users]")
+    t.click("#btnDialects")
+    t.wait_for("document.querySelectorAll('#dialectReport tbody tr').length >= 10", 10000)
+    rows = t.call("Object.fromEntries([...document.querySelectorAll('#dialectReport tbody tr')].map(tr => [tr.dataset.dialect, tr.children[1].textContent]))")
+    expect(rows["tsql"].startswith("OK"), rows["tsql"])
+    expect("line 1" in rows["postgresql"].lower(), rows["postgresql"])
+
+
+@case("sql-formatter", "typical", "2.7: autocomplete from pasted DDL: tables after FROM, columns after an alias")
+def _(t):
+    t.set("schemaInput", "CREATE TABLE customers (id INT, full_name TEXT, city TEXT);\nCREATE TABLE invoices (id INT, customer_id INT, amount DECIMAL(10,2));")
+    t.set("sqlInput", "")
+    t.page.click("#sqlInput"); t.page.keyboard.type("SELECT * FROM inv")
+    t.wait_for("!document.getElementById('acPopup').hidden", 3000)
+    expect("invoices" in t.text("acPopup"), t.text("acPopup"))
+    t.page.keyboard.press("Tab")
+    expect(t.val("sqlInput").endswith("FROM invoices"), t.val("sqlInput"))
+    t.page.keyboard.type(" i WHERE i.am")
+    t.wait_for("document.getElementById('acPopup').textContent.includes('amount')", 3000)
+    t.page.keyboard.press("Enter")
+    expect(t.val("sqlInput").endswith("i.amount"), t.val("sqlInput"))
+    t.set("schemaInput", "")
+
+
+@case("sql-formatter", "edge", "a MySQL stored procedure with block labels (proc: BEGIN) formats instead of failing")
+def _(t):
+    t.select("dialectSelect", "auto")
+    t.set("sqlInput", "DELIMITER //\nCREATE PROCEDURE rewards(IN min_purchases INT)\nproc: BEGIN\n  DECLARE n INT;\n  IF min_purchases = 0 THEN\n    LEAVE proc;\n  END IF;\n  SELECT COUNT(*) INTO n FROM payment;\nEND //\nDELIMITER ;")
+    t.click("#btnFormat"); t.wait(300)
+    out = t.text("sqlOutput")
+    expect("proc: BEGIN" in out and "LEAVE proc" in out and "lb-label" not in out, "label lost or format failed: " + out + " | " + t.text("errorText"))
+
+
 @case("sql-formatter", "maximal", "500 statements under budget")
 def _(t):
     t.select("dialectSelect", "sql") if t.count("#dialectSelect option[value='sql']") else None
