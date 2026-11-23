@@ -138,7 +138,7 @@
       <p>Worth being explicit about the lossy parts, because they matter when you copy data out of a table and into something else:</p>
       <ul>
         <li><strong>Key order is not data.</strong> RFC 8259 defines a JSON object as an <em>unordered</em> collection. Column order here is a presentation choice, not information about the document.</li>
-        <li><strong>Large integers.</strong> JavaScript parses JSON numbers into IEEE 754 doubles, which hold integers exactly only to 2<sup>53</sup> − 1. A 19-digit snowflake ID or bigint primary key loses precision on parse — silently, with no error. This is why well-designed APIs serialise large identifiers as strings.</li>
+        <li><strong>Large integers.</strong> JavaScript parses JSON numbers into IEEE 754 doubles, which hold integers exactly only to 2<sup>53</sup> − 1. A 19-digit snowflake ID or bigint primary key loses precision on parse — silently, with no error. This is why well-designed APIs serialise large identifiers as strings. This tool reads numbers without that round trip, so a 19-digit ID is shown, filtered and exported with every digit.</li>
         <li><strong>Distinguishing absent from null.</strong> A blank cell may mean the key was missing, the value was <code>null</code>, or the value was an empty string. Those are three different facts and a table shows them identically.</li>
       </ul>
       <p>None of that makes the table wrong — it makes it a <em>view</em>. Use it to find the record or field you care about, then go back to the JSON for the authoritative detail.</p>
@@ -169,6 +169,7 @@
     <div class="info-panel">
       <h2><i data-lucide="git-commit"></i> Changelog</h2>
       <ul class="changelog-list">
+        <li><span class="changelog-tag">v2.2.0</span> Numbers are read losslessly: 19-digit IDs, 1e400 and -0 appear and export exactly as written instead of rounded, as Infinity or as 0.</li>
         <li><span class="changelog-tag">v2.1.0</span> Columns sort on click (numeric where every value is a number, natural-order text otherwise; empty cells sink to the bottom), and the sort composes with the live filter and CSV export.</li>
         <li><span class="changelog-tag">v1.2.0</span> Integrated nested object flattening and robust client-side filtering via the grid toolbar.</li>
         <li><span class="changelog-tag">v1.1.0</span> Added the CSV export functionality with strict quote escaping for spreadsheet compatibility.</li>
@@ -189,6 +190,7 @@
   {{FOOTER}}
 
   <script src="../js/shared.js"></script>
+  <script src="../js/engines/lossless-json.js"></script>
 
 
   <script>
@@ -226,14 +228,16 @@
       for (let i in ob) {
         if (!ob.hasOwnProperty(i)) continue;
 
-        if (typeof ob[i] === 'object' && ob[i] !== null && !Array.isArray(ob[i])) {
+        if (LBLossless.isLosslessNumber(ob[i])) {
+          toReturn[i] = ob[i];
+        } else if (typeof ob[i] === 'object' && ob[i] !== null && !Array.isArray(ob[i])) {
           let flatObject = flattenObject(ob[i]);
           for (let x in flatObject) {
             if (!flatObject.hasOwnProperty(x)) continue;
             toReturn[i + '.' + x] = flatObject[x];
           }
         } else if (Array.isArray(ob[i])) {
-          toReturn[i] = JSON.stringify(ob[i]); // Stringify arrays for clean rendering
+          toReturn[i] = LBLossless.stringify(ob[i]); // Stringify arrays for clean rendering
         } else {
           toReturn[i] = ob[i];
         }
@@ -259,7 +263,9 @@
       let headerData = null;
 
       try {
-        parsed = JSON.parse(inputVal);
+        JSON.parse(inputVal);  // the browser's parser reports syntax errors
+        // numbers keep their written digits (12345678901234567890, 1e400)
+        parsed = LBLossless.parse(inputVal);
 
         if (Array.isArray(parsed)) {
           bodyData = parsed;

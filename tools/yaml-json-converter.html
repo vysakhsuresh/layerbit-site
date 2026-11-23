@@ -88,6 +88,7 @@
     },
     {
       "@type": "FAQPage",
+      "@id": "https://layerbit.co.in/tools/yaml-json-converter.html#faq",
       "mainEntity": [
         {
           "@type": "Question",
@@ -113,8 +114,7 @@
             "text": "Absolutely. We employ a Zero-Trust client-side processing architecture. The entire JS-YAML conversion engine runs in your browser's local memory. Your AWS keys, database passwords, and API tokens never touch an external server or log file."
           }
         }
-      ],
-      "@id": "https://layerbit.co.in/tools/yaml-json-converter.html#faq"
+      ]
     }
   ]
 }
@@ -485,6 +485,7 @@
     <div class="info-panel">
       <h2><i data-lucide="git-merge"></i> Deployment Changelog</h2>
       <ul class="changelog-list">
+        <li><span class="changelog-tag">v2.2.0</span> Integers and numbers a JavaScript number cannot hold exactly (12345678901234567890, 1e400) keep every digit in both directions, YAML to JSON and JSON to YAML.</li>
         <li><span class="changelog-tag">v2.1.0</span> Syntax errors now say what went wrong and where: the YAML side reports the parser's reason with line and column, the JSON side the engine message with the position resolved to line and column.</li>
         <li><span class="changelog-tag">v1.3.0</span> Added file upload, drag-and-drop, and line-number gutters to both panes.</li>
         <li><span class="changelog-tag">v1.2.0</span> Integrated interactive Quick Testing Templates for rapid validation of the bidirectional JS-YAML engine.</li>
@@ -601,6 +602,7 @@
   <script src="../js/kernel.js?v=02708bb1fe"></script>
 
   <script src="../js/shared.js?v=e2441a1728"></script>
+  <script src="../js/engines/lossless-json.js?v=88a67e6c17"></script>
 
 
   <script>
@@ -667,12 +669,12 @@
       }
 
       try {
-        const obj = jsyaml.load(val);
+        const obj = jsyaml.load(val, { schema: losslessSchema() });
         // If parsed object is just a string/number, ignore unless it's a real object
         if (typeof obj !== 'object' || obj === null) throw new Error("Not a valid object");
 
         isSyncing = true;
-        jsonInput.value = JSON.stringify(obj, null, 4);
+        jsonInput.value = LBLossless.stringify(obj, 4);
         yamlError.classList.remove("active");
         jsonError.classList.remove("active");
       } catch (err) {
@@ -686,6 +688,26 @@
         updateGutters();
       }
     });
+
+    // Numbers a JavaScript number cannot hold exactly (12345678901234567890,
+    // 1e400) are kept as their text in both directions: the YAML int and
+    // float types are wrapped so such values become LosslessNumbers, which
+    // the JSON writer and the YAML dumper both write back digit for digit.
+    let LSCHEMA = null;
+    function losslessSchema() {
+      if (LSCHEMA) return LSCHEMA;
+      const T = jsyaml.types, keep = (orig, plain) => new jsyaml.Type(orig.tag, {
+        kind: 'scalar', resolve: orig.resolve, defaultStyle: orig.defaultStyle,
+        construct: data => {
+          const v = orig.construct(data), text = String(data).replace(/_/g, '').replace(/^\+/, '');
+          return typeof v === 'number' && plain.test(text) && LBLossless.isUnsafe(text) ? new LBLossless.LosslessNumber(text) : v;
+        },
+        predicate: x => LBLossless.isLosslessNumber(x) || orig.predicate(x),
+        represent: (x, style) => LBLossless.isLosslessNumber(x) ? x.value : orig.represent[style] ? orig.represent[style](x) : typeof orig.represent === 'function' ? orig.represent(x, style) : String(x)
+      });
+      LSCHEMA = jsyaml.DEFAULT_SCHEMA.extend({ implicit: [keep(T.int, /^-?\d+$/), keep(T.float, /^-?\d+(\.\d+)?([eE][-+]?\d+)?$/)] });
+      return LSCHEMA;
+    }
 
     // JSON to YAML
     jsonInput.addEventListener("input", () => {
@@ -703,9 +725,10 @@
       }
 
       try {
-        const obj = JSON.parse(val);
+        JSON.parse(val);  // the browser's own parser reports syntax errors
+        const obj = LBLossless.parse(val);
         isSyncing = true;
-        yamlInput.value = jsyaml.dump(obj, { indent: 2, lineWidth: -1 });
+        yamlInput.value = jsyaml.dump(obj, { indent: 2, lineWidth: -1, schema: losslessSchema() });
         jsonError.classList.remove("active");
         yamlError.classList.remove("active");
       } catch (err) {

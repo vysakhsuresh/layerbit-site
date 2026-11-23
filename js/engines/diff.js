@@ -10,9 +10,9 @@
  * directory reader built on DecompressionStream.
  */
 (function (root, factory) {
-  if (typeof module === 'object' && module.exports) module.exports = factory(require('../vendor/diff.min.js'), require('./csv.js'));
-  else root.LBDiff = factory(root.Diff, root.LBCsv);
-})(typeof self !== 'undefined' ? self : this, function (Diff, CSV) {
+  if (typeof module === 'object' && module.exports) module.exports = factory(require('../vendor/diff.min.js'), require('./csv.js'), require('./lossless-json.js'));
+  else root.LBDiff = factory(root.Diff, root.LBCsv, root.LBLossless);
+})(typeof self !== 'undefined' ? self : this, function (Diff, CSV, LL) {
   'use strict';
 
   // ------------------------------------------------------------ normalisation
@@ -568,60 +568,11 @@
   function sameLines(a, b, key) { if (a.length !== b.length) return false; for (var i = 0; i < a.length; i++) if (key(a[i]) !== key(b[i])) return false; return true; }
 
   // ------------------------------------------------------- lossless JSON
-  /** A JSON number kept as its source text, so 9007199254740993 does not
-   *  become 9007199254740992 the way it does in JSON.parse. */
-  function LosslessNumber(raw) { this.value = raw; this.isLosslessNumber = true; }
-  /** Canonical form of a decimal literal: 1.0, 1e0 and 1 all give "1e0". */
-  function canonicalNumber(raw) {
-    var m = /^(-?)(\d+)(?:\.(\d+))?(?:[eE]([+-]?\d+))?$/.exec(raw);
-    if (!m) return raw;
-    var digits = (m[2] + (m[3] || '')).replace(/^0+/, ''), exp = parseInt(m[4] || '0', 10) - (m[3] || '').length;
-    if (!digits) return '0';
-    var t = digits.replace(/0+$/, ''); exp += digits.length - t.length;
-    return (m[1] ? '-' : '') + t + 'e' + exp;
-  }
-  /** JSON.parse that keeps numbers as LosslessNumber. Throws SyntaxError with
-   *  a position, like JSON.parse. */
-  function parseJsonLossless(text) {
-    var i = 0, n = text.length;
-    function fail(msg) { throw new SyntaxError('Invalid JSON: ' + msg + ' at position ' + i); }
-    function ws() { while (i < n && (text[i] === ' ' || text[i] === '\t' || text[i] === '\n' || text[i] === '\r')) i++; }
-    function value() {
-      ws(); var c = text[i];
-      if (c === '{') { i++; var obj = {}; ws(); if (text[i] === '}') { i++; return obj; }
-        for (;;) { ws(); if (text[i] !== '"') fail('expected a property name'); var k = str(); ws(); if (text[i] !== ':') fail('expected ":"'); i++; obj[k] = value(); ws();
-          if (text[i] === ',') { i++; continue; } if (text[i] === '}') { i++; return obj; } fail('expected "," or "}"'); } }
-      if (c === '[') { i++; var arr = []; ws(); if (text[i] === ']') { i++; return arr; }
-        for (;;) { arr.push(value()); ws(); if (text[i] === ',') { i++; continue; } if (text[i] === ']') { i++; return arr; } fail('expected "," or "]"'); } }
-      if (c === '"') return str();
-      var m = /^-?(?:0|[1-9]\d*)(?:\.\d+)?(?:[eE][+-]?\d+)?/.exec(text.slice(i, i + 400));
-      if (m && m[0]) { i += m[0].length; if (/^[\d.]/.test(text[i] || '')) fail('invalid number'); return new LosslessNumber(m[0]); }
-      if (text.startsWith('true', i)) { i += 4; return true; }
-      if (text.startsWith('false', i)) { i += 5; return false; }
-      if (text.startsWith('null', i)) { i += 4; return null; }
-      fail(i >= n ? 'unexpected end of input' : 'unexpected character ' + JSON.stringify(c));
-    }
-    function str() {
-      var start = i; i++;
-      while (i < n && text[i] !== '"') { if (text[i] === '\\') i++; else if (text.charCodeAt(i) < 32) fail('control character in string'); i++; }
-      if (i >= n) fail('unterminated string');
-      i++;
-      return JSON.parse(text.slice(start, i));
-    }
-    var v = value(); ws();
-    if (i < n) fail('unexpected text after the end');
-    return v;
-  }
-  function isNum(v) { return v instanceof LosslessNumber; }
-  /** JSON.stringify that writes LosslessNumbers as their digits. */
-  function stringifyLossless(v, indent, depth) {
-    depth = depth || 0;
-    var pad = indent ? '\n' + new Array(depth + 2).join(indent) : '', close = indent ? '\n' + new Array(depth + 1).join(indent) : '';
-    if (isNum(v)) return v.value;
-    if (Array.isArray(v)) return v.length ? '[' + v.map(function (x) { return pad + stringifyLossless(x, indent, depth + 1); }).join(',') + close + ']' : '[]';
-    if (v && typeof v === 'object') { var ks = Object.keys(v); return ks.length ? '{' + ks.map(function (k) { return pad + JSON.stringify(k) + (indent ? ': ' : ':') + stringifyLossless(v[k], indent, depth + 1); }).join(',') + close + '}' : '{}'; }
-    return v === undefined ? 'null' : JSON.stringify(v);
-  }
+  // The shared engine (js/engines/lossless-json.js): numbers keep their text.
+  var LosslessNumber = LL.LosslessNumber, canonicalNumber = LL.canonicalNumber;
+  function parseJsonLossless(text) { return LL.parse(text); }
+  function isNum(v) { return LL.isLosslessNumber(v); }
+  function stringifyLossless(v, indent) { return LL.stringify(v, indent); }
 
   // --------------------------------------------------------------- structural
   function typeOf(v) { return v === null ? 'null' : isNum(v) ? 'number' : Array.isArray(v) ? 'array' : typeof v; }

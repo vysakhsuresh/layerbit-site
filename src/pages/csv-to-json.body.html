@@ -40,6 +40,7 @@
         <span id="errorText">Invalid CSV format.</span>
       </div>
       <div class="csv-issues" id="csvIssues" role="status"></div>
+      <div class="col-types" id="colTypes" hidden></div>
       <textarea id="csvInput" class="editor" placeholder='Paste CSV data or drag & drop a .csv file here...&#10;&#10;id,name,role,active&#10;1,John Doe,Admin,true&#10;2,"Smith, Jane",User,false' spellcheck="false"></textarea>
     </div>
 
@@ -100,7 +101,7 @@
         <div class="faq-item">
           <button class="faq-question">What is "Smart Type Inference"? <i data-lucide="chevron-down"></i></button>
           <div class="faq-answer">
-            <p>By default, CSV files treat all data as text strings. When "Smart Types" is enabled, Layerbit's engine automatically detects numerical values (like <code>42</code> or <code>3.14</code>) and boolean values (like <code>true</code> or <code>false</code>) and formats them as native integers, floats, and booleans in the resulting JSON output, rather than wrapping them in quotation marks.</p>
+            <p>By default, CSV files treat all data as text strings. When "Smart Types" is enabled, Layerbit's engine automatically detects numerical values (like <code>42</code> or <code>3.14</code>) and boolean values (like <code>true</code> or <code>false</code>) and formats them as native integers, floats, and booleans in the resulting JSON output, rather than wrapping them in quotation marks. It never changes a value to do so: anything with a leading zero (<code>00123</code>), a <code>+</code> sign (<code>+971…</code>), more than 15 significant digits, or a spelling a number would not keep (<code>1.10</code>) stays text. Below the input, each column shows the type it was given, and you can set any column to text, number or true/false.</p>
           </div>
         </div>
 
@@ -139,7 +140,7 @@
       <div class="use-cases-grid">
         <div class="use-case-card">
           <h3><i data-lucide="type"></i> Smart type inference</h3>
-          <p>CSV has no type system — every value is text. With Smart Types enabled, numeric and boolean-looking values become real JSON numbers and booleans instead of quoted strings. Turn it off when identifiers must stay strings, which is usually the right call for anything with a leading zero.</p>
+          <p>CSV has no type system — every value is text. With Smart Types enabled, numeric and boolean-looking values become real JSON numbers and booleans instead of quoted strings, but only when that changes nothing: postcodes with a leading zero, phone numbers with a <code>+</code> and identifiers longer than 15 digits stay strings automatically, and the per-column type list lets you force any column to text, number or true/false. Turn Smart Types off to keep every value a string.</p>
         </div>
         <div class="use-case-card">
           <h3><i data-lucide="combine"></i> Union-of-keys on the way back</h3>
@@ -187,7 +188,7 @@
     <div class="info-panel">
       <h2><i data-lucide="git-commit"></i> Changelog</h2>
       <ul class="changelog-list">
-        <li><span class="changelog-tag">v2.2.0</span> One shared CSV reader for every tool: a quote inside a field (5" screen) is a literal character instead of swallowing the rest of the file, the delimiter is detected without counting the ones inside quotes, repeated header names become separate keys (amount, amount (2)), a one-column file keeps rows whose value is empty, and rows with the wrong number of values are listed with their line.</li>
+        <li><span class="changelog-tag">v2.2.0</span> One shared CSV reader for every tool: a quote inside a field (5" screen) is a literal character instead of swallowing the rest of the file, the delimiter is detected without counting the ones inside quotes, repeated header names become separate keys (amount, amount (2)), a one-column file keeps rows whose value is empty, and rows with the wrong number of values are listed with their line. Smart Types never change a value (leading zeros, + signs and numbers over 15 digits stay text), an empty cell stays an empty string instead of becoming null, and each column's type can be set to text, number or true/false; long numbers forced to number keep every digit.</li>
         <li><span class="changelog-tag">v2.1.0</span> Delimiter handling: automatic detection picks the separator that is most consistent across the first lines (comma, semicolon, tab or pipe), which is what European-locale exports from Excel need, and a manual override is a click away. A file that yields one column is now refused with a hint instead of producing a single mangled field.</li>
         <li><span class="changelog-tag">v1.5.0</span> Added a JSON &rarr; CSV reverse mode, building the header row from the union of keys across all objects so heterogeneous records don't lose columns.</li>
         <li><span class="changelog-tag">v1.4.0</span> Added direct-to-disk download capability for generating <code>.json</code> files natively in the browser.</li>
@@ -210,6 +211,7 @@
 
   <script src="../js/shared.js"></script>
   <script src="../js/engines/csv.js"></script>
+  <script src="../js/engines/lossless-json.js"></script>
 
 
   <script>
@@ -240,6 +242,7 @@
 
       csvInput.value = "";
       jsonOutput.innerHTML = "";
+      document.getElementById('colTypes').hidden = true;
       finalOutputString = "";
       errorBanner.classList.remove("active");
       btnCopy.disabled = true;
@@ -297,15 +300,38 @@
     }
 
     // Type Inference Engine
-    function parseValue(val) {
-      if (!inferTypes.checked) return val;
-      const lower = val.toLowerCase();
-      if (lower === "true") return true;
-      if (lower === "false") return false;
-      if (lower === "null" || lower === "") return null;
-      if (!isNaN(val) && val.trim() !== "") return Number(val);
-      return val;
+    // Smart Types never change a value: a cell becomes a number only when it
+    // would be written back identically (no leading zero, no + sign, at most
+    // 15 significant digits), and true/false/null become those literals.
+    // Each column's type can be overridden below the input.
+    const colChoice = {};
+    function parseValue(val, header) {
+      const c = colChoice[header] || 'auto';
+      if (c === 'text') return val;
+      if (c === 'number') {
+        const m = /^([+-]?)0*(\d+(?:\.\d+)?(?:[eE][+-]?\d+)?)$/.exec(val.replace(/^\+/, ''));
+        return m ? new LBLossless.LosslessNumber((m[1] === '-' ? '-' : '') + m[2]) : val;
+      }
+      if (c === 'boolean') { const l = val.toLowerCase(); return ['true', 'yes', 'y', '1'].includes(l) ? true : ['false', 'no', 'n', '0'].includes(l) ? false : val; }
+      return inferTypes.checked ? LBLossless.inferValue(val) : val;
     }
+    function setKey(o, k, v) { if (k === '__proto__') Object.defineProperty(o, k, { value: v, enumerable: true, writable: true, configurable: true }); else o[k] = v; }
+    function autoType(values) {
+      const kinds = new Set(values.filter(v => v !== '').map(v => { const x = LBLossless.inferValue(v); return x === null ? 'null' : typeof x === 'number' ? 'number' : typeof x === 'boolean' ? 'boolean' : 'text'; }));
+      kinds.delete('null');
+      return kinds.size === 0 ? 'empty' : kinds.size === 1 ? [...kinds][0] : 'mixed';
+    }
+    function renderColTypes(headers, rows) {
+      const box = document.getElementById('colTypes');
+      if (!inferTypes.checked || !headers.length) { box.hidden = true; box.innerHTML = ''; return; }
+      box.hidden = false;
+      box.innerHTML = '<span class="ct-label">Column types:</span>' + headers.map((h, i) => {
+        const auto = autoType(rows.map(r => (r[i] || '').trim())), v = colChoice[h] || 'auto';
+        return `<label class="ct-item">${escHtml(h)} <select class="mini-select" id="colType-${escHtml(h)}" data-col="${escHtml(h)}">` +
+          [['auto', `auto (${auto})`], ['text', 'text'], ['number', 'number'], ['boolean', 'true/false']].map(([k, l]) => `<option value="${k}"${k === v ? ' selected' : ''}>${l}</option>`).join('') + '</select></label>';
+      }).join('');
+    }
+    document.getElementById('colTypes').addEventListener('change', e => { const s = e.target.closest('select[data-col]'); if (s) { colChoice[s.dataset.col] = s.value; processCSV(); } });
 
     function processCSV() {
       const input = csvInput.value.trim();
@@ -343,12 +369,13 @@
 
           headers.forEach((header, index) => {
             let val = currentRow[index] !== undefined ? currentRow[index].trim() : "";
-            obj[header] = parseValue(val);
+            setKey(obj, header, parseValue(val, header));
           });
           jsonArray.push(obj);
         }
 
-        finalOutputString = JSON.stringify(jsonArray, null, 4);
+        renderColTypes(headers, rows.slice(1));
+        finalOutputString = LBLossless.stringify(jsonArray, 4);
         jsonOutput.innerHTML = syntaxHighlight(finalOutputString);
 
         btnCopy.disabled = false;

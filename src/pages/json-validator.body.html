@@ -195,7 +195,7 @@
         <li>Twitter/X snowflake IDs, Discord IDs and many database bigint primary keys exceed this range routinely.</li>
         <li>No error is raised. The number simply changes, and you find out when a lookup by ID misses.</li>
       </ul>
-      <p>This is why mature APIs serialise large identifiers as <strong>strings</strong>. If you control the producer, do the same. If you do not, parse with a library that supports BigInt rather than the native parser. This page scans the raw text for integers beyond that range and warns you above the input — the document is valid; the round trip through a double is what loses information.</p>
+      <p>This is why mature APIs serialise large identifiers as <strong>strings</strong>. If you control the producer, do the same. If you do not, parse with a library that supports BigInt rather than the native parser. This page scans the raw text for integers beyond that range and warns you above the input — the document is valid; the round trip through a double is what loses information. Beautify, Minify and Sort keys here do not make that round trip: the output keeps every number exactly as written, including <code>1e400</code> and <code>-0</code>, which <code>JSON.stringify</code> would turn into <code>null</code> and <code>0</code>.</p>
       <h2><i data-lucide="shield-check"></i> Schema validation, briefly</h2>
       <p>A JSON Schema is a contract: it says which keys must exist, what type each value has, which strings are dates or emails, what a status field may contain. Validating a payload against it before you process it turns a vague runtime failure three functions deep into a precise message at the boundary — <code>$.orders[2].total: expected number, got string</code>. The validator here covers draft-07 and the 2020-12 keywords most schemas use: <code>type</code>, <code>properties</code>, <code>required</code>, <code>additionalProperties</code>, <code>items</code>, <code>enum</code>, <code>const</code>, <code>format</code>, <code>pattern</code>, numeric and length bounds, <code>uniqueItems</code>, local <code>$ref</code>, <code>allOf</code>/<code>anyOf</code>/<code>oneOf</code>/<code>not</code>, and <code>if</code>/<code>then</code>/<code>else</code>.</p>
       <p>Inferring a schema from a sample is the fast way to get one. The inference marks a key as required only if every object in the sample has it, types a field as nullable only if a null was actually seen, and proposes an enum only when a string field repeats a small set of values. Treat the result as a draft: it describes the sample you gave it, not every document the producer might emit.</p>
@@ -292,7 +292,7 @@
     <div class="info-panel">
       <h2><i data-lucide="git-commit"></i> Changelog</h2>
       <ul class="changelog-list">
-        <li><span class="changelog-tag">v3.1.0</span> History is off by default: with the Save to history switch on, only Beautify saves a run; typing never does.</li>
+        <li><span class="changelog-tag">v3.1.0</span> History is off by default: with the Save to history switch on, only Beautify saves a run; typing never does. Beautify, Minify and Sort keys keep every number exactly as written (12345678901234567890, 1e400, -0) instead of rounding them; the warning names the views that still show the JavaScript value.</li>
         <li><span class="changelog-tag">v3.0.0</span> Added Fix for almost-JSON with a list of changes made, full JSONPath (wildcards, recursive descent, slices, unions, filters) with every match and its path, JSON Schema validation and inference, type generation for TypeScript, Go, C#, Kotlin, Python, Java and Rust, SQL and CSV export with flattening, NDJSON detection and conversion, YAML output, string-literal escape and decode, a big-integer precision warning, indentation choice, file open, and share links.</li>
         <li><span class="changelog-tag">v2.1.0</span> Added a path query box, a structure readout, an optional deep key sort, and syntax errors with line and column that move the caret to the offending character.</li>
         <li><span class="changelog-tag">v1.4.0</span> Added a collapsible Tree view alongside the raw text output, with Expand All / Collapse All controls.</li>
@@ -316,6 +316,7 @@
 
   <script src="../js/shared.js"></script>
   <script src="../js/engines/json.js"></script>
+  <script src="../js/engines/lossless-json.js"></script>
 
   <script>
     const $ = id => document.getElementById(id);
@@ -409,7 +410,13 @@
         }
       }
       if (sortKeys.checked) parsed = J.sortKeysDeep(parsed);
-      lastResultText = action === 'minify' ? JSON.stringify(parsed) : JSON.stringify(parsed, null, indentArg());
+      // The output is written from a lossless parse, so numbers keep the
+      // digits they were written with (12345678901234567890, 1e400, -0).
+      let lossless;
+      try { lossless = isNdjson ? raw.split(/\r?\n/).filter(l => l.trim()).map(l => { try { return LBLossless.parse(l); } catch (e) { return undefined; } }).filter(v => v !== undefined) : LBLossless.parse(raw); }
+      catch (e) { lossless = parsed; }
+      if (sortKeys.checked) lossless = LBLossless.sortKeys(lossless);
+      lastResultText = action === 'minify' ? LBLossless.stringify(lossless) : LBLossless.stringify(lossless, indentArg());
       jsonOutput.innerHTML = lastResultText.length > 3000000 ? escapeHTMLText(lastResultText) : syntaxHighlight(lastResultText);
       lastParsed = parsed;
       renderTree(parsed);
@@ -418,8 +425,8 @@
       runPathQuery();
       if (outputView === 'types') renderTypes();
       if (outputView === 'convert') renderConvert();
-      const big = J.bigIntWarnings(raw);
-      if (big.length && !isNdjson) notice(`Precision warning: ${big.length} integer${big.length > 1 ? 's' : ''} beyond 2^53 (e.g. ${big[0]}) ${big.length > 1 ? 'are' : 'is'} silently rounded by every JavaScript parser. Serialise such ids as strings.`);
+      const big = LBLossless.unsafeNumbers(lossless);
+      if (big.length) notice(`${isNdjson ? $('noticeText').textContent + ' ' : ''}Precision warning: ${big.length} number${big.length > 1 ? 's' : ''} (e.g. ${big[0]}) cannot be held exactly by a JavaScript number. The formatted output keeps ${big.length > 1 ? 'them' : 'it'} exactly as written; the tree, JSONPath results, generated types and conversions show the JavaScript value. Most JSON parsers round such numbers, so serialise ids like these as strings.`);
       Layerbit.history.push('json-validator', getState(), `${J.typeOf(parsed)} · ${Layerbit.fmtBytes(raw.length)}`);
     }
     function notice(msg) { $('noticeText').textContent = msg; $('noticeBanner').classList.add('active'); }

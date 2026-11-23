@@ -47,13 +47,14 @@
     },
     {
       "@type": "FAQPage",
+      "@id": "https://layerbit.co.in/tools/csv-to-json.html#faq",
       "mainEntity": [
         {
           "@type": "Question",
           "name": "What is \"Smart Type Inference\"?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "By default, CSV files treat all data as text strings. When \"Smart Types\" is enabled, Layerbit's engine automatically detects numerical values (like 42 or 3.14) and boolean values (like true or false) and formats them as native integers, floats, and booleans in the resulting JSON output, rather than wrapping them in quotation marks."
+            "text": "By default, CSV files treat all data as text strings. When \"Smart Types\" is enabled, Layerbit's engine automatically detects numerical values (like 42 or 3.14) and boolean values (like true or false) and formats them as native integers, floats, and booleans in the resulting JSON output, rather than wrapping them in quotation marks. It never changes a value to do so: anything with a leading zero (00123), a + sign (+971…), more than 15 significant digits, or a spelling a number would not keep (1.10) stays text. Below the input, each column shows the type it was given, and you can set any column to text, number or true/false."
           }
         },
         {
@@ -80,8 +81,7 @@
             "text": "Yes. Switch to \"JSON → CSV\" mode and paste a JSON array of objects. The header row is built from the union of every key across all objects, so records with slightly different fields (an optional notes column on some rows, for example) still produce one clean table instead of dropping data. Nested objects or arrays inside a field are stringified into that cell rather than breaking the export."
           }
         }
-      ],
-      "@id": "https://layerbit.co.in/tools/csv-to-json.html#faq"
+      ]
     }
   ]
 }

@@ -231,6 +231,20 @@ def _(t):
     expect(out.startswith('[{"id":0') and out.rstrip().endswith("}]"), "minified large array wrong")
 
 
+@case("json-validator", "edge", "A3: Beautify, Minify and Sort keys keep every number exactly as written")
+def _(t):
+    t.set("jsonInput", '{"id": 12345678901234567890, "big": 1e400, "neg": -0, "f": 1.10}')
+    t.click("#btnFormat")
+    out = t.text("jsonOutput")
+    for lit in ["12345678901234567890", "1e400", "-0", "1.10"]:
+        expect(lit in out, f"{lit} changed in the formatted output: {out}")
+    t.click("#btnMinify")
+    eq(t.text("jsonOutput").strip(), '{"id":12345678901234567890,"big":1e400,"neg":-0,"f":1.10}', "minified")
+    t.page.check("#sortKeys"); t.click("#btnMinify")
+    eq(t.text("jsonOutput").strip(), '{"big":1e400,"f":1.10,"id":12345678901234567890,"neg":-0}', "sorted")
+    t.page.uncheck("#sortKeys")
+
+
 @case("json-validator", "typical", "path query evaluates dot, bracket and length")
 def _(t):
     t.set("jsonInput", '{"users":[{"id":1,"tags":["a","b"]},{"id":2}],"meta":{"a b":true}}')
@@ -822,6 +836,20 @@ def _(t):
     expect("line 3" in t.text("csvIssues").lower(), "short row not reported: " + t.text("csvIssues"))
 
 
+@case("csv-to-json", "edge", "A3: Smart Types never change a value: leading zeros, + signs and long numbers stay text; a column can be forced to text")
+def _(t):
+    t.click("#btnModeToJSON")
+    t.set("csvInput", "id,zip,phone,acct,n,ok\n7,00123,+971501234567,12345678901234567890,42,true")
+    t.click("#btnConvert")
+    out = json.loads(t.text("jsonOutput"))[0]
+    eq(out, {"id": 7, "zip": "00123", "phone": "+971501234567", "acct": "12345678901234567890", "n": 42, "ok": True}, "typed row")
+    expect(t.visible("#colTypes"), "no per-column type preview")
+    t.select("colType-n", "text")
+    out = json.loads(t.text("jsonOutput"))[0]
+    eq(out["n"], "42", "column forced to text")
+    t.select("colType-n", "auto")
+
+
 @case("csv-to-json", "edge", "quoted commas, escaped quotes, embedded newlines, CRLF")
 def _(t):
     t.click("#btnModeToJSON")
@@ -893,6 +921,16 @@ def _(t):
     t.set("jsonInput", '{"a": {"b": [1, 2]}}')
     y = t.val("yamlInput")
     expect("a:" in y and "b:" in y and "- 1" in y, f"json->yaml wrong: {y!r}")
+
+
+@case("yaml-json-converter", "edge", "A3: long integers survive YAML to JSON and JSON to YAML")
+def _(t):
+    t.set("yamlInput", "id: 12345678901234567890\nsmall: 42\nprice: 1.50\n")
+    out = t.val("jsonInput")
+    expect("12345678901234567890" in out and '"small": 42' in out, out)
+    t.set("jsonInput", '{"id": 12345678901234567891, "count": 7, "huge": 1e400}')
+    y = t.val("yamlInput")
+    expect("id: 12345678901234567891" in y and "count: 7" in y and "huge: 1e400" in y, y)
 
 
 @case("yaml-json-converter", "edge", "the Norway problem: YAML 1.2 keeps 'no' a string")
@@ -1271,6 +1309,14 @@ def _(t):
     t.call("processJSON()")
     eq(t.count("#tableBody tr"), 2, "rows")
     expect("user.name" in t.text("tableHead") or "name" in t.text("tableHead"), "nested column missing")
+
+
+@case("json-to-table", "edge", "A3: long numbers are shown and exported exactly")
+def _(t):
+    t.set("jsonInput", '[{"id": 12345678901234567890, "v": 1e400}]')
+    t.call("processJSON()")
+    body = t.text("tableBody")
+    expect("12345678901234567890" in body and "1e400" in body, body)
 
 
 @case("json-to-table", "edge", "single object and ragged keys")
@@ -1940,6 +1986,18 @@ def _(t):
     out = t.call("""LBFlow.run({ v: 1, steps: [{ op: 'csv-to-json', args: { delim: 'auto', types: false } }] }, 'sku,desc\\n1,5" screen\\n2,stand').then(r => r[r.length - 1].output)""")
     rows = json.loads(out)
     eq([r["desc"] for r in rows], ['5" screen', "stand"], "rows")
+
+
+@case("flow", "edge", "A3: JSON operations keep long numbers exactly")
+def _(t):
+    run = lambda op, args, inp: t.call(f"LBFlow.run({{ v: 1, steps: [{{ op: '{op}', args: {json.dumps(args)} }}] }}, {json.dumps(inp)}).then(r => r[r.length - 1].output)")
+    src = '{"id": 12345678901234567890, "nested": {"v": 1e400}}'
+    expect("12345678901234567890" in run("json-format", {"indent": "2", "sort": False}, src), "json-format")
+    expect("12345678901234567890" in run("json-to-yaml", {}, src), "json-to-yaml")
+    expect("12345678901234567890" in run("json-to-csv", {"delim": ","}, '[' + src + ']'), "json-to-csv")
+    expect("12345678901234567890" in run("json-flatten", {"mode": "flatten"}, src), "json-flatten")
+    rows = json.loads(run("csv-to-json", {"delim": "auto", "types": True}, "zip,phone,n\n00123,+971,42"))
+    eq(rows, [{"zip": "00123", "phone": "+971", "n": 42}], "csv-to-json types")
 
 
 @case("flow", "typical", "magic suggests Base64 decode and the chip adds a working step")
