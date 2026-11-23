@@ -159,3 +159,11 @@ t('bug 3: a top folder is stripped only when every entry shares it', () => {
   assert.deepStrictEqual(D.stripCommonRoot(['only.txt']), ['only.txt']);
   assert.deepStrictEqual(D.stripCommonRoot([]), []);
 });
+
+// ---- v4: bug 4, quotes inside a field
+t('bug 4: a quote that does not start a field is a literal character', () => {
+  assert.deepStrictEqual(D.parseCsv('id,desc\n1,5" screen\n2,ok\n', ','), [['id', 'desc'], ['1', '5" screen'], ['2', 'ok']]);
+  assert.deepStrictEqual(D.parseCsv('a,b\n"x, ""y""",z\n', ','), [['a', 'b'], ['x, "y"', 'z']]);
+  assert.deepStrictEqual(D.parseCsv('a;b\n12" pipe;"multi\nline"\n', ';'), [['a', 'b'], ['12" pipe', 'multi\nline']]);
+  assert.deepStrictEqual(D.parseCsv('a\n "lead"\n', ','), [['a'], [' "lead"']]);
+});

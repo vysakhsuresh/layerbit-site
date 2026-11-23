@@ -434,17 +434,18 @@
   }
   function parseCsv(text, delim) {
     delim = delim || detectDelimiter(text);
-    var rows = [], row = [], cell = '', i = 0, q = false, n = text.length;
+    var rows = [], row = [], cell = '', i = 0, q = false, started = false, n = text.length;
     if (text.charCodeAt(0) === 0xFEFF) i = 1;
     for (; i < n; i++) {
       var ch = text[i];
       if (q) {
         if (ch === '"') { if (text[i + 1] === '"') { cell += '"'; i++; } else q = false; }
         else cell += ch;
-      } else if (ch === '"') q = true;
-      else if (ch === delim) { row.push(cell); cell = ''; }
-      else if (ch === '\n' || ch === '\r') { if (ch === '\r' && text[i + 1] === '\n') i++; row.push(cell); rows.push(row); row = []; cell = ''; }
+      } else if (ch === '"' && cell === '' && !started) q = true; // quoting only opens at the start of a field, as in Excel
+      else if (ch === delim) { row.push(cell); cell = ''; started = false; continue; }
+      else if (ch === '\n' || ch === '\r') { if (ch === '\r' && text[i + 1] === '\n') i++; row.push(cell); rows.push(row); row = []; cell = ''; started = false; continue; }
       else cell += ch;
+      started = true;
     }
     if (cell !== '' || row.length) { row.push(cell); rows.push(row); }
     return rows.filter(function (r) { return !(r.length === 1 && r[0] === ''); });
