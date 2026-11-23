@@ -13,12 +13,14 @@
         <div class="pane-title title-yaml"><i data-lucide="file-code-2"></i> YAML Config</div>
         <div class="btn-group">
           <span id="yamlError" class="error-text"><i data-lucide="alert-circle"></i> Invalid Syntax</span>
+          <label class="yaml-opt" title="Off: dates such as 2026-01-01 stay exactly as written. On: they become ISO timestamps (2026-01-01T00:00:00.000Z), as js-yaml's default schema does."><input type="checkbox" id="yamlDates"> Dates → timestamps</label>
           <input type="file" id="yamlFile" accept=".yaml,.yml" style="display:none;">
           <button class="btn" onclick="document.getElementById('yamlFile').click()"><i data-lucide="upload"></i> Upload</button>
           <button class="btn" onclick="copyContent('yamlInput', this)"><i data-lucide="copy"></i> Copy</button>
           <button class="btn" onclick="downloadFile('yamlInput', 'yaml')"><i data-lucide="download"></i> Save</button>
         </div>
       </div>
+      <div class="yaml-note" id="yamlNote" role="status"></div>
       <div class="editor-wrapper">
         <div class="gutter" id="yamlGutterWrap" aria-hidden="true"><div class="gutter-inner" id="yamlGutter">1</div></div>
         <textarea id="yamlInput" class="editor" placeholder="Paste, type, or drag & drop YAML here...&#10;&#10;server:&#10;  port: 8080&#10;  host: localhost&#10;features:&#10;  - logging&#10;  - metrics" spellcheck="false"></textarea>
@@ -171,6 +173,7 @@
     <div class="info-panel">
       <h2><i data-lucide="git-merge"></i> Deployment Changelog</h2>
       <ul class="changelog-list">
+        <li><span class="changelog-tag">v2.3.0</span> Files with several documents separated by --- (every Kubernetes manifest) are converted to a JSON array instead of being rejected; dates such as 2026-01-01 stay exactly as written unless you switch on Dates → timestamps.</li>
         <li><span class="changelog-tag">v2.2.0</span> Integers and numbers a JavaScript number cannot hold exactly (12345678901234567890, 1e400) keep every digit in both directions, YAML to JSON and JSON to YAML.</li>
         <li><span class="changelog-tag">v2.1.0</span> Syntax errors now say what went wrong and where: the YAML side reports the parser's reason with line and column, the JSON side the engine message with the position resolved to line and column.</li>
         <li><span class="changelog-tag">v1.3.0</span> Added file upload, drag-and-drop, and line-number gutters to both panes.</li>
@@ -260,12 +263,15 @@
       }
 
       try {
-        const obj = jsyaml.load(val, { schema: losslessSchema() });
-        // If parsed object is just a string/number, ignore unless it's a real object
-        if (typeof obj !== 'object' || obj === null) throw new Error("Not a valid object");
+        // every document in the file (--- separators, as in Kubernetes
+        // manifests); more than one becomes a JSON array
+        const docs = jsyaml.loadAll(val, null, { schema: losslessSchema() });
+        const obj = docs.length > 1 ? docs : docs[0];
+        if (docs.length <= 1 && (typeof obj !== 'object' || obj === null)) throw new Error("Not a valid object");
+        $note.textContent = docs.length > 1 ? `${docs.length} documents (separated by ---), shown as a JSON array in the same order.` : '';
 
         isSyncing = true;
-        jsonInput.value = LBLossless.stringify(obj, 4);
+        jsonInput.value = LBLossless.stringify(obj === undefined ? null : obj, 4);
         yamlError.classList.remove("active");
         jsonError.classList.remove("active");
       } catch (err) {
@@ -284,9 +290,13 @@
     // 1e400) are kept as their text in both directions: the YAML int and
     // float types are wrapped so such values become LosslessNumbers, which
     // the JSON writer and the YAML dumper both write back digit for digit.
-    let LSCHEMA = null;
+    let LSCHEMA = null, LSCHEMA_DATES = null;
+    const $note = document.getElementById('yamlNote');
+    // Dates stay as written by default: the core schema has no timestamp
+    // type, so 2026-01-01 is the string "2026-01-01". The switch adds it.
     function losslessSchema() {
-      if (LSCHEMA) return LSCHEMA;
+      const dates = document.getElementById('yamlDates').checked;
+      if (dates ? LSCHEMA_DATES : LSCHEMA) return dates ? LSCHEMA_DATES : LSCHEMA;
       const T = jsyaml.types, keep = (orig, plain) => new jsyaml.Type(orig.tag, {
         kind: 'scalar', resolve: orig.resolve, defaultStyle: orig.defaultStyle,
         construct: data => {
@@ -296,9 +306,12 @@
         predicate: x => LBLossless.isLosslessNumber(x) || orig.predicate(x),
         represent: (x, style) => LBLossless.isLosslessNumber(x) ? x.value : orig.represent[style] ? orig.represent[style](x) : typeof orig.represent === 'function' ? orig.represent(x, style) : String(x)
       });
-      LSCHEMA = jsyaml.DEFAULT_SCHEMA.extend({ implicit: [keep(T.int, /^-?\d+$/), keep(T.float, /^-?\d+(\.\d+)?([eE][-+]?\d+)?$/)] });
-      return LSCHEMA;
+      const nums = [keep(T.int, /^-?\d+$/), keep(T.float, /^-?\d+(\.\d+)?([eE][-+]?\d+)?$/)];
+      if (dates) return (LSCHEMA_DATES = jsyaml.DEFAULT_SCHEMA.extend({ implicit: nums }));
+      return (LSCHEMA = jsyaml.CORE_SCHEMA.extend({ implicit: nums.concat([T.merge]), explicit: [T.binary, T.omap, T.pairs, T.set] }));
     }
+
+    document.getElementById('yamlDates').addEventListener('change', () => yamlInput.dispatchEvent(new Event('input')));
 
     // JSON to YAML
     jsonInput.addEventListener("input", () => {

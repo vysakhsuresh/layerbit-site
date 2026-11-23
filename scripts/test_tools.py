@@ -981,6 +981,26 @@ def _(t):
     expect("a:" in y and "b:" in y and "- 1" in y, f"json->yaml wrong: {y!r}")
 
 
+@case("yaml-json-converter", "edge", "B4: multi-document YAML (Kubernetes) becomes a JSON array")
+def _(t):
+    y = "apiVersion: v1\nkind: Service\nmetadata:\n  name: web\n---\napiVersion: apps/v1\nkind: Deployment\nmetadata:\n  name: web\n"
+    t.set("yamlInput", y)
+    out = json.loads(t.val("jsonInput"))
+    expect(isinstance(out, list) and [d["kind"] for d in out] == ["Service", "Deployment"], f"{out}")
+    expect("2 documents" in t.text("yamlNote"), "no note about the documents: " + t.text("yamlNote"))
+    t.set("yamlInput", "---\na: 1\n---\n")
+    eq(json.loads(t.val("jsonInput")), [{"a": 1}, None], "empty document kept as null")
+
+
+@case("yaml-json-converter", "edge", "B4: dates stay as written unless conversion is asked for")
+def _(t):
+    t.set("yamlInput", "when: 2026-01-01\nat: 2026-01-01T10:30:00Z\n")
+    eq(json.loads(t.val("jsonInput")), {"when": "2026-01-01", "at": "2026-01-01T10:30:00Z"}, "dates as written")
+    t.page.check("#yamlDates")
+    eq(json.loads(t.val("jsonInput"))["when"], "2026-01-01T00:00:00.000Z", "dates converted on request")
+    t.page.uncheck("#yamlDates")
+
+
 @case("yaml-json-converter", "edge", "A3: long integers survive YAML to JSON and JSON to YAML")
 def _(t):
     t.set("yamlInput", "id: 12345678901234567890\nsmall: 42\nprice: 1.50\n")
