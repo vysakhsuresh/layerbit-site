@@ -118,13 +118,19 @@
 
   // --------------------------------------------------------------------- toast
   var toastTimer = null;
-  function toast(msg, kind) {
+  // action: optional { label, fn } shown as a button in the toast (e.g. Undo).
+  function toast(msg, kind, action) {
     var t = document.getElementById('lbToast');
     if (!t) { t = el('div', { id: 'lbToast', role: 'status', 'aria-live': 'polite' }); document.body.appendChild(t); }
     t.textContent = msg;
-    t.className = 'show' + (kind ? ' ' + kind : '');
+    if (action) {
+      var b = el('button', { type: 'button', class: 'lb-toast-action', text: action.label });
+      b.addEventListener('click', function () { t.className = ''; action.fn(); });
+      t.appendChild(b);
+    }
+    t.className = 'show' + (kind ? ' ' + kind : '') + (action ? ' has-action' : '');
     clearTimeout(toastTimer);
-    toastTimer = setTimeout(function () { t.className = ''; }, 2600);
+    toastTimer = setTimeout(function () { t.className = ''; }, action ? 6000 : 2600);
   }
 
   // ----------------------------------------------------------------- URL state
@@ -229,8 +235,12 @@
   }
 
   // ------------------------------------------------------------------- history
-  // IndexedDB 'layerbit' / store 'runs': {slug, ts, label, data}. Only tools
-  // that call history.push write anything; nothing is recorded silently.
+  // IndexedDB 'layerbit' / store 'runs': {slug, ts, label, data}.
+  // Saving is opt-in per tool: a "Save to history" switch (off by default,
+  // remembered per tool in localStorage) and, with it on, only an explicit run
+  // is written: the tool's primary button, Ctrl+Enter, or the "Save run"
+  // button live tools show. Tools report their latest state with
+  // history.push as they run; typing alone never writes anything.
   var DB_NAME = 'layerbit', STORE = 'runs', MAX_PER_TOOL = 50;
   function openDb() {
     return new Promise(function (res, rej) {
@@ -254,21 +264,61 @@
       });
     });
   }
-  var lastPush = {};
+  var lastPush = {}, pending = {}, explicitAt = 0, undoShown = {};
+  var OLD_SWITCH = { 'text-diff-checker': 'lb-diff-save-history' };
+  function lsGet(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
+  function lsSet(k, v) { try { localStorage.setItem(k, v); } catch (e) { /* storage blocked */ } }
+  // An explicit run (primary button, Ctrl+Enter, Save run) lets the next
+  // push within 2 s be written; asynchronous tools pass {explicit: true}.
+  function markExplicit() { explicitAt = Date.now(); }
+  function takeExplicit() { var ok = explicitAt && Date.now() - explicitAt < 2000; explicitAt = 0; return ok; }
+  function commit(slug, entry) {
+    var key = JSON.stringify(entry.data);
+    if (lastPush[slug] === key || key.length > 2000000) return Promise.resolve(null);
+    lastPush[slug] = key;
+    return history_.list(slug, MAX_PER_TOOL + 5).then(function (rows) {
+      return tx('readwrite', function (s) {
+        rows.slice(MAX_PER_TOOL - 1).forEach(function (r) { s.delete(r.id); });
+        return s.add({ slug: slug, ts: Date.now(), label: (entry.label || '').slice(0, 120), data: entry.data });
+      });
+    }).then(function (id) {
+      if (id != null && !undoShown[slug]) {
+        undoShown[slug] = true;
+        toast('Saved to history on this device', null, { label: 'Undo', fn: function () { history_.remove(id); lastPush[slug] = null; } });
+      }
+      return id;
+    }).catch(function () { return null; /* storage blocked: history is a convenience */ });
+  }
   var history_ = {
-    push: function (slug, data, label) {
-      slug = slug || SLUG; if (!slug || !data) return Promise.resolve();
-      var key = JSON.stringify(data);
-      if (lastPush[slug] === key) return Promise.resolve();
-      lastPush[slug] = key;
-      if (key.length > 2000000) return Promise.resolve();
-      return history_.list(slug, MAX_PER_TOOL + 5).then(function (rows) {
-        return tx('readwrite', function (s) {
-          s.add({ slug: slug, ts: Date.now(), label: (label || '').slice(0, 120), data: data });
-          rows.slice(MAX_PER_TOOL - 1).forEach(function (r) { s.delete(r.id); });
-        });
-      }).catch(function () { /* storage blocked: history is a convenience */ });
+    enabled: function (slug) {
+      slug = slug || SLUG;
+      var v = lsGet('lb-history-on:' + slug);
+      if (v == null && OLD_SWITCH[slug]) v = lsGet(OLD_SWITCH[slug]);
+      return v === '1';
     },
+    setEnabled: function (slug, on) {
+      slug = slug || SLUG;
+      lsSet('lb-history-on:' + slug, on ? '1' : '0');
+      if (OLD_SWITCH[slug]) lsSet(OLD_SWITCH[slug], on ? '1' : '0');
+      syncSwitches();
+    },
+    // Records the tool's current state. It is written only when the switch is
+    // on and this push follows an explicit run (or opts.explicit is set).
+    push: function (slug, data, label, opts) {
+      slug = slug || SLUG; if (!slug || !data) return Promise.resolve(null);
+      pending[slug] = { data: data, label: label };
+      if (!history_.enabled(slug)) { explicitAt = 0; return Promise.resolve(null); }
+      if (!((opts && opts.explicit) || takeExplicit())) return Promise.resolve(null);
+      return commit(slug, pending[slug]);
+    },
+    // Save run: writes the tool's latest state now (switch must be on).
+    saveNow: function (slug) {
+      slug = slug || SLUG;
+      if (!history_.enabled(slug)) return Promise.resolve(null);
+      if (!pending[slug]) { toast('Run the tool first, then save'); return Promise.resolve(null); }
+      return commit(slug, pending[slug]);
+    },
+    remove: function (id) { return tx('readwrite', function (s) { s.delete(id); }).then(function () { toast('Removed from history'); }).catch(function () { }); },
     list: function (slug, n) {
       return openDb().then(function (db) {
         return new Promise(function (res, rej) {
@@ -286,6 +336,47 @@
     },
     clear: function () { return tx('readwrite', function (s) { s.clear(); }).then(function () { lastPush = {}; toast('History cleared on this device'); }).catch(function () { }); }
   };
+
+  // Before the switch existed, some tools saved every run silently (a pasted
+  // JWT, for one). Delete those once; the Diff Checker's runs were already
+  // saved only behind its own switch, so they are kept.
+  function purgeSilentRuns() {
+    if (lsGet('lb-history-v2') || !window.indexedDB) return;
+    var done = function () { lsSet('lb-history-v2', '1'); };
+    tx('readwrite', function (s) {
+      var req = s.openCursor();
+      req.onsuccess = function () { var c = req.result; if (!c) return; if (c.value.slug !== 'text-diff-checker') c.delete(); c.continue(); };
+    }).then(done, done);
+  }
+
+  // Switch UI: pages mark where it goes with [data-lb-history-slot]
+  // (data-live adds a "Save run" button for tools that run as you type), or
+  // provide their own input[data-lb-history-switch].
+  function syncSwitches() {
+    var on = history_.enabled(SLUG);
+    document.querySelectorAll('input[data-lb-history-switch]').forEach(function (i) { i.checked = on; });
+    document.querySelectorAll('[data-lb-history-save]').forEach(function (b) { b.hidden = !on; });
+  }
+  function installHistorySwitches() {
+    document.querySelectorAll('[data-lb-history-slot]').forEach(function (slot) {
+      if (slot.querySelector('input[data-lb-history-switch]')) return;
+      var tip = 'Off: nothing is stored. On: each run you start (the run button, Ctrl+Enter or Save run) is kept in this browser so you can reopen it with Ctrl+H. Typing alone is never saved.';
+      var lab = el('label', { class: 'toggle-label lb-history-switch', title: tip, html: '<input type="checkbox" data-lb-history-switch> Save to history' });
+      slot.appendChild(lab);
+      if (slot.hasAttribute('data-live')) {
+        var b = el('button', { type: 'button', class: 'btn mini-btn', 'data-lb-history-save': '', title: 'Save the current input to history on this device', html: '<i data-lucide="history"></i> Save run' });
+        b.addEventListener('click', function () { history_.saveNow(SLUG); });
+        slot.appendChild(b);
+      }
+    });
+    document.querySelectorAll('input[data-lb-history-switch]').forEach(function (i) {
+      i.addEventListener('change', function () { history_.setEnabled(SLUG, i.checked); });
+    });
+    // a click on the tool's primary button is an explicit run
+    document.addEventListener('click', function (e) { if (e.target.closest && e.target.closest('[data-lb-primary]')) markExplicit(); }, true);
+    syncSwitches();
+  }
+  function hasHistory() { return !!document.querySelector('input[data-lb-history-switch], [data-lb-history-slot]'); }
 
   // ------------------------------------------------------------------ palette
   var pal = null, palMode = 'search', palPayload = null, palItems = [], palIndex = 0;
@@ -522,6 +613,7 @@
       hist = el('div', { id: 'lbHistory', role: 'dialog', 'aria-modal': 'true', 'aria-label': 'Run history' }, [
         el('div', { class: 'lb-pal-box' }, [
           el('div', { class: 'lb-pal-head', html: '<i data-lucide="history"></i><strong style="flex:1">History on this device</strong><button type="button" class="lb-pill lb-pill-btn" id="lbHistClear"><i data-lucide="trash-2"></i><span>Clear</span></button><kbd>Esc</kbd>' }),
+          el('div', { id: 'lbHistSwitchRow', class: 'lb-hist-switch-row' }),
           el('div', { id: 'lbHistList', class: 'lb-pal-list' }),
           el('div', { class: 'lb-pal-foot', html: '<span>Stored in this browser\'s IndexedDB only. Never synced, never sent. Up to 50 runs per tool.</span>' })
         ])
@@ -530,6 +622,12 @@
       document.body.appendChild(hist);
       hist.querySelector('#lbHistClear').addEventListener('click', function () { history_.clear().then(function () { renderHistory(); }); });
     }
+    var row = hist.querySelector('#lbHistSwitchRow');
+    if (hasHistory()) {
+      row.innerHTML = '<label class="toggle-label"><input type="checkbox" data-lb-history-switch> Save this tool\'s runs to history on this device</label>';
+      row.querySelector('input').addEventListener('change', function (e) { history_.setEnabled(SLUG, e.target.checked); });
+      syncSwitches();
+    } else row.innerHTML = '<span>This tool does not save runs.</span>';
     hist.classList.add('open'); document.body.classList.add('lb-modal-open');
     renderHistory();
   }
@@ -537,7 +635,7 @@
   function renderHistory() {
     history_.list(SLUG, 50).then(function (rows) {
       var list = hist.querySelector('#lbHistList');
-      if (!rows.length) { list.innerHTML = '<div class="lb-pal-empty">Nothing saved yet. Runs appear here after you use the tool.</div>'; return; }
+      if (!rows.length) { list.innerHTML = '<div class="lb-pal-empty">Nothing saved. History is off unless you turn on Save to history for a tool; then each run you start is kept here.</div>'; return; }
       list.innerHTML = rows.map(function (r, i) {
         var prev = r.label || (typeof r.data.input === 'string' ? r.data.input.slice(0, 80).replace(/\s+/g, ' ') : JSON.stringify(r.data).slice(0, 80));
         return '<div class="lb-pal-item" data-i="' + i + '"><i data-lucide="corner-up-left"></i><span class="lb-pal-title">' + esc(prev) + '</span><span class="lb-pal-hint">' + esc(new Date(r.ts).toLocaleString()) + '</span></div>';
@@ -572,9 +670,12 @@
     sc.classList.add('open'); icons();
   }
   function runTool() {
-    if (TOOL && TOOL.run) { TOOL.run(); return; }
-    var b = document.querySelector('[data-lb-primary], .btn-primary');
-    if (b) b.click();
+    markExplicit();
+    if (TOOL && TOOL.run) TOOL.run();
+    else { var b = document.querySelector('[data-lb-primary], .btn-primary'); if (b) b.click(); }
+    // a tool that runs as you type has already reported its state: save it
+    // if the explicit run did not produce a push of its own
+    if (hasHistory() && history_.enabled(SLUG)) setTimeout(function () { if (explicitAt) { explicitAt = 0; history_.saveNow(SLUG); } }, 60);
   }
   function inEditable(t) { return t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable); }
   function installKeys() {
@@ -620,6 +721,8 @@
     installDrop();
     installKeys();
     installSw();
+    installHistorySwitches();
+    purgeSilentRuns();
     applyIncomingState();
     document.querySelectorAll('[data-lb-send]').forEach(function (b) {
       b.addEventListener('click', function () {

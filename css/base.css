@@ -331,6 +331,12 @@ body.lb-modal-open { overflow: hidden; }
 #lbToast { position: fixed; left: 50%; bottom: 28px; transform: translate(-50%, 20px); z-index: 10001; max-width: min(560px, calc(100vw - 32px)); padding: 12px 18px; border-radius: 12px; background: rgba(15,17,24,0.97); border: 1px solid rgba(56,189,248,0.4); color: #fff; font: 500 0.9em 'Space Grotesk', sans-serif; box-shadow: 0 10px 30px rgba(0,0,0,0.5); opacity: 0; pointer-events: none; transition: opacity 0.2s, transform 0.2s; }
 #lbToast.show { opacity: 1; transform: translate(-50%, 0); }
 #lbToast.warn { border-color: rgba(245,158,11,0.6); }
+#lbToast.has-action.show { pointer-events: auto; display: flex; align-items: center; gap: 14px; }
+#lbToast .lb-toast-action { background: none; border: 1px solid rgba(56,189,248,0.6); color: #38bdf8; border-radius: 8px; padding: 4px 12px; font: 600 0.95em 'Space Grotesk', sans-serif; cursor: pointer; flex-shrink: 0; }
+#lbToast .lb-toast-action:hover { background: rgba(56,189,248,0.12); }
+.lb-history-slot { display: inline-flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+[data-lb-history-save][hidden] { display: none !important; }
+.lb-hist-switch-row { padding: 10px 16px; border-bottom: 1px solid rgba(255,255,255,0.08); color: var(--text-muted, #94a3b8); font-size: 0.9em; }
 
 #lbDrop { position: fixed; inset: 0; z-index: 9999; display: none; align-items: center; justify-content: center; background: rgba(56,189,248,0.08); border: 3px dashed var(--accent-main); pointer-events: none; }
 #lbDrop.show { display: flex; }

@@ -107,7 +107,7 @@
           "name": "Why is client-side JSON processing more secure?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "Unlike server-side validation tools that transmit your pasted data across the internet, Layerbit executes all parsing and formatting locally within your machine using the browser's native JSON.parse() capabilities. Sensitive API keys, private user data and proprietary system configurations remain strictly on your device, and the header indicator shows the page has made no network request with your data."
+            "text": "Unlike server-side validation tools that transmit your pasted data across the internet, Layerbit executes all parsing and formatting locally within your machine using the browser's native JSON.parse() capabilities. Sensitive API keys, private user data and proprietary system configurations remain strictly on your device, and the header indicator shows the page has made no network request with your data. Nothing is saved on your device either, unless you turn on Save to history; then only the runs you start yourself are kept, in this browser, until you clear them."
           }
         },
         {
@@ -123,7 +123,7 @@
           "name": "Which JSONPath syntax is supported?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "The root $, dotted keys, bracket keys with quotes for names containing spaces, numeric and negative indexes, wildcards with [*] or .*, recursive descent with .., slices such as [0:5], unions such as [0,2] or ['a','b'], .length on arrays and strings, and filters written as [?(@.price > 10 \u0026\u0026 @.status == 'paid')] with ==, !=, <, >, <=, >=, regex matching via =~ /pattern/, negation and parentheses. Every match is returned with its exact path."
+            "text": "The root $, dotted keys, bracket keys with quotes for names containing spaces, numeric and negative indexes, wildcards with [*] or .*, recursive descent with .., slices such as [0:5], unions such as [0,2] or ['a','b'], .length on arrays and strings, and filters written as [?(@.price \u003e 10 \u0026\u0026 @.status == 'paid')] with ==, !=, \u003c, \u003e, \u003c=, \u003e=, regex matching via =~ /pattern/, negation and parentheses. Every match is returned with its exact path."
           }
         },
         {
@@ -174,7 +174,7 @@
   <link rel="manifest" href="../manifest.json" />
   <link rel="alternate" type="application/atom+xml" title="Layerbit developer guides" href="https://layerbit.co.in/feed.xml" />
   <link rel="apple-touch-icon" href="../apple-touch-icon.png" />
-  <link rel="stylesheet" href="../css/base.css?v=3a758638ad" />
+  <link rel="stylesheet" href="../css/base.css?v=37fd5dc3fe" />
 
   <style>
 
@@ -576,6 +576,7 @@
           <button class="btn" type="button" onclick="document.getElementById('jsonFile').click()" title="Open a .json / .jsonl file"><i data-lucide="upload"></i></button>
           <button class="btn" id="btnClear" type="button" title="Clear input"><i data-lucide="trash-2"></i></button>
           <button class="btn" id="btnFix" type="button" title="Repair almost-JSON: comments, trailing commas, single quotes, bare keys, NaN"><i data-lucide="wrench"></i> Fix</button>
+          <span class="lb-history-slot" data-lb-history-slot></span>
           <button class="btn btn-primary" id="btnMinify" type="button"><i data-lucide="minimize-2"></i> Minify</button>
           <button class="btn btn-primary" id="btnFormat" type="button" data-lb-primary><i data-lucide="sparkles"></i> Beautify</button>
         </div>
@@ -768,7 +769,7 @@
         <div class="faq-item">
           <button class="faq-question">Why is client-side JSON processing more secure? <i data-lucide="chevron-down"></i></button>
           <div class="faq-answer">
-            <p>Unlike server-side validation tools that transmit your pasted data across the internet, Layerbit executes all parsing and formatting locally within your machine using the browser's native JSON.parse() capabilities. Sensitive API keys, private user data and proprietary system configurations remain strictly on your device, and the header indicator shows the page has made no network request with your data.</p>
+            <p>Unlike server-side validation tools that transmit your pasted data across the internet, Layerbit executes all parsing and formatting locally within your machine using the browser's native JSON.parse() capabilities. Sensitive API keys, private user data and proprietary system configurations remain strictly on your device, and the header indicator shows the page has made no network request with your data. Nothing is saved on your device either, unless you turn on <strong>Save to history</strong>; then only the runs you start yourself are kept, in this browser, until you clear them.</p>
           </div>
         </div>
         <div class="faq-item">
@@ -848,6 +849,7 @@
     <div class="info-panel">
       <h2><i data-lucide="git-commit"></i> Changelog</h2>
       <ul class="changelog-list">
+        <li><span class="changelog-tag">v3.1.0</span> History is off by default: with the Save to history switch on, only Beautify saves a run; typing never does.</li>
         <li><span class="changelog-tag">v3.0.0</span> Added Fix for almost-JSON with a list of changes made, full JSONPath (wildcards, recursive descent, slices, unions, filters) with every match and its path, JSON Schema validation and inference, type generation for TypeScript, Go, C#, Kotlin, Python, Java and Rust, SQL and CSV export with flattening, NDJSON detection and conversion, YAML output, string-literal escape and decode, a big-integer precision warning, indentation choice, file open, and share links.</li>
         <li><span class="changelog-tag">v2.1.0</span> Added a path query box, a structure readout, an optional deep key sort, and syntax errors with line and column that move the caret to the offending character.</li>
         <li><span class="changelog-tag">v1.4.0</span> Added a collapsible Tree view alongside the raw text output, with Expand All / Collapse All controls.</li>
@@ -962,7 +964,7 @@
       </div>
     </div>
   </footer>
-  <script src="../js/kernel.js?v=40b2047872"></script>
+  <script src="../js/kernel.js?v=02708bb1fe"></script>
 
   <script src="../js/shared.js?v=e2441a1728"></script>
   <script src="../js/engines/json.js?v=7ce8e8e146"></script>

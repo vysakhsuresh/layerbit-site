@@ -236,7 +236,7 @@
     <div class="opt-group">
       <button class="btn mode-only" data-for="text struct table hex image" type="button" onclick="swapInputs()"><i data-lucide="arrow-left-right"></i> Swap</button>
       <button class="btn" type="button" onclick="clearInputs()"><i data-lucide="trash-2"></i> Clear</button>
-      <label class="toggle-label save-switch" title="Off: nothing is stored. On: each Compare you click is saved to this browser's history (IndexedDB) so you can reopen it with Ctrl+H. Edits while typing are never saved."><input type="checkbox" id="saveHistory"> Save to history</label>
+      <label class="toggle-label save-switch" title="Off: nothing is stored. On: each Compare you click is saved to this browser's history (IndexedDB) so you can reopen it with Ctrl+H. Edits while typing are never saved."><input type="checkbox" id="saveHistory" data-lb-history-switch> Save to history</label>
       <button class="btn btn-primary" type="button" id="btnRun" data-lb-primary onclick="compare()"><i data-lucide="search"></i> <span id="btnRunLabel">Compare</span></button>
     </div>
   </div>
@@ -712,9 +712,7 @@
     // Ctrl+Enter) with "Save to history" switched on. Live re-runs while typing,
     // samples and share links never write anything.
     let explicitRun = false;
-    try { $('saveHistory').checked = localStorage.getItem('lb-diff-save-history') === '1'; } catch (e) { /* storage blocked */ }
-    $('saveHistory').addEventListener('change', () => { try { localStorage.setItem('lb-diff-save-history', $('saveHistory').checked ? '1' : '0'); } catch (e) { /* ignore */ } });
-    function remember(label) { if (explicitRun && $('saveHistory').checked) Layerbit.history.push('text-diff-checker', getState(), label); }
+    function remember(label) { if (explicitRun && $('saveHistory').checked) Layerbit.history.push('text-diff-checker', getState(), label, { explicit: true }); }
     function compare() { explicitRun = true; try { run(); } finally { setTimeout(() => { explicitRun = false; }, 0); } }
     function run(quiet) {
       clearError();
@@ -824,7 +822,7 @@
       renderText();
       renderMerged();
       $('mergedSection').style.display = res.hunks.length ? 'grid' : 'none';
-      if (wasExplicit && $('saveHistory').checked) Layerbit.history.push('text-diff-checker', getState(), `${nameA} → ${nameB}: +${res.stats.added + res.stats.modified} −${res.stats.removed + res.stats.modified}`);
+      if (wasExplicit && $('saveHistory').checked) Layerbit.history.push('text-diff-checker', getState(), `${nameA} → ${nameB}: +${res.stats.added + res.stats.modified} −${res.stats.removed + res.stats.modified}`, { explicit: true });
     }
     // ------------------------------------------------------------ virtual list
     // Renders `count` items in blocks; only blocks near the visible part of
@@ -1134,7 +1132,7 @@
         last = null; three = null; window._structDocs = [a, b]; window._structDiff = d;
         $('outputSection').style.display = 'grid'; $('mergedSection').style.display = 'none';
         showPanel('structPanel'); icons();
-        if (wasExplicit && $('saveHistory').checked) Layerbit.history.push('text-diff-checker', getState(), `structural: ${d.length} change${d.length === 1 ? '' : 's'}`);
+        if (wasExplicit && $('saveHistory').checked) Layerbit.history.push('text-diff-checker', getState(), `structural: ${d.length} change${d.length === 1 ? '' : 's'}`, { explicit: true });
       }).catch(e => showError(e.message));
     }
     function structAsText() { const [a, b] = window._structDocs; $('text1').value = E.canonicalJson(a); $('text2').value = E.canonicalJson(b); names = { a: 'original.json', b: 'modified.json' }; updateMeta(); setMode('text'); run(); }

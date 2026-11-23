@@ -3507,6 +3507,99 @@ def _(t):
 
 
 # ----------------------------------------------------------------------------
+# kernel: run history is opt-in (plan A1)
+# ----------------------------------------------------------------------------
+def HIST(slug):
+    return f"Layerbit.history.list('{slug}', 100).then(r => r.length)"
+
+
+def _hist_switch(t):
+    return t.page.locator("input[data-lb-history-switch]").first
+
+
+@case("jwt-decoder", "edge", "A1: a pasted token is never saved; with the switch on, only Save run saves, and Undo removes it")
+def _(t):
+    t.call("Layerbit.history.clear()")
+    t.set("jwtInput", JWT_HS256); t.wait(300)
+    eq(t.call(HIST("jwt-decoder")), 0, "pasting a token saved it")
+    sw = _hist_switch(t)
+    expect(sw.count() == 1 and sw.is_visible() and not sw.is_checked(), "no visible switch, or it is on by default")
+    expect(not t.visible("[data-lb-history-save]"), "Save run shown while the switch is off")
+    sw.check()
+    t.set("jwtInput", JWT_HS256 + " "); t.set("jwtInput", JWT_HS256); t.wait(300)
+    eq(t.call(HIST("jwt-decoder")), 0, "typing with the switch on saved a run")
+    t.click("[data-lb-history-save]"); t.wait(300)
+    eq(t.call(HIST("jwt-decoder")), 1, "Save run did not save")
+    expect("Undo" in t.text("lbToast"), "first save has no Undo: " + t.text("lbToast"))
+    t.click("#lbToast .lb-toast-action"); t.wait(300)
+    eq(t.call(HIST("jwt-decoder")), 0, "Undo did not remove the saved run")
+    t.page.keyboard.press("Control+Enter"); t.wait(300)
+    eq(t.call(HIST("jwt-decoder")), 1, "Ctrl+Enter is an explicit run")
+    sw.uncheck(); t.call("Layerbit.history.clear()")
+
+
+@case("json-validator", "edge", "A1: typing never saves; with the switch on, Beautify saves once")
+def _(t):
+    t.call("Layerbit.history.clear()")
+    t.set("jsonInput", '{"password": "hunter2"}'); t.wait(500)
+    t.click("#btnFormat"); t.wait(300)
+    eq(t.call(HIST("json-validator")), 0, "saved with the switch off")
+    _hist_switch(t).check()
+    t.set("jsonInput", '{"password": "hunter3"}'); t.wait(500)
+    eq(t.call(HIST("json-validator")), 0, "typing saved a run")
+    t.click("#btnFormat"); t.wait(300)
+    eq(t.call(HIST("json-validator")), 1, "Beautify with the switch on")
+    _hist_switch(t).uncheck(); t.call("Layerbit.history.clear()")
+
+
+@case("regex-tester", "edge", "A1: live matching never saves; Save run does, and the switch is remembered per tool")
+def _(t):
+    t.call("Layerbit.history.clear()")
+    t.set("regexInput", "\\d+"); t.set("testInput", "a1 b22"); t.wait(400)
+    eq(t.call(HIST("regex-tester")), 0, "live matching saved a run")
+    _hist_switch(t).check()
+    t.set("testInput", "a1 b22 c333"); t.wait(400)
+    eq(t.call(HIST("regex-tester")), 0, "typing with the switch on saved a run")
+    t.click("[data-lb-history-save]"); t.wait(300)
+    eq(t.call(HIST("regex-tester")), 1, "Save run")
+    t.page.reload(); t.wait(400)
+    expect(_hist_switch(t).is_checked(), "switch not remembered after reload")
+    t.page.goto(t.page.url.replace("regex-tester", "jwt-decoder")); t.wait(400)
+    expect(not _hist_switch(t).is_checked(), "switch leaked to another tool")
+    t.page.goto(t.page.url.replace("jwt-decoder", "regex-tester")); t.wait(400)
+    _hist_switch(t).uncheck(); t.call("Layerbit.history.clear()")
+
+
+@case("flow", "edge", "A1: live re-runs never save; Run with the switch on saves once")
+def _(t):
+    t.call("Layerbit.history.clear()")
+    t.set("flowInput", "c2VjcmV0PTE="); t.wait(300)
+    t.click(".magic-chip"); t.wait(400)
+    eq(t.call(HIST("flow")), 0, "live run saved with the switch off")
+    _hist_switch(t).check()
+    t.set("flowInput", "c2VjcmV0PTI="); t.wait(500)
+    eq(t.call(HIST("flow")), 0, "typing with the switch on saved a run")
+    t.click("#btnRun"); t.wait(400)
+    eq(t.call(HIST("flow")), 1, "Run with the switch on")
+    _hist_switch(t).uncheck(); t.call("Layerbit.history.clear()")
+
+
+@case("jwt-decoder", "edge", "A1: runs saved silently by earlier versions are removed once; Diff Checker runs saved behind its switch are kept")
+def _(t):
+    t.call("""() => new Promise(res => { const r = indexedDB.open('layerbit', 1);
+      r.onupgradeneeded = () => { const s = r.result.createObjectStore('runs', { keyPath: 'id', autoIncrement: true }); s.createIndex('slug', 'slug'); s.createIndex('ts', 'ts'); };
+      r.onsuccess = () => { const tx = r.result.transaction('runs', 'readwrite'), s = tx.objectStore('runs');
+        s.add({ slug: 'jwt-decoder', ts: Date.now(), label: 'old', data: { input: 'eyJ.old.token' } });
+        s.add({ slug: 'text-diff-checker', ts: Date.now(), label: 'kept', data: { a: 'x', b: 'y' } });
+        tx.oncomplete = () => { r.result.close(); res(); }; }; })""")
+    t.call("localStorage.removeItem('lb-history-v2')")
+    t.page.reload(); t.wait(600)
+    eq(t.call(HIST("jwt-decoder")), 0, "a silently saved token survived")
+    eq(t.call(HIST("text-diff-checker")), 1, "a consented Diff Checker run was deleted")
+    t.call("Layerbit.history.clear()")
+
+
+# ----------------------------------------------------------------------------
 # runner
 # ----------------------------------------------------------------------------
 def free_port():

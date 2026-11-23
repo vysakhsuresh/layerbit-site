@@ -48,7 +48,7 @@
       "@id": "https://layerbit.co.in/tools/regex-tester.html#app",
       "name": "Regex Tester \u0026 Debugger",
       "url": "https://layerbit.co.in/tools/regex-tester.html",
-      "description": "Test regular expressions with live highlighting, capture groups, replacement preview, all JavaScript flags, and an engine-time readout that flags slow patterns.",
+      "description": "Test regex with live highlighting, token explanation, railroad diagram, ReDoS check, unit tests, code for 10 languages and patterns inferred from examples.",
       "applicationCategory": "DeveloperApplication",
       "operatingSystem": "Any (runs in the browser)",
       "browserRequirements": "Requires JavaScript",
@@ -139,7 +139,7 @@
           "name": "Where are the unit tests stored?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "In the page, and in the share link when you copy one: the pattern, flags, test string and the full test table are compressed into the URL fragment, which browsers never send to a server. Paste the link into a code review or a ticket and the reader gets the pattern with its expectations and can run them. Nothing is stored on Layerbit's side; the optional history lives in your browser's own storage."
+            "text": "In the page, and in the share link when you copy one: the pattern, flags, test string and the full test table are compressed into the URL fragment, which browsers never send to a server. Paste the link into a code review or a ticket and the reader gets the pattern with its expectations and can run them. Nothing is stored on Layerbit's side. History is off by default; if you turn on Save to history, runs you save with Save run or Ctrl+Enter are kept in your browser's own storage."
           }
         },
         {
@@ -174,7 +174,7 @@
   <link rel="manifest" href="../manifest.json" />
   <link rel="alternate" type="application/atom+xml" title="Layerbit developer guides" href="https://layerbit.co.in/feed.xml" />
   <link rel="apple-touch-icon" href="../apple-touch-icon.png" />
-  <link rel="stylesheet" href="../css/base.css?v=3a758638ad" />
+  <link rel="stylesheet" href="../css/base.css?v=37fd5dc3fe" />
 
   <style>
 
@@ -707,6 +707,7 @@
       <div class="pane-header">
         <div class="pane-title"><i data-lucide="regex"></i> Expression Editor</div>
         <div class="btn-group">
+          <span class="lb-history-slot" data-lb-history-slot data-live></span>
           <span class="flavor-chip" title="Patterns run on your browser's native ECMAScript engine. The Code tab translates flags and syntax for other languages.">JavaScript / ECMAScript</span>
         </div>
       </div>
@@ -1013,7 +1014,7 @@
         <div class="faq-item">
           <button class="faq-question">Where are the unit tests stored? <i data-lucide="chevron-down"></i></button>
           <div class="faq-answer">
-            <p>In the page, and in the share link when you copy one: the pattern, flags, test string and the full test table are compressed into the URL fragment, which browsers never send to a server. Paste the link into a code review or a ticket and the reader gets the pattern with its expectations and can run them. Nothing is stored on Layerbit's side; the optional history lives in your browser's own storage.</p>
+            <p>In the page, and in the share link when you copy one: the pattern, flags, test string and the full test table are compressed into the URL fragment, which browsers never send to a server. Paste the link into a code review or a ticket and the reader gets the pattern with its expectations and can run them. Nothing is stored on Layerbit's side. History is off by default; if you turn on <strong>Save to history</strong>, runs you save with <strong>Save run</strong> or Ctrl+Enter are kept in your browser's own storage.</p>
           </div>
         </div>
         <div class="faq-item">
@@ -1057,6 +1058,7 @@
     <div class="info-panel">
       <h2><i data-lucide="git-merge"></i> Deployment Changelog</h2>
       <ul class="changelog-list">
+        <li><span class="changelog-tag">v3.1.0</span> History is off by default: with the Save to history switch on, runs are saved only with Save run or Ctrl+Enter, never while typing.</li>
         <li><span class="changelog-tag">v3.0.0</span> Rebuilt as a debugger: token-by-token explanation, railroad diagram with SVG export, static catastrophic-backtracking analysis plus a growth measurement, saved unit tests that travel in share links, code generation for ten languages with engine caveats, whole-file batch testing with download, pattern synthesis from examples, a quick reference, match export as text/CSV/JSON, and alternating match colours.</li>
         <li><span class="changelog-tag">v2.4.0</span> Added an engine-time readout that flags slow patterns, and a line-number gutter.</li>
         <li><span class="changelog-tag">v2.3.0</span> Added the s, u and y flags and the replacement preview with named-group support.</li>
@@ -1170,7 +1172,7 @@
       </div>
     </div>
   </footer>
-  <script src="../js/kernel.js?v=40b2047872"></script>
+  <script src="../js/kernel.js?v=02708bb1fe"></script>
 
   <script src="../js/shared.js?v=e2441a1728"></script>
   <script src="../js/engines/regex.js?v=f9bc12ccda"></script>
