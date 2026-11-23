@@ -65,7 +65,9 @@ TABS = r"""() => [...document.querySelectorAll('[role=tab], .tab-btn, .mode-tab,
 
 LIST = r"""() => {
   const skip = el => el.closest('header, footer, .faq-section, .faq-container, .faq-item, .info-panel, .docs-container, .related, .seo-panel, #lbPalette, #lbHistory, #lbShortcuts, .cookie-consent-banner, .fab, nav');
-  const vis = e => { const r = e.getBoundingClientRect(); return r.width > 0 && r.height > 0 && getComputedStyle(e).visibility !== 'hidden'; };
+  const vis = e => { const r = e.getBoundingClientRect(); return r.width > 0 && r.height > 0 && getComputedStyle(e).visibility !== 'hidden' && (!e.checkVisibility || e.checkVisibility()); };
+  // options folded into a <details> panel are part of the tool: open it so they are swept too
+  document.querySelectorAll('main details:not([open])').forEach(d => { if (!skip(d)) d.open = true; });
   const out = [];
   document.querySelectorAll('button, input[type=checkbox], input[type=radio], select, [role=tab], .tab-btn, .mode-btn').forEach((e, i) => {
     if (skip(e) || !vis(e) || e.disabled) return;

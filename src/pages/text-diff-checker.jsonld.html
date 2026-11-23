@@ -7,7 +7,7 @@
       "@id": "https://layerbit.co.in/tools/text-diff-checker.html#app",
       "name": "Text Diff Checker \u0026 Merge Tool",
       "url": "https://layerbit.co.in/tools/text-diff-checker.html",
-      "description": "Compare two texts or code files side by side with every difference highlighted, diff JSON, CSV and zip folders, merge changes and apply patches. Runs locally.",
+      "description": "Compare text, code, JSON, spreadsheets, folders, binary files and images side by side, merge changes, and export patches, CSV or Excel reports. Runs locally.",
       "applicationCategory": "DeveloperApplication",
       "operatingSystem": "Any (runs in the browser)",
       "browserRequirements": "Requires JavaScript",
@@ -27,10 +27,15 @@
         "Hunk-by-hunk merge with editable result",
         "Three-way merge with conflict resolution",
         "Structural JSON and YAML diff by path",
-        "Keyed CSV and Excel cell diff",
+        "Keyed CSV and Excel cell diff with up to three key columns",
+        "Every sheet of two Excel workbooks compared",
+        "Matching options: trim, case, empty = NULL, numbers by value, date formats, tolerance, ignored columns",
+        "Folder comparison by content, size or date, with an ignore list",
+        "Hex comparison of binary files read in slices",
+        "Image comparison: side by side, slider, onion skin and pixel difference",
         "Apply and export unified patches",
-        "Zip folder comparison",
-        "Share links and local history"
+        "CSV, Excel, JSON and HTML exports stating options and date",
+        "Share links and opt-in local history"
       ]
     },
     {
@@ -74,7 +79,7 @@
           "name": "What do \"Ignore whitespace\" and the other normalisation options do?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "They change how lines are compared, not how they are displayed. Ignore whitespace collapses every run of spaces and tabs to one space and trims the ends, so a reformatted file shows only logic changes. Ignore case compares lower-cased lines. Trim trailing ignores whitespace at the end of a line only. Ignore blank lines lets empty lines match anywhere. Line endings (CRLF vs LF) are always normalised. The original text is still shown in full in the result."
+            "text": "They change how lines are compared, not how they are displayed. Ignore whitespace collapses every run of spaces and tabs to one space and trims the ends, so a reformatted file shows only logic changes. Ignore case compares lower-cased lines. Trim trailing ignores whitespace at the end of a line only. Ignore blank lines leaves empty lines out of the comparison. Lines are always matched regardless of CRLF or LF endings, but a difference in line endings, or a missing newline at the end of a file, is still reported above the result. The original text is shown in full."
           }
         },
         {
@@ -106,7 +111,15 @@
           "name": "How does the spreadsheet comparison match rows?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "By a key column you choose from the header row, such as an id, SKU or email. Rows with the same key are compared cell by cell regardless of where they appear, so a re-sorted or filtered export shows only real changes. Rows whose key exists on one side only are reported as added or removed, and columns that appear or disappear are listed separately. If the file has no natural key, match by row order instead."
+            "text": "By up to three key columns you choose from the header row, such as an id, or a region plus a SKU. Rows with the same key are compared cell by cell regardless of where they appear, so a re-sorted or filtered export shows only real changes. Rows whose key exists on one side only are reported as added or removed, duplicate keys are flagged, and columns that appear or disappear are listed separately. Matching options can trim spaces, ignore case, treat empty and NULL alike, compare numbers by value, read dates in different formats as the same date, allow an absolute or percentage tolerance, and leave chosen columns out. If the file has no natural key, match by row order instead."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Does it compare every sheet of an Excel workbook?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes. Open an .xlsx, .xls or .ods file on each side and every sheet is compared: sheets with the same name are paired, a sheet that was renamed is paired by its content and marked as possibly renamed, and sheets found on one side only are listed. A summary shows the changes per sheet, with a tab for each. You can compare the values as Excel displays them (with number and date formats applied) or the raw stored values, and the whole comparison exports to one .xlsx."
           }
         },
         {
@@ -119,10 +132,10 @@
         },
         {
           "@type": "Question",
-          "name": "Is anything uploaded when I compare files or zip folders?",
+          "name": "Is anything uploaded when I compare files or folders?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "No. Files are read with the browser's FileReader, zip archives are unpacked with the browser's own DecompressionStream, and every algorithm on this page is JavaScript running in the tab. The privacy indicator in the header counts any network request the page makes; it stays at zero while you work. Closing the tab discards everything unless you chose to save a run to the local history."
+            "text": "No. Files and folders are read by the browser itself, zip archives are unpacked with the browser's own DecompressionStream, folder contents are hashed with the browser's Web Crypto, and every algorithm on this page is JavaScript running in the tab. The privacy indicator in the header counts any network request the page makes; it stays at zero while you work. Nothing is stored either: the Save to history switch next to Compare is off by default. If you turn it on, each comparison you run with the Compare button is kept in this browser's own storage so you can reopen it later; edits made while typing are never saved, and the history can be cleared at any time. Apart from that, only two settings are remembered: the folder ignore list and whether the history switch is on. Closing the tab otherwise discards everything."
           }
         },
         {
@@ -130,7 +143,31 @@
           "name": "How large a file can it handle?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "Tens of thousands of lines compare in well under a second; the limit is rendering, not diffing. For files over about 20,000 lines, set Context to 3 or 5 lines so only the changed regions are rendered, and prefer word over character highlighting. The structural and table modes handle documents of several megabytes. Share links are capped at roughly 60 KB of compressed input; larger comparisons can be exported as a patch or HTML report instead."
+            "text": "Large text files are compared in a background worker with a progress bar and a Cancel button, so the page never freezes, and the result is drawn as a virtual list: only the rows on screen exist in the page, so a 100,000-line comparison scrolls like a short one. When two large files are too different to line up within a time limit, the page says so and shows what they have in common, with an option to align them anyway. The hex view reads files in slices, so two files of hundreds of megabytes compare without being loaded into memory, and folders of tens of thousands of files are hashed in the background. Images larger than 40 megapixels are compared on a scaled copy, and the page says so. Share links are capped at roughly 60 KB of compressed input; larger comparisons can be exported instead."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How does the binary (hex) comparison work?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Both files are read in 4 MB slices and compared byte for byte at the same offsets; no alignment is attempted, because in a binary file an inserted byte usually means everything after it moved. The result gives both sizes, the number of bytes that differ, the number of separate differing ranges and the first differing offset, and warns when the sizes differ (the extra bytes count as different). The view shows offset, hex and printable text for both sides with the differing bytes highlighted; Next and Previous step through the ranges, and Go to offset accepts hex (0x1F00) or decimal (7936). The ranges export as CSV."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How does the image comparison decide what changed?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Both images are decoded by the browser and drawn at the same position, top-left aligned. A pixel counts as changed when its red, green, blue or alpha value differs by more than the tolerance, so a tolerance of a few levels hides JPEG re-compression noise while still catching real edits; fully transparent pixels count as equal whatever their colour. If the dimensions differ, the page warns you and counts the area only one image covers as changed. SVGs are compared as rendered, and their source can be compared as text with one click. The format is read from the file's bytes, so a PNG saved with a .jpg name is reported as a PNG."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What can I export, and what does a report include?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Text comparisons export as a unified .patch and an HTML report. Tables export as CSV, with an original and a modified column for every column, and as an .xlsx with changed cells yellow, added rows green and removed rows red. JSON and YAML changes export by path as CSV or JSON, folders as CSV or HTML, byte comparisons as a CSV of the differing ranges, and images as an HTML report with both images and the difference image, or the difference image alone as a PNG. Every report starts with the names of what was compared, the options used and the date it was made."
           }
         }
       ]

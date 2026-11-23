@@ -3,7 +3,7 @@
   <main id="main" class="page-main">
   <div class="hero">
     <h1>Text Diff Checker &amp; Merge Tool</h1>
-    <p>Compare two texts or code files side by side with every change highlighted, or compare JSON documents, spreadsheets and whole zip folders; merge changes hunk by hunk; resolve three-way merges; apply and export unified patches. Every byte stays in your browser.</p>
+    <p>Compare two texts or code files side by side with every change highlighted, or compare JSON documents, every sheet of two spreadsheets, whole folders, binary files byte by byte and images pixel by pixel; merge changes hunk by hunk; resolve three-way merges; apply patches; export the result as a patch, CSV, Excel workbook or HTML report. Every byte stays in your browser.</p>
   </div>
 
   <div class="mode-tabs" id="modeTabs" role="tablist" aria-label="Comparison mode">
@@ -12,7 +12,9 @@
     <button type="button" class="mode-tab" data-mode="struct" role="tab" aria-selected="false"><i data-lucide="braces"></i> JSON / YAML structure</button>
     <button type="button" class="mode-tab" data-mode="table" role="tab" aria-selected="false"><i data-lucide="table"></i> CSV / spreadsheet cells</button>
     <button type="button" class="mode-tab" data-mode="patch" role="tab" aria-selected="false"><i data-lucide="file-plus-2"></i> Apply a patch</button>
-    <button type="button" class="mode-tab" data-mode="zip" role="tab" aria-selected="false"><i data-lucide="folder-git-2"></i> Folders (.zip)</button>
+    <button type="button" class="mode-tab" data-mode="zip" role="tab" aria-selected="false"><i data-lucide="folder-git-2"></i> Folders</button>
+    <button type="button" class="mode-tab" data-mode="hex" role="tab" aria-selected="false"><i data-lucide="binary"></i> Hex / binary</button>
+    <button type="button" class="mode-tab" data-mode="image" role="tab" aria-selected="false"><i data-lucide="image"></i> Images</button>
   </div>
 
   <!-- Two-sided inputs: text, struct and table modes share them -->
@@ -75,17 +77,67 @@
     </div>
   </div>
 
-  <!-- Zip inputs -->
+  <!-- Folder inputs: a real folder (picker, folder input or drag and drop) or a .zip -->
   <div class="ide-container mode-only" data-for="zip" style="display:none;">
     <div class="pane zip-pane" id="zipAPane">
-      <div class="pane-header"><div class="pane-title title-red"><i data-lucide="folder-archive"></i> Folder A (.zip)</div>
-        <div class="btn-group"><input type="file" id="zipAFile" accept=".zip,application/zip" style="display:none;"><button class="btn" type="button" onclick="document.getElementById('zipAFile').click()"><i data-lucide="upload"></i> Choose zip</button></div></div>
-      <div class="zip-drop" id="zipAInfo"><i data-lucide="folder-input"></i><span>Drop a .zip of the first folder here</span></div>
+      <div class="pane-header"><div class="pane-title title-red"><i data-lucide="folder"></i> Left folder</div>
+        <div class="btn-group">
+          <input type="file" id="dirAInput" webkitdirectory multiple style="display:none;">
+          <input type="file" id="zipAFile" accept=".zip,application/zip" style="display:none;">
+          <button class="btn" type="button" onclick="pickFolder('a')"><i data-lucide="folder-open"></i> Choose folder</button>
+          <button class="btn" type="button" onclick="document.getElementById('zipAFile').click()"><i data-lucide="file-archive"></i> Zip</button>
+        </div></div>
+      <div class="zip-drop" id="zipAInfo"><i data-lucide="folder-input"></i><span>Drop a folder or a .zip here</span></div>
     </div>
     <div class="pane zip-pane" id="zipBPane">
-      <div class="pane-header"><div class="pane-title title-green"><i data-lucide="folder-archive"></i> Folder B (.zip)</div>
-        <div class="btn-group"><input type="file" id="zipBFile" accept=".zip,application/zip" style="display:none;"><button class="btn" type="button" onclick="document.getElementById('zipBFile').click()"><i data-lucide="upload"></i> Choose zip</button></div></div>
-      <div class="zip-drop" id="zipBInfo"><i data-lucide="folder-input"></i><span>Drop a .zip of the second folder here</span></div>
+      <div class="pane-header"><div class="pane-title title-green"><i data-lucide="folder"></i> Right folder</div>
+        <div class="btn-group">
+          <input type="file" id="dirBInput" webkitdirectory multiple style="display:none;">
+          <input type="file" id="zipBFile" accept=".zip,application/zip" style="display:none;">
+          <button class="btn" type="button" onclick="pickFolder('b')"><i data-lucide="folder-open"></i> Choose folder</button>
+          <button class="btn" type="button" onclick="document.getElementById('zipBFile').click()"><i data-lucide="file-archive"></i> Zip</button>
+        </div></div>
+      <div class="zip-drop" id="zipBInfo"><i data-lucide="folder-input"></i><span>Drop a folder or a .zip here</span></div>
+    </div>
+  </div>
+
+  <!-- Hex inputs: any two files, read in slices -->
+  <div class="ide-container mode-only" data-for="hex" style="display:none;">
+    <div class="pane zip-pane" id="hexAPane">
+      <div class="pane-header"><div class="pane-title title-red"><i data-lucide="file-minus"></i> Left file</div>
+        <div class="btn-group">
+          <input type="file" id="hexAFile" style="display:none;">
+          <button class="btn" type="button" onclick="document.getElementById('hexAFile').click()"><i data-lucide="upload"></i> Open file</button>
+        </div></div>
+      <div class="zip-drop" id="hexAInfo"><i data-lucide="binary"></i><span>Drop any file here, or choose one</span></div>
+    </div>
+    <div class="pane zip-pane" id="hexBPane">
+      <div class="pane-header"><div class="pane-title title-green"><i data-lucide="file-plus"></i> Right file</div>
+        <div class="btn-group">
+          <input type="file" id="hexBFile" style="display:none;">
+          <button class="btn" type="button" onclick="document.getElementById('hexBFile').click()"><i data-lucide="upload"></i> Open file</button>
+        </div></div>
+      <div class="zip-drop" id="hexBInfo"><i data-lucide="binary"></i><span>Drop any file here, or choose one</span></div>
+    </div>
+  </div>
+
+  <!-- Image inputs -->
+  <div class="ide-container mode-only" data-for="image" style="display:none;">
+    <div class="pane zip-pane" id="imgAPane">
+      <div class="pane-header"><div class="pane-title title-red"><i data-lucide="image"></i> Left image</div>
+        <div class="btn-group">
+          <input type="file" id="imgAFile" accept="image/*,.svg,.bmp,.webp" style="display:none;">
+          <button class="btn" type="button" onclick="document.getElementById('imgAFile').click()"><i data-lucide="upload"></i> Open image</button>
+        </div></div>
+      <div class="zip-drop" id="imgAInfo"><i data-lucide="image"></i><span>Drop a PNG, JPG, GIF, WebP, BMP or SVG here</span></div>
+    </div>
+    <div class="pane zip-pane" id="imgBPane">
+      <div class="pane-header"><div class="pane-title title-green"><i data-lucide="image"></i> Right image</div>
+        <div class="btn-group">
+          <input type="file" id="imgBFile" accept="image/*,.svg,.bmp,.webp" style="display:none;">
+          <button class="btn" type="button" onclick="document.getElementById('imgBFile').click()"><i data-lucide="upload"></i> Open image</button>
+        </div></div>
+      <div class="zip-drop" id="imgBInfo"><i data-lucide="image"></i><span>Drop a PNG, JPG, GIF, WebP, BMP or SVG here</span></div>
     </div>
   </div>
 
@@ -109,7 +161,7 @@
       <label class="toggle-label">Syntax
         <select id="syntaxMode" class="mini-select"><option value="auto" selected>auto</option><option value="text">none</option><option value="json">JSON</option><option value="js">JS / TS</option><option value="py">Python</option><option value="sql">SQL</option><option value="yaml">YAML</option><option value="xml">XML / HTML</option><option value="css">CSS</option><option value="go">Go</option><option value="java">Java / Kotlin</option><option value="cs">C#</option><option value="sh">Shell</option><option value="rs">Rust</option><option value="ini">INI / .env</option></select>
       </label>
-      <label class="toggle-label" title="Render spaces as · and tabs as →"><input type="checkbox" id="showWs"> Show whitespace</label>
+      <label class="toggle-label" title="Render spaces as ·, tabs as →, and invisible characters (no-break space, zero-width space, BOM, bidi controls) as labelled markers"><input type="checkbox" id="showWs"> Show whitespace</label>
     </div>
     <div class="opt-group mode-only" data-for="struct" style="display:none;">
       <label class="toggle-label">Arrays
@@ -117,15 +169,75 @@
       </label>
       <label class="toggle-label" id="keyFieldLabel" style="display:none;">Key field <input type="text" id="keyField" class="mini-input" value="id" size="8"></label>
     </div>
+    <div class="opt-group mode-only" data-for="zip" style="display:none;">
+      <label class="toggle-label">Compare by
+        <select id="folderBy" class="mini-select"><option value="content" selected>content (SHA-256)</option><option value="size">size</option><option value="date">modified date</option></select>
+      </label>
+      <label class="toggle-label">Show
+        <select id="folderStatus" class="mini-select"><option value="all" selected>all files</option><option value="modified">modified</option><option value="added">added</option><option value="removed">removed</option><option value="same">identical</option></select>
+      </label>
+      <label class="toggle-label"><input type="checkbox" id="hideSame"> Hide identical</label>
+      <label class="toggle-label ignore-label" title="Names or globs, separated by commas. A name matches at any depth (node_modules, *.log); a pattern with / matches from the top folder (docs/*.pdf).">Ignore
+        <input type="text" id="ignoreList" class="mini-input ignore-input" spellcheck="false" autocomplete="off">
+        <button type="button" class="btn mini-btn" id="btnIgnoreReset" title="Restore the default ignore list">Reset</button>
+      </label>
+    </div>
+    <div class="opt-group mode-only" data-for="hex" style="display:none;">
+      <label class="toggle-label">Bytes per row
+        <select id="hexWidth" class="mini-select"><option value="8">8</option><option value="16" selected>16</option><option value="32">32</option></select>
+      </label>
+      <label class="toggle-label" title="Hex (0x1F00, 1F00h) or decimal (7936)">Go to offset
+        <input type="text" id="hexJump" class="mini-input" size="12" spellcheck="false" autocomplete="off" placeholder="0x0000">
+        <button type="button" class="btn mini-btn" id="btnHexJump">Go</button>
+      </label>
+      <span class="muted hex-jump-msg" id="hexJumpMsg" role="status"></span>
+    </div>
+    <div class="opt-group mode-only" data-for="image" style="display:none;">
+      <label class="toggle-label">View
+        <select id="imgView" class="mini-select"><option value="side" selected>side by side</option><option value="slider">slider</option><option value="onion">onion skin</option><option value="diff">difference</option></select>
+      </label>
+      <label class="toggle-label" title="A pixel counts as changed when a colour channel differs by more than this (0-255). A few levels hides re-compression noise.">Tolerance
+        <input type="range" id="imgTol" min="0" max="64" step="1" value="0"> <output id="imgTolVal" for="imgTol">0</output>
+      </label>
+      <label class="toggle-label" id="imgOpacityLabel" hidden>Right image opacity
+        <input type="range" id="imgOpacity" min="0" max="100" step="1" value="50">
+      </label>
+    </div>
     <div class="opt-group mode-only" data-for="table" style="display:none;">
+      <label class="toggle-label" id="sheetValuesLabel" hidden title="Displayed: the text Excel shows (formats such as 0.00 or dates applied). Raw: the stored values.">Spreadsheet values
+        <select id="sheetValues" class="mini-select"><option value="displayed" selected>as displayed</option><option value="raw">raw values</option></select>
+      </label>
       <label class="toggle-label">Match rows by
         <select id="keyCol" class="mini-select"><option value="-1">row order</option></select>
       </label>
+      <label class="toggle-label" title="Add a second key column for a composite key">and
+        <select id="keyCol2" class="mini-select"><option value="">(no second key)</option></select>
+      </label>
+      <label class="toggle-label" title="Add a third key column">and
+        <select id="keyCol3" class="mini-select"><option value="">(no third key)</option></select>
+      </label>
+      <details class="table-opts" id="tableOpts">
+        <summary>Matching options</summary>
+        <div class="to-grid">
+          <label class="toggle-label"><input type="checkbox" id="tTrim"> Trim spaces</label>
+          <label class="toggle-label"><input type="checkbox" id="tCase"> Ignore case</label>
+          <label class="toggle-label" title="Treat empty cells and NULL, null, None, N/A as the same"><input type="checkbox" id="tNull"> Empty = NULL</label>
+          <label class="toggle-label" title="Compare numbers by value: 1.0 = 1 and 0012 = 12; long numbers are compared digit by digit"><input type="checkbox" id="tNumeric"> Numbers by value</label>
+          <label class="toggle-label" title="2026-11-05, 05/11/2026 and 5 Nov 2026 are the same date"><input type="checkbox" id="tDates"> Dates in any format</label>
+          <label class="toggle-label">Dates like 05/11 are
+            <select id="tDayFirst" class="mini-select"><option value="1" selected>day first</option><option value="0">month first</option></select>
+          </label>
+          <label class="toggle-label">Tolerance ±<input type="number" id="tTolAbs" class="mini-input num" min="0" step="any" placeholder="0"></label>
+          <label class="toggle-label">or ±<input type="number" id="tTolPct" class="mini-input num" min="0" step="any" placeholder="0">%</label>
+        </div>
+        <div class="to-cols"><span class="muted">Ignore columns:</span> <span id="ignoreCols"></span></div>
+      </details>
     </div>
     <div class="opt-group">
-      <button class="btn mode-only" data-for="text struct table" type="button" onclick="swapInputs()"><i data-lucide="arrow-left-right"></i> Swap</button>
+      <button class="btn mode-only" data-for="text struct table hex image" type="button" onclick="swapInputs()"><i data-lucide="arrow-left-right"></i> Swap</button>
       <button class="btn" type="button" onclick="clearInputs()"><i data-lucide="trash-2"></i> Clear</button>
-      <button class="btn btn-primary" type="button" id="btnRun" data-lb-primary onclick="run()"><i data-lucide="search"></i> <span id="btnRunLabel">Compare</span></button>
+      <label class="toggle-label save-switch" title="Off: nothing is stored. On: each Compare you click is saved to this browser's history (IndexedDB) so you can reopen it with Ctrl+H. Edits while typing are never saved."><input type="checkbox" id="saveHistory"> Save to history</label>
+      <button class="btn btn-primary" type="button" id="btnRun" data-lb-primary onclick="compare()"><i data-lucide="search"></i> <span id="btnRunLabel">Compare</span></button>
     </div>
   </div>
 
@@ -135,7 +247,7 @@
         <div class="pane-title"><i data-lucide="file-output"></i> <span id="resultTitle">Result</span></div>
         <div class="stats-strip" id="diffStats"></div>
         <div class="btn-group">
-          <span class="btn-group mode-only" data-for="text patch zip" id="navGroup">
+          <span class="btn-group mode-only" data-for="text patch zip hex" id="navGroup">
             <button class="btn" type="button" onclick="navDiff(-1)" title="Previous change (p)"><i data-lucide="chevron-up"></i></button>
             <span class="hunk-counter" id="hunkCounter">0 / 0</span>
             <button class="btn" type="button" onclick="navDiff(1)" title="Next change (n)"><i data-lucide="chevron-down"></i></button>
@@ -145,18 +257,27 @@
             <button class="btn" type="button" id="btnAllRight" onclick="mergeAll('right')" title="Accept every change: merged result equals the modified text"><i data-lucide="chevrons-right"></i> Accept all changes</button>
           </span>
           <span class="btn-group">
-            <button class="btn" type="button" id="btnPatch" onclick="copyPatch()" title="Copy a unified diff (git apply / patch -p0 compatible)"><i data-lucide="copy"></i> Copy patch</button>
-            <button class="btn" type="button" id="btnPatchDl" onclick="downloadPatch()" title="Download as .patch"><i data-lucide="download"></i> .patch</button>
+            <button class="btn mode-only" data-for="text three struct table patch zip" type="button" id="btnPatch" onclick="copyPatch()" title="Copy a unified diff (git apply / patch -p0 compatible)"><i data-lucide="copy"></i> Copy patch</button>
+            <button class="btn mode-only" data-for="text three struct table patch zip" type="button" id="btnPatchDl" onclick="downloadPatch()" title="Download as .patch"><i data-lucide="download"></i> .patch</button>
             <button class="btn" type="button" id="btnReport" onclick="downloadReport()" title="Download a standalone HTML report of this comparison"><i data-lucide="file-code-2"></i> HTML report</button>
+            <button class="btn mode-only" data-for="zip table struct hex" type="button" id="btnCsv" onclick="downloadCsv()" title="Download the differences as CSV, with the options and date at the top"><i data-lucide="file-spreadsheet"></i> CSV</button>
+            <button class="btn mode-only" data-for="table" type="button" id="btnXlsx" onclick="exportXlsx()" title="Download an Excel workbook: changed cells yellow, added rows green, removed rows red"><i data-lucide="sheet"></i> .xlsx</button>
+            <button class="btn mode-only" data-for="struct" type="button" id="btnJson" onclick="exportJson()" title="Download the path changes as JSON"><i data-lucide="braces"></i> JSON</button>
+            <button class="btn mode-only" data-for="image" type="button" id="btnDiffPng" onclick="exportDiffPng()" title="Download the difference image as PNG"><i data-lucide="image"></i> Difference PNG</button>
+            <button class="btn" type="button" id="btnBackFolder" onclick="backToFolder()" hidden><i data-lucide="folder-tree"></i> Back to folder</button>
           </span>
         </div>
       </div>
+      <div class="diff-progress" id="diffProgress" hidden role="status" aria-live="polite">
+        <div class="dp-row"><span id="diffProgressLabel">Comparing…</span><span class="muted" id="diffProgressTime"></span><button class="btn" type="button" id="btnCancelDiff"><i data-lucide="x"></i> Cancel</button></div>
+        <div class="dp-bar"><div class="dp-fill" id="diffProgressFill"></div></div>
+      </div>
+      <div class="patch-files" id="patchFiles" hidden></div>
       <div class="error-banner" id="errorBanner"><i data-lucide="alert-triangle"></i><span id="errorText"></span></div>
 
       <!-- text / patch / zip-file views -->
       <div class="split-wrap" id="splitWrap">
-        <div id="leftPanel" class="diff-output" tabindex="0" aria-label="Original with removals"></div>
-        <div id="rightPanel" class="diff-output" tabindex="0" aria-label="Modified with additions"></div>
+        <div id="splitPanel" class="diff-output split" tabindex="0" aria-label="Side-by-side comparison: original on the left, modified on the right"></div>
       </div>
       <div id="inlinePanel" class="diff-output unified" style="display:none;" tabindex="0" aria-label="Unified diff"></div>
 
@@ -168,6 +289,22 @@
       <div id="threePanel" class="three-output" style="display:none;"></div>
       <!-- zip view -->
       <div id="zipPanel" class="struct-output" style="display:none;"></div>
+      <!-- image view -->
+      <div id="imagePanel" class="image-output" style="display:none;">
+        <div id="imgNotes"></div>
+        <div class="img-info-wrap"><table class="data-table img-info" id="imgInfo"></table></div>
+        <div class="img-stage-wrap"><div class="img-stage" id="imgStage"></div></div>
+        <div class="img-slider-row" id="imgSliderRow" hidden><input type="range" id="imgSlider" min="0" max="100" step="0.5" value="50" aria-label="Slider position: left image to the left, right image to the right"></div>
+      </div>
+      <!-- hex view: a virtual list, so any file size scrolls -->
+      <div id="hexPanel" class="hex-output" style="display:none;">
+        <div id="hexNotes"></div>
+        <div class="hex-scroll" id="hexScroll" tabindex="0" aria-label="Hex view: offset, left bytes and text, right bytes and text">
+          <div class="hex-head" id="hexHead"></div>
+          <div class="hex-spacer" id="hexSpacer"></div>
+          <div class="hex-rows" id="hexRows"></div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -188,8 +325,8 @@
 
   <div class="docs-container">
     <div class="info-panel">
-      <h2><i data-lucide="info"></i> Six comparisons, one page, nothing uploaded</h2>
-      <p>Most diff sites do one thing: a line diff of two pasted texts. Real comparison work is messier than that — a merge that needs a third version, a JSON file whose keys were reordered, a spreadsheet export where one cell changed in ten thousand, a patch file someone emailed, two copies of a project folder. This page handles each of those with the right algorithm instead of forcing everything through a line diff.</p>
+      <h2><i data-lucide="info"></i> Eight comparisons, one page, nothing uploaded</h2>
+      <p>Most diff sites do one thing: a line diff of two pasted texts. Real comparison work is messier than that — a merge that needs a third version, a JSON file whose keys were reordered, a spreadsheet export where one cell changed in ten thousand, a patch file someone emailed, two copies of a project folder, two firmware builds, two screenshots. This page handles each of those with the right algorithm instead of forcing everything through a line diff.</p>
       <div class="use-cases-grid">
         <div class="use-case-card">
           <h3><i data-lucide="file-diff"></i> Text &amp; code</h3>
@@ -205,15 +342,23 @@
         </div>
         <div class="use-case-card">
           <h3><i data-lucide="table"></i> CSV / spreadsheet cells</h3>
-          <p>Rows are matched by a key column you choose, so a re-sorted export does not show as "everything changed". The result is the list of rows added, removed, and changed, with the exact cells that differ. Excel files are read locally too.</p>
+          <p>Rows are matched by up to three key columns you choose, so a re-sorted export does not show as "everything changed". The result is the list of rows added, removed, and changed, with the exact cells that differ and a count per column. Optional rules ignore spacing, case, number formatting (1.0 = 1), date formats and small numeric differences. Every sheet of two Excel workbooks is compared, and the result exports to CSV or to an .xlsx with the changed cells highlighted.</p>
         </div>
         <div class="use-case-card">
           <h3><i data-lucide="file-plus-2"></i> Apply a patch</h3>
           <p>Paste a unified diff and the file it was made against; the patch is applied with context matching (and a fuzz fallback if line numbers drifted) and the result is shown as a diff so you can see exactly what it did before you trust it.</p>
         </div>
         <div class="use-case-card">
-          <h3><i data-lucide="folder-git-2"></i> Folders (.zip)</h3>
-          <p>Drop two zip archives — two releases, a backup and a live copy — and get the file-level picture: added, removed, identical, and modified files, each modified file one click from a full text diff. The archives are unpacked in memory in your browser.</p>
+          <h3><i data-lucide="folder-git-2"></i> Folders</h3>
+          <p>Choose or drop two folders, or two zip archives — two releases, a backup and a live copy — and get a tree of added, removed, identical and modified files, compared by content (SHA-256), size or modified date, with an ignore list for folders such as <code>node_modules</code>. Each file is one click from the comparison that suits it: text, table, structure, bytes or image.</p>
+        </div>
+        <div class="use-case-card">
+          <h3><i data-lucide="binary"></i> Hex / binary</h3>
+          <p>Any two files, byte by byte: offset, hex and text columns for both sides with the differing bytes highlighted, the first differing offset and the number of bytes that differ, next and previous difference, and go to offset. Files are read in slices, so files hundreds of megabytes in size work.</p>
+        </div>
+        <div class="use-case-card">
+          <h3><i data-lucide="image"></i> Images</h3>
+          <p>PNG, JPG, GIF, WebP, BMP and SVG side by side, with a slider, onion skin, or a difference image that marks every changed pixel. A tolerance hides re-compression noise, and the result gives the share of pixels that changed alongside the format, dimensions and file size of both images.</p>
         </div>
       </div>
     </div>
@@ -247,11 +392,11 @@
       <div class="use-cases-grid">
         <div class="use-case-card">
           <h3><i data-lucide="eye-off"></i> Invisible differences</h3>
-          <p>The hardest diffs are the ones you cannot see: a trailing space, a tab where the rest of the file uses spaces, a non-breaking space pasted from a document, or a zero-width character from a web page. Turn on <strong>Show whitespace</strong> to render spaces and tabs visibly, and the <a href="unicode-inspector.html">Unicode Inspector</a> for anything stranger.</p>
+          <p>The hardest diffs are the ones you cannot see: a trailing space, a tab where the rest of the file uses spaces, a non-breaking space pasted from a document, or a zero-width character from a web page. Turn on <strong>Show whitespace</strong> to render spaces and tabs visibly and every invisible character as a labelled marker (NBSP, ZWSP, BOM, RLO and so on); inside a changed region those markers appear even with the option off, so a change is never invisible. The <a href="unicode-inspector.html">Unicode Inspector</a> explains any character in detail.</p>
         </div>
         <div class="use-case-card">
           <h3><i data-lucide="corner-down-left"></i> Line endings</h3>
-          <p>Windows uses CRLF, Unix LF. A file that has crossed platforms without normalisation differs on <em>every</em> line while looking unchanged. Line endings are normalised before comparing here, so that case shows as "no changes" rather than a wall of red.</p>
+          <p>Windows uses CRLF, Unix LF. A file that has crossed platforms without normalisation differs on <em>every</em> line while looking unchanged. Lines are matched ignoring the line ending, so that case does not show as a wall of red; instead the result says plainly that the line endings differ, and a merged download keeps the file's own line endings.</p>
         </div>
         <div class="use-case-card">
           <h3><i data-lucide="type"></i> Unicode that looks the same</h3>
@@ -273,7 +418,7 @@
     <div class="info-panel">
       <h2><i data-lucide="alert-triangle"></i> Why two files that look identical still differ</h2>
       <p>The most frustrating diff is the one that reports a change you cannot see. Almost always the difference is a character that renders as nothing, or as the same thing your editor renders something else as. Four causes account for nearly all of these.</p>
-      <p><strong>Line endings.</strong> Windows terminates a line with <code>CRLF</code> (carriage return plus line feed), Unix and macOS with a bare <code>LF</code>. A file that has travelled through a Windows editor, a zip archive, or a checkout with Git's <code>core.autocrlf</code> enabled can differ from its counterpart on every single line while looking identical on screen. This tool ignores the difference by default; if a diff elsewhere marks an entire file as changed, check the line endings before you check anything else.</p>
+      <p><strong>Line endings.</strong> Windows terminates a line with <code>CRLF</code> (carriage return plus line feed), Unix and macOS with a bare <code>LF</code>. A file that has travelled through a Windows editor, a zip archive, or a checkout with Git's <code>core.autocrlf</code> enabled can differ from its counterpart on every single line while looking identical on screen. This tool matches lines regardless of their endings and tells you separately when the endings differ; if a diff elsewhere marks an entire file as changed, check the line endings before you check anything else.</p>
       <p><strong>Trailing whitespace.</strong> A space or tab at the end of a line is invisible in most editors and significant to a byte-for-byte comparison. It is also the change most often introduced accidentally, because pressing space before a newline leaves no visual trace. Use the <strong>Trim trailing</strong> option to confirm that this is the only difference, then remove the whitespace rather than leaving the option on permanently — it will hide a real change eventually.</p>
       <p><strong>Unicode normalisation.</strong> The character <code>é</code> can be stored as a single code point (U+00E9) or as <code>e</code> followed by a combining acute accent (U+0065 U+0301). Both render identically in every font. They are different byte sequences, so they are a difference. macOS filesystems have historically preferred the decomposed form, which is why filenames with accents copied from a Mac can mismatch a list generated on Linux.</p>
       <p><strong>Invisible and look-alike characters.</strong> A zero-width space (U+200B), a non-breaking space (U+00A0) pasted from a web page or a word processor, a byte-order mark at the start of the file (U+FEFF), or a Cyrillic <code>а</code> standing in for a Latin <code>a</code> all produce a change with no visible cause. The BOM case is particularly common: it is three bytes prepended to a UTF-8 file by some Windows tools, and it breaks shebang lines, YAML documents and JSON parsers while remaining completely invisible in an editor.</p>
@@ -298,7 +443,7 @@
         </div>
         <div class="faq-item">
           <button class="faq-question">What do "Ignore whitespace" and the other normalisation options do? <i data-lucide="chevron-down"></i></button>
-          <div class="faq-answer"><p>They change how lines are compared, not how they are displayed. Ignore whitespace collapses every run of spaces and tabs to one space and trims the ends, so a reformatted file shows only logic changes. Ignore case compares lower-cased lines. Trim trailing ignores whitespace at the end of a line only. Ignore blank lines lets empty lines match anywhere. Line endings (CRLF vs LF) are always normalised. The original text is still shown in full in the result.</p></div>
+          <div class="faq-answer"><p>They change how lines are compared, not how they are displayed. Ignore whitespace collapses every run of spaces and tabs to one space and trims the ends, so a reformatted file shows only logic changes. Ignore case compares lower-cased lines. Trim trailing ignores whitespace at the end of a line only. Ignore blank lines leaves empty lines out of the comparison. Lines are always matched regardless of CRLF or LF endings, but a difference in line endings, or a missing newline at the end of a file, is still reported above the result. The original text is shown in full.</p></div>
         </div>
         <div class="faq-item">
           <button class="faq-question">How do I merge two files, not just compare them? <i data-lucide="chevron-down"></i></button>
@@ -314,19 +459,35 @@
         </div>
         <div class="faq-item">
           <button class="faq-question">How does the spreadsheet comparison match rows? <i data-lucide="chevron-down"></i></button>
-          <div class="faq-answer"><p>By a key column you choose from the header row, such as an id, SKU or email. Rows with the same key are compared cell by cell regardless of where they appear, so a re-sorted or filtered export shows only real changes. Rows whose key exists on one side only are reported as added or removed, and columns that appear or disappear are listed separately. If the file has no natural key, match by row order instead.</p></div>
+          <div class="faq-answer"><p>By up to three key columns you choose from the header row, such as an id, or a region plus a SKU. Rows with the same key are compared cell by cell regardless of where they appear, so a re-sorted or filtered export shows only real changes. Rows whose key exists on one side only are reported as added or removed, duplicate keys are flagged, and columns that appear or disappear are listed separately. Matching options can trim spaces, ignore case, treat empty and NULL alike, compare numbers by value, read dates in different formats as the same date, allow an absolute or percentage tolerance, and leave chosen columns out. If the file has no natural key, match by row order instead.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">Does it compare every sheet of an Excel workbook? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>Yes. Open an .xlsx, .xls or .ods file on each side and every sheet is compared: sheets with the same name are paired, a sheet that was renamed is paired by its content and marked as possibly renamed, and sheets found on one side only are listed. A summary shows the changes per sheet, with a tab for each. You can compare the values as Excel displays them (with number and date formats applied) or the raw stored values, and the whole comparison exports to one .xlsx.</p></div>
         </div>
         <div class="faq-item">
           <button class="faq-question">Is the patch output compatible with git apply and patch? <i data-lucide="chevron-down"></i></button>
           <div class="faq-answer"><p>Yes. The export is a standard unified diff with --- and +++ headers and @@ hunk ranges, which git apply, patch -p0 and every code review tool accept. The Apply a patch mode reads the same format back, including patches produced by git diff, and uses context matching with a fuzz fallback when line numbers have drifted.</p></div>
         </div>
         <div class="faq-item">
-          <button class="faq-question">Is anything uploaded when I compare files or zip folders? <i data-lucide="chevron-down"></i></button>
-          <div class="faq-answer"><p>No. Files are read with the browser's FileReader, zip archives are unpacked with the browser's own DecompressionStream, and every algorithm on this page is JavaScript running in the tab. The privacy indicator in the header counts any network request the page makes; it stays at zero while you work. Closing the tab discards everything unless you chose to save a run to the local history.</p></div>
+          <button class="faq-question">Is anything uploaded when I compare files or folders? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>No. Files and folders are read by the browser itself, zip archives are unpacked with the browser's own DecompressionStream, folder contents are hashed with the browser's Web Crypto, and every algorithm on this page is JavaScript running in the tab. The privacy indicator in the header counts any network request the page makes; it stays at zero while you work. Nothing is stored either: the <strong>Save to history</strong> switch next to Compare is off by default. If you turn it on, each comparison you run with the Compare button is kept in this browser's own storage so you can reopen it later; edits made while typing are never saved, and the history can be cleared at any time. Apart from that, only two settings are remembered: the folder ignore list and whether the history switch is on. Closing the tab otherwise discards everything.</p></div>
         </div>
         <div class="faq-item">
           <button class="faq-question">How large a file can it handle? <i data-lucide="chevron-down"></i></button>
-          <div class="faq-answer"><p>Tens of thousands of lines compare in well under a second; the limit is rendering, not diffing. For files over about 20,000 lines, set Context to 3 or 5 lines so only the changed regions are rendered, and prefer word over character highlighting. The structural and table modes handle documents of several megabytes. Share links are capped at roughly 60 KB of compressed input; larger comparisons can be exported as a patch or HTML report instead.</p></div>
+          <div class="faq-answer"><p>Large text files are compared in a background worker with a progress bar and a Cancel button, so the page never freezes, and the result is drawn as a virtual list: only the rows on screen exist in the page, so a 100,000-line comparison scrolls like a short one. When two large files are too different to line up within a time limit, the page says so and shows what they have in common, with an option to align them anyway. The hex view reads files in slices, so two files of hundreds of megabytes compare without being loaded into memory, and folders of tens of thousands of files are hashed in the background. Images larger than 40 megapixels are compared on a scaled copy, and the page says so. Share links are capped at roughly 60 KB of compressed input; larger comparisons can be exported instead.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">How does the binary (hex) comparison work? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>Both files are read in 4 MB slices and compared byte for byte at the same offsets; no alignment is attempted, because in a binary file an inserted byte usually means everything after it moved. The result gives both sizes, the number of bytes that differ, the number of separate differing ranges and the first differing offset, and warns when the sizes differ (the extra bytes count as different). The view shows offset, hex and printable text for both sides with the differing bytes highlighted; Next and Previous step through the ranges, and Go to offset accepts hex (0x1F00) or decimal (7936). The ranges export as CSV.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">How does the image comparison decide what changed? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>Both images are decoded by the browser and drawn at the same position, top-left aligned. A pixel counts as changed when its red, green, blue or alpha value differs by more than the tolerance, so a tolerance of a few levels hides JPEG re-compression noise while still catching real edits; fully transparent pixels count as equal whatever their colour. If the dimensions differ, the page warns you and counts the area only one image covers as changed. SVGs are compared as rendered, and their source can be compared as text with one click. The format is read from the file's bytes, so a PNG saved with a .jpg name is reported as a PNG.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">What can I export, and what does a report include? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>Text comparisons export as a unified .patch and an HTML report. Tables export as CSV, with an original and a modified column for every column, and as an .xlsx with changed cells yellow, added rows green and removed rows red. JSON and YAML changes export by path as CSV or JSON, folders as CSV or HTML, byte comparisons as a CSV of the differing ranges, and images as an HTML report with both images and the difference image, or the difference image alone as a PNG. Every report starts with the names of what was compared, the options used and the date it was made.</p></div>
         </div>
       </div>
     </div>
@@ -362,10 +523,10 @@
         <div class="use-case-card">
           <h3><i data-lucide="wrench"></i> <a href="csv-to-json.html">CSV to JSON Converter</a></h3>
           <p>Turn a spreadsheet export into structured data.</p>
+        </div>
         <div class="use-case-card">
           <h3><i data-lucide="wrench"></i> <a href="text-case-converter.html">Text Case Converter &amp; Word Counter</a></h3>
           <p>Normalize case and whitespace before comparing.</p>
-        </div>
         </div>
       </div>
     </div>
@@ -373,6 +534,7 @@
     <div class="info-panel">
       <h2><i data-lucide="git-merge"></i> Deployment Changelog</h2>
       <ul class="changelog-list">
+        <li><span class="changelog-tag">v4.0.0</span> Folder comparison of real folders (choose, drop or zip) with a tree, content, size or date matching and an ignore list; every sheet of two workbooks compared; up to three key columns and matching options for tables (trim, case, empty = NULL, numbers by value, date formats, tolerance, ignored columns) with filters, sorting and per-column counts; a hex view for binary files of any size; image comparison with slider, onion skin and pixel difference; CSV, .xlsx and JSON exports that state the options and date. Fixed 20 bugs, including: files in Windows-1252 and UTF-16 are decoded instead of garbled, JSON numbers beyond 2^53 compare exactly, duplicate keys are reported, large or unrelated files no longer freeze the page, line-ending and final-newline differences are reported, invisible characters are labelled, and history is saved only when you ask for it.</li>
         <li><span class="changelog-tag">v3.0.0</span> Rebuilt as a merge tool: hunk-by-hunk merge with a live editable result, three-way merge with conflict resolution, structural JSON/YAML diff, keyed CSV and Excel cell diff, apply-a-patch mode, zip folder comparison, syntax highlighting for 14 languages, context folding, unified patch and HTML report export, show-whitespace, ignore-case/trailing/blank options, keyboard navigation and share links.</li>
         <li><span class="changelog-tag">v2.3.0</span> Added a highlight granularity control for changed lines: word (default), character, or none.</li>
         <li><span class="changelog-tag">v2.2.0</span> Added file upload and drag-and-drop to both panes.</li>
@@ -410,19 +572,21 @@
     let decisions = [];         // per hunk: 'left' | 'right' | 'both'
     let currentHunk = -1;
     let three = null;           // last three-way result
-    let zips = { a: null, b: null };
+    let folders = { a: null, b: null }, folderView = null, folderReturn = false;
     let tableRowsCache = { a: null, b: null };
 
-    const MODE_LABEL = { text: 'Compare', three: 'Merge', struct: 'Compare structure', table: 'Compare rows', patch: 'Apply patch', zip: 'Compare folders' };
+    const MODE_LABEL = { text: 'Compare', three: 'Merge', struct: 'Compare structure', table: 'Compare rows', patch: 'Apply patch', zip: 'Compare folders', hex: 'Compare bytes', image: 'Compare images' };
 
     function setMode(m) {
       mode = m;
       document.querySelectorAll('#modeTabs .mode-tab').forEach(b => { const on = b.dataset.mode === m; b.classList.toggle('active', on); b.setAttribute('aria-selected', on ? 'true' : 'false'); });
       document.querySelectorAll('.mode-only').forEach(el => { el.style.display = el.dataset.for.split(' ').includes(m) ? '' : 'none'; });
       $('btnRunLabel').textContent = MODE_LABEL[m];
+      $('btnBackFolder').hidden = !(folderReturn && folderView && m !== 'zip');
       $('outputSection').style.display = 'none';
       $('mergedSection').style.display = 'none';
       if (m === 'table') refreshKeyColumns();
+      if (m === 'hex') [['a', 'text1'], ['b', 'text2']].forEach(([side, id]) => { const i = fileInfo(id); if (!hexSrc[side] && i && i.file) setHexSide(side, srcFromFile(i.file)); });
       $('text1').placeholder = m === 'struct' ? 'Paste the original JSON or YAML...' : m === 'table' ? 'Paste the original CSV / TSV, or open a .csv / .xlsx file...' : 'Paste, type, or drop the original text, code, JSON or CSV here...';
       $('text2').placeholder = m === 'struct' ? 'Paste the modified JSON or YAML...' : m === 'table' ? 'Paste the modified CSV / TSV, or open a .csv / .xlsx file...' : 'Paste, type, or drop the modified version here...';
     }
@@ -430,11 +594,19 @@
     $('arrMode').addEventListener('change', () => { $('keyFieldLabel').style.display = $('arrMode').value === 'key' ? '' : 'none'; });
 
     // ------------------------------------------------------------ inputs
+    // Files are read as bytes and decoded by the engine (BOM, UTF-16, strict
+    // UTF-8, then Windows-1252), so no character is ever replaced by U+FFFD.
+    // sideInfo keeps the bytes and the raw text (with its CRLFs, which a
+    // textarea cannot hold) for as long as the textarea still shows that file.
+    let sideInfo = {};
+    const normNl = t => t.replace(/\r\n?/g, '\n');
+    function fileInfo(id) { const i = sideInfo[id]; return i && normNl(i.raw) === $(id).value ? i : null; }
+    function sideText(id) { const i = fileInfo(id); return i ? i.raw : $(id).value; }
     function updateMeta() {
       [['text1', 'meta1', 'lang1'], ['text2', 'meta2', 'lang2']].forEach(([t, m, l]) => {
-        const v = $(t).value;
-        const lines = v ? E.splitLines(v).length + (v.endsWith('\n') ? 0 : 0) : 0;
-        $(m).textContent = v ? `${lines.toLocaleString()} lines · ${Layerbit ? Layerbit.fmtBytes(new Blob([v]).size) : v.length}` : '';
+        const v = $(t).value, info = fileInfo(t);
+        const lines = v ? E.splitLines(v).length : 0;
+        $(m).textContent = v ? `${lines.toLocaleString()} lines · ${Layerbit ? Layerbit.fmtBytes(info ? info.bytes.length : new Blob([v]).size) : v.length}${info ? ' · ' + info.encoding + (info.bom ? ' with BOM' : '') : ''}` : '';
         $(l).textContent = v && mode === 'text' ? E.detectLang(v, t === 'text1' ? names.a : names.b) : '';
       });
     }
@@ -442,11 +614,17 @@
 
     function loadFileInto(id, file, nameKey) {
       if (!file) return;
-      if (/\.xlsx?$/i.test(file.name)) { loadWorkbook(id, file); if (nameKey) names[nameKey] = file.name; return; }
-      Layerbit.readFile(file).then(text => { $(id).value = text; if (nameKey) names[nameKey] = file.name; $(id).dispatchEvent(new Event('input')); if (mode === 'table') refreshKeyColumns(); });
+      if (/\.(xlsx|xlsm|xls|ods)$/i.test(file.name)) { loadWorkbook(id, file); if (nameKey) names[nameKey] = file.name; return; }
+      file.arrayBuffer().then(buf => {
+        const bytes = new Uint8Array(buf), d = E.decodeBytes(bytes);
+        sideInfo[id] = { name: file.name, bytes, encoding: d.encoding, bom: d.bom, raw: d.text, file };
+        $(id).value = d.text; if (nameKey) names[nameKey] = file.name;
+        if ((id === 'text1' || id === 'text2') && !E.isProbablyText(bytes.subarray(0, 4096)) && !/^UTF-16/.test(d.encoding)) Layerbit.toast(`${file.name} looks like a binary file. The Hex / binary tab compares it byte by byte.`, 'warn');
+        $(id).dispatchEvent(new Event('input')); updateMeta(); if (mode === 'table') refreshKeyColumns();
+      }).catch(e => showError(`${file.name}: ${e.message}`));
     }
     [['text1File', 'text1', 'a'], ['text2File', 'text2', 'b'], ['baseFile', 'baseText'], ['oursFile', 'oursText'], ['theirsFile', 'theirsText'], ['patchOrigFile', 'patchOriginal', 'a'], ['patchFile', 'patchText']]
-      .forEach(([f, t, k]) => $(f).addEventListener('change', e => loadFileInto(t, e.target.files[0], k)));
+      .forEach(([f, t, k]) => $(f).addEventListener('change', e => { loadFileInto(t, e.target.files[0], k); e.target.value = ''; }));
     document.querySelectorAll('.pane').forEach(pane => {
       const ta = pane.querySelector('textarea');
       if (!ta) return;
@@ -460,54 +638,95 @@
     });
     // Kernel drop fallback: a file dropped outside a pane goes to whichever side is empty.
     Layerbit.onDrop(files => {
-      if (mode === 'zip') { loadZip(zips.a ? 'b' : 'a', files[0]); if (files[1]) loadZip('b', files[1]); return; }
+      if (mode === 'zip') { loadZip(folders.a ? 'b' : 'a', files[0]); if (files[1]) loadZip('b', files[1]); return; }
+      if (mode === 'image') { imgFromFile(imgSrc.a ? 'b' : 'a', files[0]); if (files[1]) imgFromFile('b', files[1]); return; }
+      if (mode === 'hex') { setHexSide(hexSrc.a ? 'b' : 'a', srcFromFile(files[0])); if (files[1]) setHexSide('b', srcFromFile(files[1])); return; }
       const target = mode === 'three' ? ($('baseText').value ? ($('oursText').value ? 'theirsText' : 'oursText') : 'baseText') : mode === 'patch' ? ($('patchOriginal').value ? 'patchText' : 'patchOriginal') : ($('text1').value ? 'text2' : 'text1');
       loadFileInto(target, files[0], target === 'text1' ? 'a' : target === 'text2' ? 'b' : null);
       if (files[1] && target === 'text1') loadFileInto('text2', files[1], 'b');
     });
 
-    // Excel: SheetJS is loaded only when an .xlsx is actually opened (900 KB).
-    function loadWorkbook(id, file) {
-      const go = () => file.arrayBuffer().then(buf => {
-        const wb = XLSX.read(buf, { type: 'array' });
-        const ws = wb.Sheets[wb.SheetNames[0]];
-        $(id).value = XLSX.utils.sheet_to_csv(ws);
-        $(id).dispatchEvent(new Event('input'));
-        if (mode !== 'table') setMode('table'); else refreshKeyColumns();
-        Layerbit.toast(`Loaded sheet "${wb.SheetNames[0]}" from ${file.name}`);
-      });
-      if (window.XLSX) return go();
-      const s = document.createElement('script'); s.src = '../js/vendor/xlsx.full.min.js'; s.onload = go; s.onerror = () => showError('Could not load the spreadsheet reader.'); document.head.appendChild(s);
+    // Spreadsheets: SheetJS (900 KB) loads only when one is opened. Every
+    // sheet is read; text cells stay text, so leading zeros and long digit
+    // strings are never turned into numbers.
+    const books = {};
+    function loadXlsx() {
+      if (window.XLSX) return Promise.resolve();
+      return new Promise((res, rej) => { const s = document.createElement('script'); s.src = '../js/vendor/xlsx.full.min.js'; s.onload = res; s.onerror = () => rej(new Error('Could not load the spreadsheet reader.')); document.head.appendChild(s); });
     }
+    function sheetRows(wb, name, displayed) {
+      const ws = wb.Sheets[name]; if (!ws || !ws['!ref']) return [];
+      return XLSX.utils.sheet_to_json(ws, { header: 1, raw: !displayed, defval: '', blankrows: false })
+        .map(r => r.map(v => v == null ? '' : typeof v === 'string' ? v : typeof v === 'boolean' ? (v ? 'TRUE' : 'FALSE') : v instanceof Date ? v.toISOString() : String(v)));
+    }
+    const rowsToCsv = rows => rows.map(r => E.csvLine(r)).join('');
+    const displayedValues = () => $('sheetValues').value !== 'raw';
+    function loadWorkbookBytes(id, bytes, name) {
+      return loadXlsx().then(() => {
+        const wb = XLSX.read(bytes, { type: 'array', cellNF: true, cellText: true });
+        const csv = rowsToCsv(sheetRows(wb, wb.SheetNames[0], displayedValues()));
+        books[id] = { name, wb, csv };
+        $(id).value = csv; delete sideInfo[id];
+        $(id).dispatchEvent(new Event('input')); updateMeta();
+        if (mode !== 'table') setMode('table'); else refreshKeyColumns();
+        $('sheetValuesLabel').hidden = false;
+        Layerbit.toast(`Loaded ${wb.SheetNames.length} sheet${wb.SheetNames.length === 1 ? '' : 's'} from ${name}`);
+      }).catch(e => showError(`${name}: ${e.message}`));
+    }
+    function loadWorkbook(id, file) { return file.arrayBuffer().then(b => loadWorkbookBytes(id, new Uint8Array(b), file.name)); }
+    const bookActive = () => !!(books.text1 && books.text2 && normNl(books.text1.csv) === $('text1').value && normNl(books.text2.csv) === $('text2').value);
+    // a spreadsheet opened from a folder comparison
+    window.openSheets = (a, b, nameA, nameB) => {
+      setMode('table');
+      return Promise.all([a ? loadWorkbookBytes('text1', a, nameA) : null, b ? loadWorkbookBytes('text2', b, nameB) : null]).then(() => { names = { a: nameA, b: nameB }; run(); });
+    };
 
-    function swapInputs() { const t = $('text1').value; $('text1').value = $('text2').value; $('text2').value = t; const n = names.a; names.a = names.b; names.b = n; updateMeta(); if ($('outputSection').style.display !== 'none') run(true); }
+    function swapInputs() { if (mode === 'image') { const x = imgSrc.a; setImgSide('a', imgSrc.b); setImgSide('b', x); if (imgState) run(true); return; } if (mode === 'hex') { const x = hexSrc.a; setHexSide('a', hexSrc.b); setHexSide('b', x); if (hex) run(true); return; } const t = $('text1').value; $('text1').value = $('text2').value; $('text2').value = t; const n = names.a; names.a = names.b; names.b = n; updateMeta(); if ($('outputSection').style.display !== 'none') run(true); }
     function clearInputs() {
+      keyUserChoice = null; sideInfo = {}; patchState = null;
+      // a file input keeps its last value, and choosing the same file again
+      // would then fire no change event
+      document.querySelectorAll('input[type="file"]').forEach(i => { i.value = ''; });
       ['text1', 'text2', 'baseText', 'oursText', 'theirsText', 'patchOriginal', 'patchText', 'mergedText'].forEach(id => $(id).value = '');
-      names = { a: 'original', b: 'modified' }; zips = { a: null, b: null };
-      $('zipAInfo').innerHTML = '<i data-lucide="folder-input"></i><span>Drop a .zip of the first folder here</span>'; $('zipBInfo').innerHTML = '<i data-lucide="folder-input"></i><span>Drop a .zip of the second folder here</span>';
+      delete books.text1; delete books.text2; sheetView = null; $('sheetValuesLabel').hidden = true;
+      names = { a: 'original', b: 'modified' }; folders = { a: null, b: null }; folderView = null; folderReturn = false; $('btnBackFolder').hidden = true;
+      $('zipAInfo').innerHTML = $('zipBInfo').innerHTML = '<i data-lucide="folder-input"></i><span>Drop a folder or a .zip here</span>';
+      hexJob++; hex = null; setHexSide('a', null); setHexSide('b', null); $('hexJumpMsg').textContent = '';
+      imgJob++; imgState = null; setImgSide('a', null); setImgSide('b', null);
       $('outputSection').style.display = 'none'; $('mergedSection').style.display = 'none'; updateMeta(); Layerbit.state.clear(); icons();
     }
     function showError(msg) { $('errorBanner').classList.add('active'); $('errorText').textContent = msg; $('outputSection').style.display = 'grid'; }
     function clearError() { $('errorBanner').classList.remove('active'); }
     function showPanel(which) {
+      if (mode !== 'patch') $('patchFiles').hidden = true;
       $('splitWrap').style.display = which === 'split' ? '' : 'none';
       $('inlinePanel').style.display = which === 'unified' ? '' : 'none';
-      ['structPanel', 'tablePanel', 'threePanel', 'zipPanel'].forEach(p => $(p).style.display = which === p ? '' : 'none');
+      ['structPanel', 'tablePanel', 'threePanel', 'zipPanel', 'hexPanel', 'imagePanel'].forEach(p => $(p).style.display = which === p ? '' : 'none');
     }
     function opts() {
       return { ignoreWhitespace: $('ignoreWhitespace').checked, ignoreCase: $('ignoreCase').checked, trimTrailing: $('trimTrailing').checked, ignoreBlank: $('ignoreBlank').checked, granularity: $('granularity').value };
     }
 
     // ------------------------------------------------------------ run
+    // History: a run is stored only when the visitor clicks Compare (or presses
+    // Ctrl+Enter) with "Save to history" switched on. Live re-runs while typing,
+    // samples and share links never write anything.
+    let explicitRun = false;
+    try { $('saveHistory').checked = localStorage.getItem('lb-diff-save-history') === '1'; } catch (e) { /* storage blocked */ }
+    $('saveHistory').addEventListener('change', () => { try { localStorage.setItem('lb-diff-save-history', $('saveHistory').checked ? '1' : '0'); } catch (e) { /* ignore */ } });
+    function remember(label) { if (explicitRun && $('saveHistory').checked) Layerbit.history.push('text-diff-checker', getState(), label); }
+    function compare() { explicitRun = true; try { run(); } finally { setTimeout(() => { explicitRun = false; }, 0); } }
     function run(quiet) {
       clearError();
       try {
-        if (mode === 'text') runText($('text1').value, $('text2').value, names.a, names.b);
+        if (mode === 'text') runText(sideText('text1'), sideText('text2'), names.a, names.b, null, fileInfo('text1'), fileInfo('text2'));
         else if (mode === 'three') runThree();
         else if (mode === 'struct') runStruct();
         else if (mode === 'table') runTable();
         else if (mode === 'patch') runPatch();
         else if (mode === 'zip') runZip();
+        else if (mode === 'hex') runHex();
+        else if (mode === 'image') runImages();
       } catch (e) { showError(e.message || String(e)); }
       if (quiet !== true) $('outputSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
@@ -519,7 +738,7 @@
     let liveTimer = null;
     function rerunSoon(delay) {
       clearTimeout(liveTimer);
-      liveTimer = setTimeout(() => { if (hasResult() && mode !== 'zip') run(true); }, delay || 0);
+      liveTimer = setTimeout(() => { if (hasResult() && mode !== 'zip' && mode !== 'hex' && mode !== 'image') run(true); }, delay || 0);
     }
     ['ignoreWhitespace', 'ignoreCase', 'trimTrailing', 'ignoreBlank', 'granularity', 'arrMode', 'keyCol']
       .forEach(id => $(id).addEventListener('change', () => rerunSoon(0)));
@@ -533,9 +752,69 @@
     if (window.matchMedia && window.matchMedia('(max-width: 760px)').matches && !location.hash) $('viewMode').value = 'unified';
 
     // ---- text
-    function runText(a, b, nameA, nameB, title) {
+    // Differences that a line comparison cannot show: encoding, BOM, bytes.
+    function fileNotes(infoA, infoB) {
+      const notes = [];
+      if (infoA && infoB) {
+        if (infoA.encoding !== infoB.encoding) notes.push(`Encodings differ: the original is ${infoA.encoding}, the modified file is ${infoB.encoding}.`);
+        if (infoA.bom !== infoB.bom) notes.push(`Only the ${infoA.bom ? 'original' : 'modified'} file starts with a byte-order mark (BOM).`);
+        if (!notes.length && !E.bytesEqual(infoA.bytes, infoB.bytes) && infoA.raw === infoB.raw) notes.push('The files are not byte-identical, although they decode to the same text.');
+      }
+      return notes;
+    }
+    // Large comparisons run in a Web Worker so the tab never freezes; the
+    // bar shows the phase and elapsed time and Cancel terminates the worker.
+    // Small ones stay synchronous so the result appears instantly.
+    let worker = null, workerJob = 0, workerTimer = null, textJob = 0;
+    function diffWorker() {
+      if (worker) return worker;
+      const src = part => document.querySelector(`script[src*="${part}"]`).src;
+      const code = `importScripts(${JSON.stringify(src('vendor/diff.min.js'))}, ${JSON.stringify(src('engines/diff.js'))});
+        onmessage = e => { const { id, a, b, opts } = e.data; opts.onProgress = (f, phase) => postMessage({ id, progress: f, phase });
+          try { postMessage({ id, res: LBDiff.lineDiff(a, b, opts) }); } catch (err) { postMessage({ id, error: err.message || String(err) }); } };`;
+      worker = new Worker(URL.createObjectURL(new Blob([code], { type: 'text/javascript' })));
+      return worker;
+    }
+    function stopProgress() { clearInterval(workerTimer); $('diffProgress').hidden = true; }
+    function cancelDiff() {
+      if (!worker) return;
+      worker.terminate(); worker = null; workerJob++; textJob++; stopProgress();
+      $('splitPanel').innerHTML = $('inlinePanel').innerHTML = '<div class="diff-empty">Comparison cancelled. Change the options or press Compare to run it again.</div>';
+      $('diffStats').innerHTML = '';
+    }
+    $('btnCancelDiff').addEventListener('click', cancelDiff);
+    function computeDiff(a, b, o) {
+      const big = a.length + b.length > 400000 || (a.match(/\n/g) || []).length + (b.match(/\n/g) || []).length > 6000;
+      if (!big || typeof Worker !== 'function') return Promise.resolve(E.lineDiff(a, b, o));
+      const id = ++workerJob, w = diffWorker(), t0 = Date.now();
+      $('outputSection').style.display = 'grid';
+      $('diffProgress').hidden = false; $('diffProgressFill').style.width = '0%'; $('diffProgressFill').classList.add('indeterminate');
+      $('diffProgressLabel').textContent = 'Aligning lines…'; $('diffProgressTime').textContent = '';
+      clearInterval(workerTimer); workerTimer = setInterval(() => { $('diffProgressTime').textContent = ((Date.now() - t0) / 1000).toFixed(1) + ' s'; }, 100);
+      icons();
+      return new Promise((resolve, reject) => {
+        w.onmessage = e => {
+          const m = e.data; if (m.id !== workerJob) return;
+          if (m.progress != null) {
+            $('diffProgressLabel').textContent = m.phase === 'align' ? 'Aligning lines…' : 'Highlighting changed lines…';
+            $('diffProgressFill').classList.toggle('indeterminate', m.phase === 'align');
+            if (m.phase !== 'align') $('diffProgressFill').style.width = Math.round(m.progress * 100) + '%';
+            return;
+          }
+          stopProgress();
+          if (m.error) reject(new Error(m.error)); else resolve(m.res);
+        };
+        w.postMessage({ id, a, b, opts: o });
+      });
+    }
+    function runText(a, b, nameA, nameB, title, infoA, infoB, extra) {
+      const o = Object.assign(opts(), extra || {}), wasExplicit = explicitRun, job = ++textJob;
+      return computeDiff(a, b, o).then(res => { if (job === textJob) finishText(res, a, b, nameA, nameB, title, infoA, infoB, wasExplicit); }).catch(e => showError(e.message));
+    }
+    function alignAnyway() { if (!last) return; runText(last.a, last.b, last.nameA, last.nameB, null, last.infoA, last.infoB, { workLimit: Infinity }); }
+    function finishText(res, a, b, nameA, nameB, title, infoA, infoB, wasExplicit) {
       const o = opts();
-      const res = E.lineDiff(a, b, o);
+      res.notes = (res.notes || []).concat(fileNotes(infoA, infoB)); res.infoA = infoA; res.infoB = infoB; openFolds = [];
       const lang = $('syntaxMode').value === 'auto' ? E.detectLang(a || b, nameA !== 'original' ? nameA : nameB !== 'modified' ? nameB : '') : $('syntaxMode').value;
       last = Object.assign(res, { a, b, nameA, nameB, lang });
       decisions = res.hunks.map(() => 'right');
@@ -545,61 +824,155 @@
       renderText();
       renderMerged();
       $('mergedSection').style.display = res.hunks.length ? 'grid' : 'none';
-      Layerbit.history.push('text-diff-checker', getState(), `${nameA} → ${nameB}: +${res.stats.added + res.stats.modified} −${res.stats.removed + res.stats.modified}`);
+      if (wasExplicit && $('saveHistory').checked) Layerbit.history.push('text-diff-checker', getState(), `${nameA} → ${nameB}: +${res.stats.added + res.stats.modified} −${res.stats.removed + res.stats.modified}`);
     }
+    // ------------------------------------------------------------ virtual list
+    // Renders `count` items in blocks; only blocks near the visible part of
+    // the scroll container are in the DOM, the others are spacers holding
+    // their last measured (or estimated) height. Small lists render at once.
+    const vlists = new Map();
+    function VList(host, count, render, o) {
+      o = o || {};
+      const BLOCK = o.block || 80, tag = o.blockTag || 'div';
+      let est = o.rowHeight || 22;
+      const nB = Math.ceil(count / BLOCK), heights = new Array(nB).fill(0), filled = new Array(nB).fill(false);
+      const spacer = b => { const h = heights[b] || Math.min(BLOCK, count - b * BLOCK) * est; return o.spacer ? o.spacer(h) : `<div class="vspacer" style="height:${h}px"></div>`; };
+      const eager = count <= (o.eager == null ? 400 : o.eager);
+      const html = b => { let out = ''; for (let i = b * BLOCK, e = Math.min(count, i + BLOCK); i < e; i++) out += render(i); return out; };
+      host.insertAdjacentHTML('beforeend', Array.from({ length: nB }, (_, b) => `<${tag} class="vblock" data-b="${b}">${eager || b < 2 ? html(b) : spacer(b)}</${tag}>`).join(''));
+      const els = [...host.querySelectorAll(':scope > .vblock')];
+      els.forEach((el, b) => { filled[b] = eager || b < 2; });
+      // calibrate the row-height estimate from the first rendered block so
+      // spacers match real content and scrolling to the end lands there
+      const calibrate = () => {
+        if (eager || !els[0]) return;
+        const h = els[0].getBoundingClientRect().height, n = Math.min(BLOCK, count);
+        if (!h || !n) return;
+        const real = h / n; if (Math.abs(real - est) / est < 0.05) return;
+        est = real;
+        els.forEach((el, b) => { if (!filled[b] && !heights[b]) el.innerHTML = spacer(b); });
+      };
+      const fill = b => { if (filled[b]) return; els[b].innerHTML = html(b); filled[b] = true; if (o.onFill) o.onFill(els[b]); };
+      const empty = b => { if (!filled[b]) return; heights[b] = els[b].getBoundingClientRect().height || heights[b]; els[b].innerHTML = spacer(b); filled[b] = false; };
+      let io = null;
+      if (!eager && typeof IntersectionObserver === 'function') {
+        io = new IntersectionObserver(entries => entries.forEach(en => { const b = +en.target.dataset.b; if (en.isIntersecting) fill(b); else empty(b); }), { root: o.root || null, rootMargin: '1500px 0px' });
+        els.forEach(el => io.observe(el));
+      } else if (!eager) for (let b = 0; b < nB; b++) fill(b);
+      if (!eager) requestAnimationFrame(calibrate);
+      return { calibrate, reveal: i => { const b = Math.floor(i / BLOCK); fill(b); return els[b]; }, destroy: () => { if (io) io.disconnect(); } };
+    }
+    function mountList(key, host, count, render, o) {
+      if (vlists.has(key)) vlists.get(key).destroy();
+      const v = VList(host, count, render, o); vlists.set(key, v); return v;
+    }
+
+    let openFolds = [];
     function renderText() {
+      if (last.tooDifferent) {
+        const S = last.summary, n = v => v.toLocaleString();
+        $('diffStats').innerHTML = `<span class="st-del">too different to align</span><span>${n(S.common)} lines in common</span>`;
+        const html = `<div class="diff-notes too-different" role="status"><i data-lucide="alert-triangle"></i><div><strong>These files are too different to align line by line</strong> within the time limit, so no line-by-line view is shown rather than a misleading one.<ul><li>${n(S.onlyA)} only in the original (of ${n(S.linesA)} lines)</li><li>${n(S.onlyB)} only in the modified file (of ${n(S.linesB)} lines)</li><li>${n(S.common)} lines appear in both</li></ul><button class="btn" type="button" onclick="alignAnyway()"><i data-lucide="play"></i> Align anyway (no time limit, can be cancelled)</button></div></div>`;
+        $('splitPanel').innerHTML = html; $('inlinePanel').innerHTML = html;
+        $('hunkCounter').textContent = '0 / 0';
+        showPanel($('viewMode').value === 'unified' ? 'unified' : 'split'); icons();
+        return;
+      }
       const { rows, hunks, stats, lang } = last;
       const ctx = $('contextLines').value === 'all' ? null : +$('contextLines').value;
-      const view = $('viewMode').value;
+      const view = $('viewMode').value, unified = view === 'unified';
       const showWs = $('showWs').checked;
-      const shown = ctx == null ? rows : E.foldContext(rows, ctx);
+      const shown = ctx == null ? rows : E.foldContext(rows, ctx, openFolds);
       $('diffStats').innerHTML = `<span class="st-add">+${(stats.added + stats.modified).toLocaleString()}</span><span class="st-del">−${(stats.removed + stats.modified).toLocaleString()}</span><span>${hunks.length} change block${hunks.length === 1 ? '' : 's'}</span><span>${stats.similarity}% similar</span><span class="st-lang">${E.esc(lang)}</span>`;
       $('hunkCounter').textContent = `${currentHunk + 1} / ${hunks.length}`;
-      // index row -> hunk
       const rowHunk = new Map(); hunks.forEach((h, i) => { for (let r = h.start; r < h.end; r++) rowHunk.set(r, i); });
       const rowIndex = new Map(); rows.forEach((r, i) => rowIndex.set(r, i));
-      let L = '', R = '', U = '', lastHunk = -1;
-      const hunkBar = i => `<div class="hunk-bar" data-hunk="${i}"><span class="hunk-label">Change ${i + 1}</span>` +
+      // Items are described first and turned into HTML only when their block
+      // scrolls into view. Each side-by-side row is ONE element holding the
+      // left and right cells, so both always share a height.
+      const items = []; let lastHunk = -1; last.barItem = [];
+      if ((last.notes || []).length) items.push({ k: 'notes' });
+      if (!rows.length) items.push({ k: 'empty' });
+      else if (!hunks.length && !(last.notes || []).length) items.push({ k: 'identical' });
+      shown.forEach(row => {
+        if (row.type === 'skip') { items.push({ k: 'skip', row }); lastHunk = -1; return; }
+        const hi = rowHunk.has(rowIndex.get(row)) ? rowHunk.get(rowIndex.get(row)) : -1;
+        if (hi >= 0 && hi !== lastHunk) { last.barItem[hi] = items.length; items.push({ k: 'bar', hi }); }
+        lastHunk = hi;
+        items.push({ k: 'row', row });
+      });
+      const hunkBar = i => `<div class="hunk-anchor" id="${unified ? 'hU' : 'hS'}${i}"></div><div class="hunk-bar${i === currentHunk ? ' current' : ''}" data-hunk="${i}"><span class="hunk-label">Change ${i + 1}</span>` +
         `<button type="button" class="hb ${decisions[i] === 'left' ? 'on' : ''}" onclick="decide(${i},'left')" title="Revert this block to the original">Keep original</button>` +
         `<button type="button" class="hb ${decisions[i] === 'right' ? 'on' : ''}" onclick="decide(${i},'right')" title="Keep the modified version of this block">Accept change</button>` +
         `<button type="button" class="hb ${decisions[i] === 'both' ? 'on' : ''}" onclick="decide(${i},'both')" title="Keep original lines followed by modified lines">Both</button></div>`;
-      shown.forEach(row => {
-        if (row.type === 'skip') { const s = `<div class="diff-skip" onclick="expandSkip(${row.from},${row.to})" title="Show these lines"><i data-lucide="unfold-vertical"></i> ${row.count.toLocaleString()} unchanged lines</div>`; L += s; R += s; U += s; lastHunk = -1; return; }
-        const ri = rowIndex.get(row), hi = rowHunk.has(ri) ? rowHunk.get(ri) : -1;
-        if (hi >= 0 && hi !== lastHunk) { const hb = hunkBar(hi); L += `<div class="hunk-anchor" id="hL${hi}"></div>${hb}`; R += `<div class="hunk-anchor" id="hR${hi}"></div><div class="hunk-bar-spacer"></div>`; U += `<div class="hunk-anchor" id="hU${hi}"></div>${hb}`; }
-        lastHunk = hi;
+      const cell = (side, kind, n, html) => `<div class="dside sd-${side} diff-line line-${kind}${kind !== 'match' && kind !== 'blank' ? ' has-diff' : ''}"><div class="diff-num">${n}</div><div class="diff-text">${html}</div></div>`;
+      const render = i => {
+        const it = items[i];
+        if (it.k === 'notes') return `<div class="diff-notes" role="status"><i data-lucide="alert-triangle"></i><div><strong>${hunks.length ? 'Also' : 'No line differences with the current options, but the files are not byte-identical'}:</strong><ul>${last.notes.map(n => `<li>${E.esc(n)}</li>`).join('')}</ul></div></div>`;
+        if (it.k === 'empty') return '<div class="diff-empty">Both inputs are empty.</div>';
+        if (it.k === 'identical') return '<div class="diff-identical"><i data-lucide="check-circle-2"></i> No differences with the current options.</div>';
+        if (it.k === 'skip') return `<div class="diff-skip" data-from="${it.row.from}" onclick="expandSkip(${it.row.from},${it.row.to})" title="Show these lines"><i data-lucide="unfold-vertical"></i> ${it.row.count.toLocaleString()} unchanged lines</div>`;
+        if (it.k === 'bar') return hunkBar(it.hi);
+        const row = it.row, ig = row.type === 'blank';
         const lh = row.l ? E.renderLine(row.l.text, row.l.segs, lang, showWs) : '';
         const rh = row.r ? E.renderLine(row.r.text, row.r.segs, lang, showWs) : '';
-        const lt = row.type === 'eq' ? 'match' : row.type === 'ins' ? 'blank' : 'removed';
-        const rt = row.type === 'eq' ? 'match' : row.type === 'del' ? 'blank' : 'added';
-        L += `<div class="diff-line line-${lt}${lt !== 'match' && lt !== 'blank' ? ' has-diff' : ''}"><div class="diff-num">${row.l ? row.l.n : ''}</div><div class="diff-text">${row.l ? lh : '&nbsp;'}</div></div>`;
-        R += `<div class="diff-line line-${rt}${rt !== 'match' && rt !== 'blank' ? ' has-diff' : ''}"><div class="diff-num">${row.r ? row.r.n : ''}</div><div class="diff-text">${row.r ? rh : '&nbsp;'}</div></div>`;
-        if (row.type === 'eq') U += `<div class="diff-line line-match"><div class="diff-num"><span>${row.l.n}</span><span>${row.r.n}</span></div><div class="diff-text">${lh}</div></div>`;
-        else { if (row.l) U += `<div class="diff-line line-removed has-diff"><div class="diff-num"><span>${row.l.n}</span><span></span></div><div class="diff-text">${lh}</div></div>`; if (row.r) U += `<div class="diff-line line-added has-diff"><div class="diff-num"><span></span><span>${row.r.n}</span></div><div class="diff-text">${rh}</div></div>`; }
-      });
-      if (!rows.length) { L = R = U = '<div class="diff-empty">Both inputs are empty.</div>'; }
-      else if (!hunks.length) { const s = '<div class="diff-identical"><i data-lucide="check-circle-2"></i> No differences with the current options.</div>'; L = s + L; R = R; U = s + U; }
-      $('leftPanel').innerHTML = L; $('rightPanel').innerHTML = R; $('inlinePanel').innerHTML = U;
-      showPanel(view === 'unified' ? 'unified' : 'split');
+        if (unified) {
+          if (row.type === 'eq' || ig) return `<div class="diff-line line-match${ig ? ' line-ignored' : ''}"><div class="diff-num"><span>${row.l ? row.l.n : ''}</span><span>${row.r ? row.r.n : ''}</span></div><div class="diff-text">${row.l ? lh : rh}</div></div>`;
+          return (row.l ? `<div class="diff-line line-removed has-diff"><div class="diff-num"><span>${row.l.n}</span><span></span></div><div class="diff-text">${lh}</div></div>` : '') + (row.r ? `<div class="diff-line line-added has-diff"><div class="diff-num"><span></span><span>${row.r.n}</span></div><div class="diff-text">${rh}</div></div>` : '');
+        }
+        const lt = row.type === 'eq' || (ig && row.l) ? 'match' : row.type === 'ins' || ig ? 'blank' : 'removed';
+        const rt = row.type === 'eq' || (ig && row.r) ? 'match' : row.type === 'del' || ig ? 'blank' : 'added';
+        return `<div class="drow">${cell('l', lt, row.l ? row.l.n : '', row.l ? lh : '&nbsp;')}${cell('r', rt, row.r ? row.r.n : '', row.r ? rh : '&nbsp;')}</div>`;
+      };
+      const panel = unified ? $('inlinePanel') : $('splitPanel'), other = unified ? $('splitPanel') : $('inlinePanel');
+      const keepScroll = panel.scrollTop;
+      if (vlists.has('text-other')) vlists.get('text-other').destroy();
+      other.innerHTML = '';
+      panel.innerHTML = '';
+      last.view = mountList('text', panel, items.length, render, { root: panel, onFill: icons });
+      last.renderAll = () => { let out = ''; for (let i = 0; i < items.length; i++) out += render(i); return out; };
+      showPanel(unified ? 'unified' : 'split');
+      last.view.calibrate();
+      panel.scrollTop = keepScroll;
       icons();
     }
-    function expandSkip(from, to) { $('contextLines').value = 'all'; renderText(); }
+    function expandSkip(from, to) {
+      if (from == null) { $('contextLines').value = 'all'; openFolds = []; renderText(); return; }
+      openFolds.push(from); renderText();
+    }
     function decide(i, d) { decisions[i] = d; renderText(); renderMerged(); }
     function mergeAll(d) { decisions = decisions.map(() => d); renderText(); renderMerged(); }
     function mergedText() {
       if (!last) return '';
+      // Lines that only match because of an ignore option still differ in
+      // their text: they take the modified side, unless every change is
+      // reverted, in which case the result is exactly the original.
       const { rows, hunks } = last; const out = []; let r = 0;
+      const allLeft = decisions.length > 0 && decisions.every(d => d === 'left');
+      // a 'blank' row (a blank line ignored by the option) exists on one side only
+      const same = row => row.type === 'blank' ? (allLeft ? row.l : row.r) && (allLeft ? row.l : row.r).text : allLeft ? (row.l || row.r).text : (row.r || row.l).text;
+      const keep = row => { const t = same(row); if (t != null) out.push(t); };
       hunks.forEach((h, i) => {
-        for (; r < h.start; r++) out.push(rows[r].l.text);
+        for (; r < h.start; r++) keep(rows[r]);
         const left = [], right = [];
         for (let k = h.start; k < h.end; k++) { if (rows[k].l) left.push(rows[k].l.text); if (rows[k].r) right.push(rows[k].r.text); }
         const d = decisions[i];
         if (d === 'left') out.push(...left); else if (d === 'both') out.push(...left, ...right); else out.push(...right);
         r = h.end;
       });
-      for (; r < rows.length; r++) out.push((rows[r].l || rows[r].r).text);
-      const nl = (last.b.endsWith('\n') || last.a.endsWith('\n')) && out.length ? '\n' : '';
+      for (; r < rows.length; r++) keep(rows[r]);
+      const facts = last.facts || { a: { finalNewline: /\n$/.test(last.a) }, b: { finalNewline: /\n$/.test(last.b) } };
+      const nl = (allLeft ? facts.a.finalNewline : facts.b.finalNewline) && out.length ? '\n' : '';
       return out.join('\n') + nl;
+    }
+    // The merged pane is a textarea, which can only hold LF. Downloads put
+    // back the line endings of the file the result is based on.
+    function mergedOutput() {
+      const t = $('mergedText').value;
+      if (!last || !last.facts) return t;
+      const allLeft = decisions.length > 0 && decisions.every(d => d === 'left');
+      const eol = (allLeft ? last.facts.a : last.facts.b).eol;
+      return eol === 'CRLF' ? t.replace(/\r?\n/g, '\r\n') : eol === 'CR' ? t.replace(/\r?\n/g, '\r') : t;
     }
     function renderMerged() {
       if (!last) return;
@@ -610,15 +983,16 @@
     }
     function useMergedAsOriginal() { $('text1').value = $('mergedText').value; names.a = 'merged'; updateMeta(); setMode('text'); run(); }
     function navDiff(dir) {
+      if (mode === 'hex') return hexNav(dir);
       if (!last || !last.hunks.length) return;
       currentHunk = (currentHunk + dir + last.hunks.length) % last.hunks.length;
       $('hunkCounter').textContent = `${currentHunk + 1} / ${last.hunks.length}`;
       const unified = $('viewMode').value === 'unified';
-      const id = (unified ? 'hU' : 'hR') + currentHunk;
-      const panel = unified ? $('inlinePanel') : $('rightPanel');
+      const id = (unified ? 'hU' : 'hS') + currentHunk;
+      const panel = unified ? $('inlinePanel') : $('splitPanel');
+      if (last.view && last.barItem && last.barItem[currentHunk] != null) last.view.reveal(last.barItem[currentHunk]);
       const a = $(id); if (!a) { $('contextLines').value = 'all'; renderText(); return navDiff(0); }
-      panel.scrollTop = a.offsetTop - 40;
-      if (!unified) $('leftPanel').scrollTop = panel.scrollTop;
+      panel.scrollTop = a.offsetTop - panel.offsetTop - 40;
       document.querySelectorAll('.hunk-bar.current').forEach(x => x.classList.remove('current'));
       document.querySelectorAll(`.hunk-bar[data-hunk="${currentHunk}"]`).forEach(x => x.classList.add('current'));
     }
@@ -626,9 +1000,6 @@
       if (e.target.tagName === 'TEXTAREA' || e.target.tagName === 'INPUT' || e.ctrlKey || e.metaKey || e.altKey) return;
       if (e.key === 'n' || e.key === 'j') navDiff(1); else if (e.key === 'p' || e.key === 'k') navDiff(-1);
     });
-    // sync scroll
-    let syncing = false;
-    [['leftPanel', 'rightPanel'], ['rightPanel', 'leftPanel']].forEach(([a, b]) => $(a).addEventListener('scroll', function () { if (syncing) return; syncing = true; $(b).scrollTop = this.scrollTop; $(b).scrollLeft = this.scrollLeft; syncing = false; }));
     ['viewMode', 'contextLines', 'showWs', 'syntaxMode'].forEach(id => $(id).addEventListener('change', () => { if (last && (mode === 'text' || mode === 'zip' || mode === 'patch') && $('outputSection').style.display !== 'none') { if (id === 'syntaxMode') last.lang = $('syntaxMode').value === 'auto' ? E.detectLang(last.a || last.b, last.nameA) : $('syntaxMode').value; renderText(); } }));
 
     // ---- patch export / report
@@ -645,13 +1016,48 @@
     }
     function download(name, text, type) { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([text], { type: type || 'text/plain' })); a.download = name; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 500); }
     function downloadPatch() { const p = patchText(); if (!p) { Layerbit.toast('Run a comparison first'); return; } download((last && last.nameB !== 'modified' ? last.nameB : 'changes') + '.patch', p); }
-    function downloadMerged() { download(mode === 'three' ? 'merged.txt' : (last && last.nameB !== 'modified' ? 'merged-' + last.nameB : 'merged.txt'), $('mergedText').value); }
+    function downloadMerged() { download(mode === 'three' ? 'merged.txt' : (last && last.nameB !== 'modified' ? 'merged-' + last.nameB : 'merged.txt'), mode === 'three' ? $('mergedText').value : mergedOutput()); }
     function copyText(id) { Layerbit.copy($(id).value).then(() => Layerbit.toast('Copied')); }
+    // The on-screen view is virtual; the report renders every row.
+    function fullTextHtml() {
+      if (!last || last.tooDifferent || !last.renderAll) return $('splitPanel').outerHTML;
+      return `<div class="diff-output ${$('viewMode').value === 'unified' ? 'unified' : 'split'}">${last.renderAll()}</div>`;
+    }
+    // Options line stated in every export, so a report is an honest record.
+    function optionsSummary() {
+      if (mode === 'zip') return `Compared by ${$('folderBy').selectedOptions[0].textContent}; ignored: ${ignoreList().join(', ') || 'nothing'}`;
+      if (mode === 'table') {
+        const o = tableOpts(), k = $('keyCol').value === '-1' ? [] : chosenKeys(), on = [];
+        if (o.trim) on.push('trim spaces'); if (o.ignoreCase) on.push('ignore case'); if (o.emptyNull) on.push('empty = NULL'); if (o.numeric) on.push('numbers by value');
+        if (o.dates) on.push(`dates in any format (${o.dayFirst ? 'day' : 'month'} first)`); if (o.tolAbs) on.push(`tolerance ±${o.tolAbs}`); if (o.tolPct) on.push(`tolerance ±${o.tolPct}%`);
+        if (o.ignore.length) on.push('ignored columns: ' + o.ignore.join(', '));
+        if (bookActive()) on.push(displayedValues() ? 'spreadsheet values as displayed' : 'raw spreadsheet values');
+        return `Rows matched by ${k.length ? k.join(' + ') : 'row order'}${on.length ? '; ' + on.join('; ') : ''}`;
+      }
+      if (mode === 'hex') return 'Byte-by-byte comparison; bytes past the end of the shorter file count as different';
+      if (mode === 'image') { const S = imgState; return `Pixel tolerance ${$('imgTol').value} (per colour channel, 0-255); images aligned at the top-left corner${S && S.scale < 1 ? `; compared on a copy scaled to ${S.cw} × ${S.ch}` : ''}`; }
+      if (mode === 'struct') return `Arrays compared ${$('arrMode').selectedOptions[0].textContent}${$('arrMode').value === 'key' ? ' (' + $('keyField').value + ')' : ''}`;
+      const o = opts(), on = ['ignoreWhitespace', 'ignoreCase', 'trimTrailing', 'ignoreBlank'].filter(k => o[k]).map(k => ({ ignoreWhitespace: 'ignore whitespace', ignoreCase: 'ignore case', trimTrailing: 'trim trailing whitespace', ignoreBlank: 'ignore blank lines' }[k]));
+      return `Options: ${on.length ? on.join(', ') : 'exact comparison'}; highlight ${o.granularity}`;
+    }
+    function folderReportHtml() {
+      const V = folderView; if (!V) return '';
+      return `<table class="data-table"><thead><tr><th>Path</th><th>Status</th><th>Left size</th><th>Right size</th><th>Left modified</th><th>Right modified</th></tr></thead><tbody>${V.rows.map(r => `<tr><td class="t-path">${E.esc(r.path)}</td><td class="t-${r.status === 'modified' ? 'changed' : r.status}">${r.status === 'same' ? 'identical' : STATUS_WORD[r.status]}</td><td>${r.a ? r.a.size : ''}</td><td>${r.b ? r.b.size : ''}</td><td>${r.a ? fmtTime(r.a.mtime) : ''}</td><td>${r.b ? fmtTime(r.b.mtime) : ''}</td></tr>`).join('')}</tbody></table>`;
+    }
+    function downloadCsv() {
+      const stamp = new Date().toISOString();
+      if (mode === 'zip' && folderView) { download('folder-comparison.csv', E.folderCsv(folderView.rows, { by: $('folderBy').selectedOptions[0].textContent, ignore: ignoreList(), generated: stamp, left: folders.a.name, right: folders.b.name }), 'text/csv'); return; }
+      if (mode === 'table' || mode === 'struct' || mode === 'hex') return exportCsv(stamp);
+      Layerbit.toast('Run a comparison first');
+    }
     function downloadReport() {
-      const panel = $('outputSection').querySelector('.result-pane');
-      const body = mode === 'text' || mode === 'patch' || mode === 'zip' ? ($('viewMode').value === 'unified' ? $('inlinePanel').outerHTML : $('splitWrap').outerHTML) : mode === 'struct' ? $('structPanel').outerHTML : mode === 'table' ? $('tablePanel').outerHTML : $('threePanel').outerHTML;
-      const css = `body{font-family:system-ui,sans-serif;background:#0a0c10;color:#f8fafc;margin:0;padding:24px}h1{font-size:1.2em}.meta{color:#94a3b8;font-size:.9em;margin-bottom:16px}.split-wrap{display:grid;grid-template-columns:1fr 1fr;gap:12px}.diff-output{font-family:ui-monospace,Menlo,monospace;font-size:12px;line-height:1.5;background:rgba(0,0,0,.4);border:1px solid #222;border-radius:8px;overflow:auto;max-height:none}.diff-line{display:flex}.diff-num{width:48px;flex-shrink:0;text-align:right;padding-right:8px;color:#94a3b8;border-right:1px solid #222;user-select:none}.unified .diff-num{width:80px;display:flex}.unified .diff-num span{flex:1}.diff-text{padding-left:8px;white-space:pre-wrap;word-break:break-all;flex:1}.line-removed{background:rgba(239,68,68,.15)}.line-added{background:rgba(34,197,94,.15)}.word-removed{background:rgba(239,68,68,.45);text-decoration:line-through}.word-added{background:rgba(34,197,94,.45)}.hunk-bar,.hunk-bar-spacer,.hunk-anchor{display:none}.diff-skip{color:#94a3b8;padding:4px 12px;background:rgba(255,255,255,.03)}.tk-kw{color:#38bdf8}.tk-str{color:#a7f3d0}.tk-num{color:#fdba74}.tk-cmt{color:#64748b;font-style:italic}.tk-key{color:#c084fc}.tk-tag{color:#f472b6}.tk-attr{color:#fdba74}.tk-fn{color:#f472b6}.tk-prop{color:#38bdf8}table{border-collapse:collapse;width:100%;font-size:.9em}th,td{text-align:left;padding:6px 10px;border-bottom:1px solid #222;vertical-align:top;font-family:ui-monospace,monospace}th{color:#38bdf8}.t-added{color:#4ade80}.t-removed{color:#f87171}.t-changed{color:#fbbf24}.t-type{color:#c084fc}.cell-old{color:#f87171;text-decoration:line-through}.cell-new{color:#4ade80}.three-chunk{border-left:3px solid #333;padding:4px 10px;margin:4px 0;white-space:pre-wrap;font-family:ui-monospace,monospace;font-size:12px}.three-chunk.conflict{border-color:#ef4444}.three-chunk.ours{border-color:#f87171}.three-chunk.theirs{border-color:#4ade80}.three-chunk .cb{display:none}.ws{opacity:.4}`;
-      const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Layerbit diff report</title><style>${css}</style></head><body><h1>Comparison report</h1><div class="meta">${E.esc($('resultTitle').textContent)} · ${E.esc($('diffStats').innerText.replace(/\n/g, ' · '))} · generated ${new Date().toISOString()} with layerbit.co.in/tools/text-diff-checker.html</div>${body}</body></html>`;
+      if (mode === 'hex') { if (!hex) { Layerbit.toast('Run a comparison first'); return; } hexRangeRows(1000).then(rows => saveReport(hexReportHtml(rows))); return; }
+      if (mode === 'image') { if (!imgState) { Layerbit.toast('Run a comparison first'); return; } saveReport(imageReportHtml()); return; }
+      saveReport(mode === 'zip' ? folderReportHtml() : mode === 'text' || mode === 'patch' ? fullTextHtml() : mode === 'struct' ? $('structPanel').outerHTML : mode === 'table' ? $('tablePanel').outerHTML : $('threePanel').outerHTML);
+    }
+    function saveReport(body) {
+      const css = `body{font-family:system-ui,sans-serif;background:#0a0c10;color:#f8fafc;margin:0;padding:24px}h1{font-size:1.2em}.meta{color:#94a3b8;font-size:.9em;margin-bottom:16px}.drow{display:grid;grid-template-columns:1fr 1fr}.sd-l{border-right:1px solid #222}.dside{min-width:0}.diff-output{font-family:ui-monospace,Menlo,monospace;font-size:12px;line-height:1.5;background:rgba(0,0,0,.4);border:1px solid #222;border-radius:8px;overflow:auto;max-height:none}.diff-line{display:flex}.diff-num{width:48px;flex-shrink:0;text-align:right;padding-right:8px;color:#94a3b8;border-right:1px solid #222;user-select:none}.unified .diff-num{width:80px;display:flex}.unified .diff-num span{flex:1}.diff-text{padding-left:8px;white-space:pre-wrap;word-break:break-all;flex:1}.line-removed{background:rgba(239,68,68,.15)}.line-added{background:rgba(34,197,94,.15)}.word-removed{background:rgba(239,68,68,.45);text-decoration:line-through}.word-added{background:rgba(34,197,94,.45)}.hunk-bar,.hunk-bar-spacer,.hunk-anchor{display:none}.diff-skip{color:#94a3b8;padding:4px 12px;background:rgba(255,255,255,.03)}.tk-kw{color:#38bdf8}.tk-str{color:#a7f3d0}.tk-num{color:#fdba74}.tk-cmt{color:#64748b;font-style:italic}.tk-key{color:#c084fc}.tk-tag{color:#f472b6}.tk-attr{color:#fdba74}.tk-fn{color:#f472b6}.tk-prop{color:#38bdf8}table{border-collapse:collapse;width:100%;font-size:.9em}th,td{text-align:left;padding:6px 10px;border-bottom:1px solid #222;vertical-align:top;font-family:ui-monospace,monospace}th{color:#38bdf8}.t-added{color:#4ade80}.t-removed{color:#f87171}.t-changed{color:#fbbf24}.t-type{color:#c084fc}.cell-old{color:#f87171;text-decoration:line-through}.cell-new{color:#4ade80}.three-chunk{border-left:3px solid #333;padding:4px 10px;margin:4px 0;white-space:pre-wrap;font-family:ui-monospace,monospace;font-size:12px}.three-chunk.conflict{border-color:#ef4444}.three-chunk.ours{border-color:#f87171}.three-chunk.theirs{border-color:#4ade80}.three-chunk .cb{display:none}.ws{opacity:.4}.img-fig{display:inline-block;margin:0 12px 12px 0;vertical-align:top;max-width:100%}.img-fig img{max-width:100%;image-rendering:pixelated;background:#222;border:1px solid #333}.img-fig figcaption{color:#94a3b8;font-size:.85em}.mono{font-family:ui-monospace,monospace}.table-tools,.struct-foot,.cb{display:none}.linkish{background:none;border:0;color:inherit;font:inherit;padding:0}`;
+      const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Layerbit diff report</title><style>${css}</style></head><body><h1>Comparison report</h1><div class="meta">${E.esc($('resultTitle').textContent)} · ${E.esc($('diffStats').innerText.replace(/\n/g, ' · '))}<br>${E.esc(optionsSummary())}<br>Generated ${new Date().toISOString()} with layerbit.co.in/tools/text-diff-checker.html</div>${body}</body></html>`;
       download('diff-report.html', html, 'text/html');
     }
 
@@ -665,7 +1071,7 @@
       $('outputSection').style.display = 'grid';
       renderThree();
       $('mergedSection').style.display = 'grid';
-      Layerbit.history.push('text-diff-checker', getState(), `3-way merge: ${three.conflicts} conflict${three.conflicts === 1 ? '' : 's'}`);
+      remember(`3-way merge: ${three.conflicts} conflict${three.conflicts === 1 ? '' : 's'}`);
     }
     function renderThree() {
       const unresolved = three.chunks.filter((c, i) => c.type === 'conflict' && !three.resolutions[i]).length;
@@ -703,123 +1109,816 @@
     function parseDoc(text, label) {
       const t = text.trim();
       if (!t) throw new Error(`${label} is empty.`);
-      try { return JSON.parse(t); } catch (je) {
+      try { return E.parseJsonLossless(t); } catch (je) {
         if (window.jsyaml) { try { return jsyaml.load(t); } catch (ye) { throw new Error(`${label} is neither valid JSON (${je.message}) nor valid YAML (${ye.message}).`); } }
         if (/^[\[{"]/.test(t)) throw new Error(`${label}: ${je.message}`);
         return new Promise((res, rej) => { const s = document.createElement('script'); s.src = '../js/vendor/js-yaml.min.js'; s.onload = () => { try { res(jsyaml.load(t)); } catch (ye) { rej(new Error(`${label} is neither valid JSON nor valid YAML (${ye.message}).`)); } }; s.onerror = () => rej(new Error('Could not load the YAML parser.')); document.head.appendChild(s); });
       }
     }
     function runStruct() {
+      const wasExplicit = explicitRun;
       Promise.all([parseDoc($('text1').value, 'Original'), parseDoc($('text2').value, 'Modified')]).then(([a, b]) => {
         const o = { arrays: $('arrMode').value, keyField: $('keyField').value.trim() || 'id' };
         const d = E.structuralDiff(a, b, o);
-        const fmt = v => v === undefined ? '' : E.esc(JSON.stringify(v).length > 120 ? JSON.stringify(v).slice(0, 117) + '…' : JSON.stringify(v));
-        const counts = { added: 0, removed: 0, changed: 0, type: 0 }; d.forEach(x => counts[x.type]++);
+        const fmt = v => { if (v === undefined) return ''; const j = E.stringifyLossless(v); return E.esc(j.length > 120 ? j.slice(0, 117) + '…' : j); };
+        // YAML has no lossless number type here: flag long numbers instead of trusting them
+        const longNum = [$('text1').value, $('text2').value].some(x => !/^\s*[\[{]/.test(x) && /(^|[^\w.])\d{16,}/.test(x));
+        const counts = { added: 0, removed: 0, changed: 0, type: 0, duplicate: 0 }; d.forEach(x => counts[x.type]++);
         $('resultTitle').textContent = 'Structural comparison';
-        $('diffStats').innerHTML = `<span class="st-add">+${counts.added} added</span><span class="st-del">−${counts.removed} removed</span><span class="st-mod">~${counts.changed} changed</span><span>${counts.type} type changes</span>`;
+        $('diffStats').innerHTML = `<span class="st-add">+${counts.added} added</span><span class="st-del">−${counts.removed} removed</span><span class="st-mod">~${counts.changed} changed</span><span>${counts.type} type changes</span>${counts.duplicate ? `<span class="st-del">${counts.duplicate} duplicate key${counts.duplicate === 1 ? '' : 's'}</span>` : ''}`;
         $('structPanel').innerHTML = d.length ? `<table class="data-table"><thead><tr><th>Path</th><th>Change</th><th>Original</th><th>Modified</th></tr></thead><tbody>` +
-          d.map(x => `<tr class="t-row"><td class="t-path">${E.esc(x.path)}</td><td class="t-${x.type}">${x.type === 'type' ? `type ${x.oldType} → ${x.newType}` : x.type}</td><td class="cell-old">${fmt(x.old)}</td><td class="cell-new">${fmt(x.new)}</td></tr>`).join('') + '</tbody></table>' +
+          d.map(x => `<tr class="t-row"><td class="t-path">${E.esc(x.path)}</td><td class="t-${x.type}">${x.type === 'type' ? `type ${x.oldType} → ${x.newType}` : x.type === 'duplicate' ? `duplicate key: ${x.countA} in original, ${x.countB} in modified` : x.type}</td><td class="cell-old">${fmt(x.old)}</td><td class="cell-new">${fmt(x.new)}</td></tr>`).join('') + '</tbody></table>' +
           `<div class="struct-foot"><button type="button" class="btn" onclick="structAsText()"><i data-lucide="file-diff"></i> Show as normalised text diff</button><span class="muted">Both documents re-serialised with sorted keys and 2-space indentation, then compared line by line.</span></div>`
           : '<div class="diff-identical"><i data-lucide="check-circle-2"></i> Semantically identical: same keys, same values. Formatting and key order may differ.</div>';
-        last = null; three = null; window._structDocs = [a, b];
+        if (longNum) $('structPanel').insertAdjacentHTML('afterbegin', '<div class="diff-notes" role="status"><i data-lucide="alert-triangle"></i><div><strong>Check long numbers by eye:</strong> YAML numbers with more than 15 digits are read as floating point, so two that differ only in their last digits can compare as equal. JSON input is compared digit for digit.</div></div>');
+        last = null; three = null; window._structDocs = [a, b]; window._structDiff = d;
         $('outputSection').style.display = 'grid'; $('mergedSection').style.display = 'none';
         showPanel('structPanel'); icons();
-        Layerbit.history.push('text-diff-checker', getState(), `structural: ${d.length} change${d.length === 1 ? '' : 's'}`);
+        if (wasExplicit && $('saveHistory').checked) Layerbit.history.push('text-diff-checker', getState(), `structural: ${d.length} change${d.length === 1 ? '' : 's'}`);
       }).catch(e => showError(e.message));
     }
     function structAsText() { const [a, b] = window._structDocs; $('text1').value = E.canonicalJson(a); $('text2').value = E.canonicalJson(b); names = { a: 'original.json', b: 'modified.json' }; updateMeta(); setMode('text'); run(); }
 
     // ---- table
+    // Key options are column NAMES (the engine looks each one up in both
+    // files' own headers); '-1' means match by row order.
+    let keyUserChoice = null;
     function refreshKeyColumns() {
-      const sel = $('keyCol'), prev = sel.value;
+      const sel = $('keyCol');
       const rows = E.parseCsv($('text1').value || $('text2').value);
-      const hdr = rows[0] || [];
-      sel.innerHTML = '<option value="-1">row order</option>' + hdr.map((h, i) => `<option value="${i}">${E.esc(h || '(column ' + (i + 1) + ')')}</option>`).join('');
-      // prefer an id-like column
-      const guess = hdr.findIndex(h => /^(id|_id|key|sku|code|email|uuid|guid|ref|no\.?|number)$/i.test(String(h).trim()));
-      sel.value = prev !== '-1' && +prev < hdr.length ? prev : guess >= 0 ? String(guess) : (hdr.length ? '0' : '-1');
+      const hdr = E.uniqueHeaders(rows[0] || []);
+      sel.innerHTML = '<option value="-1">row order</option>' + hdr.map(h => `<option value="${E.esc(h)}">${E.esc(h)}</option>`).join('');
+      const guess = hdr.find(h => /^(id|_id|key|sku|code|email|uuid|guid|ref|no\.?|number)$/i.test(String(h).trim()));
+      sel.value = keyUserChoice != null && (keyUserChoice === '-1' || hdr.includes(keyUserChoice)) ? keyUserChoice : guess != null ? guess : (hdr.length ? hdr[0] : '-1');
+      const all = [...new Set(hdr.concat(E.uniqueHeaders(E.parseCsv($('text2').value)[0] || [])))];
+      ['keyCol2', 'keyCol3'].forEach((id, i) => { const el = $(id), prev = el.value; el.innerHTML = `<option value="">(no ${i ? 'third' : 'second'} key)</option>` + all.map(h => `<option value="${E.esc(h)}">${E.esc(h)}</option>`).join(''); el.value = all.includes(prev) ? prev : ''; });
+      const ign = new Set([...document.querySelectorAll('#ignoreCols input:checked')].map(i => i.value));
+      $('ignoreCols').innerHTML = all.map(h => `<label class="toggle-label"><input type="checkbox" value="${E.esc(h)}"${ign.has(h) ? ' checked' : ''}> ${E.esc(h)}</label>`).join('') || '<span class="muted">(paste data first)</span>';
     }
+    $('keyCol').addEventListener('change', () => { keyUserChoice = $('keyCol').value; });
+    let keyTimer = null;
+    ['text1', 'text2'].forEach(id => $(id).addEventListener('input', () => { if (mode !== 'table') return; clearTimeout(keyTimer); keyTimer = setTimeout(refreshKeyColumns, 150); }));
+    let sheetView = null;
+    function autoKey(ha, hb) { const k = ha.find(h => hb.includes(h) && /^(id|_id|key|sku|code|email|uuid|guid|ref|no\.?|number)$/i.test(String(h).trim())); return k ? [k] : []; }
+    function runBooks() {
+      const disp = displayedValues(), A = books.text1.wb, B = books.text2.wb;
+      const SA = A.SheetNames.map(n => ({ name: n, rows: sheetRows(A, n, disp) })), SB = B.SheetNames.map(n => ({ name: n, rows: sheetRows(B, n, disp) }));
+      const P = E.pairSheets(SA, SB), prev = sheetView;
+      const results = P.pairs.map(p => {
+        const ra = SA.find(x => x.name === p.a).rows, rb = SB.find(x => x.name === p.b).rows;
+        const ha = E.uniqueHeaders(ra[0] || []), hb = E.uniqueHeaders(rb[0] || []);
+        const chosen = prev && prev.keys[p.a];
+        const keys = chosen != null ? (chosen === '-1' ? [] : ha.includes(chosen) && hb.includes(chosen) ? [chosen] : autoKey(ha, hb)) : autoKey(ha, hb);
+        const o = tableOpts(); o.ignore = o.ignore.filter(c => ha.includes(c) || hb.includes(c));
+        let r; try { r = E.tableDiff(ra.length ? ra : [[]], rb.length ? rb : [[]], Object.assign({}, o, { keys })); } catch (e) { r = E.tableDiff(ra.length ? ra : [[]], rb.length ? rb : [[]], Object.assign({}, o, { keys: [] })); }
+        return { pair: p, r, header: ha, keys };
+      });
+      sheetView = { P, results, current: prev && prev.current != null && prev.current < results.length ? prev.current : -1, keys: prev ? prev.keys : {}, disp };
+      renderBooks();
+    }
+    function renderBooks() {
+      const V = sheetView, n = r => r.changed.length + r.added.length + r.removed.length;
+      const total = V.results.reduce((t, x) => t + n(x.r), 0) + V.P.added.length + V.P.removed.length;
+      const tabs = `<div class="sheet-tabs" role="tablist"><button type="button" class="sheet-tab${V.current < 0 ? ' active' : ''}" data-sheet="-1">All sheets <span class="sc">${total}</span></button>` +
+        V.results.map((x, i) => `<button type="button" class="sheet-tab${V.current === i ? ' active' : ''}" data-sheet="${i}">${E.esc(x.pair.a)}${x.pair.renamed ? ` → ${E.esc(x.pair.b)}` : ''} <span class="sc${n(x.r) ? ' has' : ''}">${n(x.r)}</span></button>`).join('') + '</div>';
+      $('resultTitle').textContent = `${books.text1.name} vs ${books.text2.name}`;
+      if (V.current < 0) {
+        $('diffStats').innerHTML = `<span>${V.results.length} sheet${V.results.length === 1 ? '' : 's'} compared</span>${V.P.added.length ? `<span class="st-add">+${V.P.added.length} sheet${V.P.added.length === 1 ? '' : 's'} added</span>` : ''}${V.P.removed.length ? `<span class="st-del">−${V.P.removed.length} sheet${V.P.removed.length === 1 ? '' : 's'} removed</span>` : ''}<span>${V.disp ? 'displayed values' : 'raw values'}</span>`;
+        const rows = V.results.map((x, i) => `<tr><td class="t-path"><button type="button" class="linkish" data-sheet="${i}">${E.esc(x.pair.a)}</button>${x.pair.renamed ? ` <span class="t-changed">renamed to ${E.esc(x.pair.b)}?</span>` : ''}</td><td>${x.keys.length ? 'by ' + E.esc(x.keys.join(' + ')) : 'by row order'}</td><td class="t-changed">${x.r.changed.length}</td><td class="t-added">${x.r.added.length}</td><td class="t-removed">${x.r.removed.length}</td><td>${E.esc([x.r.colsAdded.length ? '+' + x.r.colsAdded.join(', ') : '', x.r.colsRemoved.length ? '−' + x.r.colsRemoved.join(', ') : ''].filter(Boolean).join(' '))}${x.r.duplicates.length ? ` <span class="t-duplicate">${x.r.duplicates.length} duplicate key${x.r.duplicates.length === 1 ? '' : 's'}</span>` : ''}</td></tr>`).join('');
+        $('tablePanel').innerHTML = tabs + `<table class="data-table"><thead><tr><th>Sheet</th><th>Rows matched</th><th>Changed</th><th>Added</th><th>Removed</th><th>Columns</th></tr></thead><tbody>${rows}</tbody></table>` +
+          (V.P.added.length ? `<p class="t-h t-added">Sheets added: ${V.P.added.map(E.esc).join(', ')}</p>` : '') + (V.P.removed.length ? `<p class="t-h t-removed">Sheets removed: ${V.P.removed.map(E.esc).join(', ')}</p>` : '');
+        last = null; three = null; $('outputSection').style.display = 'grid'; $('mergedSection').style.display = 'none'; showPanel('tablePanel'); icons();
+        return;
+      }
+      const x = V.results[V.current];
+      const sel = $('keyCol'); sel.innerHTML = '<option value="-1">row order</option>' + x.header.map(h => `<option value="${E.esc(h)}">${E.esc(h)}</option>`).join('');
+      sel.value = x.keys.length ? x.keys[0] : '-1';
+      renderTableResult(x.r, tabs, `Sheet ${x.pair.a}${x.pair.renamed ? ' → ' + x.pair.b : ''}: rows ${x.keys.length ? 'keyed by ' + x.keys.join(' + ') : 'by row order'}`);
+    }
+    $('tablePanel').addEventListener('change', e => { if (e.target && ['rowFilter', 'rowSort', 'rowSortDir'].includes(e.target.id) && window._lastTable) renderTableResult(window._lastTable, ...window._lastTableArgs); });
+    $('tablePanel').addEventListener('click', e => { const b = e.target.closest('[data-sheet]'); if (b && sheetView) { sheetView.current = +b.dataset.sheet; renderBooks(); } });
+    $('sheetValues').addEventListener('change', () => { if (mode === 'table' && bookActive()) run(true); });
+    function tableOpts() {
+      return { trim: $('tTrim').checked, ignoreCase: $('tCase').checked, emptyNull: $('tNull').checked, numeric: $('tNumeric').checked, dates: $('tDates').checked, dayFirst: $('tDayFirst').value === '1',
+        tolAbs: Math.max(0, +$('tTolAbs').value || 0), tolPct: Math.max(0, +$('tTolPct').value || 0), ignore: [...document.querySelectorAll('#ignoreCols input:checked')].map(i => i.value) };
+    }
+    function chosenKeys() { const k = [$('keyCol').value, $('keyCol2').value, $('keyCol3').value].filter(v => v && v !== '-1'); return [...new Set(k)]; }
+    ['tTrim', 'tCase', 'tNull', 'tNumeric', 'tDates', 'tDayFirst', 'keyCol2', 'keyCol3'].forEach(id => $(id).addEventListener('change', () => rerunSoon(0)));
+    ['tTolAbs', 'tTolPct'].forEach(id => $(id).addEventListener('input', () => rerunSoon(300)));
+    $('ignoreCols').addEventListener('change', () => rerunSoon(0));
     function runTable() {
+      if (bookActive()) {
+        // the key picker applies to the sheet on show
+        if (sheetView && sheetView.current >= 0 && keyUserChoice != null) sheetView.keys[sheetView.results[sheetView.current].pair.a] = keyUserChoice;
+        return runBooks();
+      }
+      sheetView = null;
       const A = E.parseCsv($('text1').value), B = E.parseCsv($('text2').value);
       if (!A.length || !B.length) { showError('Both sides need at least a header row.'); return; }
-      const key = +$('keyCol').value;
-      const r = E.tableDiff(A, B, key);
+      const r = E.tableDiff(A, B, Object.assign(tableOpts(), { keys: $('keyCol').value === '-1' ? [] : chosenKeys() }));
+      renderTableResult(r, '', `Row comparison${r.keyName ? ' keyed by ' + r.keyName : ' by row order'}`);
+      remember(`rows: +${r.added.length} −${r.removed.length} ~${r.changed.length}`);
+    }
+    function renderTableResult(r, prefix, title) {
       const cell = v => E.esc(v == null ? '' : String(v));
-      $('resultTitle').textContent = `Row comparison${r.keyName ? ' keyed by ' + r.keyName : ' by row order'}`;
+      window._lastTable = r; window._lastTableArgs = [prefix, title];
+      $('resultTitle').textContent = title;
+      // result tools: filter, sort, and the per-column summary
+      const show = $('rowFilter') ? $('rowFilter').value : 'all', sortCol = $('rowSort') ? $('rowSort').value : '', dir = $('rowSortDir') && $('rowSortDir').value === 'desc' ? -1 : 1;
+      const val = x => { const ch = x.cells && x.cells.find(k => k.col === sortCol); return ch ? ch.new : x.row[sortCol]; };
+      const sorted = list => sortCol ? list.slice().sort((p, q) => dir * String(val(p) ?? '').localeCompare(String(val(q) ?? ''), undefined, { numeric: true, sensitivity: 'base' })) : list;
+      const tools = `<div class="table-tools"><label class="toggle-label">Show <select id="rowFilter" class="mini-select">${['all', 'changed', 'added', 'removed'].map(v => `<option value="${v}"${v === show ? ' selected' : ''}>${v === 'all' ? 'all differences' : v + ' rows'}</option>`).join('')}</select></label>` +
+        `<label class="toggle-label">Sort by <select id="rowSort" class="mini-select"><option value="">file order</option>${r.columns.map(c => `<option value="${cell(c)}"${c === sortCol ? ' selected' : ''}>${cell(c)}</option>`).join('')}</select></label>` +
+        `<select id="rowSortDir" class="mini-select" aria-label="Sort direction"><option value="asc"${dir > 0 ? ' selected' : ''}>ascending</option><option value="desc"${dir < 0 ? ' selected' : ''}>descending</option></select></div>`;
+      const cc = Object.entries(r.colChanges || {}).sort((p, q) => q[1] - p[1]);
+      const colSummary = cc.length ? `<div class="col-summary" id="colSummary"><strong>Changed cells per column:</strong> ${cc.map(([c, n]) => `<span class="cs-item">${cell(c)} <span class="sc has">${n}</span></span>`).join('')}${(r.ignored || []).length ? ` <span class="muted">(ignored: ${r.ignored.map(cell).join(', ')})</span>` : ''}</div>` : `<div class="col-summary" id="colSummary"></div>`;
+      prefix = prefix + tools + colSummary;
+      r = Object.assign({}, r, { changed: show === 'all' || show === 'changed' ? sorted(r.changed) : [], added: show === 'all' || show === 'added' ? sorted(r.added) : [], removed: show === 'all' || show === 'removed' ? sorted(r.removed) : [] });
       $('diffStats').innerHTML = `<span class="st-add">+${r.added.length} rows</span><span class="st-del">−${r.removed.length} rows</span><span class="st-mod">~${r.changed.length} changed</span><span>${r.unchanged} unchanged</span>${r.colsAdded.length ? `<span class="st-add">columns added: ${E.esc(r.colsAdded.join(', '))}</span>` : ''}${r.colsRemoved.length ? `<span class="st-del">columns removed: ${E.esc(r.colsRemoved.join(', '))}</span>` : ''}`;
+      // Each section is a table whose body is a virtual list of <tbody> blocks.
       let html = '';
-      if (r.changed.length) html += `<h3 class="t-h">Changed rows</h3><table class="data-table"><thead><tr>${r.keyName ? '' : '<th>#</th>'}${r.columns.map(c => `<th${c === r.keyName ? ' class="t-path"' : ''}>${cell(c)}</th>`).join('')}</tr></thead><tbody>` +
-        r.changed.map(x => `<tr>${r.keyName ? '' : `<td class="t-path">${cell(x.key)}</td>`}${r.columns.map(c => { const ch = x.cells.find(k => k.col === c); return ch ? `<td><span class="cell-old">${cell(ch.old) || '∅'}</span> <span class="cell-new">${cell(ch.new) || '∅'}</span></td>` : `<td class="muted">${cell(x.row[c])}</td>`; }).join('')}</tr>`).join('') + '</tbody></table>';
-      if (r.added.length) html += `<h3 class="t-h t-added">Added rows</h3><table class="data-table"><thead><tr>${r.keyName ? '' : '<th>#</th>'}${r.columns.map(c => `<th${c === r.keyName ? ' class="t-path"' : ''}>${cell(c)}</th>`).join('')}</tr></thead><tbody>` + r.added.map(x => `<tr>${r.keyName ? '' : `<td class="t-path">${cell(x.key)}</td>`}${r.columns.map(c => `<td class="cell-new">${cell(x.row[c])}</td>`).join('')}</tr>`).join('') + '</tbody></table>';
-      if (r.removed.length) html += `<h3 class="t-h t-removed">Removed rows</h3><table class="data-table"><thead><tr>${r.keyName ? '' : '<th>#</th>'}${r.columns.map(c => `<th${c === r.keyName ? ' class="t-path"' : ''}>${cell(c)}</th>`).join('')}</tr></thead><tbody>` + r.removed.map(x => `<tr>${r.keyName ? '' : `<td class="t-path">${cell(x.key)}</td>`}${r.columns.map(c => `<td class="cell-old">${cell(x.row[c])}</td>`).join('')}</tr>`).join('') + '</tbody></table>';
-      if (!html) html = '<div class="diff-identical"><i data-lucide="check-circle-2"></i> Every row matches cell for cell.</div>';
-      $('tablePanel').innerHTML = html;
+      if (r.duplicates && r.duplicates.length) html += `<div class="diff-notes" role="status"><i data-lucide="alert-triangle"></i><div><strong>Duplicate key${r.duplicates.length === 1 ? '' : 's'} in ${E.esc(r.keyName)}:</strong> rows that share a key are paired in file order, and any extra ones are listed as added or removed.<ul>${r.duplicates.slice(0, 50).map(d => `<li>${E.esc(d.key)}: ${d.a} in the original, ${d.b} in the modified file</li>`).join('')}${r.duplicates.length > 50 ? `<li>and ${r.duplicates.length - 50} more</li>` : ''}</ul></div></div>`;
+      const head = `<thead><tr>${r.keyName ? '' : '<th>#</th>'}${r.columns.map(c => `<th${r.keys.includes(c) ? ' class="t-path"' : ''}>${cell(c)}</th>`).join('')}</tr></thead>`;
+      const sections = [];
+      if (r.changed.length) sections.push(['Changed rows', '', r.changed, x => `<tr>${r.keyName ? '' : `<td class="t-path">${cell(x.key)}</td>`}${r.columns.map(c => { const ch = x.cells.find(k => k.col === c); return ch ? `<td><span class="cell-old">${cell(ch.old) || '∅'}</span> <span class="cell-new">${cell(ch.new) || '∅'}</span></td>` : `<td class="muted">${cell(x.row[c])}</td>`; }).join('')}</tr>`]);
+      if (r.added.length) sections.push(['Added rows', ' t-added', r.added, x => `<tr>${r.keyName ? '' : `<td class="t-path">${cell(x.key)}</td>`}${r.columns.map(c => `<td class="cell-new">${cell(x.row[c])}</td>`).join('')}</tr>`]);
+      if (r.removed.length) sections.push(['Removed rows', ' t-removed', r.removed, x => `<tr>${r.keyName ? '' : `<td class="t-path">${cell(x.key)}</td>`}${r.columns.map(c => `<td class="cell-old">${cell(x.row[c])}</td>`).join('')}</tr>`]);
+      sections.forEach(([title, cls], i) => { html += `<h3 class="t-h${cls}">${title}</h3><table class="data-table" id="tsec${i}">${head}</table>`; });
+      if (!sections.length && !(r.duplicates && r.duplicates.length)) html = '<div class="diff-identical"><i data-lucide="check-circle-2"></i> Every row matches cell for cell.</div>';
+      $('tablePanel').innerHTML = prefix + html;
+      const ncols = r.columns.length + (r.keyName ? 0 : 1);
+      sections.forEach(([, , list, row], i) => mountList('table' + i, $('tsec' + i), list.length, k => row(list[k]), { root: $('tablePanel'), blockTag: 'tbody', rowHeight: 37, spacer: h => `<tr class="vspacer"><td colspan="${ncols}" style="height:${h}px;padding:0;border:0"></td></tr>` }));
+      window._tableSections = sections;
       last = null; three = null;
       $('outputSection').style.display = 'grid'; $('mergedSection').style.display = 'none';
       showPanel('tablePanel'); icons();
-      Layerbit.history.push('text-diff-checker', getState(), `rows: +${r.added.length} −${r.removed.length} ~${r.changed.length}`);
     }
 
     // ---- patch
+    // A patch can hold several files. Each is listed with its own status;
+    // the first one applies to the "Original file" pane and the others to
+    // originals chosen per file. A patch that only applies with fuzz is held
+    // back until the visitor has seen which context lines did not match.
+    let patchState = null;
     function runPatch() {
-      const orig = $('patchOriginal').value, patch = $('patchText').value;
+      const patch = $('patchText').value;
+      $('patchFiles').hidden = true;
       if (!patch.trim()) { showError('Paste a unified diff.'); return; }
-      const r = E.applyPatch(orig, patch);
-      if (!r.ok) { showError(r.error); return; }
-      runText(orig, r.text, names.a !== 'original' ? names.a : 'original', 'patched', `Patch applied: ${r.hunks} hunk${r.hunks === 1 ? '' : 's'}${r.fuzzy ? ' (with fuzz: context lines had moved)' : ''}`);
-      $('mergedTitle').textContent = 'Patched file';
-      $('mergedSection').style.display = 'grid';
-      if (r.fuzzy) Layerbit.toast('Applied with fuzz: some context lines had moved. Check the result.', 'warn');
+      let files;
+      try { files = E.parsePatchFiles(patch); } catch (e) { showError(e.message); return; }
+      if (!files.length) { showError('No hunks found. A unified diff starts with --- / +++ lines followed by @@ hunks.'); return; }
+      const prev = patchState && patchState.patch === patch ? patchState : null;
+      const originals = files.map((f, i) => i === 0 ? sideText('patchOriginal') : prev && prev.originals[i] != null ? prev.originals[i] : null);
+      patchState = { patch, files, originals, names: files.map((f, i) => prev && prev.names[i] ? prev.names[i] : f.name), confirmed: [], current: 0 };
+      patchState.results = files.map((f, i) => originals[i] == null ? null : E.applyPatchFile(originals[i], f));
+      if (files.length === 1 && !patchState.results[0].ok && !patchState.results[0].mismatches.length) { showError(patchState.results[0].error); return; }
+      if (files.length === 1 && !patchState.results[0].ok) { showError(patchState.results[0].error); }
+      showPatchFile(0);
+    }
+    function patchSetOriginal(i, text, name) {
+      if (!patchState) return;
+      patchState.originals[i] = text; if (name) patchState.names[i] = name;
+      patchState.results[i] = E.applyPatchFile(text, patchState.files[i]); patchState.confirmed[i] = false;
+      showPatchFile(i);
+    }
+    function pickPatchOriginal(i) {
+      const inp = document.createElement('input'); inp.type = 'file';
+      inp.onchange = () => { const f = inp.files[0]; if (f) f.arrayBuffer().then(b => patchSetOriginal(i, E.decodeBytes(new Uint8Array(b)).text, f.name)); };
+      inp.click();
+    }
+    function acceptFuzz(i) { patchState.confirmed[i] = true; showPatchFile(i); }
+    function renderPatchFiles() {
+      const P = patchState, done = P.results.filter((r, i) => r && r.ok && (!r.fuzzy || P.confirmed[i])).length;
+      const row = (f, i) => {
+        const r = P.results[i];
+        const status = !r ? '<span class="muted">needs its original file</span>' : !r.ok ? '<span class="t-removed">does not apply</span>' : r.fuzzy && !P.confirmed[i] ? '<span class="t-changed">applies only with fuzz: check below</span>' : `<span class="t-added">applied${r.fuzzy ? ' with fuzz (confirmed)' : ''}</span>`;
+        return `<tr class="${i === P.current ? 'pf-current' : ''}"><td class="t-path">${E.esc(f.name)}</td><td>${f.hunks.length} hunk${f.hunks.length === 1 ? '' : 's'}</td><td>${status}</td><td class="pf-act">` +
+          (i > 0 ? `<button type="button" class="btn" onclick="pickPatchOriginal(${i})"><i data-lucide="upload"></i> ${r ? 'Change' : 'Choose'} original</button>` : '<span class="muted">original pane</span>') +
+          (r && r.ok ? ` <button type="button" class="btn" onclick="showPatchFile(${i})"><i data-lucide="eye"></i> View</button>` : '') + '</td></tr>';
+      };
+      let html = `<div class="pf-head"><strong>${done} of ${P.files.length} file${P.files.length === 1 ? '' : 's'} applied</strong> from this patch.</div><table class="data-table"><tbody>${P.files.map(row).join('')}</tbody></table>`;
+      const r = P.results[P.current];
+      if (r && r.mismatches && r.mismatches.length && !(r.ok && !r.fuzzy)) {
+        html += `<div class="diff-notes" role="status"><i data-lucide="alert-triangle"></i><div><strong>${E.esc(P.names[P.current])}: ${r.mismatches.length} context line${r.mismatches.length === 1 ? '' : 's'} did not match the original.</strong> ${r.ok ? 'The patch was placed by fuzzy matching, so it may change the wrong lines.' : ''}<table class="data-table"><thead><tr><th>Hunk</th><th>Original line</th><th>The patch expected</th><th>The file has</th></tr></thead><tbody>${r.mismatches.map(m => `<tr><td>${m.hunk}</td><td>line ${m.line}</td><td class="cell-old">${E.esc(m.expected)}</td><td class="cell-new">${E.esc(m.actual)}</td></tr>`).join('')}</tbody></table>` +
+          (r.ok && !P.confirmed[P.current] ? `<button type="button" class="btn" id="btnAcceptFuzz" onclick="acceptFuzz(${P.current})"><i data-lucide="check"></i> I have checked these lines: apply anyway</button>` : '') + '</div></div>';
+      }
+      $('patchFiles').innerHTML = html; $('patchFiles').hidden = false;
+    }
+    function showPatchFile(i) {
+      const P = patchState; if (!P) return;
+      P.current = i; clearError();
+      const r = P.results[i], name = P.names[i];
+      $('outputSection').style.display = 'grid';
+      renderPatchFiles();
+      if (!r || !r.ok || (r.fuzzy && !P.confirmed[i])) {
+        if (r && !r.ok) showError(r.error);
+        $('mergedSection').style.display = 'none';
+        $('splitPanel').innerHTML = $('inlinePanel').innerHTML = ''; $('diffStats').innerHTML = '';
+        $('resultTitle').textContent = !r ? `${name}: choose its original file` : r.ok ? `${name}: confirm the fuzzy match` : `${name}: patch does not apply`;
+        showPanel($('viewMode').value === 'unified' ? 'unified' : 'split'); icons();
+        return;
+      }
+      runText(P.originals[i], r.text, name, name, `Patch applied to ${name}: ${r.hunks} hunk${r.hunks === 1 ? '' : 's'}${r.fuzzy ? ' (with confirmed fuzz)' : ''}`)
+        .then(() => { $('mergedTitle').textContent = 'Patched file: ' + name; $('mergedSection').style.display = 'grid'; renderPatchFiles(); icons(); });
     }
 
-    // ---- zip
+    // ---- folders
+    // A side is a list of entries {path, size, mtime, crc?, file?, read()}
+    // from a real folder (picker, folder input, drag and drop) or a .zip.
+    const IGNORE_KEY = 'lb-diff-ignore';
+    function ignoreList() { return $('ignoreList').value.split(',').map(x => x.trim()).filter(Boolean); }
+    try { $('ignoreList').value = localStorage.getItem(IGNORE_KEY) || E.DEFAULT_IGNORE.join(', '); } catch (e) { $('ignoreList').value = E.DEFAULT_IGNORE.join(', '); }
+    $('ignoreList').addEventListener('change', () => { try { localStorage.setItem(IGNORE_KEY, $('ignoreList').value); } catch (e) { /* ignore */ } if (folders.a && folders.b) run(true); });
+    $('btnIgnoreReset').addEventListener('click', () => { $('ignoreList').value = E.DEFAULT_IGNORE.join(', '); $('ignoreList').dispatchEvent(new Event('change')); });
+    $('folderBy').addEventListener('change', () => { if (folders.a && folders.b) run(true); });
+    ['folderStatus', 'hideSame'].forEach(id => $(id).addEventListener('change', () => { if (folderView) renderFolder(); }));
+
+    function setFolder(side, name, entries, kind) {
+      const shown = E.stripCommonRoot(entries.map(e => e.path));
+      entries.forEach((e, i) => { e.path = shown[i]; });
+      folders[side] = { name, entries, kind };
+      const bytes = entries.reduce((t, e) => t + (e.size || 0), 0);
+      $(side === 'a' ? 'zipAInfo' : 'zipBInfo').innerHTML = `<i data-lucide="${kind === 'zip' ? 'folder-archive' : 'folder-check'}"></i><span><strong>${E.esc(name)}</strong> · ${entries.length.toLocaleString()} files · ${Layerbit.fmtBytes(bytes)}</span>`;
+      icons();
+      if (folders.a && folders.b) run();
+    }
     function loadZip(side, file) {
       if (!file) return;
+      if (!/\.zip$/i.test(file.name) && file.type !== 'application/zip' && file.type !== 'application/x-zip-compressed') { setFolder(side, file.name, [{ path: file.name, size: file.size, mtime: file.lastModified, file }], 'files'); return; }
       file.arrayBuffer().then(buf => {
-        const entries = E.readZip(buf);
-        zips[side] = { name: file.name, entries, map: new Map(entries.map(e => [e.name.replace(/^[^/]+\//, ''), e])) };
-        $(side === 'a' ? 'zipAInfo' : 'zipBInfo').innerHTML = `<i data-lucide="folder-check"></i><span><strong>${E.esc(file.name)}</strong> · ${entries.length} files · ${Layerbit.fmtBytes(buf.byteLength)}</span>`;
-        icons();
-        if (zips.a && zips.b) run();
+        const entries = E.readZip(buf).map(e => ({ path: e.name, size: e.size, mtime: e.mtime, crc: e.crc, read: e.read }));
+        setFolder(side, file.name, entries, 'zip');
       }).catch(e => showError(`${file.name}: ${e.message}`));
     }
-    $('zipAFile').addEventListener('change', e => loadZip('a', e.target.files[0]));
-    $('zipBFile').addEventListener('change', e => loadZip('b', e.target.files[0]));
-    [['zipAPane', 'a'], ['zipBPane', 'b']].forEach(([id, side]) => { const p = $(id); p.addEventListener('dragover', e => { e.preventDefault(); p.classList.add('dragover'); }); p.addEventListener('dragleave', () => p.classList.remove('dragover')); p.addEventListener('drop', e => { e.preventDefault(); p.classList.remove('dragover'); loadZip(side, e.dataTransfer.files[0]); }); });
-    async function runZip() {
-      if (!zips.a || !zips.b) { showError('Choose or drop two zip archives.'); return; }
-      const namesAll = new Set([...zips.a.map.keys(), ...zips.b.map.keys()]);
-      const rows = [];
-      for (const n of [...namesAll].sort()) {
-        const ea = zips.a.map.get(n), eb = zips.b.map.get(n);
-        if (!ea) rows.push({ n, s: 'added', size: eb.size }); else if (!eb) rows.push({ n, s: 'removed', size: ea.size });
-        else if (ea.crc === eb.crc && ea.size === eb.size) rows.push({ n, s: 'same', size: ea.size });
-        else rows.push({ n, s: 'modified', size: eb.size, da: ea.size, db: eb.size });
+    function setFolderFromFiles(side, name, files) {
+      setFolder(side, name, files.map(f => { const F = f.file || f; return { path: f.path || F.webkitRelativePath || F.name, size: F.size, mtime: F.lastModified, file: F }; }), 'folder');
+    }
+    async function walkHandle(handle, prefix, out) {
+      for await (const [n, h] of handle.entries()) {
+        if (h.kind === 'directory') await walkHandle(h, prefix + n + '/', out);
+        else { const f = await h.getFile(); out.push({ path: prefix + n, size: f.size, mtime: f.lastModified, file: f }); }
       }
-      const c = { added: 0, removed: 0, modified: 0, same: 0 }; rows.forEach(r => c[r.s]++);
-      $('resultTitle').textContent = `${zips.a.name} vs ${zips.b.name}`;
-      $('diffStats').innerHTML = `<span class="st-add">+${c.added} added</span><span class="st-del">−${c.removed} removed</span><span class="st-mod">~${c.modified} modified</span><span>${c.same} identical</span>`;
-      $('zipPanel').innerHTML = `<table class="data-table zip-table"><thead><tr><th>File</th><th>Status</th><th>Size</th><th></th></tr></thead><tbody>` + rows.map((r, i) => `<tr class="z-${r.s}"><td class="t-path">${E.esc(r.n)}</td><td class="t-${r.s === 'modified' ? 'changed' : r.s}">${r.s}${r.s === 'modified' ? ` (${Layerbit.fmtBytes(r.da)} → ${Layerbit.fmtBytes(r.db)})` : ''}</td><td class="muted">${Layerbit.fmtBytes(r.size)}</td><td>${r.s === 'modified' ? `<button type="button" class="btn" onclick="zipOpen(${i})"><i data-lucide="file-diff"></i> Diff</button>` : r.s !== 'same' ? `<button type="button" class="btn" onclick="zipView(${i})"><i data-lucide="eye"></i> View</button>` : ''}</td></tr>`).join('') + '</tbody></table>';
-      window._zipRows = rows;
+      return out;
+    }
+    function pickFolder(side) {
+      if (window.showDirectoryPicker) {
+        window.showDirectoryPicker().then(h => { $(side === 'a' ? 'zipAInfo' : 'zipBInfo').innerHTML = '<span>Reading folder…</span>'; return walkHandle(h, '', []).then(list => setFolder(side, h.name, list, 'folder')); })
+          .catch(e => { if (e.name !== 'AbortError') $(side === 'a' ? 'dirAInput' : 'dirBInput').click(); });
+      } else $(side === 'a' ? 'dirAInput' : 'dirBInput').click();
+    }
+    [['dirAInput', 'a'], ['dirBInput', 'b']].forEach(([id, side]) => $(id).addEventListener('change', e => {
+      const files = [...e.target.files]; e.target.value = '';
+      if (files.length) setFolderFromFiles(side, (files[0].webkitRelativePath || files[0].name).split('/')[0], files);
+    }));
+    $('zipAFile').addEventListener('change', e => { loadZip('a', e.target.files[0]); e.target.value = ''; });
+    $('zipBFile').addEventListener('change', e => { loadZip('b', e.target.files[0]); e.target.value = ''; });
+    // Drag and drop: whole folders (recursively), a zip, or loose files.
+    function readEntry(entry, out) {
+      return new Promise(res => {
+        if (entry.isFile) entry.file(f => { out.push({ path: entry.fullPath.replace(/^\//, ''), size: f.size, mtime: f.lastModified, file: f }); res(); }, () => res());
+        else { const r = entry.createReader(), all = []; const next = () => r.readEntries(batch => { if (!batch.length) Promise.all(all.map(en => readEntry(en, out))).then(res); else { all.push(...batch); Promise.resolve().then(next); } }, () => res()); next(); }
+      });
+    }
+    function dropInto(side, dt) {
+      const items = [...(dt.items || [])].map(i => i.webkitGetAsEntry && i.webkitGetAsEntry()).filter(Boolean);
+      if (items.length === 1 && items[0].isFile && /\.zip$/i.test(items[0].name)) { loadZip(side, dt.files[0]); return; }
+      if (!items.length) { if (dt.files && dt.files[0]) loadZip(side, dt.files[0]); return; }
+      const out = []; $(side === 'a' ? 'zipAInfo' : 'zipBInfo').innerHTML = '<span>Reading folder…</span>';
+      Promise.all(items.map(en => readEntry(en, out))).then(() => setFolder(side, items.length === 1 ? items[0].name : `${items.length} items`, out, 'folder'));
+    }
+    [['zipAPane', 'a'], ['zipBPane', 'b']].forEach(([id, side]) => { const p = $(id); p.addEventListener('dragover', e => { e.preventDefault(); p.classList.add('dragover'); }); p.addEventListener('dragleave', () => p.classList.remove('dragover')); p.addEventListener('drop', e => { e.preventDefault(); e.stopPropagation(); p.classList.remove('dragover'); dropInto(side, e.dataTransfer); }); });
+
+    // SHA-256 in a worker, one file at a time, with progress and Cancel.
+    let hashWorker = null, hashJob = 0;
+    function cancelHashing() { if (hashWorker) { hashWorker.terminate(); hashWorker = null; } hashJob++; stopProgress(); }
+    function readEntryBytes(e) { return e.file ? e.file.arrayBuffer() : e.read().then(u => u.buffer.slice(u.byteOffset, u.byteOffset + u.byteLength)); }
+    // Files are sent to the worker in batches (it reads them itself); zip
+    // entries are inflated here first. A batch holds at most 256 files or
+    // 64 MB, and two batches are in flight, so memory stays bounded.
+    function hashEntries(list) {
+      if (!list.length) return Promise.resolve(true);
+      if (!(window.crypto && crypto.subtle)) return Promise.resolve(false);
+      if (!hashWorker) hashWorker = new Worker(URL.createObjectURL(new Blob([`
+        const hex = d => { let h = ''; for (const x of new Uint8Array(d)) h += x.toString(16).padStart(2, '0'); return h; };
+        // reading one Blob made of many small files costs one round trip
+        // instead of one per file, which is most of the time for small files
+        onmessage = async e => { const { id, items } = e.data, out = [];
+          const files = items.filter(it => it.file), bufs = items.filter(it => !it.file);
+          try {
+            const big = await new Blob(files.map(it => it.file)).arrayBuffer(); let off = 0;
+            // all of a batch's digests are started together: awaiting each in
+            // turn costs a thread round trip per file
+            const views = files.map(it => { const v = new Uint8Array(big, off, it.file.size); off += it.file.size; return v; });
+            const sums = await Promise.all(views.map(v => crypto.subtle.digest('SHA-256', v)));
+            files.forEach((it, i) => out.push([it.k, hex(sums[i])]));
+          } catch (err) { for (const it of files) { try { out.push([it.k, hex(await crypto.subtle.digest('SHA-256', await it.file.arrayBuffer()))]); } catch (e2) { out.push([it.k, 'unreadable:' + it.k]); } } }
+          const bsums = await Promise.all(bufs.map(it => crypto.subtle.digest('SHA-256', it.buf)));
+          bufs.forEach((it, i) => out.push([it.k, hex(bsums[i])]));
+          postMessage({ id, out }); };`], { type: 'text/javascript' })));
+      const job = ++hashJob, w = hashWorker, t0 = Date.now();
+      $('outputSection').style.display = 'grid';
+      $('diffProgress').hidden = false; $('diffProgressFill').classList.remove('indeterminate'); $('diffProgressFill').style.width = '0%';
+      $('diffProgressLabel').textContent = `Hashing 0 of ${list.length.toLocaleString()} files…`; $('diffProgressTime').textContent = '';
+      clearInterval(workerTimer); workerTimer = setInterval(() => { $('diffProgressTime').textContent = ((Date.now() - t0) / 1000).toFixed(1) + ' s'; }, 100);
+      icons();
+      const batches = []; let cur = [], bytes = 0;
+      list.forEach((e, k) => { if (cur.length && (cur.length >= 512 || bytes + (e.size || 0) > 64 * 1048576)) { batches.push(cur); cur = []; bytes = 0; } cur.push(k); bytes += e.size || 0; });
+      if (cur.length) batches.push(cur);
+      return new Promise(resolve => {
+        let nextBatch = 0, done = 0;
+        const send = async () => {
+          if (job !== hashJob || nextBatch >= batches.length) return;
+          const ks = batches[nextBatch++], items = [], transfer = [];
+          for (const k of ks) {
+            const e = list[k];
+            if (e.file) items.push({ k, file: e.file });
+            else { const u = await e.read().catch(() => new Uint8Array(0)); const buf = u.buffer.slice(u.byteOffset, u.byteOffset + u.byteLength); items.push({ k, buf }); transfer.push(buf); }
+          }
+          if (job === hashJob) w.postMessage({ id: job, items }, transfer);
+        };
+        w.onmessage = e => {
+          if (e.data.id !== job) return;
+          e.data.out.forEach(([k, h]) => { list[k].hash = h; });
+          done += e.data.out.length;
+          $('diffProgressFill').style.width = Math.round(100 * done / list.length) + '%';
+          $('diffProgressLabel').textContent = `Hashing ${done.toLocaleString()} of ${list.length.toLocaleString()} files…`;
+          if (done >= list.length) { stopProgress(); resolve(true); } else send();
+        };
+        const watch = setInterval(() => { if (job !== hashJob) { clearInterval(watch); resolve(false); } else if (done >= list.length) clearInterval(watch); }, 100);
+        send(); send();
+      });
+    }
+    // the shared Cancel button stops hashing too
+    $('btnCancelDiff').addEventListener('click', () => { if (mode === 'zip') { cancelHashing(); if (folderView) { folderView.cancelled = true; renderFolder(); } } });
+
+    async function runZip() {
+      if (!folders.a || !folders.b) { showError('Choose, drop or open a folder or a zip on each side.'); return; }
+      const ign = E.compileIgnore(ignoreList()), by = $('folderBy').value;
+      const A = folders.a.entries.filter(e => !ign(e.path)), B = folders.b.entries.filter(e => !ign(e.path));
+      const ignored = folders.a.entries.length - A.length + folders.b.entries.length - B.length;
+      let rows = E.folderDiff(A, B, by);
+      const prevOpen = folderView ? folderView.open : null;
+      const tree0 = E.buildTree(rows), open0 = prevOpen || new Set();
+      if (!prevOpen && rows.length <= 300) (function all(n) { n.children.forEach(c => { if (c.dir) { open0.add(c.path); all(c); } }); })(tree0);
+      folderView = { rows, tree: tree0, open: open0, by, ignored, cancelled: false };
+      renderFolder();
+      if (by === 'content') {
+        const pend = rows.filter(r => r.status === 'pending');
+        if (pend.length) {
+          const need = []; pend.forEach(r => { if (!r.a.hash) need.push(r.a); if (!r.b.hash) need.push(r.b); });
+          const ok = await hashEntries(need);
+          if (!ok && !need.every(e => e.hash)) { folderView.cancelled = true; folderView.noHash = !(window.crypto && crypto.subtle); renderFolder(); return; }
+          rows = E.folderDiff(A, B, by);
+          folderView.rows = rows; folderView.tree = E.buildTree(rows); renderFolder();
+        }
+      }
+    }
+    function toggleDir(path) { if (folderView.open.has(path)) folderView.open.delete(path); else folderView.open.add(path); renderFolder(); }
+    const fmtTime = t => t ? new Date(t).toLocaleString(undefined, { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : '';
+    const STATUS_WORD = { same: 'same', added: 'added', removed: 'removed', modified: 'modified', pending: 'not compared' };
+    function renderFolder() {
+      const V = folderView, c = V.tree.counts;
+      $('resultTitle').textContent = `${folders.a.name} vs ${folders.b.name}`;
+      $('diffStats').innerHTML = `<span class="st-add">+${c.added} added</span><span class="st-del">−${c.removed} removed</span><span class="st-mod">~${c.modified} modified</span><span>${c.same} identical</span>${c.pending ? `<span class="st-del">${c.pending} not compared</span>` : ''}${V.ignored ? `<span class="muted">${V.ignored} ignored</span>` : ''}`;
+      const list = E.flattenTree(V.tree, V.open, { hideIdentical: $('hideSame').checked, status: $('folderStatus').value });
+      window._zipRows = V.rows;
+      const idx = new Map(V.rows.map((r, i) => [r, i]));
+      const badge = (n, cls, label) => n ? `<span class="zc ${cls}" title="${n} ${label}">${n}</span>` : '';
+      const row = i => {
+        const { node, depth } = list[i], pad = `style="padding-left:${depth * 18}px"`;
+        if (node.dir) {
+          const k = node.counts, isOpen = V.open.has(node.path);
+          return `<tr class="z-dir" data-dir="${E.esc(node.path)}"><td class="t-path"><span class="ztog" ${pad}><i data-lucide="${isOpen ? 'chevron-down' : 'chevron-right'}"></i>${E.esc(node.name)}/</span></td><td>${badge(k.added, 't-added', 'added')}${badge(k.removed, 't-removed', 'removed')}${badge(k.modified, 't-changed', 'modified')}${badge(k.same, 't-same', 'identical')}${badge(k.pending, 't-removed', 'not compared')}</td><td></td><td></td><td></td><td></td><td></td></tr>`;
+        }
+        const r = node.row, n = idx.get(r), st = r.status;
+        const act = st === 'modified' || st === 'pending' ? `<button type="button" class="btn" data-open="${n}"><i data-lucide="file-diff"></i> Compare</button>` : st !== 'same' ? `<button type="button" class="btn" data-open="${n}"><i data-lucide="eye"></i> View</button>` : `<button type="button" class="btn ghost" data-open="${n}" title="Open both copies"><i data-lucide="eye"></i></button>`;
+        return `<tr class="z-${st}"><td class="t-path"><span ${pad}>${E.esc(node.name)}</span></td><td class="t-${st === 'modified' ? 'changed' : st === 'pending' ? 'removed' : st}">${STATUS_WORD[st]}${r.newer ? ` <span class="muted">(${r.newer === 'a' ? 'left' : 'right'} newer)</span>` : ''}</td><td class="muted">${r.a ? Layerbit.fmtBytes(r.a.size) : ''}</td><td class="muted">${r.b ? Layerbit.fmtBytes(r.b.size) : ''}</td><td class="muted">${r.a ? fmtTime(r.a.mtime) : ''}</td><td class="muted">${r.b ? fmtTime(r.b.mtime) : ''}</td><td>${act}</td></tr>`;
+      };
+      const keep = $('zipPanel').scrollTop;
+      $('zipPanel').innerHTML = (V.cancelled && c.pending ? `<div class="diff-notes" role="status"><i data-lucide="alert-triangle"></i><div><strong>${V.noHash ? 'This browser cannot hash files on this page.' : 'Hashing was cancelled.'}</strong> Files of equal size that were not hashed are listed as "not compared", never as identical. ${V.noHash ? 'Compare by size or date instead, or open the page over https.' : 'Press Compare to finish.'}</div></div>` : '') +
+        '<table class="data-table zip-table" id="zipTable"><thead><tr><th>Name</th><th>Status</th><th>Left size</th><th>Right size</th><th>Left modified</th><th>Right modified</th><th></th></tr></thead></table>' +
+        (list.length ? '' : '<div class="diff-identical"><i data-lucide="check-circle-2"></i> Nothing to show with the current filters.</div>');
+      mountList('zip', $('zipTable'), list.length, row, { root: $('zipPanel'), blockTag: 'tbody', rowHeight: 45, onFill: icons, spacer: h => `<tr class="vspacer"><td colspan="7" style="height:${h}px;padding:0;border:0"></td></tr>` });
       last = null; three = null;
       $('outputSection').style.display = 'grid'; $('mergedSection').style.display = 'none';
-      showPanel('zipPanel'); icons();
+      showPanel('zipPanel'); $('zipPanel').scrollTop = keep; icons();
+    }
+    $('zipPanel').addEventListener('click', e => {
+      const d = e.target.closest('tr[data-dir]'); if (d) { toggleDir(d.dataset.dir); return; }
+      const b = e.target.closest('[data-open]'); if (b) zipOpen(+b.dataset.open);
+    });
+    // Opening a file picks the comparison that suits its type.
+    const EXT = n => (n.match(/\.([^./]+)$/) || [, ''])[1].toLowerCase();
+    function fileKind(name, a, b) {
+      const x = EXT(name);
+      if (['png', 'jpg', 'jpeg', 'gif', 'webp', 'bmp', 'svg', 'ico', 'avif'].includes(x)) return 'image';
+      if (['xlsx', 'xls', 'ods', 'xlsm'].includes(x)) return 'sheet';
+      if (['csv', 'tsv'].includes(x)) return 'table';
+      if (['json', 'yaml', 'yml'].includes(x)) return 'struct';
+      if ((!a || E.isProbablyText(a) || /^UTF-16/.test(E.decodeBytes(a.subarray(0, 4096)).encoding)) && (!b || E.isProbablyText(b) || /^UTF-16/.test(E.decodeBytes(b.subarray(0, 4096)).encoding))) return 'text';
+      return 'hex';
+    }
+    function bytesToSide(id, bytes, name) {
+      if (!bytes) { $(id).value = ''; delete sideInfo[id]; return; }
+      const d = E.decodeBytes(bytes);
+      sideInfo[id] = { name, bytes, encoding: d.encoding, bom: d.bom, raw: d.text }; $(id).value = d.text;
     }
     async function zipOpen(i) {
       const r = window._zipRows[i];
       try {
-        const [a, b] = await Promise.all([zips.a.map.get(r.n).read(), zips.b.map.get(r.n).read()]);
-        if (!E.isProbablyText(a) || !E.isProbablyText(b)) { Layerbit.toast(`${r.n} is binary; sizes and checksums differ but there is no text to show.`, 'warn'); return; }
-        const td = new TextDecoder();
-        $('text1').value = td.decode(a); $('text2').value = td.decode(b); names = { a: r.n, b: r.n }; updateMeta();
-        setMode('text'); run();
-      } catch (e) { showError(e.message); }
+        const [a, b] = await Promise.all([r.a ? readEntryBytes(r.a).then(x => new Uint8Array(x)) : null, r.b ? readEntryBytes(r.b).then(x => new Uint8Array(x)) : null]);
+        const kind = fileKind(r.path, a, b);
+        folderReturn = true;
+        if (kind === 'hex' && window.openHex) return openHex(a, b, r.path, r.path);
+        if (kind === 'image' && window.openImages) return openImages(a, b, r.path, r.path);
+        if (kind === 'sheet' && window.openSheets) return openSheets(a, b, r.path, r.path);
+        if (kind === 'hex' || kind === 'image' || kind === 'sheet') { Layerbit.toast(`${r.path} is not a text file.`, 'warn'); folderReturn = false; return; }
+        bytesToSide('text1', a, r.path); bytesToSide('text2', b, r.path); names = { a: r.path, b: r.path }; updateMeta();
+        setMode(kind === 'table' ? 'table' : kind === 'struct' ? 'struct' : 'text');
+        if (kind === 'table') refreshKeyColumns();
+        run();
+      } catch (e) { folderReturn = false; showError(e.message); }
     }
-    async function zipView(i) {
-      const r = window._zipRows[i]; const z = r.s === 'added' ? zips.b : zips.a;
-      const u = await z.map.get(r.n).read();
-      if (!E.isProbablyText(u)) { Layerbit.toast(`${r.n} is binary.`, 'warn'); return; }
-      $('text1').value = r.s === 'added' ? '' : new TextDecoder().decode(u); $('text2').value = r.s === 'added' ? new TextDecoder().decode(u) : ''; names = { a: r.n, b: r.n }; updateMeta(); setMode('text'); run();
+    function zipView(i) { return zipOpen(i); }
+    function backToFolder() {
+      if (!folderView) return;
+      folderReturn = false; setMode('zip'); renderFolder();
+    }
+
+
+    // ------------------------------------------------------------ hex / binary
+    // Files stay File objects and are read with Blob.slice, so comparing two
+    // disk images never loads either into memory. The scan streams 4 MB
+    // chunks of both sides (the next pair is read while this one is
+    // compared); the view is a virtual list that reads only the 64 KB blocks
+    // on screen. Past 8 million pixels the scrollbar is scaled, so a file of
+    // any size still scrolls end to end.
+    const hexSrc = { a: null, b: null };
+    let hex = null, hexJob = 0, hexPin = null;
+    const HEX_CHUNK = 4 << 20, HEX_BLOCK = 64 << 10, HEX_RANGE_CAP = 100000, HEX_MAX_PX = 8000000;
+    // a phone stacks the right file under the left one, so each row is two lines
+    const hexNarrow = window.matchMedia ? window.matchMedia('(max-width: 760px)') : { matches: false };
+    const hexRowH = () => hexNarrow.matches ? 40 : 20;
+    const HEXB = Array.from({ length: 256 }, (_, i) => (i < 16 ? '0' : '') + i.toString(16).toUpperCase());
+    const ASC = Array.from({ length: 256 }, (_, i) => E.esc(E.asciiByte(i)));
+    const HEX_EMPTY = '<i data-lucide="binary"></i><span>Drop any file here, or choose one</span>';
+    function hexSource(side) { return hexSrc[side]; }
+    function srcFromFile(f) { return { name: f.name, size: f.size, file: f, read: (s, e) => f.slice(s, e).arrayBuffer().then(b => new Uint8Array(b)) }; }
+    function srcFromBytes(u8, name) { const b = u8 || new Uint8Array(0); return { name, size: b.length, bytes: b, read: (s, e) => Promise.resolve(b.subarray(s, e)) }; }
+    const fmtB = n => `${Layerbit.fmtBytes(n)}${n >= 1024 ? ` (${n.toLocaleString()} bytes)` : ''}`;
+    function setHexSide(side, src) {
+      hexSrc[side] = src;
+      $(side === 'a' ? 'hexAInfo' : 'hexBInfo').innerHTML = src ? `<i data-lucide="binary"></i><span><strong>${E.esc(src.name)}</strong><br><span class="muted">${fmtB(src.size)}</span></span>` : HEX_EMPTY;
+      icons();
+    }
+    [['hexAFile', 'a'], ['hexBFile', 'b']].forEach(([id, side]) => $(id).addEventListener('change', e => { const f = e.target.files[0]; if (f) setHexSide(side, srcFromFile(f)); e.target.value = ''; }));
+    [['hexAPane', 'a'], ['hexBPane', 'b']].forEach(([id, side]) => {
+      const pane = $(id);
+      pane.addEventListener('dragover', e => { e.preventDefault(); pane.classList.add('dragover'); });
+      pane.addEventListener('dragleave', () => pane.classList.remove('dragover'));
+      pane.addEventListener('drop', e => { e.preventDefault(); e.stopPropagation(); pane.classList.remove('dragover'); const f = e.dataTransfer.files && e.dataTransfer.files[0]; if (f) setHexSide(side, srcFromFile(f)); });
+    });
+    window.openHex = function (a, b, nameA, nameB) {
+      setHexSide('a', a ? srcFromBytes(a, nameA) : null); setHexSide('b', b ? srcFromBytes(b, nameB) : null);
+      setMode('hex'); run();
+    };
+    async function runHex() {
+      if (!hexSrc.a && !hexSrc.b) { showError('Choose or drop the two files to compare byte by byte.'); return; }
+      const a = hexSrc.a || srcFromBytes(null, '(no file)'), b = hexSrc.b || srcFromBytes(null, '(no file)');
+      const job = ++hexJob, size = Math.max(a.size, b.size), ranges = [], t0 = performance.now();
+      let diff = 0;
+      hex = null; $('diffStats').innerHTML = ''; $('hexNotes').innerHTML = ''; $('hexRows').innerHTML = ''; $('hexJumpMsg').textContent = '';
+      $('resultTitle').textContent = `Byte comparison: ${a.name} ↔ ${b.name}`;
+      $('outputSection').style.display = 'grid'; $('mergedSection').style.display = 'none'; showPanel('hexPanel');
+      $('hunkCounter').textContent = '0 / 0';
+      const prog = size > HEX_CHUNK;
+      if (prog) { $('diffProgress').hidden = false; $('diffProgressFill').classList.remove('indeterminate'); $('diffProgressFill').style.width = '0%'; $('diffProgressLabel').textContent = 'Comparing bytes…'; $('diffProgressTime').textContent = ''; }
+      const pair = off => Promise.all([a.read(Math.min(off, a.size), Math.min(off + HEX_CHUNK, a.size)), b.read(Math.min(off, b.size), Math.min(off + HEX_CHUNK, b.size))]);
+      try {
+        let next = size ? pair(0) : null;
+        for (let off = 0; off < size; off += HEX_CHUNK) {
+          const [ca, cb] = await next;
+          if (job !== hexJob) return;
+          next = off + HEX_CHUNK < size ? pair(off + HEX_CHUNK) : null;
+          diff += E.byteRanges(ca, cb, off, ranges, HEX_RANGE_CAP);
+          if (prog) { const done = Math.min(size, off + HEX_CHUNK); $('diffProgressFill').style.width = Math.round(100 * done / size) + '%'; $('diffProgressTime').textContent = `${Layerbit.fmtBytes(done)} of ${Layerbit.fmtBytes(size)} · ${((performance.now() - t0) / 1000).toFixed(1)} s`; }
+        }
+      } catch (e) { if (job === hexJob) { $('diffProgress').hidden = true; showError(`Could not read the files: ${e.message || e}`); } return; }
+      if (job !== hexJob) return;
+      $('diffProgress').hidden = true;
+      hex = { a, b, size, ranges, diff, width: +$('hexWidth').value, cache: { a: new Map(), b: new Map() }, cur: -1, target: -1 };
+      const first = ranges.length ? ranges[0][0] : -1, nR = ranges.length;
+      $('diffStats').innerHTML = `<span>Left ${E.esc(fmtB(a.size))}</span><span>Right ${E.esc(fmtB(b.size))}</span>` + (diff
+        ? `<span class="st-del">${diff.toLocaleString()} byte${diff === 1 ? ' differs' : 's differ'}</span><span>${nR.toLocaleString()}${ranges.truncated ? '+' : ''} range${nR === 1 ? '' : 's'}</span><span>first at 0x${E.hexOffset(first, size)} (${first.toLocaleString()})</span>`
+        : `<span class="st-add">Identical: every byte matches</span>`);
+      const notes = [];
+      if (a.size !== b.size) notes.push(`The sizes differ: the left file is ${a.size.toLocaleString()} bytes and the right file ${b.size.toLocaleString()} bytes. The ${Math.abs(a.size - b.size).toLocaleString()} extra byte${Math.abs(a.size - b.size) === 1 ? '' : 's'} on the ${a.size > b.size ? 'left' : 'right'} count as different.`);
+      if (ranges.truncated) notes.push(`More than ${HEX_RANGE_CAP.toLocaleString()} separate differences: Next and Previous step through the first ${HEX_RANGE_CAP.toLocaleString()}; the byte count above covers the whole file.`);
+      $('hexNotes').innerHTML = notes.length ? `<div class="diff-notes"><i data-lucide="alert-triangle"></i><div>${notes.join('<br>')}</div></div>` : '';
+      $('hunkCounter').textContent = `0 / ${nR.toLocaleString()}${ranges.truncated ? '+' : ''}`;
+      remember(`${a.name} ↔ ${b.name} (bytes)`);
+      hexLayout(0); icons();
+    }
+    function hexGeom() {
+      const sc = $('hexScroll'), W = hex.width, rows = Math.max(1, Math.ceil(hex.size / W)), total = rows * hexRowH(), head = $('hexHead').offsetHeight;
+      const view = Math.max(1, Math.floor((sc.clientHeight - head) / hexRowH())), px = Math.min(total, HEX_MAX_PX);
+      return { W, rows, px, view, head, scaled: total > HEX_MAX_PX, maxSt: Math.max(1, px + head - sc.clientHeight) };
+    }
+    function hexLayout(row) {
+      const W = hex.width, cols = n => Array.from({ length: n }, (_, i) => HEXB[i].slice(-2)).join(' ');
+      $('hexHead').innerHTML = `<span class="hx-off">Offset</span><span class="hx-hex l">${cols(W)}</span><span class="hx-asc l">${'Left'.padEnd(W).replace(/ /g, '&nbsp;')}</span><span class="hx-hex r">${cols(W)}</span><span class="hx-asc r">${'Right'.padEnd(W).replace(/ /g, '&nbsp;')}</span>`;
+      $('hexSpacer').style.height = hexGeom().px + 'px';
+      hexScrollToRow(row || 0);
+    }
+    function hexTopRow(g) {
+      const st = $('hexScroll').scrollTop;
+      if (hexPin && hexPin.st === st) return hexPin.row;
+      hexPin = null;
+      if (!g.scaled) return Math.min(g.rows - 1, Math.floor(st / hexRowH()));
+      return Math.round(Math.min(1, st / g.maxSt) * Math.max(0, g.rows - g.view));
+    }
+    function hexScrollToRow(row) {
+      const g = hexGeom(), sc = $('hexScroll');
+      row = Math.max(0, Math.min(row, g.rows - 1));
+      sc.scrollTop = g.scaled ? Math.round(row / Math.max(1, g.rows - g.view) * g.maxSt) : row * hexRowH();
+      hexPin = { row, st: sc.scrollTop };
+      renderHex();
+    }
+    function hexBlock(side, idx) {
+      const c = hex.cache[side]; let ent = c.get(idx);
+      if (ent) { c.delete(idx); c.set(idx, ent); return ent; }
+      const src = hex[side], s = idx * HEX_BLOCK;
+      ent = { data: null };
+      ent.p = (s >= src.size ? Promise.resolve(new Uint8Array(0)) : src.read(s, Math.min(src.size, s + HEX_BLOCK))).then(u => { ent.data = u; return u; });
+      c.set(idx, ent); if (c.size > 48) c.delete(c.keys().next().value);
+      return ent;
+    }
+    let hexRaf = 0;
+    function renderHex() {
+      if (!hex) return;
+      const H = hex, g = hexGeom(), W = g.W, top = hexTopRow(g), n = Math.min(g.view + 2, g.rows - top);
+      const s0 = top * W, s1 = Math.min(H.size, (top + n) * W), blocks = [];
+      for (let k = Math.floor(s0 / HEX_BLOCK); k * HEX_BLOCK < Math.max(s1, s0 + 1); k++) blocks.push(k);
+      const ents = blocks.flatMap(k => [hexBlock('a', k), hexBlock('b', k)]);
+      if (ents.some(e => !e.data)) { Promise.all(ents.map(e => e.p)).then(() => { if (hex === H) renderHex(); }); if (!$('hexRows').children.length) $('hexRows').innerHTML = '<div class="diff-empty">Reading…</div>'; return; }
+      const cur = H.cur >= 0 ? H.ranges[H.cur] : null, out = [];
+      for (let r = 0; r < n; r++) {
+        const off = (top + r) * W, k = Math.floor(off / HEX_BLOCK), base = k * HEX_BLOCK;
+        const A = H.cache.a.get(k).data, B = H.cache.b.get(k).data, ia = off - base;
+        let hl = '', al = '', hr = '', ar = '', any = false;
+        for (let i = 0; i < W; i++) {
+          const x = ia + i < A.length ? A[ia + i] : -1, y = ia + i < B.length ? B[ia + i] : -1, d = x !== y;
+          if (d) any = true;
+          const sep = i < W - 1 ? ' ' : '';
+          hl += x < 0 ? '  ' + sep : d ? `<b class="d">${HEXB[x]}</b>${sep}` : HEXB[x] + sep;
+          hr += y < 0 ? '  ' + sep : d ? `<b class="d">${HEXB[y]}</b>${sep}` : HEXB[y] + sep;
+          al += x < 0 ? ' ' : d ? `<b class="d">${ASC[x]}</b>` : ASC[x];
+          ar += y < 0 ? ' ' : d ? `<b class="d">${ASC[y]}</b>` : ASC[y];
+        }
+        const isCur = cur && cur[0] < off + W && cur[1] > off, isT = H.target >= off && H.target < off + W;
+        out.push(`<div class="hx-row${any ? ' hx-has' : ''}${isCur ? ' hx-cur' : ''}${isT ? ' hx-target' : ''}"><span class="hx-off">${E.hexOffset(off, H.size)}</span><span class="hx-hex l">${hl}</span><span class="hx-asc l">${al}</span><span class="hx-hex r">${hr}</span><span class="hx-asc r">${ar}</span></div>`);
+      }
+      const rows = $('hexRows');
+      rows.style.top = (g.head + (g.scaled ? $('hexScroll').scrollTop : top * hexRowH())) + 'px';
+      rows.innerHTML = out.join('');
+    }
+    $('hexScroll').addEventListener('scroll', () => { if (!hex) return; cancelAnimationFrame(hexRaf); hexRaf = requestAnimationFrame(renderHex); });
+    window.addEventListener('resize', () => { if (hex && mode === 'hex') renderHex(); });
+    if (hexNarrow.addEventListener) hexNarrow.addEventListener('change', () => { if (hex) hexLayout(hexTopRow(Object.assign(hexGeom(), {})) ); });
+    $('hexWidth').addEventListener('change', () => { if (!hex) return; const off = hexTopRow(hexGeom()) * hex.width; hex.width = +$('hexWidth').value; hexLayout(Math.floor(off / hex.width)); });
+    if (window.matchMedia && window.matchMedia('(max-width: 760px)').matches) $('hexWidth').value = '8';
+    // index of the last range that starts before `off` (-1 if none)
+    function rangeBefore(off) { let lo = 0, hi = hex.ranges.length; while (lo < hi) { const m = (lo + hi) >> 1; if (hex.ranges[m][0] < off) lo = m + 1; else hi = m; } return lo - 1; }
+    function hexNav(dir) {
+      if (!hex || !hex.ranges.length) return;
+      const n = hex.ranges.length;
+      hex.cur = hex.cur < 0 ? (dir >= 0 ? 0 : n - 1) : (hex.cur + dir + n) % n;
+      if (hex.pendingFrom != null) { const i = rangeBefore(hex.pendingFrom); hex.cur = dir >= 0 ? (i + 1) % n : (i < 0 ? n - 1 : i); hex.pendingFrom = null; }
+      $('hunkCounter').textContent = `${(hex.cur + 1).toLocaleString()} / ${n.toLocaleString()}${hex.ranges.truncated ? '+' : ''}`;
+      hexScrollToRow(Math.floor(hex.ranges[hex.cur][0] / hex.width) - 2);
+    }
+    function hexJump() {
+      const msg = $('hexJumpMsg');
+      if (!hex) { msg.textContent = 'Compare two files first.'; return; }
+      const v = E.parseOffset($('hexJump').value);
+      if (v == null) { msg.textContent = 'Enter an offset such as 0x1F00 or 7936.'; return; }
+      if (v >= hex.size) { msg.textContent = `That offset is past the end (last byte at 0x${E.hexOffset(Math.max(0, hex.size - 1), hex.size)}).`; return; }
+      msg.textContent = '';
+      hex.target = v; hex.cur = -1; hex.pendingFrom = v;
+      $('hunkCounter').textContent = `0 / ${hex.ranges.length.toLocaleString()}${hex.ranges.truncated ? '+' : ''}`;
+      hexScrollToRow(Math.floor(v / hex.width) - 2);
+    }
+    $('btnHexJump').addEventListener('click', hexJump);
+    $('hexJump').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); hexJump(); } });
+    $('btnCancelDiff').addEventListener('click', () => { if (mode === 'hex') { hexJob++; $('diffProgress').hidden = true; $('diffStats').innerHTML = '<span>Cancelled</span>'; } });
+
+
+    // ------------------------------------------------------------ images
+    // Both images are drawn top-left aligned on canvases the size of the
+    // union of their areas, so every view (side by side, slider, onion skin,
+    // difference) lines them up the same way. The format comes from the
+    // bytes, not the name. Very large images are scaled to 40 megapixels for
+    // the pixel comparison, and the page says so.
+    const imgSrc = { a: null, b: null };
+    let imgState = null, imgJob = 0;
+    const IMG_EMPTY = '<i data-lucide="image"></i><span>Drop a PNG, JPG, GIF, WebP, BMP or SVG here</span>';
+    const IMG_MIME = { PNG: 'image/png', JPEG: 'image/jpeg', GIF: 'image/gif', WebP: 'image/webp', BMP: 'image/bmp', SVG: 'image/svg+xml', ICO: 'image/x-icon', AVIF: 'image/avif' };
+    const IMG_EXT = { PNG: ['png'], JPEG: ['jpg', 'jpeg', 'jfif'], GIF: ['gif'], WebP: ['webp'], BMP: ['bmp', 'dib'], SVG: ['svg'], ICO: ['ico'], AVIF: ['avif'] };
+    const IMG_MAX_PX = 40e6;
+    function setImgSide(side, src) {
+      if (imgSrc[side] && imgSrc[side].thumb) URL.revokeObjectURL(imgSrc[side].thumb);
+      imgSrc[side] = src;
+      if (src) { const fmt = E.imageFormat(src.bytes, src.name); src.format = fmt; if (fmt) src.thumb = URL.createObjectURL(new Blob([src.bytes], { type: IMG_MIME[fmt] })); }
+      $(side === 'a' ? 'imgAInfo' : 'imgBInfo').innerHTML = src ? `${src.thumb ? `<img class="img-thumb" src="${src.thumb}" alt="">` : '<i data-lucide="file-question"></i>'}<span><strong>${E.esc(src.name)}</strong><br><span class="muted">${src.format || 'not a recognised image'} · ${Layerbit.fmtBytes(src.bytes.length)}</span></span>` : IMG_EMPTY;
+      icons();
+    }
+    function imgFromFile(side, f) { return f.arrayBuffer().then(b => setImgSide(side, { name: f.name, bytes: new Uint8Array(b) })).catch(e => showError(`${f.name}: ${e.message}`)); }
+    [['imgAFile', 'a'], ['imgBFile', 'b']].forEach(([id, side]) => $(id).addEventListener('change', e => { const f = e.target.files[0]; if (f) imgFromFile(side, f); e.target.value = ''; }));
+    [['imgAPane', 'a'], ['imgBPane', 'b']].forEach(([id, side]) => {
+      const pane = $(id);
+      pane.addEventListener('dragover', e => { e.preventDefault(); pane.classList.add('dragover'); });
+      pane.addEventListener('dragleave', () => pane.classList.remove('dragover'));
+      pane.addEventListener('drop', e => { e.preventDefault(); e.stopPropagation(); pane.classList.remove('dragover'); const f = e.dataTransfer.files && e.dataTransfer.files[0]; if (f) imgFromFile(side, f); });
+    });
+    window.openImages = function (a, b, nameA, nameB) {
+      setImgSide('a', a ? { name: nameA, bytes: a } : null); setImgSide('b', b ? { name: nameB, bytes: b } : null);
+      setMode('image'); run();
+    };
+    function decodeImage(src) {
+      return new Promise((res, rej) => {
+        const bad = () => rej(new Error(`${src.name} is not an image this browser can read (PNG, JPG, GIF, WebP, BMP or SVG).`));
+        if (!src.format) return bad();
+        const img = new Image();
+        img.onload = () => {
+          let w = img.naturalWidth, h = img.naturalHeight;
+          if (src.format === 'SVG' && (!w || !h)) { const m = /viewBox\s*=\s*["']\s*[-\d.]+[\s,]+[-\d.]+[\s,]+([\d.]+)[\s,]+([\d.]+)/i.exec(E.decodeBytes(src.bytes).text); w = m ? Math.round(+m[1]) : 300; h = m ? Math.round(+m[2]) : 150; }
+          res({ img, w, h });
+        };
+        img.onerror = bad;
+        img.src = src.thumb;
+      });
+    }
+    async function runImages() {
+      if (!imgSrc.a || !imgSrc.b) { showError('Choose or drop the two images to compare.'); return; }
+      const job = ++imgJob, A = imgSrc.a, B = imgSrc.b;
+      $('resultTitle').textContent = `Image comparison: ${A.name} ↔ ${B.name}`;
+      $('diffStats').innerHTML = ''; $('imgNotes').innerHTML = ''; $('imgInfo').innerHTML = ''; $('imgStage').innerHTML = '';
+      $('outputSection').style.display = 'grid'; $('mergedSection').style.display = 'none'; showPanel('imagePanel');
+      let da, db;
+      try { [da, db] = await Promise.all([decodeImage(A), decodeImage(B)]); } catch (e) { if (job === imgJob) { imgState = null; showError(e.message); } return; }
+      if (job !== imgJob) return;
+      const W = Math.max(da.w, db.w), H = Math.max(da.h, db.h), scale = Math.min(1, Math.sqrt(IMG_MAX_PX / Math.max(1, W * H)));
+      const cw = Math.max(1, Math.round(W * scale)), ch = Math.max(1, Math.round(H * scale));
+      const paint = d => { const c = document.createElement('canvas'); c.width = cw; c.height = ch; c.getContext('2d').drawImage(d.img, 0, 0, Math.round(d.w * scale), Math.round(d.h * scale)); return c; };
+      const ca = paint(da), cb = paint(db);
+      let pa = null, pb = null;
+      try { pa = ca.getContext('2d').getImageData(0, 0, cw, ch); pb = cb.getContext('2d').getImageData(0, 0, cw, ch); } catch (e) { /* a tainted SVG: views still work */ }
+      imgState = { A, B, da, db, ca, cb, pa, pb, cw, ch, scale, aw: Math.round(da.w * scale), ah: Math.round(da.h * scale), bw: Math.round(db.w * scale), bh: Math.round(db.h * scale) };
+      // details of both files
+      const row = (label, x, y) => `<tr${x !== y ? ' class="img-mismatch"' : ''}><th>${label}</th><td>${x}</td><td>${y}</td></tr>`;
+      $('imgInfo').innerHTML = `<thead><tr><th></th><th class="t-removed">${E.esc(A.name)}</th><th class="t-added">${E.esc(B.name)}</th></tr></thead><tbody>` +
+        row('Format', A.format, B.format) + row('Dimensions', `${da.w} × ${da.h}`, `${db.w} × ${db.h}`) + row('File size', E.esc(fmtB(A.bytes.length)), E.esc(fmtB(B.bytes.length))) + '</tbody>';
+      const notes = [];
+      if (da.w !== db.w || da.h !== db.h) notes.push(`The dimensions differ (${da.w} × ${da.h} and ${db.w} × ${db.h}). The images are lined up at the top-left corner; the area only one of them covers counts as changed.`);
+      [A, B].forEach(x => { const ext = EXT(x.name); if (ext && x.format && !IMG_EXT[x.format].includes(ext)) notes.push(`${E.esc(x.name)} is named .${E.esc(ext)} but its bytes are ${x.format}.`); });
+      if (scale < 1) notes.push(`These images are large, so the pixel comparison runs on a copy scaled to ${cw} × ${ch}.`);
+      if (!pa) notes.push('This browser will not read the pixels of these SVGs, so only the visual views are available.');
+      const svg = A.format === 'SVG' && B.format === 'SVG';
+      $('imgNotes').innerHTML = (notes.length ? `<div class="diff-notes"><i data-lucide="alert-triangle"></i><div>${notes.join('<br>')}</div></div>` : '') +
+        (svg ? `<div class="img-svg-row"><span class="muted">SVGs are compared as rendered.</span> <button type="button" class="btn mini-btn" id="btnSvgText"><i data-lucide="file-diff"></i> Compare the SVG source as text</button></div>` : '');
+      if (svg) $('btnSvgText').addEventListener('click', () => { bytesToSide('text1', A.bytes, A.name); bytesToSide('text2', B.bytes, B.name); names = { a: A.name, b: B.name }; updateMeta(); setMode('text'); run(); });
+      imgDiff(); imgRender();
+      remember(`${A.name} ↔ ${B.name} (images)`);
+      icons();
+    }
+    function imgDiff() {
+      const S = imgState; if (!S) return;
+      const tol = +$('imgTol').value;
+      $('imgTolVal').textContent = tol;
+      if (!S.pa) { $('diffStats').innerHTML = '<span>Pixels not readable</span>'; return; }
+      S.dc = document.createElement('canvas'); S.dc.width = S.cw; S.dc.height = S.ch; S.dc.className = 'img-diff';
+      const ctx = S.dc.getContext('2d'), out = ctx.createImageData(S.cw, S.ch);
+      // both canvases are the union size; pixels outside an image are transparent,
+      // so the compare uses each image's own area to count uncovered pixels
+      const crop = (p, w, h) => { if (w === S.cw && h === S.ch) return p.data; const d = new Uint8ClampedArray(w * h * 4); for (let y = 0; y < h; y++) d.set(p.data.subarray(y * S.cw * 4, (y * S.cw + w) * 4), y * w * 4); return d; };
+      const r = E.pixelDiff(crop(S.pa, S.aw, S.ah), S.aw, S.ah, crop(S.pb, S.bw, S.bh), S.bw, S.bh, tol, out.data);
+      ctx.putImageData(out, 0, 0);
+      S.result = r;
+      $('diffStats').innerHTML = r.changed
+        ? `<span class="st-del">${r.percent.toLocaleString()}% of pixels changed</span><span>${r.changed.toLocaleString()} of ${r.total.toLocaleString()} pixels</span><span>tolerance ${tol}</span>${r.bbox ? `<span>in x ${r.bbox[0]}–${r.bbox[2]}, y ${r.bbox[1]}–${r.bbox[3]}</span>` : ''}`
+        : `<span class="st-add">Identical pixels</span><span>${r.total.toLocaleString()} pixels</span><span>tolerance ${tol}</span>`;
+    }
+    function imgRender() {
+      const S = imgState; if (!S) return;
+      const v = $('imgView').value, stage = $('imgStage');
+      $('imgOpacityLabel').hidden = v !== 'onion'; $('imgSliderRow').hidden = v !== 'slider';
+      stage.className = 'img-stage view-' + v; stage.innerHTML = '';
+      stage.style.setProperty('--img-w', S.cw + 'px'); stage.style.setProperty('--img-ar', `${S.cw} / ${S.ch}`);
+      const fig = (c, label, cls) => { const f = document.createElement('figure'); f.className = 'img-fig ' + (cls || ''); f.appendChild(c); const cap = document.createElement('figcaption'); cap.textContent = label; f.appendChild(cap); return f; };
+      if (v === 'side') { stage.appendChild(fig(S.ca, imgSrc.a.name, 'l')); stage.appendChild(fig(S.cb, imgSrc.b.name, 'r')); return; }
+      if (v === 'diff') { if (S.dc) stage.appendChild(fig(S.dc, 'Changed pixels in magenta')); return; }
+      const box = document.createElement('div'); box.className = 'img-overlay';
+      S.ca.id = ''; S.cb.id = 'imgTop'; S.cb.classList.add('img-top');
+      box.appendChild(S.ca); box.appendChild(S.cb);
+      if (v === 'slider') { const h = document.createElement('div'); h.className = 'img-handle'; h.id = 'imgHandle'; box.appendChild(h); }
+      stage.appendChild(box);
+      imgApply();
+    }
+    function imgApply() {
+      const top = $('imgTop'); if (!top) return;
+      const v = $('imgView').value;
+      if (v === 'slider') { const x = +$('imgSlider').value; top.style.opacity = ''; top.style.clipPath = `inset(0 0 0 ${x}%)`; const h = $('imgHandle'); if (h) h.style.left = x + '%'; }
+      else if (v === 'onion') { top.style.clipPath = ''; top.style.opacity = String(+$('imgOpacity').value / 100); }
+    }
+    $('imgView').addEventListener('change', () => { $('imgOpacityLabel').hidden = $('imgView').value !== 'onion'; imgRender(); });
+    $('imgSlider').addEventListener('input', imgApply);
+    $('imgOpacity').addEventListener('input', imgApply);
+    let imgTolTimer = null;
+    $('imgTol').addEventListener('input', () => { $('imgTolVal').textContent = $('imgTol').value; clearTimeout(imgTolTimer); imgTolTimer = setTimeout(() => { if (imgState) { imgDiff(); if ($('imgView').value === 'diff') imgRender(); } }, 120); });
+    // swipe: drag anywhere on the picture in slider view
+    let imgDrag = false;
+    function imgDragTo(e) { const box = $('imgStage').querySelector('.img-overlay'); if (!box) return; const r = box.getBoundingClientRect(); $('imgSlider').value = Math.max(0, Math.min(100, (e.clientX - r.left) / r.width * 100)); imgApply(); }
+    $('imgStage').addEventListener('pointerdown', e => { if ($('imgView').value !== 'slider') return; imgDrag = true; try { $('imgStage').setPointerCapture(e.pointerId); } catch (x) { /* synthetic events */ } imgDragTo(e); e.preventDefault(); });
+    $('imgStage').addEventListener('pointermove', e => { if (imgDrag) imgDragTo(e); });
+    ['pointerup', 'pointercancel'].forEach(t => $('imgStage').addEventListener(t, () => { imgDrag = false; }));
+
+
+    // ------------------------------------------------------------ exports
+    // Every export starts with what was compared, the options and the date.
+    function exportMeta(stamp) {
+      const l = mode === 'hex' && hex ? hex.a.name : mode === 'image' && imgState ? imgSrc.a.name : books.text1 ? books.text1.name : names.a;
+      const r = mode === 'hex' && hex ? hex.b.name : mode === 'image' && imgState ? imgSrc.b.name : books.text2 ? books.text2.name : names.b;
+      return { generated: stamp || new Date().toISOString(), left: l, right: r, options: optionsSummary() };
+    }
+    const baseName = (fallback) => { const n = (books.text2 && books.text2.name) || names.b; return n && n !== 'modified' ? n.replace(/\.[^.]+$/, '') + '-diff' : fallback; };
+    function exportCsv(stamp) {
+      const meta = exportMeta(stamp);
+      if (mode === 'struct') { if (!window._structDiff) { Layerbit.toast('Run a comparison first'); return; } download('structure-changes.csv', E.structCsv(window._structDiff, meta), 'text/csv'); return; }
+      if (mode === 'hex') { if (!hex) { Layerbit.toast('Run a comparison first'); return; } Layerbit.toast('Preparing the byte ranges…'); hexRangeRows(5000).then(rows => download('byte-differences.csv', E.hexRangesCsv(rows, hexMeta(meta)), 'text/csv')); return; }
+      if (sheetView && sheetView.current < 0) {
+        // workbook overview: every sheet, one block each
+        let out = E.tableCsv({ columns: [], changed: [], added: [], removed: [] }, Object.assign({}, meta)).replace(/Status,Key,Changed columns\r\n$/, '');
+        out = out.replace('Layerbit table comparison', 'Layerbit workbook comparison');
+        if (sheetView.P.added.length) out += E.csvLine(['Sheets only on the right', sheetView.P.added.join(', ')]);
+        if (sheetView.P.removed.length) out += E.csvLine(['Sheets only on the left', sheetView.P.removed.join(', ')]);
+        sheetView.results.forEach(x => { out += '\r\n' + E.csvLine(['Sheet', x.pair.a + (x.pair.renamed ? ' → ' + x.pair.b : '')]) + E.tableCsv(x.r, meta).split('\r\n\r\n').slice(1).join('\r\n\r\n'); });
+        download(baseName('workbook-diff') + '.csv', out, 'text/csv'); return;
+      }
+      if (!window._lastTable) { Layerbit.toast('Run a comparison first'); return; }
+      download(baseName('table-diff') + '.csv', E.tableCsv(window._lastTable, meta), 'text/csv');
+    }
+    function exportXlsx() {
+      if (mode !== 'table' || (!window._lastTable && !sheetView)) { Layerbit.toast('Run a comparison first'); return; }
+      const meta = exportMeta(), sheets = [];
+      if (sheetView) {
+        const about = E.aboutRows('Layerbit workbook comparison', meta);
+        about.push([], [{ v: 'Sheet', s: 'head' }, { v: 'Compared with', s: 'head' }, { v: 'Changed rows', s: 'head' }, { v: 'Added rows', s: 'head' }, { v: 'Removed rows', s: 'head' }]);
+        sheetView.results.forEach(x => about.push([x.pair.a, x.pair.b, x.r.changed.length, x.r.added.length, x.r.removed.length]));
+        sheetView.P.added.forEach(n => about.push([{ v: n, s: 'added' }, 'only in the right workbook']));
+        sheetView.P.removed.forEach(n => about.push([{ v: n, s: 'removed' }, 'only in the left workbook']));
+        sheets.push({ name: 'About', rows: about });
+        sheetView.results.forEach(x => sheets.push({ name: x.pair.a, rows: E.tableSheetRows(x.r), freeze: 1 }));
+      } else {
+        sheets.push({ name: 'About', rows: E.aboutRows('Layerbit table comparison', meta) }, { name: 'Differences', rows: E.tableSheetRows(window._lastTable), freeze: 1 });
+      }
+      download(baseName(sheetView ? 'workbook-diff' : 'table-diff') + '.xlsx', E.xlsxBuild(sheets), 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    }
+    function exportJson() {
+      if (!window._structDiff) { Layerbit.toast('Run a comparison first'); return; }
+      download('structure-changes.json', E.structJson(window._structDiff, exportMeta()), 'application/json');
+    }
+    function hexMeta(meta) { return Object.assign({}, meta, { left: hex.a.name, right: hex.b.name, leftSize: hex.a.size, rightSize: hex.b.size, differing: hex.diff, truncated: !!hex.ranges.truncated }); }
+    // the first `withBytes` ranges carry up to 32 bytes of each side
+    async function hexRangeRows(withBytes) {
+      const H = hex, out = [];
+      for (let i = 0; i < H.ranges.length; i++) {
+        const [s, e] = H.ranges[i];
+        if (i < withBytes) { const [a, b] = await Promise.all([H.a.read(Math.min(s, H.a.size), Math.min(e, s + 32, H.a.size)), H.b.read(Math.min(s, H.b.size), Math.min(e, s + 32, H.b.size))]); out.push({ start: s, end: e, a: e - s > 32 && a.length === 32 ? withMore(a) : a, b: e - s > 32 && b.length === 32 ? withMore(b) : b }); }
+        else out.push({ start: s, end: e, a: new Uint8Array(0), b: new Uint8Array(0) });
+      }
+      return out;
+    }
+    // a 33-byte view tells the CSV writer there is more than it shows
+    function withMore(u) { const x = new Uint8Array(33); x.set(u); return x; }
+    function hexReportHtml(rows) {
+      const H = hex, hb = u => Array.from(u.subarray(0, 32), c => (c < 16 ? '0' : '') + c.toString(16).toUpperCase()).join(' ') + (u.length > 32 ? ' …' : '');
+      return `<p>${E.esc(H.a.name)}: ${H.a.size.toLocaleString()} bytes · ${E.esc(H.b.name)}: ${H.b.size.toLocaleString()} bytes</p>` +
+        `<table><thead><tr><th>Start</th><th>Last byte</th><th>Length</th><th>Left bytes</th><th>Right bytes</th></tr></thead><tbody>${rows.map(r => `<tr><td>0x${E.hexOffset(r.start, H.size)} (${r.start.toLocaleString()})</td><td>0x${E.hexOffset(r.end - 1, H.size)}</td><td>${(r.end - r.start).toLocaleString()}</td><td class="cell-old">${hb(r.a)}</td><td class="cell-new">${hb(r.b)}</td></tr>`).join('')}</tbody></table>` +
+        (H.ranges.length > rows.length || H.ranges.truncated ? `<p class="meta">First ${rows.length.toLocaleString()} ranges listed.</p>` : '');
+    }
+    // canvases as PNG data URLs, scaled down to 1600 px wide for the report
+    function canvasUrl(c) {
+      if (c.width <= 1600) return c.toDataURL('image/png');
+      const k = 1600 / c.width, t = document.createElement('canvas'); t.width = 1600; t.height = Math.max(1, Math.round(c.height * k));
+      const x = t.getContext('2d'); x.imageSmoothingEnabled = false; x.drawImage(c, 0, 0, t.width, t.height); return t.toDataURL('image/png');
+    }
+    function imageReportHtml() {
+      const S = imgState, fig = (c, cap) => `<figure class="img-fig"><img src="${canvasUrl(c)}" alt="${E.esc(cap)}"><figcaption>${E.esc(cap)}</figcaption></figure>`;
+      return `${$('imgInfo').outerHTML}${$('imgNotes').innerText.trim() ? `<p>${E.esc($('imgNotes').innerText.trim())}</p>` : ''}<div>${fig(S.ca, S.A.name)}${fig(S.cb, S.B.name)}${S.dc ? fig(S.dc, 'Changed pixels in magenta') : ''}</div>`;
+    }
+    function exportDiffPng() {
+      if (!imgState || !imgState.dc) { Layerbit.toast('Run a comparison first'); return; }
+      imgState.dc.toBlob(b => { const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = 'image-difference.png'; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 500); }, 'image/png');
     }
 
     // ------------------------------------------------------------ share / history state
@@ -840,11 +1939,17 @@
       else if (s.mode === 'patch') { $('patchOriginal').value = s.a || ''; $('patchText').value = s.patch || ''; }
       else { $('text1').value = s.a || ''; $('text2').value = s.b || ''; }
       updateMeta();
-      if (s.mode === 'table') { refreshKeyColumns(); if (s.opts && s.opts.keyCol) $('keyCol').value = s.opts.keyCol; }
+      if (s.mode === 'table') {
+        refreshKeyColumns();
+        const v = s.opts && s.opts.keyCol, names_ = [...$('keyCol').options].map(o => o.value);
+        // older share links stored a column index
+        const pick = v == null ? null : names_.includes(String(v)) ? String(v) : /^\d+$/.test(String(v)) && names_[+v + 1] ? names_[+v + 1] : null;
+        if (pick) { keyUserChoice = pick; $('keyCol').value = pick; }
+      }
       $('keyFieldLabel').style.display = $('arrMode').value === 'key' ? '' : 'none';
       if ((s.a || s.base || s.b) && s.mode !== 'zip') run();
     }
-    Layerbit.register({ slug: 'text-diff-checker', getState, setState, run, input: (text, name) => { const t = $('text1').value ? 'text2' : 'text1'; $(t).value = text; if (name) names[t === 'text1' ? 'a' : 'b'] = name; updateMeta(); } });
+    Layerbit.register({ slug: 'text-diff-checker', getState, setState, run: compare, input: (text, name) => { const t = $('text1').value ? 'text2' : 'text1'; $(t).value = text; if (name) names[t === 'text1' ? 'a' : 'b'] = name; updateMeta(); } });
 
     // ------------------------------------------------------------ samples
     function loadSample(type) {

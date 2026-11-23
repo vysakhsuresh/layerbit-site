@@ -951,8 +951,8 @@ def _(t):
     t.set("text2", "same")
     t.call("run()")
     t.wait(100)
-    expect(t.count("#rightPanel .line-added") == 0, "identical text produced additions")
-    expect("No differences" in t.text("leftPanel"), "identical notice missing")
+    expect(t.count("#splitPanel .sd-r.line-added") == 0, "identical text produced additions")
+    expect("No differences" in t.text("splitPanel"), "identical notice missing")
     expect(not t.visible("#mergedSection"), "merge pane shown with nothing to merge")
 
 
@@ -960,7 +960,7 @@ def _(t):
 def _(t):
     t.call("run()")
     t.wait(50)
-    expect("empty" in t.text("leftPanel"), t.text("leftPanel"))
+    expect("empty" in t.text("splitPanel"), t.text("splitPanel"))
 
 
 @case("text-diff-checker", "typical", "one changed line is highlighted with stats and a hunk bar")
@@ -969,9 +969,9 @@ def _(t):
     t.set("text2", "a\nB\nc")
     t.call("run()")
     t.wait(100)
-    expect(t.count("#rightPanel .line-added") == 1 and t.count("#leftPanel .line-removed") == 1, "changed line not shown")
+    expect(t.count("#splitPanel .sd-r.line-added") == 1 and t.count("#splitPanel .sd-l.line-removed") == 1, "changed line not shown")
     expect("1 change block" in t.text("diffStats"), t.text("diffStats"))
-    expect(t.count("#leftPanel .hunk-bar") == 1, "hunk bar missing")
+    expect(t.count("#splitPanel .hunk-bar") == 1, "hunk bar missing")
 
 
 @case("text-diff-checker", "typical", "merge: per-hunk decisions and accept/keep all")
@@ -993,7 +993,7 @@ def _(t):
 def _(t):
     t.call("loadSample('code')")
     t.wait(150)
-    expect(t.count("#rightPanel .tk-kw") > 0, "no syntax tokens")
+    expect(t.count("#splitPanel .sd-r .tk-kw") > 0, "no syntax tokens")
     expect("js" in t.text("diffStats"), "language not detected")
     t.select("viewMode", "unified")
     t.wait(50)
@@ -1005,14 +1005,14 @@ def _(t):
     t.select("contextLines", "3")
     t.call("run()")
     t.wait(100)
-    expect(t.count("#rightPanel .diff-skip") == 2, f"expected 2 folds, got {t.count('#rightPanel .diff-skip')}")
-    expect(t.count("#rightPanel .diff-line") <= 10, "context folding did not reduce rows")
+    expect(t.count("#splitPanel .diff-skip") == 2, f"expected 2 folds, got {t.count('#splitPanel .diff-skip')}")
+    expect(t.count("#splitPanel .sd-r") <= 10, "context folding did not reduce rows")
     t.call("expandSkip()")
     t.wait(50)
-    expect(t.count("#rightPanel .diff-line") >= 60, "expand did not restore rows")
+    expect(t.count("#splitPanel .sd-r") >= 60, "expand did not restore rows")
     t.click("#showWs")
     t.wait(50)
-    expect(t.count("#rightPanel .ws") > 0, "whitespace markers missing")
+    expect(t.count("#splitPanel .sd-r .ws") > 0, "whitespace markers missing")
 
 
 @case("text-diff-checker", "typical", "character granularity isolates a one-letter change")
@@ -1022,12 +1022,12 @@ def _(t):
     t.select("granularity", "char")
     t.call("run()")
     t.wait(100)
-    spans = t.call("Array.from(document.querySelectorAll('#rightPanel .word-added')).map(e => e.textContent)")
+    spans = t.call("Array.from(document.querySelectorAll('#splitPanel .sd-r .word-added')).map(e => e.textContent)")
     eq(spans, ["D"], "char-level added span")
     t.select("granularity", "none")
     t.call("run()")
     t.wait(100)
-    eq(t.count("#rightPanel .word-added"), 0, "lines-only mode still highlighted words")
+    eq(t.count("#splitPanel .sd-r .word-added"), 0, "lines-only mode still highlighted words")
 
 
 @case("text-diff-checker", "edge", "normalisation options: whitespace, case, trailing, blank, CRLF")
@@ -1138,7 +1138,7 @@ def _(t):
     eq(rows, ["a.txt:modified", "gone.txt:removed", "new.txt:added", "same.txt:same"], "zip rows")
     t.call("zipOpen(0)")
     t.wait_for("() => document.getElementById('resultTitle').textContent.includes('a.txt')")
-    eq(t.call("[...document.querySelectorAll('#rightPanel .word-added')].map(e=>e.textContent)"), ["there"], "file diff from zip")
+    eq(t.call("[...document.querySelectorAll('#splitPanel .sd-r .word-added')].map(e=>e.textContent)"), ["there"], "file diff from zip")
 
 
 @case("text-diff-checker", "typical", "share link restores mode, inputs and options and re-runs")
@@ -1159,7 +1159,7 @@ def _(t):
     t.select("contextLines", "3")
     t.call("run()")
     t.wait_for("() => document.getElementById('diffStats').innerText.includes('40 change blocks')")
-    expect(t.count("#rightPanel .diff-line") < 400, "folding not applied")
+    expect(t.count("#splitPanel .sd-r") < 400, "folding not applied")
     t.call("navDiff(1)")
     eq(t.text("hunkCounter"), "1 / 40", "navigation counter")
 
@@ -1215,6 +1215,9 @@ def _(t):
             ["2026-01-01 10:00:0%d ERROR user %d timed out after 30s" % (i, 1000 + i) for i in range(4)] + \
             ["2026-01-01 10:00:09 INFO ok"]
     t.set("logInput", "\n".join(lines))
+    # typing schedules its own analysis 300 ms later, which resets the search
+    # box; let it land first so it cannot wipe the grep below mid-test
+    t.wait(450)
     t.call("analyzeLogs()")
     eq(t.text("countDebug").strip(), "3", "debug count")
     top = t.text("topMessages")
@@ -2034,6 +2037,771 @@ ZOHO = """Invoice Date,Invoice ID,Invoice Number,Invoice Status,Customer Name,Cu
 2026-09-03,4410000000124,INV-000232,Draft,"Gulf Star Logistics, FZE",100987654300003,2026-10-03,AED,1,API integration,ERP sync,10,600.00,5,300.00,6000.00,6300.00,6300.00"""
 
 
+# --- v4 bug fixes and features --------------------------------------------
+DIFF_HIST = "Layerbit.history.list('text-diff-checker', 100).then(r => r.length)"
+
+
+@case("text-diff-checker", "edge", "bug 1: history is saved only on an explicit Compare with the switch on")
+def _(t):
+    t.call("Layerbit.history.clear()")
+    t.set("text1", "user=admin\n"); t.set("text2", "user=admin\npassword=")
+    t.click("#btnRun"); t.wait(200)
+    for v in ["password=h", "password=hu", "password=hun", "password=hunter2"]:
+        t.set("text2", "user=admin\n" + v); t.wait(600)
+    eq(t.call(DIFF_HIST), 0, "runs saved while the switch is off")
+    expect(t.visible("#saveHistory"), "no visible Save to history switch")
+    t.page.check("#saveHistory")
+    t.click("#btnRun"); t.wait(200)
+    eq(t.call(DIFF_HIST), 1, "explicit Compare with the switch on")
+    t.set("text2", "user=admin\npassword=x"); t.wait(700)
+    eq(t.call(DIFF_HIST), 1, "live re-run while typing saved a copy")
+    t.page.uncheck("#saveHistory")
+
+
+DIFF_LOAD = """([id, side, bytes, name]) => { const f = new File([new Uint8Array(bytes)], name); loadFileInto(id, f, side); }"""
+
+
+@case("text-diff-checker", "edge", "bug 2: Windows-1252 files are decoded, labelled, and never reported identical when bytes differ")
+def _(t):
+    t.page.evaluate(DIFF_LOAD, ["text1", "a", [0x63, 0x61, 0x66, 0xE9, 0x0A], "menu-a.txt"])
+    t.page.evaluate(DIFF_LOAD, ["text2", "b", [0x63, 0x61, 0x66, 0xE8, 0x0A], "menu-b.txt"])
+    t.wait_for("() => document.getElementById('meta2').textContent.includes('Windows-1252')")
+    t.call("run()"); t.wait(150)
+    expect("1 change block" in t.text("diffStats"), "café/cafè not detected: " + t.text("diffStats"))
+    eq(t.val("text1"), "café\n", "decoded text")
+    # same characters, different bytes (UTF-8 vs Windows-1252)
+    t.page.evaluate(DIFF_LOAD, ["text1", "a", [0x63, 0x61, 0x66, 0xC3, 0xA9, 0x0A], "utf8.txt"])
+    t.page.evaluate(DIFF_LOAD, ["text2", "b", [0x63, 0x61, 0x66, 0xE9, 0x0A], "ansi.txt"])
+    t.wait_for("() => document.getElementById('meta1').textContent.includes('UTF-8') && document.getElementById('meta2').textContent.includes('Windows-1252')")
+    t.call("run()"); t.wait(150)
+    out = t.text("outputSection")
+    expect("identical" not in out.lower() or "not byte-identical" in out, "reported identical: " + out[:200])
+    expect("encoding" in out.lower() and "UTF-8" in out and "Windows-1252" in out, "encoding difference not reported: " + out[:300])
+
+
+DIFF_ZIP_JS = """
+  window._crc32 = u8 => { let c, crc = 0xFFFFFFFF; for (let i = 0; i < u8.length; i++) { c = (crc ^ u8[i]) & 0xFF; for (let k = 0; k < 8; k++) c = c & 1 ? (c >>> 1) ^ 0xEDB88320 : c >>> 1; crc = (crc >>> 8) ^ c; } return (crc ^ 0xFFFFFFFF) >>> 0; };
+  window._mkzip = (files, name) => { const enc = new TextEncoder(); const parts = [], cd = []; let off = 0;
+    for (const [n0, data] of files) { const n = enc.encode(n0), d = typeof data === 'string' ? enc.encode(data) : data, crc = _crc32(d);
+      const lh = new DataView(new ArrayBuffer(30)); lh.setUint32(0, 0x04034b50, true); lh.setUint32(14, crc, true); lh.setUint32(18, d.length, true); lh.setUint32(22, d.length, true); lh.setUint16(26, n.length, true);
+      parts.push(new Uint8Array(lh.buffer), n, d);
+      const c = new DataView(new ArrayBuffer(46)); c.setUint32(0, 0x02014b50, true); c.setUint32(16, crc, true); c.setUint32(20, d.length, true); c.setUint32(24, d.length, true); c.setUint16(28, n.length, true); c.setUint32(42, off, true);
+      cd.push(new Uint8Array(c.buffer), n); off += 30 + n.length + d.length; }
+    const cdLen = cd.reduce((a, x) => a + x.length, 0); const e = new DataView(new ArrayBuffer(22)); e.setUint32(0, 0x06054b50, true); e.setUint16(8, files.length, true); e.setUint16(10, files.length, true); e.setUint32(12, cdLen, true); e.setUint32(16, off, true);
+    return new File([...parts, ...cd, new Uint8Array(e.buffer)], name || 'x.zip'); };
+"""
+
+
+@case("text-diff-checker", "edge", "bug 3: zip entries in different top folders are all kept")
+def _(t):
+    t.call("() => {" + DIFF_ZIP_JS + """
+      setMode('zip');
+      loadZip('a', _mkzip([['src/app.js', 'a'], ['lib/app.js', 'b']], 'a.zip'));
+      loadZip('b', _mkzip([['src/app.js', 'a'], ['lib/app.js', 'B']], 'b.zip')); }""")
+    t.wait_for("() => window._zipRows && window._zipRows.length >= 2 && /lib\\//.test(document.getElementById('zipPanel').innerText)")
+    eq(t.call("window._zipRows.map(r => r.path + ':' + r.status)"), ["lib/app.js:modified", "src/app.js:same"], "a file vanished")
+    text = t.text("zipPanel")
+    expect("src/" in text and "lib/" in text and text.count("app.js") == 2, "tree does not show both files: " + text)
+
+
+@case("text-diff-checker", "edge", "bug 6: duplicate keys are reported in table and JSON results")
+def _(t):
+    t.call("setMode('table')")
+    t.set("text1", "id,name\n1,a\n1,b\n2,c\n"); t.set("text2", "id,name\n1,a\n2,c\n")
+    t.call("refreshKeyColumns()"); t.call("run()"); t.wait(150)
+    out = t.text("tablePanel")
+    expect("Duplicate key" in out and "1" in out, "duplicate key warning missing: " + out[:300])
+    expect("−1 rows" in t.text("diffStats"), t.text("diffStats"))
+    t.call("setMode('struct')"); t.select("arrMode", "key")
+    t.set("text1", '[{"id":1,"n":"a"},{"id":1,"n":"b"}]'); t.set("text2", '[{"id":1,"n":"a"}]')
+    t.call("run()"); t.wait(150)
+    expect("duplicate key" in t.text("structPanel").lower(), t.text("structPanel"))
+
+
+@case("text-diff-checker", "edge", "bug 8: JSON ids above 2^53 are compared exactly")
+def _(t):
+    t.call("setMode('struct')"); t.select("arrMode", "index")
+    t.set("text1", '{"order_id": 9007199254740993, "total": 1.0}'); t.set("text2", '{"order_id": 9007199254740992, "total": 1}')
+    t.call("run()"); t.wait(200)
+    out = t.text("structPanel")
+    expect("$.order_id" in out and "9007199254740993" in out and "9007199254740992" in out, out[:300])
+    expect("$.total" not in out, "1.0 vs 1 reported as a change")
+    t.set("text1", "a: 12345678901234567890\n"); t.set("text2", "a: 12345678901234567891\n")
+    t.call("run()"); t.wait(600)
+    expect("15 digits" in t.text("outputSection"), "YAML precision warning missing: " + t.text("outputSection")[:300])
+
+
+@case("text-diff-checker", "maximal", "bug 9: unrelated 20,000-line files run in a worker, end in a summary, and a long run can be cancelled")
+def _(t):
+    t.call("""() => { const r = s => () => (s = (s * 1103515245 + 12345) >>> 0);
+      const A = r(1), B = r(2);
+      document.getElementById('text1').value = Array.from({length: 20000}, () => 'alpha ' + A()).join('\\n');
+      document.getElementById('text2').value = Array.from({length: 20000}, () => 'beta ' + B()).join('\\n'); }""")
+    t.call("run()")
+    expect(t.visible("#diffProgress"), "no progress indicator while comparing")
+    ticks = t.call("new Promise(res => { let n = 0; const id = setInterval(() => n++, 20); setTimeout(() => { clearInterval(id); res(n); }, 300); })")
+    expect(ticks >= 8, f"main thread blocked: only {ticks} timer ticks in 300 ms")
+    t.wait_for("() => /too different/i.test(document.getElementById('outputSection').innerText)", 30000)
+    out = t.text("outputSection")
+    expect("20,000 only in the original" in out and "20,000 only in the modified" in out, out[:400])
+    # 'Align anyway' has no limit (several seconds): it must show progress and stop on Cancel
+    t.call("alignAnyway()")
+    t.wait(200)
+    expect(t.visible("#diffProgress"), "no progress for the unlimited run")
+    t.click("#btnCancelDiff"); t.wait(100)
+    expect("cancelled" in t.text("outputSection").lower() and not t.visible("#diffProgress"), "cancel did not stop the comparison")
+
+
+@case("text-diff-checker", "edge", "bug 10: pasting into the CSV tab refreshes the key columns")
+def _(t):
+    t.call("setMode('table')")
+    t.set("text1", "id,name,qty\n1,Widget,5\n2,Gadget,6\n3,Doohickey,7\n")
+    t.set("text2", "id,name,qty\n3,Doohickey,7\n1,Widget,9\n2,Gadget,6\n")
+    t.wait(500)
+    opts = t.call("[...document.querySelectorAll('#keyCol option')].map(o => o.textContent)")
+    expect("id" in opts, f"key columns not refreshed: {opts}")
+    eq(t.call("document.querySelector('#keyCol option:checked').textContent"), "id", "id column not chosen")
+    t.call("run()"); t.wait(150)
+    expect("~1 changed" in t.text("diffStats"), "re-sorted file: " + t.text("diffStats"))
+
+
+@case("text-diff-checker", "edge", "bug 11: accept all / keep all give exactly the modified / original text with ignore options on")
+def _(t):
+    t.page.check("#ignoreCase"); t.page.check("#ignoreWhitespace")
+    t.set("text1", "Hello World\nkeep  this\nold\n"); t.set("text2", "hello world\nkeep this\nnew\n")
+    t.call("run()"); t.wait(150)
+    t.call("mergeAll('right')")
+    eq(t.val("mergedText"), "hello world\nkeep this\nnew\n", "accept all")
+    t.call("mergeAll('left')")
+    eq(t.val("mergedText"), "Hello World\nkeep  this\nold\n", "keep all original")
+    t.page.uncheck("#ignoreCase"); t.page.uncheck("#ignoreWhitespace")
+
+
+DIFF_MULTI_PATCH = "--- a/one.txt\n+++ b/one.txt\n@@ -1,2 +1,2 @@\n alpha\n-beta\n+BETA\n--- a/two.txt\n+++ b/two.txt\n@@ -1,1 +1,2 @@\n gamma\n+delta\n"
+
+
+@case("text-diff-checker", "edge", "bug 12: a multi-file patch lists every file and applies each one")
+def _(t):
+    t.call("setMode('patch')")
+    t.set("patchOriginal", "alpha\nbeta\n"); t.set("patchText", DIFF_MULTI_PATCH)
+    t.call("run()"); t.wait(200)
+    files = t.text("patchFiles")
+    expect("one.txt" in files and "two.txt" in files, "files not listed: " + files)
+    expect("1 of 2 files applied" in files, files)
+    eq(t.val("mergedText"), "alpha\nBETA\n", "first file applied")
+    t.call("patchSetOriginal(1, 'gamma\\n', 'two.txt')"); t.wait(200)
+    expect("2 of 2 files applied" in t.text("patchFiles"), t.text("patchFiles"))
+    t.call("showPatchFile(1)"); t.wait(150)
+    eq(t.val("mergedText"), "gamma\ndelta\n", "second file applied")
+
+
+@case("text-diff-checker", "edge", "bug 12: a fuzzy patch shows the mismatched context lines and needs confirmation")
+def _(t):
+    patch = t.call("E.unifiedPatch('one\\ntwo\\nthree\\nfour\\nfive\\n', 'one\\ntwo\\nTHREE\\nfour\\nfive\\n', 'f.txt', 'f.txt')")
+    t.call("setMode('patch')")
+    t.set("patchOriginal", "one\nTWO\nthree\nfour\nfive\n"); t.set("patchText", patch)
+    t.call("run()"); t.wait(200)
+    out = t.text("patchFiles")
+    expect("did not match" in out and "TWO" in out and "line 2" in out, out)
+    expect(not t.visible("#mergedSection"), "fuzzy result shown before confirmation")
+    t.click("#btnAcceptFuzz"); t.wait(200)
+    eq(t.val("mergedText"), "one\nTWO\nTHREE\nfour\nfive\n", "confirmed fuzzy result")
+
+
+@case("text-diff-checker", "edge", "bug 13: side-by-side rows stay aligned after a long wrapped line")
+def _(t):
+    t.select("viewMode", "split")
+    t.set("text1", "start\n" + ("lorem ipsum dolor " * 150) + "\nend line\n")
+    t.set("text2", "start\nshort\nend line\n")
+    t.call("run()"); t.wait(150)
+    tops = t.call("""(() => { const rows = [...document.querySelectorAll('#splitPanel .drow')].filter(r => r.innerText.includes('end line'));
+      if (!rows.length) return null; const r = rows[0]; const l = r.querySelector('.sd-l'), rt = r.querySelector('.sd-r');
+      return [Math.round(l.getBoundingClientRect().top), Math.round(rt.getBoundingClientRect().top), Math.round(l.getBoundingClientRect().height), Math.round(rt.getBoundingClientRect().height)]; })()""")
+    expect(tops is not None, "rows are not single elements with left and right cells")
+    eq(tops[0], tops[1], "left and right cells of the same row start at different heights")
+    eq(tops[2], tops[3], "left and right cells of the same row have different heights")
+
+
+@case("text-diff-checker", "edge", "bug 14: line endings and a missing final newline are reported; merged output keeps CRLF")
+def _(t):
+    t.set("text1", "a\nb"); t.set("text2", "a\nb\n")
+    t.call("run()"); t.wait(150)
+    out = t.text("outputSection")
+    expect("No newline at end of file in the original" in out and "No differences" not in out, out[:300])
+    crlf = [0x78, 0x0D, 0x0A, 0x79, 0x0D, 0x0A]
+    t.page.evaluate(DIFF_LOAD, ["text1", "a", crlf, "win.txt"])
+    t.page.evaluate(DIFF_LOAD, ["text2", "b", [0x78, 0x0A, 0x79, 0x0A], "unix.txt"])
+    t.wait_for("() => document.getElementById('meta2').textContent.includes('UTF-8')")
+    t.call("run()"); t.wait(150)
+    expect("Line endings differ" in t.text("outputSection") and "CRLF" in t.text("outputSection"), t.text("outputSection")[:300])
+    t.page.evaluate(DIFF_LOAD, ["text2", "b", [0x78, 0x0D, 0x0A, 0x59, 0x0D, 0x0A], "win2.txt"])
+    t.wait_for("() => document.getElementById('text2').value === 'x\\nY\\n'")
+    t.call("run()"); t.wait(150)
+    t.call("mergeAll('right')")
+    eq(t.call("mergedOutput()"), "x\r\nY\r\n", "merged download lost the CRLF line endings")
+
+
+@case("text-diff-checker", "edge", "bug 15: ignore blank lines reports no change for an added blank line")
+def _(t):
+    t.page.check("#ignoreBlank")
+    t.set("text1", "a\nb\n"); t.set("text2", "a\n\n\nb\n")
+    t.call("run()"); t.wait(150)
+    expect("0 change blocks" in t.text("diffStats"), t.text("diffStats"))
+    eq(t.count("#splitPanel .hunk-bar"), 0, "hunk shown for a blank line")
+    t.set("text2", "a\n\nB\n"); t.call("run()"); t.wait(150)
+    t.call("mergeAll('right')")
+    eq(t.val("mergedText"), "a\n\nB\n", "accept all with blank lines")
+    t.call("mergeAll('left')")
+    eq(t.val("mergedText"), "a\nb\n", "keep all with blank lines")
+    t.page.uncheck("#ignoreBlank")
+
+
+@case("text-diff-checker", "edge", "bug 16: invisible characters are shown as labelled markers")
+def _(t):
+    t.set("text1", "price: 10 AED\nkey=value\n"); t.set("text2", "price: 10 AED\nkey=​value\n")
+    t.call("run()"); t.wait(150)
+    marks = t.call("[...document.querySelectorAll('#splitPanel .sd-r .inv')].map(e => e.textContent)")
+    expect("NBSP" in marks and "ZWSP" in marks, f"changed invisible characters not marked: {marks}")
+    t.set("text1", "a​b\n"); t.set("text2", "a​b\nc\n"); t.call("run()"); t.wait(150)
+    eq(t.count("#splitPanel .sd-l .inv"), 0, "unchanged line marked without Show whitespace")
+    t.page.check("#showWs"); t.wait(150)
+    expect(t.count("#splitPanel .sd-l .inv") >= 1, "Show whitespace did not reveal the zero-width space")
+    t.page.uncheck("#showWs")
+
+
+@case("text-diff-checker", "edge", "bug 18: after Clear, choosing the same file again loads it")
+def _(t):
+    f = {"name": "same.txt", "mimeType": "text/plain", "buffer": b"hello again\n"}
+    t.page.set_input_files("#text1File", f)
+    t.wait_for("() => document.getElementById('text1').value === 'hello again\\n'")
+    # a real file dialog fires 'change' only if the input's value changes, so
+    # the input must be empty again after a load and after Clear
+    eq(t.call("document.getElementById('text1File').value"), "", "file input still holds the last file after loading")
+    t.page.set_input_files("#text1File", f)
+    t.wait(200)
+    t.call("clearInputs()")
+    eq(t.val("text1"), "", "clear")
+    eq(t.call("[...document.querySelectorAll('input[type=file]')].filter(i => i.value).length"), 0, "Clear left a file input set")
+    t.page.set_input_files("#text1File", f)
+    t.wait_for("() => document.getElementById('text1').value === 'hello again\\n'", 3000)
+
+
+@case("text-diff-checker", "minimal", "bug 19: no related-tool card is nested inside another")
+def _(t):
+    eq(t.count(".use-case-card .use-case-card"), 0, "nested cards")
+    parent = t.call("document.querySelector('a[href=\"text-case-converter.html\"]').closest('.use-case-card').parentElement.className")
+    expect("use-cases-grid" in parent, "Text Case Converter card is not a direct child of the grid: " + parent)
+
+
+@case("text-diff-checker", "typical", "bug 20: clicking a fold opens only that fold")
+def _(t):
+    a = "\n".join(f"l{i}" for i in range(60)); b = a.replace("l20\n", "X\n").replace("l45\n", "Y\n")
+    t.set("text1", a); t.set("text2", b); t.select("contextLines", "3")
+    t.call("run()"); t.wait(150)
+    eq(t.count("#splitPanel .diff-skip"), 3, "folds")
+    t.click("#splitPanel .diff-skip >> nth=1"); t.wait(150)
+    eq(t.count("#splitPanel .diff-skip"), 2, "one click expanded more than one fold")
+    eq(t.val("contextLines"), "3", "the context setting was changed")
+    t.select("contextLines", "all")
+
+
+@case("text-diff-checker", "maximal", "bug 20: a 100,000-line comparison renders only the rows on screen")
+def _(t):
+    t.call("""() => { const a = Array.from({length: 100000}, (_, i) => 'line ' + i);
+      const b = a.slice(); b[50000] = 'changed'; document.getElementById('text1').value = a.join('\\n'); document.getElementById('text2').value = b.join('\\n'); run(); }""")
+    t.wait_for("() => document.getElementById('diffStats').innerText.includes('1 change block')", 30000)
+    t.wait(300)
+    nodes = t.call("document.querySelectorAll('#splitPanel *').length")
+    expect(nodes < 20000, f"{nodes} DOM nodes for a 100k-line diff")
+    t.call("(() => { const p = document.getElementById('splitPanel'); p.scrollTop = p.scrollHeight; })()"); t.wait(400)
+    t.call("(() => { const p = document.getElementById('splitPanel'); p.scrollTop = p.scrollHeight; })()"); t.wait(400)
+    expect("line 99999" in t.text("splitPanel"), "last rows not rendered after scrolling to the end")
+    t.call("navDiff(1)"); t.wait(300)
+    expect("changed" in t.text("splitPanel"), "navigating to the change did not render it")
+
+
+@case("text-diff-checker", "maximal", "bug 20: 20,000 changed table rows and 5,000 zip entries render virtually")
+def _(t):
+    t.call("""() => { setMode('table');
+      document.getElementById('text1').value = 'id,v\\n' + Array.from({length: 20000}, (_, i) => i + ',a' + i).join('\\n');
+      document.getElementById('text2').value = 'id,v\\n' + Array.from({length: 20000}, (_, i) => i + ',b' + i).join('\\n');
+      refreshKeyColumns(); run(); }""")
+    t.wait_for("() => document.getElementById('diffStats').innerText.includes('20000 changed')", 30000)
+    t.wait(300)
+    rows = t.count("#tablePanel tbody tr")
+    expect(rows < 3000, f"{rows} table rows in the DOM for 20,000 changes")
+    t.call("(() => { const p = document.getElementById('tablePanel'); p.scrollTop = p.scrollHeight; })()"); t.wait(400)
+    t.call("(() => { const p = document.getElementById('tablePanel'); p.scrollTop = p.scrollHeight; })()"); t.wait(400)
+    expect("b19999" in t.text("tablePanel"), "last changed row not rendered after scrolling")
+    t.call("() => {" + DIFF_ZIP_JS + """
+      setMode('zip'); const files = n => Array.from({length: 5000}, (_, i) => ['f' + String(i).padStart(5, '0') + '.txt', 'x' + i + n]);
+      loadZip('a', _mkzip(files(''), 'a.zip')); loadZip('b', _mkzip(files('!'), 'b.zip')); }""")
+    t.wait_for("() => document.getElementById('diffStats').innerText.includes('5000 modified')", 30000)
+    t.wait(300)
+    zr = t.count("#zipPanel tbody tr")
+    expect(zr < 2000, f"{zr} folder rows in the DOM for 5,000 files")
+
+
+DIFF_FOLDER_JS = """
+  window._mkdir = (spec, t) => Object.entries(spec).map(([path, text]) => ({ path, file: new File([text], path.split('/').pop(), { lastModified: t || 1767225600000 }) }));
+"""
+
+
+@case("text-diff-checker", "typical", "feature 21: real folders: tree with counts, default ignores, filters, open a file and come back")
+def _(t):
+    t.call("() => {" + DIFF_FOLDER_JS + """
+      setMode('zip');
+      setFolderFromFiles('a', 'app-v1', _mkdir({ 'app/src/main.js': 'let a = 1;\\n', 'app/src/util/fmt.js': 'same', 'app/README.md': 'hello', 'app/node_modules/x/index.js': 'dep', 'app/old.txt': 'bye', 'app/build.log': 'log' }));
+      setFolderFromFiles('b', 'app-v2', _mkdir({ 'app/src/main.js': 'let a = 2;\\n', 'app/src/util/fmt.js': 'same', 'app/README.md': 'hello', 'app/node_modules/x/index.js': 'dep2', 'app/new.txt': 'hi' })); }""")
+    t.wait_for("() => window._zipRows && !window._zipRows.some(r => r.status === 'pending') && /identical/.test(document.getElementById('diffStats').innerText)", 15000)
+    s = t.text("diffStats")
+    expect("+1 added" in s and "−1 removed" in s and "~1 modified" in s and "2 identical" in s and "ignored" in s, s)
+    eq(sorted(t.call("window._zipRows.map(r => r.path)")), ["README.md", "new.txt", "old.txt", "src/main.js", "src/util/fmt.js"], "node_modules and *.log are not ignored")
+    src = t.call("[...document.querySelectorAll('#zipPanel tr.z-dir')].map(r => r.innerText.replace(/\\s+/g, ' ').trim())")
+    expect(any(x.startswith("src/") for x in src), str(src))
+    t.page.check("#hideSame"); t.wait(150)
+    expect("fmt.js" not in t.text("zipPanel") and "README.md" not in t.text("zipPanel"), "identical files still shown")
+    t.page.uncheck("#hideSame"); t.select("folderStatus", "added"); t.wait(150)
+    expect("new.txt" in t.text("zipPanel") and "old.txt" not in t.text("zipPanel"), "status filter")
+    t.select("folderStatus", "all"); t.wait(100)
+    # collapse src, open main.js, then come back with the tree state kept
+    t.call("toggleDir('src')"); t.wait(100)
+    expect("main.js" not in t.text("zipPanel"), "collapse failed")
+    t.call("toggleDir('src')"); t.call("toggleDir('src/util')"); t.wait(100)
+    i = t.call("window._zipRows.findIndex(r => r.path === 'src/main.js')")
+    t.call(f"zipOpen({i})")
+    t.wait_for("() => document.getElementById('resultTitle').textContent.includes('main.js') && document.querySelectorAll('#splitPanel .word-added').length")
+    expect(t.visible("#btnBackFolder"), "no Back to folder button")
+    t.click("#btnBackFolder"); t.wait(200)
+    expect("main.js" in t.text("zipPanel") and "fmt.js" not in t.text("zipPanel"), "tree state lost: " + t.text("zipPanel")[:200])
+
+
+@case("text-diff-checker", "typical", "feature 21: compare by size and by date, CSV report, folder drag and drop")
+def _(t):
+    t.call("() => {" + DIFF_FOLDER_JS + """
+      setMode('zip'); document.getElementById('folderBy').value = 'size';
+      setFolderFromFiles('a', 'L', _mkdir({ 'a.txt': 'abc', 'b.txt': 'xyz' }, 1767225600000));
+      setFolderFromFiles('b', 'R', _mkdir({ 'a.txt': 'ABC', 'b.txt': 'xyzw' }, 1767312000000)); }""")
+    t.wait(300)
+    eq(t.call("window._zipRows.map(r => r.path + ':' + r.status)"), ["a.txt:same", "b.txt:modified"], "by size")
+    t.select("folderBy", "date"); t.wait(300)
+    eq(t.call("window._zipRows.map(r => r.path + ':' + r.status + ':' + r.newer)"), ["a.txt:modified:b", "b.txt:modified:b"], "by date")
+    expect("right newer" in t.text("zipPanel"), "newer side not shown")
+    with t.page.expect_download() as dl:
+        t.click("#btnCsv")
+    csv = open(dl.value.path(), encoding="utf-8").read()
+    expect("Compared by,modified date" in csv and "Generated," in csv and "Ignored," in csv and "b.txt,modified,3,4" in csv, csv[:400])
+    # a dropped folder (directory entries as the browser provides them)
+    t.call("""() => {
+      const fe = (name, text) => ({ isFile: true, isDirectory: false, name, fullPath: '/drop/' + name, file: cb => cb(new File([text], name)) });
+      const dir = { isFile: false, isDirectory: true, name: 'drop', fullPath: '/drop', createReader: () => { let done = false; return { readEntries: cb => { const out = done ? [] : [fe('x.txt', 'one'), fe('y.txt', 'two')]; done = true; setTimeout(() => cb(out), 0); } }; } };
+      dropInto('a', { items: [{ webkitGetAsEntry: () => dir }], files: [] }); }""")
+    t.wait_for("() => document.getElementById('zipAInfo').innerText.includes('2 files')", 5000)
+
+
+@case("text-diff-checker", "maximal", "feature 21: 20,000 files hash in a worker with progress and Cancel, never guessing")
+def _(t):
+    t.call("""() => { setMode('zip'); document.getElementById('folderBy').value = 'content';
+      // slices of one Blob: cheap to build, read like files (12 bytes each)
+      // slices of one Blob: cheap to build, read like files (12 bytes each). The
+      // right side reuses the left side's slice wherever the file is the same,
+      // so building the fixture costs far less than hashing it.
+      const text = s => Array.from({length: 20000}, (_, i) => String(i % 7 === 0 ? i + s : i).padStart(12, '0'));
+      const ta = text('a'), tb = text('b'), A = new Blob([ta.join('')]), B = new Blob([tb.join('')]);
+      const left = ta.map((p, i) => ({ path: 'd' + (i % 50) + '/f' + i + '.txt', file: A.slice(i * 12, i * 12 + 12) }));
+      const right = tb.map((p, i) => ({ path: left[i].path, file: p === ta[i] ? left[i].file : B.slice(i * 12, i * 12 + 12) }));
+      setFolderFromFiles('a', 'big-a', left); setFolderFromFiles('b', 'big-b', right); }""")
+    t.wait(400)
+    expect(t.visible("#diffProgress") and "Hashing" in t.text("diffProgressLabel"), "no hashing progress")
+    ticks = t.call("new Promise(res => { let n = 0; const id = setInterval(() => n++, 20); setTimeout(() => { clearInterval(id); res(n); }, 300); })")
+    expect(ticks >= 8, f"main thread blocked while hashing: {ticks} ticks")
+    t.click("#btnCancelDiff"); t.wait(300)
+    expect("not compared" in t.text("diffStats") and "Hashing was cancelled" in t.text("zipPanel"), t.text("diffStats"))
+    t.call("run()")
+    t.wait_for("() => !/not compared/.test(document.getElementById('diffStats').innerText) && /identical/.test(document.getElementById('diffStats').innerText)", 120000)
+    eq(t.call("window._zipRows.filter(r => r.status === 'modified').length"), 2858, "modified count")
+    expect(t.count("#zipPanel tbody tr") < 2000, f"{t.count('#zipPanel tbody tr')} rows in the DOM")
+
+
+DIFF_BOOK_JS = """async () => { await loadXlsx();
+  const mk = (sheets, name) => { const wb = XLSX.utils.book_new();
+    for (const [sn, aoa] of sheets) { const ws = XLSX.utils.aoa_to_sheet(aoa); if (ws.C2) ws.C2.z = '0.00'; XLSX.utils.book_append_sheet(wb, ws, sn); }
+    return new File([XLSX.write(wb, { type: 'array', bookType: 'xlsx' })], name); };
+  window._bookA = mk([['Orders', [['id', 'qty', 'price', 'ref'], ['007', 5, 1.5, '12345678901234567890']]], ['Customers', [['id', 'name'], [1, 'Ann']]], ['Old', [['x'], [1]]]], 'a.xlsx');
+  window._bookB = mk([['Orders', [['id', 'qty', 'price', 'ref'], ['007', 6, 1.5, '12345678901234567890']]], ['Clients', [['id', 'name'], [1, 'Ann']]], ['New', [['z'], [9]]]], 'b.xlsx');
+  loadFileInto('text1', _bookA, 'a'); loadFileInto('text2', _bookB, 'b'); }"""
+
+
+@case("text-diff-checker", "typical", "feature 22: every sheet is compared, with tabs, a summary and renamed sheets")
+def _(t):
+    t.call(DIFF_BOOK_JS)
+    t.wait_for("() => document.getElementById('text2').value.includes('007') && document.getElementById('text1').value.includes('007')", 15000)
+    t.call("run()")
+    t.wait_for("() => document.querySelector('#tablePanel .sheet-tabs')", 8000)
+    tabs = t.call("[...document.querySelectorAll('#tablePanel .sheet-tab')].map(b => b.innerText.replace(/\\s+/g, ' ').trim())")
+    expect(tabs[0].startswith("All sheets") and any(x.startswith("Orders") and "1" in x for x in tabs) and any("Customers" in x and "Clients" in x for x in tabs), str(tabs))
+    summary = t.text("tablePanel")
+    expect("Old" in summary and "removed" in summary.lower() and "New" in summary and "added" in summary.lower(), summary[:500])
+    t.click("#tablePanel .sheet-tab[data-sheet='0']"); t.wait(200)
+    out = t.text("tablePanel")
+    expect("007" in out and "12345678901234567890" in out, "leading zeros or long numbers were changed: " + out[:400])
+    expect("1.50" in out, "displayed value missing: " + out[:400])
+    t.select("sheetValues", "raw"); t.wait(300)
+    out = t.text("tablePanel")
+    expect("1.5" in out and "1.50" not in out and "007" in out, "raw values: " + out[:400])
+    t.select("sheetValues", "displayed")
+
+
+@case("text-diff-checker", "typical", "feature 23: composite keys, ignored columns, tolerance, dates, filter, sort and column summary")
+def _(t):
+    t.call("setMode('table')")
+    t.set("text1", "region,sku,qty,price,updated,shipped\nUAE,1,5,10.00,t1,2026-11-05\nKSA,1,7,20.00,t1,2026-11-06\nUAE,2,9,30.00,t1,2026-11-07\nUAE,3,1,5.00,t1,2026-11-08\n")
+    t.set("text2", "sku,region,qty,price,updated,shipped\n1,KSA,8,20.004,t2,06/11/2026\n1,UAE,5,10,t2,5 Nov 2026\n2,UAE,9,31.00,t2,07/11/2026\n4,UAE,2,1.00,t2,2026-11-09\n")
+    t.wait(400)
+    t.select("keyCol", "region"); t.select("keyCol2", "sku")
+    t.call("document.getElementById('tableOpts').open = true")
+    t.page.check("#ignoreCols input[value='updated']")
+    t.call("run()"); t.wait(200)
+    expect("region + sku" in t.text("resultTitle"), t.text("resultTitle"))
+    s = t.text("diffStats")
+    expect("~3 changed" in s, "before options: " + s)
+    t.page.check("#tNumeric"); t.page.check("#tDates"); t.set("tTolAbs", "0.01"); t.call("run()"); t.wait(200)
+    s = t.text("diffStats")
+    expect("~2 changed" in s and "+1 rows" in s and "−1 rows" in s, "with numeric, dates and tolerance: " + s)
+    items = t.call("[...document.querySelectorAll('#colSummary .cs-item')].map(e => e.innerText.replace(/\\s+/g, ' ').trim())")
+    expect(items == ["qty 1", "price 1"] or items == ["price 1", "qty 1"], f"column summary: {items}")
+    expect("ignored: updated" in t.text("colSummary"), "ignored columns are named in the summary")
+    t.select("rowFilter", "added"); t.wait(150)
+    out = t.text("tablePanel")
+    expect("Added rows" in out and "Changed rows" not in out, "row filter")
+    t.select("rowFilter", "all"); t.select("rowSort", "qty"); t.select("rowSortDir", "desc"); t.wait(150)
+    order = t.call("[...document.querySelectorAll('#tsec0 tbody tr')].map(r => r.innerText.split('\\t').slice(0, 2).join(' '))")
+    expect(order == ["UAE 2", "KSA 1"], f"sort by qty desc: {order}")
+    t.select("rowSortDir", "asc"); t.wait(150)
+    order = t.call("[...document.querySelectorAll('#tsec0 tbody tr')].map(r => r.innerText.split('\\t').slice(0, 2).join(' '))")
+    expect(order == ["KSA 1", "UAE 2"], f"sort by qty asc: {order}")
+
+
+DIFF_HEX_SET = """([side, parts, name]) => { const toPart = p => typeof p === 'number' ? new Uint8Array(p) : Array.isArray(p) ? new Uint8Array(p) : p;
+  const f = new File(parts.map(toPart), name); const dt = new DataTransfer(); dt.items.add(f);
+  const inp = document.getElementById(side === 'a' ? 'hexAFile' : 'hexBFile'); inp.files = dt.files; inp.dispatchEvent(new Event('change')); }"""
+
+
+@case("text-diff-checker", "typical", "feature 24: hex compare shows offsets, both sides, highlighted bytes, next/previous difference and jump to offset")
+def _(t):
+    t.call("setMode('hex')")
+    expect(t.visible("#hexAPane") and t.visible("#hexBPane"), "hex inputs not shown")
+    a = list(range(256)) * 4            # 1024 bytes
+    b = list(a); b[0x1F] = 0xAA; b[0x200] = 0xFF; b[0x201] = 0xFE; b += [0x41, 0x42]   # 3 bytes changed + 2 extra
+    t.page.evaluate(DIFF_HEX_SET, ["a", [a], "fw-1.bin"])
+    t.page.evaluate(DIFF_HEX_SET, ["b", [b], "fw-2.bin"])
+    t.wait_for("() => document.getElementById('hexBInfo').textContent.includes('fw-2.bin')")
+    t.call("compare()")
+    t.wait_for("() => /differ/.test(document.getElementById('diffStats').innerText)")
+    s = t.text("diffStats")
+    expect("5 bytes differ" in s, s)
+    expect("first at 0x0000001F" in s, s)
+    expect("1 KB" in s or "1,024" in s, "sizes missing: " + s)
+    expect("sizes differ" in t.text("outputSection").lower(), "size warning missing")
+    rows = t.count("#hexRows .hx-row")
+    expect(0 < rows < 120, f"rows rendered: {rows}")
+    first = t.call("document.querySelector('#hexRows .hx-row .hx-off').textContent")
+    eq(first, "00000000", "first offset")
+    # row 0x10 holds byte 0x1F: left 1F highlighted, right AA highlighted, ASCII columns present
+    row = t.call("(() => { const r = [...document.querySelectorAll('#hexRows .hx-row')].find(x => x.querySelector('.hx-off').textContent === '00000010'); return { l: [...r.querySelectorAll('.hx-hex.l .d')].map(e => e.textContent.trim()), r: [...r.querySelectorAll('.hx-hex.r .d')].map(e => e.textContent.trim()), asc: r.querySelector('.hx-asc.l').textContent.length }; })()")
+    eq(row["l"], ["1F"], "left highlighted byte"); eq(row["r"], ["AA"], "right highlighted byte"); eq(row["asc"], 16, "ASCII column width")
+    # next / previous difference
+    t.call("navDiff(1)"); t.wait(150)
+    eq(t.text("hunkCounter"), "1 / 3", "counter after next")
+    expect(t.count("#hexRows .hx-row.hx-cur") >= 1, "current difference not marked")
+    t.call("navDiff(1)"); t.wait(150)
+    eq(t.text("hunkCounter"), "2 / 3", "second difference")
+    cur = t.call("document.querySelector('#hexRows .hx-row.hx-cur .hx-off').textContent")
+    eq(cur, "00000200", "second difference row")
+    t.call("navDiff(-1)"); t.wait(150)
+    eq(t.text("hunkCounter"), "1 / 3", "previous difference")
+    # jump to an offset (hex or decimal)
+    t.set("hexJump", "0x300"); t.click("#btnHexJump"); t.wait(150)
+    eq(t.call("document.querySelector('#hexRows .hx-row.hx-target .hx-off').textContent"), "00000300", "jump to 0x300")
+    t.set("hexJump", "1024"); t.click("#btnHexJump"); t.wait(150)
+    eq(t.call("document.querySelector('#hexRows .hx-row.hx-target .hx-off').textContent"), "00000400", "jump to decimal 1024")
+    tail = t.call("[...document.querySelectorAll('#hexRows .hx-row.hx-target .hx-hex.r .d')].map(e => e.textContent.trim())")
+    eq(tail, ["41", "42"], "bytes only on the right are highlighted")
+    t.set("hexJump", "zzz"); t.click("#btnHexJump"); t.wait(100)
+    expect("offset" in t.text("hexJumpMsg").lower(), "bad offset not reported")
+
+
+@case("text-diff-checker", "maximal", "feature 24: two 160 MB files are read in slices, scanned with progress, and stay scrollable")
+def _(t):
+    t.call("setMode('hex')")
+    mb = 1 << 20
+    # parts are shared buffers, so the page never holds the files in one array
+    t.page.evaluate("""() => { const z = new Uint8Array(8 << 20); const one = new Uint8Array([7]);
+      const mk = (name, extra) => { const parts = []; for (let i = 0; i < 20; i++) parts.push(z); parts.push(...extra); return new File(parts, name); };
+      const set = (id, f) => { const dt = new DataTransfer(); dt.items.add(f); const i = document.getElementById(id); i.files = dt.files; i.dispatchEvent(new Event('change')); };
+      set('hexAFile', mk('disk-a.img', [z]));
+      set('hexBFile', mk('disk-b.img', [one, z.subarray(1)])); }""")
+    t.call("compare()")
+    t.wait_for("() => /differ/.test(document.getElementById('diffStats').innerText)", timeout=10000)
+    s = t.text("diffStats")
+    expect("1 byte differs" in s, s)
+    expect("first at 0x0A000000" in s, s)
+    expect(t.count("#hexRows .hx-row") < 120, "rows are not virtual")
+    t.set("hexJump", "0x09FFFFF0"); t.click("#btnHexJump"); t.wait(400)
+    t.wait_for("() => !!document.querySelector('#hexRows .hx-row.hx-target')")
+    expect(t.call("[...document.querySelectorAll('#hexRows .hx-row .hx-hex.r .d')].map(e => e.textContent.trim()).join(',')") == "07", "byte at 0x0A000000 not shown as different")
+    t.call("navDiff(1)"); t.wait(300)
+    eq(t.call("document.querySelector('#hexRows .hx-row.hx-cur .hx-off').textContent"), "0A000000", "next difference in a big file")
+    eq(t.call("hexSource('a').bytes === undefined && hexSource('a').size"), 168 * mb, "left file kept as a File, read by slices")
+
+
+@case("text-diff-checker", "edge", "feature 24: empty, identical, single-sided and folder-opened binaries")
+def _(t):
+    t.call("setMode('hex')")
+    t.page.evaluate(DIFF_HEX_SET, ["a", [[]], "empty.bin"])
+    t.page.evaluate(DIFF_HEX_SET, ["b", [[0, 1, 2]], "three.bin"])
+    t.wait_for("() => document.getElementById('hexBInfo').textContent.includes('three.bin')")
+    t.call("compare()"); t.wait_for("() => /differ/.test(document.getElementById('diffStats').innerText)")
+    expect("3 bytes differ" in t.text("diffStats") and "first at 0x00000000" in t.text("diffStats"), t.text("diffStats"))
+    t.page.evaluate(DIFF_HEX_SET, ["a", [[0, 1, 2]], "same.bin"])
+    t.wait_for("() => document.getElementById('hexAInfo').textContent.includes('same.bin')")
+    t.call("compare()"); t.wait_for("() => /identical/i.test(document.getElementById('diffStats').innerText)")
+    eq(t.text("hunkCounter"), "0 / 0", "no differences to step through")
+    # a binary file opened from a folder comparison lands in the hex view
+    t.call("openHex(new Uint8Array([0, 0, 0, 5]), new Uint8Array([0, 0, 0, 6]), 'lib/a.so', 'lib/a.so')")
+    t.wait_for("() => /differ/.test(document.getElementById('diffStats').innerText)")
+    eq(t.call("mode"), "hex", "mode")
+    expect("first at 0x00000003" in t.text("diffStats") and "lib/a.so" in t.text("resultTitle"), t.text("resultTitle") + " " + t.text("diffStats"))
+    # Clear empties the hex inputs too
+    t.call("clearInputs()")
+    expect("Drop any file" in t.text("hexAInfo"), "hex input not cleared")
+
+
+DIFF_IMG_JS = """() => {
+  // draw(ctx) paints the picture; type is a MIME type the canvas can encode
+  window._mkimg = (w, h, draw, type, name) => new Promise(res => { const c = document.createElement('canvas'); c.width = w; c.height = h; const x = c.getContext('2d'); draw(x); c.toBlob(b => res(new File([b], name, { type: b.type })), type, 1); });
+  window._bmp = (w, h, rgb) => { const row = Math.ceil(w * 3 / 4) * 4, size = 54 + row * h, u = new Uint8Array(size), v = new DataView(u.buffer);
+    u[0] = 66; u[1] = 77; v.setUint32(2, size, true); v.setUint32(10, 54, true); v.setUint32(14, 40, true); v.setInt32(18, w, true); v.setInt32(22, h, true); v.setUint16(26, 1, true); v.setUint16(28, 24, true); v.setUint32(34, row * h, true);
+    for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) { const o = 54 + y * row + x * 3; u[o] = rgb[2]; u[o + 1] = rgb[1]; u[o + 2] = rgb[0]; } return u; };
+  window._gif1 = () => Uint8Array.from(atob('R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=='), c => c.charCodeAt(0));
+  window._setImg = (side, file) => { const dt = new DataTransfer(); dt.items.add(file); const i = document.getElementById(side === 'a' ? 'imgAFile' : 'imgBFile'); i.files = dt.files; i.dispatchEvent(new Event('change')); };
+}"""
+IMG_RED = "x => { x.fillStyle = 'rgb(200,0,0)'; x.fillRect(0, 0, 100, 100); }"
+
+
+@case("text-diff-checker", "typical", "feature 25: image compare: side by side, slider, onion skin, difference, % changed and the details of both files")
+def _(t):
+    t.page.evaluate(DIFF_IMG_JS)
+    t.call("setMode('image')")
+    expect(t.visible("#imgAPane") and t.visible("#imgBPane"), "image inputs not shown")
+    t.page.evaluate(f"""async () => {{ _setImg('a', await _mkimg(100, 100, {IMG_RED}, 'image/png', 'before.png'));
+      _setImg('b', await _mkimg(100, 100, x => {{ ({IMG_RED})(x); x.fillStyle = 'rgb(0,0,255)'; x.fillRect(10, 20, 10, 10); }}, 'image/png', 'after.png')); }}""")
+    t.wait_for("() => document.getElementById('imgBInfo').textContent.includes('after.png')")
+    t.call("compare()")
+    t.wait_for("() => /changed|identical/i.test(document.getElementById('diffStats').innerText)")
+    s = t.text("diffStats")
+    expect("1% of pixels changed" in s and "100 of 10,000" in s, s)
+    info = t.text("imgInfo")
+    expect(info.count("PNG") == 2 and info.count("100 × 100") == 2 and "File size" in info, info)
+    expect("dimensions differ" not in t.text("imagePanel").lower(), "false dimension warning")
+    # side by side shows both images
+    eq(t.count("#imgStage canvas"), 2, "side by side")
+    # slider / swipe
+    t.select("imgView", "slider"); t.wait(100)
+    t.set("imgSlider", "30", "input"); t.wait(50)
+    expect("30%" in t.call("document.getElementById('imgTop').style.clipPath"), t.call("document.getElementById('imgTop').style.clipPath"))
+    # swipe: pointer down on the picture and drag (coordinates read at the moment of the event)
+    t.call("""(() => { const st = document.getElementById('imgStage'), o = st.querySelector('.img-overlay');
+      const at = f => { const r = o.getBoundingClientRect(); return { clientX: r.left + r.width * f, clientY: r.top + r.height / 2, pointerId: 1, bubbles: true, isPrimary: true }; };
+      o.dispatchEvent(new PointerEvent('pointerdown', at(0.8))); st.dispatchEvent(new PointerEvent('pointermove', at(0.75))); st.dispatchEvent(new PointerEvent('pointerup', at(0.75))); })()""")
+    v = float(t.val("imgSlider"))
+    expect(74 <= v <= 76, f"dragging the picture did not move the slider: {v}")
+    expect("75" in t.call("document.getElementById('imgHandle').style.left"), "handle did not follow")
+    # onion skin
+    t.select("imgView", "onion"); t.wait(100)
+    expect(t.visible("#imgOpacityLabel"), "opacity control hidden in onion view")
+    t.set("imgOpacity", "25", "input"); t.wait(50)
+    eq(t.call("document.getElementById('imgTop').style.opacity"), "0.25", "onion opacity")
+    # difference image
+    t.select("imgView", "diff"); t.wait(100)
+    px = t.call("(() => { const c = document.querySelector('#imgStage canvas.img-diff'); const d = c.getContext('2d').getImageData(15, 25, 1, 1).data; const e = c.getContext('2d').getImageData(60, 60, 1, 1).data; return [c.width, Array.from(d), Array.from(e)]; })()")
+    eq(px[0], 100, "diff canvas width"); eq(px[1], [255, 0, 160, 255], "changed pixel marked"); expect(px[2] != [255, 0, 160, 255], "unchanged pixel marked")
+
+
+@case("text-diff-checker", "typical", "feature 25: the pixel tolerance ignores small colour shifts such as re-compression")
+def _(t):
+    t.page.evaluate(DIFF_IMG_JS)
+    t.call("setMode('image')")
+    t.page.evaluate(f"""async () => {{ _setImg('a', await _mkimg(100, 100, {IMG_RED}, 'image/png', 'a.png'));
+      _setImg('b', await _mkimg(100, 100, x => {{ ({IMG_RED})(x); x.fillStyle = 'rgb(203,2,0)'; x.fillRect(0, 0, 20, 20); x.fillStyle = 'rgb(0,0,255)'; x.fillRect(50, 50, 10, 10); }}, 'image/png', 'b.png')); }}""")
+    t.wait_for("() => document.getElementById('imgBInfo').textContent.includes('b.png')")
+    t.call("compare()"); t.wait_for("() => /changed/i.test(document.getElementById('diffStats').innerText)")
+    expect("5% of pixels changed" in t.text("diffStats"), t.text("diffStats"))
+    t.set("imgTol", "5", "input"); t.wait_for("() => /\\b1% of pixels changed/.test(document.getElementById('diffStats').innerText)")
+    expect("tolerance 5" in t.text("diffStats"), "tolerance not stated: " + t.text("diffStats"))
+
+
+@case("text-diff-checker", "edge", "feature 25: JPEG, WebP, GIF, BMP and SVG; mismatched dimensions, misnamed files and non-images")
+def _(t):
+    t.page.evaluate(DIFF_IMG_JS)
+    t.call("setMode('image')")
+    t.page.evaluate(f"""async () => {{ _setImg('a', await _mkimg(100, 100, {IMG_RED}, 'image/jpeg', 'a.jpg')); _setImg('b', await _mkimg(120, 100, {IMG_RED}, 'image/webp', 'b.webp')); }}""")
+    t.wait_for("() => document.getElementById('imgBInfo').textContent.includes('b.webp')")
+    t.call("compare()"); t.wait_for("() => /changed|identical/i.test(document.getElementById('diffStats').innerText)")
+    info = t.text("imgInfo")
+    expect("JPEG" in info and "WebP" in info and "100 × 100" in info and "120 × 100" in info, info)
+    expect("dimensions differ" in t.text("imagePanel").lower(), "no dimension warning")
+    # GIF and BMP
+    t.page.evaluate("() => { _setImg('a', new File([_gif1()], 'dot.gif')); _setImg('b', new File([_bmp(2, 2, [10, 200, 30])], 'tile.bmp')); }")
+    t.wait_for("() => document.getElementById('imgBInfo').textContent.includes('tile.bmp')")
+    t.call("compare()"); t.wait_for("() => /GIF/.test(document.getElementById('imgInfo').innerText) && /BMP/.test(document.getElementById('imgInfo').innerText)")
+    expect("1 × 1" in t.text("imgInfo") and "2 × 2" in t.text("imgInfo"), t.text("imgInfo"))
+    # SVG, compared as rendered; the source can also be compared as text
+    t.page.evaluate("""() => { const svg = f => new File([`<?xml version="1.0"?>\n<svg xmlns="http://www.w3.org/2000/svg" width="40" height="20"><rect width="40" height="20" fill="${f}"/></svg>`], 'logo.svg');
+      _setImg('a', svg('#ff0000')); _setImg('b', svg('#0000ff')); }""")
+    t.wait_for("() => document.getElementById('imgAInfo').textContent.includes('logo.svg') && document.getElementById('imgBInfo').textContent.includes('logo.svg')")
+    t.call("compare()"); t.wait_for("() => /SVG/.test(document.getElementById('imgInfo').innerText)")
+    expect("40 × 20" in t.text("imgInfo") and "100% of pixels changed" in t.text("diffStats"), t.text("imgInfo") + " | " + t.text("diffStats"))
+    t.click("#btnSvgText"); t.wait(200)
+    eq(t.call("mode"), "text", "SVG source compared as text")
+    expect("#ff0000" in t.val("text1") and "#0000ff" in t.val("text2"), "SVG source not loaded")
+    # a PNG named .jpg is labelled by its bytes, and the name mismatch is noted
+    t.call("setMode('image')")
+    t.page.evaluate(f"""async () => {{ const f = await _mkimg(10, 10, x => {{}}, 'image/png', 'x.png'); _setImg('a', new File([f], 'photo.jpg')); _setImg('b', new File([f], 'photo.png')); }}""")
+    t.wait_for("() => document.getElementById('imgAInfo').textContent.includes('photo.jpg')")
+    t.call("compare()"); t.wait_for("() => /identical/i.test(document.getElementById('diffStats').innerText)")
+    expect("named .jpg" in t.text("imagePanel"), "misnamed file not noted: " + t.text("imagePanel")[:300])
+    # not an image at all
+    t.page.evaluate("() => _setImg('b', new File(['just text'], 'notes.txt'))")
+    t.wait_for("() => document.getElementById('imgBInfo').textContent.includes('notes.txt')")
+    t.call("compare()"); t.wait_for("() => document.getElementById('errorBanner').classList.contains('active')")
+    expect("notes.txt" in t.text("errorText") and "image" in t.text("errorText"), t.text("errorText"))
+    # images opened from a folder comparison
+    t.call("clearInputs()")
+    t.page.evaluate(f"""async () => {{ const a = new Uint8Array(await (await _mkimg(4, 4, {IMG_RED}, 'image/png', 'i.png')).arrayBuffer()); openImages(a, a, 'img/icon.png', 'img/icon.png'); }}""")
+    t.wait_for("() => /identical/i.test(document.getElementById('diffStats').innerText)")
+    expect("img/icon.png" in t.text("resultTitle"), t.text("resultTitle"))
+
+
+def _xlsx_check(path):
+    """Opens a downloaded .xlsx with zipfile (CRC check) and returns {part: xml}."""
+    import zipfile
+    z = zipfile.ZipFile(path)
+    expect(z.testzip() is None, "xlsx: bad CRC")
+    return {n: z.read(n).decode("utf-8") for n in z.namelist()}
+
+
+@case("text-diff-checker", "typical", "feature 26: table exports: CSV with original/modified columns and .xlsx with highlighted cells, both stating options and date")
+def _(t):
+    t.call("setMode('table')")
+    t.set("text1", "id,name,qty\n1,Pen,5\n2,Ink,1\n")
+    t.set("text2", "id,name,qty\n1,Pen,6\n3,Pad,2\n")
+    t.wait(300); t.select("keyCol", "id")
+    t.call("document.getElementById('tableOpts').open = true"); t.page.check("#tNumeric")
+    t.call("run()"); t.wait(200)
+    expect(t.visible("#btnCsv") and t.visible("#btnXlsx"), "table export buttons hidden")
+    with t.page.expect_download() as dl:
+        t.click("#btnCsv")
+    csv = open(dl.value.path(), encoding="utf-8").read()
+    expect(dl.value.suggested_filename.endswith(".csv"), dl.value.suggested_filename)
+    expect("Generated,20" in csv and "Options,Rows matched by id" in csv and "numbers by value" in csv, csv[:400])
+    expect("Status,Key,id (original),id (modified),name (original),name (modified),qty (original),qty (modified),Changed columns" in csv, csv)
+    expect("changed,1,1,1,Pen,Pen,5,6,qty" in csv and "added,3,,3,,Pad,,2," in csv and "removed,2,2,,Ink,,1,," in csv, csv)
+    with t.page.expect_download() as dl:
+        t.click("#btnXlsx")
+    expect(dl.value.suggested_filename.endswith(".xlsx"), dl.value.suggested_filename)
+    parts = _xlsx_check(dl.value.path())
+    wb = parts["xl/workbook.xml"]
+    expect('name="About"' in wb and 'name="Differences"' in wb, wb)
+    about, diff = parts["xl/worksheets/sheet1.xml"], parts["xl/worksheets/sheet2.xml"]
+    expect("Rows matched by id" in about and "Generated" in about, about[:500])
+    expect('<c r="H2" t="inlineStr" s="2"><is><t xml:space="preserve">6</t>' in diff, "changed cell not highlighted: " + diff[:800])
+    # a real spreadsheet reader opens it
+    vals = t.page.evaluate("""async b64 => { await loadXlsx(); const wb = XLSX.read(Uint8Array.from(atob(b64), c => c.charCodeAt(0)), { type: 'array' });
+      return [wb.SheetNames, XLSX.utils.sheet_to_json(wb.Sheets.Differences, { header: 1 })[1]]; }""", __import__("base64").b64encode(open(dl.value.path(), "rb").read()).decode())
+    eq(vals[0], ["About", "Differences"], "sheet names")
+    eq(vals[1][:2] + vals[1][-3:], ["changed", "1", "5", "6", "qty"], "first data row")
+
+
+@case("text-diff-checker", "typical", "feature 26: a workbook comparison exports every sheet to one .xlsx")
+def _(t):
+    t.call(DIFF_BOOK_JS)
+    t.wait_for("() => document.getElementById('text2').value.includes('007') && document.getElementById('text1').value.includes('007')", 15000)
+    t.call("run()"); t.wait_for("() => /sheets? compared/.test(document.getElementById('diffStats').innerText)")
+    with t.page.expect_download() as dl:
+        t.click("#btnXlsx")
+    parts = _xlsx_check(dl.value.path())
+    wb = parts["xl/workbook.xml"]
+    expect('name="About"' in wb and 'name="Orders"' in wb and 'name="Customers"' in wb, wb)
+    expect("Clients" in parts["xl/worksheets/sheet1.xml"] and "New" in parts["xl/worksheets/sheet1.xml"], "renamed/added sheets not listed in About")
+    with t.page.expect_download() as dl:
+        t.click("#btnCsv")
+    csv = open(dl.value.path(), encoding="utf-8").read()
+    expect("Sheet,Orders" in csv and "Sheet,Customers" in csv and "changed,007" in csv, csv[:600])
+
+
+@case("text-diff-checker", "typical", "feature 26: JSON/YAML path changes export as CSV and JSON; text and folder reports keep options and date")
+def _(t):
+    t.call("setMode('struct')")
+    t.set("text1", '{"id": 12345678901234567890, "tags": ["x"], "on": true}')
+    t.set("text2", '{"id": 12345678901234567891, "tags": [], "on": "yes"}')
+    t.call("run()"); t.wait_for("() => /changed/.test(document.getElementById('diffStats').innerText)")
+    expect(t.visible("#btnJson"), "JSON export hidden")
+    with t.page.expect_download() as dl:
+        t.click("#btnCsv")
+    csv = open(dl.value.path(), encoding="utf-8").read()
+    expect("Options,Arrays compared by position" in csv and "$.id,changed,12345678901234567890,12345678901234567891" in csv, csv)
+    with t.page.expect_download() as dl:
+        t.click("#btnJson")
+    js = open(dl.value.path(), encoding="utf-8").read()
+    expect(dl.value.suggested_filename.endswith(".json"), dl.value.suggested_filename)
+    expect('"original": 12345678901234567890' in js and '"generated": "20' in js and '"options": "Arrays compared by position"' in js, js[:500])
+    # text: the HTML report states the options and the date; the patch stays a clean patch
+    t.call("setMode('text')"); t.set("text1", "a\nb\n"); t.set("text2", "a\nc\n"); t.page.check("#ignoreCase"); t.call("run()"); t.wait(200)
+    with t.page.expect_download() as dl:
+        t.click("#btnReport")
+    html = open(dl.value.path(), encoding="utf-8").read()
+    expect("Options: ignore case" in html and "Generated 20" in html, html[-900:])
+    with t.page.expect_download() as dl:
+        t.click("#btnPatchDl")
+    patch = open(dl.value.path(), encoding="utf-8").read()
+    expect(patch.startswith("--- ") and "-b" in patch and "+c" in patch, patch)
+
+
+@case("text-diff-checker", "typical", "feature 26: hex exports the differing byte ranges (CSV and HTML); images export an HTML report and the difference image")
+def _(t):
+    t.call("setMode('hex')")
+    a = list(range(256)) * 4
+    b = list(a); b[0x1F] = 0xAA; b[0x200] = 0xFF; b[0x201] = 0xFE; b += [0x41, 0x42]
+    t.page.evaluate(DIFF_HEX_SET, ["a", [a], "fw-1.bin"]); t.page.evaluate(DIFF_HEX_SET, ["b", [b], "fw-2.bin"])
+    t.wait_for("() => document.getElementById('hexBInfo').textContent.includes('fw-2.bin')")
+    t.call("compare()"); t.wait_for("() => /differ/.test(document.getElementById('diffStats').innerText)")
+    expect(t.visible("#btnCsv") and not t.visible("#btnPatch"), "hex export buttons")
+    with t.page.expect_download() as dl:
+        t.click("#btnCsv")
+    csv = open(dl.value.path(), encoding="utf-8").read()
+    expect("Generated,20" in csv and "Left,fw-1.bin (1024 bytes)" in csv and "Differing bytes,5" in csv, csv[:400])
+    expect("0x0000001F,31,0x0000001F,1,1F,AA" in csv and "0x00000200,512,0x00000201,2,00 01,FF FE" in csv and "0x00000400,1024,0x00000401,2,,41 42" in csv, csv)
+    with t.page.expect_download() as dl:
+        t.click("#btnReport")
+    html = open(dl.value.path(), encoding="utf-8").read()
+    expect("0x0000001F" in html and "5 bytes differ" in html and "Generated 20" in html and "byte-by-byte" in html.lower(), html[-1200:])
+    # images
+    t.page.evaluate(DIFF_IMG_JS)
+    t.call("setMode('image')")
+    t.page.evaluate(f"""async () => {{ _setImg('a', await _mkimg(40, 30, {IMG_RED}, 'image/png', 'a.png'));
+      _setImg('b', await _mkimg(40, 30, x => {{ ({IMG_RED})(x); x.fillStyle = '#00f'; x.fillRect(0, 0, 4, 3); }}, 'image/png', 'b.png')); }}""")
+    t.wait_for("() => document.getElementById('imgBInfo').textContent.includes('b.png')")
+    t.call("compare()"); t.wait_for("() => /changed/.test(document.getElementById('diffStats').innerText)")
+    with t.page.expect_download() as dl:
+        t.click("#btnReport")
+    html = open(dl.value.path(), encoding="utf-8").read()
+    expect(html.count("data:image/png;base64,") == 3 and "1% of pixels changed" in html and "Pixel tolerance 0" in html and "Generated 20" in html, html[-1500:])
+    with t.page.expect_download() as dl:
+        t.click("#btnDiffPng")
+    expect(open(dl.value.path(), "rb").read(8) == b"\x89PNG\r\n\x1a\n", "difference image is not a PNG")
+
+
 @case("text-diff-checker", "typical", "audit: ignore-whitespace/case and highlight options re-run the diff live")
 def _(t):
     t.set("text1", "Hello  World\nsecond line\n")
@@ -2054,7 +2822,7 @@ def _(t):
     t.set("text1", "x();\nmodule.exports = { calculateTotal };\n")
     t.set("text2", "x();\nfunction round2(n) { return Math.round(n * 100) / 100; }\n\nmodule.exports = { calculateTotal, round2 };\n")
     t.click("#btnRun"); t.wait(200)
-    pairs = t.call("[...document.querySelectorAll('#leftPanel .diff-line, #leftPanel tr, #leftPanel > div')].map(e=>e.innerText).join('\\n')")
+    pairs = t.call("[...document.querySelectorAll('#splitPanel .sd-l')].map(e=>e.innerText).join('\\n')")
     rows = t.call("(() => { const r = []; document.querySelectorAll('.word-removed, .w-del, del, .seg-del').forEach(e => r.push(e.textContent)); return r; })()")
     # 'module.exports' itself must not be marked removed: only the inserted ', round2' differs
     expect(not any('module.exports' in x for x in rows), f"module.exports was highlighted as removed: {rows}")
