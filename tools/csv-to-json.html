@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="Convert CSV to a JSON array or JSON back to CSV in your browser. Auto-detects comma, semicolon, tab and pipe delimiters and handles quoted fields." />
+  <meta name="description" content="Convert CSV and Excel to JSON or JSON Lines, and JSON back to CSV or .xlsx, in your browser: every sheet, nested a.b headers, column picking, 100 MB+ files." />
   <title>CSV to JSON Converter Online (and JSON to CSV) | Layerbit</title>
   <meta name="google-adsense-account" content="ca-pub-6072772587431629" />
   <link rel="preload" href="../fonts/space-grotesk-latin.woff2" as="font" type="font/woff2" crossorigin />
@@ -26,7 +26,7 @@
   <meta property="og:url" content="https://layerbit.co.in/tools/csv-to-json.html" />
   <meta property="og:site_name" content="Layerbit" />
   <meta property="og:title" content="CSV to JSON Converter Online (and JSON to CSV) | Layerbit" />
-  <meta property="og:description" content="Convert CSV to a JSON array or JSON back to CSV in your browser. Auto-detects comma, semicolon, tab and pipe delimiters and handles quoted fields." />
+  <meta property="og:description" content="Convert CSV and Excel to JSON or JSON Lines, and JSON back to CSV or .xlsx, in your browser: every sheet, nested a.b headers, column picking, 100 MB+ files." />
   <meta property="og:image" content="https://layerbit.co.in/images/og/tools-csv-to-json.jpg" />
   <meta property="og:image:type" content="image/jpeg" />
   <meta property="og:image:width" content="1200" />
@@ -35,7 +35,7 @@
   <meta property="og:locale" content="en" />
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="CSV to JSON Converter Online (and JSON to CSV) | Layerbit" />
-  <meta name="twitter:description" content="Convert CSV to a JSON array or JSON back to CSV in your browser. Auto-detects comma, semicolon, tab and pipe delimiters and handles quoted fields." />
+  <meta name="twitter:description" content="Convert CSV and Excel to JSON or JSON Lines, and JSON back to CSV or .xlsx, in your browser: every sheet, nested a.b headers, column picking, 100 MB+ files." />
   <meta name="twitter:image" content="https://layerbit.co.in/images/og/tools-csv-to-json.jpg" />
   <meta name="twitter:image:alt" content="CSV to JSON Converter Online (and JSON to CSV)" />
   <meta name="theme-color" content="#0a0c10" />
@@ -48,7 +48,7 @@
       "@id": "https://layerbit.co.in/tools/csv-to-json.html#app",
       "name": "CSV to JSON Converter",
       "url": "https://layerbit.co.in/tools/csv-to-json.html",
-      "description": "Convert CSV to a JSON array or JSON back to CSV in your browser. Auto-detects comma, semicolon, tab and pipe delimiters and handles quoted fields.",
+      "description": "Convert CSV and Excel (every sheet) to JSON or JSON Lines, and JSON back to CSV or .xlsx, in your browser. Nested a.b headers, column picking, editable table, 100 MB+ files.",
       "applicationCategory": "DeveloperApplication",
       "operatingSystem": "Any (runs in the browser)",
       "browserRequirements": "Requires JavaScript",
@@ -60,7 +60,20 @@
       },
       "publisher": {
         "@id": "https://layerbit.co.in/#organization"
-      }
+      },
+      "featureList": [
+        "CSV to JSON array or JSON Lines",
+        "JSON or JSON Lines to CSV",
+        "Every sheet of an Excel workbook",
+        "Excel .xlsx export with typed cells",
+        "Nested JSON from dotted headers and flattening back",
+        "Choose, rename and reorder columns",
+        "Editable table preview",
+        "Streams files of 100 MB and more in a Web Worker",
+        "Type inference that never changes a value",
+        "Formula-safe CSV export",
+        "Runs entirely in the browser"
+      ]
     },
     {
       "@type": "BreadcrumbList",
@@ -124,10 +137,58 @@
         },
         {
           "@type": "Question",
+          "name": "Can it read Excel files?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes. Drop or upload an .xlsx, .xlsm, .xls or .ods file and every sheet is listed with its row count. Pick one sheet to see it as CSV (where you can edit it, choose columns and set types), or pick All sheets to get one JSON object with a key per sheet; with JSON Lines output, each record carries a _sheet field instead. Cells are read as Excel shows them: dates as formatted, formulas as their last calculated value. The workbook is read by the open-source SheetJS library inside your browser."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What are JSON Lines, and when should I use them?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "JSON Lines (also called NDJSON) puts one JSON object on each line instead of wrapping everything in one array. Log pipelines, BigQuery, Elasticsearch bulk loads and most streaming tools read it, because a program can process one line at a time without loading the whole file. Choose JSON Lines as the output format; in JSON → CSV mode, JSON Lines input is recognised automatically, and a broken line is reported by its line number."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How do I get nested JSON from a flat CSV?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Name the columns by path and switch on Nest a.b headers: customer.name and customer.city become {\"customer\": {\"name\": …, \"city\": …}}, and items.0.sku, items.1.sku become an array. If one column holds a value where another needs an object (a and a.b), that column is kept flat and listed above the input, rather than one silently overwriting the other. Going the other way, Flatten nested turns nested JSON into exactly these column names, so the two directions round-trip."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Can I choose, rename or reorder columns?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes, in both directions. Under the input, each column has a box to include it, a name you can change (press Enter), arrows to move it, and in CSV → JSON a type. The choices stay while you edit the data or load a file with the same columns, and new columns are added at the end."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Can I edit the data before converting?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes. Below the converter, the table preview shows every row (only the rows on screen are drawn, so 100,000 rows scroll smoothly). Double-click a cell, or select it and press Enter, type, and press Enter; the change goes back into the CSV or JSON input and the output updates. Escape cancels. In JSON → CSV mode a number stays a number when you type a number."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How large a file can it convert?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Files of 20 MB and more are not loaded into the text box. A background worker reads them in slices and writes the result straight into the file you save, while the page shows progress and the first 100 records. In our tests a 150 MB CSV with 2 million rows became 349 MB of JSON in about 17 seconds, and a 122 MB JSON Lines file became CSV in 16 seconds, without uploading anything. The limit is your device's memory for the finished file. A single JSON array (not JSON Lines) is read whole inside the worker, so for very large JSON prefer JSON Lines."
+          }
+        },
+        {
+          "@type": "Question",
           "name": "Can it convert JSON back to CSV too?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "Yes. Switch to \"JSON → CSV\" mode and paste a JSON array of objects. The header row is built from the union of every key across all objects, so records with slightly different fields (an optional notes column on some rows, for example) still produce one clean table instead of dropping data. Nested objects or arrays inside a field are stringified into that cell rather than breaking the export."
+            "text": "Yes. Switch to \"JSON → CSV\" mode and paste a JSON array of objects, or JSON Lines (one object per line; the format is detected). The header row is built from the union of every key across all objects, so records with slightly different fields (an optional notes column on some rows, for example) still produce one clean table instead of dropping data. With Flatten nested on (the default), nested objects and arrays become columns named by their path, such as user.name and tags.0; switch it off to write each nested value as JSON in one cell. Save .xlsx writes an Excel workbook instead of CSV."
           }
         }
       ]
@@ -146,7 +207,7 @@
   <link rel="manifest" href="../manifest.json" />
   <link rel="alternate" type="application/atom+xml" title="Layerbit developer guides" href="https://layerbit.co.in/feed.xml" />
   <link rel="apple-touch-icon" href="../apple-touch-icon.png" />
-  <link rel="stylesheet" href="../css/base.css?v=7bd41a021f" />
+  <link rel="stylesheet" href="../css/base.css?v=2b24d32e4f" />
 
   <style>
 
@@ -368,6 +429,25 @@
     .col-types .ct-label { font-weight: 600; }
     .col-types .ct-item { display: inline-flex; gap: 6px; align-items: center; color: var(--text-main, #e2e8f0); }
 
+    .col-types .ct-item { background: rgba(255,255,255,0.03); border: 1px solid var(--card-border); border-radius: 8px; padding: 3px 6px; }
+    .col-types .ct-item.off { opacity: 0.5; }
+    .col-types .ct-name { background: rgba(0,0,0,0.3); border: 1px solid var(--card-border); color: var(--text-main); border-radius: 6px; padding: 3px 6px; font-family: inherit; font-size: 0.95em; outline: none; min-width: 3em; }
+    .col-types .ct-name:focus { border-color: var(--accent-main); }
+    .col-types .ct-move { background: transparent; border: 1px solid var(--card-border); color: var(--text-muted); border-radius: 6px; width: 24px; height: 24px; line-height: 1; cursor: pointer; font-size: 1.05em; }
+    .col-types .ct-move:hover { color: #fff; border-color: var(--accent-main); }
+    .big-note { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; padding: 10px 20px; background: rgba(56,189,248,0.08); border-bottom: 1px solid rgba(56,189,248,0.35); color: var(--text-main); font-size: 0.88em; }
+    .big-note[hidden] { display: none; }
+    .big-note svg { flex-shrink: 0; width: 18px; height: 18px; color: var(--accent-main); }
+    .big-note .btn-inline { padding: 3px 10px; font-size: 0.95em; margin-left: 6px; }
+    #sheetWrap[hidden] { display: none; }
+    textarea.editor[readonly] { opacity: 0.75; }
+    .grid-section { max-width: 1400px; width: 100%; margin: -40px auto 60px auto; background: var(--card-bg, rgba(15,23,42,0.6)); border: 1px solid var(--card-border); border-radius: 16px; overflow: hidden; }
+    .grid-section[hidden] { display: none; }
+    .grid-head { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 12px 20px; border-bottom: 1px solid var(--card-border); font-weight: 600; }
+    .grid-head svg { width: 18px; height: 18px; color: var(--accent-main); }
+    .grid-hint { font-weight: 400; color: var(--text-muted); font-size: 0.85em; }
+    .grid-host { height: 320px; font-family: 'Fira Code', monospace; font-size: 0.85em; }
+
   </style>
 </head>
 <body>
@@ -401,7 +481,7 @@
   <main id="main" class="page-main">
   <div class="hero">
     <h1>CSV to JSON Converter</h1>
-    <p>Convert CSV to JSON and JSON to CSV with delimiter detection and correct quoting — spreadsheet exports in, API-ready arrays out, all client-side.</p>
+    <p>Convert CSV and Excel to JSON or JSON Lines, and JSON back to CSV or .xlsx. Every sheet of a workbook, nested objects from <code>a.b</code> headers, columns you pick and rename, an editable table, and files of 100 MB and more streamed in your browser. Nothing is uploaded.</p>
   </div>
 
   <div class="mode-selector">
@@ -415,6 +495,9 @@
       <div class="pane-header">
         <div class="pane-title" id="inputPaneTitle"><i data-lucide="sheet"></i> Raw CSV Data</div>
         <div class="btn-group">
+          <label class="toggle-wrapper" id="sheetWrap" hidden title="The workbook's sheets. All sheets gives one JSON object with a key per sheet.">
+            <select id="sheetSelect" class="mini-select" aria-label="Sheet"></select>
+          </label>
           <label class="toggle-wrapper" id="delimWrapper" title="Field separator. Auto looks at the first lines and picks the most consistent one.">
             <select id="delimSelect" class="mini-select">
               <option value="auto" selected>Auto delimiter</option>
@@ -428,8 +511,10 @@
           <label class="toggle-wrapper" id="inferTypesWrapper" title="Automatically convert '123' to numbers and 'true' to booleans">
             <input type="checkbox" id="inferTypes" checked> Smart Types
           </label>
+          <label class="toggle-wrapper" id="nestWrapper" title="Headers such as user.name and tags.0 become nested objects and arrays: {&quot;user&quot;: {&quot;name&quot;: …}, &quot;tags&quot;: […]}."><input type="checkbox" id="nestKeys"> Nest a.b headers</label>
+          <label class="toggle-wrapper" id="flattenWrapper" style="display:none;" title="Nested objects and arrays become columns named by their path (user.name, tags.0). Off: each nested value is written as JSON in one cell."><input type="checkbox" id="flattenKeys" checked> Flatten nested</label>
           <label class="toggle-wrapper" id="csvSafeWrapper" style="display:none;" title="Spreadsheets run a cell that starts with =, +, - or @ as a formula. On: such values get a leading apostrophe so they open as text (plain numbers like -5 are left alone). Off: the exact text."><input type="checkbox" id="csvSafe" checked> Safe for Excel</label>
-          <input type="file" id="csvFile" accept=".csv" style="display: none;">
+          <input type="file" id="csvFile" accept=".csv,.tsv,.txt,.xlsx,.xlsm,.xls,.ods" style="display: none;">
           <button class="btn" onclick="document.getElementById('csvFile').click()"><i data-lucide="upload"></i> Upload</button>
           <button class="btn btn-primary" id="btnConvert" onclick="convert()"><i data-lucide="arrow-right-left"></i> Convert</button>
         </div>
@@ -438,6 +523,7 @@
         <i data-lucide="triangle-alert"></i>
         <span id="errorText">Invalid CSV format.</span>
       </div>
+      <div class="big-note" id="bigNote" role="status" hidden></div>
       <div class="csv-issues" id="csvIssues" role="status"></div>
       <div class="col-types" id="colTypes" hidden></div>
       <textarea id="csvInput" class="editor" placeholder='Paste CSV data or drag & drop a .csv file here...&#10;&#10;id,name,role,active&#10;1,John Doe,Admin,true&#10;2,"Smith, Jane",User,false' spellcheck="false"></textarea>
@@ -447,14 +533,26 @@
       <div class="pane-header">
         <div class="pane-title" id="outputPaneTitle"><i data-lucide="braces"></i> JSON Array</div>
         <div class="btn-group">
+          <label class="toggle-wrapper" id="outFormatWrap" title="JSON array: one document. JSON Lines: one record per line (also called NDJSON), the format log pipelines, BigQuery and most bulk loaders read.">
+            <select id="outFormat" class="mini-select" aria-label="Output format">
+              <option value="json" selected>JSON array</option>
+              <option value="jsonl">JSON Lines</option>
+            </select>
+          </label>
           <button class="btn" id="btnCopy" onclick="copyOutput()" disabled><i data-lucide="copy"></i> Copy</button>
           <button class="btn" id="btnDownload" onclick="downloadOutput()" disabled><i data-lucide="download"></i> Save .json</button>
+          <button class="btn" id="btnXlsx" onclick="downloadXlsx()" style="display:none;" disabled title="An Excel workbook: text stays text (00123 keeps its zero), numbers are numbers, and nothing is ever written as a formula."><i data-lucide="sheet"></i> Save .xlsx</button>
         </div>
       </div>
       <div id="jsonOutput" class="output-area"></div>
     </div>
 
   </div>
+
+  <section class="grid-section" id="gridSection" hidden aria-label="Table preview">
+    <div class="grid-head"><i data-lucide="table"></i> <span id="gridTitle">Table preview</span> <span class="grid-hint" id="gridHint">Double-click a cell (or select it and press Enter) to edit it; the change goes back into the input.</span></div>
+    <div id="grid" class="grid-host"></div>
+  </section>
 
   <div class="docs-container">
     
@@ -489,7 +587,9 @@
         <button class="sample-btn" data-lb-autosample onclick="loadSample('basic')">Basic Records</button>
         <button class="sample-btn" onclick="loadSample('quotes')">Quoted Commas</button>
         <button class="sample-btn" onclick="loadSample('types')">Smart Types</button>
+        <button class="sample-btn" onclick="loadSample('nested')">Nested (a.b headers)</button>
         <button class="sample-btn" onclick="loadSample('reverse')">JSON &rarr; CSV</button>
+        <button class="sample-btn" onclick="loadSample('lines')">JSON Lines &rarr; CSV</button>
       </div>
     </div>
 
@@ -523,9 +623,34 @@
           <div class="faq-answer"><p>Excel, LibreOffice and Google Sheets treat a cell that begins with <code>=</code>, <code>+</code>, <code>-</code> or <code>@</code> as a formula, so a value such as <code>=HYPERLINK(&quot;http://…&quot;)</code> in your data can run when someone opens the file (CSV or formula injection). With Safe for Excel on, which is the default, such values are written with a leading apostrophe (<code>'=HYPERLINK(…)</code>); spreadsheets show them as text. Plain numbers such as <code>-5</code> or <code>+3.5</code> are left alone. Turn it off when the CSV feeds another program that must receive the exact text.</p></div>
         </div>
         <div class="faq-item">
+          <button class="faq-question">Can it read Excel files? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>Yes. Drop or upload an <code>.xlsx</code>, <code>.xlsm</code>, <code>.xls</code> or <code>.ods</code> file and every sheet is listed with its row count. Pick one sheet to see it as CSV (where you can edit it, choose columns and set types), or pick <strong>All sheets</strong> to get one JSON object with a key per sheet; with JSON Lines output, each record carries a <code>_sheet</code> field instead. Cells are read as Excel shows them: dates as formatted, formulas as their last calculated value. The workbook is read by the open-source SheetJS library inside your browser.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">What are JSON Lines, and when should I use them? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>JSON Lines (also called NDJSON) puts one JSON object on each line instead of wrapping everything in one array. Log pipelines, BigQuery, Elasticsearch bulk loads and most streaming tools read it, because a program can process one line at a time without loading the whole file. Choose <strong>JSON Lines</strong> as the output format; in JSON &rarr; CSV mode, JSON Lines input is recognised automatically, and a broken line is reported by its line number.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">How do I get nested JSON from a flat CSV? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>Name the columns by path and switch on <strong>Nest a.b headers</strong>: <code>customer.name</code> and <code>customer.city</code> become <code>{"customer": {"name": …, "city": …}}</code>, and <code>items.0.sku</code>, <code>items.1.sku</code> become an array. If one column holds a value where another needs an object (<code>a</code> and <code>a.b</code>), that column is kept flat and listed above the input, rather than one silently overwriting the other. Going the other way, <strong>Flatten nested</strong> turns nested JSON into exactly these column names, so the two directions round-trip.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">Can I choose, rename or reorder columns? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>Yes, in both directions. Under the input, each column has a box to include it, a name you can change (press Enter), arrows to move it, and in CSV &rarr; JSON a type. The choices stay while you edit the data or load a file with the same columns, and new columns are added at the end.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">Can I edit the data before converting? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>Yes. Below the converter, the table preview shows every row (only the rows on screen are drawn, so 100,000 rows scroll smoothly). Double-click a cell, or select it and press Enter, type, and press Enter; the change goes back into the CSV or JSON input and the output updates. Escape cancels. In JSON &rarr; CSV mode a number stays a number when you type a number.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">How large a file can it convert? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>Files of 20 MB and more are not loaded into the text box. A background worker reads them in slices and writes the result straight into the file you save, while the page shows progress and the first 100 records. In our tests a 150 MB CSV with 2 million rows became 349 MB of JSON in about 17 seconds, and a 122 MB JSON Lines file became CSV in 16 seconds, without uploading anything. The limit is your device's memory for the finished file. A single JSON array (not JSON Lines) is read whole inside the worker, so for very large JSON prefer JSON Lines.</p></div>
+        </div>
+
+        <div class="faq-item">
           <button class="faq-question">Can it convert JSON back to CSV too? <i data-lucide="chevron-down"></i></button>
           <div class="faq-answer">
-            <p>Yes. Switch to "JSON &rarr; CSV" mode and paste a JSON array of objects. The header row is built from the union of every key across all objects, so records with slightly different fields (an optional <code>notes</code> column on some rows, for example) still produce one clean table instead of dropping data. Nested objects or arrays inside a field are stringified into that cell rather than breaking the export.</p>
+            <p>Yes. Switch to "JSON &rarr; CSV" mode and paste a JSON array of objects, or JSON Lines (one object per line; the format is detected). The header row is built from the union of every key across all objects, so records with slightly different fields (an optional <code>notes</code> column on some rows, for example) still produce one clean table instead of dropping data. With <strong>Flatten nested</strong> on (the default), nested objects and arrays become columns named by their path, such as <code>user.name</code> and <code>tags.0</code>; switch it off to write each nested value as JSON in one cell. <strong>Save .xlsx</strong> writes an Excel workbook instead of CSV.</p>
           </div>
         </div>
 
@@ -563,7 +688,7 @@
         <li><code>1-5</code> and <code>3/4</code> become dates. So, famously, did the gene symbols <em>SEPT2</em> and <em>MARCH1</em> — corrupted so routinely in published genomics data that the naming committee renamed the genes in 2020.</li>
         <li>In locales where the decimal mark is a comma, Excel expects a <strong>semicolon</strong> delimiter and opens a comma file as a single column.</li>
       </ul>
-      <p>This happens on open, not on export: your file is correct until the tool reading it changes it and someone saves. If humans will open the data in a spreadsheet, an <code>.xlsx</code> export avoids the whole category.</p>
+      <p>This happens on open, not on export: your file is correct until the tool reading it changes it and someone saves. If humans will open the data in a spreadsheet, an <code>.xlsx</code> export avoids the whole category: in JSON &rarr; CSV mode, <strong>Save .xlsx</strong> writes text cells as text (so <code>00123</code> keeps its zero) and numbers as numbers.</p>
 
       <h2><i data-lucide="shield-alert"></i> Formula injection in exports</h2>
       <p>One security note that catches people out, because the vulnerability is in your <em>output</em> rather than your input. If a cell begins with <code>=</code>, <code>+</code>, <code>-</code> or <code>@</code>, spreadsheets treat it as a formula. An attacker who can store text in your database — a display name, a ticket subject — can plant a payload that executes when an administrator later exports and opens the file. Before writing any user-supplied value, prefix such values with an apostrophe. Quoting the field is not sufficient, because the quotes are consumed by the CSV parser before the spreadsheet sees the value.</p>
@@ -591,6 +716,7 @@
     <div class="info-panel">
       <h2><i data-lucide="git-commit"></i> Changelog</h2>
       <ul class="changelog-list">
+        <li><span class="changelog-tag">v3.0.0</span> Excel in and out: every sheet of an .xlsx, .xls or .ods workbook is listed, one sheet or all of them convert, and JSON converts to an .xlsx whose text stays text, numbers stay numbers and nothing becomes a formula. JSON Lines as output, and as input recognised automatically. Nested JSON from a.b headers (objects and arrays) and flattening back. Columns can be included, renamed and reordered in both directions. An editable table preview whose edits go back into the input. Files of 20 MB and more stream through a background worker with progress and a preview, tested with a 150 MB, 2-million-row CSV.</li>
         <li><span class="changelog-tag">v2.2.0</span> One shared CSV reader for every tool: a quote inside a field (5" screen) is a literal character instead of swallowing the rest of the file, the delimiter is detected without counting the ones inside quotes, repeated header names become separate keys (amount, amount (2)), a one-column file keeps rows whose value is empty, and rows with the wrong number of values are listed with their line. Smart Types never change a value (leading zeros, + signs and numbers over 15 digits stay text), an empty cell stays an empty string instead of becoming null, and each column's type can be set to text, number or true/false; long numbers forced to number keep every digit. JSON to CSV keeps long numbers exact and has a Safe for Excel switch, on by default, that writes formula-like values with a leading apostrophe.</li>
         <li><span class="changelog-tag">v2.1.0</span> Delimiter handling: automatic detection picks the separator that is most consistent across the first lines (comma, semicolon, tab or pipe), which is what European-locale exports from Excel need, and a manual override is a click away. A file that yields one column is now refused with a hint instead of producing a single mangled field.</li>
         <li><span class="changelog-tag">v1.5.0</span> Added a JSON &rarr; CSV reverse mode, building the header row from the union of keys across all objects so heterogeneous records don't lose columns.</li>
@@ -710,65 +836,75 @@
   <script src="../js/shared.js?v=e2441a1728"></script>
   <script src="../js/engines/csv.js?v=a78b81af7d"></script>
   <script src="../js/engines/lossless-json.js?v=88a67e6c17"></script>
+  <script src="../js/engines/stream.js?v=09549f4666"></script>
+  <script src="../js/engines/tabular.js?v=a094f5cbcd"></script>
+  <script src="../js/ui/virtual.js?v=db3f27d059"></script>
 
 
   <script>
-        const csvInput = document.getElementById("csvInput");
-    const jsonOutput = document.getElementById("jsonOutput");
-    const csvFile = document.getElementById("csvFile");
-    const inputPane = document.getElementById("inputPane");
-    const errorBanner = document.getElementById("errorBanner");
-    const csvIssues = document.getElementById("csvIssues");
+    const $ = id => document.getElementById(id);
+    const csvInput = $("csvInput");
+    const jsonOutput = $("jsonOutput");
+    const csvFile = $("csvFile");
+    const inputPane = $("inputPane");
+    const errorBanner = $("errorBanner");
+    const csvIssues = $("csvIssues");
     const escHtml = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
-    const errorText = document.getElementById("errorText");
-    const inferTypes = document.getElementById("inferTypes");
-    const inferTypesWrapper = document.getElementById("inferTypesWrapper");
-    const btnCopy = document.getElementById("btnCopy");
-    const btnDownload = document.getElementById("btnDownload");
-    const inputPaneTitle = document.getElementById("inputPaneTitle");
-    const outputPaneTitle = document.getElementById("outputPaneTitle");
-    const btnModeToJSON = document.getElementById("btnModeToJSON");
-    const btnModeToCSV = document.getElementById("btnModeToCSV");
+    const errorText = $("errorText");
+    const inferTypes = $("inferTypes");
+    const btnCopy = $("btnCopy");
+    const btnDownload = $("btnDownload");
+    const btnXlsx = $("btnXlsx");
+    const T = LBTable;
 
     let finalOutputString = "";
     let mode = 'toJSON'; // 'toJSON' (CSV -> JSON, default) or 'toCSV' (JSON -> CSV)
+    // The column plan (which columns, their names and order) and the forced
+    // types, kept while the columns stay the same; reset when the mode changes.
+    let plan = [];
+    const colChoice = {};
+    let book = null;      // an Excel workbook: {name, sheets: [{name, rows}]}
+    let big = null;       // a file streamed in a Worker: {file, worker}
+    let bigBlob = null;   // its converted output
+    let lastTable = null; // what the table preview shows and edits
+    let grid = null, gridRenders = 0;
 
+    function show(el, on, disp) { el.style.display = on ? (disp || 'flex') : 'none'; }
     function setMode(newMode) {
       mode = newMode;
-      btnModeToJSON.classList.toggle('active', mode === 'toJSON');
-      btnModeToCSV.classList.toggle('active', mode === 'toCSV');
-
-      csvInput.value = "";
-      jsonOutput.innerHTML = "";
-      document.getElementById('colTypes').hidden = true;
-      finalOutputString = "";
-      errorBanner.classList.remove("active");
-      btnCopy.disabled = true;
-      btnDownload.disabled = true;
-
-      if (mode === 'toJSON') {
-        inputPaneTitle.innerHTML = '<i data-lucide="sheet"></i> Raw CSV Data';
-        outputPaneTitle.innerHTML = '<i data-lucide="braces"></i> JSON Array';
-        inferTypesWrapper.style.display = 'flex';
-        document.getElementById('csvSafeWrapper').style.display = 'none';
-        document.getElementById('delimWrapper').style.display = 'flex';
-        csvFile.setAttribute('accept', '.csv');
-        csvInput.placeholder = 'Paste CSV data or drag & drop a .csv file here...\n\nid,name,role,active\n1,John Doe,Admin,true\n2,"Smith, Jane",User,false';
-        btnDownload.innerHTML = '<i data-lucide="download"></i> Save .json';
-      } else {
-        inputPaneTitle.innerHTML = '<i data-lucide="braces"></i> Raw JSON Array';
-        outputPaneTitle.innerHTML = '<i data-lucide="sheet"></i> CSV Data';
-        inferTypesWrapper.style.display = 'none';
-        document.getElementById('csvSafeWrapper').style.display = 'flex';
-        document.getElementById('delimWrapper').style.display = 'none';
-        csvFile.setAttribute('accept', '.json');
-        csvInput.placeholder = 'Paste a JSON array of objects here...\n\n[\n  { "id": 1, "name": "John Doe", "role": "Admin" },\n  { "id": 2, "name": "Smith, Jane", "role": "User" }\n]';
-        btnDownload.innerHTML = '<i data-lucide="download"></i> Save .csv';
-      }
+      $('btnModeToJSON').classList.toggle('active', mode === 'toJSON');
+      $('btnModeToCSV').classList.toggle('active', mode === 'toCSV');
+      csvInput.value = ""; csvInput.readOnly = false;
+      plan = []; Object.keys(colChoice).forEach(k => delete colChoice[k]);
+      clearBook(); stopBig();
+      resetOutput();
+      const toJSON = mode === 'toJSON';
+      $('inputPaneTitle').innerHTML = toJSON ? '<i data-lucide="sheet"></i> Raw CSV Data' : '<i data-lucide="braces"></i> JSON or JSON Lines';
+      $('outputPaneTitle').innerHTML = toJSON ? '<i data-lucide="braces"></i> JSON Output' : '<i data-lucide="sheet"></i> CSV Data';
+      show($('inferTypesWrapper'), toJSON); show($('nestWrapper'), toJSON); show($('delimWrapper'), toJSON); show($('outFormatWrap'), toJSON);
+      show($('csvSafeWrapper'), !toJSON); show($('flattenWrapper'), !toJSON); show(btnXlsx, !toJSON, '');
+      csvFile.setAttribute('accept', toJSON ? '.csv,.tsv,.txt,.xlsx,.xlsm,.xls,.ods' : '.json,.jsonl,.ndjson');
+      csvInput.placeholder = toJSON ? 'Paste CSV data, or drop a .csv or Excel file here...\n\nid,name,role,active\n1,John Doe,Admin,true\n2,"Smith, Jane",User,false'
+        : 'Paste a JSON array of objects, or JSON Lines (one object per line)...\n\n[\n  { "id": 1, "name": "John Doe", "role": "Admin" },\n  { "id": 2, "name": "Smith, Jane", "role": "User" }\n]';
+      setDownloadLabel();
       lucide.createIcons();
+    }
+    function setDownloadLabel() {
+      const ext = mode === 'toCSV' ? 'csv' : $('outFormat').value === 'jsonl' ? 'jsonl' : 'json';
+      btnDownload.innerHTML = `<i data-lucide="download"></i> Save .${ext}`;
+      if (window.lucide) lucide.createIcons();
+    }
+    function resetOutput() {
+      jsonOutput.innerHTML = ""; finalOutputString = ""; bigBlob = null;
+      errorBanner.classList.remove("active"); csvIssues.innerHTML = "";
+      btnCopy.disabled = true; btnDownload.disabled = true; btnXlsx.disabled = true;
+      $('colTypes').hidden = true; delete $('colTypes').dataset.cols;
+      hideGrid();
     }
 
     function convert() {
+      clearTimeout(liveTimer);  // an explicit run replaces a pending live one
+      if (big) return streamFile(big.file);
       if (mode === 'toJSON') processCSV();
       else processJSONToCSV();
     }
@@ -779,9 +915,9 @@
       return jsonStr.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, function (match) {
         let cls = 'syn-number';
         if (/^"/.test(match)) {
-          if (/:$/.test(match)) { cls = 'syn-key'; } 
+          if (/:$/.test(match)) { cls = 'syn-key'; }
           else { cls = 'syn-string'; }
-        } else if (/true|false/.test(match)) { cls = 'syn-boolean'; } 
+        } else if (/true|false/.test(match)) { cls = 'syn-boolean'; }
         else if (/null/.test(match)) { cls = 'syn-null'; }
         return '<span class="' + cls + '">' + match + '</span>';
       });
@@ -790,174 +926,297 @@
     // CSV reading is the shared engine (js/engines/csv.js): a quote opens
     // quoting only at the start of a field, the delimiter is detected outside
     // quotes, and rows with the wrong number of values are reported.
-    const detectDelimiter = text => LBCsv.detectDelimiter(text);
     const DELIM_NAMES = { ',': 'comma', ';': 'semicolon', '\t': 'tab', '|': 'pipe' };
     function currentDelimiter(text) {
-      const sel = document.getElementById('delimSelect').value;
-      const d = sel === 'auto' ? detectDelimiter(text) : sel;
-      document.getElementById('delimDetected').textContent = sel === 'auto' && text ? `→ ${DELIM_NAMES[d]}` : '';
+      const sel = $('delimSelect').value;
+      const d = sel === 'auto' ? LBCsv.detectDelimiter(text) : sel;
+      showDetected(sel === 'auto' && text ? d : null);
       return d;
     }
+    function showDetected(d) { $('delimDetected').textContent = d ? `→ ${DELIM_NAMES[d]}` : ''; }
 
-    // Type Inference Engine
     // Smart Types never change a value: a cell becomes a number only when it
     // would be written back identically (no leading zero, no + sign, at most
     // 15 significant digits), and true/false/null become those literals.
-    // Each column's type can be overridden below the input.
-    const colChoice = {};
-    function parseValue(val, header) {
-      const c = colChoice[header] || 'auto';
-      if (c === 'text') return val;
-      if (c === 'number') {
-        const m = /^([+-]?)0*(\d+(?:\.\d+)?(?:[eE][+-]?\d+)?)$/.exec(val.replace(/^\+/, ''));
-        return m ? new LBLossless.LosslessNumber((m[1] === '-' ? '-' : '') + m[2]) : val;
-      }
-      if (c === 'boolean') { const l = val.toLowerCase(); return ['true', 'yes', 'y', '1'].includes(l) ? true : ['false', 'no', 'n', '0'].includes(l) ? false : val; }
-      return inferTypes.checked ? LBLossless.inferValue(val) : val;
-    }
-    function setKey(o, k, v) { if (k === '__proto__') Object.defineProperty(o, k, { value: v, enumerable: true, writable: true, configurable: true }); else o[k] = v; }
+    // Each column's type can be set in the column list below the input.
     function autoType(values) {
       const kinds = new Set(values.filter(v => v !== '').map(v => { const x = LBLossless.inferValue(v); return x === null ? 'null' : typeof x === 'number' ? 'number' : typeof x === 'boolean' ? 'boolean' : 'text'; }));
       kinds.delete('null');
       return kinds.size === 0 ? 'empty' : kinds.size === 1 ? [...kinds][0] : 'mixed';
     }
-    function renderColTypes(headers, rows) {
-      const box = document.getElementById('colTypes');
-      if (!inferTypes.checked || !headers.length) { box.hidden = true; box.innerHTML = ''; delete box.dataset.cols; return; }
+    function showIssues(issues, conflicts, extra) {
+      const parts = [];
+      if (issues && issues.length) parts.push(`${issues.length === 1 ? '1 problem' : issues.length + ' problems'} in the CSV: ${issues.slice(0, 5).map(x => escHtml(x.message)).join(' ')}${issues.length > 5 ? ` …and ${issues.length - 5} more.` : ''}`);
+      if (conflicts && conflicts.length) parts.push(`Kept flat because another column already holds a value at that path: ${conflicts.slice(0, 5).map(escHtml).join(', ')}${conflicts.length > 5 ? ' …' : ''}.`);
+      if (extra) parts.push(escHtml(extra));
+      csvIssues.innerHTML = parts.length ? `<i data-lucide="triangle-alert"></i><span>${parts.join(' ')}</span>` : '';
+      if (window.lucide) lucide.createIcons();
+    }
+
+    // ---- the column list: include, rename, type (CSV -> JSON), move
+    function renderColumns(keys, dataRows) {
+      const box = $('colTypes');
+      if (!keys.length) { box.hidden = true; box.innerHTML = ''; delete box.dataset.cols; return; }
       box.hidden = false;
-      // Same columns as last time: update the "auto (type)" labels in place, so
-      // the select just changed keeps its focus and identity.
-      const same = box.dataset.cols === JSON.stringify(headers);
-      if (same) {
-        headers.forEach((h, i) => {
-          const sel = box.querySelector(`select[data-col="${CSS.escape(h)}"]`); if (!sel) return;
-          sel.options[0].textContent = `auto (${autoType(rows.map(r => (r[i] || '').trim()))})`;
-          sel.value = colChoice[h] || 'auto';
+      plan = T.planFor(keys, plan);
+      const typed = mode === 'toJSON';
+      const autoOf = k => { if (!dataRows) return ''; const i = keys.indexOf(k); return autoType(dataRows.map(r => (r[i] || '').trim())); };
+      const sig = JSON.stringify([mode, keys]);
+      if (box.dataset.cols === sig) {
+        // same columns: update in place, so the control just used keeps its
+        // focus and identity; move items only when the order changed
+        const active = document.activeElement;
+        plan.forEach(p => {
+          const item = box.querySelector(`.ct-item[data-key="${CSS.escape(p.key)}"]`); if (!item) return;
+          item.querySelector('[data-col-inc]').checked = p.include;
+          const nm = item.querySelector('[data-col-name]'); if (nm !== active) nm.value = p.name;
+          item.classList.toggle('off', !p.include);
+          const sel = item.querySelector('select[data-col]');
+          if (sel) { sel.options[0].textContent = `auto (${autoOf(p.key)})`; sel.value = colChoice[p.key] || 'auto'; }
         });
+        const order = [...box.querySelectorAll('.ct-item')].map(i => i.dataset.key);
+        if (order.join('\u0000') !== plan.map(p => p.key).join('\u0000')) plan.forEach(p => { const item = box.querySelector(`.ct-item[data-key="${CSS.escape(p.key)}"]`); if (item) box.appendChild(item); });
+        if (active && box.contains(active) && document.activeElement !== active) active.focus();
         return;
       }
-      box.dataset.cols = JSON.stringify(headers);
-      box.innerHTML = '<span class="ct-label">Column types:</span>' + headers.map((h, i) => {
-        const auto = autoType(rows.map(r => (r[i] || '').trim())), v = colChoice[h] || 'auto';
-        return `<label class="ct-item">${escHtml(h)} <select class="mini-select" id="colType-${escHtml(h)}" data-col="${escHtml(h)}">` +
-          [['auto', `auto (${auto})`], ['text', 'text'], ['number', 'number'], ['boolean', 'true/false']].map(([k, l]) => `<option value="${k}"${k === v ? ' selected' : ''}>${l}</option>`).join('') + '</select></label>';
+      box.dataset.cols = sig;
+      box.innerHTML = '<span class="ct-label">Columns:</span>' + plan.map(p => {
+        const k = escHtml(p.key), v = colChoice[p.key] || 'auto';
+        return `<span class="ct-item${p.include ? '' : ' off'}" data-key="${k}">` +
+          `<input type="checkbox" id="colInc-${k}" data-col-inc="${k}"${p.include ? ' checked' : ''} title="Include this column" aria-label="Include ${k}">` +
+          `<input class="ct-name" id="colName-${k}" data-col-name="${k}" value="${escHtml(p.name)}" size="${Math.min(18, Math.max(4, p.name.length))}" spellcheck="false" title="Output name for ${k} (press Enter)" aria-label="Output name for ${k}">` +
+          (typed ? `<select class="mini-select" id="colType-${k}" data-col="${k}" aria-label="Type of ${k}">` +
+            [['auto', `auto (${autoOf(p.key)})`], ['text', 'text'], ['number', 'number'], ['boolean', 'true/false']].map(([o, l]) => `<option value="${o}"${o === v ? ' selected' : ''}>${l}</option>`).join('') + '</select>' : '') +
+          `<button type="button" class="ct-move" id="colUp-${k}" data-col-move="-1" data-key="${k}" title="Move left" aria-label="Move ${k} left">&lsaquo;</button>` +
+          `<button type="button" class="ct-move" id="colDown-${k}" data-col-move="1" data-key="${k}" title="Move right" aria-label="Move ${k} right">&rsaquo;</button></span>`;
       }).join('');
     }
-    document.getElementById('colTypes').addEventListener('change', e => { const s = e.target.closest('select[data-col]'); if (s) { colChoice[s.dataset.col] = s.value; processCSV(); } });
+    $('colTypes').addEventListener('change', e => {
+      const el = e.target;
+      if (el.dataset.colInc !== undefined) plan = T.togglePlan(plan, el.dataset.colInc, el.checked);
+      else if (el.dataset.colName !== undefined) plan = T.renamePlan(plan, el.dataset.colName, el.value);
+      else if (el.dataset.col !== undefined) colChoice[el.dataset.col] = el.value;
+      else return;
+      convert();
+    });
+    $('colTypes').addEventListener('click', e => {
+      const b = e.target.closest('[data-col-move]'); if (!b) return;
+      plan = T.movePlan(plan, b.dataset.key, +b.dataset.colMove);
+      convert();
+    });
 
+    // ---- CSV -> JSON
+    function readOpts(extra) { return Object.assign({ infer: inferTypes.checked, types: Object.assign({}, colChoice), nest: $('nestKeys').checked, plan }, extra || {}); }
+    function writeJSON(records) { return $('outFormat').value === 'jsonl' ? T.toJSONL(records) : LBLossless.stringify(records, 4); }
     function processCSV() {
-      const input = csvInput.value.trim();
-      errorBanner.classList.remove("active");
-      csvIssues.innerHTML = "";
-      jsonOutput.innerHTML = "";
-      finalOutputString = "";
-      btnCopy.disabled = true;
-      btnDownload.disabled = true;
-
-      if (!input) {
-        showError("Please provide CSV data.");
-        return;
-      }
-
+      const input = csvInput.value;
+      resetOutputKeepColumns();
+      if (book && $('sheetSelect').value === '*') return processAllSheets();
+      if (!input.trim()) { showError("Please provide CSV data."); return; }
       try {
         const delim = currentDelimiter(input);
         const parsed = LBCsv.parse(input, { delimiter: delim }), rows = parsed.rows;
-        const issues = parsed.issues;
-        csvIssues.innerHTML = issues.length ? `<i data-lucide="triangle-alert"></i><span>${issues.length === 1 ? '1 problem' : issues.length + ' problems'} in the CSV: ${issues.slice(0, 5).map(x => escHtml(x.message)).join(' ')}${issues.length > 5 ? ` …and ${issues.length - 5} more.` : ''}</span>` : '';
-        if (window.lucide) lucide.createIcons();
+        showIssues(parsed.issues);
         if (rows.length < 2) throw new Error("CSV requires at least a header row and one data row.");
         if (rows[0].length === 1 && /[;\t|]/.test(rows[0][0])) {
           throw new Error(`Only one column was found with the ${DELIM_NAMES[delim]} delimiter - the data looks separated by something else. Change the delimiter.`);
         }
-
-        const headers = LBCsv.uniqueHeaders(rows[0].map(h => h.trim()));
-        const jsonArray = [];
-
-        for (let i = 1; i < rows.length; i++) {
-          let obj = {};
-          const currentRow = rows[i];
-          // a blank line is a gap in a wide file, but an empty value in a one-column file
-          if (headers.length > 1 && currentRow.length === 1 && currentRow[0].trim() === "") continue;
-
-          headers.forEach((header, index) => {
-            let val = currentRow[index] !== undefined ? currentRow[index].trim() : "";
-            setKey(obj, header, parseValue(val, header));
-          });
-          jsonArray.push(obj);
-        }
-
-        renderColTypes(headers, rows.slice(1));
-        finalOutputString = LBLossless.stringify(jsonArray, 4);
-        jsonOutput.innerHTML = syntaxHighlight(finalOutputString);
-
-        btnCopy.disabled = false;
-        btnDownload.disabled = false;
-
+        const conv = T.recordConverter(rows[0], readOpts());
+        const records = rows.slice(1).map(conv.convert);
+        showIssues(parsed.issues, Object.keys(conv.conflicts));
+        renderColumns(conv.headers, rows.slice(1));
+        setOutput(writeJSON(records));
+        // the preview shows the cells as read; an edit goes back into the CSV
+        showGrid(conv.names, rows.length - 1, (r, c) => { const v = rows[r + 1][conv.index[c]]; return v == null ? '' : v.trim(); }, (r, c, v) => {
+          const row = rows[r + 1]; while (row.length <= conv.index[c]) row.push('');
+          row[conv.index[c]] = v;
+          csvInput.value = LBCsv.stringify(rows, { delimiter: delim, newline: '\n' });
+          convert();
+        });
       } catch (err) {
         showError(err.message);
       }
     }
-
-    // Escapes one CSV cell: wraps in quotes (doubling any embedded quotes)
-    // if the value contains a comma, quote, or newline - standard CSV rules
-    function csvEscape(val) {
-      if (val === null || val === undefined) return '';
-      if (LBLossless.isLosslessNumber(val)) val = val.value;
-      else if (typeof val === 'object') val = LBLossless.stringify(val);
-      let str = String(val);
-      if (document.getElementById('csvSafe').checked && LBCsv.isFormulaLike(str)) str = "'" + str;
-      if (/[",\n\r]/.test(str)) {
-        return '"' + str.replace(/"/g, '""') + '"';
-      }
-      return str;
+    function resetOutputKeepColumns() {
+      errorBanner.classList.remove("active"); csvIssues.innerHTML = "";
+      jsonOutput.innerHTML = ""; finalOutputString = ""; bigBlob = null;
+      btnCopy.disabled = true; btnDownload.disabled = true; btnXlsx.disabled = true;
+    }
+    function setOutput(text, opts) {
+      finalOutputString = text;
+      if (mode === 'toJSON') jsonOutput.innerHTML = syntaxHighlight(text); else jsonOutput.textContent = text;
+      btnCopy.disabled = !!(opts && opts.noCopy); btnDownload.disabled = false; btnXlsx.disabled = mode !== 'toCSV';
     }
 
+    // ---- Excel workbooks: every sheet listed; one sheet is shown as CSV
+    // text (so it can be edited), All sheets gives one key per sheet
+    function loadXlsx() {
+      if (window.XLSX) return Promise.resolve();
+      return new Promise((res, rej) => { const s = document.createElement('script'); s.src = '../js/vendor/xlsx.full.min.js'; s.onload = res; s.onerror = () => rej(new Error('Could not load the spreadsheet reader.')); document.head.appendChild(s); });
+    }
+    function isWorkbook(file, bytes) {
+      if (/\.(xlsx|xlsm|xlsb|xls|ods)$/i.test(file.name)) return true;
+      return bytes.length > 4 && ((bytes[0] === 0x50 && bytes[1] === 0x4B && !/\.(csv|tsv|txt|json|jsonl|ndjson)$/i.test(file.name)) || (bytes[0] === 0xD0 && bytes[1] === 0xCF && bytes[2] === 0x11 && bytes[3] === 0xE0));
+    }
+    function openWorkbook(file) {
+      return Promise.all([loadXlsx(), file.arrayBuffer()]).then(([, buf]) => {
+        const wb = XLSX.read(new Uint8Array(buf), { type: 'array', cellDates: true });
+        const sheets = wb.SheetNames.map(name => ({ name, rows: XLSX.utils.sheet_to_json(wb.Sheets[name], { header: 1, raw: false, rawNumbers: true, defval: '', blankrows: false }).map(r => r.map(v => v == null ? '' : String(v))) }));
+        if (mode !== 'toJSON') setMode('toJSON');
+        book = { name: file.name, sheets };
+        const sel = $('sheetSelect');
+        sel.innerHTML = sheets.map((sh, i) => `<option value="${escHtml(sh.name)}">${escHtml(sh.name)} (${Math.max(0, sh.rows.length - 1).toLocaleString()} rows)</option>`).join('') +
+          (sheets.length > 1 ? `<option value="*">All sheets (${sheets.length})</option>` : '');
+        $('sheetWrap').hidden = false;
+        $('delimSelect').value = ',';
+        selectSheet(sheets[0].name);
+      }).catch(err => showError(`Could not read ${file.name}: ${err.message}`));
+    }
+    function selectSheet(name) {
+      const sel = $('sheetSelect'); sel.value = name;
+      if (name === '*') { csvInput.readOnly = true; csvInput.value = LBCsv.stringify(book.sheets[0].rows, { newline: '\n' }); convert(); return; }
+      csvInput.readOnly = false;
+      const sh = book.sheets.find(x => x.name === name);
+      csvInput.value = LBCsv.stringify(sh.rows, { newline: '\n' });
+      convert();
+    }
+    $('sheetSelect').addEventListener('change', e => selectSheet(e.target.value));
+    function clearBook() { book = null; $('sheetWrap').hidden = true; $('sheetSelect').innerHTML = ''; csvInput.readOnly = false; }
+    function processAllSheets() {
+      const out = {}, jl = [], conflicts = [];
+      $('colTypes').hidden = true; delete $('colTypes').dataset.cols; hideGrid();
+      book.sheets.forEach(sh => {
+        if (sh.rows.length < 1) { T.setKey(out, sh.name, []); return; }
+        const conv = T.recordConverter(sh.rows[0], { infer: inferTypes.checked, nest: $('nestKeys').checked });
+        const recs = sh.rows.slice(1).map(conv.convert);
+        T.setKey(out, sh.name, recs);
+        recs.forEach(r => { const o = { _sheet: sh.name }; Object.keys(r).forEach(k => T.setKey(o, k, r[k])); jl.push(o); });
+        conflicts.push(...Object.keys(conv.conflicts));
+      });
+      showIssues(null, conflicts, `All ${book.sheets.length} sheets of ${book.name} are converted${$('outFormat').value === 'jsonl' ? ', each record with a _sheet field' : ', one key per sheet'}. Pick one sheet to edit it, choose columns or set types.`);
+      setOutput($('outFormat').value === 'jsonl' ? T.toJSONL(jl) : LBLossless.stringify(out, 4));
+    }
+
+    // ---- JSON or JSON Lines -> CSV
+    let jsonRecords = null, jsonKind = 'json', jsonWasArray = true;
+    function readJSONRecords(input) {
+      jsonKind = T.detectJSON(input);
+      if (jsonKind === 'jsonl') {
+        const r = T.parseJSONL(input);
+        if (r.errors.length) throw new Error(`JSON Lines: ${r.errors[0].message}${r.errors.length > 1 ? ` (and ${r.errors.length - 1} more lines)` : ''}`);
+        jsonWasArray = true;
+        return r.records;
+      }
+      try { JSON.parse(input); }  // the browser's parser reports syntax errors
+      catch (e) {
+        const lines = input.split(/\r\n|\n|\r/).filter(l => l.trim());
+        if (lines.length > 1 && /^\s*\{/.test(lines[0])) {
+          const r = T.parseJSONL(input);
+          if (r.errors.length) throw new Error(`This looks like JSON Lines, but ${r.errors[0].message.replace(/^Line/, 'line')}`);
+        }
+        throw e;
+      }
+      const parsed = LBLossless.parse(input);  // numbers keep every digit
+      jsonWasArray = Array.isArray(parsed);
+      return jsonWasArray ? parsed : [parsed];
+    }
     function processJSONToCSV() {
       const input = csvInput.value.trim();
-      errorBanner.classList.remove("active");
-      jsonOutput.innerHTML = "";
-      finalOutputString = "";
-      btnCopy.disabled = true;
-      btnDownload.disabled = true;
-
-      if (!input) {
-        showError("Please provide JSON data.");
-        return;
-      }
-
+      resetOutputKeepColumns();
+      if (!input) { showError("Please provide JSON data."); return; }
       try {
-        JSON.parse(input);  // the browser's parser reports syntax errors
-        const parsed = LBLossless.parse(input);  // numbers keep every digit
-        const rows = Array.isArray(parsed) ? parsed : [parsed];
-        if (!rows.length) throw new Error("JSON array is empty - nothing to convert.");
-        if (rows.some(r => typeof r !== 'object' || r === null || Array.isArray(r))) {
-          throw new Error("Expected a JSON array of objects, e.g. [{\"id\": 1, \"name\": \"...\"}].");
+        const records = readJSONRecords(input);
+        if (!records.length) throw new Error("JSON array is empty - nothing to convert.");
+        if (records.some(r => typeof r !== 'object' || r === null || Array.isArray(r) || LBLossless.isLosslessNumber(r))) {
+          throw new Error("Expected a JSON array of objects, e.g. [{\"id\": 1, \"name\": \"...\"}], or one object per line.");
         }
-
+        jsonRecords = records;
         // Union of keys across all objects, in first-seen order, so
         // heterogeneous records don't silently drop columns
-        const headers = [];
-        const seen = new Set();
-        for (const row of rows) {
-          for (const key of Object.keys(row)) {
-            if (!seen.has(key)) { seen.add(key); headers.push(key); }
-          }
-        }
-
-        const lines = [headers.map(h => csvEscape(h)).join(',')];
-        for (const row of rows) {
-          lines.push(headers.map(h => csvEscape(row[h])).join(','));
-        }
-
-        finalOutputString = lines.join('\n');
-        jsonOutput.textContent = finalOutputString;
-
-        btnCopy.disabled = false;
-        btnDownload.disabled = false;
-
+        const flat = $('flattenKeys').checked;
+        let tbl = T.table(records, { flatten: flat, plan });
+        renderColumns(tbl.keys, null);
+        tbl = T.table(records, { flatten: flat, plan });
+        const safe = $('csvSafe').checked;
+        setOutput([T.csvRow(tbl.names, safe)].concat(tbl.rows.map(r => T.csvRow(r, safe))).join('\n'));
+        lastXlsx = tbl;
+        showGrid(tbl.names, tbl.rows.length, (r, c) => T.cellText(tbl.rows[r][c]), (r, c, v) => {
+          const key = tbl.keys[tbl.index[c]], rec = records[r];
+          setPath(rec, key, flat, typedLike(getPath(rec, key, flat), v));
+          csvInput.value = jsonKind === 'jsonl' ? T.toJSONL(records) : LBLossless.stringify(jsonWasArray ? records : records[0], 2);
+          convert();
+        });
       } catch (err) {
         showError(err.message);
       }
+    }
+    // a flattened key (user.name) leads back to its place in the record; a
+    // key that itself contains dots is tried whole first
+    function findPath(obj, key) {
+      if (obj === null || typeof obj !== 'object') return null;
+      if (Object.prototype.hasOwnProperty.call(obj, key)) return [key];
+      for (let i = key.indexOf('.'); i > 0; i = key.indexOf('.', i + 1)) {
+        const head = key.slice(0, i);
+        if (Object.prototype.hasOwnProperty.call(obj, head)) { const rest = findPath(obj[head], key.slice(i + 1)); if (rest) return [head].concat(rest); }
+      }
+      return null;
+    }
+    function getPath(rec, key, flat) {
+      const p = flat ? findPath(rec, key) : [key];
+      if (!p) return undefined;
+      return p.reduce((o, k) => o == null ? undefined : o[k], rec);
+    }
+    function setPath(rec, key, flat, v) {
+      const p = (flat && findPath(rec, key)) || [key];
+      const parent = p.slice(0, -1).reduce((o, k) => o[k], rec);
+      T.setKey(parent, p[p.length - 1], v);
+    }
+    // an edited cell keeps its JSON type when the new text fits it
+    function typedLike(old, v) {
+      if (LBLossless.isLosslessNumber(old) && /^-?(0|[1-9]\d*)(\.\d+)?([eE][+-]?\d+)?$/.test(v.trim())) return new LBLossless.LosslessNumber(v.trim());
+      if (typeof old === 'boolean' && /^(true|false)$/i.test(v.trim())) return v.trim().toLowerCase() === 'true';
+      if (old === null && v === '') return null;
+      if (old !== null && typeof old === 'object') { try { JSON.parse(v); return LBLossless.parse(v); } catch (e) { return v; } }
+      return v;
+    }
+
+    // ---- .xlsx out: typed cells, never formulas
+    let lastXlsx = null;
+    function downloadXlsx() {
+      if (!lastXlsx) return;
+      loadXlsx().then(() => {
+        const cell = v => {
+          if (v === null || v === undefined) return null;
+          if (LBLossless.isLosslessNumber(v)) return LBLossless.isUnsafe(v.value) ? v.value : Number(v.value);
+          if (typeof v === 'boolean') return v;
+          if (typeof v === 'object') return LBLossless.stringify(v);
+          return String(v);
+        };
+        const aoa = [lastXlsx.names].concat(lastXlsx.rows.map(r => r.map(cell)));
+        if (aoa.length > 1048576) { showError(`An Excel sheet holds at most 1,048,575 rows; this data has ${(aoa.length - 1).toLocaleString()}. Save it as CSV instead.`); return; }
+        const ws = XLSX.utils.aoa_to_sheet(aoa);
+        const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, 'Data');
+        const bytes = XLSX.write(wb, { type: 'array', bookType: 'xlsx', compression: true });
+        saveBlob(new Blob([bytes], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }), 'xlsx');
+      }).catch(err => showError(err.message));
+    }
+
+    // ---- table preview: a virtual grid, editable when the data is in the
+    // text box (not for streamed files)
+    function hideGrid() { $('gridSection').hidden = true; if (grid) { grid.destroy(); grid = null; } lastTable = null; }
+    function showGrid(names, count, cell, edit) {
+      lastTable = { names, count, cell, edit };
+      const sec = $('gridSection'); sec.hidden = false;
+      $('gridTitle').textContent = `Table preview · ${count.toLocaleString()} row${count === 1 ? '' : 's'} × ${names.length} column${names.length === 1 ? '' : 's'}`;
+      $('gridHint').hidden = !edit;
+      const host = $('grid'), keep = host.scrollTop;
+      // a cell being edited is saved before the table is redrawn
+      const open = host.querySelector('input.lb-vedit');
+      if (open) { const n = gridRenders; open.blur(); if (gridRenders !== n) return; }
+      gridRenders++;
+      if (grid) grid.destroy();
+      grid = LBVirtual.grid(host, { columns: names.map(n => ({ label: n })), count, rowHeight: 30, cell, edit: edit || undefined });
+      host.scrollTop = keep;
     }
 
     function showError(msg) {
@@ -978,27 +1237,141 @@
         }, 2000);
       });
     }
-
-    function downloadOutput() {
-      if (!finalOutputString) return;
-      const isCSV = mode === 'toCSV';
-      const blob = new Blob([finalOutputString], { type: isCSV ? "text/csv" : "application/json" });
+    function saveBlob(blob, ext) {
       const link = document.createElement("a");
       link.href = URL.createObjectURL(blob);
-      link.download = `layerbit_data_${Date.now()}.${isCSV ? 'csv' : 'json'}`;
+      link.download = `layerbit_data_${Date.now()}.${ext}`;
       link.click();
+      setTimeout(() => URL.revokeObjectURL(link.href), 60000);
+    }
+    function downloadOutput() {
+      const ext = mode === 'toCSV' ? 'csv' : $('outFormat').value === 'jsonl' ? 'jsonl' : 'json';
+      const type = ext === 'csv' ? 'text/csv' : ext === 'jsonl' ? 'application/x-ndjson' : 'application/json';
+      if (bigBlob) return saveBlob(bigBlob, ext);
+      if (!finalOutputString) return;
+      saveBlob(new Blob([finalOutputString], { type }), ext);
     }
 
-    // Drag & Drop / File Upload Logic
-    csvFile.addEventListener('change', function(e) { handleFile(e.target.files[0]); });
-    // Options and edits apply immediately once there is input: the delimiter
-    // and type inference change the result, so they re-run the conversion.
-    let liveTimer = null;
-    function convertSoon(ms) { clearTimeout(liveTimer); liveTimer = setTimeout(() => { if (csvInput.value.trim()) convert(); }, ms); }
-    document.getElementById('delimSelect').addEventListener('change', () => convertSoon(0));
-    inferTypes.addEventListener('change', () => convertSoon(0));
-    csvInput.addEventListener('input', () => { if (csvInput.value.length < 3000000) convertSoon(400); });
+    // ---- files of any size: from csvStreamMin bytes (20 MB) a file is not
+    // put in the text box; a Worker reads it in slices and writes the result
+    // straight into a file, showing the first records as a preview
+    const STREAM_MIN = 20 * 1024 * 1024;
+    function streamMin() { return typeof window.csvStreamMin === 'number' ? window.csvStreamMin : STREAM_MIN; }
+    function stopBig() { if (big && big.worker) big.worker.terminate(); big = null; $('bigNote').hidden = true; window.csvBig = null; }
+    function fmtMB(n) { return (n / 1048576).toFixed(n < 10485760 ? 1 : 0) + ' MB'; }
+    function workerSource() {
+      const src = part => JSON.stringify(document.querySelector(`script[src*="${part}"]`).src);
+      return `importScripts(${src('engines/csv.js')}, ${src('engines/lossless-json.js')}, ${src('engines/stream.js')}, ${src('engines/tabular.js')});
+      ${streamWorkerMain.toString()}
+      onmessage = e => streamWorkerMain(e.data).then(r => postMessage(r), err => postMessage({ type: 'error', message: err.message || String(err) }));`;
+    }
+    // runs inside the Worker
+    async function streamWorkerMain(o) {
+      const T = LBTable, f = o.file, LIMIT = 1 << 22;
+      const parts = []; let buf = '';
+      const emit = s => { buf += s; if (buf.length > LIMIT) { parts.push(buf); buf = ''; } };
+      const progress = (done, total) => postMessage({ type: 'progress', done, total });
+      async function* texts() {
+        let dec = null;
+        for await (const c of LBStream.chunks(f, { chunkSize: 1 << 21, onProgress: progress })) {
+          if (!dec) dec = new TextDecoder(LBStream.detectEncoding(c.bytes.subarray(0, 65536)));
+          yield dec.decode(c.bytes, { stream: true });
+        }
+        if (dec) yield dec.decode();
+      }
+      if (o.mode === 'toJSON') {
+        const rd = T.csvReader({ delimiter: o.delimiter }), w = T.jsonWriter(o.out);
+        let conv = null, n = 0; const preview = [], sample = [];
+        const take = got => {
+          if (got.header) conv = T.recordConverter(got.header, o.opts);
+          for (const row of got.rows) { const r = conv.convert(row); emit(w.record(r, n)); if (n < 100) preview.push(r); if (n < 200) sample.push(row); n++; }
+        };
+        for await (const t of texts()) take(rd.push(t));
+        take(rd.end());
+        if (!conv || !n) throw new Error('CSV requires at least a header row and one data row.');
+        emit(w.end(n)); parts.push(buf);
+        return { type: 'done', blob: new Blob(parts, { type: o.out === 'jsonl' ? 'application/x-ndjson' : 'application/json' }), records: n,
+          preview: o.out === 'jsonl' ? T.toJSONL(preview) : LBLossless.stringify(preview, 4), issues: rd.issues.slice(0, 50), issueCount: rd.issues.length,
+          conflicts: Object.keys(conv.conflicts), delimiter: rd.delimiter, headers: conv.headers, sample };
+      }
+      // JSON Lines (two passes: every key first, then the rows) or a JSON
+      // document read whole inside the Worker
+      const head = await f.slice(0, 65536).text();
+      const lines = head.split(/\r\n|\n|\r/); if (f.size > 65536) lines.pop();
+      let kind = T.detectJSON(lines.join('\n'));
+      if (/\.(jsonl|ndjson)$/i.test(f.name)) kind = 'jsonl';
+      const flat = o.flatten, rowsOf = rec => flat ? T.flatten(rec) : rec;
+      const check = rec => { if (typeof rec !== 'object' || rec === null || Array.isArray(rec) || LBLossless.isLosslessNumber(rec)) throw new Error('Expected one JSON object per line or an array of objects.'); return rec; };
+      let keys, each;
+      if (kind === 'jsonl') {
+        const seen = new Set(); keys = [];
+        const all = async fn => { let ln = 0; let text = ''; for await (const t of texts()) { text += t; const ls = text.split(/\r\n|\n|\r/); text = ls.pop(); for (const l of ls) { ln++; if (l.trim()) fn(l, ln); } } if (text.trim()) fn(text, ln + 1); };
+        const parse = (l, ln) => { try { JSON.parse(l); return check(LBLossless.parse(l)); } catch (e) { throw new Error('JSON Lines, line ' + ln + ': ' + e.message); } };
+        await all((l, ln) => { for (const k of Object.keys(rowsOf(parse(l, ln)))) if (!seen.has(k)) { seen.add(k); keys.push(k); } });
+        each = async fn => all((l, ln) => fn(rowsOf(parse(l, ln))));
+      } else {
+        const text = await f.text();
+        JSON.parse(text);
+        const v = LBLossless.parse(text), recs = (Array.isArray(v) ? v : [v]).map(check).map(rowsOf);
+        keys = T.unionKeys(recs);
+        each = async fn => recs.forEach(fn);
+      }
+      const p = T.applyPlan(keys, o.opts.plan);
+      emit(T.csvRow(p.names, o.safe));
+      let n = 0; const preview = [T.csvRow(p.names, o.safe)];
+      await each(rec => { const line = T.csvRow(p.index.map(i => rec[keys[i]]), o.safe); emit('\n' + line); if (n < 100) preview.push(line); n++; });
+      parts.push(buf);
+      return { type: 'done', blob: new Blob(parts, { type: 'text/csv' }), records: n, preview: preview.join('\n'), issues: [], issueCount: 0, conflicts: [], headers: keys };
+    }
+    function streamFile(file) {
+      if (big && big.worker) big.worker.terminate();
+      resetOutputKeepColumns(); hideGrid();
+      csvInput.value = ''; csvInput.readOnly = false;
+      big = { file, worker: new Worker(URL.createObjectURL(new Blob([workerSource()], { type: 'text/javascript' }))) };
+      window.csvBig = { done: false, file: file.name };
+      const note = $('bigNote'); note.hidden = false;
+      const say = html => { note.innerHTML = `<i data-lucide="hard-drive"></i><span>${html}</span>`; if (window.lucide) lucide.createIcons(); };
+      const label = `<b>${escHtml(file.name)}</b> (${fmtMB(file.size)})`;
+      say(`Reading ${label} in the background… <span id="bigPct">0%</span> <button type="button" class="btn btn-inline" id="btnCancelBig">Cancel</button>`);
+      const job = big; let ticks = 0;
+      job.worker.onmessage = e => {
+        if (big !== job) return;
+        const m = e.data;
+        if (m.type === 'progress') { ticks++; const pct = $('bigPct'); if (pct) pct.textContent = Math.round(100 * m.done / m.total) + '%'; return; }
+        job.worker.terminate(); job.worker = null;
+        if (m.type === 'error') { say(`${label} could not be converted.`); showError(m.message); window.csvBig = { done: true, error: m.message }; return; }
+        bigBlob = m.blob;
+        const small = m.blob.size <= 2 * 1048576;
+        if (mode === 'toJSON') { showDetected($('delimSelect').value === 'auto' ? m.delimiter : null); renderColumns(m.headers, m.sample); }
+        else renderColumns(m.headers, null);
+        showIssues(m.issues, m.conflicts, m.issueCount > m.issues.length ? `${m.issueCount.toLocaleString()} problems in all; the first ${m.issues.length} are listed.` : '');
+        const finish = text => {
+          setOutput(text, { noCopy: !small });
+          bigBlob = m.blob;
+          btnXlsx.disabled = true;
+          say(`${label}: <b>${m.records.toLocaleString()}</b> record${m.records === 1 ? '' : 's'} converted in your browser${small ? '.' : `. The output (${fmtMB(m.blob.size)}) is too large to show: below are the first ${Math.min(100, m.records)} records, and Save writes all of them.`} <button type="button" class="btn btn-inline" id="btnCloseBig">Close file</button>`);
+          window.csvBig = { done: true, records: m.records, blob: m.blob, text: small ? text : null, progress: ticks };
+        };
+        if (small) m.blob.text().then(finish); else finish(m.preview);
+      };
+      job.worker.onerror = e => { if (big === job) { say(`${label} could not be converted.`); showError(e.message || 'The background reader stopped.'); window.csvBig = { done: true, error: e.message }; } };
+      job.worker.postMessage({ file, mode, delimiter: $('delimSelect').value, out: $('outFormat').value, flatten: $('flattenKeys').checked, safe: $('csvSafe').checked,
+        opts: { infer: inferTypes.checked, types: Object.assign({}, colChoice), nest: $('nestKeys').checked, plan } });
+    }
+    $('bigNote').addEventListener('click', e => {
+      if (e.target.closest('#btnCancelBig')) { stopBig(); resetOutput(); showError('Cancelled. Drop the file again to convert it.'); }
+      if (e.target.closest('#btnCloseBig')) { stopBig(); resetOutput(); }
+    });
 
+    // Drag & Drop / File Upload Logic
+    csvFile.addEventListener('change', function (e) { handleFile(e.target.files[0]); e.target.value = ''; });
+    // Options and edits apply immediately once there is input: the delimiter,
+    // type inference, nesting and the output format change the result.
+    let liveTimer = null;
+    function convertSoon(ms) { clearTimeout(liveTimer); liveTimer = setTimeout(() => { if (csvInput.value.trim() || big || book) convert(); }, ms); }
+    ['delimSelect', 'inferTypes', 'nestKeys', 'flattenKeys', 'csvSafe'].forEach(id => $(id).addEventListener('change', () => convertSoon(0)));
+    $('outFormat').addEventListener('change', () => { setDownloadLabel(); convertSoon(0); });
+    csvInput.addEventListener('input', () => { if (big) stopBig(); if (csvInput.value.length < 3000000) convertSoon(400); });
 
     inputPane.addEventListener('dragover', (e) => {
       e.preventDefault();
@@ -1017,34 +1390,35 @@
 
     function handleFile(file) {
       if (!file) return;
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        csvInput.value = e.target.result;
-        convert();
-      };
-      Layerbit.readFile(file).then(t => reader.onload({ target: { result: t } }));  // bytes decoded by the kernel (encoding detected)
+      // the file's kind picks the direction: CSV and Excel in, or JSON in
+      const wantMode = /\.(json|jsonl|ndjson)$/i.test(file.name) ? 'toCSV' : /\.(csv|tsv|txt|xlsx|xlsm|xlsb|xls|ods)$/i.test(file.name) ? 'toJSON' : mode;
+      file.slice(0, 8).arrayBuffer().then(b => {
+        const head = new Uint8Array(b);
+        if (isWorkbook(file, head)) { stopBig(); return openWorkbook(file); }
+        if (wantMode !== mode) setMode(wantMode);
+        clearBook();
+        if (file.size >= streamMin()) return streamFile(file);
+        stopBig();
+        return Layerbit.readFile(file).then(t => { csvInput.value = t; convert(); });  // bytes decoded by the kernel (encoding detected)
+      });
     }
 
-    // FAQ Accordion Logic
-    
     // Sample Loader Logic
     function loadSample(type) {
       const samples = {
         basic: { mode: 'toJSON', text: "id,first_name,last_name,email\n1,Alan,Turing,alan@example.com\n2,Ada,Lovelace,ada@example.com\n3,Grace,Hopper,grace@example.com" },
         quotes: { mode: 'toJSON', text: "product_id,title,price,category\n101,\"Laptop, Pro Model\",1299.99,Electronics\n102,\"Mouse, Wireless Optical\",49.50,Accessories\n103,\"Keyboard, Mechanical\",105.00,Accessories" },
         types: { mode: 'toJSON', text: "user_id,is_active,account_balance,role\n1,true,4500.50,admin\n2,false,0,guest\n3,true,-15.00,user" },
-        reverse: { mode: 'toCSV', text: '[\n  { "id": 1, "name": "Alan Turing", "role": "Admin" },\n  { "id": 2, "name": "Smith, Jane", "role": "User", "notes": "VIP" }\n]' }
+        nested: { mode: 'toJSON', nest: true, text: "id,customer.name,customer.city,items.0.sku,items.0.qty,items.1.sku,items.1.qty\n1001,Ada Lovelace,London,A-17,2,B-04,1\n1002,Alan Turing,Wilmslow,C-33,5,,\n" },
+        reverse: { mode: 'toCSV', text: '[\n  { "id": 1, "name": "Alan Turing", "role": "Admin" },\n  { "id": 2, "name": "Smith, Jane", "role": "User", "notes": "VIP" }\n]' },
+        lines: { mode: 'toCSV', text: '{"ts":"2026-11-23T09:00:00Z","user":{"id":7,"country":"AE"},"event":"login"}\n{"ts":"2026-11-23T09:00:04Z","user":{"id":12,"country":"IN"},"event":"purchase","amount":499.0}\n' }
       };
 
       const sample = samples[type];
       setMode(sample.mode);
+      $('nestKeys').checked = !!sample.nest;
       csvInput.value = sample.text;
-
-      // Auto-trigger the inference checkbox logic for the 'types' example to show it off
-      if (type === 'types') {
-        inferTypes.checked = true;
-      }
-
+      if (type === 'types') inferTypes.checked = true;
       convert();
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }

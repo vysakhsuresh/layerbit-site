@@ -7,7 +7,7 @@
       "@id": "https://layerbit.co.in/tools/csv-to-json.html#app",
       "name": "CSV to JSON Converter",
       "url": "https://layerbit.co.in/tools/csv-to-json.html",
-      "description": "Convert CSV to a JSON array or JSON back to CSV in your browser. Auto-detects comma, semicolon, tab and pipe delimiters and handles quoted fields.",
+      "description": "Convert CSV and Excel (every sheet) to JSON or JSON Lines, and JSON back to CSV or .xlsx, in your browser. Nested a.b headers, column picking, editable table, 100 MB+ files.",
       "applicationCategory": "DeveloperApplication",
       "operatingSystem": "Any (runs in the browser)",
       "browserRequirements": "Requires JavaScript",
@@ -19,7 +19,20 @@
       },
       "publisher": {
         "@id": "https://layerbit.co.in/#organization"
-      }
+      },
+      "featureList": [
+        "CSV to JSON array or JSON Lines",
+        "JSON or JSON Lines to CSV",
+        "Every sheet of an Excel workbook",
+        "Excel .xlsx export with typed cells",
+        "Nested JSON from dotted headers and flattening back",
+        "Choose, rename and reorder columns",
+        "Editable table preview",
+        "Streams files of 100 MB and more in a Web Worker",
+        "Type inference that never changes a value",
+        "Formula-safe CSV export",
+        "Runs entirely in the browser"
+      ]
     },
     {
       "@type": "BreadcrumbList",
@@ -83,10 +96,58 @@
         },
         {
           "@type": "Question",
+          "name": "Can it read Excel files?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes. Drop or upload an .xlsx, .xlsm, .xls or .ods file and every sheet is listed with its row count. Pick one sheet to see it as CSV (where you can edit it, choose columns and set types), or pick All sheets to get one JSON object with a key per sheet; with JSON Lines output, each record carries a _sheet field instead. Cells are read as Excel shows them: dates as formatted, formulas as their last calculated value. The workbook is read by the open-source SheetJS library inside your browser."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What are JSON Lines, and when should I use them?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "JSON Lines (also called NDJSON) puts one JSON object on each line instead of wrapping everything in one array. Log pipelines, BigQuery, Elasticsearch bulk loads and most streaming tools read it, because a program can process one line at a time without loading the whole file. Choose JSON Lines as the output format; in JSON → CSV mode, JSON Lines input is recognised automatically, and a broken line is reported by its line number."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How do I get nested JSON from a flat CSV?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Name the columns by path and switch on Nest a.b headers: customer.name and customer.city become {\"customer\": {\"name\": …, \"city\": …}}, and items.0.sku, items.1.sku become an array. If one column holds a value where another needs an object (a and a.b), that column is kept flat and listed above the input, rather than one silently overwriting the other. Going the other way, Flatten nested turns nested JSON into exactly these column names, so the two directions round-trip."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Can I choose, rename or reorder columns?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes, in both directions. Under the input, each column has a box to include it, a name you can change (press Enter), arrows to move it, and in CSV → JSON a type. The choices stay while you edit the data or load a file with the same columns, and new columns are added at the end."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Can I edit the data before converting?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes. Below the converter, the table preview shows every row (only the rows on screen are drawn, so 100,000 rows scroll smoothly). Double-click a cell, or select it and press Enter, type, and press Enter; the change goes back into the CSV or JSON input and the output updates. Escape cancels. In JSON → CSV mode a number stays a number when you type a number."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How large a file can it convert?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Files of 20 MB and more are not loaded into the text box. A background worker reads them in slices and writes the result straight into the file you save, while the page shows progress and the first 100 records. In our tests a 150 MB CSV with 2 million rows became 349 MB of JSON in about 17 seconds, and a 122 MB JSON Lines file became CSV in 16 seconds, without uploading anything. The limit is your device's memory for the finished file. A single JSON array (not JSON Lines) is read whole inside the worker, so for very large JSON prefer JSON Lines."
+          }
+        },
+        {
+          "@type": "Question",
           "name": "Can it convert JSON back to CSV too?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "Yes. Switch to \"JSON → CSV\" mode and paste a JSON array of objects. The header row is built from the union of every key across all objects, so records with slightly different fields (an optional notes column on some rows, for example) still produce one clean table instead of dropping data. Nested objects or arrays inside a field are stringified into that cell rather than breaking the export."
+            "text": "Yes. Switch to \"JSON → CSV\" mode and paste a JSON array of objects, or JSON Lines (one object per line; the format is detected). The header row is built from the union of every key across all objects, so records with slightly different fields (an optional notes column on some rows, for example) still produce one clean table instead of dropping data. With Flatten nested on (the default), nested objects and arrays become columns named by their path, such as user.name and tags.0; switch it off to write each nested value as JSON in one cell. Save .xlsx writes an Excel workbook instead of CSV."
           }
         }
       ]

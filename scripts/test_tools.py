@@ -23,7 +23,7 @@ Usage:
 Requires: pip install playwright && playwright install chromium
 Set LAYERBIT_CHROMIUM=/path/to/chrome to use a specific binary.
 """
-import argparse, functools, http.server, json, os, socket, socketserver, sys
+import argparse, base64, functools, http.server, json, os, socket, socketserver, sys
 import threading, time, traceback
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -960,6 +960,179 @@ def _(t):
     t.set("csvInput", "a;b\n1;2")
     t.click("#btnConvert")
     expect("delimiter" in t.text("errorText").lower(), f"no hint: {t.text('errorText')}")
+
+
+@case("csv-to-json", "typical", "2.4: JSON Lines out, and JSON Lines in for JSON -> CSV")
+def _(t):
+    t.click("#btnModeToJSON")
+    t.select("outFormat", "jsonl")
+    t.set("csvInput", 'id,name\n1,Ada\n2,"Smith, Jane"')
+    t.click("#btnConvert")
+    lines = t.text("jsonOutput").strip().splitlines()
+    eq([json.loads(x) for x in lines], [{"id": 1, "name": "Ada"}, {"id": 2, "name": "Smith, Jane"}], "JSON Lines out")
+    expect(".jsonl" in t.text("btnDownload"), "download label: " + t.text("btnDownload"))
+    t.select("outFormat", "json")
+    t.click("#btnModeToCSV")
+    t.set("csvInput", '{"id":1,"name":"Ada"}\n\n{"id":2,"tag":"x"}\n')
+    t.click("#btnConvert")
+    eq(t.text("jsonOutput").strip().splitlines(), ["id,name,tag", "1,Ada,", "2,,x"], "JSON Lines in")
+    t.set("csvInput", '{"id":1}\n{"id":')
+    t.click("#btnConvert")
+    expect("line" in t.text("errorText").lower(), "broken JSON Lines not reported by line: " + t.text("errorText"))
+    t.click("#btnModeToJSON")
+
+
+@case("csv-to-json", "typical", "2.4: dotted headers nest into objects and arrays, and flatten back")
+def _(t):
+    t.click("#btnModeToJSON")
+    expect(not t.page.is_checked("#nestKeys"), "nesting should be off by default")
+    t.page.check("#nestKeys")
+    t.set("csvInput", "id,user.name,user.city,tags.0,tags.1\n1,Ada,Dubai,a,b")
+    t.click("#btnConvert")
+    eq(json.loads(t.text("jsonOutput")), [{"id": 1, "user": {"name": "Ada", "city": "Dubai"}, "tags": ["a", "b"]}], "nested")
+    t.set("csvInput", "a,a.b\n1,2")
+    t.click("#btnConvert")
+    eq(json.loads(t.text("jsonOutput")), [{"a": 1, "a.b": 2}], "conflict kept flat")
+    expect("a.b" in t.text("csvIssues"), "conflict not reported: " + t.text("csvIssues"))
+    t.page.uncheck("#nestKeys")
+    t.click("#btnModeToCSV")
+    expect(t.page.is_checked("#flattenKeys"), "flattening should be on by default")
+    t.set("csvInput", '[{"id":1,"user":{"name":"Ada","city":"Dubai"},"tags":["a","b"]}]')
+    t.click("#btnConvert")
+    eq(t.text("jsonOutput").strip().splitlines(), ["id,user.name,user.city,tags.0,tags.1", "1,Ada,Dubai,a,b"], "flattened")
+    t.page.uncheck("#flattenKeys"); t.wait(100)
+    expect('"{""name"":""Ada""' in t.text("jsonOutput"), "objects should stay JSON in one cell: " + t.text("jsonOutput"))
+    t.page.check("#flattenKeys")
+    t.click("#btnModeToJSON")
+
+
+@case("csv-to-json", "typical", "2.4: choose, rename and reorder columns in both directions")
+def _(t):
+    t.click("#btnModeToJSON")
+    t.set("csvInput", "id,name,email\n1,Ada,ada@x.com")
+    t.click("#btnConvert")
+    t.page.uncheck("#colInc-email")
+    t.page.fill("#colName-name", "full_name"); t.page.press("#colName-name", "Enter")
+    t.click("#colUp-name")
+    out = json.loads(t.text("jsonOutput"))
+    eq(list(out[0].items()), [("full_name", "Ada"), ("id", 1)], "columns chosen, renamed, reordered")
+    t.set("csvInput", "id,name,email,phone\n2,Bob,b@x.com,+971")
+    t.click("#btnConvert")
+    eq(list(json.loads(t.text("jsonOutput"))[0].keys()), ["full_name", "id", "phone"], "the plan survives new data")
+    t.click("#btnModeToCSV")
+    t.set("csvInput", '[{"id":1,"name":"Ada","secret":"x"}]')
+    t.click("#btnConvert")
+    t.page.uncheck("#colInc-secret"); t.click("#colDown-id")
+    eq(t.text("jsonOutput").strip().splitlines(), ["name,id", "Ada,1"], "JSON -> CSV columns")
+    t.click("#btnModeToJSON")
+
+
+@case("csv-to-json", "typical", "2.4: an Excel workbook: every sheet listed, one sheet or all converted")
+def _(t):
+    t.click("#btnModeToJSON")
+    t.page.evaluate(LOAD_SCRIPT, "../js/vendor/xlsx.full.min.js")
+    t.call("""() => { const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([['id', 'zip', 'name'], [1, '00123', 'Ada'], [2, '94107', 'Bob, Jr.']]), 'Customers');
+      XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([['sku', 'price'], ['A-1', 9.5]]), 'Prices');
+      handleFile(new File([XLSX.write(wb, { type: 'array', bookType: 'xlsx' })], 'book.xlsx')); }""")
+    t.wait_for("!document.getElementById('sheetWrap').hidden && document.getElementById('jsonOutput').textContent.includes('Ada')")
+    opts = t.call("[...document.getElementById('sheetSelect').options].map(o => o.textContent)")
+    expect(any("Customers" in o for o in opts) and any("Prices" in o for o in opts) and any("All sheets" in o for o in opts), f"{opts}")
+    out = json.loads(t.text("jsonOutput"))
+    eq(out[0], {"id": 1, "zip": "00123", "name": "Ada"}, "first sheet, text kept")
+    eq(out[1]["name"], "Bob, Jr.", "comma inside a cell")
+    t.select("sheetSelect", "Prices")
+    eq(json.loads(t.text("jsonOutput")), [{"sku": "A-1", "price": 9.5}], "second sheet")
+    t.select("sheetSelect", "*")
+    both = json.loads(t.text("jsonOutput"))
+    eq(list(both.keys()), ["Customers", "Prices"], "all sheets, keyed by name")
+    eq(both["Prices"], [{"sku": "A-1", "price": 9.5}], "all sheets: Prices")
+    t.click("#btnModeToCSV"); t.click("#btnModeToJSON")
+    expect(t.call("document.getElementById('sheetWrap').hidden"), "sheet picker stays after leaving the workbook")
+
+
+@case("csv-to-json", "typical", "2.4: .xlsx out keeps text as text and numbers as numbers, and never writes a formula")
+def _(t):
+    t.click("#btnModeToCSV")
+    t.set("csvInput", '[{"zip":"00123","n":42,"big":12345678901234567890,"f":"=1+1","ok":true,"user":{"name":"Ada"}}]')
+    t.click("#btnConvert")
+    with t.page.expect_download() as dl:
+        t.click("#btnXlsx")
+    expect(dl.value.suggested_filename.endswith(".xlsx"), dl.value.suggested_filename)
+    b64 = base64.b64encode(open(dl.value.path(), "rb").read()).decode()
+    t.page.evaluate(LOAD_SCRIPT, "../js/vendor/xlsx.full.min.js")
+    res = t.call("""() => { const wb = XLSX.read(Uint8Array.from(atob('%s'), c => c.charCodeAt(0)), { type: 'array' });
+      const ws = wb.Sheets[wb.SheetNames[0]];
+      return ['A1', 'A2', 'B2', 'C2', 'D2', 'E2', 'F1', 'F2'].map(a => ws[a] ? [ws[a].t, String(ws[a].v), ws[a].f || ''] : null); }""" % b64)
+    eq(res, [["s", "zip", ""], ["s", "00123", ""], ["n", "42", ""], ["s", "12345678901234567890", ""], ["s", "=1+1", ""], ["b", "true", ""], ["s", "user.name", ""], ["s", "Ada", ""]], "cells")
+    t.click("#btnModeToJSON")
+
+
+@case("csv-to-json", "typical", "2.4: the table preview is editable and edits go back into the input")
+def _(t):
+    t.click("#btnModeToJSON")
+    t.set("csvInput", "id,name\n1,Ada\n2,Bob")
+    t.click("#btnConvert")
+    expect(t.visible("#gridSection"), "no table preview")
+    t.page.dblclick("#grid .lb-vrow[data-row='1'] .lb-vcell[data-col='1']")
+    t.page.fill("#grid input.lb-vedit", 'Bob "the builder", Jr.')
+    t.page.press("#grid input.lb-vedit", "Enter")
+    t.wait(150)
+    expect(t.text("jsonOutput").strip().startswith("["), "output after the edit: " + t.text("jsonOutput")[:100] + " ; " + t.text("errorText") + " | input: " + t.val("csvInput")[:200])
+    eq(json.loads(t.text("jsonOutput"))[1]["name"], 'Bob "the builder", Jr.', "edited output")
+    eq(t.val("csvInput").splitlines()[2], '2,"Bob ""the builder"", Jr."', "edited input, quoted")
+    t.page.dblclick("#grid .lb-vrow[data-row='0'] .lb-vcell[data-col='0']")
+    t.page.press("#grid input.lb-vedit", "Escape")
+    expect(t.text("jsonOutput").strip().startswith("["), "output after Escape: " + t.text("jsonOutput")[:100] + t.text("errorText"))
+    eq(json.loads(t.text("jsonOutput"))[0]["id"], 1, "Escape leaves the cell as it was")
+    t.click("#btnModeToCSV")
+    t.set("csvInput", '[{"id":7,"user":{"name":"Ada"}}]')
+    t.click("#btnConvert")
+    t.page.dblclick("#grid .lb-vrow[data-row='0'] .lb-vcell[data-col='1']")
+    t.page.fill("#grid input.lb-vedit", "Grace"); t.page.press("#grid input.lb-vedit", "Enter"); t.wait(150)
+    expect(t.val("csvInput").strip().startswith("["), "JSON input after the edit: " + t.val("csvInput")[:120] + " ; output: " + t.text("jsonOutput") + " | " + t.text("errorText"))
+    eq(json.loads(t.val("csvInput")), [{"id": 7, "user": {"name": "Grace"}}], "nested value edited in the JSON input")
+    t.click("#btnModeToJSON")
+
+
+@case("csv-to-json", "edge", "2.4: streaming in a Worker gives exactly the in-memory result, for messy CSV and for JSON Lines")
+def _(t):
+    t.click("#btnModeToJSON")
+    # (a text box turns CRLF inside a value into LF; the stream keeps the bytes)
+    messy = '\ufeffid;name;note\r\n1;"Smith; Jane";"multi\nline"\r\n2;5" screen;\r\n\r\n3;"say ""hi""";00123\r\n4;x\r\n'
+    t.set("csvInput", messy); t.click("#btnConvert")
+    want = t.call("finalOutputString")
+    t.call("window.csvStreamMin = 0")
+    t.page.evaluate("text => handleFile(new File([text], 'messy.csv'))", messy)
+    t.wait_for("window.csvBig && window.csvBig.done", 10000)
+    got = t.call("window.csvBig.text")
+    eq(got, want, "stream result equals the in-memory conversion")
+    expect("line 7" in t.text("csvIssues").lower(), "short row not reported by the stream: " + t.text("csvIssues"))
+    t.click("#btnModeToCSV")
+    t.page.evaluate("text => handleFile(new File([text], 'r.jsonl'))", '{"a":1,"b":{"c":12345678901234567890}}\n{"a":2,"d":"=x"}\n')
+    t.wait_for("window.csvBig && window.csvBig.done", 10000)
+    eq(t.call("window.csvBig.text").strip().splitlines(), ["a,b.c,d", "1,12345678901234567890,", "2,,'=x"], "JSON Lines streamed to CSV")
+    t.call("window.csvStreamMin = undefined")
+    t.click("#btnModeToJSON")
+
+
+@case("csv-to-json", "maximal", "2.4: a 40 MB CSV streams through a Worker with progress and a preview; Save holds every record")
+def _(t):
+    t.click("#btnModeToJSON")
+    t.call("""() => { const row = i => i + ',name ' + i + ',"note, with a comma and some more text here",' + (i % 2 ? 'true' : 'false') + '\\n';
+      const parts = ['id,name,note,flag\\n']; for (let i = 0; i < 600000; i++) parts.push(row(i));
+      window.__big = new File(parts, 'big.csv'); handleFile(window.__big); }""")
+    t.wait_for("window.csvBig && window.csvBig.done", 60000)
+    expect(t.call("window.__big.size") > 30e6, "file not large enough")
+    eq(t.call("window.csvBig.records"), 600000, "records")
+    expect(t.call("window.csvBig.progress") >= 10, "progress reported %s times" % t.call("window.csvBig.progress"))
+    expect("600,000" in t.text("bigNote"), "summary: " + t.text("bigNote"))
+    expect('"name 0"' in t.text("jsonOutput") and '"name 599999"' not in t.text("jsonOutput"), "preview should show the first records only")
+    expect(t.call("window.csvBig.blob.size") > 40e6, "saved output too small")
+    tail = t.call("() => window.csvBig.blob.slice(window.csvBig.blob.size - 200).text()")
+    expect('"name 599999"' in tail and tail.rstrip().endswith("]"), tail)
+    expect(t.call("document.getElementById('csvInput').value.length") == 0, "the big file was put into the text box")
+    t.click("#btnModeToCSV"); t.click("#btnModeToJSON")
 
 
 # ----------------------------------------------------------------------------

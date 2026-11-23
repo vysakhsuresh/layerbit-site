@@ -2,8 +2,12 @@
  * on screen exist in the page. Browser only (window.LBVirtual).
  *
  * LBVirtual.list(host, {count, rowHeight, render(i) -> string | Node, overscan})
- * LBVirtual.grid(host, {columns: [{label, width?}], count, rowHeight, cell(row, col) -> text})
+ * LBVirtual.grid(host, {columns: [{label, width?}], count, rowHeight, cell(row, col) -> text,
+ *                      edit(row, col, text)?})
  *   both return {update(count), scrollToIndex(i), refresh(), destroy()}
+ *   With edit, a cell is edited in place: double-click it, or focus it and
+ *   press Enter or F2; Enter or leaving the box saves, Escape cancels. Rows
+ *   and cells carry data-row and data-col.
  *
  * A string from render() or cell() is set as text, never parsed as HTML.
  * Past 8 million pixels the scroll range is scaled (browsers cap element
@@ -82,19 +86,55 @@
     head.className = 'lb-vgrid-head';
     head.style.cssText = 'position:sticky;top:0;z-index:2;display:grid;grid-template-columns:' + tmpl + ';min-width:max-content;';
     o.columns.forEach(function (c) { var d = document.createElement('div'); d.className = 'lb-vcell'; d.textContent = c.label; head.appendChild(d); });
-    return list(host, {
+    var view = list(host, {
       count: o.count, rowHeight: o.rowHeight, overscan: o.overscan || 8, header: head,
       render: function (r) {
         var row = document.createElement('div'); row.className = 'lb-vrow';
+        row.dataset.row = r;
         row.style.cssText = 'display:grid;grid-template-columns:' + tmpl + ';min-width:max-content;';
         for (var c = 0; c < o.columns.length; c++) {
           var d = document.createElement('div'); d.className = 'lb-vcell';
+          d.dataset.col = c;
+          if (o.edit) d.tabIndex = -1;
           var v = o.cell(r, c); d.textContent = v == null ? '' : String(v);
           row.appendChild(d);
         }
         return row;
       }
     });
+    if (!o.edit) return view;
+    function begin(cellEl) {
+      var rowEl = cellEl.closest('.lb-vrow'); if (!rowEl || cellEl.querySelector('input')) return;
+      var r = +rowEl.dataset.row, c = +cellEl.dataset.col, old = o.cell(r, c);
+      var inp = document.createElement('input'); inp.className = 'lb-vedit'; inp.type = 'text';
+      inp.value = old == null ? '' : String(old);
+      inp.setAttribute('aria-label', 'Edit ' + (o.columns[c] ? o.columns[c].label : 'cell') + ', row ' + (r + 1));
+      cellEl.textContent = ''; cellEl.appendChild(inp); inp.focus(); inp.select();
+      var done = false;
+      function finish(save) {
+        if (done) return; done = true;
+        var v = inp.value;
+        if (save && v !== (old == null ? "" : String(old))) { o.edit(r, c, v); if (cellEl.isConnected) view.refresh(); }
+        else { cellEl.textContent = old == null ? '' : String(old); cellEl.focus(); }
+      }
+      inp.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') { e.preventDefault(); finish(true); }
+        else if (e.key === 'Escape') { e.preventDefault(); finish(false); }
+        e.stopPropagation();
+      });
+      inp.addEventListener('blur', function () { finish(true); });
+    }
+    var onDbl = function (e) { var cl = e.target.closest('.lb-vrow .lb-vcell'); if (cl && host.contains(cl)) begin(cl); };
+    var onKey = function (e) {
+      var cl = e.target.closest && e.target.closest('.lb-vrow .lb-vcell');
+      if (cl && (e.key === 'Enter' || e.key === 'F2')) { e.preventDefault(); begin(cl); }
+    };
+    host.addEventListener('dblclick', onDbl);
+    host.addEventListener('keydown', onKey);
+    // the host is often reused for the next grid: take the listeners away
+    var destroy = view.destroy;
+    view.destroy = function () { host.removeEventListener('dblclick', onDbl); host.removeEventListener('keydown', onKey); destroy(); };
+    return view;
   }
 
   root.LBVirtual = { list: list, grid: grid, MAX_PX: MAX_PX };
