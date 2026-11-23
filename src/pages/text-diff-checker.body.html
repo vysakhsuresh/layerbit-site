@@ -464,7 +464,7 @@
       }).catch(e => showError(`${file.name}: ${e.message}`));
     }
     [['text1File', 'text1', 'a'], ['text2File', 'text2', 'b'], ['baseFile', 'baseText'], ['oursFile', 'oursText'], ['theirsFile', 'theirsText'], ['patchOrigFile', 'patchOriginal', 'a'], ['patchFile', 'patchText']]
-      .forEach(([f, t, k]) => $(f).addEventListener('change', e => loadFileInto(t, e.target.files[0], k)));
+      .forEach(([f, t, k]) => $(f).addEventListener('change', e => { loadFileInto(t, e.target.files[0], k); e.target.value = ''; }));
     document.querySelectorAll('.pane').forEach(pane => {
       const ta = pane.querySelector('textarea');
       if (!ta) return;
@@ -500,7 +500,10 @@
 
     function swapInputs() { const t = $('text1').value; $('text1').value = $('text2').value; $('text2').value = t; const n = names.a; names.a = names.b; names.b = n; updateMeta(); if ($('outputSection').style.display !== 'none') run(true); }
     function clearInputs() {
-      keyUserChoice = null;
+      keyUserChoice = null; sideInfo = {}; patchState = null;
+      // a file input keeps its last value, and choosing the same file again
+      // would then fire no change event
+      document.querySelectorAll('input[type="file"]').forEach(i => { i.value = ''; });
       ['text1', 'text2', 'baseText', 'oursText', 'theirsText', 'patchOriginal', 'patchText', 'mergedText'].forEach(id => $(id).value = '');
       names = { a: 'original', b: 'modified' }; zips = { a: null, b: null };
       $('zipAInfo').innerHTML = '<i data-lucide="folder-input"></i><span>Drop a .zip of the first folder here</span>'; $('zipBInfo').innerHTML = '<i data-lucide="folder-input"></i><span>Drop a .zip of the second folder here</span>';
@@ -965,8 +968,8 @@
         if (zips.a && zips.b) run();
       }).catch(e => showError(`${file.name}: ${e.message}`));
     }
-    $('zipAFile').addEventListener('change', e => loadZip('a', e.target.files[0]));
-    $('zipBFile').addEventListener('change', e => loadZip('b', e.target.files[0]));
+    $('zipAFile').addEventListener('change', e => { loadZip('a', e.target.files[0]); e.target.value = ''; });
+    $('zipBFile').addEventListener('change', e => { loadZip('b', e.target.files[0]); e.target.value = ''; });
     [['zipAPane', 'a'], ['zipBPane', 'b']].forEach(([id, side]) => { const p = $(id); p.addEventListener('dragover', e => { e.preventDefault(); p.classList.add('dragover'); }); p.addEventListener('dragleave', () => p.classList.remove('dragover')); p.addEventListener('drop', e => { e.preventDefault(); p.classList.remove('dragover'); loadZip(side, e.dataTransfer.files[0]); }); });
     async function runZip() {
       if (!zips.a || !zips.b) { showError('Choose or drop two zip archives.'); return; }

@@ -2265,6 +2265,23 @@ def _(t):
     t.page.uncheck("#showWs")
 
 
+@case("text-diff-checker", "edge", "bug 18: after Clear, choosing the same file again loads it")
+def _(t):
+    f = {"name": "same.txt", "mimeType": "text/plain", "buffer": b"hello again\n"}
+    t.page.set_input_files("#text1File", f)
+    t.wait_for("() => document.getElementById('text1').value === 'hello again\\n'")
+    # a real file dialog fires 'change' only if the input's value changes, so
+    # the input must be empty again after a load and after Clear
+    eq(t.call("document.getElementById('text1File').value"), "", "file input still holds the last file after loading")
+    t.page.set_input_files("#text1File", f)
+    t.wait(200)
+    t.call("clearInputs()")
+    eq(t.val("text1"), "", "clear")
+    eq(t.call("[...document.querySelectorAll('input[type=file]')].filter(i => i.value).length"), 0, "Clear left a file input set")
+    t.page.set_input_files("#text1File", f)
+    t.wait_for("() => document.getElementById('text1').value === 'hello again\\n'", 3000)
+
+
 @case("text-diff-checker", "typical", "audit: ignore-whitespace/case and highlight options re-run the diff live")
 def _(t):
     t.set("text1", "Hello  World\nsecond line\n")
