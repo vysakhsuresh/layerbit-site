@@ -2444,6 +2444,36 @@ def _(t):
     t.select("sheetValues", "displayed")
 
 
+@case("text-diff-checker", "typical", "feature 23: composite keys, ignored columns, tolerance, dates, filter, sort and column summary")
+def _(t):
+    t.call("setMode('table')")
+    t.set("text1", "region,sku,qty,price,updated,shipped\nUAE,1,5,10.00,t1,2026-11-05\nKSA,1,7,20.00,t1,2026-11-06\nUAE,2,9,30.00,t1,2026-11-07\nUAE,3,1,5.00,t1,2026-11-08\n")
+    t.set("text2", "sku,region,qty,price,updated,shipped\n1,KSA,8,20.004,t2,06/11/2026\n1,UAE,5,10,t2,5 Nov 2026\n2,UAE,9,31.00,t2,07/11/2026\n4,UAE,2,1.00,t2,2026-11-09\n")
+    t.wait(400)
+    t.select("keyCol", "region"); t.select("keyCol2", "sku")
+    t.call("document.getElementById('tableOpts').open = true")
+    t.page.check("#ignoreCols input[value='updated']")
+    t.call("run()"); t.wait(200)
+    expect("region + sku" in t.text("resultTitle"), t.text("resultTitle"))
+    s = t.text("diffStats")
+    expect("~3 changed" in s, "before options: " + s)
+    t.page.check("#tNumeric"); t.page.check("#tDates"); t.set("tTolAbs", "0.01"); t.call("run()"); t.wait(200)
+    s = t.text("diffStats")
+    expect("~2 changed" in s and "+1 rows" in s and "−1 rows" in s, "with numeric, dates and tolerance: " + s)
+    items = t.call("[...document.querySelectorAll('#colSummary .cs-item')].map(e => e.innerText.replace(/\\s+/g, ' ').trim())")
+    expect(items == ["qty 1", "price 1"] or items == ["price 1", "qty 1"], f"column summary: {items}")
+    expect("ignored: updated" in t.text("colSummary"), "ignored columns are named in the summary")
+    t.select("rowFilter", "added"); t.wait(150)
+    out = t.text("tablePanel")
+    expect("Added rows" in out and "Changed rows" not in out, "row filter")
+    t.select("rowFilter", "all"); t.select("rowSort", "qty"); t.select("rowSortDir", "desc"); t.wait(150)
+    order = t.call("[...document.querySelectorAll('#tsec0 tbody tr')].map(r => r.innerText.split('\\t').slice(0, 2).join(' '))")
+    expect(order == ["UAE 2", "KSA 1"], f"sort by qty desc: {order}")
+    t.select("rowSortDir", "asc"); t.wait(150)
+    order = t.call("[...document.querySelectorAll('#tsec0 tbody tr')].map(r => r.innerText.split('\\t').slice(0, 2).join(' '))")
+    expect(order == ["KSA 1", "UAE 2"], f"sort by qty asc: {order}")
+
+
 @case("text-diff-checker", "typical", "audit: ignore-whitespace/case and highlight options re-run the diff live")
 def _(t):
     t.set("text1", "Hello  World\nsecond line\n")

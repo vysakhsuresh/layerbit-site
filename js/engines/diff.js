@@ -716,6 +716,59 @@
    *  header, so a file whose columns were reordered still matches row for
    *  row. An empty key list compares by row order. A number is accepted for
    *  older callers: an index into the original's header. */
+  // ----------------------------------------------------- table cell matching
+  var MONTH = { jan: 1, feb: 2, mar: 3, apr: 4, may: 5, jun: 6, jul: 7, aug: 8, sep: 9, sept: 9, oct: 10, nov: 11, dec: 12 };
+  function validYmd(y, m, d) { return m >= 1 && m <= 12 && d >= 1 && d <= new Date(Date.UTC(y, m, 0)).getUTCDate(); }
+  /** A date (and optional time) in any common format as "YYYY-MM-DD" or
+   *  "YYYY-MM-DDTHH:MM[:SS]"; null if it is not a valid date. Numeric
+   *  day/month order follows dayFirst unless one part is above 12. */
+  function normaliseDate(v, dayFirst) {
+    var s = String(v == null ? '' : v).trim(), m, y, mo, d, rest = '';
+    if (!s) return null;
+    if ((m = /^(\d{4})[-/.](\d{1,2})[-/.](\d{1,2})(.*)$/.exec(s))) { y = +m[1]; mo = +m[2]; d = +m[3]; rest = m[4]; }
+    else if ((m = /^(\d{1,2})[-/.](\d{1,2})[-/.](\d{4})(.*)$/.exec(s))) {
+      var p = +m[1], q = +m[2]; y = +m[3]; rest = m[4];
+      if (p > 12 && q <= 12) { d = p; mo = q; } else if (q > 12 && p <= 12) { mo = p; d = q; } else if (dayFirst === false) { mo = p; d = q; } else { d = p; mo = q; }
+    } else if ((m = /^(\d{1,2})[\s-]+([a-z]{3,9})\.?,?[\s-]+(\d{4})(.*)$/i.exec(s)) && MONTH[m[2].slice(0, m[2].toLowerCase() === 'sept' ? 4 : 3).toLowerCase()]) { d = +m[1]; mo = MONTH[m[2].slice(0, 3).toLowerCase()]; y = +m[3]; rest = m[4]; }
+    else if ((m = /^([a-z]{3,9})\.?\s+(\d{1,2}),?\s+(\d{4})(.*)$/i.exec(s)) && MONTH[m[1].slice(0, 3).toLowerCase()]) { mo = MONTH[m[1].slice(0, 3).toLowerCase()]; d = +m[2]; y = +m[3]; rest = m[4]; }
+    else return null;
+    if (!validYmd(y, mo, d)) return null;
+    var out = y + '-' + ('0' + mo).slice(-2) + '-' + ('0' + d).slice(-2);
+    rest = rest.trim().replace(/^t/i, '').trim();
+    if (!rest) return out;
+    var t = /^(\d{1,2}):(\d{2})(?::(\d{2}))?(?:\.\d+)?\s*(am|pm)?\s*(z|[+-]\d{2}:?\d{2})?$/i.exec(rest);
+    if (!t) return null;
+    var h = +t[1]; if (t[4]) { if (h < 1 || h > 12) return null; h = h % 12 + (/pm/i.test(t[4]) ? 12 : 0); }
+    if (h > 23 || +t[2] > 59) return null;
+    return out + 'T' + ('0' + h).slice(-2) + ':' + t[2] + (t[3] && t[3] !== '00' ? ':' + t[3] : '');
+  }
+  var NUM_RE = /^[+-]?(\d+(\.\d*)?|\.\d+)([eE][+-]?\d+)?$/, GROUPED_RE = /^[+-]?\d{1,3}(,\d{3})+(\.\d+)?$/;
+  function numText(v) { var s = String(v).trim(); if (GROUPED_RE.test(s)) s = s.replace(/,/g, ''); return NUM_RE.test(s) ? s.replace(/^\+/, '') : null; }
+  /** Normalises a cell for comparison under the table options. */
+  function cellKey(v, o) {
+    v = v == null ? '' : String(v);
+    if (o.trim) v = v.trim();
+    if (o.emptyNull && /^(null|nil|none|n\/a|\\n)?$/i.test(v.trim())) return '';
+    if (o.ignoreCase) v = v.toLowerCase();
+    if (o.numeric) { var n = numText(v); if (n != null) return '#' + canonicalNumber(n.replace(/^(-?)0+(?=\d)/, '$1').replace(/^(-?)\./, '$10.')); }
+    if (o.dates) { var d = normaliseDate(v, o.dayFirst); if (d) return '@' + d; }
+    return v;
+  }
+  function cellEq(x, y, o) {
+    if (cellKey(x, o) === cellKey(y, o)) return true;
+    if (o.tolAbs || o.tolPct) {
+      var a = numText(o.trim ? String(x).trim() : x), b = numText(o.trim ? String(y).trim() : y);
+      if (a == null || b == null) return false;
+      var fa = parseFloat(a), fb = parseFloat(b), diff = Math.abs(fa - fb);
+      if (!isFinite(diff)) return false;
+      // exact decimals beyond double precision are never "within tolerance" of each other by accident
+      if ((a.replace(/[^\d]/g, '').replace(/^0+/, '').length > 15 || b.replace(/[^\d]/g, '').replace(/^0+/, '').length > 15) && canonicalNumber(a) !== canonicalNumber(b) && diff === 0) return false;
+      if (o.tolAbs && diff <= o.tolAbs * (1 + 1e-12)) return true;
+      if (o.tolPct && diff <= Math.abs(fa) * o.tolPct / 100 * (1 + 1e-12)) return true;
+    }
+    return false;
+  }
+
   /** Makes header names unique and non-empty so no column shadows another:
    *  amount, amount -> amount, amount (2); a blank header becomes (column N). */
   function uniqueHeaders(hdr) {
@@ -733,18 +786,20 @@
   function tableDiff(rowsA, rowsB, opts) {
     var ha = uniqueHeaders(rowsA[0] || []), hb = uniqueHeaders(rowsB[0] || []);
     if (typeof opts === 'number') opts = { keys: opts >= 0 && ha[opts] != null ? [ha[opts]] : [] };
-    var o = Object.assign({ keys: [] }, opts || {});
+    var o = Object.assign({ keys: [], ignore: [] }, opts || {});
     o.keys.forEach(function (k) {
       if (ha.indexOf(k) < 0) throw new Error('Key column "' + k + '" is not in the original file.');
       if (hb.indexOf(k) < 0) throw new Error('Key column "' + k + '" is not in the modified file.');
     });
     var cols = ha.slice(); hb.forEach(function (c) { if (cols.indexOf(c) < 0) cols.push(c); });
-    var colsAdded = hb.filter(function (c) { return ha.indexOf(c) < 0; }), colsRemoved = ha.filter(function (c) { return hb.indexOf(c) < 0; });
+    var ignored = function (c) { return o.ignore.indexOf(c) >= 0; };
+    var colsAdded = hb.filter(function (c) { return ha.indexOf(c) < 0 && !ignored(c); }), colsRemoved = ha.filter(function (c) { return hb.indexOf(c) < 0 && !ignored(c); });
+    var compared = cols.filter(function (c) { return !ignored(c) && o.keys.indexOf(c) < 0; }), colChanges = {};
     function objects(rows, hdr) {
       return rows.slice(1).map(function (r) { var obj = {}; hdr.forEach(function (c, j) { obj[c] = r[j] == null ? '' : String(r[j]); }); return obj; });
     }
     var OA = objects(rowsA, ha), OB = objects(rowsB, hb);
-    var keyOf = function (obj, i) { return o.keys.length ? o.keys.map(function (k) { return obj[k]; }).join('\u241F') : String(i); };
+    var keyOf = function (obj, i) { return o.keys.length ? o.keys.map(function (k) { return o.trim || o.ignoreCase ? cellKey(obj[k], { trim: o.trim, ignoreCase: o.ignoreCase }) : obj[k]; }).join('\u241F') : String(i); };
     // Every row is kept, even when its key repeats: rows sharing a key are
     // paired in file order (a multiset), surplus ones are added or removed,
     // and every repeated key is listed in `duplicates`.
@@ -756,13 +811,13 @@
     var added = [], removed = [], changed = [], unchanged = 0, duplicates = [];
     var diffCells = function (ra, rb) {
       var cells = [];
-      cols.forEach(function (c) { var x = ra[c] == null ? '' : ra[c], y = rb[c] == null ? '' : rb[c]; if (x !== y) cells.push({ col: c, old: x, new: y }); });
+      compared.forEach(function (c) { var x = ra[c] == null ? '' : ra[c], y = rb[c] == null ? '' : rb[c]; if (x !== y && !cellEq(x, y, o)) { cells.push({ col: c, old: x, new: y }); colChanges[c] = (colChanges[c] || 0) + 1; } });
       return cells;
     };
     if (!o.keys.length) {
       // Row order: align whole rows with an LCS first, so one inserted row
       // is one added row; rows in a replaced block are paired by likeness.
-      var sig = function (r) { return cols.map(function (c) { return r[c] == null ? '' : r[c]; }).join('\u241E'); };
+      var sig = function (r) { return compared.map(function (c) { return cellKey(r[c] == null ? '' : r[c], o); }).join('\u241E'); };
       var SA = OA.map(sig), SB = OB.map(sig), parts = alignParts(SA, SB, Infinity), ia = 0, ib = 0;
       var emitPair = function (x, y) { var cells = diffCells(OA[x], OB[y]); if (cells.length) changed.push({ key: 'row ' + (y + 1), aRow: x + 1, bRow: y + 1, cells: cells, row: OB[y] }); else unchanged++; };
       for (var pi = 0; pi < parts.length; pi++) {
@@ -780,7 +835,7 @@
         if (part.kind === 'd') part.value.forEach(function () { removed.push({ key: 'row ' + (ia + 1), aRow: ia + 1, row: OA[ia] }); ia++; });
         else part.value.forEach(function () { added.push({ key: 'row ' + (ib + 1), bRow: ib + 1, row: OB[ib] }); ib++; });
       }
-      return { columns: cols, colsAdded: colsAdded, colsRemoved: colsRemoved, added: added, removed: removed, changed: changed, unchanged: unchanged, keyName: null, keys: [], duplicates: [] };
+      return { columns: cols, colsAdded: colsAdded, colsRemoved: colsRemoved, added: added, removed: removed, changed: changed, unchanged: unchanged, keyName: null, keys: [], duplicates: [], colChanges: colChanges, ignored: o.ignore.slice() };
     }
     var A = index(OA), B = index(OB);
     var label = function (k, i, n) { return n > 1 ? k + ' (#' + (i + 1) + ')' : k; };
@@ -790,8 +845,7 @@
       for (var i = 0; i < n; i++) {
         if (i >= rb.length) { removed.push({ key: label(k, i, n), row: ra[i] }); continue; }
         if (i >= ra.length) { added.push({ key: label(k, i, n), row: rb[i] }); continue; }
-        var cells = [];
-        cols.forEach(function (c) { var x = ra[i][c] == null ? '' : ra[i][c], y = rb[i][c] == null ? '' : rb[i][c]; if (x !== y) cells.push({ col: c, old: x, new: y }); });
+        var cells = diffCells(ra[i], rb[i]);
         if (cells.length) changed.push({ key: label(k, i, n), cells: cells, row: rb[i] }); else unchanged++;
       }
     });
@@ -801,7 +855,7 @@
       if (rb.length > 1) duplicates.push({ key: k, a: 0, b: rb.length });
       rb.forEach(function (row, i) { added.push({ key: label(k, i, rb.length), row: row }); });
     });
-    return { columns: cols, colsAdded: colsAdded, colsRemoved: colsRemoved, added: added, removed: removed, changed: changed, unchanged: unchanged, keyName: o.keys.length ? o.keys.join(' + ') : null, keys: o.keys, duplicates: o.keys.length ? duplicates : [] };
+    return { columns: cols, colsAdded: colsAdded, colsRemoved: colsRemoved, added: added, removed: removed, changed: changed, unchanged: unchanged, keyName: o.keys.length ? o.keys.join(' + ') : null, keys: o.keys, duplicates: o.keys.length ? duplicates : [], colChanges: colChanges, ignored: o.ignore.slice() };
   }
 
   // ------------------------------------------------------------- workbooks
@@ -991,5 +1045,5 @@
 
   return { lineDiff: lineDiff, foldContext: foldContext, intraline: intraline, tokenize: tokenize, detectLang: detectLang, renderLine: renderLine, esc: esc,
     unifiedPatch: unifiedPatch, applyPatch: applyPatch, parsePatchFiles: parsePatchFiles, applyPatchFile: applyPatchFile, diff3: diff3, structuralDiff: structuralDiff, canonicalJson: canonicalJson, canon: canon,
-    parseCsv: parseCsv, detectDelimiter: detectDelimiter, tableDiff: tableDiff, readZip: readZip, isProbablyText: isProbablyText, decodeBytes: decodeBytes, bytesEqual: bytesEqual, stripCommonRoot: stripCommonRoot, uniqueHeaders: uniqueHeaders, pairSheets: pairSheets, DEFAULT_IGNORE: DEFAULT_IGNORE, compileIgnore: compileIgnore, folderDiff: folderDiff, buildTree: buildTree, flattenTree: flattenTree, folderCsv: folderCsv, csvLine: csvLine, dosTime: dosTime, textFacts: textFacts, textNotes: textNotes, parseJsonLossless: parseJsonLossless, stringifyLossless: stringifyLossless, canonicalNumber: canonicalNumber, splitLines: splitLines, normalizeLine: normalizeLine, DEFAULT_OPTS: DEFAULT_OPTS };
+    parseCsv: parseCsv, detectDelimiter: detectDelimiter, tableDiff: tableDiff, readZip: readZip, isProbablyText: isProbablyText, decodeBytes: decodeBytes, bytesEqual: bytesEqual, stripCommonRoot: stripCommonRoot, uniqueHeaders: uniqueHeaders, pairSheets: pairSheets, normaliseDate: normaliseDate, cellEq: cellEq, DEFAULT_IGNORE: DEFAULT_IGNORE, compileIgnore: compileIgnore, folderDiff: folderDiff, buildTree: buildTree, flattenTree: flattenTree, folderCsv: folderCsv, csvLine: csvLine, dosTime: dosTime, textFacts: textFacts, textNotes: textNotes, parseJsonLossless: parseJsonLossless, stringifyLossless: stringifyLossless, canonicalNumber: canonicalNumber, splitLines: splitLines, normalizeLine: normalizeLine, DEFAULT_OPTS: DEFAULT_OPTS };
 });

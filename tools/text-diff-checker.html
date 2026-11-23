@@ -513,6 +513,16 @@
     .sheet-tab .sc.has { background: rgba(251,191,36,0.2); color: #fbbf24; }
     .linkish { background: none; border: 0; padding: 0; color: var(--accent-main); cursor: pointer; font: inherit; text-decoration: underline; }
     #sheetValuesLabel[hidden] { display: none; }
+    .table-opts { flex-basis: 100%; }
+    .table-opts summary { cursor: pointer; color: var(--text-muted); font-size: 0.88em; font-family: 'Space Grotesk', sans-serif; }
+    .table-opts[open] summary { color: #fff; margin-bottom: 8px; }
+    .to-grid { display: flex; flex-wrap: wrap; gap: 8px 16px; }
+    .to-cols { margin-top: 8px; display: flex; flex-wrap: wrap; gap: 6px 12px; align-items: center; font-size: 0.9em; }
+    .mini-input.num { width: 80px; }
+    .table-tools { display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: center; padding: 4px 12px 8px; }
+    .col-summary { padding: 0 12px 8px; font-size: 0.86em; color: var(--text-muted); display: flex; flex-wrap: wrap; gap: 6px 12px; align-items: center; }
+    .col-summary:empty { display: none; }
+    .col-summary .sc { display: inline-block; min-width: 18px; padding: 0 5px; border-radius: 999px; text-align: center; background: rgba(251,191,36,0.2); color: #fbbf24; }
 
   </style>
 </head>
@@ -691,6 +701,28 @@
       <label class="toggle-label">Match rows by
         <select id="keyCol" class="mini-select"><option value="-1">row order</option></select>
       </label>
+      <label class="toggle-label" title="Add a second key column for a composite key">and
+        <select id="keyCol2" class="mini-select"><option value="">(no second key)</option></select>
+      </label>
+      <label class="toggle-label" title="Add a third key column">and
+        <select id="keyCol3" class="mini-select"><option value="">(no third key)</option></select>
+      </label>
+      <details class="table-opts" id="tableOpts">
+        <summary>Matching options</summary>
+        <div class="to-grid">
+          <label class="toggle-label"><input type="checkbox" id="tTrim"> Trim spaces</label>
+          <label class="toggle-label"><input type="checkbox" id="tCase"> Ignore case</label>
+          <label class="toggle-label" title="Treat empty cells and NULL, null, None, N/A as the same"><input type="checkbox" id="tNull"> Empty = NULL</label>
+          <label class="toggle-label" title="Compare numbers by value: 1.0 = 1 and 0012 = 12; long numbers are compared digit by digit"><input type="checkbox" id="tNumeric"> Numbers by value</label>
+          <label class="toggle-label" title="2026-11-05, 05/11/2026 and 5 Nov 2026 are the same date"><input type="checkbox" id="tDates"> Dates in any format</label>
+          <label class="toggle-label">Dates like 05/11 are
+            <select id="tDayFirst" class="mini-select"><option value="1" selected>day first</option><option value="0">month first</option></select>
+          </label>
+          <label class="toggle-label">Tolerance ±<input type="number" id="tTolAbs" class="mini-input num" min="0" step="any" placeholder="0"></label>
+          <label class="toggle-label">or ±<input type="number" id="tTolPct" class="mini-input num" min="0" step="any" placeholder="0">%</label>
+        </div>
+        <div class="to-cols"><span class="muted">Ignore columns:</span> <span id="ignoreCols"></span></div>
+      </details>
     </div>
     <div class="opt-group">
       <button class="btn mode-only" data-for="text struct table" type="button" onclick="swapInputs()"><i data-lucide="arrow-left-right"></i> Swap</button>
@@ -1068,7 +1100,7 @@
   <script src="../js/kernel.js?v=40b2047872"></script>
 
   <script src="../js/shared.js?v=e2441a1728"></script>
-  <script src="../js/engines/diff.js?v=f744a70394"></script>
+  <script src="../js/engines/diff.js?v=c7eaa5fb76"></script>
 
   <script>
     // ------------------------------------------------------------ state
@@ -1638,6 +1670,10 @@
       sel.innerHTML = '<option value="-1">row order</option>' + hdr.map(h => `<option value="${E.esc(h)}">${E.esc(h)}</option>`).join('');
       const guess = hdr.find(h => /^(id|_id|key|sku|code|email|uuid|guid|ref|no\.?|number)$/i.test(String(h).trim()));
       sel.value = keyUserChoice != null && (keyUserChoice === '-1' || hdr.includes(keyUserChoice)) ? keyUserChoice : guess != null ? guess : (hdr.length ? hdr[0] : '-1');
+      const all = [...new Set(hdr.concat(E.uniqueHeaders(E.parseCsv($('text2').value)[0] || [])))];
+      ['keyCol2', 'keyCol3'].forEach((id, i) => { const el = $(id), prev = el.value; el.innerHTML = `<option value="">(no ${i ? 'third' : 'second'} key)</option>` + all.map(h => `<option value="${E.esc(h)}">${E.esc(h)}</option>`).join(''); el.value = all.includes(prev) ? prev : ''; });
+      const ign = new Set([...document.querySelectorAll('#ignoreCols input:checked')].map(i => i.value));
+      $('ignoreCols').innerHTML = all.map(h => `<label class="toggle-label"><input type="checkbox" value="${E.esc(h)}"${ign.has(h) ? ' checked' : ''}> ${E.esc(h)}</label>`).join('') || '<span class="muted">(paste data first)</span>';
     }
     $('keyCol').addEventListener('change', () => { keyUserChoice = $('keyCol').value; });
     let keyTimer = null;
@@ -1653,7 +1689,8 @@
         const ha = E.uniqueHeaders(ra[0] || []), hb = E.uniqueHeaders(rb[0] || []);
         const chosen = prev && prev.keys[p.a];
         const keys = chosen != null ? (chosen === '-1' ? [] : ha.includes(chosen) && hb.includes(chosen) ? [chosen] : autoKey(ha, hb)) : autoKey(ha, hb);
-        let r; try { r = E.tableDiff(ra.length ? ra : [[]], rb.length ? rb : [[]], { keys }); } catch (e) { r = E.tableDiff(ra.length ? ra : [[]], rb.length ? rb : [[]], { keys: [] }); }
+        const o = tableOpts(); o.ignore = o.ignore.filter(c => ha.includes(c) || hb.includes(c));
+        let r; try { r = E.tableDiff(ra.length ? ra : [[]], rb.length ? rb : [[]], Object.assign({}, o, { keys })); } catch (e) { r = E.tableDiff(ra.length ? ra : [[]], rb.length ? rb : [[]], Object.assign({}, o, { keys: [] })); }
         return { pair: p, r, header: ha, keys };
       });
       sheetView = { P, results, current: prev && prev.current != null && prev.current < results.length ? prev.current : -1, keys: prev ? prev.keys : {}, disp };
@@ -1678,8 +1715,17 @@
       sel.value = x.keys.length ? x.keys[0] : '-1';
       renderTableResult(x.r, tabs, `Sheet ${x.pair.a}${x.pair.renamed ? ' → ' + x.pair.b : ''}: rows ${x.keys.length ? 'keyed by ' + x.keys.join(' + ') : 'by row order'}`);
     }
+    $('tablePanel').addEventListener('change', e => { if (e.target && ['rowFilter', 'rowSort', 'rowSortDir'].includes(e.target.id) && window._lastTable) renderTableResult(window._lastTable, ...window._lastTableArgs); });
     $('tablePanel').addEventListener('click', e => { const b = e.target.closest('[data-sheet]'); if (b && sheetView) { sheetView.current = +b.dataset.sheet; renderBooks(); } });
     $('sheetValues').addEventListener('change', () => { if (mode === 'table' && bookActive()) run(true); });
+    function tableOpts() {
+      return { trim: $('tTrim').checked, ignoreCase: $('tCase').checked, emptyNull: $('tNull').checked, numeric: $('tNumeric').checked, dates: $('tDates').checked, dayFirst: $('tDayFirst').value === '1',
+        tolAbs: Math.max(0, +$('tTolAbs').value || 0), tolPct: Math.max(0, +$('tTolPct').value || 0), ignore: [...document.querySelectorAll('#ignoreCols input:checked')].map(i => i.value) };
+    }
+    function chosenKeys() { const k = [$('keyCol').value, $('keyCol2').value, $('keyCol3').value].filter(v => v && v !== '-1'); return [...new Set(k)]; }
+    ['tTrim', 'tCase', 'tNull', 'tNumeric', 'tDates', 'tDayFirst', 'keyCol2', 'keyCol3'].forEach(id => $(id).addEventListener('change', () => rerunSoon(0)));
+    ['tTolAbs', 'tTolPct'].forEach(id => $(id).addEventListener('input', () => rerunSoon(300)));
+    $('ignoreCols').addEventListener('change', () => rerunSoon(0));
     function runTable() {
       if (bookActive()) {
         // the key picker applies to the sheet on show
@@ -1689,15 +1735,25 @@
       sheetView = null;
       const A = E.parseCsv($('text1').value), B = E.parseCsv($('text2').value);
       if (!A.length || !B.length) { showError('Both sides need at least a header row.'); return; }
-      const key = $('keyCol').value;
-      const r = E.tableDiff(A, B, { keys: key === '-1' ? [] : [key] });
+      const r = E.tableDiff(A, B, Object.assign(tableOpts(), { keys: $('keyCol').value === '-1' ? [] : chosenKeys() }));
       renderTableResult(r, '', `Row comparison${r.keyName ? ' keyed by ' + r.keyName : ' by row order'}`);
       remember(`rows: +${r.added.length} −${r.removed.length} ~${r.changed.length}`);
     }
     function renderTableResult(r, prefix, title) {
       const cell = v => E.esc(v == null ? '' : String(v));
-      window._lastTable = r;
+      window._lastTable = r; window._lastTableArgs = [prefix, title];
       $('resultTitle').textContent = title;
+      // result tools: filter, sort, and the per-column summary
+      const show = $('rowFilter') ? $('rowFilter').value : 'all', sortCol = $('rowSort') ? $('rowSort').value : '', dir = $('rowSortDir') && $('rowSortDir').value === 'desc' ? -1 : 1;
+      const val = x => { const ch = x.cells && x.cells.find(k => k.col === sortCol); return ch ? ch.new : x.row[sortCol]; };
+      const sorted = list => sortCol ? list.slice().sort((p, q) => dir * String(val(p) ?? '').localeCompare(String(val(q) ?? ''), undefined, { numeric: true, sensitivity: 'base' })) : list;
+      const tools = `<div class="table-tools"><label class="toggle-label">Show <select id="rowFilter" class="mini-select">${['all', 'changed', 'added', 'removed'].map(v => `<option value="${v}"${v === show ? ' selected' : ''}>${v === 'all' ? 'all differences' : v + ' rows'}</option>`).join('')}</select></label>` +
+        `<label class="toggle-label">Sort by <select id="rowSort" class="mini-select"><option value="">file order</option>${r.columns.map(c => `<option value="${cell(c)}"${c === sortCol ? ' selected' : ''}>${cell(c)}</option>`).join('')}</select></label>` +
+        `<select id="rowSortDir" class="mini-select" aria-label="Sort direction"><option value="asc"${dir > 0 ? ' selected' : ''}>ascending</option><option value="desc"${dir < 0 ? ' selected' : ''}>descending</option></select></div>`;
+      const cc = Object.entries(r.colChanges || {}).sort((p, q) => q[1] - p[1]);
+      const colSummary = cc.length ? `<div class="col-summary" id="colSummary"><strong>Changed cells per column:</strong> ${cc.map(([c, n]) => `<span class="cs-item">${cell(c)} <span class="sc has">${n}</span></span>`).join('')}${(r.ignored || []).length ? ` <span class="muted">(ignored: ${r.ignored.map(cell).join(', ')})</span>` : ''}</div>` : `<div class="col-summary" id="colSummary"></div>`;
+      prefix = prefix + tools + colSummary;
+      r = Object.assign({}, r, { changed: show === 'all' || show === 'changed' ? sorted(r.changed) : [], added: show === 'all' || show === 'added' ? sorted(r.added) : [], removed: show === 'all' || show === 'removed' ? sorted(r.removed) : [] });
       $('diffStats').innerHTML = `<span class="st-add">+${r.added.length} rows</span><span class="st-del">−${r.removed.length} rows</span><span class="st-mod">~${r.changed.length} changed</span><span>${r.unchanged} unchanged</span>${r.colsAdded.length ? `<span class="st-add">columns added: ${E.esc(r.colsAdded.join(', '))}</span>` : ''}${r.colsRemoved.length ? `<span class="st-del">columns removed: ${E.esc(r.colsRemoved.join(', '))}</span>` : ''}`;
       // Each section is a table whose body is a virtual list of <tbody> blocks.
       let html = '';

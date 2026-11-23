@@ -415,3 +415,40 @@ t('feature 22: sheets pair by name; renamed-looking, added and removed are liste
   // a sheet with different headers is not called a rename
   assert.deepStrictEqual(D.pairSheets([S('A', [['p', 'q']])], [S('B', [['r', 's']])]), { pairs: [], added: ['B'], removed: ['A'] });
 });
+
+// ---- v4 feature 23: table options
+t('feature 23: composite keys, ignored columns and the per-column summary', () => {
+  const A = [['region', 'sku', 'qty', 'note', 'updated'], ['UAE', '1', '5', 'a', 't1'], ['KSA', '1', '7', 'b', 't1'], ['UAE', '2', '9', 'c', 't1']];
+  const B = [['sku', 'region', 'qty', 'note', 'updated'], ['1', 'KSA', '8', 'b', 't2'], ['1', 'UAE', '5', 'A', 't2'], ['2', 'UAE', '9', 'c', 't2']];
+  const r = D.tableDiff(A, B, { keys: ['region', 'sku'], ignore: ['updated'] });
+  assert.strictEqual(r.keyName, 'region + sku'); assert.strictEqual(r.changed.length, 2); assert.strictEqual(r.unchanged, 1);
+  assert.deepStrictEqual(r.colChanges, { qty: 1, note: 1 });
+  assert.ok(r.changed.every(c => c.cells.every(x => x.col !== 'updated')));
+});
+t('feature 23: trim, ignore case and empty = null', () => {
+  const A = [['id', 'v', 'w'], ['1', ' Apple ', ''], ['2', 'x', 'NULL']], B = [['id', 'v', 'w'], ['1', 'apple', ''], ['2', 'x', '']];
+  assert.strictEqual(D.tableDiff(A, B, { keys: ['id'] }).changed.length, 2);
+  assert.strictEqual(D.tableDiff(A, B, { keys: ['id'], trim: true, ignoreCase: true }).changed.length, 1);
+  assert.strictEqual(D.tableDiff(A, B, { keys: ['id'], trim: true, ignoreCase: true, emptyNull: true }).changed.length, 0);
+  // keys are normalised by the same options
+  assert.strictEqual(D.tableDiff([['id', 'v'], [' A1', '1']], [['id', 'v'], ['a1', '1']], { keys: ['id'], trim: true, ignoreCase: true }).unchanged, 1);
+});
+t('feature 23: numbers: 1.0 = 1, absolute and percentage tolerance, long numbers stay exact', () => {
+  const A = [['id', 'n'], ['1', '1.0'], ['2', '100'], ['3', '12345678901234567890'], ['4', '0012']], B = [['id', 'n'], ['1', '1'], ['2', '100.4'], ['3', '12345678901234567891'], ['4', '12']];
+  const keys = { keys: ['id'] };
+  assert.strictEqual(D.tableDiff(A, B, keys).changed.length, 4);
+  const num = D.tableDiff(A, B, Object.assign({ numeric: true }, keys));
+  assert.deepStrictEqual(num.changed.map(c => c.key), ['2', '3']);  // 1.0 = 1 and 0012 = 12; long numbers compared digit by digit
+  assert.deepStrictEqual(D.tableDiff(A, B, Object.assign({ tolAbs: 0.5 }, keys)).changed.map(c => c.key), ['3']);
+  assert.deepStrictEqual(D.tableDiff(A, B, Object.assign({ tolPct: 0.5 }, keys)).changed.map(c => c.key), ['3']);
+  assert.deepStrictEqual(D.tableDiff(A, B, Object.assign({ tolPct: 0.1 }, keys)).changed.map(c => c.key), ['2', '3']);
+});
+t('feature 23: dates in different formats compare equal when asked', () => {
+  const A = [['id', 'd'], ['1', '2026-11-05'], ['2', '05/11/2026'], ['3', '2026-11-05 14:30'], ['4', '31/12/2026']];
+  const B = [['id', 'd'], ['1', '5 Nov 2026'], ['2', '2026-11-05'], ['3', '05.11.2026 2:30 PM'], ['4', '2026-12-30']];
+  assert.strictEqual(D.tableDiff(A, B, { keys: ['id'] }).changed.length, 4);
+  assert.deepStrictEqual(D.tableDiff(A, B, { keys: ['id'], dates: true }).changed.map(c => c.key), ['4']);
+  // month-first reading when asked
+  assert.strictEqual(D.tableDiff([['d'], ['11/05/2026']], [['d'], ['2026-11-05']], { dates: true, dayFirst: false }).changed.length, 0);
+  assert.strictEqual(D.normaliseDate('2026-02-30'), null);
+});
