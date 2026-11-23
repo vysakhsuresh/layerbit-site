@@ -213,6 +213,30 @@ def check_icons():
     return errs
 
 
+def check_nested_cards(files):
+    """A card must never sit inside another card of the same kind: that is
+    the symptom of a missing </div>, which the tag-balance check cannot see
+    when a later stray </div> happens to balance the count."""
+    from html.parser import HTMLParser
+    errs = []
+    for f in files:
+        class P(HTMLParser):
+            def __init__(self):
+                super().__init__(); self.stack = []; self.bad = None
+            def handle_starttag(self, tag, attrs):
+                if tag != "div": return
+                cls = (dict(attrs).get("class") or "").split()
+                card = next((c for c in cls if c in ("use-case-card", "tool-box", "faq-item", "work-card")), None)
+                if card and card in self.stack and not self.bad:
+                    self.bad = f"{card} nested inside another {card} at line {self.getpos()[0]}"
+                self.stack.append(card)
+            def handle_endtag(self, tag):
+                if tag == "div" and self.stack: self.stack.pop()
+        p = P(); p.feed(open(f, encoding="utf-8").read())
+        if p.bad: errs.append(f"{f}: {p.bad} (missing </div>?)")
+    return errs
+
+
 def check_css():
     """Every stylesheet must have balanced braces. One missing '}' makes the
     browser treat the rest of the sheet as part of the unclosed block, which
@@ -336,7 +360,7 @@ def main():
         if errs:
             failures.append((f, errs))
 
-    graph_errs = check_link_graph(files) + check_registry() + check_icons() + check_sitemap() + check_css()
+    graph_errs = check_link_graph(files) + check_registry() + check_icons() + check_sitemap() + check_css() + check_nested_cards(files)
     if graph_errs:
         failures.append(("(site-wide link graph)", graph_errs))
 

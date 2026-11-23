@@ -2282,6 +2282,13 @@ def _(t):
     t.wait_for("() => document.getElementById('text1').value === 'hello again\\n'", 3000)
 
 
+@case("text-diff-checker", "minimal", "bug 19: no related-tool card is nested inside another")
+def _(t):
+    eq(t.count(".use-case-card .use-case-card"), 0, "nested cards")
+    parent = t.call("document.querySelector('a[href=\"text-case-converter.html\"]').closest('.use-case-card').parentElement.className")
+    expect("use-cases-grid" in parent, "Text Case Converter card is not a direct child of the grid: " + parent)
+
+
 @case("text-diff-checker", "typical", "audit: ignore-whitespace/case and highlight options re-run the diff live")
 def _(t):
     t.set("text1", "Hello  World\nsecond line\n")
