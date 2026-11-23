@@ -201,3 +201,13 @@ t('bug 6: "as sets" compares multisets, so [1,1,2] differs from [1,2]', () => {
   assert.strictEqual(d.length, 1); assert.strictEqual(d[0].type, 'removed'); assert.strictEqual(d[0].old, 1);
   assert.strictEqual(D.structuralDiff([2, 1, 1], [1, 2, 1], { arrays: 'set' }).length, 0);
 });
+
+// ---- v4: bug 7, duplicate header names
+t('bug 7: repeated column names are made unique so every column is compared', () => {
+  const r = D.tableDiff([['id', 'amount', 'amount'], ['1', '10', '20']], [['id', 'amount', 'amount'], ['1', '11', '20']], { keys: ['id'] });
+  assert.deepStrictEqual(r.columns, ['id', 'amount', 'amount (2)']);
+  assert.deepStrictEqual(r.changed[0].cells, [{ col: 'amount', old: '10', new: '11' }]);
+  const r2 = D.tableDiff([['id', 'amount', 'amount'], ['1', '10', '20']], [['id', 'amount', 'amount'], ['1', '10', '21']], { keys: ['id'] });
+  assert.deepStrictEqual(r2.changed[0].cells, [{ col: 'amount (2)', old: '20', new: '21' }]);
+  assert.deepStrictEqual(D.uniqueHeaders(['a', 'a', 'a (2)', '', '']), ['a', 'a (3)', 'a (2)', '(column 4)', '(column 5)']);
+});

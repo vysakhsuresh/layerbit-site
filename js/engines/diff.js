@@ -464,8 +464,22 @@
    *  header, so a file whose columns were reordered still matches row for
    *  row. An empty key list compares by row order. A number is accepted for
    *  older callers: an index into the original's header. */
+  /** Makes header names unique and non-empty so no column shadows another:
+   *  amount, amount -> amount, amount (2); a blank header becomes (column N). */
+  function uniqueHeaders(hdr) {
+    var taken = {}, out = [];
+    hdr.forEach(function (h) { h = String(h == null ? '' : h); if (h) taken[h] = (taken[h] || 0) + 1; });
+    var used = {};
+    hdr.forEach(function (h, i) {
+      h = String(h == null ? '' : h);
+      var name = h || '(column ' + (i + 1) + ')';
+      if (used[name]) { var n = 2; while (used[h + ' (' + n + ')'] || (taken[h + ' (' + n + ')'] && h + ' (' + n + ')' !== name)) n++; name = h + ' (' + n + ')'; }
+      used[name] = true; out.push(name);
+    });
+    return out;
+  }
   function tableDiff(rowsA, rowsB, opts) {
-    var ha = (rowsA[0] || []).map(String), hb = (rowsB[0] || []).map(String);
+    var ha = uniqueHeaders(rowsA[0] || []), hb = uniqueHeaders(rowsB[0] || []);
     if (typeof opts === 'number') opts = { keys: opts >= 0 && ha[opts] != null ? [ha[opts]] : [] };
     var o = Object.assign({ keys: [] }, opts || {});
     o.keys.forEach(function (k) {
@@ -584,5 +598,5 @@
 
   return { lineDiff: lineDiff, foldContext: foldContext, intraline: intraline, tokenize: tokenize, detectLang: detectLang, renderLine: renderLine, esc: esc,
     unifiedPatch: unifiedPatch, applyPatch: applyPatch, diff3: diff3, structuralDiff: structuralDiff, canonicalJson: canonicalJson, canon: canon,
-    parseCsv: parseCsv, detectDelimiter: detectDelimiter, tableDiff: tableDiff, readZip: readZip, isProbablyText: isProbablyText, decodeBytes: decodeBytes, bytesEqual: bytesEqual, stripCommonRoot: stripCommonRoot, splitLines: splitLines, normalizeLine: normalizeLine, DEFAULT_OPTS: DEFAULT_OPTS };
+    parseCsv: parseCsv, detectDelimiter: detectDelimiter, tableDiff: tableDiff, readZip: readZip, isProbablyText: isProbablyText, decodeBytes: decodeBytes, bytesEqual: bytesEqual, stripCommonRoot: stripCommonRoot, uniqueHeaders: uniqueHeaders, splitLines: splitLines, normalizeLine: normalizeLine, DEFAULT_OPTS: DEFAULT_OPTS };
 });

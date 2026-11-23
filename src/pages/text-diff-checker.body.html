@@ -769,7 +769,7 @@
     function refreshKeyColumns() {
       const sel = $('keyCol'), prev = sel.value;
       const rows = E.parseCsv($('text1').value || $('text2').value);
-      const hdr = rows[0] || [];
+      const hdr = E.uniqueHeaders(rows[0] || []);
       sel.innerHTML = '<option value="-1">row order</option>' + hdr.map((h, i) => `<option value="${i}">${E.esc(h || '(column ' + (i + 1) + ')')}</option>`).join('');
       // prefer an id-like column
       const guess = hdr.findIndex(h => /^(id|_id|key|sku|code|email|uuid|guid|ref|no\.?|number)$/i.test(String(h).trim()));
