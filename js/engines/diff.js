@@ -450,22 +450,32 @@
     if (cell !== '' || row.length) { row.push(cell); rows.push(row); }
     return rows.filter(function (r) { return !(r.length === 1 && r[0] === ''); });
   }
-  /** Keyed table diff. rowsA/rowsB are arrays of arrays with a header row. keyCol is an index or -1 for row order. */
-  function tableDiff(rowsA, rowsB, keyCol) {
-    var ha = rowsA[0] || [], hb = rowsB[0] || [];
+  /** Table diff. rowsA/rowsB are arrays of arrays whose first row is the
+   *  header. opts.keys lists key column NAMES, looked up in each file's own
+   *  header, so a file whose columns were reordered still matches row for
+   *  row. An empty key list compares by row order. A number is accepted for
+   *  older callers: an index into the original's header. */
+  function tableDiff(rowsA, rowsB, opts) {
+    var ha = (rowsA[0] || []).map(String), hb = (rowsB[0] || []).map(String);
+    if (typeof opts === 'number') opts = { keys: opts >= 0 && ha[opts] != null ? [ha[opts]] : [] };
+    var o = Object.assign({ keys: [] }, opts || {});
+    o.keys.forEach(function (k) {
+      if (ha.indexOf(k) < 0) throw new Error('Key column "' + k + '" is not in the original file.');
+      if (hb.indexOf(k) < 0) throw new Error('Key column "' + k + '" is not in the modified file.');
+    });
     var cols = ha.slice(); hb.forEach(function (c) { if (cols.indexOf(c) < 0) cols.push(c); });
     var colsAdded = hb.filter(function (c) { return ha.indexOf(c) < 0; }), colsRemoved = ha.filter(function (c) { return hb.indexOf(c) < 0; });
-    function index(rows, hdr) {
+    function objects(rows, hdr) {
+      return rows.slice(1).map(function (r) { var obj = {}; hdr.forEach(function (c, j) { obj[c] = r[j] == null ? '' : String(r[j]); }); return obj; });
+    }
+    var OA = objects(rowsA, ha), OB = objects(rowsB, hb);
+    var keyOf = function (obj, i) { return o.keys.length ? o.keys.map(function (k) { return obj[k]; }).join('\u241F') : String(i); };
+    function index(objs) {
       var m = {}, order = [];
-      rows.slice(1).forEach(function (r, i) {
-        var k = keyCol >= 0 ? String(r[keyCol] == null ? '' : r[keyCol]) : String(i);
-        var obj = {}; hdr.forEach(function (c, j) { obj[c] = r[j] == null ? '' : String(r[j]); });
-        if (!(k in m)) order.push(k);
-        m[k] = obj;
-      });
+      objs.forEach(function (obj, i) { var k = keyOf(obj, i); if (!(k in m)) { m[k] = obj; order.push(k); } });
       return { m: m, order: order };
     }
-    var A = index(rowsA, ha), B = index(rowsB, hb);
+    var A = index(OA), B = index(OB);
     var added = [], removed = [], changed = [], unchanged = 0;
     A.order.forEach(function (k) {
       if (!(k in B.m)) { removed.push({ key: k, row: A.m[k] }); return; }
@@ -474,7 +484,7 @@
       if (cells.length) changed.push({ key: k, cells: cells, row: B.m[k] }); else unchanged++;
     });
     B.order.forEach(function (k) { if (!(k in A.m)) added.push({ key: k, row: B.m[k] }); });
-    return { columns: cols, colsAdded: colsAdded, colsRemoved: colsRemoved, added: added, removed: removed, changed: changed, unchanged: unchanged, keyName: keyCol >= 0 ? ha[keyCol] : null };
+    return { columns: cols, colsAdded: colsAdded, colsRemoved: colsRemoved, added: added, removed: removed, changed: changed, unchanged: unchanged, keyName: o.keys.length ? o.keys.join(' + ') : null, keys: o.keys };
   }
 
   // --------------------------------------------------------------------- zip

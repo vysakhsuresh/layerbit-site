@@ -167,3 +167,16 @@ t('bug 4: a quote that does not start a field is a literal character', () => {
   assert.deepStrictEqual(D.parseCsv('a;b\n12" pipe;"multi\nline"\n', ';'), [['a', 'b'], ['12" pipe', 'multi\nline']]);
   assert.deepStrictEqual(D.parseCsv('a\n "lead"\n', ','), [['a'], [' "lead"']]);
 });
+
+// ---- v4: bug 5, key columns by name
+t('bug 5: rows are keyed by header name in each file, so reordered columns still match', () => {
+  const A = [['id', 'name', 'qty'], ['1', 'Widget', '5'], ['2', 'Gadget', '6']];
+  const B = [['qty', 'id', 'name'], ['5', '1', 'Widget'], ['7', '2', 'Gadget']];
+  const r = D.tableDiff(A, B, { keys: ['id'] });
+  assert.strictEqual(r.added.length, 0); assert.strictEqual(r.removed.length, 0);
+  assert.strictEqual(r.changed.length, 1); assert.deepStrictEqual(r.changed[0].cells, [{ col: 'qty', old: '6', new: '7' }]);
+  assert.strictEqual(r.unchanged, 1); assert.strictEqual(r.keyName, 'id');
+  // legacy numeric key (index into the original's header) maps to the name
+  assert.strictEqual(D.tableDiff(A, B, 0).changed.length, 1);
+  assert.throws(() => D.tableDiff(A, [['sku', 'qty']], { keys: ['id'] }), /Key column "id" is not in the modified file/);
+});
