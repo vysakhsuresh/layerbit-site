@@ -492,10 +492,10 @@
     const sumsName = alg => alg.replace(/-/g, '').toUpperCase() + 'SUMS';
     function batchReport() { const b = batchRows; return LBBatch.report(b.results, { title: 'Layerbit file hashes', options: b.alg, generated: b.when, columns: [{ label: 'File', get: r => r.item.path }, { label: 'Bytes', get: r => r.item.file.size }, { label: b.alg, get: r => r.ok ? r.value : '' }] }); }
     function batchSums() { return LBHashX.formatSums(batchRows.results.filter(r => r.ok).map(r => ({ path: r.item.path, digest: r.value })), batchRows.alg); }
-    $('btnBatchSums').addEventListener('click', () => saveBlob(batchSums(), sumsName(batchRows.alg), 'text/plain'));
-    $('btnBatchCsv').addEventListener('click', () => saveBlob(batchReport().csv, `layerbit-hashes-${Date.now()}.csv`, 'text/csv'));
-    $('btnBatchHtml').addEventListener('click', () => saveBlob(batchReport().html, `layerbit-hashes-${Date.now()}.html`, 'text/html'));
-    $('btnBatchZip').addEventListener('click', () => { const r = batchReport(); saveBlob(LBBatch.archive([{ name: sumsName(batchRows.alg), data: batchSums() }, { name: 'report.csv', data: r.csv }, { name: 'report.html', data: r.html }]), `layerbit-hashes-${Date.now()}.zip`, 'application/zip'); });
+    $('btnBatchSums').addEventListener('click', () => batchRows && saveBlob(batchSums(), sumsName(batchRows.alg), 'text/plain'));
+    $('btnBatchCsv').addEventListener('click', () => batchRows && saveBlob(batchReport().csv, `layerbit-hashes-${Date.now()}.csv`, 'text/csv'));
+    $('btnBatchHtml').addEventListener('click', () => batchRows && saveBlob(batchReport().html, `layerbit-hashes-${Date.now()}.html`, 'text/html'));
+    $('btnBatchZip').addEventListener('click', () => { if (!batchRows) return; const r = batchReport(); saveBlob(LBBatch.archive([{ name: sumsName(batchRows.alg), data: batchSums() }, { name: 'report.csv', data: r.csv }, { name: 'report.html', data: r.html }]), `layerbit-hashes-${Date.now()}.zip`, 'application/zip'); });
 
     ['A', 'B'].forEach(side => {
       const set = items => { sets[side] = items; $('cmpInfo' + side).textContent = items.length ? `${items.length} file${items.length === 1 ? '' : 's'}, ${sizeOf(items)}` : 'nothing chosen'; };

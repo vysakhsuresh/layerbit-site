@@ -2240,6 +2240,12 @@ def _hash_files(spec):
     return [{"name": n, "mimeType": "application/octet-stream", "buffer": c.encode() if isinstance(c, str) else c} for n, c in spec]
 
 
+@case("hash-generator", "edge", "2.10: the report buttons appear only after a run (the audit found them clickable before)")
+def _(t):
+    t.click("[data-ftab='batch']")
+    expect(not t.visible("#btnBatchCsv"), "report buttons shown before any files were hashed")
+
+
 @case("hash-generator", "typical", "2.10: many files at once, with CSV and HTML reports and a checksum file")
 def _(t):
     import hashlib
