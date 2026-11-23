@@ -509,13 +509,86 @@
 
   // ------------------------------------------------------------------ drop
   var dropHandler = null, dragDepth = 0, overlay = null;
-  function readFile(file) {
-    return new Promise(function (res, rej) {
-      var r = new FileReader();
-      r.onload = function () { res(r.result); }; r.onerror = function () { rej(r.error); };
-      r.readAsText(file);
+  // ------------------------------------------------------------ file reading
+  // Files are read as bytes and decoded here, not with readAsText (UTF-8
+  // only, which turns every Windows-1252 accent into U+FFFD): a BOM decides
+  // (UTF-8, UTF-16 LE/BE), then BOM-less UTF-16 is recognised by its zero
+  // bytes, then strict UTF-8 is tried, and Windows-1252 is the fallback,
+  // since it maps every byte. The toast after loading names the encoding and
+  // offers to read the same bytes another way.
+  var ENCODINGS = [{ v: 'utf-8', n: 'UTF-8' }, { v: 'windows-1252', n: 'Windows-1252 (Western European)' }, { v: 'utf-16le', n: 'UTF-16 LE' }, { v: 'utf-16be', n: 'UTF-16 BE' },
+    { v: 'windows-1256', n: 'Windows-1256 (Arabic)' }, { v: 'windows-1251', n: 'Windows-1251 (Cyrillic)' }, { v: 'iso-8859-7', n: 'ISO-8859-7 (Greek)' }, { v: 'shift_jis', n: 'Shift_JIS (Japanese)' }, { v: 'gb18030', n: 'GB18030 (Chinese)' }];
+  var ENC_NAME = { 'utf-8': 'UTF-8', 'windows-1252': 'Windows-1252', 'utf-16le': 'UTF-16 LE', 'utf-16be': 'UTF-16 BE', 'windows-1256': 'Windows-1256', 'windows-1251': 'Windows-1251', 'iso-8859-7': 'ISO-8859-7', 'shift_jis': 'Shift_JIS', 'gb18030': 'GB18030' };
+  function decodeBytes(u8, forced) {
+    var dec = function (label, bytes, fatal) { return new TextDecoder(label, { fatal: !!fatal }).decode(bytes); };
+    if (forced) {
+      var skip = forced === 'utf-8' && u8[0] === 0xEF && u8[1] === 0xBB && u8[2] === 0xBF ? 3 : /^utf-16/.test(forced) && ((u8[0] === 0xFF && u8[1] === 0xFE) || (u8[0] === 0xFE && u8[1] === 0xFF)) ? 2 : 0;
+      return { text: dec(forced, u8.subarray(skip)), encoding: ENC_NAME[forced] || forced, label: forced, bom: skip > 0 };
+    }
+    if (u8[0] === 0xEF && u8[1] === 0xBB && u8[2] === 0xBF) return { text: dec('utf-8', u8.subarray(3)), encoding: 'UTF-8', label: 'utf-8', bom: true };
+    if (u8[0] === 0xFF && u8[1] === 0xFE) return { text: dec('utf-16le', u8.subarray(2)), encoding: 'UTF-16 LE', label: 'utf-16le', bom: true };
+    if (u8[0] === 0xFE && u8[1] === 0xFF) return { text: dec('utf-16be', u8.subarray(2)), encoding: 'UTF-16 BE', label: 'utf-16be', bom: true };
+    var n = Math.min(u8.length, 4096) & ~1, ze = 0, zo = 0;
+    for (var i = 0; i < n; i += 2) { if (u8[i] === 0) ze++; if (u8[i + 1] === 0) zo++; }
+    if (n >= 4 && zo > n / 2 * 0.3 && ze < n / 2 * 0.05) return { text: dec('utf-16le', u8), encoding: 'UTF-16 LE', label: 'utf-16le', bom: false };
+    if (n >= 4 && ze > n / 2 * 0.3 && zo < n / 2 * 0.05) return { text: dec('utf-16be', u8), encoding: 'UTF-16 BE', label: 'utf-16be', bom: false };
+    try { return { text: dec('utf-8', u8, true), encoding: 'UTF-8', label: 'utf-8', bom: false }; }
+    catch (e) { return { text: dec('windows-1252', u8), encoding: 'Windows-1252', label: 'windows-1252', bom: false }; }
+  }
+  /** {name, text, encoding, label, bom, bytes} for a File; opts.encoding forces one. */
+  function readFileInfo(file, opts) {
+    return file.arrayBuffer().then(function (buf) {
+      var u8 = new Uint8Array(buf), d = decodeBytes(u8, opts && opts.encoding);
+      return { name: file.name, text: d.text, encoding: d.encoding + (d.bom ? ' with BOM' : ''), label: d.label, bom: d.bom, bytes: u8 };
     });
   }
+  var lastRead = null;
+  /** Promise of the decoded text (as before). The page's callbacks are
+   *  remembered, so choosing another encoding re-delivers the text to them. */
+  function readFile(file) {
+    var handlers = [];
+    var p = readFileInfo(file).then(function (info) {
+      lastRead = { info: info, handlers: handlers };
+      // after the page's own callbacks (and any "Loaded" toast they show)
+      setTimeout(function () { toast('Loaded ' + info.name + ' (' + fmtBytes(info.bytes.length) + ', ' + info.encoding + ')', null, { label: 'Change encoding', fn: openEncoding }); }, 0);
+      return info.text;
+    });
+    var then = p.then.bind(p);
+    p.then = function (f, r) { if (typeof f === 'function') handlers.push(f); return then(f, r); };
+    return p;
+  }
+  var encDlg = null;
+  function openEncoding() {
+    if (!lastRead) return;
+    if (!encDlg) {
+      encDlg = el('div', { id: 'lbEncoding', role: 'dialog', 'aria-modal': 'true', 'aria-label': 'Choose the text encoding' }, [
+        el('div', { class: 'lb-pal-box' }, [
+          el('div', { class: 'lb-pal-head', html: '<i data-lucide="languages"></i><strong style="flex:1">Read the file as…</strong><kbd>Esc</kbd>' }),
+          el('div', { id: 'lbEncList', class: 'lb-pal-list' }),
+          el('div', { class: 'lb-pal-foot', html: '<span>The same bytes, decoded another way. Pick the line that reads correctly.</span>' })
+        ])
+      ]);
+      encDlg.addEventListener('click', function (e) {
+        if (e.target === encDlg) { closeEncoding(); return; }
+        var it = e.target.closest('[data-enc]'); if (!it) return;
+        var d = decodeBytes(lastRead.info.bytes, it.getAttribute('data-enc'));
+        lastRead.info.text = d.text; lastRead.info.encoding = d.encoding + (d.bom ? ' with BOM' : '');
+        closeEncoding();
+        lastRead.handlers.forEach(function (h) { try { h(d.text); } catch (x) { /* the page reports its own errors */ } });
+        toast('Read ' + lastRead.info.name + ' as ' + d.encoding);
+      });
+      document.body.appendChild(encDlg);
+    }
+    var b = lastRead.info.bytes, sample = b.subarray(0, 4000);
+    encDlg.querySelector('#lbEncList').innerHTML = ENCODINGS.map(function (e) {
+      var prev;
+      try { prev = decodeBytes(sample, e.v).text.split(/\r?\n/).filter(function (l) { return l.trim(); })[0] || ''; } catch (x) { prev = '(not available in this browser)'; }
+      var cur = lastRead.info.label === e.v;
+      return '<div class="lb-pal-item' + (cur ? ' active' : '') + '" data-enc="' + e.v + '"><i data-lucide="' + (cur ? 'check' : 'type') + '"></i><span class="lb-pal-title">' + esc(e.n) + '</span><span class="lb-pal-hint lb-enc-prev">' + esc(prev.slice(0, 70)) + '</span></div>';
+    }).join('');
+    encDlg.classList.add('open'); document.body.classList.add('lb-modal-open'); icons();
+  }
+  function closeEncoding() { if (encDlg) { encDlg.classList.remove('open'); document.body.classList.remove('lb-modal-open'); } }
   function installDrop() {
     overlay = el('div', { id: 'lbDrop', html: '<div><i data-lucide="file-down"></i><strong>Drop to load</strong><span>The file is read by this page only. It is not uploaded.</span></div>' });
     document.body.appendChild(overlay);
@@ -535,7 +608,6 @@
       readFile(f).then(function (text) {
         if (TOOL && TOOL.input) TOOL.input(text, f.name);
         else { var ta = firstTextarea(); if (!ta) { toast('This page has nowhere to drop a file'); return; } ta.value = text; ta.dispatchEvent(new Event('input', { bubbles: true })); ta.dispatchEvent(new Event('change', { bubbles: true })); }
-        toast('Loaded ' + f.name + ' (' + fmtBytes(f.size) + ')');
       });
     });
   }
@@ -682,7 +754,7 @@
     document.addEventListener('keydown', function (e) {
       var mod = e.ctrlKey || e.metaKey;
       if (mod && !e.shiftKey && (e.key === 'k' || e.key === 'K')) { e.preventDefault(); if (pal && pal.classList.contains('open')) closePalette(); else openPalette('search'); return; }
-      if (e.key === 'Escape') { closePalette(); closeHistory(); if (sc) sc.classList.remove('open'); return; }
+      if (e.key === 'Escape') { closePalette(); closeHistory(); closeEncoding(); if (sc) sc.classList.remove('open'); return; }
       if (mod && e.key === 'Enter') { e.preventDefault(); runTool(); return; }
       if (mod && e.shiftKey && (e.key === 'S' || e.key === 's')) { e.preventDefault(); state.share(); return; }
       if (mod && !e.shiftKey && (e.key === 'h' || e.key === 'H') && SLUG) { e.preventDefault(); openHistory(); return; }
@@ -742,7 +814,7 @@
     version: '1.0.0', prefix: PREFIX, slug: SLUG, tools: TOOLS, guides: GUIDES,
     toast: toast, copy: copy, state: state, history: history_, fmtBytes: fmtBytes,
     palette: openPalette, sendTo: function (text, kind) { openPalette('send', { text: text, kind: kind || 'text' }); },
-    onDrop: function (fn) { dropHandler = fn; }, readFile: readFile, run: runTool,
+    onDrop: function (fn) { dropHandler = fn; }, readFile: readFile, readFileInfo: readFileInfo, decodeBytes: decodeBytes, run: runTool,
     register: function (cfg) { TOOL = cfg; window.LB_TOOL = cfg; },
     netRequests: function () { return netLog.slice(); }
   };

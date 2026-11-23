@@ -130,7 +130,7 @@
   <link rel="manifest" href="../manifest.json" />
   <link rel="alternate" type="application/atom+xml" title="Layerbit developer guides" href="https://layerbit.co.in/feed.xml" />
   <link rel="apple-touch-icon" href="../apple-touch-icon.png" />
-  <link rel="stylesheet" href="../css/base.css?v=37fd5dc3fe" />
+  <link rel="stylesheet" href="../css/base.css?v=f81f291850" />
 
   <style>
 
@@ -595,6 +595,7 @@
     <div class="info-panel">
       <h2><i data-lucide="git-merge"></i> Deployment Methodology Changelog</h2>
       <ul class="changelog-list">
+        <li><span class="changelog-tag">v2.2.0</span> Dropping a log file onto the page works again (it failed with an error), and files are decoded from their bytes: UTF-8, UTF-16 and Windows-1252 are detected, and the encoding can be changed after loading.</li>
         <li><span class="changelog-tag">v2.1.0</span> Added a DEBUG/TRACE filter with its own count, a regular-expression mode for grep, and a "most repeated messages" readout that collapses timestamps, ids, numbers and quoted values so the same fault logged a thousand times with different ids shows as one line with a count.</li>
         <li><span class="changelog-tag">v1.4.0</span> Added a Copy Filtered button alongside Export, matching the copy-to-clipboard pattern used elsewhere in the suite.</li>
         <li><span class="changelog-tag">v1.3.0</span> Added a file-size warning before loading very large dumps, and corrected the FAQ's file-size claim to match actual (non-virtualized) rendering capacity.</li>
@@ -710,7 +711,7 @@
       </div>
     </div>
   </footer>
-  <script src="../js/kernel.js?v=02708bb1fe"></script>
+  <script src="../js/kernel.js?v=067599f7e6"></script>
 
   <script src="../js/shared.js?v=e2441a1728"></script>
 
@@ -745,7 +746,7 @@
         if (text.length > BIG_LOG_CHARS) loadBig(text, file.name);
         else { setBig(null); logInput.value = text; analyzeLogs(); }
       };
-      reader.readAsText(file);
+      Layerbit.readFile(file).then(t => reader.onload({ target: { result: t } }));  // bytes decoded by the kernel (encoding detected)
       this.value = ''; // Reset so the same file can be uploaded again if needed
     });
 
@@ -862,7 +863,7 @@
       if (t && t.length > BIG_LOG_CHARS) { e.preventDefault(); loadBig(t, 'Pasted log'); }
     });
     document.getElementById('btnEditBig').addEventListener('click', () => { const t = bigLog; setBig(null); logInput.value = t; });
-    if (window.Layerbit) Layerbit.onDrop(file => { const r = new FileReader(); r.onload = ev => { const t = ev.target.result; if (t.length > BIG_LOG_CHARS) loadBig(t, file.name); else { setBig(null); logInput.value = t; analyzeLogs(); } }; r.readAsText(file); });
+    if (window.Layerbit) Layerbit.onDrop(files => { const file = files[0]; Layerbit.readFile(file).then(t => { if (t.length > BIG_LOG_CHARS) loadBig(t, file.name); else { setBig(null); logInput.value = t; analyzeLogs(); } }); });
 
     // Parse as soon as a log is pasted or typed; the button stays for re-runs.
     let parseTimer = null;

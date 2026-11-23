@@ -363,8 +363,8 @@
       xpathInput.value = '//ns:entry[ns:category/@term="security"]/ns:title';
       render();
     });
-    fileInput.addEventListener('change', async e => { const f = e.target.files[0]; if (f) { xmlInput.value = await f.text(); render(); } });
+    fileInput.addEventListener('change', async e => { const f = e.target.files[0]; if (f) { xmlInput.value = await Layerbit.readFile(f); render(); } });
     inputPane.addEventListener('dragover', e => { e.preventDefault(); inputPane.classList.add('dragover'); });
     inputPane.addEventListener('dragleave', () => inputPane.classList.remove('dragover'));
-    inputPane.addEventListener('drop', async e => { e.preventDefault(); inputPane.classList.remove('dragover'); const f = e.dataTransfer.files[0]; if (f) { xmlInput.value = await f.text(); render(); } });
+    inputPane.addEventListener('drop', async e => { e.preventDefault(); inputPane.classList.remove('dragover'); const f = e.dataTransfer.files[0]; if (f) { xmlInput.value = await Layerbit.readFile(f); render(); } });
   </script>

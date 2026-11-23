@@ -517,7 +517,7 @@
         csvInput.value = e.target.result;
         convert();
       };
-      reader.readAsText(file);
+      Layerbit.readFile(file).then(t => reader.onload({ target: { result: t } }));  // bytes decoded by the kernel (encoding detected)
     }
 
     // FAQ Accordion Logic

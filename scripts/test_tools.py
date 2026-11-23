@@ -3744,6 +3744,54 @@ def _(t):
 
 
 # ----------------------------------------------------------------------------
+# kernel: files are read as bytes with encoding detection (plan A5)
+# ----------------------------------------------------------------------------
+LOAD_FLOW = """bytes => { const dt = new DataTransfer(); dt.items.add(new File([new Uint8Array(bytes)], 'menu.txt')); const i = document.getElementById('flowFile'); i.files = dt.files; i.dispatchEvent(new Event('change')); }"""
+
+
+@case("flow", "edge", "A5: a Windows-1252 file is decoded, not turned into replacement characters, and the encoding is named")
+def _(t):
+    t.page.evaluate(LOAD_FLOW, [0x63, 0x61, 0x66, 0xE9, 0x20, 0x96, 0x20, 0x80, 0x35])
+    t.wait_for("() => document.getElementById('flowInput').value.length > 0")
+    eq(t.val("flowInput"), "caf\u00e9 \u2013 \u20ac5", "decoded text")
+    expect("Windows-1252" in t.text("lbToast"), "encoding not named: " + t.text("lbToast"))
+
+
+@case("flow", "edge", "A5: UTF-16 and UTF-8 with a BOM are decoded; the encoding can be changed after loading")
+def _(t):
+    t.page.evaluate(LOAD_FLOW, [0xFF, 0xFE, 0x68, 0x00, 0x69, 0x00])
+    t.wait_for("() => document.getElementById('flowInput').value === 'hi'")
+    expect("UTF-16" in t.text("lbToast"), t.text("lbToast"))
+    t.page.evaluate(LOAD_FLOW, [0xEF, 0xBB, 0xBF, 0xC3, 0xA9])
+    t.wait_for("() => document.getElementById('flowInput').value === '\u00e9'")
+    expect("UTF-8 with BOM" in t.text("lbToast"), t.text("lbToast"))
+    t.page.evaluate(LOAD_FLOW, [0xC3, 0xA9, 0x0A])
+    t.wait_for("() => document.getElementById('flowInput').value === '\u00e9\\n'")
+    # the bytes C3 A9 read as Windows-1252 are the two characters of mojibake
+    t.click("#lbToast .lb-toast-action")
+    t.wait_for("() => !!document.querySelector('#lbEncoding [data-enc=\"windows-1252\"]')")
+    t.click("#lbEncoding [data-enc='windows-1252']")
+    t.wait_for("() => document.getElementById('flowInput').value === '\u00c3\u00a9\\n'")
+    info = t.call("Layerbit.readFileInfo(new File([new Uint8Array([0xE9])], 'x')).then(i => [i.encoding, i.text, i.bytes.length])")
+    eq(info, ["Windows-1252", "\u00e9", 1], "readFileInfo")
+
+
+@case("log-analyzer", "edge", "A5: a dropped log file is read (encoding detected) instead of failing")
+def _(t):
+    t.call("""() => { const dt = new DataTransfer(); dt.items.add(new File([new Uint8Array([0x32,0x30,0x32,0x36,0x2D,0x30,0x31,0x2D,0x30,0x31,0x20,0x45,0x52,0x52,0x4F,0x52,0x20,0x63,0x61,0x66,0xE9])], 'app.log'));
+      document.body.dispatchEvent(new DragEvent('drop', { dataTransfer: dt, bubbles: true, cancelable: true })); }""")
+    t.wait_for("() => document.getElementById('logInput').value.includes('caf')")
+    expect(t.val("logInput").endswith("caf\u00e9"), repr(t.val("logInput")))
+
+
+@case("markdown-preview", "edge", "A5: a dropped Markdown file is read instead of failing")
+def _(t):
+    t.call("""() => { const dt = new DataTransfer(); dt.items.add(new File(['# Dropped heading'], 'notes.md'));
+      document.body.dispatchEvent(new DragEvent('drop', { dataTransfer: dt, bubbles: true, cancelable: true })); }""")
+    t.wait_for("() => document.body.innerText.includes('Dropped heading')")
+
+
+# ----------------------------------------------------------------------------
 # runner
 # ----------------------------------------------------------------------------
 def free_port():

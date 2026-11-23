@@ -156,7 +156,7 @@
   <link rel="manifest" href="../manifest.json" />
   <link rel="alternate" type="application/atom+xml" title="Layerbit developer guides" href="https://layerbit.co.in/feed.xml" />
   <link rel="apple-touch-icon" href="../apple-touch-icon.png" />
-  <link rel="stylesheet" href="../css/base.css?v=37fd5dc3fe" />
+  <link rel="stylesheet" href="../css/base.css?v=f81f291850" />
   <link rel="stylesheet" href="../css/tool.css?v=9cec66c40e" />
 
   <style>
@@ -472,7 +472,7 @@
       </div>
     </div>
   </footer>
-  <script src="../js/kernel.js?v=02708bb1fe"></script>
+  <script src="../js/kernel.js?v=067599f7e6"></script>
 
   <script src="../js/shared.js?v=e2441a1728"></script>
 
@@ -662,10 +662,10 @@
       xpathInput.value = '//ns:entry[ns:category/@term="security"]/ns:title';
       render();
     });
-    fileInput.addEventListener('change', async e => { const f = e.target.files[0]; if (f) { xmlInput.value = await f.text(); render(); } });
+    fileInput.addEventListener('change', async e => { const f = e.target.files[0]; if (f) { xmlInput.value = await Layerbit.readFile(f); render(); } });
     inputPane.addEventListener('dragover', e => { e.preventDefault(); inputPane.classList.add('dragover'); });
     inputPane.addEventListener('dragleave', () => inputPane.classList.remove('dragover'));
-    inputPane.addEventListener('drop', async e => { e.preventDefault(); inputPane.classList.remove('dragover'); const f = e.dataTransfer.files[0]; if (f) { xmlInput.value = await f.text(); render(); } });
+    inputPane.addEventListener('drop', async e => { e.preventDefault(); inputPane.classList.remove('dragover'); const f = e.dataTransfer.files[0]; if (f) { xmlInput.value = await Layerbit.readFile(f); render(); } });
   </script>
 </body>
 </html>

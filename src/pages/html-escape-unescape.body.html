@@ -278,7 +278,7 @@
         input.value = e.target.result;
         input.dispatchEvent(new Event('input'));
       };
-      reader.readAsText(file);
+      Layerbit.readFile(file).then(t => reader.onload({ target: { result: t } }));  // bytes decoded by the kernel (encoding detected)
     }
 
     document.getElementById('rawFile').addEventListener('change', (e) => loadFileInto(rawInput, e.target.files[0]));

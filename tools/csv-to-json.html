@@ -146,7 +146,7 @@
   <link rel="manifest" href="../manifest.json" />
   <link rel="alternate" type="application/atom+xml" title="Layerbit developer guides" href="https://layerbit.co.in/feed.xml" />
   <link rel="apple-touch-icon" href="../apple-touch-icon.png" />
-  <link rel="stylesheet" href="../css/base.css?v=37fd5dc3fe" />
+  <link rel="stylesheet" href="../css/base.css?v=f81f291850" />
 
   <style>
 
@@ -705,7 +705,7 @@
       </div>
     </div>
   </footer>
-  <script src="../js/kernel.js?v=02708bb1fe"></script>
+  <script src="../js/kernel.js?v=067599f7e6"></script>
 
   <script src="../js/shared.js?v=e2441a1728"></script>
   <script src="../js/engines/csv.js?v=a78b81af7d"></script>
@@ -1010,7 +1010,7 @@
         csvInput.value = e.target.result;
         convert();
       };
-      reader.readAsText(file);
+      Layerbit.readFile(file).then(t => reader.onload({ target: { result: t } }));  // bytes decoded by the kernel (encoding detected)
     }
 
     // FAQ Accordion Logic
