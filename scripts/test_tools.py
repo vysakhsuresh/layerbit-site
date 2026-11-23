@@ -2127,6 +2127,27 @@ def _(t):
     expect("15 digits" in t.text("outputSection"), "YAML precision warning missing: " + t.text("outputSection")[:300])
 
 
+@case("text-diff-checker", "maximal", "bug 9: unrelated 20,000-line files run in a worker, end in a summary, and a long run can be cancelled")
+def _(t):
+    t.call("""() => { const r = s => () => (s = (s * 1103515245 + 12345) >>> 0);
+      const A = r(1), B = r(2);
+      document.getElementById('text1').value = Array.from({length: 20000}, () => 'alpha ' + A()).join('\\n');
+      document.getElementById('text2').value = Array.from({length: 20000}, () => 'beta ' + B()).join('\\n'); }""")
+    t.call("run()")
+    expect(t.visible("#diffProgress"), "no progress indicator while comparing")
+    ticks = t.call("new Promise(res => { let n = 0; const id = setInterval(() => n++, 20); setTimeout(() => { clearInterval(id); res(n); }, 300); })")
+    expect(ticks >= 8, f"main thread blocked: only {ticks} timer ticks in 300 ms")
+    t.wait_for("() => /too different/i.test(document.getElementById('outputSection').innerText)", 30000)
+    out = t.text("outputSection")
+    expect("20,000 only in the original" in out and "20,000 only in the modified" in out, out[:400])
+    # 'Align anyway' has no limit (several seconds): it must show progress and stop on Cancel
+    t.call("alignAnyway()")
+    t.wait(200)
+    expect(t.visible("#diffProgress"), "no progress for the unlimited run")
+    t.click("#btnCancelDiff"); t.wait(100)
+    expect("cancelled" in t.text("outputSection").lower() and not t.visible("#diffProgress"), "cancel did not stop the comparison")
+
+
 @case("text-diff-checker", "typical", "audit: ignore-whitespace/case and highlight options re-run the diff live")
 def _(t):
     t.set("text1", "Hello  World\nsecond line\n")

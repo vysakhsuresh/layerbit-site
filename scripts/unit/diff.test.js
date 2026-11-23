@@ -226,3 +226,40 @@ t('bug 8: JSON numbers are compared by their exact digits', () => {
   assert.throws(() => P('{"a": 1,}'), /JSON/);
   assert.throws(() => P('[01]'), /JSON/);
 });
+
+// ---- v4: bug 9, large and unrelated inputs
+const rng = seed => () => (seed = (seed * 1103515245 + 12345) >>> 0) % 1000000007;
+t('bug 9: two similar 20,000-line files align quickly', () => {
+  const r = rng(7), a = Array.from({ length: 20000 }, (_, i) => `line ${i} ${r()}`);
+  const b = a.slice(); for (let i = 0; i < b.length; i += 7) b[i] = 'changed ' + i;
+  const t0 = Date.now(), res = D.lineDiff(a.join('\n'), b.join('\n'));
+  assert.ok(Date.now() - t0 < 8000, 'took ' + (Date.now() - t0) + ' ms');
+  assert.ok(!res.tooDifferent);
+  assert.strictEqual(res.stats.modified, Math.ceil(20000 / 7)); assert.strictEqual(res.stats.added + res.stats.removed, 0);
+});
+t('bug 9: unrelated large files stop at the work limit with a summary', () => {
+  const r1 = rng(1), r2 = rng(2);
+  const a = Array.from({ length: 20000 }, () => 'a' + r1()).concat(['shared']), b = Array.from({ length: 20000 }, () => 'b' + r2()).concat(['shared']);
+  const t0 = Date.now(), res = D.lineDiff(a.join('\n'), b.join('\n'));
+  assert.ok(Date.now() - t0 < 8000, 'took ' + (Date.now() - t0) + ' ms');
+  assert.strictEqual(res.tooDifferent, true);
+  assert.deepStrictEqual(res.summary, { linesA: 20001, linesB: 20001, onlyA: 20000, onlyB: 20000, common: 1 });
+  assert.strictEqual(res.rows.length, 0);
+  // with no limit the same input still produces a full answer
+  const full = D.lineDiff('x\ny\n', 'p\nq\n', { workLimit: Infinity });
+  assert.ok(!full.tooDifferent);
+});
+t('bug 9: the new aligner finds a minimal alignment on random edits', () => {
+  for (let s = 1; s <= 300; s++) {
+    const r = rng(s), a = Array.from({ length: r() % 40 }, () => String(r() % 6)), b = a.slice();
+    for (let e = r() % 8; e > 0; e--) { const p = r() % (b.length + 1); if (r() % 2 && b.length) b.splice(p % b.length, 1); else b.splice(p, 0, String(r() % 6)); }
+    const res = D.lineDiff(a.join('\n'), b.join('\n'), { granularity: 'none' });
+    const L = res.rows.filter(x => x.l).map(x => x.l.text), R = res.rows.filter(x => x.r).map(x => x.r.text);
+    assert.deepStrictEqual(L, a); assert.deepStrictEqual(R, b);
+    res.rows.filter(x => x.type === 'eq').forEach(x => assert.strictEqual(x.l.text, x.r.text));
+    // number of eq rows equals the LCS length (dynamic programming check)
+    const dp = Array.from({ length: a.length + 1 }, () => new Array(b.length + 1).fill(0));
+    for (let i = a.length - 1; i >= 0; i--) for (let j = b.length - 1; j >= 0; j--) dp[i][j] = a[i] === b[j] ? dp[i + 1][j + 1] + 1 : Math.max(dp[i + 1][j], dp[i][j + 1]);
+    assert.strictEqual(res.stats.unchanged, dp[0][0], 'seed ' + s);
+  }
+});

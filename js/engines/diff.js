@@ -32,6 +32,70 @@
     return lines;
   }
 
+  // ------------------------------------------------------------ alignment
+  // Linear-space Myers diff (the "middle snake" bisection used by
+  // diff-match-patch) over integer line ids. jsdiff 5.1's diffArrays copies
+  // its paths and took minutes on two similar 20,000-line files; this runs in
+  // O((N+M)D) time and O(N+M) memory. `budget` caps the inner-loop work: when
+  // it runs out the caller reports the files as too different to align.
+  function TooDifferent() { this.tooDifferent = true; }
+  function alignIds(A, B, budget) {
+    var work = 0, pairs = [];
+    function rec(a0, a1, b0, b1) {
+      while (a0 < a1 && b0 < b1 && A[a0] === B[b0]) { pairs.push(a0, b0); a0++; b0++; }
+      var e0 = a1, e1 = b1;
+      while (e0 > a0 && e1 > b0 && A[e0 - 1] === B[e1 - 1]) { e0--; e1--; }
+      if (a0 < e0 && b0 < e1) bisect(a0, e0, b0, e1);
+      for (var k = 0; k < a1 - e0; k++) pairs.push(e0 + k, e1 + k);
+    }
+    function bisect(a0, a1, b0, b1) {
+      var n = a1 - a0, m = b1 - b0, maxD = Math.ceil((n + m) / 2), off = maxD, len = 2 * maxD + 2;
+      var v1 = new Int32Array(len).fill(-1), v2 = new Int32Array(len).fill(-1);
+      v1[off + 1] = 0; v2[off + 1] = 0;
+      var delta = n - m, front = (delta & 1) !== 0, k1s = 0, k1e = 0, k2s = 0, k2e = 0;
+      for (var d = 0; d < maxD; d++) {
+        for (var k1 = -d + k1s; k1 <= d - k1e; k1 += 2) {
+          var i1 = off + k1, x1 = (k1 === -d || (k1 !== d && v1[i1 - 1] < v1[i1 + 1])) ? v1[i1 + 1] : v1[i1 - 1] + 1, y1 = x1 - k1, s1 = x1;
+          while (x1 < n && y1 < m && A[a0 + x1] === B[b0 + y1]) { x1++; y1++; }
+          v1[i1] = x1; work += 1 + x1 - s1;
+          if (x1 > n) k1e += 2; else if (y1 > m) k1s += 2;
+          else if (front) { var j2 = off + delta - k1; if (j2 >= 0 && j2 < len && v2[j2] !== -1 && x1 >= n - v2[j2]) return split(a0, a1, b0, b1, x1, y1); }
+        }
+        for (var k2 = -d + k2s; k2 <= d - k2e; k2 += 2) {
+          var i2 = off + k2, x2 = (k2 === -d || (k2 !== d && v2[i2 - 1] < v2[i2 + 1])) ? v2[i2 + 1] : v2[i2 - 1] + 1, y2 = x2 - k2, s2 = x2;
+          while (x2 < n && y2 < m && A[a1 - x2 - 1] === B[b1 - y2 - 1]) { x2++; y2++; }
+          v2[i2] = x2; work += 1 + x2 - s2;
+          if (x2 > n) k2e += 2; else if (y2 > m) k2s += 2;
+          else if (!front) { var j1 = off + delta - k2; if (j1 >= 0 && j1 < len && v1[j1] !== -1) { var xx = v1[j1], yy = off + xx - j1; if (xx >= n - x2) return split(a0, a1, b0, b1, xx, yy); } }
+        }
+        if (work > budget) throw new TooDifferent();
+      }
+      // no common line at all: nothing to pair in this range
+    }
+    function split(a0, a1, b0, b1, x, y) { rec(a0, a0 + x, b0, b0 + y); rec(a0 + x, a1, b0 + y, b1); }
+    rec(0, A.length, 0, B.length);
+    return pairs;
+  }
+  /** jsdiff-style parts ({value, added, removed}) from aligned line keys. */
+  function alignParts(ka, kb, budget) {
+    var ids = Object.create(null), next = 0, A = new Int32Array(ka.length), B = new Int32Array(kb.length), i;
+    for (i = 0; i < ka.length; i++) { var x = ka[i]; A[i] = x in ids ? ids[x] : (ids[x] = next++); }
+    for (i = 0; i < kb.length; i++) { var y = kb[i]; B[i] = y in ids ? ids[y] : (ids[y] = next++); }
+    var pairs = alignIds(A, B, budget), parts = [], ai = 0, bi = 0;
+    function push(kind, from, to, src) { if (to <= from) return; var last = parts[parts.length - 1], v = src.slice(from, to); if (last && last.kind === kind) last.value = last.value.concat(v); else parts.push({ kind: kind, value: v, added: kind === 'i', removed: kind === 'd' }); }
+    for (i = 0; i < pairs.length; i += 2) { push('d', ai, pairs[i], ka); push('i', bi, pairs[i + 1], kb); push('e', pairs[i], pairs[i] + 1, ka); ai = pairs[i] + 1; bi = pairs[i + 1] + 1; }
+    push('d', ai, ka.length, ka); push('i', bi, kb.length, kb);
+    return parts;
+  }
+  /** Counts for a pair of files too different to align: lines only on one
+   *  side and lines in common, compared as multisets of normalised lines. */
+  function lineSummary(ka, kb) {
+    var count = Object.create(null), common = 0;
+    ka.forEach(function (k) { count[k] = (count[k] || 0) + 1; });
+    kb.forEach(function (k) { if (count[k] > 0) { count[k]--; common++; } });
+    return { linesA: ka.length, linesB: kb.length, onlyA: ka.length - common, onlyB: kb.length - common, common: common };
+  }
+
   // ----------------------------------------------------------------- line diff
   /** Returns rows for split and unified rendering.
    *  row: {type:'eq'|'del'|'ins'|'mod', l:{n,text,segs}|null, r:{n,text,segs}|null}
@@ -47,9 +111,16 @@
       ka = ka.map(function (l) { return l.trim() === '' ? '' : l; });
       kb = kb.map(function (l) { return l.trim() === '' ? '' : l; });
     }
-    var parts = Diff.diffArrays(ka, kb);
+    var parts, report = typeof o.onProgress === 'function' ? o.onProgress : null;
+    if (report) report(0, 'align');
+    try { parts = alignParts(ka, kb, o.workLimit == null ? 60000000 : o.workLimit); }
+    catch (e) {
+      if (!(e instanceof TooDifferent)) throw e;
+      return { rows: [], hunks: [], tooDifferent: true, summary: lineSummary(ka, kb), stats: { added: 0, removed: 0, modified: 0, unchanged: 0, linesA: la.length, linesB: lb.length, similarity: 0 } };
+    }
     var rows = [], ai = 0, bi = 0;
     for (var i = 0; i < parts.length; i++) {
+      if (report && i % 200 === 0) report(i / parts.length, 'highlight');
       var p = parts[i], next = parts[i + 1];
       if (!p.added && !p.removed) {
         for (var k = 0; k < p.value.length; k++) {

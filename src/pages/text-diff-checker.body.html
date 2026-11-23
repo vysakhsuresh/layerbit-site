@@ -152,6 +152,10 @@
           </span>
         </div>
       </div>
+      <div class="diff-progress" id="diffProgress" hidden role="status" aria-live="polite">
+        <div class="dp-row"><span id="diffProgressLabel">Comparing…</span><span class="muted" id="diffProgressTime"></span><button class="btn" type="button" id="btnCancelDiff"><i data-lucide="x"></i> Cancel</button></div>
+        <div class="dp-bar"><div class="dp-fill" id="diffProgressFill"></div></div>
+      </div>
       <div class="error-banner" id="errorBanner"><i data-lucide="alert-triangle"></i><span id="errorText"></span></div>
 
       <!-- text / patch / zip-file views -->
@@ -565,10 +569,59 @@
       }
       return notes;
     }
-    function runText(a, b, nameA, nameB, title, infoA, infoB) {
+    // Large comparisons run in a Web Worker so the tab never freezes; the
+    // bar shows the phase and elapsed time and Cancel terminates the worker.
+    // Small ones stay synchronous so the result appears instantly.
+    let worker = null, workerJob = 0, workerTimer = null, textJob = 0;
+    function diffWorker() {
+      if (worker) return worker;
+      const src = part => document.querySelector(`script[src*="${part}"]`).src;
+      const code = `importScripts(${JSON.stringify(src('vendor/diff.min.js'))}, ${JSON.stringify(src('engines/diff.js'))});
+        onmessage = e => { const { id, a, b, opts } = e.data; opts.onProgress = (f, phase) => postMessage({ id, progress: f, phase });
+          try { postMessage({ id, res: LBDiff.lineDiff(a, b, opts) }); } catch (err) { postMessage({ id, error: err.message || String(err) }); } };`;
+      worker = new Worker(URL.createObjectURL(new Blob([code], { type: 'text/javascript' })));
+      return worker;
+    }
+    function stopProgress() { clearInterval(workerTimer); $('diffProgress').hidden = true; }
+    function cancelDiff() {
+      if (!worker) return;
+      worker.terminate(); worker = null; workerJob++; textJob++; stopProgress();
+      $('leftPanel').innerHTML = $('rightPanel').innerHTML = $('inlinePanel').innerHTML = '<div class="diff-empty">Comparison cancelled. Change the options or press Compare to run it again.</div>';
+      $('diffStats').innerHTML = '';
+    }
+    $('btnCancelDiff').addEventListener('click', cancelDiff);
+    function computeDiff(a, b, o) {
+      const big = a.length + b.length > 400000 || (a.match(/\n/g) || []).length + (b.match(/\n/g) || []).length > 6000;
+      if (!big || typeof Worker !== 'function') return Promise.resolve(E.lineDiff(a, b, o));
+      const id = ++workerJob, w = diffWorker(), t0 = Date.now();
+      $('outputSection').style.display = 'grid';
+      $('diffProgress').hidden = false; $('diffProgressFill').style.width = '0%'; $('diffProgressFill').classList.add('indeterminate');
+      $('diffProgressLabel').textContent = 'Aligning lines…'; $('diffProgressTime').textContent = '';
+      clearInterval(workerTimer); workerTimer = setInterval(() => { $('diffProgressTime').textContent = ((Date.now() - t0) / 1000).toFixed(1) + ' s'; }, 100);
+      icons();
+      return new Promise((resolve, reject) => {
+        w.onmessage = e => {
+          const m = e.data; if (m.id !== workerJob) return;
+          if (m.progress != null) {
+            $('diffProgressLabel').textContent = m.phase === 'align' ? 'Aligning lines…' : 'Highlighting changed lines…';
+            $('diffProgressFill').classList.toggle('indeterminate', m.phase === 'align');
+            if (m.phase !== 'align') $('diffProgressFill').style.width = Math.round(m.progress * 100) + '%';
+            return;
+          }
+          stopProgress();
+          if (m.error) reject(new Error(m.error)); else resolve(m.res);
+        };
+        w.postMessage({ id, a, b, opts: o });
+      });
+    }
+    function runText(a, b, nameA, nameB, title, infoA, infoB, extra) {
+      const o = Object.assign(opts(), extra || {}), wasExplicit = explicitRun, job = ++textJob;
+      return computeDiff(a, b, o).then(res => { if (job === textJob) finishText(res, a, b, nameA, nameB, title, infoA, infoB, wasExplicit); }).catch(e => showError(e.message));
+    }
+    function alignAnyway() { if (!last) return; runText(last.a, last.b, last.nameA, last.nameB, null, last.infoA, last.infoB, { workLimit: Infinity }); }
+    function finishText(res, a, b, nameA, nameB, title, infoA, infoB, wasExplicit) {
       const o = opts();
-      const res = E.lineDiff(a, b, o);
-      res.notes = fileNotes(infoA, infoB);
+      res.notes = fileNotes(infoA, infoB); res.infoA = infoA; res.infoB = infoB;
       const lang = $('syntaxMode').value === 'auto' ? E.detectLang(a || b, nameA !== 'original' ? nameA : nameB !== 'modified' ? nameB : '') : $('syntaxMode').value;
       last = Object.assign(res, { a, b, nameA, nameB, lang });
       decisions = res.hunks.map(() => 'right');
@@ -578,9 +631,18 @@
       renderText();
       renderMerged();
       $('mergedSection').style.display = res.hunks.length ? 'grid' : 'none';
-      remember(`${nameA} → ${nameB}: +${res.stats.added + res.stats.modified} −${res.stats.removed + res.stats.modified}`);
+      if (wasExplicit && $('saveHistory').checked) Layerbit.history.push('text-diff-checker', getState(), `${nameA} → ${nameB}: +${res.stats.added + res.stats.modified} −${res.stats.removed + res.stats.modified}`);
     }
     function renderText() {
+      if (last.tooDifferent) {
+        const S = last.summary, n = v => v.toLocaleString();
+        $('diffStats').innerHTML = `<span class="st-del">too different to align</span><span>${n(S.common)} lines in common</span>`;
+        const html = `<div class="diff-notes too-different" role="status"><i data-lucide="alert-triangle"></i><div><strong>These files are too different to align line by line</strong> within the time limit, so no line-by-line view is shown rather than a misleading one.<ul><li>${n(S.onlyA)} only in the original (of ${n(S.linesA)} lines)</li><li>${n(S.onlyB)} only in the modified file (of ${n(S.linesB)} lines)</li><li>${n(S.common)} lines appear in both</li></ul><button class="btn" type="button" onclick="alignAnyway()"><i data-lucide="play"></i> Align anyway (no time limit, can be cancelled)</button></div></div>`;
+        $('leftPanel').innerHTML = html; $('rightPanel').innerHTML = ''; $('inlinePanel').innerHTML = html;
+        $('hunkCounter').textContent = '0 / 0';
+        showPanel($('viewMode').value === 'unified' ? 'unified' : 'split'); icons();
+        return;
+      }
       const { rows, hunks, stats, lang } = last;
       const ctx = $('contextLines').value === 'all' ? null : +$('contextLines').value;
       const view = $('viewMode').value;
@@ -806,9 +868,8 @@
       if (!patch.trim()) { showError('Paste a unified diff.'); return; }
       const r = E.applyPatch(orig, patch);
       if (!r.ok) { showError(r.error); return; }
-      runText(orig, r.text, names.a !== 'original' ? names.a : 'original', 'patched', `Patch applied: ${r.hunks} hunk${r.hunks === 1 ? '' : 's'}${r.fuzzy ? ' (with fuzz: context lines had moved)' : ''}`);
-      $('mergedTitle').textContent = 'Patched file';
-      $('mergedSection').style.display = 'grid';
+      runText(orig, r.text, names.a !== 'original' ? names.a : 'original', 'patched', `Patch applied: ${r.hunks} hunk${r.hunks === 1 ? '' : 's'}${r.fuzzy ? ' (with fuzz: context lines had moved)' : ''}`)
+        .then(() => { $('mergedTitle').textContent = 'Patched file'; $('mergedSection').style.display = 'grid'; });
       if (r.fuzzy) Layerbit.toast('Applied with fuzz: some context lines had moved. Check the result.', 'warn');
     }
 
