@@ -150,3 +150,12 @@ t('bug 2: bytesEqual', () => {
 });
 
 process.on('beforeExit', () => { if (!process.exitCode) console.log(`diff engine: ${n} unit tests passed`); });
+
+// ---- v4: bug 3, zip root folder
+t('bug 3: a top folder is stripped only when every entry shares it', () => {
+  assert.deepStrictEqual(D.stripCommonRoot(['proj/a.txt', 'proj/src/b.js']), ['a.txt', 'src/b.js']);
+  assert.deepStrictEqual(D.stripCommonRoot(['src/app.js', 'lib/app.js']), ['src/app.js', 'lib/app.js']);
+  assert.deepStrictEqual(D.stripCommonRoot(['readme.md', 'proj/a.txt']), ['readme.md', 'proj/a.txt']);
+  assert.deepStrictEqual(D.stripCommonRoot(['only.txt']), ['only.txt']);
+  assert.deepStrictEqual(D.stripCommonRoot([]), []);
+});

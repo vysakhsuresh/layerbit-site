@@ -996,7 +996,7 @@
   <script src="../js/kernel.js?v=40b2047872"></script>
 
   <script src="../js/shared.js?v=e2441a1728"></script>
-  <script src="../js/engines/diff.js?v=92944951c8"></script>
+  <script src="../js/engines/diff.js?v=ae6fa8a2b2"></script>
 
   <script>
     // ------------------------------------------------------------ state
@@ -1411,7 +1411,8 @@
       if (!file) return;
       file.arrayBuffer().then(buf => {
         const entries = E.readZip(buf);
-        zips[side] = { name: file.name, entries, map: new Map(entries.map(e => [e.name.replace(/^[^/]+\//, ''), e])) };
+        const shown = E.stripCommonRoot(entries.map(e => e.name));
+        zips[side] = { name: file.name, entries, map: new Map(entries.map((e, i) => [shown[i], e])) };
         $(side === 'a' ? 'zipAInfo' : 'zipBInfo').innerHTML = `<i data-lucide="folder-check"></i><span><strong>${E.esc(file.name)}</strong> · ${entries.length} files · ${Layerbit.fmtBytes(buf.byteLength)}</span>`;
         icons();
         if (zips.a && zips.b) run();

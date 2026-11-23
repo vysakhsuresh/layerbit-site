@@ -2076,6 +2076,30 @@ def _(t):
     expect("encoding" in out.lower() and "UTF-8" in out and "Windows-1252" in out, "encoding difference not reported: " + out[:300])
 
 
+DIFF_ZIP_JS = """
+  window._crc32 = u8 => { let c, crc = 0xFFFFFFFF; for (let i = 0; i < u8.length; i++) { c = (crc ^ u8[i]) & 0xFF; for (let k = 0; k < 8; k++) c = c & 1 ? (c >>> 1) ^ 0xEDB88320 : c >>> 1; crc = (crc >>> 8) ^ c; } return (crc ^ 0xFFFFFFFF) >>> 0; };
+  window._mkzip = (files, name) => { const enc = new TextEncoder(); const parts = [], cd = []; let off = 0;
+    for (const [n0, data] of files) { const n = enc.encode(n0), d = typeof data === 'string' ? enc.encode(data) : data, crc = _crc32(d);
+      const lh = new DataView(new ArrayBuffer(30)); lh.setUint32(0, 0x04034b50, true); lh.setUint32(14, crc, true); lh.setUint32(18, d.length, true); lh.setUint32(22, d.length, true); lh.setUint16(26, n.length, true);
+      parts.push(new Uint8Array(lh.buffer), n, d);
+      const c = new DataView(new ArrayBuffer(46)); c.setUint32(0, 0x02014b50, true); c.setUint32(16, crc, true); c.setUint32(20, d.length, true); c.setUint32(24, d.length, true); c.setUint16(28, n.length, true); c.setUint32(42, off, true);
+      cd.push(new Uint8Array(c.buffer), n); off += 30 + n.length + d.length; }
+    const cdLen = cd.reduce((a, x) => a + x.length, 0); const e = new DataView(new ArrayBuffer(22)); e.setUint32(0, 0x06054b50, true); e.setUint16(8, files.length, true); e.setUint16(10, files.length, true); e.setUint32(12, cdLen, true); e.setUint32(16, off, true);
+    return new File([...parts, ...cd, new Uint8Array(e.buffer)], name || 'x.zip'); };
+"""
+
+
+@case("text-diff-checker", "edge", "bug 3: zip entries in different top folders are all kept")
+def _(t):
+    t.call("() => {" + DIFF_ZIP_JS + """
+      setMode('zip');
+      loadZip('a', _mkzip([['src/app.js', 'a'], ['lib/app.js', 'b']], 'a.zip'));
+      loadZip('b', _mkzip([['src/app.js', 'a'], ['lib/app.js', 'B']], 'b.zip')); }""")
+    t.wait_for("() => /lib\\/app\\.js/.test(document.getElementById('zipPanel').innerText)")
+    text = t.text("zipPanel")
+    expect("src/app.js" in text and "lib/app.js" in text, "a file vanished: " + text)
+
+
 @case("text-diff-checker", "typical", "audit: ignore-whitespace/case and highlight options re-run the diff live")
 def _(t):
     t.set("text1", "Hello  World\nsecond line\n")

@@ -533,6 +533,15 @@
     for (var i = 0; i < a.length; i++) if (a[i] !== b[i]) return false;
     return true;
   }
+  /** Display paths for a list of archive entries: a single top folder is
+   *  removed only when every entry sits inside it (proj/a, proj/b -> a, b);
+   *  src/app.js and lib/app.js keep their folders so neither is lost. */
+  function stripCommonRoot(paths) {
+    if (paths.length < 2) return paths.slice();
+    var first = paths[0].split('/')[0];
+    var all = paths.every(function (p) { var i = p.indexOf('/'); return i > 0 && p.slice(0, i) === first; });
+    return all ? paths.map(function (p) { return p.slice(first.length + 1); }) : paths.slice();
+  }
   function isProbablyText(u8) {
     var n = Math.min(u8.length, 4000), ctl = 0;
     for (var i = 0; i < n; i++) { var c = u8[i]; if (c === 0) return false; if (c < 7 || (c > 13 && c < 32)) ctl++; }
@@ -541,5 +550,5 @@
 
   return { lineDiff: lineDiff, foldContext: foldContext, intraline: intraline, tokenize: tokenize, detectLang: detectLang, renderLine: renderLine, esc: esc,
     unifiedPatch: unifiedPatch, applyPatch: applyPatch, diff3: diff3, structuralDiff: structuralDiff, canonicalJson: canonicalJson, canon: canon,
-    parseCsv: parseCsv, detectDelimiter: detectDelimiter, tableDiff: tableDiff, readZip: readZip, isProbablyText: isProbablyText, decodeBytes: decodeBytes, bytesEqual: bytesEqual, splitLines: splitLines, normalizeLine: normalizeLine, DEFAULT_OPTS: DEFAULT_OPTS };
+    parseCsv: parseCsv, detectDelimiter: detectDelimiter, tableDiff: tableDiff, readZip: readZip, isProbablyText: isProbablyText, decodeBytes: decodeBytes, bytesEqual: bytesEqual, stripCommonRoot: stripCommonRoot, splitLines: splitLines, normalizeLine: normalizeLine, DEFAULT_OPTS: DEFAULT_OPTS };
 });

@@ -813,7 +813,8 @@
       if (!file) return;
       file.arrayBuffer().then(buf => {
         const entries = E.readZip(buf);
-        zips[side] = { name: file.name, entries, map: new Map(entries.map(e => [e.name.replace(/^[^/]+\//, ''), e])) };
+        const shown = E.stripCommonRoot(entries.map(e => e.name));
+        zips[side] = { name: file.name, entries, map: new Map(entries.map((e, i) => [shown[i], e])) };
         $(side === 'a' ? 'zipAInfo' : 'zipBInfo').innerHTML = `<i data-lucide="folder-check"></i><span><strong>${E.esc(file.name)}</strong> · ${entries.length} files · ${Layerbit.fmtBytes(buf.byteLength)}</span>`;
         icons();
         if (zips.a && zips.b) run();
