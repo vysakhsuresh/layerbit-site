@@ -263,3 +263,27 @@ t('bug 9: the new aligner finds a minimal alignment on random edits', () => {
     assert.strictEqual(res.stats.unchanged, dp[0][0], 'seed ' + s);
   }
 });
+
+// ---- v4: bug 12, multi-file patches and fuzz
+const MULTI = '--- a/one.txt\n+++ b/one.txt\n@@ -1,2 +1,2 @@\n alpha\n-beta\n+BETA\n--- a/two.txt\n+++ b/two.txt\n@@ -1,1 +1,2 @@\n gamma\n+delta\n';
+t('bug 12: every file in a patch is listed', () => {
+  const f = D.parsePatchFiles(MULTI);
+  assert.deepStrictEqual(f.map(x => [x.name, x.hunks.length]), [['one.txt', 1], ['two.txt', 1]]);
+  assert.deepStrictEqual(D.parsePatchFiles('garbage').length, 0);
+});
+t('bug 12: each file applies on its own', () => {
+  const [one, two] = D.parsePatchFiles(MULTI);
+  assert.deepStrictEqual(D.applyPatchFile('alpha\nbeta\n', one), { ok: true, text: 'alpha\nBETA\n', fuzzy: false, mismatches: [], hunks: 1 });
+  assert.strictEqual(D.applyPatchFile('gamma\n', two).text, 'gamma\ndelta\n');
+  const unrelated = D.applyPatchFile('nothing alike\n', two);
+  assert.ok(!unrelated.ok || unrelated.fuzzy, 'unrelated file applied silently');
+  assert.deepStrictEqual(unrelated.mismatches, [{ hunk: 1, line: 1, expected: 'gamma', actual: 'nothing alike' }]);
+});
+t('bug 12: a fuzzy apply lists exactly the context lines that did not match', () => {
+  const patch = D.unifiedPatch('one\ntwo\nthree\nfour\nfive\n', 'one\ntwo\nTHREE\nfour\nfive\n', 'f', 'f');
+  const [file] = D.parsePatchFiles(patch);
+  const r = D.applyPatchFile('one\nTWO\nthree\nfour\nfive\n', file);
+  assert.strictEqual(r.ok, true); assert.strictEqual(r.fuzzy, true);
+  assert.strictEqual(r.text, 'one\nTWO\nTHREE\nfour\nfive\n');
+  assert.deepStrictEqual(r.mismatches, [{ hunk: 1, line: 2, expected: 'two', actual: 'TWO' }]);
+});

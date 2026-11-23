@@ -2173,6 +2173,37 @@ def _(t):
     t.page.uncheck("#ignoreCase"); t.page.uncheck("#ignoreWhitespace")
 
 
+DIFF_MULTI_PATCH = "--- a/one.txt\n+++ b/one.txt\n@@ -1,2 +1,2 @@\n alpha\n-beta\n+BETA\n--- a/two.txt\n+++ b/two.txt\n@@ -1,1 +1,2 @@\n gamma\n+delta\n"
+
+
+@case("text-diff-checker", "edge", "bug 12: a multi-file patch lists every file and applies each one")
+def _(t):
+    t.call("setMode('patch')")
+    t.set("patchOriginal", "alpha\nbeta\n"); t.set("patchText", DIFF_MULTI_PATCH)
+    t.call("run()"); t.wait(200)
+    files = t.text("patchFiles")
+    expect("one.txt" in files and "two.txt" in files, "files not listed: " + files)
+    expect("1 of 2 files applied" in files, files)
+    eq(t.val("mergedText"), "alpha\nBETA\n", "first file applied")
+    t.call("patchSetOriginal(1, 'gamma\\n', 'two.txt')"); t.wait(200)
+    expect("2 of 2 files applied" in t.text("patchFiles"), t.text("patchFiles"))
+    t.call("showPatchFile(1)"); t.wait(150)
+    eq(t.val("mergedText"), "gamma\ndelta\n", "second file applied")
+
+
+@case("text-diff-checker", "edge", "bug 12: a fuzzy patch shows the mismatched context lines and needs confirmation")
+def _(t):
+    patch = t.call("E.unifiedPatch('one\\ntwo\\nthree\\nfour\\nfive\\n', 'one\\ntwo\\nTHREE\\nfour\\nfive\\n', 'f.txt', 'f.txt')")
+    t.call("setMode('patch')")
+    t.set("patchOriginal", "one\nTWO\nthree\nfour\nfive\n"); t.set("patchText", patch)
+    t.call("run()"); t.wait(200)
+    out = t.text("patchFiles")
+    expect("did not match" in out and "TWO" in out and "line 2" in out, out)
+    expect(not t.visible("#mergedSection"), "fuzzy result shown before confirmation")
+    t.click("#btnAcceptFuzz"); t.wait(200)
+    eq(t.val("mergedText"), "one\nTWO\nTHREE\nfour\nfive\n", "confirmed fuzzy result")
+
+
 @case("text-diff-checker", "typical", "audit: ignore-whitespace/case and highlight options re-run the diff live")
 def _(t):
     t.set("text1", "Hello  World\nsecond line\n")

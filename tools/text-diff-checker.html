@@ -485,6 +485,14 @@
     @keyframes dp-slide { 0% { left: -35%; } 100% { left: 100%; } }
     .too-different .btn { margin-top: 8px; }
 
+    .patch-files { margin: 8px 12px; font-size: 0.88rem; }
+    .patch-files[hidden] { display: none; }
+    .patch-files .pf-head { margin: 4px 0 8px; font-family: 'Space Grotesk', sans-serif; }
+    .patch-files .pf-current td { background: rgba(56,189,248,0.07); }
+    .patch-files .pf-act { white-space: nowrap; text-align: right; }
+    .patch-files .diff-notes { margin: 10px 0 0; }
+    .patch-files .diff-notes .data-table { margin: 8px 0; }
+
   </style>
 </head>
 <body>
@@ -671,6 +679,7 @@
         <div class="dp-row"><span id="diffProgressLabel">Comparing…</span><span class="muted" id="diffProgressTime"></span><button class="btn" type="button" id="btnCancelDiff"><i data-lucide="x"></i> Cancel</button></div>
         <div class="dp-bar"><div class="dp-fill" id="diffProgressFill"></div></div>
       </div>
+      <div class="patch-files" id="patchFiles" hidden></div>
       <div class="error-banner" id="errorBanner"><i data-lucide="alert-triangle"></i><span id="errorText"></span></div>
 
       <!-- text / patch / zip-file views -->
@@ -1011,7 +1020,7 @@
   <script src="../js/kernel.js?v=40b2047872"></script>
 
   <script src="../js/shared.js?v=e2441a1728"></script>
-  <script src="../js/engines/diff.js?v=4c7aa7195c"></script>
+  <script src="../js/engines/diff.js?v=93d3dd0e18"></script>
 
   <script>
     // ------------------------------------------------------------ state
@@ -1118,6 +1127,7 @@
     function showError(msg) { $('errorBanner').classList.add('active'); $('errorText').textContent = msg; $('outputSection').style.display = 'grid'; }
     function clearError() { $('errorBanner').classList.remove('active'); }
     function showPanel(which) {
+      if (mode !== 'patch') $('patchFiles').hidden = true;
       $('splitWrap').style.display = which === 'split' ? '' : 'none';
       $('inlinePanel').style.display = which === 'unified' ? '' : 'none';
       ['structPanel', 'tablePanel', 'threePanel', 'zipPanel'].forEach(p => $(p).style.display = which === p ? '' : 'none');
@@ -1483,14 +1493,71 @@
     }
 
     // ---- patch
+    // A patch can hold several files. Each is listed with its own status;
+    // the first one applies to the "Original file" pane and the others to
+    // originals chosen per file. A patch that only applies with fuzz is held
+    // back until the visitor has seen which context lines did not match.
+    let patchState = null;
     function runPatch() {
-      const orig = $('patchOriginal').value, patch = $('patchText').value;
+      const patch = $('patchText').value;
+      $('patchFiles').hidden = true;
       if (!patch.trim()) { showError('Paste a unified diff.'); return; }
-      const r = E.applyPatch(orig, patch);
-      if (!r.ok) { showError(r.error); return; }
-      runText(orig, r.text, names.a !== 'original' ? names.a : 'original', 'patched', `Patch applied: ${r.hunks} hunk${r.hunks === 1 ? '' : 's'}${r.fuzzy ? ' (with fuzz: context lines had moved)' : ''}`)
-        .then(() => { $('mergedTitle').textContent = 'Patched file'; $('mergedSection').style.display = 'grid'; });
-      if (r.fuzzy) Layerbit.toast('Applied with fuzz: some context lines had moved. Check the result.', 'warn');
+      let files;
+      try { files = E.parsePatchFiles(patch); } catch (e) { showError(e.message); return; }
+      if (!files.length) { showError('No hunks found. A unified diff starts with --- / +++ lines followed by @@ hunks.'); return; }
+      const prev = patchState && patchState.patch === patch ? patchState : null;
+      const originals = files.map((f, i) => i === 0 ? sideText('patchOriginal') : prev && prev.originals[i] != null ? prev.originals[i] : null);
+      patchState = { patch, files, originals, names: files.map((f, i) => prev && prev.names[i] ? prev.names[i] : f.name), confirmed: [], current: 0 };
+      patchState.results = files.map((f, i) => originals[i] == null ? null : E.applyPatchFile(originals[i], f));
+      if (files.length === 1 && !patchState.results[0].ok && !patchState.results[0].mismatches.length) { showError(patchState.results[0].error); return; }
+      if (files.length === 1 && !patchState.results[0].ok) { showError(patchState.results[0].error); }
+      showPatchFile(0);
+    }
+    function patchSetOriginal(i, text, name) {
+      if (!patchState) return;
+      patchState.originals[i] = text; if (name) patchState.names[i] = name;
+      patchState.results[i] = E.applyPatchFile(text, patchState.files[i]); patchState.confirmed[i] = false;
+      showPatchFile(i);
+    }
+    function pickPatchOriginal(i) {
+      const inp = document.createElement('input'); inp.type = 'file';
+      inp.onchange = () => { const f = inp.files[0]; if (f) f.arrayBuffer().then(b => patchSetOriginal(i, E.decodeBytes(new Uint8Array(b)).text, f.name)); };
+      inp.click();
+    }
+    function acceptFuzz(i) { patchState.confirmed[i] = true; showPatchFile(i); }
+    function renderPatchFiles() {
+      const P = patchState, done = P.results.filter((r, i) => r && r.ok && (!r.fuzzy || P.confirmed[i])).length;
+      const row = (f, i) => {
+        const r = P.results[i];
+        const status = !r ? '<span class="muted">needs its original file</span>' : !r.ok ? '<span class="t-removed">does not apply</span>' : r.fuzzy && !P.confirmed[i] ? '<span class="t-changed">applies only with fuzz: check below</span>' : `<span class="t-added">applied${r.fuzzy ? ' with fuzz (confirmed)' : ''}</span>`;
+        return `<tr class="${i === P.current ? 'pf-current' : ''}"><td class="t-path">${E.esc(f.name)}</td><td>${f.hunks.length} hunk${f.hunks.length === 1 ? '' : 's'}</td><td>${status}</td><td class="pf-act">` +
+          (i > 0 ? `<button type="button" class="btn" onclick="pickPatchOriginal(${i})"><i data-lucide="upload"></i> ${r ? 'Change' : 'Choose'} original</button>` : '<span class="muted">original pane</span>') +
+          (r && r.ok ? ` <button type="button" class="btn" onclick="showPatchFile(${i})"><i data-lucide="eye"></i> View</button>` : '') + '</td></tr>';
+      };
+      let html = `<div class="pf-head"><strong>${done} of ${P.files.length} file${P.files.length === 1 ? '' : 's'} applied</strong> from this patch.</div><table class="data-table"><tbody>${P.files.map(row).join('')}</tbody></table>`;
+      const r = P.results[P.current];
+      if (r && r.mismatches && r.mismatches.length && !(r.ok && !r.fuzzy)) {
+        html += `<div class="diff-notes" role="status"><i data-lucide="alert-triangle"></i><div><strong>${E.esc(P.names[P.current])}: ${r.mismatches.length} context line${r.mismatches.length === 1 ? '' : 's'} did not match the original.</strong> ${r.ok ? 'The patch was placed by fuzzy matching, so it may change the wrong lines.' : ''}<table class="data-table"><thead><tr><th>Hunk</th><th>Original line</th><th>The patch expected</th><th>The file has</th></tr></thead><tbody>${r.mismatches.map(m => `<tr><td>${m.hunk}</td><td>line ${m.line}</td><td class="cell-old">${E.esc(m.expected)}</td><td class="cell-new">${E.esc(m.actual)}</td></tr>`).join('')}</tbody></table>` +
+          (r.ok && !P.confirmed[P.current] ? `<button type="button" class="btn" id="btnAcceptFuzz" onclick="acceptFuzz(${P.current})"><i data-lucide="check"></i> I have checked these lines: apply anyway</button>` : '') + '</div></div>';
+      }
+      $('patchFiles').innerHTML = html; $('patchFiles').hidden = false;
+    }
+    function showPatchFile(i) {
+      const P = patchState; if (!P) return;
+      P.current = i; clearError();
+      const r = P.results[i], name = P.names[i];
+      $('outputSection').style.display = 'grid';
+      renderPatchFiles();
+      if (!r || !r.ok || (r.fuzzy && !P.confirmed[i])) {
+        if (r && !r.ok) showError(r.error);
+        $('mergedSection').style.display = 'none';
+        $('leftPanel').innerHTML = $('rightPanel').innerHTML = $('inlinePanel').innerHTML = ''; $('diffStats').innerHTML = '';
+        $('resultTitle').textContent = !r ? `${name}: choose its original file` : r.ok ? `${name}: confirm the fuzzy match` : `${name}: patch does not apply`;
+        showPanel($('viewMode').value === 'unified' ? 'unified' : 'split'); icons();
+        return;
+      }
+      runText(P.originals[i], r.text, name, name, `Patch applied to ${name}: ${r.hunks} hunk${r.hunks === 1 ? '' : 's'}${r.fuzzy ? ' (with confirmed fuzz)' : ''}`)
+        .then(() => { $('mergedTitle').textContent = 'Patched file: ' + name; $('mergedSection').style.display = 'grid'; renderPatchFiles(); icons(); });
     }
 
     // ---- zip

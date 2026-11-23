@@ -385,6 +385,45 @@
     return { ok: true, text: res, hunks: patches[0].hunks.length };
   }
 
+  /** Every file in a (possibly multi-file) unified diff:
+   *  [{name, oldName, newName, hunks, patch}] where patch is jsdiff's object. */
+  function parsePatchFiles(patch) {
+    var list;
+    try { list = Diff.parsePatch(patch); } catch (e) { throw new Error('Could not parse the patch: ' + e.message); }
+    var strip = function (n) { return (n || '').replace(/^[ab]\//, '').replace(/\t.*$/, ''); };
+    return list.filter(function (p) { return p.hunks && p.hunks.length; }).map(function (p) {
+      var newName = strip(p.newFileName), oldName = strip(p.oldFileName);
+      return { name: newName && newName !== '/dev/null' ? newName : oldName, oldName: oldName, newName: newName, hunks: p.hunks, patch: p };
+    });
+  }
+  /** Where each hunk's expected lines (context and removed) best fit the
+   *  original, and which of them differ there: [{hunk, line, expected, actual}]
+   *  with 1-based line numbers in the original. */
+  function hunkMismatches(text, file) {
+    var lines = splitLines(text).map(function (l) { return l.replace(/\r$/, ''); }), out = [];
+    file.hunks.forEach(function (h, hi) {
+      var exp = h.lines.filter(function (l) { return l[0] === ' ' || l[0] === '-'; }).map(function (l) { return l.slice(1); });
+      if (!exp.length) return;
+      var best = -1, bestScore = -1, want = Math.max(0, h.oldStart - 1);
+      for (var p = 0; p + exp.length <= lines.length; p++) {
+        var sc = 0; for (var k = 0; k < exp.length; k++) if (lines[p + k] === exp[k]) sc++;
+        if (sc > bestScore || (sc === bestScore && Math.abs(p - want) < Math.abs(best - want))) { bestScore = sc; best = p; }
+      }
+      if (best < 0) best = want;
+      for (var k2 = 0; k2 < exp.length; k2++) if (lines[best + k2] !== exp[k2]) out.push({ hunk: hi + 1, line: best + k2 + 1, expected: exp[k2], actual: lines[best + k2] == null ? '' : lines[best + k2] });
+    });
+    return out;
+  }
+  /** Applies one file of a patch. Exact context first; if that fails, a fuzz
+   *  of 2 lines, reported with the context lines that did not match. */
+  function applyPatchFile(text, file) {
+    var res = Diff.applyPatch(text, file.patch, { fuzzFactor: 0 });
+    if (res !== false) return { ok: true, text: res, fuzzy: false, mismatches: [], hunks: file.hunks.length };
+    var fuzzy = Diff.applyPatch(text, file.patch, { fuzzFactor: 2 });
+    if (fuzzy === false) return { ok: false, error: 'The patch does not apply to ' + (file.name || 'this file') + ': a hunk\'s context lines were not found. Check that this is the file the patch was made from.', mismatches: hunkMismatches(text, file), hunks: file.hunks.length };
+    return { ok: true, text: fuzzy, fuzzy: true, mismatches: hunkMismatches(text, file), hunks: file.hunks.length };
+  }
+
   // ---------------------------------------------------------------- three-way
   /** diff3: merges `ours` and `theirs` against `base`. Returns merged text,
    *  conflict count, and chunks [{type:'eq'|'ours'|'theirs'|'both'|'conflict', lines|ours,theirs,base}]. */
@@ -733,6 +772,6 @@
   }
 
   return { lineDiff: lineDiff, foldContext: foldContext, intraline: intraline, tokenize: tokenize, detectLang: detectLang, renderLine: renderLine, esc: esc,
-    unifiedPatch: unifiedPatch, applyPatch: applyPatch, diff3: diff3, structuralDiff: structuralDiff, canonicalJson: canonicalJson, canon: canon,
+    unifiedPatch: unifiedPatch, applyPatch: applyPatch, parsePatchFiles: parsePatchFiles, applyPatchFile: applyPatchFile, diff3: diff3, structuralDiff: structuralDiff, canonicalJson: canonicalJson, canon: canon,
     parseCsv: parseCsv, detectDelimiter: detectDelimiter, tableDiff: tableDiff, readZip: readZip, isProbablyText: isProbablyText, decodeBytes: decodeBytes, bytesEqual: bytesEqual, stripCommonRoot: stripCommonRoot, uniqueHeaders: uniqueHeaders, parseJsonLossless: parseJsonLossless, stringifyLossless: stringifyLossless, canonicalNumber: canonicalNumber, splitLines: splitLines, normalizeLine: normalizeLine, DEFAULT_OPTS: DEFAULT_OPTS };
 });
