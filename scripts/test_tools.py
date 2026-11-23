@@ -1314,6 +1314,105 @@ def _(t):
     expect("[Order Id]" in t.text("sqlOutput"), "bracket identifier mangled")
 
 
+@case("sql-formatter", "typical", "2.7: named style profiles: save, switch, export and import as JSON")
+def _(t):
+    t.call("localStorage.removeItem('layerbit-sql-profiles')")
+    t.set("sqlInput", "select a, b from t where x = 1 and y = 2")
+    t.select("keywordCaseSelect", "lower"); t.select("logicalNewline", "after")
+    t.set("profileName", "team-lower"); t.click("#btnProfileSave")
+    expect("team-lower" in t.call("[...document.getElementById('profileSelect').options].map(o => o.textContent).join('|')"), "profile not listed")
+    t.select("profileSelect", "default")
+    expect("SELECT" in t.text("sqlOutput"), "default profile should uppercase keywords: " + t.text("sqlOutput"))
+    t.select("profileSelect", "team-lower")
+    out = t.text("sqlOutput")
+    expect("select" in out and "SELECT" not in out and "and\n" in out.replace(" \n", "\n"), "profile not applied: " + out)
+    with t.page.expect_download() as dl:
+        t.click("#btnProfileExport")
+    data = json.loads(open(dl.value.path(), encoding="utf-8").read())
+    expect(any(p.get("name") == "team-lower" and p.get("keywordCase") == "lower" for p in data["profiles"]), f"{data}")
+    t.call("localStorage.removeItem('layerbit-sql-profiles')"); t.page.reload(); t.wait(300)
+    t.page.set_input_files("#profileImport", [{"name": "p.json", "mimeType": "application/json", "buffer": json.dumps(data).encode()}])
+    t.wait_for("[...document.getElementById('profileSelect').options].some(o => o.textContent.includes('team-lower'))", 5000)
+    t.call("localStorage.removeItem('layerbit-sql-profiles')")
+    t.select("profileSelect", "default")
+
+
+@case("sql-formatter", "typical", "2.7: analysis finds the six problems and fixes each in one click")
+def _(t):
+    t.set("schemaInput", "CREATE TABLE users (id INT, email TEXT);")
+    sql = ("DECLARE @unused INT = 5;\nSELECT * FROM users;\nUPDATE users SET email = NULL;\n"
+           "SELECT id FROM users WHERE id NOT IN (SELECT user_id FROM orders);\n"
+           "SELECT u.id FROM users u, orders o WHERE u.id = o.user_id;\nSELECT id FROM users WHERE email LIKE '%@x.com';")
+    t.set("sqlInput", sql); t.click("#btnFormat")
+    t.wait_for("document.querySelectorAll('#lintList .lint-item').length === 6", 5000)
+    rules = t.call("[...document.querySelectorAll('#lintList .lint-item')].map(i => i.dataset.rule)")
+    eq(sorted(rules), sorted(["unused-variable", "select-star", "no-where", "not-in-null", "implicit-join", "leading-wildcard"]), "rules")
+    t.click("#lintList .lint-item[data-rule='select-star'] .lint-fix"); t.wait(150)
+    expect("SELECT id, email FROM users" in t.val("sqlInput"), t.val("sqlInput"))
+    t.click("#btnFixAll"); t.wait(200)
+    v = t.val("sqlInput")
+    expect("WHERE 1 = 0" in v and "IS NOT NULL" in v and "JOIN orders o ON" in v and "@unused" not in v, v)
+    eq(t.call("[...document.querySelectorAll('#lintList .lint-item')].map(i => i.dataset.rule)"), ["leading-wildcard"], "only the unfixable one is left")
+    t.set("schemaInput", "")
+
+
+@case("sql-formatter", "typical", "2.7: Format selection formats only the selected text")
+def _(t):
+    t.set("sqlInput", "-- keep this line exactly\nselect a,b from t where x=1;\nselect   c   from   u;")
+    t.call("() => { const e = document.getElementById('sqlInput'); const s = e.value.indexOf('select a'); e.focus(); e.setSelectionRange(s, e.value.indexOf(';') + 1); e.dispatchEvent(new Event('select')); }")
+    t.click("#btnFormatSel"); t.wait(150)
+    v = t.val("sqlInput")
+    expect(v.startswith("-- keep this line exactly\nSELECT") and v.endswith("select   c   from   u;"), "selection not formatted alone: " + v)
+
+
+@case("sql-formatter", "typical", "2.7: many files at once: formatted, zipped, errors listed per file")
+def _(t):
+    t.page.set_input_files("#sqlFiles", [{"name": "a.sql", "mimeType": "text/plain", "buffer": b"select 1 from t"},
+                                         {"name": "b.sql", "mimeType": "text/plain", "buffer": b"select * from users where"},
+                                         {"name": "c.sql", "mimeType": "text/plain", "buffer": b"update t set x = 1"}])
+    t.wait_for("document.querySelectorAll('#filesResult tbody tr').length === 3", 10000)
+    r = t.text("filesResult")
+    expect("a.sql" in r and "formatted" in r and "b.sql" in r and "line 1" in r.lower() and "c.sql" in r and "1 check" in r, r)
+    with t.page.expect_download() as dl:
+        t.click("#btnFilesZip")
+    expect(dl.value.suggested_filename.endswith(".zip"), dl.value.suggested_filename)
+
+
+@case("sql-formatter", "typical", "2.7: syntax checked in every dialect, with line and column")
+def _(t):
+    t.set("sqlInput", "SELECT TOP 5 [id] FROM [users]")
+    t.click("#btnDialects")
+    t.wait_for("document.querySelectorAll('#dialectReport tbody tr').length >= 10", 10000)
+    rows = t.call("Object.fromEntries([...document.querySelectorAll('#dialectReport tbody tr')].map(tr => [tr.dataset.dialect, tr.children[1].textContent]))")
+    expect(rows["tsql"].startswith("OK"), rows["tsql"])
+    expect("line 1" in rows["postgresql"].lower(), rows["postgresql"])
+
+
+@case("sql-formatter", "typical", "2.7: autocomplete from pasted DDL: tables after FROM, columns after an alias")
+def _(t):
+    t.set("schemaInput", "CREATE TABLE customers (id INT, full_name TEXT, city TEXT);\nCREATE TABLE invoices (id INT, customer_id INT, amount DECIMAL(10,2));")
+    t.set("sqlInput", "")
+    t.page.click("#sqlInput"); t.page.keyboard.type("SELECT * FROM inv")
+    t.wait_for("!document.getElementById('acPopup').hidden", 3000)
+    expect("invoices" in t.text("acPopup"), t.text("acPopup"))
+    t.page.keyboard.press("Tab")
+    expect(t.val("sqlInput").endswith("FROM invoices"), t.val("sqlInput"))
+    t.page.keyboard.type(" i WHERE i.am")
+    t.wait_for("document.getElementById('acPopup').textContent.includes('amount')", 3000)
+    t.page.keyboard.press("Enter")
+    expect(t.val("sqlInput").endswith("i.amount"), t.val("sqlInput"))
+    t.set("schemaInput", "")
+
+
+@case("sql-formatter", "edge", "a MySQL stored procedure with block labels (proc: BEGIN) formats instead of failing")
+def _(t):
+    t.select("dialectSelect", "auto")
+    t.set("sqlInput", "DELIMITER //\nCREATE PROCEDURE rewards(IN min_purchases INT)\nproc: BEGIN\n  DECLARE n INT;\n  IF min_purchases = 0 THEN\n    LEAVE proc;\n  END IF;\n  SELECT COUNT(*) INTO n FROM payment;\nEND //\nDELIMITER ;")
+    t.click("#btnFormat"); t.wait(300)
+    out = t.text("sqlOutput")
+    expect("proc: BEGIN" in out and "LEAVE proc" in out and "lb-label" not in out, "label lost or format failed: " + out + " | " + t.text("errorText"))
+
+
 @case("sql-formatter", "maximal", "500 statements under budget")
 def _(t):
     t.select("dialectSelect", "sql") if t.count("#dialectSelect option[value='sql']") else None
@@ -4149,6 +4248,144 @@ def _(t):
     eq(t.val("mdInput"), "**bold** me", "bold wrap")
 
 
+@case("markdown-preview", "typical", "2.11: Mermaid renders locally to SVG, with no request to any other host")
+def _(t):
+    hosts = []
+    t.page.on("request", lambda r: hosts.append(r.url.split("/")[2]) if r.url.startswith("http") else None)
+    t.set("mdInput", "# Flow\n\n```mermaid\ngraph TD\n  A[Start] --> B{Ok?}\n  B -->|yes| C[<img src=x onerror=window.__pw=1>Done]\n```\n")
+    t.wait_for("document.querySelector('#mdPreview .mermaid svg')", 15000)
+    expect(t.count("#mdPreview .mermaid svg .node") >= 3, t.html("mdPreview")[:400])
+    expect(not t.call("window.__pw"), "mermaid label ran a script")
+    local = t.call("location.host")
+    expect(all(h == local for h in hosts), f"requests left the page: {sorted(set(hosts))}")
+    expect("GitHub's servers" not in t.call("document.body.innerText"), "the FAQ still says Mermaid needs GitHub")
+
+
+@case("markdown-preview", "typical", "2.11: KaTeX math, footnotes and syntax-highlighted code")
+def _(t):
+    t.set("mdInput", "Energy $E = mc^2$ and price $5 and $6.\n\n$$\n\\int_0^1 x^2\\,dx = \\frac{1}{3}\n$$\n\nA claim.[^src]\n\n[^src]: The source, page 4.\n\n```js\nconst answer = 42; // ok\n```\n")
+    t.wait_for("document.querySelector('#mdPreview .katex-display') && document.querySelector('#mdPreview .hljs-keyword')", 10000)
+    eq(t.count("#mdPreview .katex"), 2, "inline + display math (dollar amounts left alone)")
+    expect("$5 and $6" in t.text("mdPreview"), t.text("mdPreview")[:300])
+    expect(t.count("#mdPreview section.footnotes li") == 1 and t.count("#mdPreview sup a[href^='#footnote']") >= 1, t.html("mdPreview")[-600:])
+    expect(t.call("document.querySelector('#mdPreview .hljs-keyword').textContent") == "const", "keyword not highlighted")
+
+
+@case("markdown-preview", "typical", "2.11: exports to DOCX and ePub are valid packages; PDF prints the themed page")
+def _(t):
+    import zipfile, xml.dom.minidom as mdom
+    t.set("mdInput", "# Report\n\nSome **bold**, _italic_ and a [link](https://example.com).\n\n## Data\n\n| A | B |\n|---|---|\n| 1 | 2 |\n\n- one\n- two\n\n1. first\n\n> quoted\n\n```\ncode line\n```\n\nMath $x^2$.\n")
+    t.wait(300)
+    with t.page.expect_download() as dl:
+        t.click("#btnDocx")
+    z = zipfile.ZipFile(dl.value.path())
+    names = z.namelist()
+    for n in ["[Content_Types].xml", "_rels/.rels", "word/document.xml", "word/styles.xml", "word/numbering.xml", "word/_rels/document.xml.rels"]:
+        expect(n in names, f"{n} missing: {names}")
+    doc = z.read("word/document.xml").decode()
+    mdom.parseString(doc)
+    expect('w:val="Heading1"' in doc and "<w:tbl>" in doc and "<w:b/>" in doc and "<w:hyperlink" in doc and "<w:numPr>" in doc, doc[:600])
+    expect("example.com" in z.read("word/_rels/document.xml.rels").decode(), "hyperlink target")
+    with t.page.expect_download() as dl:
+        t.click("#btnEpub")
+    z = zipfile.ZipFile(dl.value.path())
+    eq(z.infolist()[0].filename, "mimetype", "mimetype first")
+    eq(z.infolist()[0].compress_type, zipfile.ZIP_STORED, "mimetype stored")
+    eq(z.read("mimetype"), b"application/epub+zip", "mimetype")
+    expect("META-INF/container.xml" in z.namelist(), z.namelist())
+    for n in z.namelist():
+        if n.endswith((".xhtml", ".opf", ".xml")):
+            mdom.parseString(z.read(n))
+    opf = [n for n in z.namelist() if n.endswith(".opf")][0]
+    expect("<dc:title>Report</dc:title>" in z.read(opf).decode(), z.read(opf).decode()[:400])
+    t.select("mdTheme", "academic")
+    t.call("() => { window.lbPrintHook = d => { window.__printed = d.documentElement.outerHTML; }; }")
+    t.click("#btnPdf")
+    t.wait_for("window.__printed", 5000)
+    out = t.call("window.__printed")
+    expect("Report" in out and "@page" in out and "Georgia" in out and "katex" in out, out[:500])
+
+
+@case("markdown-preview", "typical", "2.11: themes, focus mode and typewriter scrolling")
+def _(t):
+    for th in ["github", "academic", "sepia", "night"]:
+        t.select("mdTheme", th)
+        eq(t.call("document.getElementById('mdPreview').dataset.theme"), th, "theme")
+    bg = t.call("getComputedStyle(document.getElementById('mdPreview')).backgroundColor")
+    t.select("mdTheme", "sepia")
+    expect(t.call("getComputedStyle(document.getElementById('mdPreview')).backgroundColor") != bg, "theme changed no colour")
+    t.click("#btnFocus")
+    expect(t.call("document.body.classList.contains('md-focus')"), "focus mode off")
+    expect(not t.visible(".hero") and t.visible("#mdInput"), "focus mode should show only the editor")
+    t.page.keyboard.press("Escape")
+    expect(not t.call("document.body.classList.contains('md-focus')"), "Esc should leave focus mode")
+    t.call("document.getElementById('optTypewriter').click()")
+    t.set("mdInput", "\n".join(f"line {i}" for i in range(300)))
+    t.call("() => { const e = document.getElementById('mdInput'); e.focus(); const p = e.value.indexOf('line 200'); e.setSelectionRange(p, p); e.dispatchEvent(new Event('keyup')); }")
+    t.wait(150)
+    r = t.call("() => { const e = document.getElementById('mdInput'), lh = parseFloat(getComputedStyle(e).lineHeight); return (200 * lh + parseFloat(getComputedStyle(e).paddingTop) - e.scrollTop) / e.clientHeight; }")
+    expect(0.3 < r < 0.7, f"caret line should sit mid-editor, at {r:.2f} of the height")
+
+
+@case("markdown-preview", "typical", "2.11: a pasted image is kept, previewed and embedded in the exports")
+def _(t):
+    import zipfile
+    t.set("mdInput", "# Pic\n\n")
+    png = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg=="
+    t.page.evaluate("""b64 => { const e = document.getElementById('mdInput'); e.focus(); e.setSelectionRange(e.value.length, e.value.length);
+        const bin = Uint8Array.from(atob(b64), c => c.charCodeAt(0)), dt = new DataTransfer();
+        dt.items.add(new File([bin], 'shot.png', { type: 'image/png' }));
+        e.dispatchEvent(new ClipboardEvent('paste', { clipboardData: dt, bubbles: true, cancelable: true })); }""", png)
+    t.wait_for("document.querySelector('#mdPreview img')", 5000)
+    expect("](images/pasted-1.png)" in t.val("mdInput"), t.val("mdInput"))
+    expect(t.call("document.querySelector('#mdPreview img').src").startswith("blob:"), "preview should show the pasted image")
+    with t.page.expect_download() as dl:
+        t.click("#btnDlHtml")
+    expect("data:image/png;base64," in open(dl.value.path(), encoding="utf-8").read(), "HTML export should embed the image")
+    with t.page.expect_download() as dl:
+        t.click("#btnDlMd")
+    expect(dl.value.suggested_filename.endswith(".zip"), dl.value.suggested_filename)
+    expect("images/pasted-1.png" in zipfile.ZipFile(dl.value.path()).namelist(), "zip should hold the image")
+    with t.page.expect_download() as dl:
+        t.click("#btnDocx")
+    z = zipfile.ZipFile(dl.value.path())
+    expect(any(n.startswith("word/media/") for n in z.namelist()) and "<w:drawing>" in z.read("word/document.xml").decode(), "DOCX should embed the image")
+
+
+@case("markdown-preview", "typical", "2.11: several documents; autosave to the browser's private files only when switched on")
+def _(t):
+    t.call("localStorage.removeItem('layerbit-md-autosave')")
+    t.call("navigator.storage.getDirectory().then(d => d.removeEntry('layerbit-markdown', { recursive: true })).catch(() => {})"); t.wait(200)
+    t.page.reload(); t.wait(300)
+    expect(not t.call("document.getElementById('optAutosave').checked"), "autosave must be off by default")
+    t.set("mdInput", "# First doc\n\nalpha")
+    t.click("#btnNewDoc"); t.wait(100)
+    eq(t.val("mdInput"), "", "a new document starts empty")
+    t.set("mdInput", "# Second doc\n\nbeta"); t.wait(100)
+    eq(t.count("#docSelect option"), 2, "two documents")
+    t.select("docSelect", t.call("document.getElementById('docSelect').options[0].value")); t.wait(100)
+    expect("alpha" in t.val("mdInput"), t.val("mdInput"))
+    t.wait(800)
+    eq(t.call("navigator.storage.getDirectory().then(async d => { try { await d.getDirectoryHandle('layerbit-markdown'); return true; } catch (e) { return false; } })"), False, "nothing written while autosave is off")
+    t.call("document.getElementById('optAutosave').click()")
+    saved = "navigator.storage.getDirectory().then(async d => { try { const x = await d.getDirectoryHandle('layerbit-markdown'); return JSON.parse(await (await (await x.getFileHandle('index.json')).getFile()).text()).docs.length === 2; } catch (e) { return false; } })"
+    t.wait_for(saved, 5000)
+    t.page.reload(); t.wait(300)
+    t.wait_for("document.querySelectorAll('#docSelect option').length === 2", 5000)
+    texts = t.call("[...document.getElementById('docSelect').options].map(o => o.textContent).join('|')")
+    expect("First doc" in texts and "Second doc" in texts, texts)
+    # a tab closed during the first save leaves an empty index: the documents are recovered, not overwritten
+    t.wait_for(saved, 5000)
+    t.call("navigator.storage.getDirectory().then(async d => { const x = await d.getDirectoryHandle('layerbit-markdown'); const w = await (await x.getFileHandle('index.json')).createWritable(); await w.write(''); await w.close(); })")
+    t.page.reload(); t.wait(300)
+    t.wait_for("document.querySelectorAll('#docSelect option').length === 2", 5000)
+    texts = t.call("[...document.getElementById('docSelect').options].map(o => o.textContent).join('|')")
+    expect("First doc" in texts and "Second doc" in texts, "not recovered from the document files: " + texts)
+    t.call("document.getElementById('optAutosave').click()")
+    t.wait_for("navigator.storage.getDirectory().then(async d => { try { await d.getDirectoryHandle('layerbit-markdown'); return false; } catch (e) { return true; } })", 5000)
+    t.call("localStorage.removeItem('layerbit-md-autosave')")
+
+
 @case("markdown-preview", "maximal", "large README (2,000 sections) renders under budget")
 def _(t):
     import time as _time
@@ -4637,6 +4874,88 @@ def _(t):
 
 
 LOAD_SCRIPT = """src => new Promise((res, rej) => { const s = document.createElement('script'); s.src = new URL(src, location.href).href; s.onload = res; s.onerror = () => rej(new Error('could not load ' + src)); document.head.appendChild(s); })"""
+
+
+LOG_JSON = '\n'.join([
+    '{"ts":"2026-11-23T09:00:00Z","level":"info","msg":"started","user":{"id":7}}',
+    '{"ts":"2026-11-23T09:00:05Z","level":50,"msg":"db down","user":{"id":9}}',
+    '{"ts":"2026-11-23T09:00:09Z","level":"warn","msg":"slow"}'])
+
+
+@case("log-analyzer", "typical", "2.13: JSON, logfmt, syslog and Windows logs: level, time and fields are read; a line shows its fields")
+def _(t):
+    t.set("logInput", LOG_JSON); t.wait(450)
+    eq([t.text("countAll"), t.text("countErr"), t.text("countWarn"), t.text("countInfo")], ["3", "1", "1", "1"], "JSON levels (pino 50 = error)")
+    expect("JSON" in t.text("logFormat"), t.text("logFormat"))
+    t.click("#logOutput .log-line:nth-child(2) .line-content")
+    expect("user.id" in t.text("logOutput") and "9" in t.text("logOutput"), "fields not shown: " + t.text("logOutput")[:300])
+    t.set("logInput", 'time=2026-11-23T09:00:00Z level=error msg="disk full" mount=/var\ntime=2026-11-23T09:00:01Z level=info msg=ok'); t.wait(450)
+    eq(t.text("countErr"), "1", "logfmt"); expect("logfmt" in t.text("logFormat"), t.text("logFormat"))
+    t.set("logInput", '<11>1 2026-11-23T09:15:02Z web01 app 123 ID1 - disk full\n<14>1 2026-11-23T09:15:03Z web01 app 123 ID1 - all good'); t.wait(450)
+    eq([t.text("countErr"), t.text("countInfo")], ["1", "1"], "syslog severities")
+    t.set("logInput", 'Error\t11/23/2026 9:15:02 AM\tService Control Manager\t7031\tNone\tThe Print Spooler service terminated unexpectedly.\nInformation\t11/23/2026 9:16:00 AM\tKernel-General\t12\tNone\tThe operating system started.'); t.wait(450)
+    eq([t.text("countErr"), t.text("countInfo")], ["1", "1"], "Windows levels")
+    expect("Windows" in t.text("logFormat"), t.text("logFormat"))
+
+
+@case("log-analyzer", "typical", "2.13: timeline histogram; dragging across it zooms the list to that time range")
+def _(t):
+    lines = [f"2026-11-23T09:{m:02d}:00Z [{'ERROR' if m % 10 == 0 else 'INFO'}] tick {m}" for m in range(60)]
+    t.set("logInput", "\n".join(lines)); t.wait(450)
+    expect(t.visible("#timeline"), "no timeline")
+    box = t.page.locator("#timeline").bounding_box()
+    t.page.mouse.move(box["x"] + box["width"] * 0.02, box["y"] + box["height"] / 2); t.page.mouse.down()
+    t.page.mouse.move(box["x"] + box["width"] * 0.24, box["y"] + box["height"] / 2, steps=5); t.page.mouse.up()
+    t.wait(200)
+    n = t.count("#logOutput .log-line")
+    expect(5 <= n <= 20, f"zoom did not narrow the list: {n} lines")
+    expect("tick 5" in t.text("logOutput") and "tick 0 " not in t.text("logOutput") + " " and "tick 59" not in t.text("logOutput"), "wrong range: " + t.text("logOutput")[:200])
+    t.click("#btnZoomReset"); t.wait(150)
+    eq(t.count("#logOutput .log-line"), 60, "reset")
+
+
+@case("log-analyzer", "typical", "2.13: several files are merged by time, each line tagged with its file")
+def _(t):
+    a = "2026-11-23 09:00:00 [INFO] a1\n2026-11-23 09:00:10 [INFO] a2\n"
+    b = "2026-11-23 09:00:05 [ERROR] b1\n2026-11-23 09:00:15 [INFO] b2\n"
+    t.page.set_input_files("#logFileInput", [{"name": "app.log", "mimeType": "text/plain", "buffer": a.encode()}, {"name": "db.log", "mimeType": "text/plain", "buffer": b.encode()}])
+    t.wait_for("document.querySelectorAll('#logOutput .log-line').length === 4", 8000)
+    order = t.call("[...document.querySelectorAll('#logOutput .line-content')].map(e => e.textContent.match(/[ab][12]/)[0])")
+    eq(order, ["a1", "b1", "a2", "b2"], "merged by time")
+    expect("db.log" in t.text("logOutput") and "app.log" in t.text("logOutput"), "files not named")
+    expect("2 files" in t.text("logFormat"), t.text("logFormat"))
+
+
+@case("log-analyzer", "typical", "2.13: saved searches and highlight rules are kept for next time")
+def _(t):
+    t.call("localStorage.removeItem('layerbit-log-searches'); localStorage.removeItem('layerbit-log-highlights')")
+    t.set("logInput", "2026-11-23 09:00:00 [ERROR] db timeout\n2026-11-23 09:00:01 [INFO] cache warm\n"); t.wait(450)
+    t.set("searchInput", "timeout"); t.click("#btnSaveSearch")
+    t.set("hlPattern", "cache"); t.click("#btnAddHl")
+    t.page.reload(); t.wait(300)
+    t.set("logInput", "2026-11-23 09:00:00 [ERROR] db timeout\n2026-11-23 09:00:01 [INFO] cache warm\n"); t.wait(450)
+    expect("timeout" in t.text("savedSearches"), "saved search lost: " + t.text("savedSearches"))
+    t.click("#savedSearches .saved-chip")
+    eq(t.val("searchInput"), "timeout", "saved search applied")
+    t.set("searchInput", "", event="input"); t.wait(150)
+    hl = t.call("[...document.querySelectorAll('#logOutput .log-line')].filter(l => l.style.getPropertyValue('--hl')).map(l => l.textContent.includes('cache'))")
+    eq(hl, [True], "highlight rule kept and applied")
+    t.call("localStorage.removeItem('layerbit-log-searches'); localStorage.removeItem('layerbit-log-highlights')")
+
+
+@case("log-analyzer", "maximal", "2.13: a 60 MB log streams through a Worker; counts and timeline cover it all and grep scans the whole file")
+def _(t):
+    t.call("""() => { const parts = []; for (let i = 0; i < 800000; i++) parts.push('2026-11-23T' + String(9 + Math.floor(i / 360000)).padStart(2, '0') + ':' + String(Math.floor(i / 6000) % 60).padStart(2, '0') + ':' + String(Math.floor(i / 100) % 60).padStart(2, '0') + 'Z [' + (i % 50 === 0 ? 'ERROR' : 'INFO') + '] request ' + i + ' served by worker-' + (i % 8) + ' in ' + (i % 97) + ' ms\\n');
+      parts.push('2026-11-23T11:00:00Z [ERROR] needle-xyz-final at the very end\\n');
+      window.__lf = new File(parts, 'huge.log'); handleLogFiles([window.__lf]); }""")
+    t.wait_for("window.logBig && window.logBig.done", 60000)
+    expect(t.call("window.__lf.size") > 55e6, "file not large enough: %s" % t.call("window.__lf.size"))
+    eq(t.text("countAll").replace(",", ""), "800001", "every event counted")
+    eq(t.text("countErr").replace(",", ""), "16001", "every error counted")
+    expect(t.visible("#timeline"), "no timeline for the big file")
+    t.set("searchInput", "needle-xyz", event="input")
+    t.wait_for("document.getElementById('logOutput').textContent.includes('needle-xyz-final')", 60000)
+    t.call("clearLogs()")
 
 
 @case("json-to-table", "maximal", "shared virtual list: a million rows keep under 100 nodes and scroll to any index")

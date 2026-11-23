@@ -328,7 +328,7 @@ def sw_source(pages):
             p = os.path.normpath(os.path.join(base, m.group(1)))
             if os.path.exists(p):
                 urls.add(p)
-    urls.update(sorted(glob.glob("js/vendor/wasm/*.wasm")) + sorted(glob.glob("js/vendor/xmllint/*.mjs")) + sorted(glob.glob("js/vendor/xmllint/*.wasm")) + sorted(glob.glob("js/vendor/schemas/*.json")) + sorted(glob.glob("fonts/*.woff2")))
+    urls.update(sorted(glob.glob("js/vendor/wasm/*.wasm")) + sorted(glob.glob("js/vendor/xmllint/*.mjs")) + sorted(glob.glob("js/vendor/xmllint/*.wasm")) + sorted(glob.glob("js/vendor/schemas/*.json")) + sorted(glob.glob("js/vendor/katex/*")) + sorted(glob.glob("js/vendor/katex/fonts/*.woff2")) + sorted(glob.glob("fonts/*.woff2")))
     urls = sorted(u.replace(os.sep, "/") for u in urls)
     version = "lb-" + hashlib.sha256(json.dumps(urls).encode()).hexdigest()[:10]
     block = "/* BUILD:PRECACHE:BEGIN */\nvar VERSION = '%s';\nvar PRECACHE = %s;\n/* BUILD:PRECACHE:END */" % (version, json.dumps(urls, indent=0).replace("\n", ""))

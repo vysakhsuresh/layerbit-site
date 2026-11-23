@@ -39,6 +39,7 @@ def INPUTS(c):
         "cron-generator": {"cronInput": "*/15 9-17 * * 1-5"},
         "timestamp-converter": {"tsInput": "1700000000"},
         "uuid-generator": {},
+        "markdown-preview": {},
         "subnet-calculator": {"cidrInput": "10.20.0.0/22", "splitSelect": "24"},
         "unicode-inspector": {"textInput": head(j("unicode-sample.txt"), 120)},
         "log-analyzer": {"logInput": open(j("apache.log")).read()},

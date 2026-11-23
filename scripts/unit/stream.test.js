@@ -54,6 +54,13 @@ t('lines: a 5 MB file streams in small chunks with a bounded line count', async 
   assert.strictEqual(count, n); assert.strictEqual(last, n);
 });
 
+t('lines: time grows linearly with the lines in a chunk (no quadratic queue; the Log Analyzer read 50 MB at 4 MB/s)', async () => {
+  const run = async n => { const blob = new Blob(Array(n).fill('2026-11-23 09:00:00 INFO short line\n')); const t0 = Date.now(); let c = 0; for await (const l of S.lines(blob, { chunkSize: 64 << 20 })) c++; assert.strictEqual(c, n); return Math.max(1, Date.now() - t0); };
+
+  const small = await run(100000), big = await run(400000);
+  assert.ok(big / small < 7, `4x the lines took ${(big / small).toFixed(1)}x the time (${small} ms -> ${big} ms)`);
+});
+
 (async () => {
   let n = 0, failed = 0;
   try { S = require('../../js/engines/stream.js'); } catch (e) { console.error('FAIL loading js/engines/stream.js\n  ', e.message); process.exitCode = 1; return; }

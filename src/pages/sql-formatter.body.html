@@ -3,7 +3,7 @@
   <main id="main" class="page-main">
   <div class="hero">
     <h1>SQL Formatter &amp; Beautifier</h1>
-    <p>Beautify, standardise or minify SQL across database dialects instantly, with the query never leaving your machine.</p>
+    <p>Format SQL for 17 dialects with style profiles you can share, check it for six common mistakes with one-click fixes, see which databases' grammar accepts it, and format a folder of files at once. The query never leaves your machine.</p>
   </div>
 
   <div class="ide-container">
@@ -36,6 +36,7 @@
             </optgroup>
           </select>
           <button class="btn" id="btnClear" title="Clear input"><i data-lucide="trash-2"></i></button>
+          <button class="btn" id="btnFormatSel" type="button" disabled title="Format only the selected text and leave the rest as it is"><i data-lucide="text-select"></i> Selection</button>
           <button class="btn" id="btnMinify" title="Minify to a single line"><i data-lucide="minimize-2"></i> Minify</button>
           <button class="btn btn-primary" id="btnFormat"><i data-lucide="sparkles"></i> Format</button>
         </div>
@@ -65,6 +66,30 @@
           <input type="checkbox" id="uppercaseFunctions" />
           Uppercase functions
         </label>
+        <label class="option-field">AND / OR
+          <select id="logicalNewline" aria-label="Line break around AND and OR"><option value="before">at line start</option><option value="after">at line end</option></select>
+        </label>
+        <label class="option-field">Data types
+          <select id="dataTypeCase" aria-label="Data type case"><option value="preserve">Preserve</option><option value="upper">UPPER</option><option value="lower">lower</option></select>
+        </label>
+        <label class="option-field">Identifiers
+          <select id="identifierCase" aria-label="Identifier case"><option value="preserve">Preserve</option><option value="upper">UPPER</option><option value="lower">lower</option></select>
+        </label>
+        <label class="option-field">Line width
+          <select id="expressionWidth" aria-label="Line width before a parenthesised expression breaks"><option value="40">40</option><option value="50" selected>50</option><option value="80">80</option><option value="120">120</option></select>
+        </label>
+        <label class="option-field checkbox"><input type="checkbox" id="denseOperators"> Dense operators</label>
+        <label class="option-field checkbox"><input type="checkbox" id="semicolonLine"> ; on its own line</label>
+      </div>
+      <div class="options-bar profile-bar">
+        <label class="option-field">Profile
+          <select id="profileSelect" aria-label="Style profile"><option value="default">Default</option></select>
+        </label>
+        <input type="text" id="profileName" class="profile-name" placeholder="name" aria-label="Profile name" spellcheck="false">
+        <button class="btn" id="btnProfileSave" type="button" title="Save these options as a named profile in this browser"><i data-lucide="save"></i> Save</button>
+        <button class="btn" id="btnProfileDelete" type="button" disabled title="Delete the selected profile"><i data-lucide="trash-2"></i></button>
+        <button class="btn" id="btnProfileExport" type="button" title="Download your profiles as JSON, to share with a team"><i data-lucide="download"></i> Export</button>
+        <label class="btn" title="Load profiles from a JSON file"><i data-lucide="upload"></i> Import<input type="file" id="profileImport" accept=".json,application/json" hidden></label>
       </div>
       <div class="error-banner" id="errorBanner" role="alert" aria-live="assertive">
         <div class="error-banner-row">
@@ -81,7 +106,8 @@
       </div>
       <div class="editor-wrapper">
         <div class="gutter" id="inputGutterWrap" aria-hidden="true"><div class="gutter-inner" id="inputGutter">1</div></div>
-        <textarea id="sqlInput" class="editor" placeholder="SELECT * FROM users WHERE active=1;" spellcheck="false" wrap="off" aria-label="Raw SQL query input"></textarea>
+        <textarea id="sqlInput" class="editor" placeholder="SELECT * FROM users WHERE active=1;" spellcheck="false" wrap="off" aria-label="Raw SQL query input" aria-autocomplete="list"></textarea>
+        <div id="acPopup" class="ac-popup" role="listbox" aria-label="Suggestions" hidden></div>
       </div>
       <div class="pane-footer">
         <span id="inputStats">0 lines · 0 chars</span>
@@ -107,6 +133,38 @@
       </div>
     </div>
 
+  </div>
+
+  <div class="sql-tools">
+    <section class="pane sql-tool" aria-labelledby="checksTitle">
+      <div class="pane-header">
+        <div class="pane-title" id="checksTitle"><i data-lucide="list-checks"></i> Checks <span class="lint-count" id="lintCount"></span></div>
+        <button class="btn" id="btnFixAll" type="button" disabled title="Apply every automatic fix, one at a time, re-checking after each"><i data-lucide="wand-sparkles"></i> Fix all</button>
+      </div>
+      <div class="lint-list" id="lintList" aria-live="polite"><div class="lint-ok">Checks run on the query as you type.</div></div>
+      <details class="schema-box">
+        <summary>Table definitions (CREATE TABLE) for SELECT * expansion and autocomplete</summary>
+        <textarea id="schemaInput" class="schema-input" spellcheck="false" placeholder="CREATE TABLE users (id INT, email TEXT);" aria-label="CREATE TABLE statements"></textarea>
+        <div class="hint" id="schemaInfo"></div>
+      </details>
+    </section>
+    <section class="pane sql-tool" aria-labelledby="filesTitle">
+      <div class="pane-header">
+        <div class="pane-title" id="filesTitle"><i data-lucide="files"></i> Many files</div>
+        <div class="btn-group">
+          <label class="btn" title="Format several .sql files with the current options"><i data-lucide="folder-open"></i> Choose files<input type="file" id="sqlFiles" accept=".sql,.txt,text/plain" multiple hidden></label>
+          <button class="btn" id="btnFilesZip" type="button" hidden title="Download the formatted files and a report as one zip"><i data-lucide="file-archive"></i> Zip</button>
+        </div>
+      </div>
+      <div class="files-result" id="filesResult"><div class="hint">Each file is formatted with the options above. Files that do not parse are listed with the line and column, and left out of the zip.</div></div>
+    </section>
+    <section class="pane sql-tool" aria-labelledby="dialectsTitle">
+      <div class="pane-header">
+        <div class="pane-title" id="dialectsTitle"><i data-lucide="database"></i> Every dialect</div>
+        <button class="btn" id="btnDialects" type="button" title="Parse the query with the grammar of each of 14 databases"><i data-lucide="scan-search"></i> Check</button>
+      </div>
+      <div class="files-result" id="dialectReport"><div class="hint">See which databases' grammar accepts the query, and where the others stop.</div></div>
+    </section>
   </div>
 
   <div class="docs-container">
@@ -148,6 +206,10 @@
         <li><i data-lucide="check"></i> <strong>Tabular Indentation:</strong> Align commas to the left or right of column names. This makes massive <code>SELECT</code> statements significantly easier to read and modify.</li>
         <li><i data-lucide="check"></i> <strong>Query Minification:</strong> Click the "Minify" button to compress sprawling SQL files into a single string. This is perfect for embedding raw SQL inside JSON payloads, application code, or YAML configuration files.</li>
         <li><i data-lucide="check"></i> <strong>Function Casing:</strong> Automatically force standard SQL functions (like <code>COUNT()</code>, <code>MAX()</code>, <code>COALESCE()</code>) to uppercase while preserving your table and column casing.</li>
+        <li><i data-lucide="check"></i> <strong>Style profiles:</strong> Save a set of options (keyword, data type and identifier case, where <code>AND</code>/<code>OR</code> break, line width, dense operators, semicolon on its own line) under a name, switch between profiles, and export them as JSON so a whole team formats the same way.</li>
+        <li><i data-lucide="check"></i> <strong>Checks with fixes:</strong> Six checks run as you type: <code>SELECT *</code> (expanded to the column list when you paste the <code>CREATE TABLE</code>), <code>UPDATE</code>/<code>DELETE</code> without <code>WHERE</code>, <code>NOT IN</code> over a subquery that can return NULL, comma joins, unused <code>DECLARE</code> variables and <code>LIKE '%…'</code>. Five have a one-click fix; Fix all applies them one at a time.</li>
+        <li><i data-lucide="check"></i> <strong>Selection and many files:</strong> Format just the selected statement and leave the rest of the script alone, or choose many .sql files and download them formatted as one zip with a CSV report of syntax errors and checks per file.</li>
+        <li><i data-lucide="check"></i> <strong>Autocomplete:</strong> Paste your <code>CREATE TABLE</code> statements and the editor suggests table names after <code>FROM</code> and <code>JOIN</code>, and column names after an alias and a dot. No database connection is needed.</li>
         <li><i data-lucide="check"></i> <strong>Persistent State:</strong> Your dialect choice, formatting preferences, and active query are saved to local storage. You will never lose your work if you accidentally refresh the browser.</li>
       </ul>
     </div>
@@ -199,9 +261,16 @@
         </div>
 
         <div class="faq-item">
+          <button class="faq-question">Are my style profiles uploaded anywhere? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer">
+            <p>No. Profiles are kept in this browser's local storage. Export writes them to a JSON file you can commit to a repository or send to a colleague, and Import reads that file back. In a private window the browser may discard them when you close it.</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
           <button class="faq-question">Does this tool validate or execute the queries? <i data-lucide="chevron-down"></i></button>
           <div class="faq-answer">
-            <p>No. This tool acts strictly as a structural formatter and syntax highlighter. It organizes the text to make it human-readable but does not connect to your database or execute the commands.</p>
+            <p>It never connects to a database or runs anything. The Every dialect panel parses the query with node-sql-parser's grammar for 14 databases and shows the line and column where each one stops. That catches syntax a database does not have, such as <code>TOP</code> or square brackets outside SQL Server. It cannot catch a missing table or a wrong column type, and a parser can stop at a valid statement it does not cover, so a red row means "look here", not "this is wrong". Oracle PL/SQL and Spark have no parser here.</p>
           </div>
         </div>
 
@@ -268,6 +337,7 @@
     <div class="info-panel">
       <h2><i data-lucide="git-merge"></i> Deployment Changelog</h2>
       <ul class="changelog-list">
+        <li><span class="changelog-tag">v1.5.0</span> Named style profiles with JSON import and export, and six more options (AND/OR placement, data type and identifier case, line width, dense operators, semicolon line). Six checks with one-click fixes and Fix all, format selection only, many files to a zip with a per-file report, syntax errors per database from node-sql-parser with line and column, and autocomplete from pasted CREATE TABLE statements.</li>
         <li><span class="changelog-tag">v1.4.0</span> Expanded enterprise documentation, detailing tabular formatting and the 16+ supported dialect configurations.</li>
         <li><span class="changelog-tag">v1.3.1</span> Replaced the deprecated <code>commaPosition</code> formatter config with the supported <code>indentStyle</code> option (Standard / Tabular Left / Tabular Right) to fix a formatting error.</li>
         <li><span class="changelog-tag">v1.3.0</span> Added line numbers, configurable format options (indent, keyword case, comma position, function case), 11 additional dialects, single-line minify mode, .sql download, keyboard shortcuts, and persistent session state.</li>
@@ -292,6 +362,9 @@
   {{FOOTER}}
 
   <script src="../js/shared.js"></script>
+  <script src="../js/engines/sqlx.js"></script>
+  <script src="../js/engines/csv.js"></script>
+  <script src="../js/engines/zip.js"></script>
 
 
   <script>
@@ -412,14 +485,20 @@
       return best;
     }
     let lastDialect = 'sql', lastNote = '';
-    function resolvedDialect() { return dialectSelect.value === 'auto' ? detectDialect(sqlInput.value) : dialectSelect.value; }
+    function resolvedDialect() { return resolvedDialectFor(sqlInput.value); }
+    function resolvedDialectFor(text) { return dialectSelect.value === 'auto' ? detectDialect(text) : dialectSelect.value; }
     function updateDialectHint() {
       dialectHint.textContent = dialectSelect.value === 'auto' ? 'Auto · ' + (DIALECT_NAMES[lastDialect] || lastDialect) : dialectSelect.options[dialectSelect.selectedIndex].text;
     }
     // Formats with the chosen dialect; in auto mode, falls back through the
     // common dialects when the detected one cannot parse the script.
+    // MySQL block labels and DELIMITER sections are hidden from the formatter and put back after
     function formatWith(raw, opts) {
-      const first = resolvedDialect();
+      const pr = LBSqlX.protectLabels(raw);
+      return pr.restore(formatRaw(pr.text, opts, raw));
+    }
+    function formatRaw(raw, opts, original) {
+      const first = resolvedDialectFor(original);
       try { lastDialect = first; lastNote = ''; return sqlFormatter.format(raw, Object.assign({}, opts, { language: first })); }
       catch (err) {
         const order = ['postgresql', 'mysql', 'tsql', 'plsql', 'sqlite', 'bigquery', 'snowflake', 'sql'].filter(d => d !== first);
@@ -440,7 +519,13 @@
         tabWidth: parseInt(indentSelect.value, 10),
         keywordCase: keywordCaseSelect.value,
         indentStyle: indentStyleSelect.value,
-        functionCase: uppercaseFunctions.checked ? 'upper' : 'preserve'
+        functionCase: uppercaseFunctions.checked ? 'upper' : 'preserve',
+        logicalOperatorNewline: document.getElementById('logicalNewline').value,
+        dataTypeCase: document.getElementById('dataTypeCase').value,
+        identifierCase: document.getElementById('identifierCase').value,
+        expressionWidth: parseInt(document.getElementById('expressionWidth').value, 10) || 50,
+        denseOperators: document.getElementById('denseOperators').checked,
+        newlineBeforeSemicolon: document.getElementById('semicolonLine').checked
       };
     }
 
@@ -545,7 +630,7 @@
       lastAction = 'format';
       try {
         const formatted = formatWith(raw, getFormatOptions());
-        renderOutput(formatted);
+        renderOutput(formatted); runLint();
       } catch (err) {
         showError(err);
       }
@@ -651,7 +736,8 @@
           tabWidth: indentSelect.value,
           keywordCase: keywordCaseSelect.value,
           indentStyle: indentStyleSelect.value,
-          uppercaseFunctions: uppercaseFunctions.checked
+          uppercaseFunctions: uppercaseFunctions.checked,
+          more: ['logicalNewline', 'dataTypeCase', 'identifierCase', 'expressionWidth', 'denseOperators', 'semicolonLine'].reduce((o, id) => { const el = document.getElementById(id); o[id] = el.type === 'checkbox' ? el.checked : el.value; return o; }, {})
         }));
       } catch (e) { /* localStorage unavailable — ignore */ }
     }
@@ -668,6 +754,7 @@
         if (state.keywordCase) keywordCaseSelect.value = state.keywordCase;
         if (state.indentStyle) indentStyleSelect.value = state.indentStyle;
         if (typeof state.uppercaseFunctions === 'boolean') uppercaseFunctions.checked = state.uppercaseFunctions;
+        if (state.more) Object.keys(state.more).forEach(id => { const el = document.getElementById(id); if (!el) return; if (el.type === 'checkbox') el.checked = !!state.more[id]; else if ([...el.options].some(o => o.value === String(state.more[id]))) el.value = String(state.more[id]); });
       } catch (e) { /* corrupted or unavailable state — ignore */ }
     }
 
@@ -707,11 +794,195 @@
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
+
+    // ---------- style profiles (named sets of options, kept in this browser) ----------
+    const $id = id => document.getElementById(id);
+    const PROFILE_KEY = 'layerbit-sql-profiles';
+    const DEFAULT_PROFILE = { name: 'Default', tabWidth: 2, keywordCase: 'upper', indentStyle: 'standard', functionCase: 'preserve', logicalOperatorNewline: 'before', dataTypeCase: 'preserve', identifierCase: 'preserve', expressionWidth: 50, denseOperators: false, newlineBeforeSemicolon: false };
+    const PROFILE_KEYS = Object.keys(DEFAULT_PROFILE).filter(k => k !== 'name');
+    const readProfiles = () => { try { return JSON.parse(localStorage.getItem(PROFILE_KEY) || '[]').filter(p => p && p.name); } catch (e) { return []; } };
+    const writeProfiles = l => { try { localStorage.setItem(PROFILE_KEY, JSON.stringify(l)); } catch (e) { Layerbit.toast('This browser is not keeping data for the page, so the profile lasts until you leave', 'warn'); } };
+    function currentProfile() {
+      const o = getFormatOptions();
+      return { tabWidth: o.tabWidth, keywordCase: o.keywordCase, indentStyle: o.indentStyle, functionCase: o.functionCase, logicalOperatorNewline: o.logicalOperatorNewline, dataTypeCase: o.dataTypeCase, identifierCase: o.identifierCase, expressionWidth: o.expressionWidth, denseOperators: o.denseOperators, newlineBeforeSemicolon: o.newlineBeforeSemicolon };
+    }
+    function applyProfile(p) {
+      p = Object.assign({}, DEFAULT_PROFILE, p);
+      indentSelect.value = String(p.tabWidth); keywordCaseSelect.value = p.keywordCase; indentStyleSelect.value = p.indentStyle;
+      uppercaseFunctions.checked = p.functionCase === 'upper'; $id('logicalNewline').value = p.logicalOperatorNewline;
+      $id('dataTypeCase').value = p.dataTypeCase; $id('identifierCase').value = p.identifierCase; $id('expressionWidth').value = String(p.expressionWidth);
+      $id('denseOperators').checked = !!p.denseOperators; $id('semicolonLine').checked = !!p.newlineBeforeSemicolon;
+      saveState(); if (sqlInput.value.trim()) rerun();
+    }
+    function renderProfiles(select) {
+      const sel = $id('profileSelect');
+      sel.innerHTML = '<option value="default">Default</option>' + readProfiles().map(p => `<option value="${escapeAttr(p.name)}">${escapeHtml(p.name)}</option>`).join('');
+      sel.value = select || 'default';
+      $id('btnProfileDelete').disabled = sel.value === 'default';
+    }
+    const escapeAttr = s => String(s).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
+    const escapeHtml = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    $id('profileSelect').addEventListener('change', e => { const v = e.target.value; applyProfile(v === 'default' ? DEFAULT_PROFILE : readProfiles().find(p => p.name === v)); $id('profileName').value = v === 'default' ? '' : v; $id('btnProfileDelete').disabled = v === 'default'; });
+    $id('btnProfileSave').addEventListener('click', () => {
+      const name = $id('profileName').value.trim(); if (!name || name.toLowerCase() === 'default') { Layerbit.toast('Give the profile a name first'); $id('profileName').focus(); return; }
+      const list = readProfiles().filter(p => p.name !== name); list.push(Object.assign({ name }, currentProfile())); writeProfiles(list); renderProfiles(name);
+      Layerbit.toast(`Saved the profile "${name}"`);
+    });
+    $id('btnProfileDelete').addEventListener('click', () => { const v = $id('profileSelect').value; if (v === 'default') return; writeProfiles(readProfiles().filter(p => p.name !== v)); renderProfiles(); applyProfile(DEFAULT_PROFILE); });
+    $id('btnProfileExport').addEventListener('click', () => {
+      const data = { app: 'layerbit-sql-formatter', version: 1, profiles: readProfiles().length ? readProfiles() : [Object.assign({ name: 'Current' }, currentProfile())] };
+      const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })); a.download = 'sql-format-profiles.json'; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 60000);
+    });
+    $id('profileImport').addEventListener('change', async e => {
+      const f = e.target.files[0]; e.target.value = ''; if (!f) return;
+      try {
+        const d = JSON.parse(await f.text()), arr = Array.isArray(d) ? d : Array.isArray(d.profiles) ? d.profiles : [d];
+        const ok = arr.filter(p => p && typeof p.name === 'string' && p.name.trim()).map(p => { const q = { name: p.name.trim() }; PROFILE_KEYS.forEach(k => { if (p[k] !== undefined) q[k] = p[k]; }); return q; });
+        if (!ok.length) throw new Error('no profiles with a name');
+        const names = new Set(ok.map(p => p.name)), list = readProfiles().filter(p => !names.has(p.name)).concat(ok);
+        writeProfiles(list); renderProfiles(ok[0].name); applyProfile(ok[0]);
+        Layerbit.toast(`Imported ${ok.length} profile${ok.length === 1 ? '' : 's'}`);
+      } catch (err) { Layerbit.toast('Not a profile file: ' + err.message, 'warn'); }
+    });
+    ['logicalNewline', 'dataTypeCase', 'identifierCase', 'expressionWidth', 'denseOperators', 'semicolonLine'].forEach(id => $id(id).addEventListener('change', () => { if (sqlInput.value.trim()) rerun(); }));
+    renderProfiles();
+
+    // ---------- checks with one-click fixes ----------
+    let schema = { tables: {} };
+    const RULE_NAME = { 'select-star': 'SELECT *', 'no-where': 'No WHERE', 'not-in-null': 'NOT IN + NULL', 'implicit-join': 'Implicit join', 'unused-variable': 'Unused variable', 'leading-wildcard': 'Leading %' };
+    let findings = [];
+    function runLint() {
+      const box = $id('lintList');
+      findings = sqlInput.value.trim() ? LBSqlX.lint(sqlInput.value, schema) : [];
+      $id('lintCount').textContent = findings.length ? `${findings.length}` : '';
+      $id('btnFixAll').disabled = !findings.some(f => f.fix);
+      box.innerHTML = findings.length ? findings.map((f, i) => `<div class="lint-item sev-${f.severity}" data-rule="${f.rule}" data-i="${i}"><span class="lint-rule">${RULE_NAME[f.rule]}</span><span class="lint-msg"><button type="button" class="lint-line" data-line="${f.line}">line ${f.line}</button> ${escapeHtml(f.message)}</span>${f.fix ? '<button type="button" class="btn lint-fix">Fix</button>' : '<span class="lint-nofix">no automatic fix</span>'}</div>`).join('')
+        : `<div class="lint-ok">${sqlInput.value.trim() ? 'No problems found by the six checks.' : 'Checks run on the query as you type.'}</div>`;
+    }
+    function goLine(n) { const lines = sqlInput.value.split('\n'), pos = lines.slice(0, n - 1).join('\n').length + (n > 1 ? 1 : 0); sqlInput.focus(); sqlInput.setSelectionRange(pos, pos + (lines[n - 1] || '').length); }
+    $id('lintList').addEventListener('click', e => {
+      const ln = e.target.closest('.lint-line'); if (ln) { goLine(+ln.dataset.line); return; }
+      const b = e.target.closest('.lint-fix'); if (!b) return;
+      const f = findings[+b.closest('.lint-item').dataset.i]; if (!f) return;
+      sqlInput.value = LBSqlX.applyFix(sqlInput.value, f); afterEdit();
+    });
+    $id('btnFixAll').addEventListener('click', () => {
+      let v = sqlInput.value;
+      for (let k = 0; k < 100; k++) { const f = LBSqlX.lint(v, schema).find(x => x.fix); if (!f) break; v = LBSqlX.applyFix(v, f); }
+      sqlInput.value = v; afterEdit();
+    });
+    function afterEdit() { updateInputMeta(); saveState(); runLint(); if (sqlInput.value.trim()) rerun(); }
+    $id('schemaInput').addEventListener('input', () => { schema = LBSqlX.parseDDL($id('schemaInput').value); const n = Object.keys(schema.tables).length; $id('schemaInfo').textContent = n ? `${n} table${n === 1 ? '' : 's'}: ${Object.keys(schema.tables).join(', ')}` : ''; runLint(); });
+    const debouncedLint = debounce(runLint, 250);
+    sqlInput.addEventListener('input', debouncedLint);
+
+    // ---------- format only the selection ----------
+    function updateSelBtn() { $id('btnFormatSel').disabled = sqlInput.selectionStart === sqlInput.selectionEnd; }
+    ['select', 'keyup', 'mouseup', 'input'].forEach(ev => sqlInput.addEventListener(ev, updateSelBtn));
+    $id('btnFormatSel').addEventListener('click', () => {
+      const s = sqlInput.selectionStart, e = sqlInput.selectionEnd; if (s === e) return;
+      try {
+        const out = formatWith(sqlInput.value.slice(s, e), getFormatOptions());
+        sqlInput.value = sqlInput.value.slice(0, s) + out + sqlInput.value.slice(e);
+        sqlInput.focus(); sqlInput.setSelectionRange(s, s + out.length);
+        afterEdit();
+      } catch (err) { showError(err); }
+    });
+
+    // ---------- many files ----------
+    let fileResults = [];
+    function errText(err) { const msg = err && err.message ? err.message : String(err), m = /line (\d+) column (\d+)/i.exec(msg); return (m ? `line ${m[1]}, column ${m[2]}: ` : '') + msg.split('\n')[0].replace(/^Parse error:\s*/i, '').replace(/ at line \d+ column \d+\.?$/i, ''); }
+    // node-sql-parser (Apache-2.0): one PEG grammar per database, loaded on first use
+    let parserP = null;
+    function loadParser() {
+      if (window.Parser && window.Parser.prototype && window.Parser.prototype.astify) return Promise.resolve(window.Parser);
+      return parserP || (parserP = new Promise((res, rej) => { const sc = document.createElement('script'); sc.src = '../js/vendor/node-sql-parser.min.js'; sc.onload = () => res(window.Parser); sc.onerror = () => { parserP = null; rej(new Error('The SQL parser did not load')); }; document.head.appendChild(sc); }));
+    }
+    // one dialect's grammar; Standard SQL passes when MySQL, PostgreSQL, T-SQL or SQLite accepts it
+    function syntaxFor(P, text, dialect) {
+      const r = LBSqlX.syntax(P, text, dialect); if (r) return r;
+      let first = null;
+      for (const d of ['postgresql', 'mysql', 'tsql', 'sqlite']) { const x = LBSqlX.syntax(P, text, d); if (x.ok) return x; first = first || x; }
+      return first;
+    }
+    $id('sqlFiles').addEventListener('change', async e => {
+      const files = [...e.target.files]; e.target.value = ''; if (!files.length) return;
+      $id('filesResult').innerHTML = '<div class="hint">Reading…</div>';
+      const opts = getFormatOptions();
+      let P = null; try { P = await loadParser(); } catch (err) { /* format without the syntax check */ }
+      fileResults = await Promise.all(files.map(async f => {
+        const text = await f.text(), checks = LBSqlX.lint(text, schema).length, syn = P ? syntaxFor(P, text, resolvedDialectFor(text)) : null;
+        const synErr = syn && !syn.ok ? syn.message : '';
+        try { const out = formatWith(text, opts); return { name: f.name, ok: true, out, checks, synErr, statements: LBSqlX.splitStatements(text).length }; }
+        catch (err) { return { name: f.name, ok: false, out: text, checks, synErr, error: errText(err) }; }
+      }));
+      const ok = fileResults.filter(r => r.ok).length, bad = fileResults.filter(r => r.synErr).length;
+      $id('filesResult').innerHTML = `<div class="hint">${ok} of ${fileResults.length} formatted with the ${escapeHtml($id('profileSelect').selectedOptions[0].textContent)} profile${bad ? `; ${bad} with a syntax error` : ''}.</div><table class="files-table"><thead><tr><th>File</th><th>Result</th><th>Checks</th></tr></thead><tbody>` +
+        fileResults.map(r => `<tr class="${r.ok && !r.synErr ? 'ok' : 'bad'}"><td>${escapeHtml(r.name)}</td><td>${r.ok ? `formatted (${r.statements} statement${r.statements === 1 ? '' : 's'})` : escapeHtml(r.error)}${r.synErr && r.ok ? `<br>syntax: ${escapeHtml(r.synErr)}` : ''}</td><td>${r.checks ? `${r.checks} check${r.checks === 1 ? '' : 's'}` : 'none'}</td></tr>`).join('') + '</tbody></table>';
+      $id('btnFilesZip').hidden = false;
+    });
+    $id('btnFilesZip').addEventListener('click', () => {
+      if (!fileResults.length) return;
+      const report = LBCsv.stringify([['File', 'Result', 'Syntax', 'Checks']].concat(fileResults.map(r => [r.name, r.ok ? 'formatted' : r.error, r.synErr || 'OK', String(r.checks)])), { safe: true });
+      const zip = LBZip.zipStore(fileResults.filter(r => r.ok).map(r => ({ name: r.name, data: r.out.endsWith('\n') ? r.out : r.out + '\n' })).concat([{ name: 'format-report.csv', data: report }]));
+      const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([zip], { type: 'application/zip' })); a.download = `formatted-sql-${Date.now()}.zip`; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 60000);
+    });
+
+    // ---------- syntax in every dialect ----------
+    $id('btnDialects').addEventListener('click', async () => {
+      const text = sqlInput.value.trim(), box = $id('dialectReport');
+      if (!text) { box.innerHTML = '<div class="hint">Type or paste a query first.</div>'; return; }
+      box.innerHTML = '<div class="hint">Loading the parsers…</div>';
+      let P; try { P = await loadParser(); } catch (err) { box.innerHTML = `<div class="hint">${escapeHtml(err.message)}. Check your connection and try again.</div>`; return; }
+      const rows = LBSqlX.PARSER_DIALECTS.map(([d, name]) => { const r = LBSqlX.syntax(P, text, d); return [d, name, r.message, r.ok]; });
+      box.innerHTML = `<div class="hint">${rows.filter(r => r[3]).length} of ${rows.length} database grammars accept this query. A parser can also stop at a valid statement it does not cover, so treat a red row as "look here", not proof. Oracle PL/SQL and Spark have no parser here.</div><table class="files-table"><thead><tr><th>Database</th><th>Result</th></tr></thead><tbody>` +
+        rows.map(r => `<tr data-dialect="${r[0]}" class="${r[3] ? 'ok' : 'bad'}"><td>${r[1]}</td><td>${escapeHtml(r[2])}</td></tr>`).join('') + '</tbody></table>';
+    });
+
+    // ---------- autocomplete from the pasted DDL ----------
+    const ac = { open: false, items: [], sel: 0, prefix: '' };
+    const popup = $id('acPopup');
+    let charW = 0;
+    function caretXY() {
+      const v = sqlInput.value.slice(0, sqlInput.selectionStart), lines = v.split('\n'), cs = getComputedStyle(sqlInput);
+      if (!charW) { const c = document.createElement('canvas').getContext('2d'); c.font = `${cs.fontSize} ${cs.fontFamily}`; charW = c.measureText('MMMMMMMMMM').width / 10; }
+      const lh = parseFloat(cs.lineHeight) || parseFloat(cs.fontSize) * 1.6;
+      return { x: parseFloat(cs.paddingLeft) + (lines[lines.length - 1].length) * charW - sqlInput.scrollLeft + sqlInput.offsetLeft, y: parseFloat(cs.paddingTop) + lines.length * lh - sqlInput.scrollTop + sqlInput.offsetTop + 2 };
+    }
+    function closeAc() { ac.open = false; popup.hidden = true; }
+    function showAc() {
+      if (!Object.keys(schema.tables).length) return closeAc();
+      const r = LBSqlX.complete(sqlInput.value, sqlInput.selectionStart, schema);
+      const before = sqlInput.value.slice(0, sqlInput.selectionStart);
+      if (!r.items.length || (!r.prefix && !/\.$/.test(before)) || (r.items.length === 1 && r.items[0].label === r.prefix)) return closeAc();
+      Object.assign(ac, { open: true, items: r.items.slice(0, 12), sel: 0, prefix: r.prefix });
+      popup.innerHTML = ac.items.map((it, i) => `<div class="ac-item${i === 0 ? ' active' : ''}" role="option" data-i="${i}"><span class="ac-kind">${it.kind === 'table' ? 'T' : 'C'}</span>${escapeHtml(it.label)}</div>`).join('');
+      const p = caretXY(); popup.style.left = Math.max(0, p.x) + 'px'; popup.style.top = p.y + 'px'; popup.hidden = false;
+    }
+    function acceptAc(i) {
+      const it = ac.items[i]; if (!it) return closeAc();
+      const s = sqlInput.selectionStart, start = s - ac.prefix.length;
+      sqlInput.value = sqlInput.value.slice(0, start) + it.label + sqlInput.value.slice(s);
+      sqlInput.setSelectionRange(start + it.label.length, start + it.label.length);
+      closeAc(); updateInputMeta(); debouncedSave(); debouncedLint();
+    }
+    sqlInput.addEventListener('input', e => { if (e.inputType && /^insert|^delete/.test(e.inputType)) showAc(); else closeAc(); });
+    sqlInput.addEventListener('keydown', e => {
+      if ((e.ctrlKey || e.metaKey) && e.key === ' ') { e.preventDefault(); showAc(); return; }
+      if (!ac.open) return;
+      if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); ac.sel = (ac.sel + (e.key === 'ArrowDown' ? 1 : ac.items.length - 1)) % ac.items.length; popup.querySelectorAll('.ac-item').forEach((el, i) => el.classList.toggle('active', i === ac.sel)); }
+      else if (e.key === 'Enter' || e.key === 'Tab') { e.preventDefault(); e.stopImmediatePropagation(); acceptAc(ac.sel); }
+      else if (e.key === 'Escape') { e.preventDefault(); closeAc(); }
+    }, true);
+    popup.addEventListener('mousedown', e => { const it = e.target.closest('.ac-item'); if (it) { e.preventDefault(); acceptAc(+it.dataset.i); } });
+    sqlInput.addEventListener('blur', () => setTimeout(closeAc, 150));
+
     // ---------- Init ----------
     loadState();
     updateInputMeta();
     updateOutputMeta('');
     updateDialectHint();
     if (sqlInput.value.trim()) processSQL();
+    runLint();
   </script>
 <script src="../main.js"></script>

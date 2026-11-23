@@ -7,7 +7,7 @@
       "@id": "https://layerbit.co.in/tools/log-analyzer.html#app",
       "name": "Log File Analyzer",
       "url": "https://layerbit.co.in/tools/log-analyzer.html",
-      "description": "Paste or upload server logs and get error, warning, info and debug counts, severity filters, plain or regex grep, and the most repeated messages. Runs locally.",
+      "description": "Analyse logs in your browser: JSON, logfmt, nginx, syslog and Windows formats, timeline with zoom, merge files by time, grep files of any size, saved searches.",
       "applicationCategory": "DeveloperApplication",
       "operatingSystem": "Any (runs in the browser)",
       "browserRequirements": "Requires JavaScript",
@@ -19,7 +19,20 @@
       },
       "publisher": {
         "@id": "https://layerbit.co.in/#organization"
-      }
+      },
+      "featureList": [
+        "Severity counts and filters",
+        "Plain and regex grep",
+        "Field search such as status\u003e=500",
+        "JSON, logfmt, Apache/nginx, syslog and Windows Event Viewer formats",
+        "Stack traces kept with their event",
+        "Timeline histogram with zoom",
+        "Several files merged by time",
+        "Files of any size streamed from disk",
+        "Saved searches and highlight rules",
+        "Most repeated messages",
+        "Runs entirely in the browser"
+      ]
     },
     {
       "@type": "BreadcrumbList",
@@ -47,7 +60,32 @@
     },
     {
       "@type": "FAQPage",
+      "@id": "https://layerbit.co.in/tools/log-analyzer.html#faq",
       "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "How large a log file can it open?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Any size. A file of 32 MB or more is read from disk in slices by a background worker: the counts, the timeline and the most repeated messages cover every event, the list holds every error and warning (up to 100,000) and the first 50,000 other events, and a grep scans the whole file again in the background. In our tests a 57 MB log of 800,000 events was counted and searched in about 5 seconds."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Can I combine logs from several servers?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes. Choose or drop several files at once and their events are merged by time into one list, each line labelled with its file, so you can follow a request from the load balancer to the database. Events at the same moment keep the order of the files, and a line with no time stays right after the line before it. Times with no zone are read as UTC."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What do the timeline, saved searches and highlights do?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "The timeline shows how many events of each level happened in each slice of time; drag across it to list only that period. Save search keeps the current search, its regex switch and level filter as a chip you can click later. Highlight colours every line matching a word or /regex/. Saved searches and highlights stay in this browser only, never on a server."
+          }
+        },
         {
           "@type": "Question",
           "name": "How does Layerbit secure my sensitive production logs?",
@@ -61,7 +99,7 @@
           "name": "What log formats does the Forensic Engine support?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "Our complex Regex mapping logic automatically structures raw text from standard Nginx (access/error), Apache, Node.js, Spring Boot, and Docker containers. It targets universal markers for severities like ERROR, FATAL, WARN, INFO, NOTICE, and DEBUG, as well as common ISO/UTC timestamps."
+            "text": "The format is detected from the first lines: JSON lines (level, time and message fields under their usual names, pino's numeric levels too), logfmt (key=value), Apache/nginx access logs (severity from the HTTP status), syslog RFC 3164 and RFC 5424 (severity from the priority), Windows Event Viewer text exports, and plain text with level words such as ERROR, FATAL, WARN, INFO and DEBUG. Click a line to see its parsed fields; search a field with status\u003e=500 or user.id=7. A stack trace stays with the line it belongs to."
           }
         },
         {
@@ -72,8 +110,7 @@
             "text": "While ELK/Splunk excel at long-term storage and aggregation, Layerbit provides instant, lightweight forensic analysis for immediate IR needs, with zero setup. It renders every line as a DOM row with no virtualization, so it's built for the single log dump you'd actually paste during an incident — comfortably tens of thousands of lines — not a multi-gigabyte archive; split a file that large first (e.g. grep the relevant window) and load that slice instead."
           }
         }
-      ],
-      "@id": "https://layerbit.co.in/tools/log-analyzer.html#faq"
+      ]
     }
   ]
 }

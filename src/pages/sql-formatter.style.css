@@ -410,3 +410,36 @@
     }
   
     .btn-inline { display: inline-flex; margin-left: 8px; padding: 3px 10px; font-size: 0.85em; vertical-align: middle; }
+
+    /* Profiles, checks, many files, every dialect, autocomplete */
+    .profile-bar { border-top: 1px solid var(--card-border); }
+    .profile-name { background: rgba(0,0,0,0.3); color: var(--text-main); border: 1px solid var(--card-border); border-radius: 6px; padding: 5px 8px; font: inherit; font-size: 0.85em; width: 130px; }
+    .options-bar label.btn input[type="file"] { display: none; }
+    .editor-wrapper { position: relative; }
+    .ac-popup { position: absolute; z-index: 20; min-width: 180px; max-width: 320px; max-height: 220px; overflow-y: auto; background: #0d1117; border: 1px solid var(--card-border); border-radius: 8px; box-shadow: 0 8px 24px rgba(0,0,0,0.5); font-family: 'JetBrains Mono', monospace; font-size: 0.85em; padding: 4px 0; }
+    .ac-popup[hidden] { display: none; }
+    .ac-item { padding: 4px 10px; cursor: pointer; display: flex; gap: 8px; align-items: center; color: var(--text-main); }
+    .ac-item.active, .ac-item:hover { background: rgba(0, 242, 254, 0.12); }
+    .ac-kind { font-size: 0.75em; font-weight: 700; color: var(--accent-main); width: 14px; text-align: center; }
+    .sql-tools { max-width: 1400px; margin: 0 auto 40px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; }
+    .pane.sql-tool { height: auto; min-height: 220px; }
+    .lint-list, .files-result { padding: 12px 16px; overflow: auto; max-height: 340px; font-size: 0.88em; }
+    .lint-count:not(:empty) { background: var(--error-bg); color: var(--text-main); border-radius: 10px; padding: 0 8px; font-size: 0.8em; margin-left: 6px; }
+    .lint-item { display: grid; grid-template-columns: auto 1fr auto; gap: 8px; align-items: start; padding: 8px 0; border-bottom: 1px solid var(--card-border); }
+    .lint-item:last-child { border-bottom: 0; }
+    .lint-rule { font-weight: 700; font-size: 0.85em; white-space: nowrap; color: var(--accent-main); }
+    .lint-item.sev-error .lint-rule { color: var(--error-border); }
+    .lint-msg { color: var(--text-muted); line-height: 1.5; }
+    .lint-line { background: none; border: 0; padding: 0; color: var(--text-main); text-decoration: underline; cursor: pointer; font: inherit; }
+    .lint-fix { padding: 3px 10px; font-size: 0.85em; }
+    .lint-nofix { font-size: 0.78em; color: var(--text-muted); white-space: nowrap; }
+    .lint-ok { color: var(--text-muted); }
+    .schema-box { border-top: 1px solid var(--card-border); padding: 10px 16px 14px; font-size: 0.85em; }
+    .schema-box summary { cursor: pointer; color: var(--text-muted); }
+    .schema-input { width: 100%; min-height: 90px; margin-top: 8px; background: rgba(0,0,0,0.3); color: var(--text-main); border: 1px solid var(--card-border); border-radius: 8px; padding: 8px; font-family: 'JetBrains Mono', monospace; font-size: 0.9em; resize: vertical; box-sizing: border-box; }
+    .files-table { width: 100%; border-collapse: collapse; margin-top: 8px; }
+    .files-table th, .files-table td { text-align: left; padding: 5px 6px; border-bottom: 1px solid var(--card-border); vertical-align: top; overflow-wrap: anywhere; }
+    .files-table tr.bad td:nth-child(2) { color: var(--error-border); }
+    .files-table tr.ok td:nth-child(2) { color: var(--accent-main); }
+    @media (max-width: 1100px) { .sql-tools { grid-template-columns: 1fr; } }
+    .btn[hidden], .sql-tools [hidden] { display: none !important; }
