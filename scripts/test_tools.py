@@ -1215,6 +1215,9 @@ def _(t):
             ["2026-01-01 10:00:0%d ERROR user %d timed out after 30s" % (i, 1000 + i) for i in range(4)] + \
             ["2026-01-01 10:00:09 INFO ok"]
     t.set("logInput", "\n".join(lines))
+    # typing schedules its own analysis 300 ms later, which resets the search
+    # box; let it land first so it cannot wipe the grep below mid-test
+    t.wait(450)
     t.call("analyzeLogs()")
     eq(t.text("countDebug").strip(), "3", "debug count")
     top = t.text("topMessages")
