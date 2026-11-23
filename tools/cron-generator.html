@@ -651,6 +651,7 @@
     <div class="info-panel">
       <h2><i data-lucide="git-commit"></i> Changelog</h2>
       <ul class="changelog-list">
+        <li><span class="changelog-tag">v1.6.0</span> Next run times now appear for month and weekday names (JAN, MON-FRI), 7 for Sunday and ? (they were hidden before), and for the @yearly, @annually, @monthly, @weekly, @daily, @midnight and @hourly shortcuts; @reboot is explained. An expression whose runs cannot be listed says so instead of leaving a blank area.</li>
         <li><span class="changelog-tag">v1.5.0</span> Next run times can be computed in the zone the cron daemon actually runs in — any IANA zone, with the browser's own zone offered first — and each run also shows its UTC equivalent, so a "9 am" job in Dubai is visibly 05:00 UTC. The choice is remembered.</li>
         <li><span class="changelog-tag">v1.4.0</span> Each field is range-checked before translation: <code>61 * * * *</code> is refused with the offending field and its valid range, instead of being rendered as "at 61 minutes past the hour". Month and weekday names are validated too.</li>
         <li><span class="changelog-tag">v1.3.1</span> Fixed a bug where the icon library loading asynchronously could cause a valid expression to be mislabeled as a syntax error on page load.</li>
@@ -798,8 +799,11 @@
     const WEEKDAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
     const MONTH_NAMES = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
-    function parseCronField(str, min, max) {
+    // names: month (jan=1) or weekday (sun=0) names, any case; '?' means any.
+    function parseCronField(str, min, max, names) {
       if (str === 'L') return { values: new Set(), isLast: true, restricted: true };
+      if (str === '?') str = '*';
+      if (names) str = str.toLowerCase().replace(/[a-z]{3}/g, n => { const i = names.indexOf(n); if (i < 0) throw new Error(`Unknown name "${n}"`); return String(i + min); });
       const values = new Set();
       for (const part of str.split(',')) {
         const m = part.match(/^(\*|\d+-\d+|\d+)(?:\/(\d+))?$/);
@@ -827,8 +831,8 @@
       const minute = parseCronField(parts[0], 0, 59);
       const hour = parseCronField(parts[1], 0, 23);
       const dom = parseCronField(parts[2], 1, 31);
-      const month = parseCronField(parts[3], 1, 12);
-      const dow = parseCronField(parts[4], 0, 6);
+      const month = parseCronField(parts[3], 1, 12, CRON_FIELDS[3].names);
+      const dow = parseCronField(parts[4], 0, 7, CRON_FIELDS[4].names);
       // some dialects allow 7 for Sunday too
       if (dow.values.has(7)) { dow.values.delete(7); dow.values.add(0); }
 
@@ -930,9 +934,14 @@
         }
         nextRunsEl.style.display = 'block';
       } catch (e) {
-        nextRunsEl.style.display = 'none';
+        // never a blank area: say why the runs cannot be listed
+        nextRunsList.innerHTML = `<li class="next-runs-empty">Next runs cannot be listed for this expression (${escapeText(e.message)}). The description above is still correct.</li>`;
+        nextRunsEl.style.display = 'block';
       }
     }
+    function escapeText(s) { return String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); }
+    // Vixie cron's shortcuts. @reboot has no schedule: it runs at boot.
+    const CRON_MACROS = { '@yearly': '0 0 1 1 *', '@annually': '0 0 1 1 *', '@monthly': '0 0 1 * *', '@weekly': '0 0 * * 0', '@daily': '0 0 * * *', '@midnight': '0 0 * * *', '@hourly': '0 * * * *' };
 
     // Guard against lucide's async CDN script not having loaded yet (e.g. a
     // browser restoring <select> state and firing 'change' before it lands),
@@ -976,7 +985,16 @@
     }
 
     function translateCron() {
-      const val = cronInput.value.trim();
+      let val = cronInput.value.trim();
+      const macro = val.toLowerCase();
+      if (macro === '@reboot') {
+        setValid('At boot: runs once each time the system (or the cron daemon) starts, not on a schedule.');
+        nextRunsList.innerHTML = '<li class="next-runs-empty">@reboot has no schedule, so there are no next run times.</li>';
+        nextRunsEl.style.display = 'block';
+        return;
+      }
+      if (CRON_MACROS[macro]) val = CRON_MACROS[macro];
+      else if (macro.startsWith('@')) { setInvalid(`Unknown shortcut "${val}" (use @yearly, @annually, @monthly, @weekly, @daily, @midnight, @hourly or @reboot)`); return; }
 
       if(val.split(' ').length < 5) {
         setInvalid("Incomplete Expression");

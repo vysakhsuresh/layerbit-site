@@ -1480,6 +1480,31 @@ def _(t):
     expect(t.count("#nextRunsList li, #nextRunsList div, #nextRunsList span") >= 5, "next runs missing")
 
 
+@case("cron-generator", "edge", "B1: month and day names, 7 for Sunday and ? all list next runs")
+def _(t):
+    for expr, check in [("0 9 * JAN *", "Jan"), ("0 9 * * MON-FRI", None), ("0 0 ? * MON", "Mon"), ("0 9 * * 7", "Sun"), ("0 9 * jan-mar sat,sun", None)]:
+        t.set("cronInput", expr); t.wait(80)
+        expect(not t.call("document.getElementById('terminalPane').classList.contains('error')"), expr + " rejected: " + t.text("cronTranslation"))
+        expect(t.visible("#nextRuns") if t.count("#nextRuns") else True, expr + ": next runs hidden")
+        items = t.call("[...document.querySelectorAll('#nextRunsList li')].map(l => l.textContent)")
+        expect(len(items) == 5 and "No matches" not in items[0], f"{expr}: {items}")
+        if check:
+            expect(all(check in i for i in items), f"{expr} runs on the wrong day: {items}")
+
+
+@case("cron-generator", "edge", "B1: @daily-style macros run; @reboot is explained, never a blank area")
+def _(t):
+    for macro in ["@yearly", "@annually", "@monthly", "@weekly", "@daily", "@midnight", "@hourly"]:
+        t.set("cronInput", macro); t.wait(80)
+        expect(not t.call("document.getElementById('terminalPane').classList.contains('error')"), macro + " rejected: " + t.text("cronTranslation"))
+        eq(t.count("#nextRunsList li"), 5, macro + " next runs")
+    t.set("cronInput", "@reboot"); t.wait(80)
+    expect("boot" in t.text("cronTranslation").lower(), t.text("cronTranslation"))
+    expect("no schedule" in t.text("nextRunsList").lower(), "reboot: " + t.text("nextRunsList"))
+    t.set("cronInput", "0 9 * * 1#2"); t.wait(80)
+    expect(t.text("nextRunsList").strip() != "" or t.call("document.getElementById('terminalPane').classList.contains('error')"), "blank next-runs area")
+
+
 @case("cron-generator", "edge", "invalid field is flagged")
 def _(t):
     t.set("cronInput", "61 * * * *")
