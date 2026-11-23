@@ -3879,6 +3879,28 @@ def _(t):
     expect(t.call("document.querySelector('#vgrid .lb-vgrid-head').getBoundingClientRect().top === document.getElementById('vgrid').getBoundingClientRect().top"), "header is not sticky")
 
 
+@case("hash-generator", "typical", "shared batch: a dropped folder is walked, hashed with limited concurrency, reported and zipped")
+def _(t):
+    for src in ["../js/engines/csv.js", "../js/engines/zip.js", "../js/engines/batch.js"]:
+        t.page.evaluate(LOAD_SCRIPT, src)
+    res = t.call("""async () => {
+      const fe = (name, text) => ({ isFile: true, isDirectory: false, name, file: ok => setTimeout(() => ok(new File([text], name)), 0) });
+      const dir = (name, kids) => ({ isFile: false, isDirectory: true, name, createReader: () => { let k = 0; return { readEntries: ok => setTimeout(() => { const part = kids.slice(k, k + 2); k += 2; ok(part); }, 0) }; } });
+      const root = dir('proj', [fe('a.txt', 'alpha'), dir('src', [fe('main.js', 'x=1'), fe('util.js', 'y=2'), fe('=evil.csv', 'z')]), fe('b.txt', 'beta')]);
+      const files = await LBBatch.fromDrop({ items: [{ webkitGetAsEntry: () => root }], files: [] });
+      const hex = b => [...new Uint8Array(b)].map(x => x.toString(16).padStart(2, '0')).join('');
+      const results = await LBBatch.run(files, async f => hex(await crypto.subtle.digest('SHA-256', await f.file.arrayBuffer())), { concurrency: 2 });
+      const rep = LBBatch.report(results, { title: 'Folder hashes', options: 'SHA-256', columns: [{ label: 'Path', get: r => r.item.path }, { label: 'SHA-256', get: r => r.value }] });
+      const zip = LBBatch.archive([{ name: 'hashes.csv', data: rep.csv }, { name: 'hashes.html', data: rep.html }]);
+      const back = LBZip.unzipStored(zip);
+      return { paths: files.map(f => f.path).sort(), csv: new TextDecoder().decode(back['hashes.csv'].data), names: Object.keys(back) };
+    }""")
+    eq(res["paths"], ["proj/a.txt", "proj/b.txt", "proj/src/=evil.csv", "proj/src/main.js", "proj/src/util.js"], "walked paths")
+    expect("proj/a.txt," + __import__("hashlib").sha256(b"alpha").hexdigest() + ",ok" in res["csv"], res["csv"])
+    expect("'proj/src/=evil.csv" not in res["csv"] and "proj/src/=evil.csv" in res["csv"], "path guard wrong")
+    eq(res["names"], ["hashes.csv", "hashes.html"], "archive entries")
+
+
 # ----------------------------------------------------------------------------
 # runner
 # ----------------------------------------------------------------------------

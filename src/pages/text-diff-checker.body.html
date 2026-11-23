@@ -561,6 +561,7 @@
   <script src="../js/shared.js"></script>
   <script src="../js/engines/csv.js"></script>
   <script src="../js/engines/lossless-json.js"></script>
+  <script src="../js/engines/zip.js"></script>
   <script src="../js/engines/diff.js"></script>
 
   <script>
@@ -769,7 +770,7 @@
     function diffWorker() {
       if (worker) return worker;
       const src = part => document.querySelector(`script[src*="${part}"]`).src;
-      const code = `importScripts(${JSON.stringify(src('vendor/diff.min.js'))}, ${JSON.stringify(src('engines/csv.js'))}, ${JSON.stringify(src('engines/lossless-json.js'))}, ${JSON.stringify(src('engines/diff.js'))});
+      const code = `importScripts(${JSON.stringify(src('vendor/diff.min.js'))}, ${JSON.stringify(src('engines/csv.js'))}, ${JSON.stringify(src('engines/lossless-json.js'))}, ${JSON.stringify(src('engines/zip.js'))}, ${JSON.stringify(src('engines/diff.js'))});
         onmessage = e => { const { id, a, b, opts } = e.data; opts.onProgress = (f, phase) => postMessage({ id, progress: f, phase });
           try { postMessage({ id, res: LBDiff.lineDiff(a, b, opts) }); } catch (err) { postMessage({ id, error: err.message || String(err) }); } };`;
       worker = new Worker(URL.createObjectURL(new Blob([code], { type: 'text/javascript' })));
