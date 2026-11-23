@@ -141,4 +141,31 @@ t('csvRow: the escape rule of the CSV writer, formulas guarded when asked', () =
   assert.strictEqual(T.csvRow(['=1+1'], false), '=1+1');
 });
 
+// ---- JSON to Table: filters, sorting, grouping
+t('filters: numeric comparisons, exact, not, empty, and contains; lossless numbers compared by value', () => {
+  const big = new L.LosslessNumber('12345678901234567890');
+  const f = (q, v) => T.parseFilter(q)(v);
+  assert.ok(f('>9', 10) && !f('>9', 9) && f('>=9', 9) && f('<10', new L.LosslessNumber('9.5')) && f('<=1e3', 1000));
+  assert.ok(f('>12345678901234567889', big) && !f('>12345678901234567890', big), 'big numbers by value');
+  assert.ok(f('=Ada', 'ada') && !f('=Ada', 'Adam'), 'exact, case-insensitive');
+  assert.ok(f('!=Ada', 'Bob') && !f('!=Ada', 'ada'));
+  assert.ok(f('ad', 'Ada Lovelace') && !f('zz', 'Ada'), 'contains');
+  assert.ok(f('!bob', 'Ada') && !f('!bob', 'Bobby'), 'does not contain');
+  assert.ok(f('empty', '') && f('empty', null) && !f('empty', 0) && f('!empty', 0));
+  assert.ok(f('', 'anything'), 'blank filter matches all');
+  assert.ok(!f('>5', 'abc'), 'a number comparison never matches text');
+});
+t('sortRows: numbers by value (lossless too), text naturally, blanks last both ways', () => {
+  const rows = [[10], [''], [new L.LosslessNumber('9')], [100], [null]];
+  assert.deepStrictEqual(T.sortRows(rows, 0, 1).map(r => T.cellText(r[0])), ['9', '10', '100', '', '']);
+  assert.deepStrictEqual(T.sortRows(rows, 0, -1).map(r => T.cellText(r[0])), ['100', '10', '9', '', '']);
+  assert.deepStrictEqual(T.sortRows([['a10'], ['a9'], ['B']], 0, 1).map(r => r[0]), ['a9', 'a10', 'B']);
+});
+t('groupBy: count, sum, average, min and max per group, in first-seen order; non-numbers ignored', () => {
+  const rows = [['tools', 10], ['books', 5], ['tools', new L.LosslessNumber('2.5')], ['books', 'n/a'], ['', 1]];
+  const g = T.groupBy(rows, 0, 1);
+  assert.deepStrictEqual(g.map(x => [x.key, x.count, x.sum, x.avg, x.min, x.max]), [['tools', 2, 12.5, 6.25, 2.5, 10], ['books', 2, 5, 5, 5, 5], ['(empty)', 1, 1, 1, 1, 1]]);
+  assert.deepStrictEqual(T.groupBy([['a'], ['a']], 0, -1).map(x => [x.key, x.count, x.sum]), [['a', 2, null]]);
+});
+
 console.log(`${n} passed, ${failed} failed`);

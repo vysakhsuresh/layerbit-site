@@ -7,7 +7,7 @@
       "@id": "https://layerbit.co.in/tools/json-to-table.html#app",
       "name": "JSON to Table Viewer",
       "url": "https://layerbit.co.in/tools/json-to-table.html",
-      "description": "Turn a JSON array into a sortable, filterable table in your browser. Nested objects flatten to dotted columns, ragged keys merge, and it exports to CSV.",
+      "description": "Turn a JSON array into a table in your browser: 100k+ rows, column filters, hide and reorder columns, group-by totals, editable cells, CSV, Excel and JSON export.",
       "applicationCategory": "DeveloperApplication",
       "operatingSystem": "Any (runs in the browser)",
       "browserRequirements": "Requires JavaScript",
@@ -19,7 +19,20 @@
       },
       "publisher": {
         "@id": "https://layerbit.co.in/#organization"
-      }
+      },
+      "featureList": [
+        "Render a JSON array as a table",
+        "Nested objects flattened to columns",
+        "100,000+ rows drawn virtually",
+        "Search and per-column filters",
+        "Sort by value",
+        "Hide, reorder and resize columns",
+        "Group by with count, sum, average, min and max",
+        "Editable cells written back to the JSON",
+        "Export CSV (formula-safe), Excel and JSON",
+        "Long numbers kept exactly",
+        "Runs entirely in the browser"
+      ]
     },
     {
       "@type": "BreadcrumbList",
@@ -62,7 +75,39 @@
           "name": "Is there a limit to how much data I can paste?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "Because the grid operates entirely client-side, there are no artificial server limits or payload size caps. The only limitation is the amount of RAM available on your local machine to process and render the DOM elements."
+            "text": "There is no server and no size cap. Up to 500 rows are drawn in full; above that only the rows on screen are drawn, so a 100,000-row array scrolls, sorts and filters smoothly. The limit is your device's memory for the parsed JSON."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How do the column filters work?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Each column has a filter box under its name. Plain text finds cells that contain it (ignoring case); \u003e10, \u003e=10, \u003c5 and \u003c=5 compare numbers by value (19-digit IDs included); =paid matches the whole cell and !=paid excludes it; !test keeps cells that do not contain the text; empty and !empty find blank or filled cells. Filters on several columns, and the search box above, all apply together."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Can I group rows and see totals?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes. Choose a column in Group by to get one row per distinct value with its count; choose a column in Total of to add its sum, average, minimum and maximum. Values that are not numbers are left out of the totals. Grouping works on the filtered rows, so filter first to total a subset."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Can I edit the data and get the JSON back?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Double-click a cell, type, and press Enter (Escape cancels). The edit is written to its place in the document, including inside nested objects, and keeps its JSON type when the text fits it: a number stays a number with every digit, true/false stays a boolean. The input box updates, and JSON downloads the edited document in the same shape you pasted, including a header/body wrapper."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Can I hide, reorder or resize columns?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes. Columns lists every column with a box to show or hide it and arrows to move it; drag the right edge of a column heading to make it wider or narrower. The exports follow the same choice and order."
           }
         },
         {
@@ -78,7 +123,7 @@
           "name": "Can I export the filtered data?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "Yes. The CSV export feature intelligently respects your active search filter. If you search for a specific term and click Export CSV, only the rows currently visible on your screen will be downloaded."
+            "text": "Yes. Export CSV and .xlsx write exactly what the grid shows: the rows that pass the search and column filters, in the current sort order, with only the columns you have not hidden, in their order. When the table is grouped, the exports contain the groups and their totals. Export JSON writes the whole document, with your cell edits, in the shape you pasted."
           }
         }
       ]

@@ -18,6 +18,12 @@
  * table(records, {flatten, plan, sep}) -> {keys, names, rows} for CSV/xlsx out
  * cellText(v) / csvRow(values, safe) -> one CSV line (no newline), the escape
  *     rule of js/engines/csv.js; safe guards spreadsheet formulas
+ * parseFilter(text) -> predicate(value): ">9", "<=1e3", "=exact", "!=x",
+ *     "!text" (does not contain), "empty", "!empty", else contains (case-
+ *     insensitive); numbers (lossless too) are compared by value
+ * sortRows(rows, col, dir) -> new array: numbers by value, text naturally,
+ *     blanks last in both directions
+ * groupBy(rows, keyCol, valueCol) -> [{key, count, sum, avg, min, max}]
  * csvReader({delimiter}) -> {push(text), end(), issues, delimiter}: the
  *     shared CSV rules (js/engines/csv.js) over text that arrives in slices
  */
@@ -190,6 +196,68 @@
   }
   function csvRow(values, safe) { return values.map(function (v) { return C.cell(cellText(v), { safe: !!safe }); }).join(','); }
 
+
+  // ---- JSON to Table: filters, sorting, grouping
+  function asNumber(v) {
+    if (L.isLosslessNumber(v)) return Number(v.value);
+    if (typeof v === 'number') return v;
+    if (typeof v === 'string' && /^\s*-?(\d+\.?\d*|\.\d+)([eE][+-]?\d+)?\s*$/.test(v)) return Number(v);
+    return null;
+  }
+  function numText(v) { return L.isLosslessNumber(v) ? v.value : typeof v === 'number' ? String(v) : typeof v === 'string' ? v.trim() : null; }
+  // compares two number spellings exactly when both are integers (beyond 2^53 too)
+  function cmpNum(a, b) {
+    var ta = numText(a), tb = numText(b);
+    if (ta !== null && tb !== null && /^-?\d+$/.test(ta) && /^-?\d+$/.test(tb) && typeof BigInt === 'function') { var x = BigInt(ta), y = BigInt(tb); return x < y ? -1 : x > y ? 1 : 0; }
+    var p = asNumber(a), q = asNumber(b);
+    return p < q ? -1 : p > q ? 1 : 0;
+  }
+  function parseFilter(text) {
+    var q = String(text == null ? '' : text).trim();
+    if (!q) return function () { return true; };
+    var low = q.toLowerCase();
+    if (low === 'empty') return function (v) { return v === null || v === undefined || cellText(v) === ''; };
+    if (low === '!empty') return function (v) { return !(v === null || v === undefined || cellText(v) === ''); };
+    var m = /^(>=|<=|!=|>|<|=)\s*(.*)$/.exec(q);
+    if (m) {
+      var op = m[1], rhs = m[2], rn = asNumber(rhs);
+      if (op === '=' || op === '!=') {
+        var eq = function (v) { return rn !== null && asNumber(v) !== null ? cmpNum(v, rhs) === 0 : cellText(v).toLowerCase() === rhs.toLowerCase(); };
+        return op === '=' ? eq : function (v) { return !eq(v); };
+      }
+      if (rn === null) return function (v) { var t = cellText(v).toLowerCase(), r = rhs.toLowerCase(); return op === '>' ? t > r : op === '<' ? t < r : op === '>=' ? t >= r : t <= r; };
+      return function (v) {
+        if (asNumber(v) === null) return false;
+        var c = cmpNum(v, rhs);
+        return op === '>' ? c > 0 : op === '<' ? c < 0 : op === '>=' ? c >= 0 : c <= 0;
+      };
+    }
+    if (q[0] === '!' && q.length > 1) { var neg = low.slice(1); return function (v) { return cellText(v).toLowerCase().indexOf(neg) < 0; }; }
+    return function (v) { return cellText(v).toLowerCase().indexOf(low) >= 0; };
+  }
+  var collator = typeof Intl !== 'undefined' ? new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' }) : null;
+  function sortRows(rows, col, dir) {
+    var blank = function (v) { return v === null || v === undefined || cellText(v) === ''; };
+    var numeric = rows.every(function (r) { return blank(r[col]) || asNumber(r[col]) !== null; });
+    return rows.slice().sort(function (a, b) {
+      var x = a[col], y = b[col], xe = blank(x), ye = blank(y);
+      if (xe && ye) return 0; if (xe) return 1; if (ye) return -1;
+      var c = numeric ? cmpNum(x, y) : collator ? collator.compare(cellText(x), cellText(y)) : (cellText(x) < cellText(y) ? -1 : cellText(x) > cellText(y) ? 1 : 0);
+      return c * dir;
+    });
+  }
+  function groupBy(rows, keyCol, valCol) {
+    var order = [], groups = {};
+    rows.forEach(function (r) {
+      var k = cellText(r[keyCol]); if (k === '') k = '(empty)';
+      var g = groups['$' + k];
+      if (!g) { g = groups['$' + k] = { key: k, count: 0, sum: null, n: 0, min: null, max: null }; order.push(g); }
+      g.count++;
+      if (valCol >= 0) { var x = asNumber(r[valCol]); if (x !== null && isFinite(x)) { g.sum = (g.sum || 0) + x; g.n++; g.min = g.min === null ? x : Math.min(g.min, x); g.max = g.max === null ? x : Math.max(g.max, x); } }
+    });
+    return order.map(function (g) { return { key: g.key, count: g.count, sum: g.sum, avg: g.n ? g.sum / g.n : null, min: g.min, max: g.max }; });
+  }
+
   // ---- streaming CSV reader (the rules of LBCsv.parse, fed in slices)
   function csvReader(opts) {
     opts = opts || {};
@@ -268,6 +336,6 @@
   return {
     nest: nest, flatten: flatten, parseJSONL: parseJSONL, toJSONL: toJSONL, detectJSON: detectJSON, unionKeys: unionKeys,
     planFor: planFor, togglePlan: togglePlan, renamePlan: renamePlan, movePlan: movePlan, applyPlan: applyPlan,
-    cellValue: cellValue, cellText: cellText, csvRow: csvRow, recordConverter: recordConverter, jsonWriter: jsonWriter, table: table, csvReader: csvReader, setKey: setKey
+    cellValue: cellValue, cellText: cellText, parseFilter: parseFilter, sortRows: sortRows, groupBy: groupBy, asNumber: asNumber, csvRow: csvRow, recordConverter: recordConverter, jsonWriter: jsonWriter, table: table, csvReader: csvReader, setKey: setKey
   };
 });

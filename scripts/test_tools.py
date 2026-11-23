@@ -1661,6 +1661,107 @@ def _(t):
     eq(col, ["100", "10", "9"], "numeric descending")
 
 
+@case("json-to-table", "maximal", "2.3: 100,000 rows render virtually, scroll to the end, and filter")
+def _(t):
+    t.set("jsonInput", json.dumps([{"id": i, "name": f"row{i}", "grp": f"g{i % 7}"} for i in range(100000)]))
+    t.call("processJSON()")
+    n = t.count("#tableBody tr")
+    expect(0 < n < 200, f"{n} rows in the DOM")
+    eq(t.text("rowCount"), "100,000 Rows", "row count")
+    t.call("() => { const c = document.querySelector('.table-container'); c.scrollTop = c.scrollHeight; }")
+    t.wait(200)
+    expect("row99999" in t.text("tableBody"), "last row not reachable")
+    t.set("searchInput", "row77777", event="keyup"); t.wait(150)
+    eq(t.text("rowCount"), "1 Row", "global filter")
+
+
+@case("json-to-table", "typical", "2.3: per-column filters with numbers and text, combined with the search")
+def _(t):
+    t.set("jsonInput", '[{"n":5,"s":"apple"},{"n":12,"s":"banana"},{"n":30,"s":"cherry"},{"n":12345678901234567890,"s":"date"},{"n":null,"s":""}]')
+    t.call("processJSON()")
+    t.set("filter-n", ">10", event="input"); t.wait(100)
+    eq(t.text("rowCount"), "3 Rows", "n > 10")
+    t.set("filter-s", "!an", event="input"); t.wait(100)
+    eq(t.text("rowCount"), "2 Rows", "and s does not contain 'an'")
+    t.set("filter-n", ">12345678901234567889", event="input"); t.wait(100)
+    eq(t.text("rowCount"), "1 Row", "big numbers by value")
+    t.set("filter-n", "", event="input"); t.set("filter-s", "empty", event="input"); t.wait(100)
+    eq(t.text("rowCount"), "1 Row", "empty")
+    t.set("filter-s", "", event="input"); t.wait(100)
+    eq(t.text("rowCount"), "5 Rows", "cleared")
+
+
+@case("json-to-table", "typical", "2.3: hide, reorder and resize columns")
+def _(t):
+    t.set("jsonInput", '[{"a":1,"b":2,"c":3}]')
+    t.call("processJSON()")
+    t.click("#btnColumns")
+    t.page.uncheck("#colInc-b")
+    eq(t.call("[...document.querySelectorAll('#tableHead th[data-col]')].map(th => th.dataset.col)"), ["a", "c"], "b hidden")
+    t.click("#colDown-a")
+    eq(t.call("[...document.querySelectorAll('#tableHead th[data-col]')].map(th => th.dataset.col)"), ["c", "a"], "a moved right")
+    eq(t.call("[...document.querySelectorAll('#tableBody tr:first-child td')].map(td => td.textContent)"), ["3", "1"], "cells follow")
+    w0 = t.call("document.querySelector(\"th[data-col='a']\").getBoundingClientRect().width")
+    box = t.page.locator("th[data-col='a'] .col-resize").bounding_box()
+    t.page.mouse.move(box["x"] + 2, box["y"] + 5); t.page.mouse.down(); t.page.mouse.move(box["x"] + 122, box["y"] + 5, steps=4); t.page.mouse.up()
+    w1 = t.call("document.querySelector(\"th[data-col='a']\").getBoundingClientRect().width")
+    expect(w1 > w0 + 60, f"column not resized: {w0} -> {w1}")
+    t.page.check("#colInc-b")
+
+
+@case("json-to-table", "typical", "2.3: group by a column with count, sum, average, min and max")
+def _(t):
+    t.set("jsonInput", '[{"cat":"tools","price":10},{"cat":"books","price":5},{"cat":"tools","price":2.5},{"cat":"books","price":"n/a"}]')
+    t.call("processJSON()")
+    t.select("groupBy", "cat"); t.select("aggCol", "price")
+    heads = t.call("[...document.querySelectorAll('#tableHead th')].map(th => th.textContent.trim())")
+    eq(heads, ["cat", "count", "sum of price", "average", "min", "max"], "group header")
+    rows = t.call("[...document.querySelectorAll('#tableBody tr')].map(tr => [...tr.children].map(td => td.textContent))")
+    eq(rows, [["tools", "2", "12.5", "6.25", "2.5", "10"], ["books", "2", "5", "5", "5", "5"]], "groups")
+    with t.page.expect_download() as dl:
+        t.click("#btnExport")
+    csv = open(dl.value.path(), encoding="utf-8").read()
+    expect(csv.splitlines()[0] == "cat,count,sum of price,average,min,max" and "tools,2,12.5,6.25,2.5,10" in csv, csv)
+    t.select("groupBy", "")
+    eq(t.text("rowCount"), "4 Rows", "back to rows")
+
+
+@case("json-to-table", "typical", "2.3: edit a cell, keep its type, and export the edited JSON")
+def _(t):
+    t.set("jsonInput", '{"header":{"src":"api"},"body":[{"id":1,"user":{"name":"Ann"},"ok":true},{"id":2,"user":{"name":"Bob"},"ok":false}]}')
+    t.call("processJSON()")
+    t.page.dblclick("#tableBody tr:nth-child(2) td[data-col='user.name']")
+    t.page.fill("#tableBody input.cell-edit", "Grace"); t.page.press("#tableBody input.cell-edit", "Enter"); t.wait(100)
+    t.page.dblclick("#tableBody tr:nth-child(1) td[data-col='id']")
+    t.page.fill("#tableBody input.cell-edit", "12345678901234567890"); t.page.press("#tableBody input.cell-edit", "Enter"); t.wait(100)
+    t.page.dblclick("#tableBody tr:nth-child(1) td[data-col='ok']")
+    t.page.fill("#tableBody input.cell-edit", "false"); t.page.press("#tableBody input.cell-edit", "Enter"); t.wait(100)
+    expect("Grace" in t.text("tableBody"), "grid not updated")
+    with t.page.expect_download() as dl:
+        t.click("#btnExportJson")
+    raw = open(dl.value.path(), encoding="utf-8").read()
+    doc = json.loads(raw)
+    eq(doc["header"], {"src": "api"}, "shape kept")
+    eq(doc["body"][1]["user"]["name"], "Grace", "nested edit")
+    eq(doc["body"][0]["ok"], False, "boolean stays boolean")
+    expect('"id": 12345678901234567890' in raw, "number stays an exact number: " + raw[:120])
+    expect("Grace" in t.val("jsonInput"), "edit not written into the input")
+
+
+@case("json-to-table", "typical", "2.3: .xlsx export with typed cells")
+def _(t):
+    t.set("jsonInput", '[{"zip":"00123","n":42,"big":12345678901234567890,"f":"=1+1","ok":true}]')
+    t.call("processJSON()")
+    with t.page.expect_download() as dl:
+        t.click("#btnXlsx")
+    expect(dl.value.suggested_filename.endswith(".xlsx"), dl.value.suggested_filename)
+    b64 = base64.b64encode(open(dl.value.path(), "rb").read()).decode()
+    t.page.evaluate(LOAD_SCRIPT, "../js/vendor/xlsx.full.min.js")
+    res = t.call("""() => { const wb = XLSX.read(Uint8Array.from(atob('%s'), c => c.charCodeAt(0)), { type: 'array' }); const ws = wb.Sheets[wb.SheetNames[0]];
+      return ['A2', 'B2', 'C2', 'D2', 'E2'].map(a => [ws[a].t, String(ws[a].v), ws[a].f || '']); }""" % b64)
+    eq(res, [["s", "00123", ""], ["n", "42", ""], ["s", "12345678901234567890", ""], ["s", "=1+1", ""], ["b", "true", ""]], "typed cells")
+
+
 # ----------------------------------------------------------------------------
 # html-escape-unescape
 # ----------------------------------------------------------------------------

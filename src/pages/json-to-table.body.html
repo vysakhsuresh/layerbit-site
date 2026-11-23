@@ -3,7 +3,7 @@
   <main id="main" class="page-main">
   <div class="hero">
     <h1>JSON to Table Viewer</h1>
-    <p>Render any JSON array as a data grid — flatten nested objects, sort columns, filter rows live and export to CSV without leaving the page.</p>
+    <p>Render any JSON array as a data grid: nested objects flattened, 100,000+ rows scrolling smoothly, filters per column, columns you hide, reorder and resize, group-by totals, cells you edit, and export to CSV, Excel or the edited JSON. Nothing leaves the page.</p>
   </div>
 
   <div class="app-container">
@@ -28,14 +28,22 @@
       <div class="grid-toolbar">
         <div class="search-wrapper">
           <i data-lucide="search"></i>
-          <input type="text" id="searchInput" class="search-input" placeholder="Filter rows in real-time..." onkeyup="filterTable()" disabled>
+          <input type="text" id="searchInput" class="search-input" placeholder="Search every column..." onkeyup="filterTable()" disabled aria-label="Search every column">
         </div>
         <div class="action-row">
           <span class="grid-meta" id="rowCount">0 Rows</span>
           <label class="toggle-label safe-csv" title="Spreadsheets run a cell that starts with =, +, - or @ as a formula. On: such values get a leading apostrophe so they open as text (plain numbers like -5 are left alone). Off: the exact text."><input type="checkbox" id="csvSafe" checked> Safe for Excel</label>
           <button class="btn" id="btnExport" onclick="exportCSV()" disabled><i data-lucide="download"></i> Export CSV</button>
+          <button class="btn" id="btnXlsx" onclick="exportXlsx()" disabled title="An Excel workbook of the rows and columns shown: text stays text, numbers are numbers, nothing becomes a formula"><i data-lucide="sheet"></i> .xlsx</button>
+          <button class="btn" id="btnExportJson" onclick="exportJSON()" disabled title="The JSON with your cell edits, in the same shape as the input"><i data-lucide="braces"></i> JSON</button>
+        </div>
+        <div class="action-row view-row">
+          <button class="btn" id="btnColumns" type="button" onclick="toggleColumns()" disabled title="Show, hide and reorder columns"><i data-lucide="columns-3"></i> Columns</button>
+          <label class="toggle-label">Group by <select id="groupBy" class="mini-select" disabled aria-label="Group by"><option value="">none</option></select></label>
+          <label class="toggle-label">Total of <select id="aggCol" class="mini-select" disabled aria-label="Column to total"><option value="">count only</option></select></label>
         </div>
       </div>
+      <div class="col-panel" id="colPanel" hidden></div>
       
       <div class="table-container">
         <table id="dataTable">
@@ -57,7 +65,7 @@
       <p>Standard JSON converters fail when encountering nested objects. Layerbit's Grid Engine automatically flattens multi-level objects (e.g., <code>user.address.city</code>) and securely stringifies internal arrays, ensuring zero data loss during conversion.</p>
       <ul>
         <li><i data-lucide="check"></i> <strong>Intelligent Parsing:</strong> Accepts direct JSON Arrays or structured objects containing a <code>body</code> array and an optional <code>header</code>.</li>
-        <li><i data-lucide="check"></i> <strong>Client-Side Filtering:</strong> Search through thousands of rows instantly without any server latency or database queries.</li>
+        <li><i data-lucide="check"></i> <strong>Client-Side Filtering:</strong> Search every column, or filter each column on its own (<code>&gt;100</code>, <code>=paid</code>, <code>!test</code>, <code>empty</code>), across 100,000+ rows without any server.</li>
         <li><i data-lucide="check"></i> <strong>Pristine Export:</strong> Generates cleanly escaped CSV files ready for direct import into Excel, Google Sheets, or BI tools.</li>
       </ul>
       
@@ -84,6 +92,7 @@
         <button class="sample-btn" data-lb-autosample onclick="loadSample('basic')">Basic Array</button>
         <button class="sample-btn" onclick="loadSample('nested')">Nested Objects</button>
         <button class="sample-btn" onclick="loadSample('api')">API Response</button>
+        <button class="sample-btn" onclick="loadSample('sales')">Sales, grouped by region</button>
       </div>
     </div>
 
@@ -101,10 +110,26 @@
         <div class="faq-item">
           <button class="faq-question">Is there a limit to how much data I can paste? <i data-lucide="chevron-down"></i></button>
           <div class="faq-answer">
-            <p>Because the grid operates entirely client-side, there are no artificial server limits or payload size caps. The only limitation is the amount of RAM available on your local machine to process and render the DOM elements.</p>
+            <p>There is no server and no size cap. Up to 500 rows are drawn in full; above that only the rows on screen are drawn, so a 100,000-row array scrolls, sorts and filters smoothly. The limit is your device's memory for the parsed JSON.</p>
           </div>
         </div>
 
+        <div class="faq-item">
+          <button class="faq-question">How do the column filters work? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>Each column has a filter box under its name. Plain text finds cells that contain it (ignoring case); <code>&gt;10</code>, <code>&gt;=10</code>, <code>&lt;5</code> and <code>&lt;=5</code> compare numbers by value (19-digit IDs included); <code>=paid</code> matches the whole cell and <code>!=paid</code> excludes it; <code>!test</code> keeps cells that do not contain the text; <code>empty</code> and <code>!empty</code> find blank or filled cells. Filters on several columns, and the search box above, all apply together.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">Can I group rows and see totals? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>Yes. Choose a column in <strong>Group by</strong> to get one row per distinct value with its count; choose a column in <strong>Total of</strong> to add its sum, average, minimum and maximum. Values that are not numbers are left out of the totals. Grouping works on the filtered rows, so filter first to total a subset.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">Can I edit the data and get the JSON back? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>Double-click a cell, type, and press Enter (Escape cancels). The edit is written to its place in the document, including inside nested objects, and keeps its JSON type when the text fits it: a number stays a number with every digit, <code>true</code>/<code>false</code> stays a boolean. The input box updates, and <strong>JSON</strong> downloads the edited document in the same shape you pasted, including a <code>header</code>/<code>body</code> wrapper.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">Can I hide, reorder or resize columns? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>Yes. <strong>Columns</strong> lists every column with a box to show or hide it and arrows to move it; drag the right edge of a column heading to make it wider or narrower. The exports follow the same choice and order.</p></div>
+        </div>
         <div class="faq-item">
           <button class="faq-question">What does &quot;Safe for Excel&quot; do to the CSV? <i data-lucide="chevron-down"></i></button>
           <div class="faq-answer"><p>Excel, LibreOffice and Google Sheets treat a cell that begins with <code>=</code>, <code>+</code>, <code>-</code> or <code>@</code> as a formula, so a value such as <code>=HYPERLINK(&quot;http://…&quot;)</code> in your data can run when someone opens the file (CSV or formula injection). With Safe for Excel on, which is the default, such values are written with a leading apostrophe (<code>'=HYPERLINK(…)</code>); spreadsheets show them as text. Plain numbers such as <code>-5</code> or <code>+3.5</code> are left alone. Turn it off when the CSV feeds another program that must receive the exact text.</p></div>
@@ -112,7 +137,7 @@
         <div class="faq-item">
           <button class="faq-question">Can I export the filtered data? <i data-lucide="chevron-down"></i></button>
           <div class="faq-answer">
-            <p>Yes. The CSV export feature intelligently respects your active search filter. If you search for a specific term and click Export CSV, only the rows currently visible on your screen will be downloaded.</p>
+            <p>Yes. Export CSV and .xlsx write exactly what the grid shows: the rows that pass the search and column filters, in the current sort order, with only the columns you have not hidden, in their order. When the table is grouped, the exports contain the groups and their totals. Export JSON writes the whole document, with your cell edits, in the shape you pasted.</p>
           </div>
         </div>
 
@@ -174,6 +199,7 @@
     <div class="info-panel">
       <h2><i data-lucide="git-commit"></i> Changelog</h2>
       <ul class="changelog-list">
+        <li><span class="changelog-tag">v3.0.0</span> Large arrays draw only the rows on screen (tested with 100,000 rows). A filter under each column (text, &gt; &lt; = comparisons that handle 19-digit numbers, not, empty). Columns can be hidden, reordered and resized. Group by any column with count, sum, average, min and max. Cells are editable, keep their JSON type, and are written back into the document; Export JSON downloads it. Excel (.xlsx) export with typed cells.</li>
         <li><span class="changelog-tag">v2.2.0</span> Numbers are read losslessly: 19-digit IDs, 1e400 and -0 appear and export exactly as written instead of rounded, as Infinity or as 0. Export CSV has a Safe for Excel switch, on by default, that writes formula-like values with a leading apostrophe.</li>
         <li><span class="changelog-tag">v2.1.0</span> Columns sort on click (numeric where every value is a number, natural-order text otherwise; empty cells sink to the bottom), and the sort composes with the live filter and CSV export.</li>
         <li><span class="changelog-tag">v1.2.0</span> Integrated nested object flattening and robust client-side filtering via the grid toolbar.</li>
@@ -199,215 +225,272 @@
   <script src="../js/engines/csv.js"></script>
 
 
-  <script>
-        const jsonInput = document.getElementById("jsonInput");
-    const errorBanner = document.getElementById("errorBanner");
-    const errorText = document.getElementById("errorText");
-    const headerSummary = document.getElementById("headerSummary");
-    const tableHead = document.getElementById("tableHead");
-    const tableBody = document.getElementById("tableBody");
-    const emptyState = document.getElementById("emptyState");
-    const searchInput = document.getElementById("searchInput");
-    const btnExport = document.getElementById("btnExport");
-    const rowCountMeta = document.getElementById("rowCount");
+  <script src="../js/engines/tabular.js"></script>
 
-    let currentData = [];
-    let currentHeaders = [];
+  <script>
+    const $ = id => document.getElementById(id);
+    const jsonInput = $("jsonInput");
+    const errorBanner = $("errorBanner");
+    const errorText = $("errorText");
+    const headerSummary = $("headerSummary");
+    const tableHead = $("tableHead");
+    const tableBody = $("tableBody");
+    const emptyState = $("emptyState");
+    const searchInput = $("searchInput");
+    const btnExport = $("btnExport");
+    const rowCountMeta = $("rowCount");
+    const container = document.querySelector('.table-container');
+    const T = LBTable, isLN = v => LBLossless.isLosslessNumber(v);
+    const escapeHTML = str => String(str).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+
+    // The document is kept as parsed (numbers lossless), the rows point back
+    // into it, so an edited cell is written to its place in the document.
+    let doc = null, records = [], keys = [], rows = [], plan = [], widths = {};
+    let filters = {}, sortState = { col: null, dir: 1 }, viewRows = [], grouped = null;
+    const ALL_ROWS = 500, ROW_H = 37;
 
     function clearInput() {
       jsonInput.value = "";
+      reset();
       errorBanner.classList.remove("active");
+    }
+    function reset() {
+      doc = null; records = []; keys = []; rows = []; viewRows = []; grouped = null;
       headerSummary.style.display = "none";
-      tableHead.innerHTML = "";
-      tableBody.innerHTML = "";
+      tableHead.innerHTML = ""; tableBody.innerHTML = "";
       emptyState.style.display = "flex";
-      searchInput.value = "";
-      searchInput.disabled = true;
-      btnExport.disabled = true;
+      searchInput.value = ""; searchInput.disabled = true;
+      ['btnExport', 'btnXlsx', 'btnExportJson', 'btnColumns', 'groupBy', 'aggCol'].forEach(id => { $(id).disabled = true; });
+      $('colPanel').hidden = true;
       rowCountMeta.innerText = "0 Rows";
-      currentData = [];
     }
 
-    // Helper: Flatten nested JSON objects
-    function flattenObject(ob) {
-      let toReturn = {};
-      for (let i in ob) {
-        if (!ob.hasOwnProperty(i)) continue;
-
-        if (LBLossless.isLosslessNumber(ob[i])) {
-          toReturn[i] = ob[i];
-        } else if (typeof ob[i] === 'object' && ob[i] !== null && !Array.isArray(ob[i])) {
-          let flatObject = flattenObject(ob[i]);
-          for (let x in flatObject) {
-            if (!flatObject.hasOwnProperty(x)) continue;
-            toReturn[i + '.' + x] = flatObject[x];
-          }
-        } else if (Array.isArray(ob[i])) {
-          toReturn[i] = LBLossless.stringify(ob[i]); // Stringify arrays for clean rendering
-        } else {
-          toReturn[i] = ob[i];
-        }
+    // nested objects become dotted columns; arrays stay one cell (shown as JSON)
+    function flatten(ob, prefix, out) {
+      out = out || {};
+      Object.keys(ob).forEach(k => {
+        const v = ob[k], key = prefix ? prefix + '.' + k : k;
+        if (v !== null && typeof v === 'object' && !Array.isArray(v) && !isLN(v) && Object.keys(v).length) flatten(v, key, out);
+        else T.setKey(out, key, v);
+      });
+      return out;
+    }
+    function flatPath(obj, key) {
+      if (obj === null || typeof obj !== 'object') return null;
+      if (Object.prototype.hasOwnProperty.call(obj, key)) return [key];
+      for (let i = key.indexOf('.'); i > 0; i = key.indexOf('.', i + 1)) {
+        const head = key.slice(0, i);
+        if (Object.prototype.hasOwnProperty.call(obj, head)) { const rest = flatPath(obj[head], key.slice(i + 1)); if (rest) return [head].concat(rest); }
       }
-      return toReturn;
+      return null;
     }
 
     function processJSON() {
       const inputVal = jsonInput.value.trim();
       errorBanner.classList.remove("active");
-      headerSummary.style.display = "none";
-      tableHead.innerHTML = "";
-      tableBody.innerHTML = "";
-      currentData = [];
-
-      if (!inputVal) {
-        showError("Please paste JSON data to render.");
-        return;
-      }
-
-      let parsed;
-      let bodyData = [];
-      let headerData = null;
-
+      const keepPlan = plan;
+      reset();
+      if (!inputVal) { showError("Please paste JSON data to render."); return; }
+      let parsed, bodyData, headerData = null;
       try {
         JSON.parse(inputVal);  // the browser's parser reports syntax errors
         // numbers keep their written digits (12345678901234567890, 1e400)
         parsed = LBLossless.parse(inputVal);
-
-        if (Array.isArray(parsed)) {
-          bodyData = parsed;
-        } else if (parsed.body && Array.isArray(parsed.body)) {
-          bodyData = parsed.body;
-          headerData = parsed.header || null;
-        } else {
-          throw new Error("Invalid format. Must be a JSON array or an object with a 'body' array.");
-        }
-      } catch (e) {
-        showError(e.message);
-        return;
-      }
-
-      if (bodyData.length === 0) {
-        showError("The JSON array is empty.");
-        return;
-      }
-
-      // Render Header Summary if exists
+        if (Array.isArray(parsed)) bodyData = parsed;
+        else if (parsed && parsed.body && Array.isArray(parsed.body)) { bodyData = parsed.body; headerData = parsed.header || null; }
+        else throw new Error("Invalid format. Must be a JSON array or an object with a 'body' array.");
+      } catch (e) { showError(e.message); return; }
+      if (bodyData.length === 0) { showError("The JSON array is empty."); return; }
       if (headerData && typeof headerData === "object") {
-        const summary = Object.entries(headerData)
-          .map(([k, v]) => `<strong>${escapeHTML(String(k))}</strong>: ${escapeHTML(String(v))}`)
-          .join(" &nbsp;|&nbsp; ");
-        headerSummary.innerHTML = summary;
+        headerSummary.innerHTML = Object.entries(headerData).map(([k, v]) => `<strong>${escapeHTML(k)}</strong>: ${escapeHTML(T.cellText(v))}`).join(" &nbsp;|&nbsp; ");
         headerSummary.style.display = "block";
       }
-
-      // Flatten objects and determine all unique headers
-      const headersSet = new Set();
-      bodyData.forEach(row => {
-        const flatRow = flattenObject(row);
-        currentData.push(flatRow);
-        Object.keys(flatRow).forEach(k => headersSet.add(k));
-      });
-
-      currentHeaders = Array.from(headersSet);
-      renderTable(currentHeaders, currentData);
-    }
-
-    function renderTable(headers, data) {
+      doc = parsed; records = bodyData;
+      const flat = records.map(r => r !== null && typeof r === 'object' && !Array.isArray(r) && !isLN(r) ? flatten(r) : { value: r });
+      keys = T.unionKeys(flat);
+      rows = flat.map((f, i) => { const r = keys.map(k => f[k]); r.rec = i; return r; });
+      plan = T.planFor(keys, keepPlan);
+      filters = {}; sortState = { col: null, dir: 1 };
+      const opts = '<option value="">none</option>' + keys.map(k => `<option value="${escapeHTML(k)}">${escapeHTML(k)}</option>`).join('');
+      $('groupBy').innerHTML = opts; $('aggCol').innerHTML = '<option value="">count only</option>' + keys.map(k => `<option value="${escapeHTML(k)}">${escapeHTML(k)}</option>`).join('');
       emptyState.style.display = "none";
       searchInput.disabled = false;
-      btnExport.disabled = false;
-      searchInput.value = ""; // Reset search on new render
-
-      // Build Thead
-      let theadHTML = "<tr>";
-      headers.forEach(h => {
-        theadHTML += `<th class="sortable" data-col="${escapeHTML(h)}" title="Click to sort">${escapeHTML(h)}<span class="sort-ind"></span></th>`;
-      });
-      theadHTML += "</tr>";
-      tableHead.innerHTML = theadHTML;
-      sortState = { col: null, dir: 1 };
-      tableHead.querySelectorAll('th.sortable').forEach(th => th.addEventListener('click', () => sortBy(th.dataset.col)));
-
-      // Build Tbody
-      renderRows(data);
+      ['btnExport', 'btnXlsx', 'btnExportJson', 'btnColumns', 'groupBy', 'aggCol'].forEach(id => { $(id).disabled = false; });
+      renderColumns();
+      renderTable();
     }
 
-    function renderRows(dataSubset) {
-      let tbodyHTML = "";
-      dataSubset.forEach(row => {
-        tbodyHTML += "<tr>";
-        currentHeaders.forEach(h => {
-          let cellValue = row[h];
-          if (cellValue === null || cellValue === undefined) cellValue = "";
-          tbodyHTML += `<td>${escapeHTML(String(cellValue))}</td>`;
-        });
-        tbodyHTML += "</tr>";
-      });
-      tableBody.innerHTML = tbodyHTML;
-      rowCountMeta.innerText = `${dataSubset.length} Rows`;
-    }
+    function visibleCols() { const p = T.applyPlan(keys, plan); return p.index.map(i => keys[i]); }
+    function colIndex(k) { return keys.indexOf(k); }
 
-    // Numbers sort numerically, everything else as strings; nulls sink to the
-    // bottom in either direction so they do not hide the interesting rows.
-    let sortState = { col: null, dir: 1 };
-    function sortBy(col) {
-      sortState = { col, dir: sortState.col === col ? -sortState.dir : 1 };
-      const isNum = currentData.every(r => r[col] === null || r[col] === undefined || r[col] === '' || (typeof r[col] === 'number') || (!isNaN(r[col]) && String(r[col]).trim() !== ''));
-      currentData.sort((a, b) => {
-        const x = a[col], y = b[col];
-        const xe = x === null || x === undefined || x === '', ye = y === null || y === undefined || y === '';
-        if (xe && ye) return 0; if (xe) return 1; if (ye) return -1;
-        return (isNum ? Number(x) - Number(y) : String(x).localeCompare(String(y), undefined, { numeric: true })) * sortState.dir;
-      });
-      tableHead.querySelectorAll('th.sortable').forEach(th => {
-        th.querySelector('.sort-ind').textContent = th.dataset.col === col ? (sortState.dir === 1 ? ' ▲' : ' ▼') : '';
-      });
-      filterTable();
+    // ---- view: filters, search and sort, then the rows on screen
+    function computeView() {
+      const preds = Object.keys(filters).filter(k => filters[k]).map(k => [colIndex(k), T.parseFilter(filters[k])]);
+      const q = searchInput.value.toLowerCase();
+      let out = rows.filter(r => preds.every(([i, p]) => p(r[i])) && (!q || r.some(v => T.cellText(v).toLowerCase().includes(q))));
+      if (sortState.col !== null) out = T.sortRows(out, colIndex(sortState.col), sortState.dir);
+      viewRows = out;
     }
-
-    function filterTable() {
-      const query = searchInput.value.toLowerCase();
-      if (!query) {
-        renderRows(currentData);
+    function renderTable() {
+      const g = $('groupBy').value;
+      grouped = g ? { key: g, val: $('aggCol').value } : null;
+      const cols = grouped ? null : visibleCols();
+      if (grouped) {
+        const heads = [grouped.key, 'count'].concat(grouped.val ? ['sum of ' + grouped.val, 'average', 'min', 'max'] : []);
+        tableHead.innerHTML = '<tr>' + heads.map(h => `<th>${escapeHTML(h)}</th>`).join('') + '</tr>';
+      } else {
+        tableHead.innerHTML = '<tr>' + cols.map(k => `<th class="sortable" data-col="${escapeHTML(k)}" title="Click to sort"${widths[k] ? ` style="width:${widths[k]}px;min-width:${widths[k]}px;max-width:${widths[k]}px"` : ''}>${escapeHTML(k)}<span class="sort-ind">${sortState.col === k ? (sortState.dir === 1 ? ' ▲' : ' ▼') : ''}</span><span class="col-resize" aria-hidden="true"></span></th>`).join('') + '</tr>' +
+          '<tr class="filter-row">' + cols.map(k => `<th><input type="text" class="col-filter" id="filter-${escapeHTML(k)}" data-filter="${escapeHTML(k)}" value="${escapeHTML(filters[k] || '')}" placeholder="filter" aria-label="Filter ${escapeHTML(k)}" title="Text to find, or >10, <=5, =exact, !=x, !text, empty, !empty" spellcheck="false"></th>`).join('') + '</tr>';
+      }
+      renderBody();
+    }
+    function fmt(v) { return v === null || v === undefined ? '' : typeof v === 'number' ? String(Math.round(v * 1e10) / 1e10) : String(v); }
+    function renderBody() {
+      computeView();
+      if (grouped) {
+        const gs = T.groupBy(viewRows, colIndex(grouped.key), grouped.val ? colIndex(grouped.val) : -1);
+        grouped.rows = gs.map(x => [x.key, x.count].concat(grouped.val ? [x.sum, x.avg, x.min, x.max] : []));
+        tableBody.innerHTML = grouped.rows.map(r => '<tr>' + r.map(v => `<td>${escapeHTML(fmt(v))}</td>`).join('') + '</tr>').join('');
+        rowCountMeta.innerText = `${gs.length.toLocaleString()} Group${gs.length === 1 ? '' : 's'}`;
         return;
       }
-
-      const filtered = currentData.filter(row => {
-        return Object.values(row).some(val => 
-          String(val).toLowerCase().includes(query)
-        );
-      });
-      renderRows(filtered);
+      rowCountMeta.innerText = `${viewRows.length.toLocaleString()} Row${viewRows.length === 1 ? '' : 's'}`;
+      drawRows();
     }
+    // all rows when there are few; otherwise only the rows on screen, between
+    // two spacer rows that keep the scroll height
+    function drawRows() {
+      const cols = visibleCols(), idx = cols.map(colIndex), n = viewRows.length;
+      let first = 0, last = n;
+      if (n > ALL_ROWS) {
+        const headH = tableHead.offsetHeight, view = container.clientHeight || 600;
+        first = Math.max(0, Math.floor((container.scrollTop - headH) / ROW_H) - 10);
+        last = Math.min(n, first + Math.ceil(view / ROW_H) + 20);
+      }
+      let html = first ? `<tr class="vspace" aria-hidden="true" style="height:${first * ROW_H}px"><td colspan="${cols.length}"></td></tr>` : '';
+      for (let i = first; i < last; i++) {
+        const r = viewRows[i];
+        html += `<tr data-row="${r.rec}"${n > ALL_ROWS ? ` style="height:${ROW_H}px"` : ''}>` + idx.map((c, j) => `<td data-col="${escapeHTML(cols[j])}">${escapeHTML(T.cellText(r[c]))}</td>`).join('') + '</tr>';
+      }
+      if (last < n) html += `<tr class="vspace" aria-hidden="true" style="height:${(n - last) * ROW_H}px"><td colspan="${cols.length}"></td></tr>`;
+      tableBody.innerHTML = html;
+      tableBody.classList.toggle('virtual', n > ALL_ROWS);
+    }
+    let raf = 0;
+    container.addEventListener('scroll', () => { if (viewRows.length > ALL_ROWS && !grouped && !tableBody.querySelector('input.cell-edit')) { cancelAnimationFrame(raf); raf = requestAnimationFrame(drawRows); } });
 
+    // ---- header: sort, filter, resize
+    tableHead.addEventListener('click', e => {
+      if (e.target.closest('.col-filter, .col-resize')) return;
+      const th = e.target.closest('th.sortable'); if (th) sortBy(th.dataset.col);
+    });
+    let filterTimer = null;
+    tableHead.addEventListener('input', e => {
+      const f = e.target.closest('.col-filter'); if (!f) return;
+      filters[f.dataset.filter] = f.value;
+      clearTimeout(filterTimer);
+      if (rows.length > 50000) filterTimer = setTimeout(renderBody, 200); else renderBody();
+    });
+    tableHead.addEventListener('mousedown', e => {
+      const h = e.target.closest('.col-resize'); if (!h) return;
+      e.preventDefault(); e.stopPropagation();
+      const th = h.parentElement, key = th.dataset.col, x0 = e.clientX, w0 = th.getBoundingClientRect().width;
+      const move = ev => { const w = Math.max(48, Math.round(w0 + ev.clientX - x0)); widths[key] = w; th.style.width = th.style.minWidth = th.style.maxWidth = w + 'px'; };
+      const up = () => { window.removeEventListener('mousemove', move); window.removeEventListener('mouseup', up); };
+      window.addEventListener('mousemove', move); window.addEventListener('mouseup', up);
+    });
+    // Numbers sort numerically (long ones by value), everything else
+    // naturally; blanks sink to the bottom in either direction.
+    function sortBy(col) {
+      sortState = { col, dir: sortState.col === col ? -sortState.dir : 1 };
+      tableHead.querySelectorAll('th.sortable').forEach(th => { th.querySelector('.sort-ind').textContent = th.dataset.col === col ? (sortState.dir === 1 ? ' ▲' : ' ▼') : ''; });
+      renderBody();
+    }
+    function filterTable() { renderBody(); }
+
+    // ---- columns: show, hide, reorder
+    function toggleColumns() { const p = $('colPanel'); p.hidden = !p.hidden; if (!p.hidden) renderColumns(); }
+    function renderColumns() {
+      const box = $('colPanel');
+      box.innerHTML = '<span class="ct-label">Columns:</span>' + plan.map((p, i) => { const k = escapeHTML(p.key);
+        return `<span class="ct-item${p.include ? '' : ' off'}"><input type="checkbox" id="colInc-${k}" data-col-inc="${k}"${p.include ? ' checked' : ''} aria-label="Show ${k}"><label for="colInc-${k}">${k}</label>` +
+          `<button type="button" class="ct-move" id="colUp-${k}" data-col-move="-1" data-key="${k}" aria-label="Move ${k} left"${i === 0 ? ' disabled' : ''}>&lsaquo;</button><button type="button" class="ct-move" id="colDown-${k}" data-col-move="1" data-key="${k}" aria-label="Move ${k} right"${i === plan.length - 1 ? ' disabled' : ''}>&rsaquo;</button></span>`; }).join('');
+    }
+    $('colPanel').addEventListener('change', e => { const c = e.target.closest('[data-col-inc]'); if (!c) return; plan = T.togglePlan(plan, c.dataset.colInc, c.checked); renderColumns(); renderTable(); });
+    // a move steps past hidden columns, so the visible order always changes
+    $('colPanel').addEventListener('click', e => {
+      const b = e.target.closest('[data-col-move]'); if (!b) return;
+      const key = b.dataset.key, d = +b.dataset.colMove;
+      for (let guard = 0; guard < plan.length; guard++) {
+        const i = plan.findIndex(p => p.key === key), j = i + d;
+        if (j < 0 || j >= plan.length) break;
+        const passed = plan[j];
+        plan = T.movePlan(plan, key, d);
+        if (passed.include) break;
+      }
+      renderColumns(); renderTable();
+      const again = $(b.id); if (again && !again.disabled) again.focus();
+    });
+    ['groupBy', 'aggCol'].forEach(id => $(id).addEventListener('change', renderTable));
+
+    // ---- cell editing: the value keeps its JSON type when the text fits it
+    function typedLike(old, v) {
+      const t = v.trim();
+      if ((isLN(old) || typeof old === 'number') && /^-?(0|[1-9]\d*)(\.\d+)?([eE][+-]?\d+)?$/.test(t)) return new LBLossless.LosslessNumber(t);
+      if (typeof old === 'boolean' && /^(true|false)$/i.test(t)) return t.toLowerCase() === 'true';
+      if (old === null && (t === '' || t === 'null')) return null;
+      if (old !== null && typeof old === 'object' && !isLN(old)) { try { JSON.parse(t); return LBLossless.parse(t); } catch (e) { return v; } }
+      return v;
+    }
+    tableBody.addEventListener('dblclick', e => {
+      const td = e.target.closest('td[data-col]'), tr = td && td.closest('tr[data-row]');
+      if (!td || !tr || td.querySelector('input')) return;
+      const ri = +tr.dataset.row, key = td.dataset.col, ci = colIndex(key), old = rows[ri][ci];
+      const inp = document.createElement('input'); inp.className = 'cell-edit'; inp.value = T.cellText(old);
+      inp.setAttribute('aria-label', `Edit ${key}, row ${ri + 1}`);
+      td.textContent = ''; td.appendChild(inp); inp.focus(); inp.select();
+      let done = false;
+      const finish = save => {
+        if (done) return; done = true;
+        if (save && inp.value !== T.cellText(old)) {
+          const v = typedLike(old, inp.value), rec = records[ri];
+          const p = rec !== null && typeof rec === 'object' && !isLN(rec) ? flatPath(rec, key) : null;
+          if (p) { const parent = p.slice(0, -1).reduce((o, k) => o[k], rec); T.setKey(parent, p[p.length - 1], v); }
+          else if (key === 'value' && (rec === null || typeof rec !== 'object' || isLN(rec))) records[ri] = v;
+          else T.setKey(rec, key, v);
+          rows[ri][ci] = v;
+          jsonInput.value = LBLossless.stringify(doc, 2);
+        }
+        renderBody();
+      };
+      inp.addEventListener('keydown', ev => { if (ev.key === 'Enter') { ev.preventDefault(); finish(true); } else if (ev.key === 'Escape') { ev.preventDefault(); finish(false); } });
+      inp.addEventListener('blur', () => finish(true));
+    });
+
+    // ---- exports: the rows and columns on screen (or the groups)
+    function tableOut() {
+      if (grouped) return { head: [...tableHead.querySelectorAll('th')].map(th => th.textContent.trim()), rows: grouped.rows };
+      const cols = visibleCols(), idx = cols.map(colIndex);
+      return { head: cols, rows: viewRows.map(r => idx.map(i => r[i])) };
+    }
+    function save(blob, name) { const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = name; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 60000); }
     function exportCSV() {
-      if (currentData.length === 0) return;
-
-      let csvContent = "";
-      
-      // Headers
-      const headerRow = currentHeaders.map(h => `"${String(h).replace(/"/g, '""')}"`).join(",");
-      csvContent += headerRow + "\n";
-
-      // Currently visible rows (respects filter)
-      const visibleRows = Array.from(tableBody.querySelectorAll("tr"));
-      
-      visibleRows.forEach(row => {
-        const cells = Array.from(row.querySelectorAll("td"));
-        const rowText = cells.map(cell => {
-          let text = cell.innerText;
-          if (document.getElementById('csvSafe').checked && LBCsv.isFormulaLike(text)) text = "'" + text;
-          // Escape quotes and wrap in quotes for CSV safety
-          return `"${text.replace(/"/g, '""')}"`;
-        }).join(",");
-        csvContent += rowText + "\n";
-      });
-
-      const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-      const link = document.createElement("a");
-      link.href = URL.createObjectURL(blob);
-      link.download = `layerbit_data_export_${Date.now()}.csv`;
-      link.click();
+      if (!rows.length) return;
+      const o = tableOut(), safe = $('csvSafe').checked;
+      const text = [T.csvRow(o.head, safe)].concat(o.rows.map(r => T.csvRow(r.map(v => typeof v === 'number' ? fmt(v) : v), safe))).join('\n') + '\n';
+      save(new Blob([text], { type: "text/csv;charset=utf-8;" }), `layerbit_data_export_${Date.now()}.csv`);
+    }
+    function exportJSON() { if (doc) save(new Blob([LBLossless.stringify(doc, 2) + '\n'], { type: 'application/json' }), `layerbit_table_${Date.now()}.json`); }
+    function loadXlsx() { return window.XLSX ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = '../js/vendor/xlsx.full.min.js'; s.onload = res; s.onerror = () => rej(new Error('Could not load the spreadsheet writer.')); document.head.appendChild(s); }); }
+    function exportXlsx() {
+      if (!rows.length) return;
+      loadXlsx().then(() => {
+        const o = tableOut();
+        const cell = v => v === null || v === undefined ? null : isLN(v) ? (LBLossless.isUnsafe(v.value) ? v.value : Number(v.value)) : typeof v === 'boolean' || typeof v === 'number' ? v : typeof v === 'object' ? LBLossless.stringify(v) : String(v);
+        if (o.rows.length >= 1048576) { showError('An Excel sheet holds at most 1,048,575 rows; filter the table or export CSV.'); return; }
+        const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([o.head].concat(o.rows.map(r => r.map(cell)))), 'Data');
+        save(new Blob([XLSX.write(wb, { type: 'array', bookType: 'xlsx', compression: true })], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }), `layerbit_table_${Date.now()}.xlsx`);
+      }).catch(e => showError(e.message));
     }
 
     function showError(msg) {
@@ -418,22 +501,17 @@
       btnExport.disabled = true;
     }
 
-    function escapeHTML(str) {
-      return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-    }
-
-    // FAQ Accordion Logic
-    
     // Sample Loader Logic
     function loadSample(type) {
       const samples = {
         basic: '[\n  { "id": 1, "name": "Alice", "role": "Admin", "active": true },\n  { "id": 2, "name": "Bob", "role": "User", "active": false },\n  { "id": 3, "name": "Charlie", "role": "Moderator", "active": true }\n]',
         nested: '[\n  { \n    "id": 101, \n    "user": { "firstName": "Jane", "lastName": "Doe" }, \n    "location": { "city": "Dubai", "country": "UAE" },\n    "tags": ["premium", "verified"]\n  },\n  { \n    "id": 102, \n    "user": { "firstName": "John", "lastName": "Smith" }, \n    "location": { "city": "London", "country": "UK" },\n    "tags": ["standard"]\n  }\n]',
-        api: '{\n  "header": {\n    "status": 200,\n    "timestamp": "2026-08-05T08:00:00Z",\n    "environment": "production"\n  },\n  "body": [\n    { "metricId": "cpu_utilization", "value": 45.2, "threshold": 80 },\n    { "metricId": "memory_usage", "value": 72.8, "threshold": 90 },\n    { "metricId": "disk_io", "value": 15.1, "threshold": 50 }\n  ]\n}'
+        api: '{\n  "header": {\n    "status": 200,\n    "timestamp": "2026-08-05T08:00:00Z",\n    "environment": "production"\n  },\n  "body": [\n    { "metricId": "cpu_utilization", "value": 45.2, "threshold": 80 },\n    { "metricId": "memory_usage", "value": 72.8, "threshold": 90 },\n    { "metricId": "disk_io", "value": 15.1, "threshold": 50 }\n  ]\n}',
+        sales: '[\n  { "region": "UAE", "product": "Laptop", "units": 12, "revenue": 18600 },\n  { "region": "India", "product": "Laptop", "units": 30, "revenue": 33000 },\n  { "region": "UAE", "product": "Monitor", "units": 25, "revenue": 7500 },\n  { "region": "India", "product": "Monitor", "units": 40, "revenue": 9600 },\n  { "region": "UK", "product": "Laptop", "units": 8, "revenue": 11200 }\n]'
       };
-      
       jsonInput.value = samples[type];
       processJSON();
+      if (type === 'sales') { $('groupBy').value = 'region'; $('aggCol').value = 'revenue'; renderTable(); }
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   </script>
