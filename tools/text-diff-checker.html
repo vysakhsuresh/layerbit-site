@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="Compare two texts or code files side by side with every difference highlighted, diff JSON, CSV and zip folders, merge changes and apply patches. Runs locally." />
+  <meta name="description" content="Compare text, code, JSON, spreadsheets, folders, binary files and images side by side, merge changes, and export patches, CSV or Excel reports. Runs locally." />
   <title>Diff Checker: Compare Text & Files Online | Layerbit</title>
   <meta name="google-adsense-account" content="ca-pub-6072772587431629" />
   <link rel="preload" href="../fonts/space-grotesk-latin.woff2" as="font" type="font/woff2" crossorigin />
@@ -26,7 +26,7 @@
   <meta property="og:url" content="https://layerbit.co.in/tools/text-diff-checker.html" />
   <meta property="og:site_name" content="Layerbit" />
   <meta property="og:title" content="Diff Checker: Compare Text & Files Online | Layerbit" />
-  <meta property="og:description" content="Compare two texts or code files side by side with every difference highlighted, diff JSON, CSV and zip folders, merge changes and apply patches. Runs locally." />
+  <meta property="og:description" content="Compare text, code, JSON, spreadsheets, folders, binary files and images side by side, merge changes, and export patches, CSV or Excel reports. Runs locally." />
   <meta property="og:image" content="https://layerbit.co.in/images/og/tools-text-diff-checker.jpg" />
   <meta property="og:image:type" content="image/jpeg" />
   <meta property="og:image:width" content="1200" />
@@ -35,7 +35,7 @@
   <meta property="og:locale" content="en" />
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="Diff Checker: Compare Text & Files Online | Layerbit" />
-  <meta name="twitter:description" content="Compare two texts or code files side by side with every difference highlighted, diff JSON, CSV and zip folders, merge changes and apply patches. Runs locally." />
+  <meta name="twitter:description" content="Compare text, code, JSON, spreadsheets, folders, binary files and images side by side, merge changes, and export patches, CSV or Excel reports. Runs locally." />
   <meta name="twitter:image" content="https://layerbit.co.in/images/og/tools-text-diff-checker.jpg" />
   <meta name="twitter:image:alt" content="Diff Checker: Compare Text & Files Online" />
   <meta name="theme-color" content="#0a0c10" />
@@ -48,7 +48,7 @@
       "@id": "https://layerbit.co.in/tools/text-diff-checker.html#app",
       "name": "Text Diff Checker \u0026 Merge Tool",
       "url": "https://layerbit.co.in/tools/text-diff-checker.html",
-      "description": "Compare two texts or code files side by side with every difference highlighted, diff JSON, CSV and zip folders, merge changes and apply patches. Runs locally.",
+      "description": "Compare text, code, JSON, spreadsheets, folders, binary files and images side by side, merge changes, and export patches, CSV or Excel reports. Runs locally.",
       "applicationCategory": "DeveloperApplication",
       "operatingSystem": "Any (runs in the browser)",
       "browserRequirements": "Requires JavaScript",
@@ -68,10 +68,15 @@
         "Hunk-by-hunk merge with editable result",
         "Three-way merge with conflict resolution",
         "Structural JSON and YAML diff by path",
-        "Keyed CSV and Excel cell diff",
+        "Keyed CSV and Excel cell diff with up to three key columns",
+        "Every sheet of two Excel workbooks compared",
+        "Matching options: trim, case, empty = NULL, numbers by value, date formats, tolerance, ignored columns",
+        "Folder comparison by content, size or date, with an ignore list",
+        "Hex comparison of binary files read in slices",
+        "Image comparison: side by side, slider, onion skin and pixel difference",
         "Apply and export unified patches",
-        "Zip folder comparison",
-        "Share links and local history"
+        "CSV, Excel, JSON and HTML exports stating options and date",
+        "Share links and opt-in local history"
       ]
     },
     {
@@ -115,7 +120,7 @@
           "name": "What do \"Ignore whitespace\" and the other normalisation options do?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "They change how lines are compared, not how they are displayed. Ignore whitespace collapses every run of spaces and tabs to one space and trims the ends, so a reformatted file shows only logic changes. Ignore case compares lower-cased lines. Trim trailing ignores whitespace at the end of a line only. Ignore blank lines lets empty lines match anywhere. Line endings (CRLF vs LF) are always normalised. The original text is still shown in full in the result."
+            "text": "They change how lines are compared, not how they are displayed. Ignore whitespace collapses every run of spaces and tabs to one space and trims the ends, so a reformatted file shows only logic changes. Ignore case compares lower-cased lines. Trim trailing ignores whitespace at the end of a line only. Ignore blank lines leaves empty lines out of the comparison. Lines are always matched regardless of CRLF or LF endings, but a difference in line endings, or a missing newline at the end of a file, is still reported above the result. The original text is shown in full."
           }
         },
         {
@@ -147,7 +152,15 @@
           "name": "How does the spreadsheet comparison match rows?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "By a key column you choose from the header row, such as an id, SKU or email. Rows with the same key are compared cell by cell regardless of where they appear, so a re-sorted or filtered export shows only real changes. Rows whose key exists on one side only are reported as added or removed, and columns that appear or disappear are listed separately. If the file has no natural key, match by row order instead."
+            "text": "By up to three key columns you choose from the header row, such as an id, or a region plus a SKU. Rows with the same key are compared cell by cell regardless of where they appear, so a re-sorted or filtered export shows only real changes. Rows whose key exists on one side only are reported as added or removed, duplicate keys are flagged, and columns that appear or disappear are listed separately. Matching options can trim spaces, ignore case, treat empty and NULL alike, compare numbers by value, read dates in different formats as the same date, allow an absolute or percentage tolerance, and leave chosen columns out. If the file has no natural key, match by row order instead."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Does it compare every sheet of an Excel workbook?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes. Open an .xlsx, .xls or .ods file on each side and every sheet is compared: sheets with the same name are paired, a sheet that was renamed is paired by its content and marked as possibly renamed, and sheets found on one side only are listed. A summary shows the changes per sheet, with a tab for each. You can compare the values as Excel displays them (with number and date formats applied) or the raw stored values, and the whole comparison exports to one .xlsx."
           }
         },
         {
@@ -160,10 +173,10 @@
         },
         {
           "@type": "Question",
-          "name": "Is anything uploaded when I compare files or zip folders?",
+          "name": "Is anything uploaded when I compare files or folders?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "No. Files are read with the browser's FileReader, zip archives are unpacked with the browser's own DecompressionStream, and every algorithm on this page is JavaScript running in the tab. The privacy indicator in the header counts any network request the page makes; it stays at zero while you work. Closing the tab discards everything unless you chose to save a run to the local history."
+            "text": "No. Files and folders are read by the browser itself, zip archives are unpacked with the browser's own DecompressionStream, folder contents are hashed with the browser's Web Crypto, and every algorithm on this page is JavaScript running in the tab. The privacy indicator in the header counts any network request the page makes; it stays at zero while you work. Nothing is stored either: the Save to history switch next to Compare is off by default. If you turn it on, each comparison you run with the Compare button is kept in this browser's own storage so you can reopen it later; edits made while typing are never saved, and the history can be cleared at any time. Apart from that, only two settings are remembered: the folder ignore list and whether the history switch is on. Closing the tab otherwise discards everything."
           }
         },
         {
@@ -171,7 +184,31 @@
           "name": "How large a file can it handle?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "Tens of thousands of lines compare in well under a second; the limit is rendering, not diffing. For files over about 20,000 lines, set Context to 3 or 5 lines so only the changed regions are rendered, and prefer word over character highlighting. The structural and table modes handle documents of several megabytes. Share links are capped at roughly 60 KB of compressed input; larger comparisons can be exported as a patch or HTML report instead."
+            "text": "Large text files are compared in a background worker with a progress bar and a Cancel button, so the page never freezes, and the result is drawn as a virtual list: only the rows on screen exist in the page, so a 100,000-line comparison scrolls like a short one. When two large files are too different to line up within a time limit, the page says so and shows what they have in common, with an option to align them anyway. The hex view reads files in slices, so two files of hundreds of megabytes compare without being loaded into memory, and folders of tens of thousands of files are hashed in the background. Images larger than 40 megapixels are compared on a scaled copy, and the page says so. Share links are capped at roughly 60 KB of compressed input; larger comparisons can be exported instead."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How does the binary (hex) comparison work?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Both files are read in 4 MB slices and compared byte for byte at the same offsets; no alignment is attempted, because in a binary file an inserted byte usually means everything after it moved. The result gives both sizes, the number of bytes that differ, the number of separate differing ranges and the first differing offset, and warns when the sizes differ (the extra bytes count as different). The view shows offset, hex and printable text for both sides with the differing bytes highlighted; Next and Previous step through the ranges, and Go to offset accepts hex (0x1F00) or decimal (7936). The ranges export as CSV."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How does the image comparison decide what changed?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Both images are decoded by the browser and drawn at the same position, top-left aligned. A pixel counts as changed when its red, green, blue or alpha value differs by more than the tolerance, so a tolerance of a few levels hides JPEG re-compression noise while still catching real edits; fully transparent pixels count as equal whatever their colour. If the dimensions differ, the page warns you and counts the area only one image covers as changed. SVGs are compared as rendered, and their source can be compared as text with one click. The format is read from the file's bytes, so a PNG saved with a .jpg name is reported as a PNG."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What can I export, and what does a report include?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Text comparisons export as a unified .patch and an HTML report. Tables export as CSV, with an original and a modified column for every column, and as an .xlsx with changed cells yellow, added rows green and removed rows red. JSON and YAML changes export by path as CSV or JSON, folders as CSV or HTML, byte comparisons as a CSV of the differing ranges, and images as an HTML report with both images and the difference image, or the difference image alone as a PNG. Every report starts with the names of what was compared, the options used and the date it was made."
           }
         }
       ]
@@ -603,7 +640,7 @@
   <main id="main" class="page-main">
   <div class="hero">
     <h1>Text Diff Checker &amp; Merge Tool</h1>
-    <p>Compare two texts or code files side by side with every change highlighted, or compare JSON documents, spreadsheets and whole zip folders; merge changes hunk by hunk; resolve three-way merges; apply and export unified patches. Every byte stays in your browser.</p>
+    <p>Compare two texts or code files side by side with every change highlighted, or compare JSON documents, every sheet of two spreadsheets, whole folders, binary files byte by byte and images pixel by pixel; merge changes hunk by hunk; resolve three-way merges; apply patches; export the result as a patch, CSV, Excel workbook or HTML report. Every byte stays in your browser.</p>
   </div>
 
   <div class="mode-tabs" id="modeTabs" role="tablist" aria-label="Comparison mode">
@@ -925,8 +962,8 @@
 
   <div class="docs-container">
     <div class="info-panel">
-      <h2><i data-lucide="info"></i> Six comparisons, one page, nothing uploaded</h2>
-      <p>Most diff sites do one thing: a line diff of two pasted texts. Real comparison work is messier than that — a merge that needs a third version, a JSON file whose keys were reordered, a spreadsheet export where one cell changed in ten thousand, a patch file someone emailed, two copies of a project folder. This page handles each of those with the right algorithm instead of forcing everything through a line diff.</p>
+      <h2><i data-lucide="info"></i> Eight comparisons, one page, nothing uploaded</h2>
+      <p>Most diff sites do one thing: a line diff of two pasted texts. Real comparison work is messier than that — a merge that needs a third version, a JSON file whose keys were reordered, a spreadsheet export where one cell changed in ten thousand, a patch file someone emailed, two copies of a project folder, two firmware builds, two screenshots. This page handles each of those with the right algorithm instead of forcing everything through a line diff.</p>
       <div class="use-cases-grid">
         <div class="use-case-card">
           <h3><i data-lucide="file-diff"></i> Text &amp; code</h3>
@@ -942,15 +979,23 @@
         </div>
         <div class="use-case-card">
           <h3><i data-lucide="table"></i> CSV / spreadsheet cells</h3>
-          <p>Rows are matched by a key column you choose, so a re-sorted export does not show as "everything changed". The result is the list of rows added, removed, and changed, with the exact cells that differ. Excel files are read locally too.</p>
+          <p>Rows are matched by up to three key columns you choose, so a re-sorted export does not show as "everything changed". The result is the list of rows added, removed, and changed, with the exact cells that differ and a count per column. Optional rules ignore spacing, case, number formatting (1.0 = 1), date formats and small numeric differences. Every sheet of two Excel workbooks is compared, and the result exports to CSV or to an .xlsx with the changed cells highlighted.</p>
         </div>
         <div class="use-case-card">
           <h3><i data-lucide="file-plus-2"></i> Apply a patch</h3>
           <p>Paste a unified diff and the file it was made against; the patch is applied with context matching (and a fuzz fallback if line numbers drifted) and the result is shown as a diff so you can see exactly what it did before you trust it.</p>
         </div>
         <div class="use-case-card">
-          <h3><i data-lucide="folder-git-2"></i> Folders (.zip)</h3>
-          <p>Drop two zip archives — two releases, a backup and a live copy — and get the file-level picture: added, removed, identical, and modified files, each modified file one click from a full text diff. The archives are unpacked in memory in your browser.</p>
+          <h3><i data-lucide="folder-git-2"></i> Folders</h3>
+          <p>Choose or drop two folders, or two zip archives — two releases, a backup and a live copy — and get a tree of added, removed, identical and modified files, compared by content (SHA-256), size or modified date, with an ignore list for folders such as <code>node_modules</code>. Each file is one click from the comparison that suits it: text, table, structure, bytes or image.</p>
+        </div>
+        <div class="use-case-card">
+          <h3><i data-lucide="binary"></i> Hex / binary</h3>
+          <p>Any two files, byte by byte: offset, hex and text columns for both sides with the differing bytes highlighted, the first differing offset and the number of bytes that differ, next and previous difference, and go to offset. Files are read in slices, so files hundreds of megabytes in size work.</p>
+        </div>
+        <div class="use-case-card">
+          <h3><i data-lucide="image"></i> Images</h3>
+          <p>PNG, JPG, GIF, WebP, BMP and SVG side by side, with a slider, onion skin, or a difference image that marks every changed pixel. A tolerance hides re-compression noise, and the result gives the share of pixels that changed alongside the format, dimensions and file size of both images.</p>
         </div>
       </div>
     </div>
@@ -1051,19 +1096,35 @@
         </div>
         <div class="faq-item">
           <button class="faq-question">How does the spreadsheet comparison match rows? <i data-lucide="chevron-down"></i></button>
-          <div class="faq-answer"><p>By a key column you choose from the header row, such as an id, SKU or email. Rows with the same key are compared cell by cell regardless of where they appear, so a re-sorted or filtered export shows only real changes. Rows whose key exists on one side only are reported as added or removed, and columns that appear or disappear are listed separately. If the file has no natural key, match by row order instead.</p></div>
+          <div class="faq-answer"><p>By up to three key columns you choose from the header row, such as an id, or a region plus a SKU. Rows with the same key are compared cell by cell regardless of where they appear, so a re-sorted or filtered export shows only real changes. Rows whose key exists on one side only are reported as added or removed, duplicate keys are flagged, and columns that appear or disappear are listed separately. Matching options can trim spaces, ignore case, treat empty and NULL alike, compare numbers by value, read dates in different formats as the same date, allow an absolute or percentage tolerance, and leave chosen columns out. If the file has no natural key, match by row order instead.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">Does it compare every sheet of an Excel workbook? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>Yes. Open an .xlsx, .xls or .ods file on each side and every sheet is compared: sheets with the same name are paired, a sheet that was renamed is paired by its content and marked as possibly renamed, and sheets found on one side only are listed. A summary shows the changes per sheet, with a tab for each. You can compare the values as Excel displays them (with number and date formats applied) or the raw stored values, and the whole comparison exports to one .xlsx.</p></div>
         </div>
         <div class="faq-item">
           <button class="faq-question">Is the patch output compatible with git apply and patch? <i data-lucide="chevron-down"></i></button>
           <div class="faq-answer"><p>Yes. The export is a standard unified diff with --- and +++ headers and @@ hunk ranges, which git apply, patch -p0 and every code review tool accept. The Apply a patch mode reads the same format back, including patches produced by git diff, and uses context matching with a fuzz fallback when line numbers have drifted.</p></div>
         </div>
         <div class="faq-item">
-          <button class="faq-question">Is anything uploaded when I compare files or zip folders? <i data-lucide="chevron-down"></i></button>
-          <div class="faq-answer"><p>No. Files are read with the browser's FileReader, zip archives are unpacked with the browser's own DecompressionStream, and every algorithm on this page is JavaScript running in the tab. The privacy indicator in the header counts any network request the page makes; it stays at zero while you work. Nothing is stored either: the <strong>Save to history</strong> switch next to Compare is off by default. If you turn it on, each comparison you run with the Compare button is kept in this browser's own storage so you can reopen it later; edits made while typing are never saved, and the history can be cleared at any time. Closing the tab otherwise discards everything.</p></div>
+          <button class="faq-question">Is anything uploaded when I compare files or folders? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>No. Files and folders are read by the browser itself, zip archives are unpacked with the browser's own DecompressionStream, folder contents are hashed with the browser's Web Crypto, and every algorithm on this page is JavaScript running in the tab. The privacy indicator in the header counts any network request the page makes; it stays at zero while you work. Nothing is stored either: the <strong>Save to history</strong> switch next to Compare is off by default. If you turn it on, each comparison you run with the Compare button is kept in this browser's own storage so you can reopen it later; edits made while typing are never saved, and the history can be cleared at any time. Apart from that, only two settings are remembered: the folder ignore list and whether the history switch is on. Closing the tab otherwise discards everything.</p></div>
         </div>
         <div class="faq-item">
           <button class="faq-question">How large a file can it handle? <i data-lucide="chevron-down"></i></button>
-          <div class="faq-answer"><p>Tens of thousands of lines compare in well under a second; the limit is rendering, not diffing. For files over about 20,000 lines, set Context to 3 or 5 lines so only the changed regions are rendered, and prefer word over character highlighting. The structural and table modes handle documents of several megabytes. Share links are capped at roughly 60 KB of compressed input; larger comparisons can be exported as a patch or HTML report instead.</p></div>
+          <div class="faq-answer"><p>Large text files are compared in a background worker with a progress bar and a Cancel button, so the page never freezes, and the result is drawn as a virtual list: only the rows on screen exist in the page, so a 100,000-line comparison scrolls like a short one. When two large files are too different to line up within a time limit, the page says so and shows what they have in common, with an option to align them anyway. The hex view reads files in slices, so two files of hundreds of megabytes compare without being loaded into memory, and folders of tens of thousands of files are hashed in the background. Images larger than 40 megapixels are compared on a scaled copy, and the page says so. Share links are capped at roughly 60 KB of compressed input; larger comparisons can be exported instead.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">How does the binary (hex) comparison work? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>Both files are read in 4 MB slices and compared byte for byte at the same offsets; no alignment is attempted, because in a binary file an inserted byte usually means everything after it moved. The result gives both sizes, the number of bytes that differ, the number of separate differing ranges and the first differing offset, and warns when the sizes differ (the extra bytes count as different). The view shows offset, hex and printable text for both sides with the differing bytes highlighted; Next and Previous step through the ranges, and Go to offset accepts hex (0x1F00) or decimal (7936). The ranges export as CSV.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">How does the image comparison decide what changed? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>Both images are decoded by the browser and drawn at the same position, top-left aligned. A pixel counts as changed when its red, green, blue or alpha value differs by more than the tolerance, so a tolerance of a few levels hides JPEG re-compression noise while still catching real edits; fully transparent pixels count as equal whatever their colour. If the dimensions differ, the page warns you and counts the area only one image covers as changed. SVGs are compared as rendered, and their source can be compared as text with one click. The format is read from the file's bytes, so a PNG saved with a .jpg name is reported as a PNG.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">What can I export, and what does a report include? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>Text comparisons export as a unified .patch and an HTML report. Tables export as CSV, with an original and a modified column for every column, and as an .xlsx with changed cells yellow, added rows green and removed rows red. JSON and YAML changes export by path as CSV or JSON, folders as CSV or HTML, byte comparisons as a CSV of the differing ranges, and images as an HTML report with both images and the difference image, or the difference image alone as a PNG. Every report starts with the names of what was compared, the options used and the date it was made.</p></div>
         </div>
       </div>
     </div>
@@ -1110,6 +1171,7 @@
     <div class="info-panel">
       <h2><i data-lucide="git-merge"></i> Deployment Changelog</h2>
       <ul class="changelog-list">
+        <li><span class="changelog-tag">v4.0.0</span> Folder comparison of real folders (choose, drop or zip) with a tree, content, size or date matching and an ignore list; every sheet of two workbooks compared; up to three key columns and matching options for tables (trim, case, empty = NULL, numbers by value, date formats, tolerance, ignored columns) with filters, sorting and per-column counts; a hex view for binary files of any size; image comparison with slider, onion skin and pixel difference; CSV, .xlsx and JSON exports that state the options and date. Fixed 20 bugs, including: files in Windows-1252 and UTF-16 are decoded instead of garbled, JSON numbers beyond 2^53 compare exactly, duplicate keys are reported, large or unrelated files no longer freeze the page, line-ending and final-newline differences are reported, invisible characters are labelled, and history is saved only when you ask for it.</li>
         <li><span class="changelog-tag">v3.0.0</span> Rebuilt as a merge tool: hunk-by-hunk merge with a live editable result, three-way merge with conflict resolution, structural JSON/YAML diff, keyed CSV and Excel cell diff, apply-a-patch mode, zip folder comparison, syntax highlighting for 14 languages, context folding, unified patch and HTML report export, show-whitespace, ignore-case/trailing/blank options, keyboard navigation and share links.</li>
         <li><span class="changelog-tag">v2.3.0</span> Added a highlight granularity control for changed lines: word (default), character, or none.</li>
         <li><span class="changelog-tag">v2.2.0</span> Added file upload and drag-and-drop to both panes.</li>
