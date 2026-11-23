@@ -2128,6 +2128,107 @@ def _(t):
     expect("inverted" in t.text("contrastMeta"), "inversion warning missing")
 
 
+QR_LOGO_PNG = "iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAIAAAD8GO2jAAAAKklEQVR4nGN4FiVCU8QwasGoBaMWjFowasGoBaMWjFowasGoBaMWDBULADeGUEwy9mfaAAAAAElFTkSuQmCC"
+
+
+@case("qr-barcode", "typical", "2.12: dot and eye shapes, a centre logo and a frame with text; the code still reads back")
+def _(t):
+    t.select("typeSelect", "qr")
+    t.set("dataInput", "https://layerbit.co.in/tools/qr-barcode.html")
+    t.select("dotStyle", "dots"); t.select("eyeStyle", "circle")
+    t.page.set_input_files("#logoFile", [{"name": "logo.png", "mimeType": "image/png", "buffer": base64.b64decode(QR_LOGO_PNG)}])
+    t.wait_for("document.getElementById('ecSelect').value === 'H'", 3000)
+    t.select("frameStyle", "banner"); t.set("frameText", "SCAN ME")
+    t.call("generateCode()")
+    t.wait_for("/reads back/i.test(document.getElementById('scanCheck').textContent)", 5000)
+    c = t.call("(() => { const c = document.querySelector('#outputArea canvas'); return [c.width, c.height]; })()")
+    expect(c[1] > c[0], f"the frame should add height: {c}")
+    svg = t.call("lastSvg")
+    expect("<circle" in svg and "<image" in svg and "SCAN ME" in svg, svg[:300])
+    expect("https://layerbit.co.in/tools/qr-barcode.html" in t.text("scanCheck"), t.text("scanCheck"))
+
+
+@case("qr-barcode", "typical", "2.12: PDF and EPS export are vector files, for QR codes and barcodes")
+def _(t):
+    import re as _re
+    t.select("typeSelect", "qr"); t.set("dataInput", "https://layerbit.co.in"); t.call("generateCode()"); t.wait(300)
+    with t.page.expect_download() as dl:
+        t.click("#btnDownloadPdf")
+    pdf = open(dl.value.path(), "rb").read()
+    expect(pdf.startswith(b"%PDF-1.4") and pdf.rstrip().endswith(b"%%EOF"), pdf[:40])
+    off = int(_re.search(rb"startxref\s+(\d+)", pdf).group(1))
+    expect(pdf[off:off + 4] == b"xref", "startxref does not point at the xref table")
+    expect(b" re" in pdf or b" c\n" in pdf or b" l\n" in pdf, "no vector drawing operators")
+    with t.page.expect_download() as dl:
+        t.click("#btnDownloadEps")
+    eps = open(dl.value.path(), "rb").read().decode("latin-1")
+    expect(eps.startswith("%!PS-Adobe-3.0 EPSF-3.0") and "%%BoundingBox: 0 0 " in eps and "fill" in eps, eps[:200])
+    t.select("typeSelect", "EAN13"); t.set("dataInput", "590123412345"); t.call("generateCode()"); t.wait(300)
+    with t.page.expect_download() as dl:
+        t.click("#btnDownloadPdf")
+    pdf = open(dl.value.path(), "rb").read()
+    expect(pdf.startswith(b"%PDF-1.4") and b"(901234) Tj" in pdf and b"(123457) Tj" in pdf, "barcode PDF should carry the digits as text")
+
+
+@case("qr-barcode", "maximal", "2.12: bulk from CSV: 600 codes (past the 500 cap of paid plans) zipped under budget")
+def _(t):
+    import zipfile, time as _time
+    rows = "sku,name\n" + "\n".join(f"A{i:04d},Item {i}" for i in range(1, 601))
+    t.select("typeSelect", "qr")
+    t.page.set_input_files("#bulkFile", [{"name": "items.csv", "mimeType": "text/csv", "buffer": rows.encode()}])
+    t.wait_for("document.getElementById('bulkNameColumn').options.length >= 2", 3000)
+    t.set("bulkTemplate", "https://shop.example/p/{sku}")
+    t.select("bulkNameColumn", "sku"); t.select("bulkFormat", "svg")
+    t0 = _time.time()
+    with t.page.expect_download(timeout=20000) as dl:
+        t.click("#btnBulk")
+    z = zipfile.ZipFile(dl.value.path())
+    svgs = [n for n in z.namelist() if n.endswith(".svg")]
+    eq(len(svgs), 600, "one file per row")
+    expect("A0001.svg" in svgs and "A0600.svg" in svgs, svgs[:3])
+    expect(_time.time() - t0 < 10, f"bulk took {_time.time() - t0:.1f}s")
+    expect("600" in t.text("bulkStatus"), t.text("bulkStatus"))
+
+
+@case("qr-barcode", "typical", "2.12: calendar event and SEPA (EPC) payment payloads, with IBAN checked")
+def _(t):
+    t.select("typeSelect", "qr")
+    t.select("payloadType", "event")
+    t.set("pf-title", "Launch; party"); t.set("pf-start", "2026-12-01T18:30"); t.set("pf-end", "2026-12-01T21:00"); t.set("pf-location", "Dubai, Marina")
+    eq(t.val("dataInput"), "BEGIN:VEVENT\nSUMMARY:Launch\; party\nDTSTART:20261201T183000\nDTEND:20261201T210000\nLOCATION:Dubai\\, Marina\nEND:VEVENT", "vevent")
+    t.select("payloadType", "epc")
+    t.set("pf-name", "Red Cross Belgium"); t.set("pf-iban", "BE72 0000 0000 1616"); t.set("pf-bic", "BPOTBEB1"); t.set("pf-amount", "10.5"); t.set("pf-text", "Donation")
+    eq(t.val("dataInput"), "BCD\n002\n1\nSCT\nBPOTBEB1\nRed Cross Belgium\nBE72000000001616\nEUR10.50\n\n\nDonation", "epc")
+    t.set("pf-iban", "BE72 0000 0000 1617")
+    expect("IBAN" in t.text("payloadMeta") and "check" in t.text("payloadMeta").lower(), t.text("payloadMeta"))
+
+
+@case("qr-barcode", "typical", "2.12: Data Matrix, PDF417, Aztec and GS1-128 render; a bad GS1 string is explained")
+def _(t):
+    for kind, data in [("DATAMATRIX", "LB-2026-000123"), ("PDF417", "Layerbit PDF417 test 1234567890"), ("AZTEC", "https://layerbit.co.in"), ("GS1_128", "(01)09521234543213(17)261231(10)ABC123")]:
+        t.select("typeSelect", kind); t.set("dataInput", data); t.call("generateCode()")
+        t.wait_for("document.querySelector('#outputArea svg') && !document.getElementById('btnDownload').disabled", 8000)
+        expect(t.call("[...document.querySelectorAll('#outputArea svg path')].reduce((n, p) => n + (p.getAttribute('d') || '').length, 0)") > 200, kind + " did not draw")
+    t.set("dataInput", "(01)123"); t.call("generateCode()"); t.wait(300)
+    expect("GS1" in t.text("outputArea") and t.call("document.getElementById('btnDownload').disabled"), t.text("outputArea"))
+
+
+@case("qr-barcode", "edge", "switching the payload type and back keeps the plain text you typed")
+def _(t):
+    t.select("typeSelect", "qr"); t.select("payloadType", "text")
+    t.set("dataInput", "https://layerbit.co.in/keep-me")
+    t.select("payloadType", "upi"); t.select("payloadType", "text")
+    eq(t.val("dataInput"), "https://layerbit.co.in/keep-me", "plain text restored")
+    t.wait(400)
+    expect(t.count("#outputArea canvas") == 1, "the code should be drawn again")
+
+
+@case("qr-barcode", "minimal", "2.12: the page says codes are static: never tracked, never expire")
+def _(t):
+    body = t.call("document.body.innerText")
+    expect("never expire" in body and "server" in body, "static-code note missing")
+
+
 @case("qr-barcode", "maximal", "payload beyond QR capacity reports an error, not an exception")
 def _(t):
     t.select("typeSelect", "qr")

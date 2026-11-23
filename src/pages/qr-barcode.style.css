@@ -479,3 +479,20 @@
     #dataInput[readonly] { opacity: 0.85; cursor: default; }
     @media (max-width: 600px) { .qr-options { grid-template-columns: 1fr; } }
     .control-pane textarea { resize: vertical; min-height: 58px; line-height: 1.4; }
+
+    /* style, scan check, bulk */
+    .qr-style { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .logo-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+    .logo-row select, .logo-row input[type="text"] { flex: 1; min-width: 90px; }
+    .btn-mini { display: inline-flex; align-items: center; gap: 4px; padding: 7px 12px; border-radius: 8px; border: 1px solid var(--card-border); background: rgba(255,255,255,0.05); color: var(--text-main); cursor: pointer; font: inherit; font-size: 0.85em; }
+    .btn-mini:disabled { opacity: 0.45; cursor: not-allowed; }
+    .scan-check { font-size: 0.85em; color: var(--text-muted); min-height: 1.2em; margin: 8px 0 0; overflow-wrap: anywhere; }
+    .scan-check.ok { color: #22c55e; }
+    .scan-check.warn { color: #f59e0b; }
+    #outputArea canvas, #outputArea .code-svg { max-width: 100%; height: auto; }
+    #outputArea .code-svg { width: 320px; }
+    .bulk-pane { max-width: 1200px; margin: 0 auto 30px; padding: 22px 24px; border: 1px solid var(--card-border); border-radius: 16px; background: var(--card-bg); }
+    .bulk-pane h2 { font-size: 1.2em; margin: 0 0 6px; display: flex; align-items: center; gap: 8px; }
+    .bulk-pane p { color: var(--text-muted); margin: 0 0 14px; }
+    .bulk-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; align-items: end; }
+    @media (max-width: 800px) { .bulk-grid, .qr-style { grid-template-columns: 1fr; } }
