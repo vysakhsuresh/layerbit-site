@@ -4248,6 +4248,144 @@ def _(t):
     eq(t.val("mdInput"), "**bold** me", "bold wrap")
 
 
+@case("markdown-preview", "typical", "2.11: Mermaid renders locally to SVG, with no request to any other host")
+def _(t):
+    hosts = []
+    t.page.on("request", lambda r: hosts.append(r.url.split("/")[2]) if r.url.startswith("http") else None)
+    t.set("mdInput", "# Flow\n\n```mermaid\ngraph TD\n  A[Start] --> B{Ok?}\n  B -->|yes| C[<img src=x onerror=window.__pw=1>Done]\n```\n")
+    t.wait_for("document.querySelector('#mdPreview .mermaid svg')", 15000)
+    expect(t.count("#mdPreview .mermaid svg .node") >= 3, t.html("mdPreview")[:400])
+    expect(not t.call("window.__pw"), "mermaid label ran a script")
+    local = t.call("location.host")
+    expect(all(h == local for h in hosts), f"requests left the page: {sorted(set(hosts))}")
+    expect("GitHub's servers" not in t.call("document.body.innerText"), "the FAQ still says Mermaid needs GitHub")
+
+
+@case("markdown-preview", "typical", "2.11: KaTeX math, footnotes and syntax-highlighted code")
+def _(t):
+    t.set("mdInput", "Energy $E = mc^2$ and price $5 and $6.\n\n$$\n\\int_0^1 x^2\\,dx = \\frac{1}{3}\n$$\n\nA claim.[^src]\n\n[^src]: The source, page 4.\n\n```js\nconst answer = 42; // ok\n```\n")
+    t.wait_for("document.querySelector('#mdPreview .katex-display') && document.querySelector('#mdPreview .hljs-keyword')", 10000)
+    eq(t.count("#mdPreview .katex"), 2, "inline + display math (dollar amounts left alone)")
+    expect("$5 and $6" in t.text("mdPreview"), t.text("mdPreview")[:300])
+    expect(t.count("#mdPreview section.footnotes li") == 1 and t.count("#mdPreview sup a[href^='#footnote']") >= 1, t.html("mdPreview")[-600:])
+    expect(t.call("document.querySelector('#mdPreview .hljs-keyword').textContent") == "const", "keyword not highlighted")
+
+
+@case("markdown-preview", "typical", "2.11: exports to DOCX and ePub are valid packages; PDF prints the themed page")
+def _(t):
+    import zipfile, xml.dom.minidom as mdom
+    t.set("mdInput", "# Report\n\nSome **bold**, _italic_ and a [link](https://example.com).\n\n## Data\n\n| A | B |\n|---|---|\n| 1 | 2 |\n\n- one\n- two\n\n1. first\n\n> quoted\n\n```\ncode line\n```\n\nMath $x^2$.\n")
+    t.wait(300)
+    with t.page.expect_download() as dl:
+        t.click("#btnDocx")
+    z = zipfile.ZipFile(dl.value.path())
+    names = z.namelist()
+    for n in ["[Content_Types].xml", "_rels/.rels", "word/document.xml", "word/styles.xml", "word/numbering.xml", "word/_rels/document.xml.rels"]:
+        expect(n in names, f"{n} missing: {names}")
+    doc = z.read("word/document.xml").decode()
+    mdom.parseString(doc)
+    expect('w:val="Heading1"' in doc and "<w:tbl>" in doc and "<w:b/>" in doc and "<w:hyperlink" in doc and "<w:numPr>" in doc, doc[:600])
+    expect("example.com" in z.read("word/_rels/document.xml.rels").decode(), "hyperlink target")
+    with t.page.expect_download() as dl:
+        t.click("#btnEpub")
+    z = zipfile.ZipFile(dl.value.path())
+    eq(z.infolist()[0].filename, "mimetype", "mimetype first")
+    eq(z.infolist()[0].compress_type, zipfile.ZIP_STORED, "mimetype stored")
+    eq(z.read("mimetype"), b"application/epub+zip", "mimetype")
+    expect("META-INF/container.xml" in z.namelist(), z.namelist())
+    for n in z.namelist():
+        if n.endswith((".xhtml", ".opf", ".xml")):
+            mdom.parseString(z.read(n))
+    opf = [n for n in z.namelist() if n.endswith(".opf")][0]
+    expect("<dc:title>Report</dc:title>" in z.read(opf).decode(), z.read(opf).decode()[:400])
+    t.select("mdTheme", "academic")
+    t.call("() => { window.lbPrintHook = d => { window.__printed = d.documentElement.outerHTML; }; }")
+    t.click("#btnPdf")
+    t.wait_for("window.__printed", 5000)
+    out = t.call("window.__printed")
+    expect("Report" in out and "@page" in out and "Georgia" in out and "katex" in out, out[:500])
+
+
+@case("markdown-preview", "typical", "2.11: themes, focus mode and typewriter scrolling")
+def _(t):
+    for th in ["github", "academic", "sepia", "night"]:
+        t.select("mdTheme", th)
+        eq(t.call("document.getElementById('mdPreview').dataset.theme"), th, "theme")
+    bg = t.call("getComputedStyle(document.getElementById('mdPreview')).backgroundColor")
+    t.select("mdTheme", "sepia")
+    expect(t.call("getComputedStyle(document.getElementById('mdPreview')).backgroundColor") != bg, "theme changed no colour")
+    t.click("#btnFocus")
+    expect(t.call("document.body.classList.contains('md-focus')"), "focus mode off")
+    expect(not t.visible(".hero") and t.visible("#mdInput"), "focus mode should show only the editor")
+    t.page.keyboard.press("Escape")
+    expect(not t.call("document.body.classList.contains('md-focus')"), "Esc should leave focus mode")
+    t.call("document.getElementById('optTypewriter').click()")
+    t.set("mdInput", "\n".join(f"line {i}" for i in range(300)))
+    t.call("() => { const e = document.getElementById('mdInput'); e.focus(); const p = e.value.indexOf('line 200'); e.setSelectionRange(p, p); e.dispatchEvent(new Event('keyup')); }")
+    t.wait(150)
+    r = t.call("() => { const e = document.getElementById('mdInput'), lh = parseFloat(getComputedStyle(e).lineHeight); return (200 * lh + parseFloat(getComputedStyle(e).paddingTop) - e.scrollTop) / e.clientHeight; }")
+    expect(0.3 < r < 0.7, f"caret line should sit mid-editor, at {r:.2f} of the height")
+
+
+@case("markdown-preview", "typical", "2.11: a pasted image is kept, previewed and embedded in the exports")
+def _(t):
+    import zipfile
+    t.set("mdInput", "# Pic\n\n")
+    png = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg=="
+    t.page.evaluate("""b64 => { const e = document.getElementById('mdInput'); e.focus(); e.setSelectionRange(e.value.length, e.value.length);
+        const bin = Uint8Array.from(atob(b64), c => c.charCodeAt(0)), dt = new DataTransfer();
+        dt.items.add(new File([bin], 'shot.png', { type: 'image/png' }));
+        e.dispatchEvent(new ClipboardEvent('paste', { clipboardData: dt, bubbles: true, cancelable: true })); }""", png)
+    t.wait_for("document.querySelector('#mdPreview img')", 5000)
+    expect("](images/pasted-1.png)" in t.val("mdInput"), t.val("mdInput"))
+    expect(t.call("document.querySelector('#mdPreview img').src").startswith("blob:"), "preview should show the pasted image")
+    with t.page.expect_download() as dl:
+        t.click("#btnDlHtml")
+    expect("data:image/png;base64," in open(dl.value.path(), encoding="utf-8").read(), "HTML export should embed the image")
+    with t.page.expect_download() as dl:
+        t.click("#btnDlMd")
+    expect(dl.value.suggested_filename.endswith(".zip"), dl.value.suggested_filename)
+    expect("images/pasted-1.png" in zipfile.ZipFile(dl.value.path()).namelist(), "zip should hold the image")
+    with t.page.expect_download() as dl:
+        t.click("#btnDocx")
+    z = zipfile.ZipFile(dl.value.path())
+    expect(any(n.startswith("word/media/") for n in z.namelist()) and "<w:drawing>" in z.read("word/document.xml").decode(), "DOCX should embed the image")
+
+
+@case("markdown-preview", "typical", "2.11: several documents; autosave to the browser's private files only when switched on")
+def _(t):
+    t.call("localStorage.removeItem('layerbit-md-autosave')")
+    t.call("navigator.storage.getDirectory().then(d => d.removeEntry('layerbit-markdown', { recursive: true })).catch(() => {})"); t.wait(200)
+    t.page.reload(); t.wait(300)
+    expect(not t.call("document.getElementById('optAutosave').checked"), "autosave must be off by default")
+    t.set("mdInput", "# First doc\n\nalpha")
+    t.click("#btnNewDoc"); t.wait(100)
+    eq(t.val("mdInput"), "", "a new document starts empty")
+    t.set("mdInput", "# Second doc\n\nbeta"); t.wait(100)
+    eq(t.count("#docSelect option"), 2, "two documents")
+    t.select("docSelect", t.call("document.getElementById('docSelect').options[0].value")); t.wait(100)
+    expect("alpha" in t.val("mdInput"), t.val("mdInput"))
+    t.wait(800)
+    eq(t.call("navigator.storage.getDirectory().then(async d => { try { await d.getDirectoryHandle('layerbit-markdown'); return true; } catch (e) { return false; } })"), False, "nothing written while autosave is off")
+    t.call("document.getElementById('optAutosave').click()")
+    saved = "navigator.storage.getDirectory().then(async d => { try { const x = await d.getDirectoryHandle('layerbit-markdown'); return JSON.parse(await (await (await x.getFileHandle('index.json')).getFile()).text()).docs.length === 2; } catch (e) { return false; } })"
+    t.wait_for(saved, 5000)
+    t.page.reload(); t.wait(300)
+    t.wait_for("document.querySelectorAll('#docSelect option').length === 2", 5000)
+    texts = t.call("[...document.getElementById('docSelect').options].map(o => o.textContent).join('|')")
+    expect("First doc" in texts and "Second doc" in texts, texts)
+    # a tab closed during the first save leaves an empty index: the documents are recovered, not overwritten
+    t.wait_for(saved, 5000)
+    t.call("navigator.storage.getDirectory().then(async d => { const x = await d.getDirectoryHandle('layerbit-markdown'); const w = await (await x.getFileHandle('index.json')).createWritable(); await w.write(''); await w.close(); })")
+    t.page.reload(); t.wait(300)
+    t.wait_for("document.querySelectorAll('#docSelect option').length === 2", 5000)
+    texts = t.call("[...document.getElementById('docSelect').options].map(o => o.textContent).join('|')")
+    expect("First doc" in texts and "Second doc" in texts, "not recovered from the document files: " + texts)
+    t.call("document.getElementById('optAutosave').click()")
+    t.wait_for("navigator.storage.getDirectory().then(async d => { try { await d.getDirectoryHandle('layerbit-markdown'); return false; } catch (e) { return true; } })", 5000)
+    t.call("localStorage.removeItem('layerbit-md-autosave')")
+
+
 @case("markdown-preview", "maximal", "large README (2,000 sections) renders under budget")
 def _(t):
     import time as _time

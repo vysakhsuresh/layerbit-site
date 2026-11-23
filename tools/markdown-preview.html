@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="Write GitHub-flavored Markdown with a live, sanitized preview, table of contents and word count, then copy clean HTML or download a styled HTML page." />
+  <meta name="description" content="Markdown editor with Mermaid diagrams, KaTeX math, footnotes, themes and several documents; export HTML, PDF, Word or ePub. Runs in your browser." />
   <title>Markdown Editor & Live Preview (Markdown to HTML) | Layerbit</title>
   <meta name="google-adsense-account" content="ca-pub-6072772587431629" />
   <link rel="preload" href="../fonts/space-grotesk-latin.woff2" as="font" type="font/woff2" crossorigin />
@@ -26,7 +26,7 @@
   <meta property="og:url" content="https://layerbit.co.in/tools/markdown-preview.html" />
   <meta property="og:site_name" content="Layerbit" />
   <meta property="og:title" content="Markdown Editor & Live Preview (Markdown to HTML) | Layerbit" />
-  <meta property="og:description" content="Write GitHub-flavored Markdown with a live, sanitized preview, table of contents and word count, then copy clean HTML or download a styled HTML page." />
+  <meta property="og:description" content="Markdown editor with Mermaid diagrams, KaTeX math, footnotes, themes and several documents; export HTML, PDF, Word or ePub. Runs in your browser." />
   <meta property="og:image" content="https://layerbit.co.in/images/og/tools-markdown-preview.jpg" />
   <meta property="og:image:type" content="image/jpeg" />
   <meta property="og:image:width" content="1200" />
@@ -35,7 +35,7 @@
   <meta property="og:locale" content="en" />
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="Markdown Editor & Live Preview (Markdown to HTML) | Layerbit" />
-  <meta name="twitter:description" content="Write GitHub-flavored Markdown with a live, sanitized preview, table of contents and word count, then copy clean HTML or download a styled HTML page." />
+  <meta name="twitter:description" content="Markdown editor with Mermaid diagrams, KaTeX math, footnotes, themes and several documents; export HTML, PDF, Word or ePub. Runs in your browser." />
   <meta name="twitter:image" content="https://layerbit.co.in/images/og/tools-markdown-preview.jpg" />
   <meta name="twitter:image:alt" content="Markdown Editor & Live Preview (Markdown to HTML)" />
   <meta name="theme-color" content="#0a0c10" />
@@ -48,7 +48,7 @@
       "@id": "https://layerbit.co.in/tools/markdown-preview.html#app",
       "name": "Markdown Editor \u0026 Live Preview to HTML",
       "url": "https://layerbit.co.in/tools/markdown-preview.html",
-      "description": "Write GitHub-flavored Markdown with a live, sanitized preview, table of contents and word count, then copy clean HTML or download a styled HTML page.",
+      "description": "Markdown editor with Mermaid diagrams, KaTeX math, footnotes, themes and several documents; export HTML, PDF, Word or ePub. Runs in your browser.",
       "applicationCategory": "DeveloperApplication",
       "operatingSystem": "Any (runs in the browser)",
       "browserRequirements": "Requires JavaScript",
@@ -62,16 +62,15 @@
         "@id": "https://layerbit.co.in/#organization"
       },
       "featureList": [
-        "GitHub-flavored Markdown: tables, task lists, strikethrough, fenced code, autolinks",
-        "Live preview sanitized with DOMPurify",
-        "Formatting toolbar with Ctrl+B, Ctrl+I and Ctrl+K shortcuts",
-        "GitHub-style heading anchors and a clickable table of contents",
-        "Proportional scroll sync",
-        "Split, editor, preview and HTML views",
-        "Copy the HTML fragment or download a self-contained styled HTML page with light and dark themes",
-        "Open and download .md files, drag and drop",
-        "Word count and reading time",
-        "Runs entirely in the browser"
+        "GitHub-flavored Markdown with a sanitized live preview",
+        "Mermaid diagrams",
+        "KaTeX math",
+        "Footnotes",
+        "Syntax-highlighted code",
+        "Export to HTML, PDF, Word and ePub",
+        "Themes, focus and typewriter modes",
+        "Pasted images",
+        "Several documents with opt-in autosave"
       ]
     },
     {
@@ -93,7 +92,7 @@
         {
           "@type": "ListItem",
           "position": 3,
-          "name": "Markdown Editor \u0026 Preview",
+          "name": "Markdown Editor \u0026 Live Preview",
           "item": "https://layerbit.co.in/tools/markdown-preview.html"
         }
       ]
@@ -123,7 +122,15 @@
           "name": "Does it support GitHub-flavored Markdown?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "Yes. Tables, task lists, strikethrough, fenced code blocks with a language tag and automatic linking of bare URLs all render as they do on GitHub, and headings get the same anchor ids GitHub generates. GitHub-specific extensions that need its servers, such as @mentions, issue references, emoji shortcodes and Mermaid diagrams, are shown as plain text."
+            "text": "Yes. Tables, task lists, strikethrough, fenced code blocks with a language tag and automatic linking of bare URLs all render as they do on GitHub, and headings get the same anchor ids GitHub generates. Mermaid diagrams, KaTeX math ($…$ and $$…$$) and footnotes ([^1]) render here too, all in your browser. GitHub-specific features that need its servers, such as @mentions, issue references and emoji shortcodes, are shown as plain text."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How do I export Markdown to PDF, Word or ePub?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "PDF opens your browser's print dialog with the document in the chosen theme; pick Save as PDF. The text stays selectable and links keep working. Word .docx writes headings as Word heading styles, so the navigation pane and a table of contents work, plus lists, tables, links, code, quotes and images; diagrams go in as pictures and math as its TeX source. ePub builds an e-book with a table of contents from your headings, math as MathML and diagrams as SVG. All three are made in the page without any upload."
           }
         },
         {
@@ -147,7 +154,7 @@
           "name": "Is my document saved or uploaded?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "It is not uploaded: parsing and rendering happen in your browser and there are no network requests. The draft is not stored either unless you choose Share link from the header, which places it in the link's #fragment so it reaches only the person you send it to. Use Download .md to keep a copy."
+            "text": "It is not uploaded: parsing, rendering, diagrams, math and every export happen in your browser and there are no network requests. Documents are not stored unless you tick Autosave in this browser, which keeps them in the browser's private file storage (the Origin Private File System) on this device only; untick it and the saved copies are deleted. Pasted images stay in the page and go into your exports. Share link from the header places the text in the link's #fragment so it reaches only the person you send it to."
           }
         }
       ]
@@ -158,7 +165,7 @@
 
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6072772587431629" crossorigin="anonymous"></script>
 
-  <script src="../js/vendor/lucide.min.js?v=418a2e0db0" async></script>
+  <script src="../js/vendor/lucide.min.js?v=3228cee26a" async></script>
 
   <link rel="icon" href="../favicon.ico" sizes="16x16 32x32 48x48" />
   <link rel="icon" href="../favicon-48.png" type="image/png" sizes="48x48" />
@@ -223,6 +230,39 @@
       .md-editor { min-height: 400px; }
     }
 
+    /* documents, themes, focus, diagrams, math */
+    .doc-bar { max-width: 1400px; margin: 0 auto 12px; display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+    .doc-field { display: flex; align-items: center; gap: 6px; font-size: 0.8em; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.03em; }
+    .doc-field select { background: rgba(0,0,0,0.3); color: var(--text-main); border: 1px solid var(--card-border); border-radius: 8px; padding: 6px 8px; font: inherit; text-transform: none; letter-spacing: 0; max-width: 220px; }
+    .doc-spacer { flex: 1; }
+    .md-body[data-theme]:not([data-theme="layerbit"]) { --text-main: var(--md-fg); --text-muted: var(--md-muted); --card-border: var(--md-line); --accent-main: var(--md-link); background: var(--md-bg); color: var(--md-fg); font-family: var(--md-font); min-height: 100%; }
+    .md-body[data-theme]:not([data-theme="layerbit"]) code { background: var(--md-code); }
+    .md-body[data-theme]:not([data-theme="layerbit"]) pre { background: var(--md-code); border-color: var(--md-line); }
+    .md-body[data-theme]:not([data-theme="layerbit"]) th, .md-body[data-theme]:not([data-theme="layerbit"]) td { border-color: var(--md-line); }
+    .md-body[data-theme]:not([data-theme="layerbit"]) th, .md-body[data-theme]:not([data-theme="layerbit"]) tr:nth-child(2n) td { background: var(--md-code); }
+    .md-body[data-theme]:not([data-theme="layerbit"]) blockquote { background: transparent; border-left-color: var(--md-line); }
+    .md-body .mermaid { text-align: center; margin: 1em 0; overflow-x: auto; }
+    .md-body .mermaid:not(:has(svg)) { white-space: pre; font-family: 'Fira Code', monospace; font-size: 0.8em; color: var(--text-muted); text-align: left; }
+    .md-body .mermaid-error { color: #f87171; }
+    .md-body .math-display { text-align: center; margin: 1em 0; overflow-x: auto; overflow-y: hidden; }
+    .md-body .footnotes { font-size: 0.88em; color: var(--text-muted); border-top: 1px solid var(--card-border); margin-top: 2em; padding-top: 0.5em; }
+    .md-body .footnotes h2 { font-size: 1em; border: 0; }
+    .md-body .hljs-keyword, .md-body .hljs-selector-tag, .md-body .hljs-built_in { color: #ff7b72; }
+    .md-body .hljs-string, .md-body .hljs-attr { color: #a5d6ff; }
+    .md-body .hljs-number, .md-body .hljs-literal { color: #79c0ff; }
+    .md-body .hljs-comment { color: #8b949e; font-style: italic; }
+    .md-body .hljs-title, .md-body .hljs-function { color: #d2a8ff; }
+    .md-body[data-theme="github"] .hljs-keyword, .md-body[data-theme="academic"] .hljs-keyword, .md-body[data-theme="sepia"] .hljs-keyword { color: #cf222e; }
+    .md-body[data-theme="github"] .hljs-string, .md-body[data-theme="academic"] .hljs-string, .md-body[data-theme="sepia"] .hljs-string { color: #0a3069; }
+    .md-body[data-theme="github"] .hljs-number, .md-body[data-theme="academic"] .hljs-number, .md-body[data-theme="sepia"] .hljs-number { color: #0550ae; }
+    .md-body[data-theme="github"] .hljs-title, .md-body[data-theme="academic"] .hljs-title, .md-body[data-theme="sepia"] .hljs-title { color: #8250df; }
+    .md-editor.typewriter { padding-bottom: 50vh; }
+    body.md-focus { overflow: hidden; }
+    body.md-focus .edit-pane { position: fixed; inset: 0; z-index: 1000; max-height: none; min-height: 0; border-radius: 0; background: var(--bg-base, #0a0c10); }
+    body.md-focus .edit-pane .md-editor { max-width: 760px; width: 100%; margin: 0 auto; font-size: 1.05em; line-height: 1.75; }
+    body.md-focus .hero, body.md-focus header, body.md-focus footer, body.md-focus .doc-bar, body.md-focus .view-switch, body.md-focus .action-bar, body.md-focus .docs-container, body.md-focus .preview-pane, body.md-focus .html-pane, body.md-focus .fab { visibility: hidden; }
+    @media (max-width: 600px) { .doc-spacer { display: none; } .doc-field select { max-width: 160px; } }
+
   </style>
 </head>
 <body>
@@ -250,14 +290,14 @@
     <span class="sep">/</span>
     <a href="../#tools">Developer tools</a>
     <span class="sep">/</span>
-    <span aria-current="page">Markdown Editor &amp; Preview</span>
+    <span aria-current="page">Markdown Editor &amp; Live Preview</span>
   </nav>
 
   <main id="main" class="page-main">
   <div class="hero">
     <div class="hero-badge"><i data-lucide="shield-check"></i> Runs entirely in your browser</div>
     <h1>Markdown Editor &amp; Live Preview to HTML</h1>
-    <p>Write GitHub-flavored Markdown with a formatting toolbar and see a live, sanitized preview with tables, task lists and a clickable table of contents, then copy clean HTML or download a styled, self-contained HTML page.</p>
+    <p>Write GitHub-flavored Markdown with Mermaid diagrams, KaTeX math, footnotes and highlighted code in a live, sanitized preview. Keep several documents, paste images, pick a theme, write in focus mode, and export to HTML, PDF, Word or ePub, all without an upload.</p>
   </div>
 
   <div class="seg view-switch" role="tablist" aria-label="View">
@@ -265,6 +305,27 @@
     <button type="button" class="seg-btn" data-view="edit" role="tab" aria-selected="false">Editor</button>
     <button type="button" class="seg-btn" data-view="preview" role="tab" aria-selected="false">Preview</button>
     <button type="button" class="seg-btn" data-view="html" role="tab" aria-selected="false">HTML</button>
+  </div>
+
+  <div class="doc-bar">
+    <label class="doc-field">Document
+      <select id="docSelect" aria-label="Open document"></select>
+    </label>
+    <button class="btn" type="button" id="btnNewDoc" title="Start another document; the others stay in the list"><i data-lucide="file-plus"></i> New</button>
+    <button class="btn" type="button" id="btnDeleteDoc" title="Remove this document from the list"><i data-lucide="trash-2"></i></button>
+    <label class="check" title="Keep every document in this browser's private file storage (OPFS), so they are here next time. Off by default; turning it off deletes the saved copies."><input type="checkbox" id="optAutosave" autocomplete="off"> Autosave in this browser</label>
+    <span class="doc-spacer"></span>
+    <label class="doc-field">Theme
+      <select id="mdTheme" aria-label="Preview and export theme" autocomplete="off">
+        <option value="layerbit">Layerbit</option>
+        <option value="github">GitHub</option>
+        <option value="academic">Academic</option>
+        <option value="sepia">Sepia</option>
+        <option value="night">Night</option>
+      </select>
+    </label>
+    <label class="check" title="Keep the line you are typing in the middle of the editor"><input type="checkbox" id="optTypewriter" autocomplete="off"> Typewriter</label>
+    <button class="btn" type="button" id="btnFocus" title="Only the editor, full screen (Esc to leave)"><i data-lucide="maximize-2"></i> Focus</button>
   </div>
 
   <div class="ide-container md-grid" id="mdGrid" data-view="split">
@@ -284,6 +345,9 @@
           <button class="tb" type="button" data-md="quote" title="Quote"><i data-lucide="quote"></i></button>
           <button class="tb" type="button" data-md="table" title="Table"><i data-lucide="table"></i></button>
           <button class="tb" type="button" data-md="hr" title="Divider"><i data-lucide="minus"></i></button>
+          <button class="tb" type="button" data-md="math" title="Math ($x^2$, KaTeX)"><i data-lucide="sigma"></i></button>
+          <button class="tb" type="button" data-md="mermaid" title="Mermaid diagram"><i data-lucide="workflow"></i></button>
+          <button class="tb" type="button" data-md="footnote" title="Footnote"><i data-lucide="superscript"></i></button>
         </div>
         <div class="btn-group">
           <input type="file" id="mdFile" accept=".md,.markdown,.txt,text/markdown,text/plain" hidden>
@@ -322,6 +386,9 @@
     <button class="btn" type="button" id="btnDlHtml"><i data-lucide="download"></i> Download .html page</button>
     <button class="btn" type="button" id="btnDlMd"><i data-lucide="file-down"></i> Download .md</button>
     <button class="btn" type="button" id="btnCopyMd"><i data-lucide="clipboard-copy"></i> Copy Markdown</button>
+    <button class="btn" type="button" id="btnPdf" title="Opens the print dialog with the themed page; choose Save as PDF"><i data-lucide="printer"></i> PDF</button>
+    <button class="btn" type="button" id="btnDocx" title="Word document with headings, lists, tables, links and images"><i data-lucide="file-text"></i> Word .docx</button>
+    <button class="btn" type="button" id="btnEpub" title="ePub 3 e-book with a table of contents"><i data-lucide="book"></i> ePub</button>
   </div>
 
   <div class="docs-container">
@@ -347,6 +414,9 @@
       <h2><i data-lucide="shield"></i> Why the preview is sanitized</h2>
       <p>Markdown allows raw HTML, so a Markdown document can contain a <code>&lt;script&gt;</code> tag, an <code>onerror</code> attribute on an image or a <code>javascript:</code> link. Rendering untrusted Markdown straight into a page is a classic cross-site scripting hole. This editor converts Markdown with the <em>marked</em> parser and then passes the HTML through <em>DOMPurify</em>, which keeps safe formatting and strips scripts, event handlers and dangerous URLs before anything reaches the page. The copied and downloaded HTML is the same sanitized output, so it is safe to paste into a CMS or an email template. If you build your own Markdown pipeline, sanitize on output in the same way; escaping the input is not enough because Markdown's own syntax produces HTML.</p>
 
+      <h2><i data-lucide="sigma"></i> Diagrams, math and footnotes</h2>
+      <p>A fenced block tagged <code>mermaid</code> becomes a diagram: flowcharts, sequence, class, state, entity-relationship, Gantt and pie charts all render in the page with the Mermaid library, the same syntax GitHub uses. Labels are treated as text, so a diagram cannot run script. Math between single dollars (<code>$E = mc^2$</code>) is set inline and between double dollars on its own line, with KaTeX; a dollar followed by a space or a digit is left alone, so prices such as $5 stay prices. <code>[^1]</code> marks a footnote and <code>[^1]: text</code> defines it; the notes are numbered and gathered at the end with links back. Fenced code with a language tag is coloured for 36 common languages.</p>
+
       <h2><i data-lucide="file-code-2"></i> Using the exported HTML</h2>
       <p><strong>Copy HTML</strong> gives you the body fragment: headings with stable <code>id</code> attributes for linking, paragraphs, lists, tables and code blocks, with no styles or scripts, ready for a CMS, a blog engine, an email builder or a documentation template. <strong>Download .html page</strong> wraps that fragment in a complete, self-contained document with a readable typographic style, a light and dark theme that follows the reader's system setting, and no external requests, which makes it suitable for sending as an attachment, archiving or printing to PDF from the browser. The heading ids follow the same rule GitHub uses (lowercase, spaces to hyphens, punctuation removed), so links like <code>#getting-started</code> written for a README keep working.</p>
     </div>
@@ -364,7 +434,11 @@
         </div>
         <div class="faq-item">
           <button class="faq-question">Does it support GitHub-flavored Markdown? <i data-lucide="chevron-down"></i></button>
-          <div class="faq-answer"><p>Yes. Tables, task lists, strikethrough, fenced code blocks with a language tag and automatic linking of bare URLs all render as they do on GitHub, and headings get the same anchor ids GitHub generates. GitHub-specific extensions that need its servers, such as @mentions, issue references, emoji shortcodes and Mermaid diagrams, are shown as plain text.</p></div>
+          <div class="faq-answer"><p>Yes. Tables, task lists, strikethrough, fenced code blocks with a language tag and automatic linking of bare URLs all render as they do on GitHub, and headings get the same anchor ids GitHub generates. Mermaid diagrams, KaTeX math (<code>$…$</code> and <code>$$…$$</code>) and footnotes (<code>[^1]</code>) render here too, all in your browser. GitHub-specific features that need its servers, such as @mentions, issue references and emoji shortcodes, are shown as plain text.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">How do I export Markdown to PDF, Word or ePub? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>PDF opens your browser's print dialog with the document in the chosen theme; pick Save as PDF. The text stays selectable and links keep working. Word .docx writes headings as Word heading styles, so the navigation pane and a table of contents work, plus lists, tables, links, code, quotes and images; diagrams go in as pictures and math as its TeX source. ePub builds an e-book with a table of contents from your headings, math as MathML and diagrams as SVG. All three are made in the page without any upload.</p></div>
         </div>
         <div class="faq-item">
           <button class="faq-question">Why does my line break disappear in the preview? <i data-lucide="chevron-down"></i></button>
@@ -376,7 +450,7 @@
         </div>
         <div class="faq-item">
           <button class="faq-question">Is my document saved or uploaded? <i data-lucide="chevron-down"></i></button>
-          <div class="faq-answer"><p>It is not uploaded: parsing and rendering happen in your browser and there are no network requests. The draft is not stored either unless you choose Share link from the header, which places it in the link's #fragment so it reaches only the person you send it to. Use Download .md to keep a copy.</p></div>
+          <div class="faq-answer"><p>It is not uploaded: parsing, rendering, diagrams, math and every export happen in your browser and there are no network requests. Documents are not stored unless you tick Autosave in this browser, which keeps them in the browser's private file storage (the Origin Private File System) on this device only; untick it and the saved copies are deleted. Pasted images stay in the page and go into your exports. Share link from the header places the text in the link's #fragment so it reaches only the person you send it to.</p></div>
         </div>
       </div>
     </div>
@@ -407,6 +481,7 @@
     <div class="info-panel">
       <h2><i data-lucide="git-commit"></i> Changelog</h2>
       <ul class="changelog-list">
+        <li><span class="changelog-tag">v1.2.0</span> Mermaid diagrams rendered in the page (the FAQ wrongly said they needed GitHub), KaTeX math, footnotes and highlighted code. Export to PDF (print dialog), Word .docx and ePub 3. Five themes, focus and typewriter modes, pasted images kept with the document, several documents with opt-in autosave to the browser's private file storage.</li>
         <li><span class="changelog-tag">v1.1.0</span> Dropping a Markdown file onto the page works again (it failed with an error), and files are decoded from their bytes with the encoding detected and changeable.</li>
         <li><span class="changelog-tag">v1.0.0</span> Initial release: GitHub-flavored Markdown with marked 18, DOMPurify sanitizing, formatting toolbar and shortcuts, GitHub-style heading anchors and table of contents, proportional scroll sync, split/editor/preview/HTML views, .md open and download, HTML fragment copy and a self-contained styled HTML export.</li>
       </ul>
@@ -521,7 +596,10 @@
 
   <script src="../js/shared.js?v=e2441a1728"></script>
   <script src="../js/vendor/marked.umd.js?v=99634095d9"></script>
+  <script src="../js/vendor/marked-footnote.umd.js?v=7c39e283a4"></script>
   <script src="../js/vendor/purify.min.js?v=c2b2880796"></script>
+  <script src="../js/engines/zip.js?v=1c95003bb0"></script>
+  <script src="../js/engines/mdexport.js?v=4d5708332c"></script>
   <script>
     const $ = id => document.getElementById(id);
     const icons = () => { if (window.lucide) lucide.createIcons(); };
@@ -561,10 +639,59 @@ atlas init --region me-central-1
 - [ ] Publish the migration guide
 - [ ] ~~Support Windows XP~~
 
+## Diagram and math
+
+\`\`\`mermaid
+graph LR
+  Phone[Field app] -->|offline edits| Queue[(Local queue)]
+  Queue -->|reconnect| Sync{Merge}
+  Sync --> Server[Region server]
+\`\`\`
+
+Merges are ordered by a hybrid logical clock, so for two edits $a$ and $b$ the later one wins when $t_a < t_b$.[^hlc]
+
+$$
+\\text{lag} = \\frac{\\sum_{i=1}^{n} (t_{\\text{server}} - t_i)}{n}
+$$
+
+[^hlc]: Kulkarni et al., *Logical Physical Clocks*, 2014.
+
 ---
 
 Raw HTML is allowed but sanitized: <a href="javascript:alert('nope')" onclick="alert('nope')">this link's script</a> is stripped before display.
 `;
+
+    // ---------- libraries loaded on first use (all vendored, no CDN) ----------
+    const loaded = {};
+    function loadScript(src) { return loaded[src] || (loaded[src] = new Promise((res, rej) => { const s = document.createElement('script'); s.src = src; s.onload = res; s.onerror = () => { delete loaded[src]; rej(new Error('Could not load ' + src.split('/').pop())); }; document.head.appendChild(s); })); }
+    function loadCss(href) { if (loaded[href]) return; loaded[href] = true; const l = document.createElement('link'); l.rel = 'stylesheet'; l.href = href; document.head.appendChild(l); }
+    const KATEX_CSS = '../js/vendor/katex/katex.min.css';
+    const katexReady = () => { loadCss(KATEX_CSS); return loadScript('../js/vendor/katex/katex.min.js'); };
+    const hljsReady = () => loadScript('../js/vendor/highlight.min.js');
+    const mermaidReady = () => loadScript('../js/vendor/mermaid.min.js');
+
+    // ---------- Markdown: GFM + footnotes + math ----------
+    // $…$ follows Pandoc: no space just inside the dollars and no digit right after the
+    // closing one, so "$5 and $6" stays text. Also $$…$$, \(…\) and \[…\].
+    const mathExt = {
+      extensions: [
+        { name: 'mathBlock', level: 'block', start: src => { const m = src.match(/^ {0,3}(\$\$|\\\[)/m); return m ? m.index : undefined; },
+          tokenizer(src) { const m = /^ {0,3}(?:\$\$([\s\S]+?)\$\$|\\\[([\s\S]+?)\\\])[ \t]*(?:\n|$)/.exec(src); if (m) return { type: 'mathBlock', raw: m[0], text: (m[1] || m[2]).trim() }; },
+          renderer: t => `<div class="math-display" data-tex="${esc(t.text)}">${esc(t.text)}</div>\n` },
+        { name: 'mathInline', level: 'inline', start: src => { const m = src.match(/\$|\\\(/); return m ? m.index : undefined; },
+          tokenizer(src) {
+            let m = /^\$\$([^$]+?)\$\$/.exec(src) || /^\\\(([\s\S]+?)\\\)/.exec(src);
+            if (m) return { type: 'mathInline', raw: m[0], text: m[1].trim(), display: m[0][1] === '$' };
+            m = /^\$(?!\s)((?:\\\$|[^$\n])+?)(?<!\s)\$(?!\d)/.exec(src);
+            if (m) return { type: 'mathInline', raw: m[0], text: m[1] };
+          },
+          renderer: t => `<span class="math-inline${t.display ? ' math-display-inline' : ''}" data-tex="${esc(t.text)}">${esc(t.text)}</span>` }
+      ]
+    };
+    const parsers = {};
+    function mdParser(breaks) {
+      return parsers[breaks] || (parsers[breaks] = new marked.Marked({ gfm: true, breaks }).use(markedFootnote({ description: 'Footnotes', refMarkers: false })).use(mathExt));
+    }
 
     function slug(text, used) {
       let s = text.toLowerCase().trim().replace(/[^\p{L}\p{N}\s-]/gu, '').replace(/\s/g, '-');
@@ -572,24 +699,96 @@ Raw HTML is allowed but sanitized: <a href="javascript:alert('nope')" onclick="a
       while (used.has(out)) out = s + '-' + n++;
       used.add(out); return out;
     }
+
+    // ---------- pasted images (kept in memory per document; in OPFS with autosave) ----------
+    let images = {};   // path -> {blob, url, type, width, height}
+    function addImage(path, blob) {
+      const url = URL.createObjectURL(blob), rec = { blob, url, type: blob.type || 'image/png', width: 0, height: 0 };
+      images[path] = rec;
+      const im = new Image(); im.onload = () => { rec.width = im.naturalWidth; rec.height = im.naturalHeight; }; im.src = url;
+      return rec;
+    }
+    ed.addEventListener('paste', e => {
+      const files = [...(e.clipboardData && e.clipboardData.files || [])].filter(f => /^image\//.test(f.type));
+      if (!files.length) return;
+      e.preventDefault();
+      const snippets = files.map(f => {
+        let n = 1; while (images['images/pasted-' + n + '.' + extOf(f.type)]) n++;
+        const path = 'images/pasted-' + n + '.' + extOf(f.type); addImage(path, f);
+        return `![pasted image](${path})`;
+      });
+      ed.setRangeText(snippets.join('\n'), ed.selectionStart, ed.selectionEnd, 'end');
+      ed.dispatchEvent(new Event('input'));
+      Layerbit.toast(files.length === 1 ? 'Image pasted; it stays on this device and goes into your exports' : files.length + ' images pasted');
+    });
+    const extOf = type => ({ 'image/jpeg': 'jpg', 'image/gif': 'gif', 'image/webp': 'webp', 'image/svg+xml': 'svg' }[type] || 'png');
+
+    // ---------- render ----------
+    let renderSeq = 0, enhanced = Promise.resolve();
+    const mermaidCache = new Map();
     function render() {
-      const src = ed.value;
-      const raw = marked.parse(src, { gfm: true, breaks: $('optBreaks').checked });
+      const src = ed.value, seq = ++renderSeq;
+      const raw = mdParser($('optBreaks').checked).parse(src);
       const tpl = document.createElement('template');
       tpl.innerHTML = DOMPurify.sanitize(raw, { ADD_ATTR: ['target'] });
       const used = new Set(); toc = [];
-      tpl.content.querySelectorAll('h1,h2,h3,h4,h5,h6').forEach(h => { h.id = slug(h.textContent, used); toc.push({ level: +h.tagName[1], text: h.textContent, id: h.id }); });
+      tpl.content.querySelectorAll('h1,h2,h3,h4,h5,h6').forEach(h => { if (h.closest('.footnotes')) { h.id = h.id || 'footnote-label'; return; } h.id = slug(h.textContent, used); toc.push({ level: +h.tagName[1], text: h.textContent, id: h.id }); });
       tpl.content.querySelectorAll('a[href^="http"]').forEach(a => { a.setAttribute('rel', 'noopener noreferrer'); });
-      html = tpl.innerHTML.trim();
+      tpl.content.querySelectorAll('pre > code.language-mermaid').forEach(c => { const d = document.createElement('div'); d.className = 'mermaid'; d.dataset.src = c.textContent; const cached = mermaidCache.get(themeName() + '\n' + c.textContent); if (cached) d.innerHTML = cached; else d.textContent = c.textContent; c.parentNode.replaceWith(d); });
+      tpl.content.querySelectorAll('img[src]').forEach(im => { const p = im.getAttribute('src'); if (images[p]) { im.dataset.lbSrc = p; im.src = images[p].url; } });
       const pv = $('mdPreview');
-      pv.innerHTML = html || '<p class="empty">The formatted preview appears here.</p>';
+      pv.innerHTML = '';
+      pv.appendChild(tpl.content);
+      if (!pv.firstChild) pv.innerHTML = '<p class="empty">The formatted preview appears here.</p>';
       pv.querySelectorAll('a[href^="http"]').forEach(a => a.target = '_blank');
+      html = cleanHtml();
       $('htmlOut').textContent = html;
       $('toc').hidden = toc.length < 2;
       $('toc').innerHTML = '<div class="toc-title">Contents</div>' + toc.map(t => `<a href="#${esc(t.id)}" data-toc="${esc(t.id)}" class="l${t.level}">${esc(t.text)}</a>`).join('');
       const words = (src.replace(/```[\s\S]*?```/g, '').match(/[\p{L}\p{N}][\p{L}\p{N}'’-]*/gu) || []).length;
       $('mdStats').innerHTML = `<span><strong>${words.toLocaleString()}</strong> words</span><span><strong>${Math.max(words ? 1 : 0, Math.round(words / 238))}</strong> min read</span><span><strong>${toc.length}</strong> headings</span><span><strong>${src.split('\n').length.toLocaleString()}</strong> lines</span>`;
+      enhanced = enhance(seq).catch(err => Layerbit.toast(err.message, 'warn'));
+      docChanged();
     }
+    // math, code colours and diagrams are filled in after the text appears
+    async function enhance(seq) {
+      const pv = $('mdPreview'), jobs = [];
+      if (pv.querySelector('[data-tex]')) jobs.push(katexReady().then(() => {
+        if (seq !== renderSeq) return;
+        pv.querySelectorAll('[data-tex]').forEach(el => { try { katex.render(el.dataset.tex, el, { displayMode: el.classList.contains('math-display') || el.classList.contains('math-display-inline'), throwOnError: false, trust: false, output: 'htmlAndMathml' }); } catch (e) { el.textContent = el.dataset.tex; } });
+      }));
+      if (pv.querySelector('pre code[class*="language-"]')) jobs.push(hljsReady().then(() => {
+        if (seq !== renderSeq) return;
+        pv.querySelectorAll('pre code[class*="language-"]').forEach(c => { const lang = (/language-([\w+#-]+)/.exec(c.className) || [])[1]; if (lang && hljs.getLanguage(lang)) { c.innerHTML = hljs.highlight(c.textContent, { language: lang, ignoreIllegals: true }).value; c.classList.add('hljs'); } });
+      }));
+      const charts = [...pv.querySelectorAll('.mermaid')].filter(d => !d.querySelector('svg'));
+      if (charts.length) jobs.push(mermaidReady().then(async () => {
+        const theme = themeName();
+        mermaid.initialize({ startOnLoad: false, securityLevel: 'strict', theme: theme === 'night' || theme === 'layerbit' ? 'dark' : 'default', htmlLabels: false, flowchart: { htmlLabels: false }, fontFamily: 'Arial, sans-serif' });
+        for (const d of charts) {
+          if (seq !== renderSeq) return;
+          const key = theme + '\n' + d.dataset.src;
+          try {
+            let svg = mermaidCache.get(key);
+            if (!svg) { svg = DOMPurify.sanitize((await mermaid.render('lbmm' + Math.random().toString(36).slice(2), d.dataset.src)).svg, { USE_PROFILES: { svg: true, svgFilters: true }, ADD_TAGS: ['style'] }); mermaidCache.set(key, svg); }
+            d.innerHTML = svg; d.classList.remove('mermaid-error');
+          } catch (e) { d.classList.add('mermaid-error'); d.textContent = 'Diagram error: ' + String(e && e.message || e).split('\n')[0]; }
+        }
+        document.querySelectorAll('body > [id^="dlbmm"], body > [id^="lbmm"]').forEach(n => n.remove());
+      }));
+      await Promise.all(jobs);
+      if (seq === renderSeq) { html = cleanHtml(); $('htmlOut').textContent = html; }
+    }
+    // the preview's HTML as it should leave the page: image paths restored, math as MathML
+    function cleanClone(opts = {}) {
+      const c = $('mdPreview').cloneNode(true);
+      c.querySelectorAll('img[data-lb-src]').forEach(im => { im.setAttribute('src', im.dataset.lbSrc); im.removeAttribute('data-lb-src'); });
+      c.querySelectorAll('p.empty').forEach(p => p.remove());
+      if (opts.mathml) c.querySelectorAll('.katex').forEach(k => { const m = k.querySelector('math'); if (m) k.replaceWith(m); });
+      return c;
+    }
+    function cleanHtml() { return $('mdPreview').querySelector('p.empty') ? '' : cleanClone({ mathml: true }).innerHTML.trim(); }
+
     let t = null;
     ed.addEventListener('input', () => { clearTimeout(t); t = setTimeout(render, ed.value.length > 100000 ? 200 : 30); });
     $('optBreaks').addEventListener('change', render);
@@ -607,7 +806,6 @@ Raw HTML is allowed but sanitized: <a href="javascript:alert('nope')" onclick="a
     function wrap(before, after, placeholder) {
       const s = ed.selectionStart, e = ed.selectionEnd, sel = ed.value.slice(s, e) || placeholder;
       ed.setRangeText(before + sel + after, s, e, 'end');
-      if (!ed.value.slice(s, e + before.length + after.length).includes(placeholder) || e > s) {}
       ed.setSelectionRange(s + before.length, s + before.length + sel.length);
       ed.focus(); ed.dispatchEvent(new Event('input'));
     }
@@ -627,7 +825,8 @@ Raw HTML is allowed but sanitized: <a href="javascript:alert('nope')" onclick="a
       ul: () => linePrefix(l => '- ' + l.replace(/^(\s*)([-*+]|\d+\.)\s+/, '$1')), ol: () => { let n = 1; linePrefix(l => (n++) + '. ' + l.replace(/^(\s*)([-*+]|\d+\.)\s+/, '$1')); },
       task: () => linePrefix(l => '- [ ] ' + l.replace(/^(\s*)([-*+]|\d+\.)\s+(\[[ x]\]\s+)?/, '$1')), quote: () => linePrefix(l => '> ' + l),
       codeblock: () => wrap('```\n', '\n```', 'code'), hr: () => block('---'),
-      table: () => block('| Column | Column |\n| --- | --- |\n| Cell | Cell |')
+      table: () => block('| Column | Column |\n| --- | --- |\n| Cell | Cell |'),
+      math: () => wrap('$', '$', 'x^2'), mermaid: () => block('```mermaid\ngraph LR\n  A[Start] --> B[Finish]\n```'), footnote: () => { const n = (ed.value.match(/\[\^(\d+)\]:/g) || []).length + 1; const s = ed.selectionEnd; ed.setRangeText(`[^${n}]`, s, s, 'end'); ed.value += `\n\n[^${n}]: Footnote text.`; ed.focus(); ed.dispatchEvent(new Event('input')); }
     };
     document.querySelectorAll('[data-md]').forEach(b => b.addEventListener('click', () => ACTIONS[b.dataset.md]()));
     ed.addEventListener('keydown', e => {
@@ -644,18 +843,214 @@ Raw HTML is allowed but sanitized: <a href="javascript:alert('nope')" onclick="a
     document.querySelectorAll('.view-switch .seg-btn').forEach(b => b.addEventListener('click', () => setView(b.dataset.view)));
     if (window.matchMedia('(max-width: 900px)').matches) setView('edit');
 
-    // files and export
-    const download = (name, text, type) => { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([text], { type })); a.download = name; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 1000); };
+    // ---------- themes (preview, HTML page, PDF, ePub) ----------
+    const THEMES = {
+      github: { fg: '#1f2328', bg: '#ffffff', muted: '#59636e', line: '#d1d9e0', code: '#f6f8fa', link: '#0969da', font: '-apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif', size: '16px' },
+      academic: { fg: '#111111', bg: '#ffffff', muted: '#555555', line: '#cccccc', code: '#f4f4f4', link: '#1a4f9c', font: 'Georgia, "Times New Roman", Times, serif', size: '17px' },
+      sepia: { fg: '#433422', bg: '#f4ecd8', muted: '#7a6a53', line: '#d8c8a8', code: '#ebe0c6', link: '#8a4b0f', font: 'Georgia, "Iowan Old Style", serif', size: '17px' },
+      night: { fg: '#d8dee9', bg: '#11151c', muted: '#8a93a5', line: '#2e3440', code: '#1b2029', link: '#88c0d0', font: '-apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif', size: '16px' }
+    };
+    const themeName = () => $('mdTheme').value;
+    function applyTheme() {
+      const name = themeName(), pv = $('mdPreview'), th = THEMES[name];
+      pv.dataset.theme = name;
+      ['fg', 'bg', 'muted', 'line', 'code', 'link', 'font'].forEach(k => { if (th) pv.style.setProperty('--md-' + k, th[k]); else pv.style.removeProperty('--md-' + k); });
+      try { localStorage.setItem('layerbit-md-theme', name); } catch (e) { /* not kept */ }
+    }
+    $('mdTheme').addEventListener('change', () => { applyTheme(); if ($('mdPreview').querySelector('.mermaid')) render(); });
+    function themeCss(name, print) {
+      const th = THEMES[name];
+      const vars = th ? `:root{--fg:${th.fg};--bg:${th.bg};--muted:${th.muted};--line:${th.line};--code:${th.code};--link:${th.link}}` :
+        ':root{color-scheme:light dark;--fg:#1f2328;--muted:#59636e;--bg:#fff;--line:#d1d9e0;--code:#f6f8fa;--link:#0969da}\n@media (prefers-color-scheme:dark){:root{--fg:#e6edf3;--muted:#9198a1;--bg:#0d1117;--line:#3d444d;--code:#151b23;--link:#4493f8}}';
+      const font = th ? th.font : '-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif', size = th ? th.size : '16px';
+      return `${vars}\nbody{margin:0;background:var(--bg);color:var(--fg);font:${size}/1.6 ${font}}\nmain{max-width:780px;margin:0 auto;padding:40px 20px}\nh1,h2{border-bottom:1px solid var(--line);padding-bottom:.3em}\nh1,h2,h3,h4{line-height:1.25;margin:1.5em 0 .6em}\na{color:var(--link)}\ncode,pre{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.88em}\ncode{background:var(--code);padding:.15em .35em;border-radius:6px}\npre{background:var(--code);padding:14px 16px;border-radius:8px;overflow:auto}\npre code{background:none;padding:0}\nblockquote{margin:0;padding:0 1em;color:var(--muted);border-left:.25em solid var(--line)}\ntable{border-collapse:collapse;display:block;overflow:auto}\nth,td{border:1px solid var(--line);padding:6px 13px}\ntr:nth-child(2n){background:var(--code)}\nimg,svg{max-width:100%;height:auto}\n.mermaid{text-align:center;margin:1em 0}\n.math-display{text-align:center;margin:1em 0;overflow-x:auto}\nhr{border:0;border-top:1px solid var(--line);margin:24px 0}\n.footnotes{font-size:.9em;color:var(--muted);border-top:1px solid var(--line);margin-top:2em}\nul.contains-task-list,li:has(>input[type=checkbox]){list-style:none}\n.hljs-keyword,.hljs-selector-tag,.hljs-built_in{color:#cf222e}.hljs-string,.hljs-attr{color:#0a3069}.hljs-number,.hljs-literal{color:#0550ae}.hljs-comment{color:#6e7781;font-style:italic}.hljs-title,.hljs-function{color:#8250df}\n` +
+        (print ? '@page{size:A4;margin:18mm 16mm}\n@media print{main{max-width:none;padding:0}pre,blockquote,table,img,svg,.mermaid,.math-display{break-inside:avoid}h1,h2,h3{break-after:avoid}a{text-decoration:none}}\n' : '@media print{main{max-width:none}}\n');
+    }
     const docTitle = () => (toc[0] && toc[0].text) || 'Document';
-    function page() {
-      return `<!doctype html>\n<html lang="en">\n<head>\n<meta charset="utf-8">\n<meta name="viewport" content="width=device-width, initial-scale=1">\n<title>${esc(docTitle())}</title>\n<style>\n:root{color-scheme:light dark;--fg:#1f2328;--muted:#59636e;--bg:#fff;--line:#d1d9e0;--code:#f6f8fa;--link:#0969da}\n@media (prefers-color-scheme:dark){:root{--fg:#e6edf3;--muted:#9198a1;--bg:#0d1117;--line:#3d444d;--code:#151b23;--link:#4493f8}}\nbody{margin:0;background:var(--bg);color:var(--fg);font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif}\nmain{max-width:780px;margin:0 auto;padding:40px 20px}\nh1,h2{border-bottom:1px solid var(--line);padding-bottom:.3em}\nh1,h2,h3,h4{line-height:1.25;margin:1.5em 0 .6em}\na{color:var(--link)}\ncode,pre{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.88em}\ncode{background:var(--code);padding:.15em .35em;border-radius:6px}\npre{background:var(--code);padding:14px 16px;border-radius:8px;overflow:auto}\npre code{background:none;padding:0}\nblockquote{margin:0;padding:0 1em;color:var(--muted);border-left:.25em solid var(--line)}\ntable{border-collapse:collapse;display:block;overflow:auto}\nth,td{border:1px solid var(--line);padding:6px 13px}\ntr:nth-child(2n){background:var(--code)}\nimg{max-width:100%}\nhr{border:0;border-top:1px solid var(--line);margin:24px 0}\nul.contains-task-list,li:has(>input[type=checkbox]){list-style:none}\n@media print{main{max-width:none}}\n</style>\n</head>\n<body>\n<main>\n${html}\n</main>\n</body>\n</html>\n`;
+    function page(opts = {}) {
+      const body = opts.body != null ? opts.body : html;
+      return `<!doctype html>\n<html lang="en">\n<head>\n<meta charset="utf-8">\n<meta name="viewport" content="width=device-width, initial-scale=1">\n<title>${esc(docTitle())}</title>\n${opts.head || ''}<style>\n${themeCss(themeName(), opts.print)}</style>\n</head>\n<body>\n<main>\n${body}\n</main>\n</body>\n</html>\n`;
+    }
+
+    // ---------- focus and typewriter ----------
+    function setFocus(on) { document.body.classList.toggle('md-focus', on); $('btnFocus').setAttribute('aria-pressed', on); if (on) { ed.focus(); typewriter(); } }
+    $('btnFocus').addEventListener('click', () => setFocus(!document.body.classList.contains('md-focus')));
+    document.addEventListener('keydown', e => { if (e.key === 'Escape' && document.body.classList.contains('md-focus')) setFocus(false); });
+    function typewriter() {
+      if (!$('optTypewriter').checked) return;
+      const cs = getComputedStyle(ed), lh = parseFloat(cs.lineHeight) || parseFloat(cs.fontSize) * 1.6;
+      const line = ed.value.slice(0, ed.selectionStart).split('\n').length - 1;
+      ed.scrollTop = Math.max(0, line * lh + parseFloat(cs.paddingTop) + lh / 2 - ed.clientHeight / 2);
+    }
+    $('optTypewriter').addEventListener('change', () => { ed.classList.toggle('typewriter', $('optTypewriter').checked); try { localStorage.setItem('layerbit-md-typewriter', $('optTypewriter').checked ? '1' : ''); } catch (e) { /* not kept */ } typewriter(); });
+    ['keyup', 'click', 'input'].forEach(ev => ed.addEventListener(ev, () => { if ($('optTypewriter').checked) requestAnimationFrame(typewriter); }));
+
+    // ---------- files and export ----------
+    const download = (name, data, type) => { const a = document.createElement('a'); a.href = URL.createObjectURL(data instanceof Blob ? data : new Blob([data], { type })); a.download = name; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 1000); };
+    const fileBase = () => slug(docTitle(), new Set()) || 'document';
+    const usedImages = () => Object.keys(images).filter(p => ed.value.includes('](' + p));
+    const bytes = async blob => new Uint8Array(await blob.arrayBuffer());
+    const dataUrl = blob => new Promise(res => { const r = new FileReader(); r.onload = () => res(r.result); r.readAsDataURL(blob); });
+    function empty() { if (html) return false; Layerbit.toast('Nothing to export yet: write some Markdown first.', 'warn'); return true; }
+    async function embeddedHtml() {
+      await enhanced;
+      const c = cleanClone({ mathml: true });
+      for (const im of c.querySelectorAll('img[src]')) { const r = images[im.getAttribute('src')]; if (r) im.setAttribute('src', await dataUrl(r.blob)); }
+      return c.innerHTML.trim();
     }
     $('btnCopyHtml').addEventListener('click', () => { if (!html) { Layerbit.toast('Nothing to copy yet: write some Markdown first.', 'warn'); return; } Layerbit.copy(html).then(() => Layerbit.toast('HTML copied (' + Layerbit.fmtBytes(new Blob([html]).size) + ')')); });
-    $('btnDlHtml').addEventListener('click', () => { if (!html) { Layerbit.toast('Nothing to download yet.', 'warn'); return; } download(slug(docTitle(), new Set()) + '.html', page(), 'text/html'); });
-    $('btnDlMd').addEventListener('click', () => { if (!ed.value) { Layerbit.toast('Nothing to download yet.', 'warn'); return; } download(slug(docTitle(), new Set()) + '.md', ed.value, 'text/markdown'); });
+    $('btnDlHtml').addEventListener('click', async () => { if (!html) { Layerbit.toast('Nothing to download yet.', 'warn'); return; } download(fileBase() + '.html', page({ body: await embeddedHtml() }), 'text/html'); });
+    $('btnDlMd').addEventListener('click', async () => {
+      if (!ed.value) { Layerbit.toast('Nothing to download yet.', 'warn'); return; }
+      const imgs = usedImages();
+      if (!imgs.length) { download(fileBase() + '.md', ed.value, 'text/markdown'); return; }
+      const files = [{ name: fileBase() + '.md', data: ed.value }];
+      for (const p of imgs) files.push({ name: p, data: await bytes(images[p].blob) });
+      download(fileBase() + '.zip', new Blob([LBZip.zipStore(files)], { type: 'application/zip' }));
+      Layerbit.toast('Downloaded a zip: the .md file and its images folder');
+    });
     $('btnCopyMd').addEventListener('click', () => { if (!ed.value) { Layerbit.toast('Nothing to copy yet.', 'warn'); return; } Layerbit.copy(ed.value).then(() => Layerbit.toast('Markdown copied')); });
+
+    // PDF: the themed page in a hidden frame, printed by the browser (Save as PDF)
+    $('btnPdf').addEventListener('click', async () => {
+      if (empty()) return;
+      await enhanced;
+      const c = cleanClone(), f = document.createElement('iframe');
+      c.querySelectorAll('img[src]').forEach(im => { const r = images[im.getAttribute('src')]; if (r) im.setAttribute('src', r.url); });
+      f.style.cssText = 'position:fixed;right:0;bottom:0;width:0;height:0;border:0;visibility:hidden';
+      document.body.appendChild(f);
+      const d = f.contentDocument;
+      d.open(); d.write(page({ body: c.innerHTML.trim(), print: true, head: '<link rel="stylesheet" h' + 'ref="' + new URL(KATEX_CSS, location.href).href + '">\n' })); d.close();
+      const go = () => { if (window.lbPrintHook) window.lbPrintHook(d); else { f.contentWindow.focus(); f.contentWindow.print(); } setTimeout(() => f.remove(), 60000); };
+      if (d.readyState === 'complete') setTimeout(go, 200); else f.addEventListener('load', () => setTimeout(go, 200), { once: true });
+    });
+
+    // a plain tree of the preview for the Word writer
+    function tree(node) {
+      if (node.nodeType === 3) return node.nodeValue;
+      if (node.nodeType !== 1) return '';
+      const el = node, tag = el.tagName.toLowerCase();
+      if (el.classList.contains('katex-mathml') || el.getAttribute('aria-hidden') === 'true') return '';
+      if (el.classList.contains('katex')) { const a = el.querySelector('annotation[encoding="application/x-tex"]'); return { tag: 'span', attrs: { 'data-math': a ? a.textContent : el.textContent }, children: [] }; }
+      if (el.dataset && el.dataset.tex) return { tag: el.classList.contains('math-display') ? 'div' : 'span', attrs: { 'data-math': el.dataset.tex }, children: [] };
+      if (el.classList.contains('mermaid')) return { tag: 'img', attrs: { src: el.dataset.chart || '', alt: 'diagram' }, children: [] };
+      const attrs = {}; for (const a of el.attributes) attrs[a.name] = a.value;
+      return { tag, attrs, children: [...el.childNodes].map(tree).filter(c => c !== '') };
+    }
+    // diagrams become PNG pictures for Word
+    function svgToPng(svgEl) {
+      return new Promise(res => {
+        const box = svgEl.getBoundingClientRect(), vb = svgEl.viewBox && svgEl.viewBox.baseVal;
+        const w = Math.round(box.width || (vb && vb.width) || 600), h = Math.round(box.height || (vb && vb.height) || 400);
+        const s = svgEl.cloneNode(true); s.setAttribute('width', w); s.setAttribute('height', h); s.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+        const img = new Image(), url = URL.createObjectURL(new Blob([new XMLSerializer().serializeToString(s)], { type: 'image/svg+xml' }));
+        img.onload = () => { const c = document.createElement('canvas'); c.width = w * 2; c.height = h * 2; const g = c.getContext('2d'); g.fillStyle = '#fff'; g.fillRect(0, 0, c.width, c.height); g.drawImage(img, 0, 0, c.width, c.height); URL.revokeObjectURL(url); c.toBlob(b => res(b ? { blob: b, width: w, height: h } : null), 'image/png'); };
+        img.onerror = () => { URL.revokeObjectURL(url); res(null); };
+        img.src = url;
+      });
+    }
+    $('btnDocx').addEventListener('click', async () => {
+      if (empty()) return;
+      await enhanced;
+      const map = {}, charts = [...$('mdPreview').querySelectorAll('.mermaid')];
+      for (let i = 0; i < charts.length; i++) { const svg = charts[i].querySelector('svg'); const p = svg && await svgToPng(svg); if (p) { charts[i].dataset.chart = 'chart-' + i; map['chart-' + i] = { data: await bytes(p.blob), type: 'image/png', width: p.width, height: p.height }; } }
+      for (const p of usedImages()) { const r = images[p]; map[p] = { data: await bytes(r.blob), type: r.type, width: r.width || 400, height: r.height || 300 }; }
+      const c = cleanClone(), t = tree(c);
+      download(fileBase() + '.docx', new Blob([LBZip.zipStore(LBMdExport.docx(t, { title: docTitle(), images: map }))], { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' }));
+    });
+    $('btnEpub').addEventListener('click', async () => {
+      if (empty()) return;
+      await enhanced;
+      const c = cleanClone({ mathml: true }), files = [];
+      c.querySelectorAll('img[src]').forEach(im => { const p = im.getAttribute('src'); if (images[p]) files.push(p); else im.replaceWith(document.createTextNode('[' + (im.alt || 'image') + ']')); });
+      c.querySelectorAll('input').forEach(i => i.setAttribute('disabled', 'disabled'));
+      c.querySelectorAll('a[target]').forEach(a => a.removeAttribute('target'));
+      const xhtml = [...c.childNodes].map(n => n.nodeType === 1 ? new XMLSerializer().serializeToString(n) : n.nodeType === 3 ? LBMdExport.xml(n.nodeValue) : '').join('');
+      const imgs = [];
+      for (const p of [...new Set(files)]) imgs.push({ name: p, type: images[p].type, data: await bytes(images[p].blob) });
+      const id = 'urn:uuid:' + (crypto.randomUUID ? crypto.randomUUID() : Date.now());
+      const pkg = LBMdExport.epub({ title: docTitle(), lang: document.documentElement.lang || 'en', id, xhtml, toc, css: themeCss(themeName() === 'layerbit' ? 'github' : themeName()).replace(/main\{[^}]*\}/, ''), images: imgs, svg: /<svg/.test(xhtml), mathml: /<math/.test(xhtml) });
+      download(fileBase() + '.epub', new Blob([LBZip.zipStore(pkg)], { type: 'application/epub+zip' }));
+    });
+
+    // ---------- several documents, optional autosave in OPFS ----------
+    let docs = [], current = null;
+    const newId = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+    const titleOf = text => { const m = /^\s{0,3}#{1,6}\s+(.+?)\s*#*\s*$/m.exec(text); return m ? m[1].slice(0, 60) : (text.trim().split('\n')[0] || 'Untitled').slice(0, 60); };
+    function renderDocList() {
+      $('docSelect').innerHTML = docs.map(d => `<option value="${d.id}">${esc(titleOf(d.text))}</option>`).join('');
+      if (current) $('docSelect').value = current.id;
+      $('btnDeleteDoc').disabled = docs.length < 2 && !(current && current.text);
+      $('docSelect').disabled = docs.length < 2;
+    }
+    function stash() { if (current) { current.text = ed.value; current.images = images; } }
+    function open(doc) { stash(); current = doc; images = doc.images || {}; ed.value = doc.text; renderDocList(); render(); }
+    let listTimer = null;
+    function docChanged() {
+      if (!current) return;
+      current.text = ed.value; current.images = images;
+      clearTimeout(listTimer); listTimer = setTimeout(() => { const o = $('docSelect').selectedOptions[0]; if (o) o.textContent = titleOf(current.text); }, 200);
+      scheduleSave();
+    }
+    $('docSelect').addEventListener('change', () => { const d = docs.find(x => x.id === $('docSelect').value); if (d && d !== current) open(d); });
+    $('btnNewDoc').addEventListener('click', () => { const d = { id: newId(), text: '', images: {} }; docs.push(d); open(d); ed.focus(); });
+    $('btnDeleteDoc').addEventListener('click', () => {
+      if (!current) return;
+      const i = docs.indexOf(current); docs.splice(i, 1);
+      Object.values(current.images || {}).forEach(r => URL.revokeObjectURL(r.url));
+      if (!docs.length) docs.push({ id: newId(), text: '', images: {} });
+      current = null; open(docs[Math.max(0, i - 1)]); Layerbit.toast('Document removed');
+    });
+
+    const AUTOSAVE_KEY = 'layerbit-md-autosave', DIR = 'layerbit-markdown';
+    const autosaveOn = () => $('optAutosave').checked;
+    let saveTimer = null, saving = Promise.resolve();
+    let restoring = true;   // nothing is written until the saved documents have been read
+    function scheduleSave() { if (restoring || !autosaveOn()) return; clearTimeout(saveTimer); saveTimer = setTimeout(() => { saving = saving.then(saveAll).catch(err => Layerbit.toast('Autosave failed: ' + err.message, 'warn')); }, 400); }
+    async function writeFile(dir, name, data) { const fh = await dir.getFileHandle(name, { create: true }), w = await fh.createWritable(); await w.write(data); await w.close(); }
+    async function saveAll() {
+      if (restoring || !autosaveOn()) return;
+      stash();
+      const root = await navigator.storage.getDirectory(), dir = await root.getDirectoryHandle(DIR, { create: true });
+      const index = { v: 1, current: current && current.id, docs: [] };
+      for (const d of docs) {
+        const imgs = Object.keys(d.images || {}).filter(p => d.text.includes('](' + p));
+        index.docs.push({ id: d.id, images: imgs.map(p => ({ path: p, type: d.images[p].type })) });
+        await writeFile(dir, 'doc-' + d.id + '.md', d.text);
+        for (const p of imgs) await writeFile(dir, 'img-' + d.id + '-' + p.replace(/[^\w.-]/g, '_'), d.images[p].blob);
+      }
+      await writeFile(dir, 'index.json', JSON.stringify(index));
+      const keep = new Set(['index.json'].concat(index.docs.flatMap(d => ['doc-' + d.id + '.md'].concat(d.images.map(i => 'img-' + d.id + '-' + i.path.replace(/[^\w.-]/g, '_'))))));
+      for await (const name of dir.keys()) if (!keep.has(name)) await dir.removeEntry(name).catch(() => {});
+    }
+    async function loadAll() {
+      const root = await navigator.storage.getDirectory(), dir = await root.getDirectoryHandle(DIR), out = [];
+      let index;
+      // an index left empty by a tab closed during its first save: rebuild it from the document files
+      try { index = JSON.parse(await (await (await dir.getFileHandle('index.json')).getFile()).text()); }
+      catch (e) { index = { docs: [] }; for await (const name of dir.keys()) { const m = /^doc-(\w+)\.md$/.exec(name); if (m) index.docs.push({ id: m[1], images: [] }); } }
+      for (const d of index.docs) {
+        let text; try { text = await (await (await dir.getFileHandle('doc-' + d.id + '.md')).getFile()).text(); } catch (e) { continue; }
+        const doc = { id: d.id, text, images: {} };
+        for (const im of d.images || []) { try { const f = await (await dir.getFileHandle('img-' + d.id + '-' + im.path.replace(/[^\w.-]/g, '_'))).getFile(); images = doc.images; addImage(im.path, new Blob([f], { type: im.type })); } catch (e) { /* image missing */ } }
+        out.push(doc);
+      }
+      return { docs: out, current: index.current };
+    }
+    $('optAutosave').addEventListener('change', async () => {
+      if (!navigator.storage || !navigator.storage.getDirectory) { $('optAutosave').checked = false; Layerbit.toast('This browser has no private file storage, so autosave is not available', 'warn'); return; }
+      if (autosaveOn()) {
+        try { localStorage.setItem(AUTOSAVE_KEY, '1'); } catch (e) { /* the flag is lost on reload */ }
+        saving = saving.then(saveAll).then(() => Layerbit.toast('Autosave is on: documents are kept in this browser only')).catch(err => Layerbit.toast('Autosave failed: ' + err.message, 'warn'));
+      } else {
+        try { localStorage.removeItem(AUTOSAVE_KEY); } catch (e) { /* ignore */ }
+        clearTimeout(saveTimer);
+        saving = saving.then(async () => { const root = await navigator.storage.getDirectory(); await root.removeEntry(DIR, { recursive: true }).catch(() => {}); Layerbit.toast('Autosave is off and the saved copies were deleted'); });
+      }
+    });
+
+    function loadText(text) { ed.value = text; images = {}; if (current) current.images = images; render(); }
     $('btnOpen').addEventListener('click', () => $('mdFile').click());
-    function loadText(text) { ed.value = text; render(); }
     $('mdFile').addEventListener('change', e => { const f = e.target.files[0]; if (f) Layerbit.readFile(f).then(loadText); e.target.value = ''; });
     $('btnSample').addEventListener('click', () => loadText(SAMPLE));
     if (window.Layerbit) Layerbit.onDrop(files => Layerbit.readFile(files[0]).then(loadText));
@@ -663,7 +1058,28 @@ Raw HTML is allowed but sanitized: <a href="javascript:alert('nope')" onclick="a
     function getState() { return ed.value ? { input: ed.value, breaks: $('optBreaks').checked } : null; }
     function setState(s) { if (!s) return; if (typeof s.input === 'string') ed.value = s.input; $('optBreaks').checked = !!s.breaks; render(); }
     if (window.Layerbit) Layerbit.register({ slug: 'markdown-preview', getState, setState, run: render, input: loadText });
-    ed.value = SAMPLE; render(); icons();
+
+    // ---------- start ----------
+    try { const th = localStorage.getItem('layerbit-md-theme'); if (th && [...$('mdTheme').options].some(o => o.value === th)) $('mdTheme').value = th; if (localStorage.getItem('layerbit-md-typewriter')) { $('optTypewriter').checked = true; ed.classList.add('typewriter'); } } catch (e) { /* defaults */ }
+    applyTheme();
+    let wantAutosave = false; try { wantAutosave = localStorage.getItem(AUTOSAVE_KEY) === '1'; } catch (e) { /* off */ }
+    $('optAutosave').checked = false;   // browsers restore a checkbox on reload; the stored flag decides
+    docs = [{ id: newId(), text: SAMPLE, images: {} }];
+    current = docs[0]; ed.value = SAMPLE; renderDocList(); render(); icons();
+    if (wantAutosave && navigator.storage && navigator.storage.getDirectory) {
+      loadAll().then(r => {
+        $('optAutosave').checked = true; restoring = false;
+        if (!r.docs.length) { scheduleSave(); return; }
+        if (ed.value !== SAMPLE) { stash(); r.docs.push(current); }   // something typed or shared before the files were read
+        docs = r.docs; current = null;
+        open(docs.find(d => d.id === r.current) || docs[0]);
+      }).catch(err => {
+        // never save over documents that could not be read
+        $('optAutosave').checked = true;
+        if (err && err.name === 'NotFoundError') { restoring = false; scheduleSave(); }
+        else Layerbit.toast('Could not read the saved documents (' + (err && err.message || err) + '), so autosave is paused to keep them', 'warn');
+      });
+    } else restoring = false;
   </script>
 </body>
 </html>

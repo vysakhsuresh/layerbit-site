@@ -1,0 +1,63 @@
+{
+  "tool": "markdown-preview",
+  "page": "tools/markdown-preview.html",
+  "competitors": [
+    {
+      "name": "Typora",
+      "price": "$14.99 one-time (3 devices)",
+      "checked": "2026-11"
+    },
+    {
+      "name": "Dillinger",
+      "price": "free (web)",
+      "checked": "2026-11"
+    }
+  ],
+  "claims": [
+    {
+      "feature": "Mermaid diagrams rendered locally",
+      "competitor": "Typora",
+      "tests": [
+        "ui:markdown-preview:2.11: Mermaid renders locally to SVG, with no request to any other host"
+      ]
+    },
+    {
+      "feature": "LaTeX math, footnotes and syntax highlighting",
+      "competitor": "Typora",
+      "tests": [
+        "ui:markdown-preview:2.11: KaTeX math, footnotes and syntax-highlighted code"
+      ]
+    },
+    {
+      "feature": "Export to PDF, Word and ePub",
+      "competitor": "Typora",
+      "tests": [
+        "ui:markdown-preview:2.11: exports to DOCX and ePub are valid packages; PDF prints the themed page",
+        "unit:mdexport:docx: the parts Word needs, all well-formed",
+        "unit:mdexport:docx: headings, runs, links, lists, tables, code, quote, math, images",
+        "unit:mdexport:epub: mimetype first, OPF metadata, nested nav, images and properties"
+      ]
+    },
+    {
+      "feature": "Themes, focus mode and typewriter mode",
+      "competitor": "Typora",
+      "tests": [
+        "ui:markdown-preview:2.11: themes, focus mode and typewriter scrolling"
+      ]
+    },
+    {
+      "feature": "Pasted images",
+      "competitor": "Typora",
+      "tests": [
+        "ui:markdown-preview:2.11: a pasted image is kept, previewed and embedded in the exports"
+      ]
+    },
+    {
+      "feature": "Several documents with local autosave",
+      "competitor": "Dillinger",
+      "tests": [
+        "ui:markdown-preview:2.11: several documents; autosave to the browser's private files only when switched on"
+      ]
+    }
+  ]
+}

@@ -7,7 +7,7 @@
       "@id": "https://layerbit.co.in/tools/markdown-preview.html#app",
       "name": "Markdown Editor \u0026 Live Preview to HTML",
       "url": "https://layerbit.co.in/tools/markdown-preview.html",
-      "description": "Write GitHub-flavored Markdown with a live, sanitized preview, table of contents and word count, then copy clean HTML or download a styled HTML page.",
+      "description": "Markdown editor with Mermaid diagrams, KaTeX math, footnotes, themes and several documents; export HTML, PDF, Word or ePub. Runs in your browser.",
       "applicationCategory": "DeveloperApplication",
       "operatingSystem": "Any (runs in the browser)",
       "browserRequirements": "Requires JavaScript",
@@ -21,16 +21,15 @@
         "@id": "https://layerbit.co.in/#organization"
       },
       "featureList": [
-        "GitHub-flavored Markdown: tables, task lists, strikethrough, fenced code, autolinks",
-        "Live preview sanitized with DOMPurify",
-        "Formatting toolbar with Ctrl+B, Ctrl+I and Ctrl+K shortcuts",
-        "GitHub-style heading anchors and a clickable table of contents",
-        "Proportional scroll sync",
-        "Split, editor, preview and HTML views",
-        "Copy the HTML fragment or download a self-contained styled HTML page with light and dark themes",
-        "Open and download .md files, drag and drop",
-        "Word count and reading time",
-        "Runs entirely in the browser"
+        "GitHub-flavored Markdown with a sanitized live preview",
+        "Mermaid diagrams",
+        "KaTeX math",
+        "Footnotes",
+        "Syntax-highlighted code",
+        "Export to HTML, PDF, Word and ePub",
+        "Themes, focus and typewriter modes",
+        "Pasted images",
+        "Several documents with opt-in autosave"
       ]
     },
     {
@@ -52,7 +51,7 @@
         {
           "@type": "ListItem",
           "position": 3,
-          "name": "Markdown Editor \u0026 Preview",
+          "name": "Markdown Editor \u0026 Live Preview",
           "item": "https://layerbit.co.in/tools/markdown-preview.html"
         }
       ]
@@ -82,7 +81,15 @@
           "name": "Does it support GitHub-flavored Markdown?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "Yes. Tables, task lists, strikethrough, fenced code blocks with a language tag and automatic linking of bare URLs all render as they do on GitHub, and headings get the same anchor ids GitHub generates. GitHub-specific extensions that need its servers, such as @mentions, issue references, emoji shortcodes and Mermaid diagrams, are shown as plain text."
+            "text": "Yes. Tables, task lists, strikethrough, fenced code blocks with a language tag and automatic linking of bare URLs all render as they do on GitHub, and headings get the same anchor ids GitHub generates. Mermaid diagrams, KaTeX math ($…$ and $$…$$) and footnotes ([^1]) render here too, all in your browser. GitHub-specific features that need its servers, such as @mentions, issue references and emoji shortcodes, are shown as plain text."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How do I export Markdown to PDF, Word or ePub?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "PDF opens your browser's print dialog with the document in the chosen theme; pick Save as PDF. The text stays selectable and links keep working. Word .docx writes headings as Word heading styles, so the navigation pane and a table of contents work, plus lists, tables, links, code, quotes and images; diagrams go in as pictures and math as its TeX source. ePub builds an e-book with a table of contents from your headings, math as MathML and diagrams as SVG. All three are made in the page without any upload."
           }
         },
         {
@@ -106,7 +113,7 @@
           "name": "Is my document saved or uploaded?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "It is not uploaded: parsing and rendering happen in your browser and there are no network requests. The draft is not stored either unless you choose Share link from the header, which places it in the link's #fragment so it reaches only the person you send it to. Use Download .md to keep a copy."
+            "text": "It is not uploaded: parsing, rendering, diagrams, math and every export happen in your browser and there are no network requests. Documents are not stored unless you tick Autosave in this browser, which keeps them in the browser's private file storage (the Origin Private File System) on this device only; untick it and the saved copies are deleted. Pasted images stay in the page and go into your exports. Share link from the header places the text in the link's #fragment so it reaches only the person you send it to."
           }
         }
       ]
