@@ -307,12 +307,43 @@ def redirect_page(src, dest, label):
     ) % (lbl, url, rel, json.dumps(rel), rel, lbl)
 
 
+# The service worker's offline list: every tool page, the local scripts and
+# styles each one links (with their ?v= hashes), scripts a tool loads on
+# demand (named as js/... strings in the page), the WebAssembly modules and
+# the fonts. The cache VERSION is a hash of that list, so a deploy that
+# changes anything refreshes the cache.
+_SW_RE = re.compile(r"/\* BUILD:PRECACHE:BEGIN \*/.*?/\* BUILD:PRECACHE:END \*/", re.S)
+
+
+def sw_source(pages):
+    urls = {"./", "index.html", "offline.html", "manifest.json"}
+    for page, target in pages:
+        if not target.startswith("tools/") or target in REDIRECTS:
+            continue
+        urls.add(target)
+        base = os.path.dirname(target)
+        for m in re.finditer(r'(?:href|src)="((?:\.\./)*(?:css|js)/[^"#]+?|(?:\.\./)*main\.js\?v=[^"#]+)"', page):
+            urls.add(os.path.normpath(os.path.join(base, m.group(1).split("?")[0])) + ("?" + m.group(1).split("?", 1)[1] if "?" in m.group(1) else ""))
+        for m in re.finditer(r"['\"]((?:\.\./)*js/(?:vendor|engines)/[\w./-]+\.js)['\"]", page):
+            p = os.path.normpath(os.path.join(base, m.group(1)))
+            if os.path.exists(p):
+                urls.add(p)
+    urls.update(sorted(glob.glob("js/vendor/wasm/*.wasm")) + sorted(glob.glob("fonts/*.woff2")))
+    urls = sorted(u.replace(os.sep, "/") for u in urls)
+    version = "lb-" + hashlib.sha256(json.dumps(urls).encode()).hexdigest()[:10]
+    block = "/* BUILD:PRECACHE:BEGIN */\nvar VERSION = '%s';\nvar PRECACHE = %s;\n/* BUILD:PRECACHE:END */" % (version, json.dumps(urls, indent=0).replace("\n", ""))
+    with open("sw.js", encoding="utf-8") as f:
+        src = f.read()
+    return _SW_RE.sub(lambda m: block, src)
+
+
 def main():
     slug_files = sorted(glob.glob("src/pages/*.json"))
     mismatches = []
     written = 0
     jobs = [build_page(sf) for sf in slug_files]
     jobs += [(redirect_page(src, dest, label), src) for src, (dest, label) in REDIRECTS.items()]
+    jobs.append((sw_source(jobs), "sw.js"))
     for page, target_path in jobs:
 
         # preserve the target file's existing line-ending convention (this repo
@@ -345,7 +376,7 @@ def main():
                 print(f"  {m}")
             print("\nRun `python3 build.py` and commit the result.")
             sys.exit(1)
-        print(f"Build check OK: all {len(slug_files)} pages and {len(REDIRECTS)} redirects match their generated output.")
+        print(f"Build check OK: all {len(slug_files)} pages, {len(REDIRECTS)} redirects and the service worker list match their generated output.")
     else:
         print(f"Wrote {written} pages.")
 

@@ -596,3 +596,7 @@ t('feature 26: xlsxBuild writes a valid workbook with highlighted cells, exact t
   assert.ok(/FFBBF7D0/.test(fillOf(sAdded)), 'added cells are green');
   assert.ok(/<c r="B4" s="\d"><v>5<\/v><\/c>/.test(s2), 'numbers stay numbers');
 });
+t('A2: the diff engine uses the shared CSV parser (delimiters inside quotes do not decide the delimiter)', () => {
+  assert.strictEqual(D.detectDelimiter('name;note\n"a, b, c";x\n"d, e, f";y\n'), ';');
+  assert.deepStrictEqual(D.parseCsv('email\na@x.com\n\nb@x.com\n'), [['email'], ['a@x.com'], [''], ['b@x.com']]);
+});

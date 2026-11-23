@@ -47,6 +47,7 @@
     },
     {
       "@type": "FAQPage",
+      "@id": "https://layerbit.co.in/tools/json-to-table.html#faq",
       "mainEntity": [
         {
           "@type": "Question",
@@ -66,14 +67,21 @@
         },
         {
           "@type": "Question",
+          "name": "What does \"Safe for Excel\" do to the CSV?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Excel, LibreOffice and Google Sheets treat a cell that begins with =, +, - or @ as a formula, so a value such as =HYPERLINK(\"http://…\") in your data can run when someone opens the file (CSV or formula injection). With Safe for Excel on, which is the default, such values are written with a leading apostrophe ('=HYPERLINK(…)); spreadsheets show them as text. Plain numbers such as -5 or +3.5 are left alone. Turn it off when the CSV feeds another program that must receive the exact text."
+          }
+        },
+        {
+          "@type": "Question",
           "name": "Can I export the filtered data?",
           "acceptedAnswer": {
             "@type": "Answer",
             "text": "Yes. The CSV export feature intelligently respects your active search filter. If you search for a specific term and click Export CSV, only the rows currently visible on your screen will be downloaded."
           }
         }
-      ],
-      "@id": "https://layerbit.co.in/tools/json-to-table.html#faq"
+      ]
     }
   ]
 }

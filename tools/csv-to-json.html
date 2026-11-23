@@ -88,13 +88,14 @@
     },
     {
       "@type": "FAQPage",
+      "@id": "https://layerbit.co.in/tools/csv-to-json.html#faq",
       "mainEntity": [
         {
           "@type": "Question",
           "name": "What is \"Smart Type Inference\"?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "By default, CSV files treat all data as text strings. When \"Smart Types\" is enabled, Layerbit's engine automatically detects numerical values (like 42 or 3.14) and boolean values (like true or false) and formats them as native integers, floats, and booleans in the resulting JSON output, rather than wrapping them in quotation marks."
+            "text": "By default, CSV files treat all data as text strings. When \"Smart Types\" is enabled, Layerbit's engine automatically detects numerical values (like 42 or 3.14) and boolean values (like true or false) and formats them as native integers, floats, and booleans in the resulting JSON output, rather than wrapping them in quotation marks. It never changes a value to do so: anything with a leading zero (00123), a + sign (+971…), more than 15 significant digits, or a spelling a number would not keep (1.10) stays text. Below the input, each column shows the type it was given, and you can set any column to text, number or true/false."
           }
         },
         {
@@ -115,14 +116,21 @@
         },
         {
           "@type": "Question",
+          "name": "What does \"Safe for Excel\" do to the CSV?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Excel, LibreOffice and Google Sheets treat a cell that begins with =, +, - or @ as a formula, so a value such as =HYPERLINK(\"http://…\") in your data can run when someone opens the file (CSV or formula injection). With Safe for Excel on, which is the default, such values are written with a leading apostrophe ('=HYPERLINK(…)); spreadsheets show them as text. Plain numbers such as -5 or +3.5 are left alone. Turn it off when the CSV feeds another program that must receive the exact text."
+          }
+        },
+        {
+          "@type": "Question",
           "name": "Can it convert JSON back to CSV too?",
           "acceptedAnswer": {
             "@type": "Answer",
             "text": "Yes. Switch to \"JSON → CSV\" mode and paste a JSON array of objects. The header row is built from the union of every key across all objects, so records with slightly different fields (an optional notes column on some rows, for example) still produce one clean table instead of dropping data. Nested objects or arrays inside a field are stringified into that cell rather than breaking the export."
           }
         }
-      ],
-      "@id": "https://layerbit.co.in/tools/csv-to-json.html#faq"
+      ]
     }
   ]
 }
@@ -138,7 +146,7 @@
   <link rel="manifest" href="../manifest.json" />
   <link rel="alternate" type="application/atom+xml" title="Layerbit developer guides" href="https://layerbit.co.in/feed.xml" />
   <link rel="apple-touch-icon" href="../apple-touch-icon.png" />
-  <link rel="stylesheet" href="../css/base.css?v=3a758638ad" />
+  <link rel="stylesheet" href="../css/base.css?v=7bd41a021f" />
 
   <style>
 
@@ -352,6 +360,13 @@
     .mini-select:focus { border-color: var(--accent-main); }
     .mini-select option { background: #0a0c10; }
     .delim-detected { font-size: 0.9em; color: var(--accent-main); }
+    .csv-issues { display: flex; gap: 10px; align-items: flex-start; padding: 10px 20px; background: rgba(245,158,11,0.08); border-bottom: 1px solid rgba(245,158,11,0.4); color: #fde68a; font-size: 0.88em; }
+    .csv-issues:empty { display: none; }
+    .csv-issues svg { flex-shrink: 0; width: 18px; height: 18px; }
+    .col-types { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; padding: 10px 20px; border-bottom: 1px solid var(--border-color, rgba(255,255,255,0.08)); font-size: 0.85em; color: var(--text-muted); }
+    .col-types[hidden] { display: none; }
+    .col-types .ct-label { font-weight: 600; }
+    .col-types .ct-item { display: inline-flex; gap: 6px; align-items: center; color: var(--text-main, #e2e8f0); }
 
   </style>
 </head>
@@ -413,6 +428,7 @@
           <label class="toggle-wrapper" id="inferTypesWrapper" title="Automatically convert '123' to numbers and 'true' to booleans">
             <input type="checkbox" id="inferTypes" checked> Smart Types
           </label>
+          <label class="toggle-wrapper" id="csvSafeWrapper" style="display:none;" title="Spreadsheets run a cell that starts with =, +, - or @ as a formula. On: such values get a leading apostrophe so they open as text (plain numbers like -5 are left alone). Off: the exact text."><input type="checkbox" id="csvSafe" checked> Safe for Excel</label>
           <input type="file" id="csvFile" accept=".csv" style="display: none;">
           <button class="btn" onclick="document.getElementById('csvFile').click()"><i data-lucide="upload"></i> Upload</button>
           <button class="btn btn-primary" id="btnConvert" onclick="convert()"><i data-lucide="arrow-right-left"></i> Convert</button>
@@ -422,6 +438,8 @@
         <i data-lucide="triangle-alert"></i>
         <span id="errorText">Invalid CSV format.</span>
       </div>
+      <div class="csv-issues" id="csvIssues" role="status"></div>
+      <div class="col-types" id="colTypes" hidden></div>
       <textarea id="csvInput" class="editor" placeholder='Paste CSV data or drag & drop a .csv file here...&#10;&#10;id,name,role,active&#10;1,John Doe,Admin,true&#10;2,"Smith, Jane",User,false' spellcheck="false"></textarea>
     </div>
 
@@ -482,7 +500,7 @@
         <div class="faq-item">
           <button class="faq-question">What is "Smart Type Inference"? <i data-lucide="chevron-down"></i></button>
           <div class="faq-answer">
-            <p>By default, CSV files treat all data as text strings. When "Smart Types" is enabled, Layerbit's engine automatically detects numerical values (like <code>42</code> or <code>3.14</code>) and boolean values (like <code>true</code> or <code>false</code>) and formats them as native integers, floats, and booleans in the resulting JSON output, rather than wrapping them in quotation marks.</p>
+            <p>By default, CSV files treat all data as text strings. When "Smart Types" is enabled, Layerbit's engine automatically detects numerical values (like <code>42</code> or <code>3.14</code>) and boolean values (like <code>true</code> or <code>false</code>) and formats them as native integers, floats, and booleans in the resulting JSON output, rather than wrapping them in quotation marks. It never changes a value to do so: anything with a leading zero (<code>00123</code>), a <code>+</code> sign (<code>+971…</code>), more than 15 significant digits, or a spelling a number would not keep (<code>1.10</code>) stays text. Below the input, each column shows the type it was given, and you can set any column to text, number or true/false.</p>
           </div>
         </div>
 
@@ -500,6 +518,10 @@
           </div>
         </div>
 
+        <div class="faq-item">
+          <button class="faq-question">What does &quot;Safe for Excel&quot; do to the CSV? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>Excel, LibreOffice and Google Sheets treat a cell that begins with <code>=</code>, <code>+</code>, <code>-</code> or <code>@</code> as a formula, so a value such as <code>=HYPERLINK(&quot;http://…&quot;)</code> in your data can run when someone opens the file (CSV or formula injection). With Safe for Excel on, which is the default, such values are written with a leading apostrophe (<code>'=HYPERLINK(…)</code>); spreadsheets show them as text. Plain numbers such as <code>-5</code> or <code>+3.5</code> are left alone. Turn it off when the CSV feeds another program that must receive the exact text.</p></div>
+        </div>
         <div class="faq-item">
           <button class="faq-question">Can it convert JSON back to CSV too? <i data-lucide="chevron-down"></i></button>
           <div class="faq-answer">
@@ -521,7 +543,7 @@
       <div class="use-cases-grid">
         <div class="use-case-card">
           <h3><i data-lucide="type"></i> Smart type inference</h3>
-          <p>CSV has no type system — every value is text. With Smart Types enabled, numeric and boolean-looking values become real JSON numbers and booleans instead of quoted strings. Turn it off when identifiers must stay strings, which is usually the right call for anything with a leading zero.</p>
+          <p>CSV has no type system — every value is text. With Smart Types enabled, numeric and boolean-looking values become real JSON numbers and booleans instead of quoted strings, but only when that changes nothing: postcodes with a leading zero, phone numbers with a <code>+</code> and identifiers longer than 15 digits stay strings automatically, and the per-column type list lets you force any column to text, number or true/false. Turn Smart Types off to keep every value a string.</p>
         </div>
         <div class="use-case-card">
           <h3><i data-lucide="combine"></i> Union-of-keys on the way back</h3>
@@ -569,6 +591,7 @@
     <div class="info-panel">
       <h2><i data-lucide="git-commit"></i> Changelog</h2>
       <ul class="changelog-list">
+        <li><span class="changelog-tag">v2.2.0</span> One shared CSV reader for every tool: a quote inside a field (5" screen) is a literal character instead of swallowing the rest of the file, the delimiter is detected without counting the ones inside quotes, repeated header names become separate keys (amount, amount (2)), a one-column file keeps rows whose value is empty, and rows with the wrong number of values are listed with their line. Smart Types never change a value (leading zeros, + signs and numbers over 15 digits stay text), an empty cell stays an empty string instead of becoming null, and each column's type can be set to text, number or true/false; long numbers forced to number keep every digit. JSON to CSV keeps long numbers exact and has a Safe for Excel switch, on by default, that writes formula-like values with a leading apostrophe.</li>
         <li><span class="changelog-tag">v2.1.0</span> Delimiter handling: automatic detection picks the separator that is most consistent across the first lines (comma, semicolon, tab or pipe), which is what European-locale exports from Excel need, and a manual override is a click away. A file that yields one column is now refused with a hint instead of producing a single mangled field.</li>
         <li><span class="changelog-tag">v1.5.0</span> Added a JSON &rarr; CSV reverse mode, building the header row from the union of keys across all objects so heterogeneous records don't lose columns.</li>
         <li><span class="changelog-tag">v1.4.0</span> Added direct-to-disk download capability for generating <code>.json</code> files natively in the browser.</li>
@@ -669,7 +692,7 @@
       </div>
     </nav>
     <div class="footer-bottom">
-      <div class="footer-copy">&copy; 2025 - 2026 <strong>Layerbit Technologies</strong>. All rights reserved.</div>
+      <div class="footer-copy">&copy; 2025 - 2026 <strong>Layerbit Technologies</strong>. Code open source under AGPL-3.0.</div>
       <div class="footer-links">
         <a href="../about.html">About</a>
         <a href="../work.html">Apps &amp; websites</a>
@@ -677,13 +700,16 @@
         <a href="../contact.html">Contact</a>
         <a href="../privacy.html">Privacy Policy</a>
         <a href="../terms.html">Terms of Service</a>
+        <a href="https://github.com/vysakhsuresh/layerbit-site" rel="noopener">Source code</a>
         <a href="#" data-cookie-settings>Your privacy choices</a>
       </div>
     </div>
   </footer>
-  <script src="../js/kernel.js?v=40b2047872"></script>
+  <script src="../js/kernel.js?v=eb69348d32"></script>
 
   <script src="../js/shared.js?v=e2441a1728"></script>
+  <script src="../js/engines/csv.js?v=a78b81af7d"></script>
+  <script src="../js/engines/lossless-json.js?v=88a67e6c17"></script>
 
 
   <script>
@@ -692,6 +718,8 @@
     const csvFile = document.getElementById("csvFile");
     const inputPane = document.getElementById("inputPane");
     const errorBanner = document.getElementById("errorBanner");
+    const csvIssues = document.getElementById("csvIssues");
+    const escHtml = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
     const errorText = document.getElementById("errorText");
     const inferTypes = document.getElementById("inferTypes");
     const inferTypesWrapper = document.getElementById("inferTypesWrapper");
@@ -712,6 +740,7 @@
 
       csvInput.value = "";
       jsonOutput.innerHTML = "";
+      document.getElementById('colTypes').hidden = true;
       finalOutputString = "";
       errorBanner.classList.remove("active");
       btnCopy.disabled = true;
@@ -721,6 +750,7 @@
         inputPaneTitle.innerHTML = '<i data-lucide="sheet"></i> Raw CSV Data';
         outputPaneTitle.innerHTML = '<i data-lucide="braces"></i> JSON Array';
         inferTypesWrapper.style.display = 'flex';
+        document.getElementById('csvSafeWrapper').style.display = 'none';
         document.getElementById('delimWrapper').style.display = 'flex';
         csvFile.setAttribute('accept', '.csv');
         csvInput.placeholder = 'Paste CSV data or drag & drop a .csv file here...\n\nid,name,role,active\n1,John Doe,Admin,true\n2,"Smith, Jane",User,false';
@@ -729,6 +759,7 @@
         inputPaneTitle.innerHTML = '<i data-lucide="braces"></i> Raw JSON Array';
         outputPaneTitle.innerHTML = '<i data-lucide="sheet"></i> CSV Data';
         inferTypesWrapper.style.display = 'none';
+        document.getElementById('csvSafeWrapper').style.display = 'flex';
         document.getElementById('delimWrapper').style.display = 'none';
         csvFile.setAttribute('accept', '.json');
         csvInput.placeholder = 'Paste a JSON array of objects here...\n\n[\n  { "id": 1, "name": "John Doe", "role": "Admin" },\n  { "id": 2, "name": "Smith, Jane", "role": "User" }\n]';
@@ -756,23 +787,10 @@
       });
     }
 
-    // Robust CSV Parser (Handles quoted commas and newlines)
-    // Picks the separator whose per-line count is both highest and most
-    // consistent across the first 20 lines - the property a real delimiter
-    // has and a stray character in the data does not.
-    function detectDelimiter(text) {
-      const lines = text.split(/\r?\n/).filter(l => l.trim()).slice(0, 20);
-      let best = ',', bestScore = -1;
-      for (const d of [',', ';', '\t', '|']) {
-        const counts = lines.map(l => { let n = 0, q = false; for (const ch of l) { if (ch === '"') q = !q; else if (ch === d && !q) n++; } return n; });
-        const mean = counts.reduce((a, b) => a + b, 0) / (counts.length || 1);
-        if (mean === 0) continue;
-        const variance = counts.reduce((a, b) => a + (b - mean) ** 2, 0) / counts.length;
-        const score = mean / (1 + variance);
-        if (score > bestScore) { bestScore = score; best = d; }
-      }
-      return best;
-    }
+    // CSV reading is the shared engine (js/engines/csv.js): a quote opens
+    // quoting only at the start of a field, the delimiter is detected outside
+    // quotes, and rows with the wrong number of values are reported.
+    const detectDelimiter = text => LBCsv.detectDelimiter(text);
     const DELIM_NAMES = { ',': 'comma', ';': 'semicolon', '\t': 'tab', '|': 'pipe' };
     function currentDelimiter(text) {
       const sel = document.getElementById('delimSelect').value;
@@ -781,37 +799,56 @@
       return d;
     }
 
-    function parseCSVToArray(text, delim) {
-      delim = delim || ',';
-      let p = '', row = [''], ret = [row], i = 0, r = 0, s = !0, l;
-      for (l of text) {
-        if ('"' === l) {
-          if (s && l === p) row[i] += l;
-          s = !s;
-        } else if (delim === l && s) l = row[++i] = '';
-        else if ('\n' === l && s) {
-          if ('\r' === p) row[i] = row[i].slice(0, -1);
-          row = ret[++r] = [l = '']; i = 0;
-        } else row[i] += l;
-        p = l;
-      }
-      return ret[0].length && !ret[ret.length-1][0] ? ret.slice(0, -1) : ret;
-    }
-
     // Type Inference Engine
-    function parseValue(val) {
-      if (!inferTypes.checked) return val;
-      const lower = val.toLowerCase();
-      if (lower === "true") return true;
-      if (lower === "false") return false;
-      if (lower === "null" || lower === "") return null;
-      if (!isNaN(val) && val.trim() !== "") return Number(val);
-      return val;
+    // Smart Types never change a value: a cell becomes a number only when it
+    // would be written back identically (no leading zero, no + sign, at most
+    // 15 significant digits), and true/false/null become those literals.
+    // Each column's type can be overridden below the input.
+    const colChoice = {};
+    function parseValue(val, header) {
+      const c = colChoice[header] || 'auto';
+      if (c === 'text') return val;
+      if (c === 'number') {
+        const m = /^([+-]?)0*(\d+(?:\.\d+)?(?:[eE][+-]?\d+)?)$/.exec(val.replace(/^\+/, ''));
+        return m ? new LBLossless.LosslessNumber((m[1] === '-' ? '-' : '') + m[2]) : val;
+      }
+      if (c === 'boolean') { const l = val.toLowerCase(); return ['true', 'yes', 'y', '1'].includes(l) ? true : ['false', 'no', 'n', '0'].includes(l) ? false : val; }
+      return inferTypes.checked ? LBLossless.inferValue(val) : val;
     }
+    function setKey(o, k, v) { if (k === '__proto__') Object.defineProperty(o, k, { value: v, enumerable: true, writable: true, configurable: true }); else o[k] = v; }
+    function autoType(values) {
+      const kinds = new Set(values.filter(v => v !== '').map(v => { const x = LBLossless.inferValue(v); return x === null ? 'null' : typeof x === 'number' ? 'number' : typeof x === 'boolean' ? 'boolean' : 'text'; }));
+      kinds.delete('null');
+      return kinds.size === 0 ? 'empty' : kinds.size === 1 ? [...kinds][0] : 'mixed';
+    }
+    function renderColTypes(headers, rows) {
+      const box = document.getElementById('colTypes');
+      if (!inferTypes.checked || !headers.length) { box.hidden = true; box.innerHTML = ''; delete box.dataset.cols; return; }
+      box.hidden = false;
+      // Same columns as last time: update the "auto (type)" labels in place, so
+      // the select just changed keeps its focus and identity.
+      const same = box.dataset.cols === JSON.stringify(headers);
+      if (same) {
+        headers.forEach((h, i) => {
+          const sel = box.querySelector(`select[data-col="${CSS.escape(h)}"]`); if (!sel) return;
+          sel.options[0].textContent = `auto (${autoType(rows.map(r => (r[i] || '').trim()))})`;
+          sel.value = colChoice[h] || 'auto';
+        });
+        return;
+      }
+      box.dataset.cols = JSON.stringify(headers);
+      box.innerHTML = '<span class="ct-label">Column types:</span>' + headers.map((h, i) => {
+        const auto = autoType(rows.map(r => (r[i] || '').trim())), v = colChoice[h] || 'auto';
+        return `<label class="ct-item">${escHtml(h)} <select class="mini-select" id="colType-${escHtml(h)}" data-col="${escHtml(h)}">` +
+          [['auto', `auto (${auto})`], ['text', 'text'], ['number', 'number'], ['boolean', 'true/false']].map(([k, l]) => `<option value="${k}"${k === v ? ' selected' : ''}>${l}</option>`).join('') + '</select></label>';
+      }).join('');
+    }
+    document.getElementById('colTypes').addEventListener('change', e => { const s = e.target.closest('select[data-col]'); if (s) { colChoice[s.dataset.col] = s.value; processCSV(); } });
 
     function processCSV() {
       const input = csvInput.value.trim();
       errorBanner.classList.remove("active");
+      csvIssues.innerHTML = "";
       jsonOutput.innerHTML = "";
       finalOutputString = "";
       btnCopy.disabled = true;
@@ -824,29 +861,33 @@
 
       try {
         const delim = currentDelimiter(input);
-        const rows = parseCSVToArray(input, delim);
+        const parsed = LBCsv.parse(input, { delimiter: delim }), rows = parsed.rows;
+        const issues = parsed.issues;
+        csvIssues.innerHTML = issues.length ? `<i data-lucide="triangle-alert"></i><span>${issues.length === 1 ? '1 problem' : issues.length + ' problems'} in the CSV: ${issues.slice(0, 5).map(x => escHtml(x.message)).join(' ')}${issues.length > 5 ? ` …and ${issues.length - 5} more.` : ''}</span>` : '';
+        if (window.lucide) lucide.createIcons();
         if (rows.length < 2) throw new Error("CSV requires at least a header row and one data row.");
         if (rows[0].length === 1 && /[;\t|]/.test(rows[0][0])) {
           throw new Error(`Only one column was found with the ${DELIM_NAMES[delim]} delimiter - the data looks separated by something else. Change the delimiter.`);
         }
 
-        const headers = rows[0].map(h => h.trim());
+        const headers = LBCsv.uniqueHeaders(rows[0].map(h => h.trim()));
         const jsonArray = [];
 
         for (let i = 1; i < rows.length; i++) {
           let obj = {};
           const currentRow = rows[i];
-          // Skip empty trailing rows
-          if (currentRow.length === 1 && currentRow[0].trim() === "") continue;
+          // a blank line is a gap in a wide file, but an empty value in a one-column file
+          if (headers.length > 1 && currentRow.length === 1 && currentRow[0].trim() === "") continue;
 
           headers.forEach((header, index) => {
             let val = currentRow[index] !== undefined ? currentRow[index].trim() : "";
-            obj[header] = parseValue(val);
+            setKey(obj, header, parseValue(val, header));
           });
           jsonArray.push(obj);
         }
 
-        finalOutputString = JSON.stringify(jsonArray, null, 4);
+        renderColTypes(headers, rows.slice(1));
+        finalOutputString = LBLossless.stringify(jsonArray, 4);
         jsonOutput.innerHTML = syntaxHighlight(finalOutputString);
 
         btnCopy.disabled = false;
@@ -861,8 +902,10 @@
     // if the value contains a comma, quote, or newline - standard CSV rules
     function csvEscape(val) {
       if (val === null || val === undefined) return '';
-      if (typeof val === 'object') val = JSON.stringify(val);
-      const str = String(val);
+      if (LBLossless.isLosslessNumber(val)) val = val.value;
+      else if (typeof val === 'object') val = LBLossless.stringify(val);
+      let str = String(val);
+      if (document.getElementById('csvSafe').checked && LBCsv.isFormulaLike(str)) str = "'" + str;
       if (/[",\n\r]/.test(str)) {
         return '"' + str.replace(/"/g, '""') + '"';
       }
@@ -883,7 +926,8 @@
       }
 
       try {
-        const parsed = JSON.parse(input);
+        JSON.parse(input);  // the browser's parser reports syntax errors
+        const parsed = LBLossless.parse(input);  // numbers keep every digit
         const rows = Array.isArray(parsed) ? parsed : [parsed];
         if (!rows.length) throw new Error("JSON array is empty - nothing to convert.");
         if (rows.some(r => typeof r !== 'object' || r === null || Array.isArray(r))) {
@@ -900,7 +944,7 @@
           }
         }
 
-        const lines = [headers.map(csvEscape).join(',')];
+        const lines = [headers.map(h => csvEscape(h)).join(',')];
         for (const row of rows) {
           lines.push(headers.map(h => csvEscape(row[h])).join(','));
         }
@@ -978,7 +1022,7 @@
         csvInput.value = e.target.result;
         convert();
       };
-      reader.readAsText(file);
+      Layerbit.readFile(file).then(t => reader.onload({ target: { result: t } }));  // bytes decoded by the kernel (encoding detected)
     }
 
     // FAQ Accordion Logic

@@ -11,6 +11,7 @@
       <div class="pane-header">
         <div class="pane-title"><i data-lucide="regex"></i> Expression Editor</div>
         <div class="btn-group">
+          <span class="lb-history-slot" data-lb-history-slot data-live></span>
           <span class="flavor-chip" title="Patterns run on your browser's native ECMAScript engine. The Code tab translates flags and syntax for other languages.">JavaScript / ECMAScript</span>
         </div>
       </div>
@@ -317,7 +318,7 @@
         <div class="faq-item">
           <button class="faq-question">Where are the unit tests stored? <i data-lucide="chevron-down"></i></button>
           <div class="faq-answer">
-            <p>In the page, and in the share link when you copy one: the pattern, flags, test string and the full test table are compressed into the URL fragment, which browsers never send to a server. Paste the link into a code review or a ticket and the reader gets the pattern with its expectations and can run them. Nothing is stored on Layerbit's side; the optional history lives in your browser's own storage.</p>
+            <p>In the page, and in the share link when you copy one: the pattern, flags, test string and the full test table are compressed into the URL fragment, which browsers never send to a server. Paste the link into a code review or a ticket and the reader gets the pattern with its expectations and can run them. Nothing is stored on Layerbit's side. History is off by default; if you turn on <strong>Save to history</strong>, runs you save with <strong>Save run</strong> or Ctrl+Enter are kept in your browser's own storage.</p>
           </div>
         </div>
         <div class="faq-item">
@@ -361,6 +362,7 @@
     <div class="info-panel">
       <h2><i data-lucide="git-merge"></i> Deployment Changelog</h2>
       <ul class="changelog-list">
+        <li><span class="changelog-tag">v3.1.0</span> History is off by default: with the Save to history switch on, runs are saved only with Save run or Ctrl+Enter, never while typing.</li>
         <li><span class="changelog-tag">v3.0.0</span> Rebuilt as a debugger: token-by-token explanation, railroad diagram with SVG export, static catastrophic-backtracking analysis plus a growth measurement, saved unit tests that travel in share links, code generation for ten languages with engine caveats, whole-file batch testing with download, pattern synthesis from examples, a quick reference, match export as text/CSV/JSON, and alternating match colours.</li>
         <li><span class="changelog-tag">v2.4.0</span> Added an engine-time readout that flags slow patterns, and a line-number gutter.</li>
         <li><span class="changelog-tag">v2.3.0</span> Added the s, u and y flags and the replacement preview with named-group support.</li>

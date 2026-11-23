@@ -376,7 +376,7 @@
           const rows = parseCSV(e.target.result);
           ingestRows(rows);
         };
-        reader.readAsText(file);
+        Layerbit.readFile(file).then(t => reader.onload({ target: { result: t } }));  // bytes decoded by the kernel (encoding detected)
       } else if (ext === 'xlsx' || ext === 'xls') {
         const reader = new FileReader();
         reader.onload = (e) => {

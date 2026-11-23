@@ -130,6 +130,15 @@ def _(t):
     expect(not t.visible("#decodeError"), "error shown for empty input")
 
 
+@case("base64", "edge", "A6: text can be encoded with CRLF line endings")
+def _(t):
+    t.set("plainText", "a\nb")
+    eq(t.val("base64Text"), "YQpi", "LF as typed")
+    t.select("lineEndings", "crlf")
+    eq(t.val("base64Text"), "YQ0KYg==", "CRLF")
+    t.select("lineEndings", "lf")
+
+
 @case("base64", "typical", "encode/decode ASCII")
 def _(t):
     t.set("plainText", "Hello, Layerbit!")
@@ -229,6 +238,34 @@ def _(t):
     t.click("#btnMinify")
     out = t.text("jsonOutput")
     expect(out.startswith('[{"id":0') and out.rstrip().endswith("}]"), "minified large array wrong")
+
+
+@case("json-validator", "edge", "A3: Beautify, Minify and Sort keys keep every number exactly as written")
+def _(t):
+    t.set("jsonInput", '{"id": 12345678901234567890, "big": 1e400, "neg": -0, "f": 1.10}')
+    t.click("#btnFormat")
+    out = t.text("jsonOutput")
+    for lit in ["12345678901234567890", "1e400", "-0", "1.10"]:
+        expect(lit in out, f"{lit} changed in the formatted output: {out}")
+    t.click("#btnMinify")
+    eq(t.text("jsonOutput").strip(), '{"id":12345678901234567890,"big":1e400,"neg":-0,"f":1.10}', "minified")
+    t.page.check("#sortKeys"); t.click("#btnMinify")
+    eq(t.text("jsonOutput").strip(), '{"big":1e400,"f":1.10,"id":12345678901234567890,"neg":-0}', "sorted")
+    t.page.uncheck("#sortKeys")
+
+
+@case("json-validator", "edge", "A4: CSV conversion is safe for spreadsheets by default; the switch gives the exact text")
+def _(t):
+    t.set("jsonInput", '[{"name": "=HYPERLINK(\\"http://x\\")", "cmd": "@SUM(A1)", "n": -5, "id": 12345678901234567890}]')
+    t.click("#btnFormat")
+    t.call("setOutputView('convert')"); t.select("convTarget", "csv"); t.wait(100)
+    out = t.text("convOut")
+    expect("'=HYPERLINK" in out and "'@SUM(A1)" in out and ",-5," in out and "12345678901234567890" in out, out)
+    expect(t.page.is_checked("#csvSafe"), "Safe for Excel is not on by default")
+    t.page.uncheck("#csvSafe"); t.wait(100)
+    out = t.text("convOut")
+    expect("'=HYPERLINK" not in out and "@SUM(A1)" in out, out)
+    t.page.check("#csvSafe")
 
 
 @case("json-validator", "typical", "path query evaluates dot, bracket and length")
@@ -741,6 +778,15 @@ def _(t):
     eq(t.val("encodedText"), "", "encoded")
 
 
+@case("url-encoder", "edge", "A6: multi-line text can be encoded with CRLF line endings")
+def _(t):
+    t.set("plainText", "a\nb")
+    eq(t.val("encodedText"), "a%0Ab", "LF as typed")
+    t.select("lineEndings", "crlf")
+    eq(t.val("encodedText"), "a%0D%0Ab", "CRLF")
+    t.select("lineEndings", "lf")
+
+
 @case("url-encoder", "typical", "smart mode keeps URL structure, encodes query values")
 def _(t):
     t.click("#btnModeSmart")
@@ -794,6 +840,63 @@ def _(t):
     out = json.loads(t.text("jsonOutput"))
     eq(out[0]["name"], "Ann", "name")
     expect(out[0]["id"] in (1, "1"), "id parsed")
+
+
+@case("csv-to-json", "edge", "A2: a stray quote inside a field is a literal character, not the start of a quoted block")
+def _(t):
+    t.click("#btnModeToJSON")
+    t.set("csvInput", 'sku,desc,price\n1,5" screen,1.50\n2,stand,9.99')
+    t.click("#btnConvert")
+    out = json.loads(t.text("jsonOutput"))
+    eq(len(out), 2, "rows")
+    eq(out[0]["desc"], '5" screen', "desc with a stray quote")
+    eq(out[1]["desc"], "stand", "second row kept")
+
+
+@case("csv-to-json", "edge", "A2: duplicate headers stay separate columns, single-column blanks are kept, short rows are reported")
+def _(t):
+    t.click("#btnModeToJSON")
+    t.set("csvInput", "id,amount,amount\n1,5,6")
+    t.click("#btnConvert")
+    out = json.loads(t.text("jsonOutput"))
+    eq(sorted(out[0].keys()), ["amount", "amount (2)", "id"], "duplicate header names")
+    t.set("csvInput", "email\na@x.com\n\nb@x.com")
+    t.click("#btnConvert")
+    eq(len(json.loads(t.text("jsonOutput"))), 3, "single-column file lost an empty row")
+    t.set("csvInput", "a,b,c\n1,2,3\n4,5")
+    t.click("#btnConvert")
+    expect("line 3" in t.text("csvIssues").lower(), "short row not reported: " + t.text("csvIssues"))
+
+
+@case("csv-to-json", "edge", "A3: Smart Types never change a value: leading zeros, + signs and long numbers stay text; a column can be forced to text")
+def _(t):
+    t.click("#btnModeToJSON")
+    t.set("csvInput", "id,zip,phone,acct,n,ok\n7,00123,+971501234567,12345678901234567890,42,true")
+    t.click("#btnConvert")
+    out = json.loads(t.text("jsonOutput"))[0]
+    eq(out, {"id": 7, "zip": "00123", "phone": "+971501234567", "acct": "12345678901234567890", "n": 42, "ok": True}, "typed row")
+    expect(t.visible("#colTypes"), "no per-column type preview")
+    t.call("window._ctEl = document.getElementById('colType-n')")
+    t.page.focus("#colType-n")
+    t.select("colType-n", "text")
+    out = json.loads(t.text("jsonOutput"))[0]
+    eq(out["n"], "42", "column forced to text")
+    expect(t.call("document.getElementById('colType-n') === window._ctEl && document.activeElement === window._ctEl"), "the select was replaced and lost focus")
+    t.select("colType-n", "auto")
+
+
+@case("csv-to-json", "edge", "A4: JSON to CSV is safe for spreadsheets by default and keeps long numbers")
+def _(t):
+    t.click("#btnModeToCSV")
+    t.set("csvInput", '[{"name": "=HYPERLINK(\\"http://x\\")", "cmd": "@SUM(A1)", "n": -5, "id": 12345678901234567890}]')
+    t.click("#btnConvert")
+    out = t.text("jsonOutput")
+    expect("'=HYPERLINK" in out and "'@SUM(A1)" in out and ",-5," in out and "12345678901234567890" in out, out)
+    expect(t.visible("#csvSafe") and t.page.is_checked("#csvSafe"), "Safe for Excel switch missing or off")
+    t.page.uncheck("#csvSafe"); t.click("#btnConvert")
+    expect("'=HYPERLINK" not in t.text("jsonOutput"), t.text("jsonOutput"))
+    t.page.check("#csvSafe")
+    t.click("#btnModeToJSON")
 
 
 @case("csv-to-json", "edge", "quoted commas, escaped quotes, embedded newlines, CRLF")
@@ -867,6 +970,16 @@ def _(t):
     t.set("jsonInput", '{"a": {"b": [1, 2]}}')
     y = t.val("yamlInput")
     expect("a:" in y and "b:" in y and "- 1" in y, f"json->yaml wrong: {y!r}")
+
+
+@case("yaml-json-converter", "edge", "A3: long integers survive YAML to JSON and JSON to YAML")
+def _(t):
+    t.set("yamlInput", "id: 12345678901234567890\nsmall: 42\nprice: 1.50\n")
+    out = t.val("jsonInput")
+    expect("12345678901234567890" in out and '"small": 42' in out, out)
+    t.set("jsonInput", '{"id": 12345678901234567891, "count": 7, "huge": 1e400}')
+    y = t.val("yamlInput")
+    expect("id: 12345678901234567891" in y and "count: 7" in y and "huge: 1e400" in y, y)
 
 
 @case("yaml-json-converter", "edge", "the Norway problem: YAML 1.2 keeps 'no' a string")
@@ -1247,6 +1360,31 @@ def _(t):
     expect("user.name" in t.text("tableHead") or "name" in t.text("tableHead"), "nested column missing")
 
 
+@case("json-to-table", "edge", "A3: long numbers are shown and exported exactly")
+def _(t):
+    t.set("jsonInput", '[{"id": 12345678901234567890, "v": 1e400}]')
+    t.call("processJSON()")
+    body = t.text("tableBody")
+    expect("12345678901234567890" in body and "1e400" in body, body)
+
+
+@case("json-to-table", "edge", "A4: Export CSV is safe for spreadsheets by default")
+def _(t):
+    t.set("jsonInput", '[{"name": "=HYPERLINK(\\"http://x\\")", "cmd": "@SUM(A1)", "n": -5, "id": 12345678901234567890}]')
+    t.call("processJSON()")
+    expect(t.page.is_checked("#csvSafe"), "Safe for Excel is not on by default")
+    with t.page.expect_download() as dl:
+        t.click("#btnExport")
+    csv = open(dl.value.path(), encoding="utf-8").read()
+    expect("'=HYPERLINK" in csv and "'@SUM(A1)" in csv and "-5" in csv and "'-5" not in csv and "12345678901234567890" in csv, csv)
+    t.page.uncheck("#csvSafe")
+    with t.page.expect_download() as dl:
+        t.click("#btnExport")
+    csv = open(dl.value.path(), encoding="utf-8").read()
+    expect("'=HYPERLINK" not in csv and "=HYPERLINK" in csv, csv)
+    t.page.check("#csvSafe")
+
+
 @case("json-to-table", "edge", "single object and ragged keys")
 def _(t):
     t.set("jsonInput", '[{"a":1},{"b":2}]')
@@ -1593,6 +1731,17 @@ def _(t):
     eq(t.text("d-MD5"), "d41d8cd98f00b204e9800998ecf8427e", "md5('')")
 
 
+@case("hash-generator", "edge", "A6: text can be hashed with CRLF line endings, as a Windows file would have")
+def _(t):
+    t.set("textInput", "a\nb")
+    t.wait_for("() => document.getElementById('d-SHA-256').textContent === '7e18f737311b2dc3b2f269dd78396b0351f14fb66efa879f768cb23181883c78'")
+    expect(t.visible("#lineEndings"), "no line-endings option")
+    t.select("lineEndings", "crlf")
+    t.wait_for("() => document.getElementById('d-SHA-256').textContent === '18745f36a05e29072709042d6062ce54f1b08ff36c27ba80c39f81fb010c8ce2'")
+    expect("file" in t.text("eolHint").lower(), "no pointer to file mode for exact bytes")
+    t.select("lineEndings", "lf")
+
+
 @case("hash-generator", "typical", "known vectors for 'abc' and HMAC-SHA256")
 def _(t):
     t.set("textInput", "abc")
@@ -1907,6 +2056,33 @@ def _(t):
     t.wait(250)
     expect(not t.visible("#errorBanner"), "error on empty input")
     expect("Paste something" in t.text("magicBar"), t.text("magicBar"))
+
+
+@case("flow", "edge", "A2: CSV operations treat a stray quote inside a field as a literal character")
+def _(t):
+    out = t.call("""LBFlow.run({ v: 1, steps: [{ op: 'csv-to-json', args: { delim: 'auto', types: false } }] }, 'sku,desc\\n1,5" screen\\n2,stand').then(r => r[r.length - 1].output)""")
+    rows = json.loads(out)
+    eq([r["desc"] for r in rows], ['5" screen', "stand"], "rows")
+
+
+@case("flow", "edge", "A3: JSON operations keep long numbers exactly")
+def _(t):
+    run = lambda op, args, inp: t.call(f"LBFlow.run({{ v: 1, steps: [{{ op: '{op}', args: {json.dumps(args)} }}] }}, {json.dumps(inp)}).then(r => r[r.length - 1].output)")
+    src = '{"id": 12345678901234567890, "nested": {"v": 1e400}}'
+    expect("12345678901234567890" in run("json-format", {"indent": "2", "sort": False}, src), "json-format")
+    expect("12345678901234567890" in run("json-to-yaml", {}, src), "json-to-yaml")
+    expect("12345678901234567890" in run("json-to-csv", {"delim": ","}, '[' + src + ']'), "json-to-csv")
+    expect("12345678901234567890" in run("json-flatten", {"mode": "flatten"}, src), "json-flatten")
+    rows = json.loads(run("csv-to-json", {"delim": "auto", "types": True}, "zip,phone,n\n00123,+971,42"))
+    eq(rows, [{"zip": "00123", "phone": "+971", "n": 42}], "csv-to-json types")
+
+
+@case("flow", "edge", "A4: JSON to CSV guards formula-like values unless switched off")
+def _(t):
+    src = json.dumps('[{"a": "=1+1", "n": -5}]')
+    run = lambda args: t.call(f"LBFlow.run({{ v: 1, steps: [{{ op: 'json-to-csv', args: {json.dumps(args)} }}] }}, {src}).then(r => r[r.length - 1].output)")
+    eq(run({"delim": ","}).split("\n")[1], "'=1+1,-5", "safe by default")
+    eq(run({"delim": ",", "safe": False}).split("\n")[1], "=1+1,-5", "exact when switched off")
 
 
 @case("flow", "typical", "magic suggests Base64 decode and the chip adds a working step")
@@ -3478,10 +3654,16 @@ def _(t):
 
 @case("base64", "typical", "kernel: history push/list/drawer and clear")
 def _(t):
-    t.call("Layerbit.history.push('base64', {input:'abc'}, 'first run')")
+    # opt-in (plan A1): nothing is written until the tool's switch is on
+    t.call("Layerbit.history.push('base64', {input:'abc'}, 'first run', {explicit: true})")
+    t.wait(150)
+    eq(t.call("Layerbit.history.list('base64', 5).then(r=>r.length)"), 0, "saved with the switch off")
+    t.call("Layerbit.history.setEnabled('base64', true)")
+    t.call("Layerbit.history.push('base64', {input:'abc'}, 'first run', {explicit: true})")
     t.wait(150)
     labels = t.call("Layerbit.history.list('base64', 5).then(r=>r.map(x=>x.label))")
     expect("first run" in labels, f"history: {labels}")
+    t.call("Layerbit.history.setEnabled('base64', false)")
     t.click("#lbHistoryBtn")
     t.wait(150)
     expect(t.count("#lbHistList .lb-pal-item") >= 1, "drawer empty")
@@ -3504,6 +3686,279 @@ def _(t):
     t.call("fetch('https://example.invalid/x').catch(()=>{})")
     t.wait(100)
     expect("1 network request" in t.text("lbPrivacyPill"), t.text("lbPrivacyPill"))
+
+
+# ----------------------------------------------------------------------------
+# kernel: run history is opt-in (plan A1)
+# ----------------------------------------------------------------------------
+def HIST(slug):
+    return f"Layerbit.history.list('{slug}', 100).then(r => r.length)"
+
+
+def _hist_switch(t):
+    return t.page.locator("input[data-lb-history-switch]").first
+
+
+@case("jwt-decoder", "edge", "A1: a pasted token is never saved; with the switch on, only Save run saves, and Undo removes it")
+def _(t):
+    t.call("Layerbit.history.clear()")
+    t.set("jwtInput", JWT_HS256); t.wait(300)
+    eq(t.call(HIST("jwt-decoder")), 0, "pasting a token saved it")
+    sw = _hist_switch(t)
+    expect(sw.count() == 1 and sw.is_visible() and not sw.is_checked(), "no visible switch, or it is on by default")
+    expect(not t.visible("[data-lb-history-save]"), "Save run shown while the switch is off")
+    sw.check()
+    t.set("jwtInput", JWT_HS256 + " "); t.set("jwtInput", JWT_HS256); t.wait(300)
+    eq(t.call(HIST("jwt-decoder")), 0, "typing with the switch on saved a run")
+    t.click("[data-lb-history-save]"); t.wait(300)
+    eq(t.call(HIST("jwt-decoder")), 1, "Save run did not save")
+    expect("Undo" in t.text("lbToast"), "first save has no Undo: " + t.text("lbToast"))
+    t.click("#lbToast .lb-toast-action"); t.wait(300)
+    eq(t.call(HIST("jwt-decoder")), 0, "Undo did not remove the saved run")
+    t.page.keyboard.press("Control+Enter"); t.wait(300)
+    eq(t.call(HIST("jwt-decoder")), 1, "Ctrl+Enter is an explicit run")
+    sw.uncheck(); t.call("Layerbit.history.clear()")
+
+
+@case("json-validator", "edge", "A1: typing never saves; with the switch on, Beautify saves once")
+def _(t):
+    t.call("Layerbit.history.clear()")
+    t.set("jsonInput", '{"password": "hunter2"}'); t.wait(500)
+    t.click("#btnFormat"); t.wait(300)
+    eq(t.call(HIST("json-validator")), 0, "saved with the switch off")
+    _hist_switch(t).check()
+    t.set("jsonInput", '{"password": "hunter3"}'); t.wait(500)
+    eq(t.call(HIST("json-validator")), 0, "typing saved a run")
+    t.click("#btnFormat"); t.wait(300)
+    eq(t.call(HIST("json-validator")), 1, "Beautify with the switch on")
+    _hist_switch(t).uncheck(); t.call("Layerbit.history.clear()")
+
+
+@case("regex-tester", "edge", "A1: live matching never saves; Save run does, and the switch is remembered per tool")
+def _(t):
+    t.call("Layerbit.history.clear()")
+    t.set("regexInput", "\\d+"); t.set("testInput", "a1 b22"); t.wait(400)
+    eq(t.call(HIST("regex-tester")), 0, "live matching saved a run")
+    _hist_switch(t).check()
+    t.set("testInput", "a1 b22 c333"); t.wait(400)
+    eq(t.call(HIST("regex-tester")), 0, "typing with the switch on saved a run")
+    t.click("[data-lb-history-save]"); t.wait(300)
+    eq(t.call(HIST("regex-tester")), 1, "Save run")
+    t.page.reload(); t.wait(400)
+    expect(_hist_switch(t).is_checked(), "switch not remembered after reload")
+    t.page.goto(t.page.url.replace("regex-tester", "jwt-decoder")); t.wait(400)
+    expect(not _hist_switch(t).is_checked(), "switch leaked to another tool")
+    t.page.goto(t.page.url.replace("jwt-decoder", "regex-tester")); t.wait(400)
+    _hist_switch(t).uncheck(); t.call("Layerbit.history.clear()")
+
+
+@case("flow", "edge", "A1: live re-runs never save; Run with the switch on saves once")
+def _(t):
+    t.call("Layerbit.history.clear()")
+    t.set("flowInput", "c2VjcmV0PTE="); t.wait(300)
+    t.click(".magic-chip"); t.wait(400)
+    eq(t.call(HIST("flow")), 0, "live run saved with the switch off")
+    _hist_switch(t).check()
+    t.set("flowInput", "c2VjcmV0PTI="); t.wait(500)
+    eq(t.call(HIST("flow")), 0, "typing with the switch on saved a run")
+    t.click("#btnRun"); t.wait(400)
+    eq(t.call(HIST("flow")), 1, "Run with the switch on")
+    _hist_switch(t).uncheck(); t.call("Layerbit.history.clear()")
+
+
+@case("jwt-decoder", "edge", "A1: runs saved silently by earlier versions are removed once; Diff Checker runs saved behind its switch are kept")
+def _(t):
+    t.call("""() => new Promise(res => { const r = indexedDB.open('layerbit', 1);
+      r.onupgradeneeded = () => { const s = r.result.createObjectStore('runs', { keyPath: 'id', autoIncrement: true }); s.createIndex('slug', 'slug'); s.createIndex('ts', 'ts'); };
+      r.onsuccess = () => { const tx = r.result.transaction('runs', 'readwrite'), s = tx.objectStore('runs');
+        s.add({ slug: 'jwt-decoder', ts: Date.now(), label: 'old', data: { input: 'eyJ.old.token' } });
+        s.add({ slug: 'text-diff-checker', ts: Date.now(), label: 'kept', data: { a: 'x', b: 'y' } });
+        tx.oncomplete = () => { r.result.close(); res(); }; }; })""")
+    t.call("localStorage.removeItem('lb-history-v2')")
+    t.page.reload(); t.wait(600)
+    eq(t.call(HIST("jwt-decoder")), 0, "a silently saved token survived")
+    eq(t.call(HIST("text-diff-checker")), 1, "a consented Diff Checker run was deleted")
+    t.call("Layerbit.history.clear()")
+
+
+# ----------------------------------------------------------------------------
+# kernel: files are read as bytes with encoding detection (plan A5)
+# ----------------------------------------------------------------------------
+LOAD_FLOW = """bytes => { const dt = new DataTransfer(); dt.items.add(new File([new Uint8Array(bytes)], 'menu.txt')); const i = document.getElementById('flowFile'); i.files = dt.files; i.dispatchEvent(new Event('change')); }"""
+
+
+@case("flow", "edge", "A5: a Windows-1252 file is decoded, not turned into replacement characters, and the encoding is named")
+def _(t):
+    t.page.evaluate(LOAD_FLOW, [0x63, 0x61, 0x66, 0xE9, 0x20, 0x96, 0x20, 0x80, 0x35])
+    t.wait_for("() => document.getElementById('flowInput').value.length > 0")
+    eq(t.val("flowInput"), "caf\u00e9 \u2013 \u20ac5", "decoded text")
+    expect("Windows-1252" in t.text("lbToast"), "encoding not named: " + t.text("lbToast"))
+
+
+@case("flow", "edge", "A5: UTF-16 and UTF-8 with a BOM are decoded; the encoding can be changed after loading")
+def _(t):
+    t.page.evaluate(LOAD_FLOW, [0xFF, 0xFE, 0x68, 0x00, 0x69, 0x00])
+    t.wait_for("() => document.getElementById('flowInput').value === 'hi'")
+    expect("UTF-16" in t.text("lbToast"), t.text("lbToast"))
+    t.page.evaluate(LOAD_FLOW, [0xEF, 0xBB, 0xBF, 0xC3, 0xA9])
+    t.wait_for("() => document.getElementById('flowInput').value === '\u00e9'")
+    expect("UTF-8 with BOM" in t.text("lbToast"), t.text("lbToast"))
+    t.page.evaluate(LOAD_FLOW, [0xC3, 0xA9, 0x0A])
+    t.wait_for("() => document.getElementById('flowInput').value === '\u00e9\\n'")
+    # the bytes C3 A9 read as Windows-1252 are the two characters of mojibake
+    t.click("#lbToast .lb-toast-action")
+    t.wait_for("() => !!document.querySelector('#lbEncoding [data-enc=\"windows-1252\"]')")
+    t.click("#lbEncoding [data-enc='windows-1252']")
+    t.wait_for("() => document.getElementById('flowInput').value === '\u00c3\u00a9\\n'")
+    info = t.call("Layerbit.readFileInfo(new File([new Uint8Array([0xE9])], 'x')).then(i => [i.encoding, i.text, i.bytes.length])")
+    eq(info, ["Windows-1252", "\u00e9", 1], "readFileInfo")
+
+
+@case("log-analyzer", "edge", "A5: a dropped log file is read (encoding detected) instead of failing")
+def _(t):
+    t.call("""() => { const dt = new DataTransfer(); dt.items.add(new File([new Uint8Array([0x32,0x30,0x32,0x36,0x2D,0x30,0x31,0x2D,0x30,0x31,0x20,0x45,0x52,0x52,0x4F,0x52,0x20,0x63,0x61,0x66,0xE9])], 'app.log'));
+      document.body.dispatchEvent(new DragEvent('drop', { dataTransfer: dt, bubbles: true, cancelable: true })); }""")
+    t.wait_for("() => document.getElementById('logInput').value.includes('caf')")
+    expect(t.val("logInput").endswith("caf\u00e9"), repr(t.val("logInput")))
+
+
+@case("markdown-preview", "edge", "A5: a dropped Markdown file is read instead of failing")
+def _(t):
+    t.call("""() => { const dt = new DataTransfer(); dt.items.add(new File(['# Dropped heading'], 'notes.md'));
+      document.body.dispatchEvent(new DragEvent('drop', { dataTransfer: dt, bubbles: true, cancelable: true })); }""")
+    t.wait_for("() => document.body.innerText.includes('Dropped heading')")
+
+
+# ----------------------------------------------------------------------------
+# Phase 0 shared modules
+# ----------------------------------------------------------------------------
+@case("log-analyzer", "maximal", "shared stream reader: a 30 MB file is counted line by line inside a Worker, with progress")
+def _(t):
+    res = t.call("""() => new Promise((resolve, reject) => {
+      const url = new URL('../js/engines/stream.js', location.href).href;
+      const code = `importScripts(${JSON.stringify(url)});
+        onmessage = async e => { let n = 0, ticks = 0; for await (const l of LBStream.lines(e.data, { chunkSize: 1 << 20, onProgress: () => ticks++ })) n++; postMessage([n, ticks]); };`;
+      const w = new Worker(URL.createObjectURL(new Blob([code], { type: 'text/javascript' })));
+      w.onmessage = e => { w.terminate(); resolve(e.data); }; w.onerror = e => reject(new Error(e.message));
+      const line = '2026-01-01 10:00:00 INFO request served in 12 ms by worker-7\\n';
+      w.postMessage(new Blob(Array(500000).fill(line)));
+    })""")
+    eq(res[0], 500000, "lines counted in the worker")
+    expect(res[1] >= 25, f"progress reported {res[1]} times")
+
+
+LOAD_SCRIPT = """src => new Promise((res, rej) => { const s = document.createElement('script'); s.src = new URL(src, location.href).href; s.onload = res; s.onerror = () => rej(new Error('could not load ' + src)); document.head.appendChild(s); })"""
+
+
+@case("json-to-table", "maximal", "shared virtual list: a million rows keep under 100 nodes and scroll to any index")
+def _(t):
+    t.page.evaluate(LOAD_SCRIPT, "../js/ui/virtual.js")
+    t.call("""() => { const host = document.createElement('div'); host.id = 'vtest'; host.style.height = '400px'; document.querySelector('main').prepend(host);
+      window._vl = LBVirtual.list(host, { count: 1000000, rowHeight: 24, render: i => 'row ' + i }); }""")
+    t.wait(100)
+    n = t.count("#vtest .lb-vrow")
+    expect(0 < n < 100, f"{n} rows in the DOM")
+    eq(t.call("document.querySelector('#vtest .lb-vrow').textContent"), "row 0", "first row")
+    t.call("_vl.scrollToIndex(999999)"); t.wait(150)
+    expect(t.call("[...document.querySelectorAll('#vtest .lb-vrow')].some(r => r.textContent === 'row 999999')"), "last row not reachable")
+    t.call("_vl.scrollToIndex(500000)"); t.wait(150)
+    rows = t.call("[...document.querySelectorAll('#vtest .lb-vrow')].map(r => r.textContent)")
+    expect("row 500000" in rows, f"middle row not shown: {rows[:3]}")
+    t.call("_vl.update(3)"); t.wait(100)
+    eq(t.count("#vtest .lb-vrow"), 3, "update(count)")
+
+
+@case("json-to-table", "typical", "shared virtual grid: sticky header, escaped cells, column widths, 200,000 rows")
+def _(t):
+    t.page.evaluate(LOAD_SCRIPT, "../js/ui/virtual.js")
+    t.call("""() => { const host = document.createElement('div'); host.id = 'vgrid'; host.style.height = '300px'; document.querySelector('main').prepend(host);
+      window._vg = LBVirtual.grid(host, { columns: [{ label: 'id', width: 80 }, { label: 'name' }, { label: 'note', width: 200 }], count: 200000, cell: (r, c) => c === 0 ? String(r) : c === 1 ? '<b>user ' + r + '</b>' : 'x' }); }""")
+    t.wait(100)
+    expect(t.count("#vgrid .lb-vgrid-head .lb-vcell") == 3, "header cells")
+    expect(t.count("#vgrid .lb-vrow") < 100, "grid rows are not virtual")
+    eq(t.call("document.querySelector('#vgrid .lb-vrow .lb-vcell:nth-child(2)').textContent"), "<b>user 0</b>", "cells are text, never HTML")
+    eq(t.call("document.querySelector('#vgrid .lb-vrow b')"), None, "HTML was injected")
+    t.call("document.getElementById('vgrid').scrollTop = 5000"); t.wait(150)
+    expect(t.call("document.querySelector('#vgrid .lb-vgrid-head').getBoundingClientRect().top === document.getElementById('vgrid').getBoundingClientRect().top"), "header is not sticky")
+
+
+@case("hash-generator", "typical", "shared batch: a dropped folder is walked, hashed with limited concurrency, reported and zipped")
+def _(t):
+    for src in ["../js/engines/csv.js", "../js/engines/zip.js", "../js/engines/batch.js"]:
+        t.page.evaluate(LOAD_SCRIPT, src)
+    res = t.call("""async () => {
+      const fe = (name, text) => ({ isFile: true, isDirectory: false, name, file: ok => setTimeout(() => ok(new File([text], name)), 0) });
+      const dir = (name, kids) => ({ isFile: false, isDirectory: true, name, createReader: () => { let k = 0; return { readEntries: ok => setTimeout(() => { const part = kids.slice(k, k + 2); k += 2; ok(part); }, 0) }; } });
+      const root = dir('proj', [fe('a.txt', 'alpha'), dir('src', [fe('main.js', 'x=1'), fe('util.js', 'y=2'), fe('=evil.csv', 'z')]), fe('b.txt', 'beta')]);
+      const files = await LBBatch.fromDrop({ items: [{ webkitGetAsEntry: () => root }], files: [] });
+      const hex = b => [...new Uint8Array(b)].map(x => x.toString(16).padStart(2, '0')).join('');
+      const results = await LBBatch.run(files, async f => hex(await crypto.subtle.digest('SHA-256', await f.file.arrayBuffer())), { concurrency: 2 });
+      const rep = LBBatch.report(results, { title: 'Folder hashes', options: 'SHA-256', columns: [{ label: 'Path', get: r => r.item.path }, { label: 'SHA-256', get: r => r.value }] });
+      const zip = LBBatch.archive([{ name: 'hashes.csv', data: rep.csv }, { name: 'hashes.html', data: rep.html }]);
+      const back = LBZip.unzipStored(zip);
+      return { paths: files.map(f => f.path).sort(), csv: new TextDecoder().decode(back['hashes.csv'].data), names: Object.keys(back) };
+    }""")
+    eq(res["paths"], ["proj/a.txt", "proj/b.txt", "proj/src/=evil.csv", "proj/src/main.js", "proj/src/util.js"], "walked paths")
+    expect("proj/a.txt," + __import__("hashlib").sha256(b"alpha").hexdigest() + ",ok" in res["csv"], res["csv"])
+    expect("'proj/src/=evil.csv" not in res["csv"] and "proj/src/=evil.csv" in res["csv"], "path guard wrong")
+    eq(res["names"], ["hashes.csv", "hashes.html"], "archive entries")
+
+
+@case("hash-generator", "typical", "shared WASM loader: loads a module on first use, once, and keeps it for offline use")
+def _(t):
+    t.page.evaluate(LOAD_SCRIPT, "../js/engines/wasm.js")
+    res = t.call("""async () => {
+      await caches.delete(LBWasm.CACHE);
+      const a = await LBWasm.load('selftest'), b = await LBWasm.load('selftest');
+      await new Promise(r => setTimeout(r, 100));
+      const cached = await (await caches.open(LBWasm.CACHE)).match(new URL('../js/vendor/wasm/selftest.wasm', location.href).href);
+      let missing = '';
+      try { await LBWasm.load('no-such-engine'); } catch (e) { missing = e.message; }
+      return [a.exports.add(2, 3), a === b, !!cached, missing];
+    }""")
+    eq(res[:3], [5, True, True], "load, memoise, cache")
+    expect("no-such-engine" in res[3] and "404" in res[3], res[3])
+
+
+@case("csv-to-json", "typical", "PWA: the manifest opens every planned file type in the right tool, and an opened file loads")
+def _(t):
+    man = t.call("fetch('/manifest.json').then(r => r.json())")
+    handlers = man.get("file_handlers") or []
+    exts = {}
+    for h in handlers:
+        for types in h["accept"].values():
+            for e in types:
+                exts[e] = h["action"]
+    for e in [".json", ".csv", ".tsv", ".xml", ".yaml", ".yml", ".log", ".md", ".patch", ".diff", ".txt"]:
+        expect(e in exts, f"{e} has no file handler")
+        status = t.call(f"fetch({json.dumps(exts[e])}).then(r => r.status)")
+        eq(status, 200, f"{e} -> {exts[e]}")
+    eq(exts[".csv"], "/tools/csv-to-json.html", "csv handler")
+    t.call("Layerbit.openFiles([new File(['id,name\\n1,Ann'], 'people.csv')])")
+    t.wait_for("() => document.getElementById('csvInput').value.startsWith('id,name')")
+
+
+@case("csv-to-json", "maximal", "PWA: after the service worker warms its cache, a tool page never visited opens offline")
+def _(t):
+    try:
+        ok = t.call("""async () => {
+          const reg = await navigator.serviceWorker.register('/sw.js', { scope: '/' });
+          await navigator.serviceWorker.ready;
+          const sw = reg.active || reg.waiting || reg.installing;
+          const done = new Promise(res => navigator.serviceWorker.addEventListener('message', e => { if (e.data && e.data.type === 'warmed') res(e.data); }));
+          sw.postMessage({ type: 'warm' });
+          return await Promise.race([done, new Promise(res => setTimeout(() => res({ timeout: true }), 10000))]);
+        }""")
+        expect(ok.get("count", 0) > 30, f"warmed {ok}")
+        t.page.context.set_offline(True)
+        t.page.goto(t.page.url.replace("csv-to-json", "xml-formatter"), wait_until="load")
+        expect("XML" in t.page.title(), "offline page did not load: " + t.page.title())
+        t.page.goto(t.page.url.replace("xml-formatter", "no-such-tool"), wait_until="load")
+        expect("offline" in t.page.content().lower(), "no offline fallback")
+    finally:
+        t.page.context.set_offline(False)
+        t.page.goto(t.page.url.split("/tools/")[0] + "/tools/csv-to-json.html", wait_until="load")
+        t.call("navigator.serviceWorker.getRegistrations().then(rs => Promise.all(rs.map(r => r.unregister()))).then(() => caches.keys()).then(ks => Promise.all(ks.map(k => caches.delete(k))))")
 
 
 # ----------------------------------------------------------------------------
@@ -3625,6 +4080,7 @@ def main():
     ap.add_argument("--only", nargs="*", default=None)
     ap.add_argument("--list", action="store_true")
     ap.add_argument("--no-smoke", action="store_true")
+    ap.add_argument("--json", metavar="PATH", help="also write every result as JSON (for scripts/check_parity.py)")
     args = ap.parse_args()
 
     if args.list:
@@ -3691,6 +4147,9 @@ def main():
 
     failed = [r for r in results if not r[3]]
     print(f"\n{len(results) - len(failed)}/{len(results)} passed in {time.time() - t0:.1f}s")
+    if args.json:
+        with open(args.json, "w", encoding="utf-8") as fh:
+            json.dump([{"slug": r[0], "level": r[1], "name": r[2], "ok": bool(r[3]), "seconds": round(r[4], 2), "error": r[5] or ""} for r in results], fh, indent=1)
     return 1 if failed else 0
 
 

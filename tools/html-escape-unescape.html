@@ -130,7 +130,7 @@
   <link rel="manifest" href="../manifest.json" />
   <link rel="alternate" type="application/atom+xml" title="Layerbit developer guides" href="https://layerbit.co.in/feed.xml" />
   <link rel="apple-touch-icon" href="../apple-touch-icon.png" />
-  <link rel="stylesheet" href="../css/base.css?v=3a758638ad" />
+  <link rel="stylesheet" href="../css/base.css?v=7bd41a021f" />
 
   <style>
 
@@ -573,7 +573,7 @@
       </div>
     </nav>
     <div class="footer-bottom">
-      <div class="footer-copy">&copy; 2025 - 2026 <strong>Layerbit Technologies</strong>. All rights reserved.</div>
+      <div class="footer-copy">&copy; 2025 - 2026 <strong>Layerbit Technologies</strong>. Code open source under AGPL-3.0.</div>
       <div class="footer-links">
         <a href="../about.html">About</a>
         <a href="../work.html">Apps &amp; websites</a>
@@ -581,11 +581,12 @@
         <a href="../contact.html">Contact</a>
         <a href="../privacy.html">Privacy Policy</a>
         <a href="../terms.html">Terms of Service</a>
+        <a href="https://github.com/vysakhsuresh/layerbit-site" rel="noopener">Source code</a>
         <a href="#" data-cookie-settings>Your privacy choices</a>
       </div>
     </div>
   </footer>
-  <script src="../js/kernel.js?v=40b2047872"></script>
+  <script src="../js/kernel.js?v=eb69348d32"></script>
 
   <script src="../js/shared.js?v=e2441a1728"></script>
 
@@ -672,7 +673,7 @@
         input.value = e.target.result;
         input.dispatchEvent(new Event('input'));
       };
-      reader.readAsText(file);
+      Layerbit.readFile(file).then(t => reader.onload({ target: { result: t } }));  // bytes decoded by the kernel (encoding detected)
     }
 
     document.getElementById('rawFile').addEventListener('change', (e) => loadFileInto(rawInput, e.target.files[0]));

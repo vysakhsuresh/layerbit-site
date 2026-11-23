@@ -136,7 +136,7 @@
           "name": "Is anything I paste sent anywhere?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "No. The operations are JavaScript functions in this page, hashing and encryption use the browser's Web Crypto API, and compression uses the browser's built-in CompressionStream. The header indicator counts network requests made by the page's own code and stays at zero. The optional history is stored in your browser's own database and can be cleared from the command palette."
+            "text": "No. The operations are JavaScript functions in this page, hashing and encryption use the browser's Web Crypto API, and compression uses the browser's built-in CompressionStream. The header indicator counts network requests made by the page's own code and stays at zero. History is off by default; if you turn on Save to history, each recipe you run with the Run button is kept in your browser's own database and can be cleared from the command palette."
           }
         },
         {
@@ -171,7 +171,7 @@
   <link rel="manifest" href="../manifest.json" />
   <link rel="alternate" type="application/atom+xml" title="Layerbit developer guides" href="https://layerbit.co.in/feed.xml" />
   <link rel="apple-touch-icon" href="../apple-touch-icon.png" />
-  <link rel="stylesheet" href="../css/base.css?v=3a758638ad" />
+  <link rel="stylesheet" href="../css/base.css?v=7bd41a021f" />
   <link rel="stylesheet" href="../css/tool.css?v=9cec66c40e" />
 
   <style>
@@ -285,6 +285,7 @@
           <button class="btn" type="button" onclick="copyRecipe()" title="Copy the recipe as JSON"><i data-lucide="copy"></i></button>
           <button class="btn" type="button" onclick="importRecipe()" title="Paste a recipe JSON"><i data-lucide="clipboard-paste"></i></button>
           <button class="btn" type="button" onclick="clearRecipe()" title="Remove all steps"><i data-lucide="trash-2"></i></button>
+          <span class="lb-history-slot" data-lb-history-slot></span>
           <button class="btn btn-primary" type="button" id="btnRun" data-lb-primary onclick="runAll()"><i data-lucide="play"></i> Run</button>
         </div>
       </div>
@@ -455,7 +456,7 @@
         </div>
         <div class="faq-item">
           <button class="faq-question">Is anything I paste sent anywhere? <i data-lucide="chevron-down"></i></button>
-          <div class="faq-answer"><p>No. The operations are JavaScript functions in this page, hashing and encryption use the browser's Web Crypto API, and compression uses the browser's built-in CompressionStream. The header indicator counts network requests made by the page's own code and stays at zero. The optional history is stored in your browser's own database and can be cleared from the command palette.</p></div>
+          <div class="faq-answer"><p>No. The operations are JavaScript functions in this page, hashing and encryption use the browser's Web Crypto API, and compression uses the browser's built-in CompressionStream. The header indicator counts network requests made by the page's own code and stays at zero. History is off by default; if you turn on <strong>Save to history</strong>, each recipe you run with the Run button is kept in your browser's own database and can be cleared from the command palette.</p></div>
         </div>
         <div class="faq-item">
           <button class="faq-question">How is this different from CyberChef? <i data-lucide="chevron-down"></i></button>
@@ -502,6 +503,7 @@
     <div class="info-panel">
       <h2><i data-lucide="git-merge"></i> Changelog</h2>
       <ul class="changelog-list">
+        <li><span class="changelog-tag">v1.1.0</span> History is off by default: with the Save to history switch on, only the Run button saves a run; live previews never do. CSV operations use the shared CSV reader, so a quote inside a field is a literal character. JSON format, JSON → YAML, JSON → CSV and JSON flatten keep long numbers exactly, and CSV → JSON typing never changes a value (00123, +971 and long numbers stay text). JSON → CSV has a Safe for Excel option, on by default.</li>
         <li><span class="changelog-tag">v1.0.0</span> Initial release: 74 chainable operations across encoding, hashing, text, data, time, numbers, network and crypto; per-step previews and errors; magic detection; nine preset recipes; recipe copy, import and share links; file input; send-to and history integration.</li>
       </ul>
     </div>
@@ -598,7 +600,7 @@
       </div>
     </nav>
     <div class="footer-bottom">
-      <div class="footer-copy">&copy; 2025 - 2026 <strong>Layerbit Technologies</strong>. All rights reserved.</div>
+      <div class="footer-copy">&copy; 2025 - 2026 <strong>Layerbit Technologies</strong>. Code open source under AGPL-3.0.</div>
       <div class="footer-links">
         <a href="../about.html">About</a>
         <a href="../work.html">Apps &amp; websites</a>
@@ -606,14 +608,17 @@
         <a href="../contact.html">Contact</a>
         <a href="../privacy.html">Privacy Policy</a>
         <a href="../terms.html">Terms of Service</a>
+        <a href="https://github.com/vysakhsuresh/layerbit-site" rel="noopener">Source code</a>
         <a href="#" data-cookie-settings>Your privacy choices</a>
       </div>
     </div>
   </footer>
-  <script src="../js/kernel.js?v=40b2047872"></script>
+  <script src="../js/kernel.js?v=eb69348d32"></script>
 
   <script src="../js/shared.js?v=e2441a1728"></script>
-  <script src="../js/engines/flow.js?v=8b22b05ea4"></script>
+  <script src="../js/engines/csv.js?v=a78b81af7d"></script>
+  <script src="../js/engines/lossless-json.js?v=88a67e6c17"></script>
+  <script src="../js/engines/flow.js?v=e128225b7b"></script>
 
   <script>
     const $ = id => document.getElementById(id);

@@ -130,7 +130,7 @@
   <link rel="manifest" href="../manifest.json" />
   <link rel="alternate" type="application/atom+xml" title="Layerbit developer guides" href="https://layerbit.co.in/feed.xml" />
   <link rel="apple-touch-icon" href="../apple-touch-icon.png" />
-  <link rel="stylesheet" href="../css/base.css?v=3a758638ad" />
+  <link rel="stylesheet" href="../css/base.css?v=7bd41a021f" />
 
   <style>
 
@@ -595,6 +595,7 @@
     <div class="info-panel">
       <h2><i data-lucide="git-merge"></i> Deployment Methodology Changelog</h2>
       <ul class="changelog-list">
+        <li><span class="changelog-tag">v2.2.0</span> Dropping a log file onto the page works again (it failed with an error), and files are decoded from their bytes: UTF-8, UTF-16 and Windows-1252 are detected, and the encoding can be changed after loading.</li>
         <li><span class="changelog-tag">v2.1.0</span> Added a DEBUG/TRACE filter with its own count, a regular-expression mode for grep, and a "most repeated messages" readout that collapses timestamps, ids, numbers and quoted values so the same fault logged a thousand times with different ids shows as one line with a count.</li>
         <li><span class="changelog-tag">v1.4.0</span> Added a Copy Filtered button alongside Export, matching the copy-to-clipboard pattern used elsewhere in the suite.</li>
         <li><span class="changelog-tag">v1.3.0</span> Added a file-size warning before loading very large dumps, and corrected the FAQ's file-size claim to match actual (non-virtualized) rendering capacity.</li>
@@ -697,7 +698,7 @@
       </div>
     </nav>
     <div class="footer-bottom">
-      <div class="footer-copy">&copy; 2025 - 2026 <strong>Layerbit Technologies</strong>. All rights reserved.</div>
+      <div class="footer-copy">&copy; 2025 - 2026 <strong>Layerbit Technologies</strong>. Code open source under AGPL-3.0.</div>
       <div class="footer-links">
         <a href="../about.html">About</a>
         <a href="../work.html">Apps &amp; websites</a>
@@ -705,11 +706,12 @@
         <a href="../contact.html">Contact</a>
         <a href="../privacy.html">Privacy Policy</a>
         <a href="../terms.html">Terms of Service</a>
+        <a href="https://github.com/vysakhsuresh/layerbit-site" rel="noopener">Source code</a>
         <a href="#" data-cookie-settings>Your privacy choices</a>
       </div>
     </div>
   </footer>
-  <script src="../js/kernel.js?v=40b2047872"></script>
+  <script src="../js/kernel.js?v=eb69348d32"></script>
 
   <script src="../js/shared.js?v=e2441a1728"></script>
 
@@ -744,7 +746,7 @@
         if (text.length > BIG_LOG_CHARS) loadBig(text, file.name);
         else { setBig(null); logInput.value = text; analyzeLogs(); }
       };
-      reader.readAsText(file);
+      Layerbit.readFile(file).then(t => reader.onload({ target: { result: t } }));  // bytes decoded by the kernel (encoding detected)
       this.value = ''; // Reset so the same file can be uploaded again if needed
     });
 
@@ -861,7 +863,7 @@
       if (t && t.length > BIG_LOG_CHARS) { e.preventDefault(); loadBig(t, 'Pasted log'); }
     });
     document.getElementById('btnEditBig').addEventListener('click', () => { const t = bigLog; setBig(null); logInput.value = t; });
-    if (window.Layerbit) Layerbit.onDrop(file => { const r = new FileReader(); r.onload = ev => { const t = ev.target.result; if (t.length > BIG_LOG_CHARS) loadBig(t, file.name); else { setBig(null); logInput.value = t; analyzeLogs(); } }; r.readAsText(file); });
+    if (window.Layerbit) Layerbit.onDrop(files => { const file = files[0]; Layerbit.readFile(file).then(t => { if (t.length > BIG_LOG_CHARS) loadBig(t, file.name); else { setBig(null); logInput.value = t; analyzeLogs(); } }); });
 
     // Parse as soon as a log is pasted or typed; the button stays for re-runs.
     let parseTimer = null;

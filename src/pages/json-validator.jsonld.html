@@ -66,7 +66,7 @@
           "name": "Why is client-side JSON processing more secure?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "Unlike server-side validation tools that transmit your pasted data across the internet, Layerbit executes all parsing and formatting locally within your machine using the browser's native JSON.parse() capabilities. Sensitive API keys, private user data and proprietary system configurations remain strictly on your device, and the header indicator shows the page has made no network request with your data."
+            "text": "Unlike server-side validation tools that transmit your pasted data across the internet, Layerbit executes all parsing and formatting locally within your machine using the browser's native JSON.parse() capabilities. Sensitive API keys, private user data and proprietary system configurations remain strictly on your device, and the header indicator shows the page has made no network request with your data. Nothing is saved on your device either, unless you turn on Save to history; then only the runs you start yourself are kept, in this browser, until you clear them."
           }
         },
         {
@@ -82,7 +82,7 @@
           "name": "Which JSONPath syntax is supported?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "The root $, dotted keys, bracket keys with quotes for names containing spaces, numeric and negative indexes, wildcards with [*] or .*, recursive descent with .., slices such as [0:5], unions such as [0,2] or ['a','b'], .length on arrays and strings, and filters written as [?(@.price > 10 \u0026\u0026 @.status == 'paid')] with ==, !=, <, >, <=, >=, regex matching via =~ /pattern/, negation and parentheses. Every match is returned with its exact path."
+            "text": "The root $, dotted keys, bracket keys with quotes for names containing spaces, numeric and negative indexes, wildcards with [*] or .*, recursive descent with .., slices such as [0:5], unions such as [0,2] or ['a','b'], .length on arrays and strings, and filters written as [?(@.price \u003e 10 \u0026\u0026 @.status == 'paid')] with ==, !=, \u003c, \u003e, \u003c=, \u003e=, regex matching via =~ /pattern/, negation and parentheses. Every match is returned with its exact path."
           }
         },
         {
@@ -107,6 +107,14 @@
           "acceptedAnswer": {
             "@type": "Answer",
             "text": "Each column's values are examined across every row: all integers gives BIGINT (INTEGER in SQLite), any decimal gives DOUBLE PRECISION, booleans give BOOLEAN or TINYINT(1), ISO date strings give TIMESTAMP or DATETIME, and everything else gives TEXT or a VARCHAR sized from the longest value. A column with no nulls is marked NOT NULL. Nested objects are flattened into parent_child columns and arrays are stored as JSON text. Identifiers are converted to snake_case and quoted for the chosen dialect."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What does \"Safe for Excel\" do to the CSV?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Excel, LibreOffice and Google Sheets treat a cell that begins with =, +, - or @ as a formula, so a value such as =HYPERLINK(\"http://…\") in your data can run when someone opens the file (CSV or formula injection). With Safe for Excel on, which is the default, such values are written with a leading apostrophe ('=HYPERLINK(…)); spreadsheets show them as text. Plain numbers such as -5 or +3.5 are left alone. Turn it off when the CSV feeds another program that must receive the exact text."
           }
         },
         {

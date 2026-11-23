@@ -17,6 +17,7 @@ offline, and sends no visitor IP to a CDN operator).
 | `marked.umd.js` | marked (`lib/marked.umd.js`) | 18.0.14 | MIT |
 | `purify.min.js` | dompurify | 3.4.16 | MPL-2.0 OR Apache-2.0 |
 | `eff-wordlist.js` | EFF Large Wordlist (via diceware-wordlist-en-eff 1.0.1), repackaged as one script | 2016 | CC BY 3.0 US |
+| `wasm/selftest.wasm` | Layerbit's own 41-byte test module for the WebAssembly loader | n/a | AGPL-3.0 |
 
 To upgrade one: download the same `dist/` file from the new version's npm
 tarball, replace it here, and update this table.

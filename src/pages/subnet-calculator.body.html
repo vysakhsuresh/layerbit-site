@@ -205,6 +205,7 @@
   {{FOOTER}}
 
   <script src="../js/shared.js"></script>
+  <script src="../js/engines/csv.js"></script>
 
   <script>
     // ---------------------------------------------------------------
@@ -429,7 +430,7 @@
     }
     document.getElementById('btnCopySplit').addEventListener('click', () => navigator.clipboard.writeText(splitLines().map(r => r[1]).join('\n')));
     document.getElementById('btnCsvSplit').addEventListener('click', () => {
-      const csv = ['#,network,first_host,last_host,broadcast,usable', ...splitLines().map(r => r.join(','))].join('\n');
+      const csv = LBCsv.stringify([['#', 'network', 'first_host', 'last_host', 'broadcast', 'usable'], ...splitLines()], { safe: true, newline: '\n' });
       const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' })); a.download = `subnets-${fmt(current, current.network)}-${splitSelect.value}.csv`; a.click();
     });
 

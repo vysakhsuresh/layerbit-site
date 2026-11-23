@@ -106,7 +106,7 @@
           "name": "Why does Layerbit prioritize client-side decoding?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "JWTs often contain personal data or authorization scopes, and the keys used to verify or sign them are the most sensitive material a service has. Sending either to a remote server for processing is a transfer you may not be allowed to make. All decoding, verification, signing and decryption here runs in your browser with the Web Crypto API, and the indicator in the header counts network requests the page makes so you can see it stays at zero."
+            "text": "JWTs often contain personal data or authorization scopes, and the keys used to verify or sign them are the most sensitive material a service has. Sending either to a remote server for processing is a transfer you may not be allowed to make. All decoding, verification, signing and decryption here runs in your browser with the Web Crypto API, and the indicator in the header counts network requests the page makes so you can see it stays at zero. A pasted token is not saved on your device either, unless you turn on Save to history and press Save run (or Ctrl+Enter); it is kept in this browser until you clear it."
           }
         },
         {
@@ -173,7 +173,7 @@
   <link rel="manifest" href="../manifest.json" />
   <link rel="alternate" type="application/atom+xml" title="Layerbit developer guides" href="https://layerbit.co.in/feed.xml" />
   <link rel="apple-touch-icon" href="../apple-touch-icon.png" />
-  <link rel="stylesheet" href="../css/base.css?v=3a758638ad" />
+  <link rel="stylesheet" href="../css/base.css?v=7bd41a021f" />
 
   <style>
 
@@ -543,6 +543,7 @@
       </div>
       <div class="token-foot">
         <span class="token-meta" id="tokenMeta"></span>
+        <span class="lb-history-slot" data-lb-history-slot data-live></span>
         <button type="button" class="btn" onclick="clearToken()"><i data-lucide="trash-2"></i> Clear</button>
         <button type="button" class="btn" onclick="copyText(document.getElementById('jwtInput').value, 'Token copied')"><i data-lucide="copy"></i> Copy token</button>
       </div>
@@ -707,7 +708,7 @@
         <div class="faq-item">
           <button class="faq-question">Why does Layerbit prioritize client-side decoding? <i data-lucide="chevron-down"></i></button>
           <div class="faq-answer">
-            <p>JWTs often contain personal data or authorization scopes, and the keys used to verify or sign them are the most sensitive material a service has. Sending either to a remote server for processing is a transfer you may not be allowed to make. All decoding, verification, signing and decryption here runs in your browser with the Web Crypto API, and the indicator in the header counts network requests the page makes so you can see it stays at zero.</p>
+            <p>JWTs often contain personal data or authorization scopes, and the keys used to verify or sign them are the most sensitive material a service has. Sending either to a remote server for processing is a transfer you may not be allowed to make. All decoding, verification, signing and decryption here runs in your browser with the Web Crypto API, and the indicator in the header counts network requests the page makes so you can see it stays at zero. A pasted token is not saved on your device either, unless you turn on <strong>Save to history</strong> and press <strong>Save run</strong> (or Ctrl+Enter); it is kept in this browser until you clear it.</p>
           </div>
         </div>
         <div class="faq-item">
@@ -824,6 +825,7 @@
     <div class="info-panel">
       <h2><i data-lucide="git-merge"></i> Deployment Methodology Changelog</h2>
       <ul class="changelog-list">
+        <li><span class="changelog-tag">v3.1.0</span> A pasted token is no longer saved to history automatically: history is off by default, behind a Save to history switch, and saves only on Save run or Ctrl+Enter. Tokens saved by earlier versions were deleted.</li>
         <li><span class="changelog-tag">v3.0.0</span> Added a claims check with expected issuer and audience, a lifetime timeline, verification for PS256/384/512, ES256/384/512 and EdDSA with PEM, PKCS#1, JWK and JWKS key material (kid selection), a signer for all thirteen algorithms with in-browser key-pair generation and JWKS export, configurable token lifetime and kid, JWE decryption (dir, A*KW, RSA-OAEP, PBES2, ECDH-ES; AES-GCM and AES-CBC-HMAC) and test encryption, share links and local history.</li>
         <li><span class="changelog-tag">v2.2.0</span> Time claims are now read out in full: <code>iat</code>, <code>nbf</code> and <code>exp</code> as UTC dates with relative time and the token's lifetime, a "not yet valid" status when <code>nbf</code> is in the future, and a warning when a value looks like milliseconds. Added a signer that creates HS256/384/512 test tokens locally.</li>
         <li><span class="changelog-tag">v1.4.0</span> Added optional signature verification (HS256/384/512 shared secret, RS256/384/512 public key) via the Web Crypto API.</li>
@@ -925,7 +927,7 @@
       </div>
     </nav>
     <div class="footer-bottom">
-      <div class="footer-copy">&copy; 2025 - 2026 <strong>Layerbit Technologies</strong>. All rights reserved.</div>
+      <div class="footer-copy">&copy; 2025 - 2026 <strong>Layerbit Technologies</strong>. Code open source under AGPL-3.0.</div>
       <div class="footer-links">
         <a href="../about.html">About</a>
         <a href="../work.html">Apps &amp; websites</a>
@@ -933,11 +935,12 @@
         <a href="../contact.html">Contact</a>
         <a href="../privacy.html">Privacy Policy</a>
         <a href="../terms.html">Terms of Service</a>
+        <a href="https://github.com/vysakhsuresh/layerbit-site" rel="noopener">Source code</a>
         <a href="#" data-cookie-settings>Your privacy choices</a>
       </div>
     </div>
   </footer>
-  <script src="../js/kernel.js?v=40b2047872"></script>
+  <script src="../js/kernel.js?v=eb69348d32"></script>
 
   <script src="../js/shared.js?v=e2441a1728"></script>
   <script src="../js/engines/jwt.js?v=440f7f3df4"></script>

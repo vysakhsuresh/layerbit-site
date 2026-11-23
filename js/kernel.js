@@ -118,13 +118,19 @@
 
   // --------------------------------------------------------------------- toast
   var toastTimer = null;
-  function toast(msg, kind) {
+  // action: optional { label, fn } shown as a button in the toast (e.g. Undo).
+  function toast(msg, kind, action) {
     var t = document.getElementById('lbToast');
     if (!t) { t = el('div', { id: 'lbToast', role: 'status', 'aria-live': 'polite' }); document.body.appendChild(t); }
     t.textContent = msg;
-    t.className = 'show' + (kind ? ' ' + kind : '');
+    if (action) {
+      var b = el('button', { type: 'button', class: 'lb-toast-action', text: action.label });
+      b.addEventListener('click', function () { t.className = ''; action.fn(); });
+      t.appendChild(b);
+    }
+    t.className = 'show' + (kind ? ' ' + kind : '') + (action ? ' has-action' : '');
     clearTimeout(toastTimer);
-    toastTimer = setTimeout(function () { t.className = ''; }, 2600);
+    toastTimer = setTimeout(function () { t.className = ''; }, action ? 6000 : 2600);
   }
 
   // ----------------------------------------------------------------- URL state
@@ -229,8 +235,12 @@
   }
 
   // ------------------------------------------------------------------- history
-  // IndexedDB 'layerbit' / store 'runs': {slug, ts, label, data}. Only tools
-  // that call history.push write anything; nothing is recorded silently.
+  // IndexedDB 'layerbit' / store 'runs': {slug, ts, label, data}.
+  // Saving is opt-in per tool: a "Save to history" switch (off by default,
+  // remembered per tool in localStorage) and, with it on, only an explicit run
+  // is written: the tool's primary button, Ctrl+Enter, or the "Save run"
+  // button live tools show. Tools report their latest state with
+  // history.push as they run; typing alone never writes anything.
   var DB_NAME = 'layerbit', STORE = 'runs', MAX_PER_TOOL = 50;
   function openDb() {
     return new Promise(function (res, rej) {
@@ -254,21 +264,61 @@
       });
     });
   }
-  var lastPush = {};
+  var lastPush = {}, pending = {}, explicitAt = 0, undoShown = {};
+  var OLD_SWITCH = { 'text-diff-checker': 'lb-diff-save-history' };
+  function lsGet(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
+  function lsSet(k, v) { try { localStorage.setItem(k, v); } catch (e) { /* storage blocked */ } }
+  // An explicit run (primary button, Ctrl+Enter, Save run) lets the next
+  // push within 2 s be written; asynchronous tools pass {explicit: true}.
+  function markExplicit() { explicitAt = Date.now(); }
+  function takeExplicit() { var ok = explicitAt && Date.now() - explicitAt < 2000; explicitAt = 0; return ok; }
+  function commit(slug, entry) {
+    var key = JSON.stringify(entry.data);
+    if (lastPush[slug] === key || key.length > 2000000) return Promise.resolve(null);
+    lastPush[slug] = key;
+    return history_.list(slug, MAX_PER_TOOL + 5).then(function (rows) {
+      return tx('readwrite', function (s) {
+        rows.slice(MAX_PER_TOOL - 1).forEach(function (r) { s.delete(r.id); });
+        return s.add({ slug: slug, ts: Date.now(), label: (entry.label || '').slice(0, 120), data: entry.data });
+      });
+    }).then(function (id) {
+      if (id != null && !undoShown[slug]) {
+        undoShown[slug] = true;
+        toast('Saved to history on this device', null, { label: 'Undo', fn: function () { history_.remove(id); lastPush[slug] = null; } });
+      }
+      return id;
+    }).catch(function () { return null; /* storage blocked: history is a convenience */ });
+  }
   var history_ = {
-    push: function (slug, data, label) {
-      slug = slug || SLUG; if (!slug || !data) return Promise.resolve();
-      var key = JSON.stringify(data);
-      if (lastPush[slug] === key) return Promise.resolve();
-      lastPush[slug] = key;
-      if (key.length > 2000000) return Promise.resolve();
-      return history_.list(slug, MAX_PER_TOOL + 5).then(function (rows) {
-        return tx('readwrite', function (s) {
-          s.add({ slug: slug, ts: Date.now(), label: (label || '').slice(0, 120), data: data });
-          rows.slice(MAX_PER_TOOL - 1).forEach(function (r) { s.delete(r.id); });
-        });
-      }).catch(function () { /* storage blocked: history is a convenience */ });
+    enabled: function (slug) {
+      slug = slug || SLUG;
+      var v = lsGet('lb-history-on:' + slug);
+      if (v == null && OLD_SWITCH[slug]) v = lsGet(OLD_SWITCH[slug]);
+      return v === '1';
     },
+    setEnabled: function (slug, on) {
+      slug = slug || SLUG;
+      lsSet('lb-history-on:' + slug, on ? '1' : '0');
+      if (OLD_SWITCH[slug]) lsSet(OLD_SWITCH[slug], on ? '1' : '0');
+      syncSwitches();
+    },
+    // Records the tool's current state. It is written only when the switch is
+    // on and this push follows an explicit run (or opts.explicit is set).
+    push: function (slug, data, label, opts) {
+      slug = slug || SLUG; if (!slug || !data) return Promise.resolve(null);
+      pending[slug] = { data: data, label: label };
+      if (!history_.enabled(slug)) { explicitAt = 0; return Promise.resolve(null); }
+      if (!((opts && opts.explicit) || takeExplicit())) return Promise.resolve(null);
+      return commit(slug, pending[slug]);
+    },
+    // Save run: writes the tool's latest state now (switch must be on).
+    saveNow: function (slug) {
+      slug = slug || SLUG;
+      if (!history_.enabled(slug)) return Promise.resolve(null);
+      if (!pending[slug]) { toast('Run the tool first, then save'); return Promise.resolve(null); }
+      return commit(slug, pending[slug]);
+    },
+    remove: function (id) { return tx('readwrite', function (s) { s.delete(id); }).then(function () { toast('Removed from history'); }).catch(function () { }); },
     list: function (slug, n) {
       return openDb().then(function (db) {
         return new Promise(function (res, rej) {
@@ -286,6 +336,47 @@
     },
     clear: function () { return tx('readwrite', function (s) { s.clear(); }).then(function () { lastPush = {}; toast('History cleared on this device'); }).catch(function () { }); }
   };
+
+  // Before the switch existed, some tools saved every run silently (a pasted
+  // JWT, for one). Delete those once; the Diff Checker's runs were already
+  // saved only behind its own switch, so they are kept.
+  function purgeSilentRuns() {
+    if (lsGet('lb-history-v2') || !window.indexedDB) return;
+    var done = function () { lsSet('lb-history-v2', '1'); };
+    tx('readwrite', function (s) {
+      var req = s.openCursor();
+      req.onsuccess = function () { var c = req.result; if (!c) return; if (c.value.slug !== 'text-diff-checker') c.delete(); c.continue(); };
+    }).then(done, done);
+  }
+
+  // Switch UI: pages mark where it goes with [data-lb-history-slot]
+  // (data-live adds a "Save run" button for tools that run as you type), or
+  // provide their own input[data-lb-history-switch].
+  function syncSwitches() {
+    var on = history_.enabled(SLUG);
+    document.querySelectorAll('input[data-lb-history-switch]').forEach(function (i) { i.checked = on; });
+    document.querySelectorAll('[data-lb-history-save]').forEach(function (b) { b.hidden = !on; });
+  }
+  function installHistorySwitches() {
+    document.querySelectorAll('[data-lb-history-slot]').forEach(function (slot) {
+      if (slot.querySelector('input[data-lb-history-switch]')) return;
+      var tip = 'Off: nothing is stored. On: each run you start (the run button, Ctrl+Enter or Save run) is kept in this browser so you can reopen it with Ctrl+H. Typing alone is never saved.';
+      var lab = el('label', { class: 'toggle-label lb-history-switch', title: tip, html: '<input type="checkbox" data-lb-history-switch> Save to history' });
+      slot.appendChild(lab);
+      if (slot.hasAttribute('data-live')) {
+        var b = el('button', { type: 'button', class: 'btn mini-btn', 'data-lb-history-save': '', title: 'Save the current input to history on this device', html: '<i data-lucide="history"></i> Save run' });
+        b.addEventListener('click', function () { history_.saveNow(SLUG); });
+        slot.appendChild(b);
+      }
+    });
+    document.querySelectorAll('input[data-lb-history-switch]').forEach(function (i) {
+      i.addEventListener('change', function () { history_.setEnabled(SLUG, i.checked); });
+    });
+    // a click on the tool's primary button is an explicit run
+    document.addEventListener('click', function (e) { if (e.target.closest && e.target.closest('[data-lb-primary]')) markExplicit(); }, true);
+    syncSwitches();
+  }
+  function hasHistory() { return !!document.querySelector('input[data-lb-history-switch], [data-lb-history-slot]'); }
 
   // ------------------------------------------------------------------ palette
   var pal = null, palMode = 'search', palPayload = null, palItems = [], palIndex = 0;
@@ -418,13 +509,86 @@
 
   // ------------------------------------------------------------------ drop
   var dropHandler = null, dragDepth = 0, overlay = null;
-  function readFile(file) {
-    return new Promise(function (res, rej) {
-      var r = new FileReader();
-      r.onload = function () { res(r.result); }; r.onerror = function () { rej(r.error); };
-      r.readAsText(file);
+  // ------------------------------------------------------------ file reading
+  // Files are read as bytes and decoded here, not with readAsText (UTF-8
+  // only, which turns every Windows-1252 accent into U+FFFD): a BOM decides
+  // (UTF-8, UTF-16 LE/BE), then BOM-less UTF-16 is recognised by its zero
+  // bytes, then strict UTF-8 is tried, and Windows-1252 is the fallback,
+  // since it maps every byte. The toast after loading names the encoding and
+  // offers to read the same bytes another way.
+  var ENCODINGS = [{ v: 'utf-8', n: 'UTF-8' }, { v: 'windows-1252', n: 'Windows-1252 (Western European)' }, { v: 'utf-16le', n: 'UTF-16 LE' }, { v: 'utf-16be', n: 'UTF-16 BE' },
+    { v: 'windows-1256', n: 'Windows-1256 (Arabic)' }, { v: 'windows-1251', n: 'Windows-1251 (Cyrillic)' }, { v: 'iso-8859-7', n: 'ISO-8859-7 (Greek)' }, { v: 'shift_jis', n: 'Shift_JIS (Japanese)' }, { v: 'gb18030', n: 'GB18030 (Chinese)' }];
+  var ENC_NAME = { 'utf-8': 'UTF-8', 'windows-1252': 'Windows-1252', 'utf-16le': 'UTF-16 LE', 'utf-16be': 'UTF-16 BE', 'windows-1256': 'Windows-1256', 'windows-1251': 'Windows-1251', 'iso-8859-7': 'ISO-8859-7', 'shift_jis': 'Shift_JIS', 'gb18030': 'GB18030' };
+  function decodeBytes(u8, forced) {
+    var dec = function (label, bytes, fatal) { return new TextDecoder(label, { fatal: !!fatal }).decode(bytes); };
+    if (forced) {
+      var skip = forced === 'utf-8' && u8[0] === 0xEF && u8[1] === 0xBB && u8[2] === 0xBF ? 3 : /^utf-16/.test(forced) && ((u8[0] === 0xFF && u8[1] === 0xFE) || (u8[0] === 0xFE && u8[1] === 0xFF)) ? 2 : 0;
+      return { text: dec(forced, u8.subarray(skip)), encoding: ENC_NAME[forced] || forced, label: forced, bom: skip > 0 };
+    }
+    if (u8[0] === 0xEF && u8[1] === 0xBB && u8[2] === 0xBF) return { text: dec('utf-8', u8.subarray(3)), encoding: 'UTF-8', label: 'utf-8', bom: true };
+    if (u8[0] === 0xFF && u8[1] === 0xFE) return { text: dec('utf-16le', u8.subarray(2)), encoding: 'UTF-16 LE', label: 'utf-16le', bom: true };
+    if (u8[0] === 0xFE && u8[1] === 0xFF) return { text: dec('utf-16be', u8.subarray(2)), encoding: 'UTF-16 BE', label: 'utf-16be', bom: true };
+    var n = Math.min(u8.length, 4096) & ~1, ze = 0, zo = 0;
+    for (var i = 0; i < n; i += 2) { if (u8[i] === 0) ze++; if (u8[i + 1] === 0) zo++; }
+    if (n >= 4 && zo > n / 2 * 0.3 && ze < n / 2 * 0.05) return { text: dec('utf-16le', u8), encoding: 'UTF-16 LE', label: 'utf-16le', bom: false };
+    if (n >= 4 && ze > n / 2 * 0.3 && zo < n / 2 * 0.05) return { text: dec('utf-16be', u8), encoding: 'UTF-16 BE', label: 'utf-16be', bom: false };
+    try { return { text: dec('utf-8', u8, true), encoding: 'UTF-8', label: 'utf-8', bom: false }; }
+    catch (e) { return { text: dec('windows-1252', u8), encoding: 'Windows-1252', label: 'windows-1252', bom: false }; }
+  }
+  /** {name, text, encoding, label, bom, bytes} for a File; opts.encoding forces one. */
+  function readFileInfo(file, opts) {
+    return file.arrayBuffer().then(function (buf) {
+      var u8 = new Uint8Array(buf), d = decodeBytes(u8, opts && opts.encoding);
+      return { name: file.name, text: d.text, encoding: d.encoding + (d.bom ? ' with BOM' : ''), label: d.label, bom: d.bom, bytes: u8 };
     });
   }
+  var lastRead = null;
+  /** Promise of the decoded text (as before). The page's callbacks are
+   *  remembered, so choosing another encoding re-delivers the text to them. */
+  function readFile(file) {
+    var handlers = [];
+    var p = readFileInfo(file).then(function (info) {
+      lastRead = { info: info, handlers: handlers };
+      // after the page's own callbacks (and any "Loaded" toast they show)
+      setTimeout(function () { toast('Loaded ' + info.name + ' (' + fmtBytes(info.bytes.length) + ', ' + info.encoding + ')', null, { label: 'Change encoding', fn: openEncoding }); }, 0);
+      return info.text;
+    });
+    var then = p.then.bind(p);
+    p.then = function (f, r) { if (typeof f === 'function') handlers.push(f); return then(f, r); };
+    return p;
+  }
+  var encDlg = null;
+  function openEncoding() {
+    if (!lastRead) return;
+    if (!encDlg) {
+      encDlg = el('div', { id: 'lbEncoding', role: 'dialog', 'aria-modal': 'true', 'aria-label': 'Choose the text encoding' }, [
+        el('div', { class: 'lb-pal-box' }, [
+          el('div', { class: 'lb-pal-head', html: '<i data-lucide="languages"></i><strong style="flex:1">Read the file as…</strong><kbd>Esc</kbd>' }),
+          el('div', { id: 'lbEncList', class: 'lb-pal-list' }),
+          el('div', { class: 'lb-pal-foot', html: '<span>The same bytes, decoded another way. Pick the line that reads correctly.</span>' })
+        ])
+      ]);
+      encDlg.addEventListener('click', function (e) {
+        if (e.target === encDlg) { closeEncoding(); return; }
+        var it = e.target.closest('[data-enc]'); if (!it) return;
+        var d = decodeBytes(lastRead.info.bytes, it.getAttribute('data-enc'));
+        lastRead.info.text = d.text; lastRead.info.encoding = d.encoding + (d.bom ? ' with BOM' : '');
+        closeEncoding();
+        lastRead.handlers.forEach(function (h) { try { h(d.text); } catch (x) { /* the page reports its own errors */ } });
+        toast('Read ' + lastRead.info.name + ' as ' + d.encoding);
+      });
+      document.body.appendChild(encDlg);
+    }
+    var b = lastRead.info.bytes, sample = b.subarray(0, 4000);
+    encDlg.querySelector('#lbEncList').innerHTML = ENCODINGS.map(function (e) {
+      var prev;
+      try { prev = decodeBytes(sample, e.v).text.split(/\r?\n/).filter(function (l) { return l.trim(); })[0] || ''; } catch (x) { prev = '(not available in this browser)'; }
+      var cur = lastRead.info.label === e.v;
+      return '<div class="lb-pal-item' + (cur ? ' active' : '') + '" data-enc="' + e.v + '"><i data-lucide="' + (cur ? 'check' : 'type') + '"></i><span class="lb-pal-title">' + esc(e.n) + '</span><span class="lb-pal-hint lb-enc-prev">' + esc(prev.slice(0, 70)) + '</span></div>';
+    }).join('');
+    encDlg.classList.add('open'); document.body.classList.add('lb-modal-open'); icons();
+  }
+  function closeEncoding() { if (encDlg) { encDlg.classList.remove('open'); document.body.classList.remove('lb-modal-open'); } }
   function installDrop() {
     overlay = el('div', { id: 'lbDrop', html: '<div><i data-lucide="file-down"></i><strong>Drop to load</strong><span>The file is read by this page only. It is not uploaded.</span></div>' });
     document.body.appendChild(overlay);
@@ -436,7 +600,14 @@
       if (!hasFiles(e)) return;
       if (e.defaultPrevented && e.target.closest && e.target.closest('.pane, [data-lb-drop]')) return; // a pane handled it
       e.preventDefault();
-      var files = Array.prototype.slice.call(e.dataTransfer.files);
+      openFiles(Array.prototype.slice.call(e.dataTransfer.files), e);
+    });
+  }
+  // A dropped file and a file the operating system opens with Layerbit (the
+  // installed app's file handlers) arrive here and go where a drop would.
+  function openFiles(files, e) {
+      files = Array.prototype.slice.call(files || []);
+      if (!files.length) return;
       if (dropHandler) { dropHandler(files, e); return; }
       if (TOOL && TOOL.files) { TOOL.files(files); return; }
       var f = files[0];
@@ -444,8 +615,13 @@
       readFile(f).then(function (text) {
         if (TOOL && TOOL.input) TOOL.input(text, f.name);
         else { var ta = firstTextarea(); if (!ta) { toast('This page has nowhere to drop a file'); return; } ta.value = text; ta.dispatchEvent(new Event('input', { bubbles: true })); ta.dispatchEvent(new Event('change', { bubbles: true })); }
-        toast('Loaded ' + f.name + ' (' + fmtBytes(f.size) + ')');
       });
+  }
+  function installLaunchQueue() {
+    if (!('launchQueue' in window)) return;
+    window.launchQueue.setConsumer(function (params) {
+      if (!params.files || !params.files.length) return;
+      Promise.all(params.files.map(function (h) { return h.getFile(); })).then(function (files) { openFiles(files); }).catch(function () { });
     });
   }
   function hasFiles(e) { var t = e.dataTransfer && e.dataTransfer.types; return !!t && Array.prototype.indexOf.call(t, 'Files') >= 0; }
@@ -522,6 +698,7 @@
       hist = el('div', { id: 'lbHistory', role: 'dialog', 'aria-modal': 'true', 'aria-label': 'Run history' }, [
         el('div', { class: 'lb-pal-box' }, [
           el('div', { class: 'lb-pal-head', html: '<i data-lucide="history"></i><strong style="flex:1">History on this device</strong><button type="button" class="lb-pill lb-pill-btn" id="lbHistClear"><i data-lucide="trash-2"></i><span>Clear</span></button><kbd>Esc</kbd>' }),
+          el('div', { id: 'lbHistSwitchRow', class: 'lb-hist-switch-row' }),
           el('div', { id: 'lbHistList', class: 'lb-pal-list' }),
           el('div', { class: 'lb-pal-foot', html: '<span>Stored in this browser\'s IndexedDB only. Never synced, never sent. Up to 50 runs per tool.</span>' })
         ])
@@ -530,6 +707,12 @@
       document.body.appendChild(hist);
       hist.querySelector('#lbHistClear').addEventListener('click', function () { history_.clear().then(function () { renderHistory(); }); });
     }
+    var row = hist.querySelector('#lbHistSwitchRow');
+    if (hasHistory()) {
+      row.innerHTML = '<label class="toggle-label"><input type="checkbox" data-lb-history-switch> Save this tool\'s runs to history on this device</label>';
+      row.querySelector('input').addEventListener('change', function (e) { history_.setEnabled(SLUG, e.target.checked); });
+      syncSwitches();
+    } else row.innerHTML = '<span>This tool does not save runs.</span>';
     hist.classList.add('open'); document.body.classList.add('lb-modal-open');
     renderHistory();
   }
@@ -537,7 +720,7 @@
   function renderHistory() {
     history_.list(SLUG, 50).then(function (rows) {
       var list = hist.querySelector('#lbHistList');
-      if (!rows.length) { list.innerHTML = '<div class="lb-pal-empty">Nothing saved yet. Runs appear here after you use the tool.</div>'; return; }
+      if (!rows.length) { list.innerHTML = '<div class="lb-pal-empty">Nothing saved. History is off unless you turn on Save to history for a tool; then each run you start is kept here.</div>'; return; }
       list.innerHTML = rows.map(function (r, i) {
         var prev = r.label || (typeof r.data.input === 'string' ? r.data.input.slice(0, 80).replace(/\s+/g, ' ') : JSON.stringify(r.data).slice(0, 80));
         return '<div class="lb-pal-item" data-i="' + i + '"><i data-lucide="corner-up-left"></i><span class="lb-pal-title">' + esc(prev) + '</span><span class="lb-pal-hint">' + esc(new Date(r.ts).toLocaleString()) + '</span></div>';
@@ -572,16 +755,19 @@
     sc.classList.add('open'); icons();
   }
   function runTool() {
-    if (TOOL && TOOL.run) { TOOL.run(); return; }
-    var b = document.querySelector('[data-lb-primary], .btn-primary');
-    if (b) b.click();
+    markExplicit();
+    if (TOOL && TOOL.run) TOOL.run();
+    else { var b = document.querySelector('[data-lb-primary], .btn-primary'); if (b) b.click(); }
+    // a tool that runs as you type has already reported its state: save it
+    // if the explicit run did not produce a push of its own
+    if (hasHistory() && history_.enabled(SLUG)) setTimeout(function () { if (explicitAt) { explicitAt = 0; history_.saveNow(SLUG); } }, 60);
   }
   function inEditable(t) { return t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable); }
   function installKeys() {
     document.addEventListener('keydown', function (e) {
       var mod = e.ctrlKey || e.metaKey;
       if (mod && !e.shiftKey && (e.key === 'k' || e.key === 'K')) { e.preventDefault(); if (pal && pal.classList.contains('open')) closePalette(); else openPalette('search'); return; }
-      if (e.key === 'Escape') { closePalette(); closeHistory(); if (sc) sc.classList.remove('open'); return; }
+      if (e.key === 'Escape') { closePalette(); closeHistory(); closeEncoding(); if (sc) sc.classList.remove('open'); return; }
       if (mod && e.key === 'Enter') { e.preventDefault(); runTool(); return; }
       if (mod && e.shiftKey && (e.key === 'S' || e.key === 's')) { e.preventDefault(); state.share(); return; }
       if (mod && !e.shiftKey && (e.key === 'h' || e.key === 'H') && SLUG) { e.preventDefault(); openHistory(); return; }
@@ -590,9 +776,21 @@
   }
 
   // ------------------------------------------------------------------- PWA
+  // After the page has loaded, ask the service worker to fetch every tool
+  // (and its scripts and WebAssembly) in the background so the whole site
+  // works offline: at most once a day, and never with Data Saver on.
   function installSw() {
     if (!('serviceWorker' in navigator) || location.protocol !== 'https:') return;
-    try { navigator.serviceWorker.register(PREFIX + 'sw.js', { scope: PREFIX || './' }).catch(function () { }); } catch (e) { /* ignore */ }
+    try {
+      navigator.serviceWorker.register(PREFIX + 'sw.js', { scope: PREFIX || './' }).then(function () { return navigator.serviceWorker.ready; }).then(function (reg) {
+        var c = navigator.connection;
+        if (c && (c.saveData || /2g/.test(c.effectiveType || ''))) return;
+        var last = +(lsGet('lb-sw-warmed') || 0);
+        if (Date.now() - last < 86400000 || !reg.active) return;
+        var go = function () { reg.active.postMessage({ type: 'warm' }); lsSet('lb-sw-warmed', String(Date.now())); };
+        if (window.requestIdleCallback) requestIdleCallback(go, { timeout: 10000 }); else setTimeout(go, 3000);
+      }).catch(function () { });
+    } catch (e) { /* ignore */ }
   }
 
   // --------------------------------------------------------- first-visit example
@@ -620,6 +818,9 @@
     installDrop();
     installKeys();
     installSw();
+    installLaunchQueue();
+    installHistorySwitches();
+    purgeSilentRuns();
     applyIncomingState();
     document.querySelectorAll('[data-lb-send]').forEach(function (b) {
       b.addEventListener('click', function () {
@@ -639,7 +840,10 @@
     version: '1.0.0', prefix: PREFIX, slug: SLUG, tools: TOOLS, guides: GUIDES,
     toast: toast, copy: copy, state: state, history: history_, fmtBytes: fmtBytes,
     palette: openPalette, sendTo: function (text, kind) { openPalette('send', { text: text, kind: kind || 'text' }); },
-    onDrop: function (fn) { dropHandler = fn; }, readFile: readFile, run: runTool,
+    // Line endings for text a tool turns into bytes: a textarea always holds
+    // LF, so 'crlf' rewrites every line break as CRLF (Windows files).
+    eol: function (text, mode) { return mode === 'crlf' ? String(text).replace(/\r?\n/g, '\r\n') : String(text); },
+    onDrop: function (fn) { dropHandler = fn; }, openFiles: function (files) { openFiles(files); }, readFile: readFile, readFileInfo: readFileInfo, decodeBytes: decodeBytes, run: runTool,
     register: function (cfg) { TOOL = cfg; window.LB_TOOL = cfg; },
     netRequests: function () { return netLog.slice(); }
   };

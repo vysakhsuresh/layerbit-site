@@ -20,3 +20,12 @@
 * **Robots Inclusion:** Allowed (Configured for `Googlebot` & `Mediapartners-Google`)
 * **SSL Encryption:** Enabled (GoDaddy Managed)
 * **Data Privacy:** Zero-tracking for local payload execution and string formatting
+## License
+Copyright (C) 2025-2026 Layerbit Technologies.
+
+The code in this repository is free software under the GNU Affero General
+Public License v3.0 (see LICENSE). Third-party files in js/vendor/ keep their
+own licences (js/vendor/LICENSES.md); the fonts in fonts/ are under the SIL
+Open Font License 1.1. The Layerbit name, logo and branding are not licensed
+for reuse, and written guides and graphics remain copyright Layerbit
+Technologies. How to contribute: CONTRIBUTING.md. Plan: ROADMAP.md.

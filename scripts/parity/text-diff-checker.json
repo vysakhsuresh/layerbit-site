@@ -1,0 +1,146 @@
+{
+  "tool": "text-diff-checker",
+  "page": "tools/text-diff-checker.html",
+  "competitors": [
+    {
+      "name": "Beyond Compare",
+      "price": "Standard $35, Pro $70 per user",
+      "source": "vendor's pricing page",
+      "checked": "2026-11"
+    },
+    {
+      "name": "WinMerge",
+      "price": "free, Windows only",
+      "checked": "2026-11"
+    },
+    {
+      "name": "Meld",
+      "price": "free",
+      "checked": "2026-11"
+    }
+  ],
+  "claims": [
+    {
+      "feature": "Side-by-side text and code comparison with word or character highlights",
+      "competitor": "Beyond Compare (Standard $35 / Pro $70 per user)",
+      "tests": [
+        "ui:text-diff-checker:one changed line is highlighted with stats and a hunk bar",
+        "ui:text-diff-checker:character granularity isolates a one-letter change"
+      ]
+    },
+    {
+      "feature": "Merge changes block by block into an editable result",
+      "competitor": "Beyond Compare (Standard $35 / Pro $70 per user)",
+      "tests": [
+        "ui:text-diff-checker:merge: per-hunk decisions and accept/keep all",
+        "ui:text-diff-checker:bug 11: accept all / keep all give exactly the modified / original text with ignore options on"
+      ]
+    },
+    {
+      "feature": "Three-way merge with conflict resolution",
+      "competitor": "Beyond Compare Pro",
+      "tests": [
+        "ui:text-diff-checker:three-way merge: auto-merge, conflict markers, click resolution"
+      ]
+    },
+    {
+      "feature": "Ignore whitespace, case, trailing spaces and blank lines",
+      "competitor": "Beyond Compare (Standard $35 / Pro $70 per user)",
+      "tests": [
+        "ui:text-diff-checker:normalisation options: whitespace, case, trailing, blank, CRLF",
+        "ui:text-diff-checker:bug 15: ignore blank lines reports no change for an added blank line"
+      ]
+    },
+    {
+      "feature": "Large files without freezing (background worker, cancel, virtual rendering)",
+      "competitor": "Beyond Compare (Standard $35 / Pro $70 per user)",
+      "tests": [
+        "ui:text-diff-checker:bug 9: unrelated 20,000-line files run in a worker, end in a summary, and a long run can be cancelled",
+        "ui:text-diff-checker:bug 20: a 100,000-line comparison renders only the rows on screen"
+      ]
+    },
+    {
+      "feature": "Encodings and line endings reported (Windows-1252, UTF-16, CRLF, final newline)",
+      "competitor": "Beyond Compare (Standard $35 / Pro $70 per user)",
+      "tests": [
+        "ui:text-diff-checker:bug 2: Windows-1252 files are decoded, labelled, and never reported identical when bytes differ",
+        "ui:text-diff-checker:bug 14: line endings and a missing final newline are reported; merged output keeps CRLF"
+      ]
+    },
+    {
+      "feature": "Folder compare by content, size or date, with ignore filters and a tree",
+      "competitor": "Beyond Compare (Standard $35 / Pro $70 per user)",
+      "tests": [
+        "ui:text-diff-checker:feature 21: real folders: tree with counts, default ignores, filters, open a file and come back",
+        "ui:text-diff-checker:feature 21: compare by size and by date, CSV report, folder drag and drop",
+        "ui:text-diff-checker:feature 21: 20,000 files hash in a worker with progress and Cancel, never guessing"
+      ]
+    },
+    {
+      "feature": "Every sheet of two Excel workbooks",
+      "competitor": "Beyond Compare Pro (table compare)",
+      "tests": [
+        "ui:text-diff-checker:feature 22: every sheet is compared, with tabs, a summary and renamed sheets"
+      ]
+    },
+    {
+      "feature": "Table compare by key columns with tolerance, date and number rules",
+      "competitor": "Beyond Compare (table compare)",
+      "tests": [
+        "ui:text-diff-checker:feature 23: composite keys, ignored columns, tolerance, dates, filter, sort and column summary",
+        "unit:diff:feature 23: composite keys, ignored columns and the per-column summary",
+        "unit:diff:feature 23: trim, ignore case and empty = null",
+        "unit:diff:feature 23: numbers: 1.0 = 1, absolute and percentage tolerance, long numbers stay exact",
+        "unit:diff:feature 23: dates in different formats compare equal when asked"
+      ]
+    },
+    {
+      "feature": "Hex / binary compare of large files",
+      "competitor": "Beyond Compare (Standard $35 / Pro $70 per user)",
+      "tests": [
+        "ui:text-diff-checker:feature 24: hex compare shows offsets, both sides, highlighted bytes, next/previous difference and jump to offset",
+        "ui:text-diff-checker:feature 24: two 160 MB files are read in slices, scanned with progress, and stay scrollable",
+        "ui:text-diff-checker:feature 24: empty, identical, single-sided and folder-opened binaries",
+        "unit:diff:feature 24: byteRanges finds differing runs, merges across chunk boundaries and counts the tail",
+        "unit:diff:feature 24: parseOffset reads hex and decimal offsets and rejects junk",
+        "unit:diff:feature 24: hexOffset pads to the width the file needs"
+      ]
+    },
+    {
+      "feature": "Image compare with pixel difference and tolerance",
+      "competitor": "Beyond Compare (Standard $35 / Pro $70 per user)",
+      "tests": [
+        "ui:text-diff-checker:feature 25: image compare: side by side, slider, onion skin, difference, % changed and the details of both files",
+        "ui:text-diff-checker:feature 25: the pixel tolerance ignores small colour shifts such as re-compression",
+        "ui:text-diff-checker:feature 25: JPEG, WebP, GIF, BMP and SVG; mismatched dimensions, misnamed files and non-images",
+        "unit:diff:feature 25: imageFormat sniffs PNG, JPEG, GIF, WebP, BMP and SVG by their bytes, not the name",
+        "unit:diff:feature 25: pixelDiff counts changed pixels with a tolerance and draws a difference image",
+        "unit:diff:feature 25: pixelDiff with different dimensions compares the union and counts the uncovered area"
+      ]
+    },
+    {
+      "feature": "Reports: patch, HTML, CSV, Excel with highlighted cells, JSON",
+      "competitor": "Beyond Compare (Standard $35 / Pro $70 per user)",
+      "tests": [
+        "ui:text-diff-checker:feature 26: table exports: CSV with original/modified columns and .xlsx with highlighted cells, both stating options and date",
+        "ui:text-diff-checker:feature 26: a workbook comparison exports every sheet to one .xlsx",
+        "ui:text-diff-checker:feature 26: JSON/YAML path changes export as CSV and JSON; text and folder reports keep options and date",
+        "ui:text-diff-checker:feature 26: hex exports the differing byte ranges (CSV and HTML); images export an HTML report and the difference image",
+        "unit:diff:feature 26: tableCsv has the options and date, then old/new column pairs for every row",
+        "unit:diff:feature 26: tableCsv quotes commas, quotes, newlines and keeps leading zeros and formula-like text",
+        "unit:diff:feature 26: structure changes export as CSV and as JSON with exact long numbers",
+        "unit:diff:feature 26: hexRangesCsv lists each differing range with offsets and the bytes on both sides",
+        "unit:diff:feature 26: xlsxBuild writes a valid workbook with highlighted cells, exact text and safe sheet names"
+      ]
+    },
+    {
+      "feature": "Unified patches: export and apply, multi-file, fuzz with confirmation",
+      "competitor": "Beyond Compare (Standard $35 / Pro $70 per user)",
+      "tests": [
+        "ui:text-diff-checker:patch export is a unified diff that re-applies cleanly",
+        "ui:text-diff-checker:bug 12: a multi-file patch lists every file and applies each one",
+        "ui:text-diff-checker:bug 12: a fuzzy patch shows the mismatched context lines and needs confirmation"
+      ]
+    }
+  ]
+}

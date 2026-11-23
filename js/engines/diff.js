@@ -10,9 +10,9 @@
  * directory reader built on DecompressionStream.
  */
 (function (root, factory) {
-  if (typeof module === 'object' && module.exports) module.exports = factory(require('../vendor/diff.min.js'));
-  else root.LBDiff = factory(root.Diff);
-})(typeof self !== 'undefined' ? self : this, function (Diff) {
+  if (typeof module === 'object' && module.exports) module.exports = factory(require('../vendor/diff.min.js'), require('./csv.js'), require('./lossless-json.js'), require('./zip.js'));
+  else root.LBDiff = factory(root.Diff, root.LBCsv, root.LBLossless, root.LBZip);
+})(typeof self !== 'undefined' ? self : this, function (Diff, CSV, LL, Z) {
   'use strict';
 
   // ------------------------------------------------------------ normalisation
@@ -568,60 +568,11 @@
   function sameLines(a, b, key) { if (a.length !== b.length) return false; for (var i = 0; i < a.length; i++) if (key(a[i]) !== key(b[i])) return false; return true; }
 
   // ------------------------------------------------------- lossless JSON
-  /** A JSON number kept as its source text, so 9007199254740993 does not
-   *  become 9007199254740992 the way it does in JSON.parse. */
-  function LosslessNumber(raw) { this.value = raw; this.isLosslessNumber = true; }
-  /** Canonical form of a decimal literal: 1.0, 1e0 and 1 all give "1e0". */
-  function canonicalNumber(raw) {
-    var m = /^(-?)(\d+)(?:\.(\d+))?(?:[eE]([+-]?\d+))?$/.exec(raw);
-    if (!m) return raw;
-    var digits = (m[2] + (m[3] || '')).replace(/^0+/, ''), exp = parseInt(m[4] || '0', 10) - (m[3] || '').length;
-    if (!digits) return '0';
-    var t = digits.replace(/0+$/, ''); exp += digits.length - t.length;
-    return (m[1] ? '-' : '') + t + 'e' + exp;
-  }
-  /** JSON.parse that keeps numbers as LosslessNumber. Throws SyntaxError with
-   *  a position, like JSON.parse. */
-  function parseJsonLossless(text) {
-    var i = 0, n = text.length;
-    function fail(msg) { throw new SyntaxError('Invalid JSON: ' + msg + ' at position ' + i); }
-    function ws() { while (i < n && (text[i] === ' ' || text[i] === '\t' || text[i] === '\n' || text[i] === '\r')) i++; }
-    function value() {
-      ws(); var c = text[i];
-      if (c === '{') { i++; var obj = {}; ws(); if (text[i] === '}') { i++; return obj; }
-        for (;;) { ws(); if (text[i] !== '"') fail('expected a property name'); var k = str(); ws(); if (text[i] !== ':') fail('expected ":"'); i++; obj[k] = value(); ws();
-          if (text[i] === ',') { i++; continue; } if (text[i] === '}') { i++; return obj; } fail('expected "," or "}"'); } }
-      if (c === '[') { i++; var arr = []; ws(); if (text[i] === ']') { i++; return arr; }
-        for (;;) { arr.push(value()); ws(); if (text[i] === ',') { i++; continue; } if (text[i] === ']') { i++; return arr; } fail('expected "," or "]"'); } }
-      if (c === '"') return str();
-      var m = /^-?(?:0|[1-9]\d*)(?:\.\d+)?(?:[eE][+-]?\d+)?/.exec(text.slice(i, i + 400));
-      if (m && m[0]) { i += m[0].length; if (/^[\d.]/.test(text[i] || '')) fail('invalid number'); return new LosslessNumber(m[0]); }
-      if (text.startsWith('true', i)) { i += 4; return true; }
-      if (text.startsWith('false', i)) { i += 5; return false; }
-      if (text.startsWith('null', i)) { i += 4; return null; }
-      fail(i >= n ? 'unexpected end of input' : 'unexpected character ' + JSON.stringify(c));
-    }
-    function str() {
-      var start = i; i++;
-      while (i < n && text[i] !== '"') { if (text[i] === '\\') i++; else if (text.charCodeAt(i) < 32) fail('control character in string'); i++; }
-      if (i >= n) fail('unterminated string');
-      i++;
-      return JSON.parse(text.slice(start, i));
-    }
-    var v = value(); ws();
-    if (i < n) fail('unexpected text after the end');
-    return v;
-  }
-  function isNum(v) { return v instanceof LosslessNumber; }
-  /** JSON.stringify that writes LosslessNumbers as their digits. */
-  function stringifyLossless(v, indent, depth) {
-    depth = depth || 0;
-    var pad = indent ? '\n' + new Array(depth + 2).join(indent) : '', close = indent ? '\n' + new Array(depth + 1).join(indent) : '';
-    if (isNum(v)) return v.value;
-    if (Array.isArray(v)) return v.length ? '[' + v.map(function (x) { return pad + stringifyLossless(x, indent, depth + 1); }).join(',') + close + ']' : '[]';
-    if (v && typeof v === 'object') { var ks = Object.keys(v); return ks.length ? '{' + ks.map(function (k) { return pad + JSON.stringify(k) + (indent ? ': ' : ':') + stringifyLossless(v[k], indent, depth + 1); }).join(',') + close + '}' : '{}'; }
-    return v === undefined ? 'null' : JSON.stringify(v);
-  }
+  // The shared engine (js/engines/lossless-json.js): numbers keep their text.
+  var LosslessNumber = LL.LosslessNumber, canonicalNumber = LL.canonicalNumber;
+  function parseJsonLossless(text) { return LL.parse(text); }
+  function isNum(v) { return LL.isLosslessNumber(v); }
+  function stringifyLossless(v, indent) { return LL.stringify(v, indent); }
 
   // --------------------------------------------------------------- structural
   function typeOf(v) { return v === null ? 'null' : isNum(v) ? 'number' : Array.isArray(v) ? 'array' : typeof v; }
@@ -687,30 +638,10 @@
   function canonicalJson(v) { return stringifyLossless(sortKeys(v), '  '); }
 
   // --------------------------------------------------------------------- CSV
-  function detectDelimiter(text) {
-    var head = text.split(/\r?\n/).slice(0, 10).join('\n');
-    var best = ',', bestN = -1;
-    [',', ';', '\t', '|'].forEach(function (d) { var n = (head.match(new RegExp(d === '|' ? '\\|' : d, 'g')) || []).length; if (n > bestN) { bestN = n; best = d; } });
-    return best;
-  }
-  function parseCsv(text, delim) {
-    delim = delim || detectDelimiter(text);
-    var rows = [], row = [], cell = '', i = 0, q = false, started = false, n = text.length;
-    if (text.charCodeAt(0) === 0xFEFF) i = 1;
-    for (; i < n; i++) {
-      var ch = text[i];
-      if (q) {
-        if (ch === '"') { if (text[i + 1] === '"') { cell += '"'; i++; } else q = false; }
-        else cell += ch;
-      } else if (ch === '"' && cell === '' && !started) q = true; // quoting only opens at the start of a field, as in Excel
-      else if (ch === delim) { row.push(cell); cell = ''; started = false; continue; }
-      else if (ch === '\n' || ch === '\r') { if (ch === '\r' && text[i + 1] === '\n') i++; row.push(cell); rows.push(row); row = []; cell = ''; started = false; continue; }
-      else cell += ch;
-      started = true;
-    }
-    if (cell !== '' || row.length) { row.push(cell); rows.push(row); }
-    return rows.filter(function (r) { return !(r.length === 1 && r[0] === ''); });
-  }
+  // CSV reading is the shared engine (js/engines/csv.js), so every tool
+  // splits a file into rows the same way.
+  function detectDelimiter(text) { return CSV.detectDelimiter(text); }
+  function parseCsv(text, delim) { return CSV.parseRows(text, delim); }
   /** Table diff. rowsA/rowsB are arrays of arrays whose first row is the
    *  header. opts.keys lists key column NAMES, looked up in each file's own
    *  header, so a file whose columns were reordered still matches row for
@@ -771,18 +702,7 @@
 
   /** Makes header names unique and non-empty so no column shadows another:
    *  amount, amount -> amount, amount (2); a blank header becomes (column N). */
-  function uniqueHeaders(hdr) {
-    var taken = {}, out = [];
-    hdr.forEach(function (h) { h = String(h == null ? '' : h); if (h) taken[h] = (taken[h] || 0) + 1; });
-    var used = {};
-    hdr.forEach(function (h, i) {
-      h = String(h == null ? '' : h);
-      var name = h || '(column ' + (i + 1) + ')';
-      if (used[name]) { var n = 2; while (used[h + ' (' + n + ')'] || (taken[h + ' (' + n + ')'] && h + ' (' + n + ')' !== name)) n++; name = h + ' (' + n + ')'; }
-      used[name] = true; out.push(name);
-    });
-    return out;
-  }
+  function uniqueHeaders(hdr) { return CSV.uniqueHeaders(hdr); }
   function tableDiff(rowsA, rowsB, opts) {
     var ha = uniqueHeaders(rowsA[0] || []), hb = uniqueHeaders(rowsB[0] || []);
     if (typeof opts === 'number') opts = { keys: opts >= 0 && ha[opts] != null ? [ha[opts]] : [] };
@@ -1032,33 +952,8 @@
   }
 
   /* ---- a small .xlsx writer: inline strings (text stays text), a few fills ---- */
-  var CRC_T = null;
-  function crc32(u8) {
-    if (!CRC_T) { CRC_T = new Uint32Array(256); for (var n = 0; n < 256; n++) { var c = n; for (var k = 0; k < 8; k++) c = c & 1 ? 0xEDB88320 ^ (c >>> 1) : c >>> 1; CRC_T[n] = c >>> 0; } }
-    var crc = 0xFFFFFFFF; for (var i = 0; i < u8.length; i++) crc = CRC_T[(crc ^ u8[i]) & 255] ^ (crc >>> 8);
-    return (crc ^ 0xFFFFFFFF) >>> 0;
-  }
-  /** files: [{name, data: Uint8Array | string}] -> a stored (uncompressed) zip. */
-  function zipStore(files) {
-    var enc = new TextEncoder(), parts = [], central = [], off = 0, now = new Date();
-    var dt = ((now.getFullYear() - 1980) << 9) | ((now.getMonth() + 1) << 5) | now.getDate(), tm = (now.getHours() << 11) | (now.getMinutes() << 5) | (now.getSeconds() >> 1);
-    files.forEach(function (f) {
-      var name = enc.encode(f.name), data = typeof f.data === 'string' ? enc.encode(f.data) : f.data, crc = crc32(data);
-      var lh = new DataView(new ArrayBuffer(30));
-      lh.setUint32(0, 0x04034b50, true); lh.setUint16(4, 20, true); lh.setUint16(6, 0x0800, true); lh.setUint16(10, tm, true); lh.setUint16(12, dt, true);
-      lh.setUint32(14, crc, true); lh.setUint32(18, data.length, true); lh.setUint32(22, data.length, true); lh.setUint16(26, name.length, true);
-      var ch = new DataView(new ArrayBuffer(46));
-      ch.setUint32(0, 0x02014b50, true); ch.setUint16(4, 20, true); ch.setUint16(6, 20, true); ch.setUint16(8, 0x0800, true); ch.setUint16(12, tm, true); ch.setUint16(14, dt, true);
-      ch.setUint32(16, crc, true); ch.setUint32(20, data.length, true); ch.setUint32(24, data.length, true); ch.setUint16(28, name.length, true); ch.setUint32(42, off, true);
-      parts.push(new Uint8Array(lh.buffer), name, data); central.push(new Uint8Array(ch.buffer), name);
-      off += 30 + name.length + data.length;
-    });
-    var cdSize = central.reduce(function (t, p) { return t + p.length; }, 0), end = new DataView(new ArrayBuffer(22));
-    end.setUint32(0, 0x06054b50, true); end.setUint16(8, files.length, true); end.setUint16(10, files.length, true); end.setUint32(12, cdSize, true); end.setUint32(16, off, true);
-    var all = parts.concat(central, [new Uint8Array(end.buffer)]), out = new Uint8Array(off + cdSize + 22), p = 0;
-    all.forEach(function (x) { out.set(x, p); p += x.length; });
-    return out;
-  }
+  // the zip writer is the shared one (js/engines/zip.js)
+  var crc32 = Z.crc32, zipStore = Z.zipStore;
   var XLSX_STYLE = { head: 1, changed: 2, added: 3, removed: 4, meta: 5 };
   function xmlText(v) {
     return String(v).replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\uFFFE\uFFFF]/g, function (c) { var h = c.charCodeAt(0).toString(16).toUpperCase(); return '_x' + '0000'.slice(h.length) + h + '_'; })

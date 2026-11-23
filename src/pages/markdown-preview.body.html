@@ -154,6 +154,7 @@
     <div class="info-panel">
       <h2><i data-lucide="git-commit"></i> Changelog</h2>
       <ul class="changelog-list">
+        <li><span class="changelog-tag">v1.1.0</span> Dropping a Markdown file onto the page works again (it failed with an error), and files are decoded from their bytes with the encoding detected and changeable.</li>
         <li><span class="changelog-tag">v1.0.0</span> Initial release: GitHub-flavored Markdown with marked 18, DOMPurify sanitizing, formatting toolbar and shortcuts, GitHub-style heading anchors and table of contents, proportional scroll sync, split/editor/preview/HTML views, .md open and download, HTML fragment copy and a self-contained styled HTML export.</li>
       </ul>
     </div>
@@ -309,7 +310,7 @@ Raw HTML is allowed but sanitized: <a href="javascript:alert('nope')" onclick="a
     function loadText(text) { ed.value = text; render(); }
     $('mdFile').addEventListener('change', e => { const f = e.target.files[0]; if (f) Layerbit.readFile(f).then(loadText); e.target.value = ''; });
     $('btnSample').addEventListener('click', () => loadText(SAMPLE));
-    if (window.Layerbit) Layerbit.onDrop(f => Layerbit.readFile(f).then(loadText));
+    if (window.Layerbit) Layerbit.onDrop(files => Layerbit.readFile(files[0]).then(loadText));
 
     function getState() { return ed.value ? { input: ed.value, breaks: $('optBreaks').checked } : null; }
     function setState(s) { if (!s) return; if (typeof s.input === 'string') ed.value = s.input; $('optBreaks').checked = !!s.breaks; render(); }

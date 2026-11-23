@@ -19,6 +19,7 @@
         <div class="pane-title"><i data-lucide="unlock"></i> Plain / Decoded</div>
         <div class="btn-group">
           <span id="decodeError" class="error-text"><i data-lucide="alert-circle"></i> Invalid URI</span>
+          <select id="lineEndings" class="mini-select" title="A text box always holds LF line breaks. Choose CRLF to process the text the way a Windows file stores it."><option value="lf">LF line breaks (as typed)</option><option value="crlf">CRLF line breaks (Windows)</option></select>
           <input type="file" id="plainFile" accept=".txt" style="display:none;">
           <button class="btn" onclick="document.getElementById('plainFile').click()"><i data-lucide="upload"></i> Upload</button>
           <button class="btn" onclick="clearAll()"><i data-lucide="trash-2"></i> Clear</button>
@@ -184,6 +185,7 @@
     <div class="info-panel">
       <h2><i data-lucide="git-merge"></i> Deployment Changelog</h2>
       <ul class="changelog-list">
+        <li><span class="changelog-tag">v1.5.0</span> A line-endings option: multi-line text can be encoded with CRLF line breaks (%0D%0A); batch mode still encodes each line on its own.</li>
         <li><span class="changelog-tag">v1.4.1</span> A bare value that is not a URL (no scheme, no path structure) is now encoded as a component, so <code>&amp;</code>, <code>=</code> and <code>#</code> are percent-encoded instead of being left to change the meaning of a query string. Relative paths keep their separators as before.</li>
         <li><span class="changelog-tag">v1.4.0</span> Made the Parameter Forensics grid editable (edit a key/value and click Re-encode to rebuild the URL) and added a Batch Mode for encoding/decoding a list of URLs at once.</li>
         <li><span class="changelog-tag">v1.3.0</span> Added file upload and drag-and-drop to both panes.</li>
@@ -262,7 +264,7 @@
         input.value = e.target.result;
         input.dispatchEvent(new Event('input'));
       };
-      reader.readAsText(file);
+      Layerbit.readFile(file).then(t => reader.onload({ target: { result: t } }));  // bytes decoded by the kernel (encoding detected)
     }
 
     document.getElementById('plainFile').addEventListener('change', (e) => loadFileInto(plainText, e.target.files[0]));
@@ -409,7 +411,7 @@
     // Applies fn to every non-empty line of text, preserving blank lines and order.
     // A line that throws is left unchanged rather than aborting the whole batch.
     function batchProcessLines(text, fn) {
-      return text.split('\n').map(line => {
+      return text.split(/\r?\n/).map(line => {  // line by line: the breaks are never encoded
         if (line.trim() === '') return line;
         try { return fn(line); } catch (e) { return line; }
       }).join('\n');
@@ -418,7 +420,7 @@
     // Engine: Encode Plain -> Encoded
     function triggerEncode() {
       if (isSyncing) return;
-      const raw = plainText.value;
+      const raw = Layerbit.eol(plainText.value, document.getElementById('lineEndings').value);
       const val = raw.trim();
 
       if (!val) {
@@ -493,6 +495,7 @@
 
     // Listeners
     plainText.addEventListener('input', triggerEncode);
+    document.getElementById('lineEndings').addEventListener('change', triggerEncode);
     encodedText.addEventListener('input', triggerDecode);
 
     // FAQ Accordion Logic
