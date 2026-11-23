@@ -67,7 +67,7 @@
         "XSD and RelaxNG validation with libxml2 in WebAssembly",
         "DTD validation",
         "ISO Schematron validation",
-        "XSLT 1.0 transforms",
+        "XSLT 1.0 transforms with libxslt in WebAssembly",
         "XQuery 3.1 and XPath 3.1",
         "XPath 1.0 with namespace support",
         "Compare two XML documents",
@@ -149,7 +149,7 @@
           "name": "Can I run XSLT or XQuery?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "Yes, in the Transform tab. XSLT 1.0 runs in your browser's built-in processor. XQuery 3.1 (which includes XPath 3.1, maps, arrays and FLWOR expressions) runs in fontoxpath, an open-source engine loaded on first use. XSLT 2.0 and 3.0 are not offered: the only browser engine for them, Saxon-JS, is not openly licensed, so it cannot be bundled here. Use as input replaces the document with the result."
+            "text": "Yes, in the Transform tab. XSLT 1.0 runs in libxslt, the library behind xsltproc, compiled to WebAssembly and loaded on first use (Chrome is removing the XSLT engine browsers used to include). XQuery 3.1 (which includes XPath 3.1, maps, arrays and FLWOR expressions) runs in fontoxpath, an open-source engine loaded on first use. XSLT 2.0 and 3.0 are not offered: the only browser engine for them, Saxon-JS, is not openly licensed, so it cannot be bundled here. Use as input replaces the document with the result."
           }
         },
         {
@@ -439,7 +439,7 @@
         </div>
         <div class="faq-item">
           <button class="faq-question">Can I run XSLT or XQuery? <i data-lucide="chevron-down"></i></button>
-          <div class="faq-answer"><p>Yes, in the <strong>Transform</strong> tab. XSLT 1.0 runs in your browser's built-in processor. XQuery 3.1 (which includes XPath 3.1, maps, arrays and FLWOR expressions) runs in fontoxpath, an open-source engine loaded on first use. XSLT 2.0 and 3.0 are not offered: the only browser engine for them, Saxon-JS, is not openly licensed, so it cannot be bundled here. <strong>Use as input</strong> replaces the document with the result.</p></div>
+          <div class="faq-answer"><p>Yes, in the <strong>Transform</strong> tab. XSLT 1.0 runs in libxslt, the library behind xsltproc, compiled to WebAssembly and loaded on first use (Chrome is removing the XSLT engine browsers used to include). XQuery 3.1 (which includes XPath 3.1, maps, arrays and FLWOR expressions) runs in fontoxpath, an open-source engine loaded on first use. XSLT 2.0 and 3.0 are not offered: the only browser engine for them, Saxon-JS, is not openly licensed, so it cannot be bundled here. <strong>Use as input</strong> replaces the document with the result.</p></div>
         </div>
         <div class="faq-item">
           <button class="faq-question">Can I compare two XML documents, or turn JSON into XML? <i data-lucide="chevron-down"></i></button>
@@ -478,7 +478,7 @@
     <div class="info-panel">
       <h2><i data-lucide="git-commit"></i> Changelog</h2>
       <ul class="changelog-list">
-        <li><span class="changelog-tag">v2.0.0</span> Validation against XSD and RelaxNG (libxml2 2.13 in WebAssembly), DTD (content models, attributes, ID/IDREF; internal subset or pasted) and ISO Schematron, with each error's line. XSLT 1.0 and XQuery 3.1 transforms. Compare two documents by path, with a hand-off to the Diff Checker. JSON to XML. Files of 8 MB and more formatted in a background worker and shown virtually.</li>
+        <li><span class="changelog-tag">v2.0.0</span> Validation against XSD and RelaxNG (libxml2 2.13 in WebAssembly), DTD (content models, attributes, ID/IDREF; internal subset or pasted) and ISO Schematron, with each error's line. XSLT 1.0 (libxslt in WebAssembly, since Chrome is removing its built-in XSLT) and XQuery 3.1 transforms. Compare two documents by path, with a hand-off to the Diff Checker. JSON to XML. Files of 8 MB and more formatted in a background worker and shown virtually.</li>
         <li><span class="changelog-tag">v1.0.0</span> Initial release: whitespace-aware pretty-printing and minification, well-formedness errors with line and column, XPath 1.0 with automatic namespace binding from the root element, typed results with node paths, XML to JSON, document statistics, file upload and drag-and-drop.</li>
       </ul>
     </div>
@@ -881,6 +881,12 @@
     }
 
     // ---- transforms: XSLT 1.0 in the browser, XQuery 3.1 with fontoxpath
+    let xsltLoading = null;
+    function loadXslt() {
+      if (window.xsltPolyfillInstalled) return Promise.resolve(window.xsltPolyfillReady ? window.xsltPolyfillReady() : null);
+      window.xsltDontAutoloadXmlDocs = true;
+      return xsltLoading || (xsltLoading = new Promise((res, rej) => { const sc = document.createElement('script'); sc.src = '../js/vendor/xslt-polyfill.min.js'; sc.onload = () => res(window.xsltPolyfillReady ? window.xsltPolyfillReady() : null); sc.onerror = () => { xsltLoading = null; rej(new Error('Could not load the XSLT engine.')); }; document.head.appendChild(sc); }));
+    }
     let fontoxLoading = null;
     const loadFontox = () => window.fontoxpath ? Promise.resolve() : fontoxLoading || (fontoxLoading = new Promise((res, rej) => { const sc = document.createElement('script'); sc.src = '../js/vendor/fontoxpath.min.js'; sc.onload = res; sc.onerror = () => { fontoxLoading = null; rej(new Error('Could not load the XQuery engine.')); }; document.head.appendChild(sc); }));
     function ser(v) {
@@ -896,14 +902,19 @@
       const d = parse(xml); if (d.error) { err.textContent = 'The document is not well-formed: ' + d.error; return; }
       if (!code.trim()) { err.textContent = kind === 'xslt' ? 'Paste an XSLT 1.0 stylesheet.' : 'Type an XQuery expression.'; return; }
       if (kind === 'xslt') {
+        // XSLT 1.0 runs in libxslt compiled to WebAssembly: Chrome is
+        // removing its built-in XSLT, and this gives every browser the same engine
+        out.textContent = 'Loading XSLT 1.0 (libxslt)…';
+        try { await loadXslt(); } catch (e) { out.textContent = ''; err.textContent = e.message; return; }
+        out.textContent = '';
         const xsl = new DOMParser().parseFromString(code, 'application/xml');
         if (xsl.getElementsByTagName('parsererror')[0]) { err.textContent = 'The stylesheet is not well-formed XML.'; return; }
         const v = xsl.documentElement.getAttribute('version');
-        if (v && parseFloat(v) >= 2) { err.textContent = `This stylesheet is XSLT ${v}. Browsers run XSLT 1.0 only, and there is no openly licensed XSLT 2.0/3.0 engine that can be bundled here; XQuery 3.1 (the other option) covers most of what 2.0 and 3.0 add.`; return; }
+        if (v && parseFloat(v) >= 2) { err.textContent = `This stylesheet is XSLT ${v}. This page runs XSLT 1.0 (libxslt), and there is no openly licensed XSLT 2.0/3.0 engine for the browser that can be bundled here; XQuery 3.1 (the other option) covers most of what 2.0 and 3.0 add.`; return; }
         try {
           const p = new XSLTProcessor(); p.importStylesheet(xsl);
           const frag = p.transformToFragment(d.doc, document);
-          if (!frag) { err.textContent = 'The browser could not apply this stylesheet (its XSLT 1.0 engine gives no detail). Check the XPath expressions and that it uses only XSLT 1.0.'; return; }
+          if (!frag) { err.textContent = 'The stylesheet could not be applied. Check the XPath expressions and that it uses only XSLT 1.0.'; return; }
           out.textContent = [...frag.childNodes].some(n => n.nodeType === 1) ? [...frag.childNodes].map(n => n.nodeType === 1 ? new XMLSerializer().serializeToString(n) : n.textContent).join('') : frag.textContent;
         } catch (e) { err.textContent = 'XSLT: ' + e.message; }
         return;

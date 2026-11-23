@@ -26,7 +26,7 @@
         "XSD and RelaxNG validation with libxml2 in WebAssembly",
         "DTD validation",
         "ISO Schematron validation",
-        "XSLT 1.0 transforms",
+        "XSLT 1.0 transforms with libxslt in WebAssembly",
         "XQuery 3.1 and XPath 3.1",
         "XPath 1.0 with namespace support",
         "Compare two XML documents",
@@ -108,7 +108,7 @@
           "name": "Can I run XSLT or XQuery?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "Yes, in the Transform tab. XSLT 1.0 runs in your browser's built-in processor. XQuery 3.1 (which includes XPath 3.1, maps, arrays and FLWOR expressions) runs in fontoxpath, an open-source engine loaded on first use. XSLT 2.0 and 3.0 are not offered: the only browser engine for them, Saxon-JS, is not openly licensed, so it cannot be bundled here. Use as input replaces the document with the result."
+            "text": "Yes, in the Transform tab. XSLT 1.0 runs in libxslt, the library behind xsltproc, compiled to WebAssembly and loaded on first use (Chrome is removing the XSLT engine browsers used to include). XQuery 3.1 (which includes XPath 3.1, maps, arrays and FLWOR expressions) runs in fontoxpath, an open-source engine loaded on first use. XSLT 2.0 and 3.0 are not offered: the only browser engine for them, Saxon-JS, is not openly licensed, so it cannot be bundled here. Use as input replaces the document with the result."
           }
         },
         {
