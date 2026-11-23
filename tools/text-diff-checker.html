@@ -780,7 +780,7 @@
         </div>
         <div class="use-case-card">
           <h3><i data-lucide="corner-down-left"></i> Line endings</h3>
-          <p>Windows uses CRLF, Unix LF. A file that has crossed platforms without normalisation differs on <em>every</em> line while looking unchanged. Line endings are normalised before comparing here, so that case shows as "no changes" rather than a wall of red.</p>
+          <p>Windows uses CRLF, Unix LF. A file that has crossed platforms without normalisation differs on <em>every</em> line while looking unchanged. Lines are matched ignoring the line ending, so that case does not show as a wall of red; instead the result says plainly that the line endings differ, and a merged download keeps the file's own line endings.</p>
         </div>
         <div class="use-case-card">
           <h3><i data-lucide="type"></i> Unicode that looks the same</h3>
@@ -802,7 +802,7 @@
     <div class="info-panel">
       <h2><i data-lucide="alert-triangle"></i> Why two files that look identical still differ</h2>
       <p>The most frustrating diff is the one that reports a change you cannot see. Almost always the difference is a character that renders as nothing, or as the same thing your editor renders something else as. Four causes account for nearly all of these.</p>
-      <p><strong>Line endings.</strong> Windows terminates a line with <code>CRLF</code> (carriage return plus line feed), Unix and macOS with a bare <code>LF</code>. A file that has travelled through a Windows editor, a zip archive, or a checkout with Git's <code>core.autocrlf</code> enabled can differ from its counterpart on every single line while looking identical on screen. This tool ignores the difference by default; if a diff elsewhere marks an entire file as changed, check the line endings before you check anything else.</p>
+      <p><strong>Line endings.</strong> Windows terminates a line with <code>CRLF</code> (carriage return plus line feed), Unix and macOS with a bare <code>LF</code>. A file that has travelled through a Windows editor, a zip archive, or a checkout with Git's <code>core.autocrlf</code> enabled can differ from its counterpart on every single line while looking identical on screen. This tool matches lines regardless of their endings and tells you separately when the endings differ; if a diff elsewhere marks an entire file as changed, check the line endings before you check anything else.</p>
       <p><strong>Trailing whitespace.</strong> A space or tab at the end of a line is invisible in most editors and significant to a byte-for-byte comparison. It is also the change most often introduced accidentally, because pressing space before a newline leaves no visual trace. Use the <strong>Trim trailing</strong> option to confirm that this is the only difference, then remove the whitespace rather than leaving the option on permanently — it will hide a real change eventually.</p>
       <p><strong>Unicode normalisation.</strong> The character <code>é</code> can be stored as a single code point (U+00E9) or as <code>e</code> followed by a combining acute accent (U+0065 U+0301). Both render identically in every font. They are different byte sequences, so they are a difference. macOS filesystems have historically preferred the decomposed form, which is why filenames with accents copied from a Mac can mismatch a list generated on Linux.</p>
       <p><strong>Invisible and look-alike characters.</strong> A zero-width space (U+200B), a non-breaking space (U+00A0) pasted from a web page or a word processor, a byte-order mark at the start of the file (U+FEFF), or a Cyrillic <code>а</code> standing in for a Latin <code>a</code> all produce a change with no visible cause. The BOM case is particularly common: it is three bytes prepended to a UTF-8 file by some Windows tools, and it breaks shebang lines, YAML documents and JSON parsers while remaining completely invisible in an editor.</p>
@@ -827,7 +827,7 @@
         </div>
         <div class="faq-item">
           <button class="faq-question">What do "Ignore whitespace" and the other normalisation options do? <i data-lucide="chevron-down"></i></button>
-          <div class="faq-answer"><p>They change how lines are compared, not how they are displayed. Ignore whitespace collapses every run of spaces and tabs to one space and trims the ends, so a reformatted file shows only logic changes. Ignore case compares lower-cased lines. Trim trailing ignores whitespace at the end of a line only. Ignore blank lines lets empty lines match anywhere. Line endings (CRLF vs LF) are always normalised. The original text is still shown in full in the result.</p></div>
+          <div class="faq-answer"><p>They change how lines are compared, not how they are displayed. Ignore whitespace collapses every run of spaces and tabs to one space and trims the ends, so a reformatted file shows only logic changes. Ignore case compares lower-cased lines. Trim trailing ignores whitespace at the end of a line only. Ignore blank lines leaves empty lines out of the comparison. Lines are always matched regardless of CRLF or LF endings, but a difference in line endings, or a missing newline at the end of a file, is still reported above the result. The original text is shown in full.</p></div>
         </div>
         <div class="faq-item">
           <button class="faq-question">How do I merge two files, not just compare them? <i data-lucide="chevron-down"></i></button>
@@ -1020,7 +1020,7 @@
   <script src="../js/kernel.js?v=40b2047872"></script>
 
   <script src="../js/shared.js?v=e2441a1728"></script>
-  <script src="../js/engines/diff.js?v=93d3dd0e18"></script>
+  <script src="../js/engines/diff.js?v=ee877448fe"></script>
 
   <script>
     // ------------------------------------------------------------ state
@@ -1241,7 +1241,7 @@
     function alignAnyway() { if (!last) return; runText(last.a, last.b, last.nameA, last.nameB, null, last.infoA, last.infoB, { workLimit: Infinity }); }
     function finishText(res, a, b, nameA, nameB, title, infoA, infoB, wasExplicit) {
       const o = opts();
-      res.notes = fileNotes(infoA, infoB); res.infoA = infoA; res.infoB = infoB;
+      res.notes = (res.notes || []).concat(fileNotes(infoA, infoB)); res.infoA = infoA; res.infoB = infoB;
       const lang = $('syntaxMode').value === 'auto' ? E.detectLang(a || b, nameA !== 'original' ? nameA : nameB !== 'modified' ? nameB : '') : $('syntaxMode').value;
       last = Object.assign(res, { a, b, nameA, nameB, lang });
       decisions = res.hunks.map(() => 'right');
@@ -1322,8 +1322,18 @@
         r = h.end;
       });
       for (; r < rows.length; r++) out.push(same(rows[r]));
-      const nl = (last.b.endsWith('\n') || last.a.endsWith('\n')) && out.length ? '\n' : '';
+      const facts = last.facts || { a: { finalNewline: /\n$/.test(last.a) }, b: { finalNewline: /\n$/.test(last.b) } };
+      const nl = (allLeft ? facts.a.finalNewline : facts.b.finalNewline) && out.length ? '\n' : '';
       return out.join('\n') + nl;
+    }
+    // The merged pane is a textarea, which can only hold LF. Downloads put
+    // back the line endings of the file the result is based on.
+    function mergedOutput() {
+      const t = $('mergedText').value;
+      if (!last || !last.facts) return t;
+      const allLeft = decisions.length > 0 && decisions.every(d => d === 'left');
+      const eol = (allLeft ? last.facts.a : last.facts.b).eol;
+      return eol === 'CRLF' ? t.replace(/\r?\n/g, '\r\n') : eol === 'CR' ? t.replace(/\r?\n/g, '\r') : t;
     }
     function renderMerged() {
       if (!last) return;
@@ -1365,7 +1375,7 @@
     }
     function download(name, text, type) { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([text], { type: type || 'text/plain' })); a.download = name; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 500); }
     function downloadPatch() { const p = patchText(); if (!p) { Layerbit.toast('Run a comparison first'); return; } download((last && last.nameB !== 'modified' ? last.nameB : 'changes') + '.patch', p); }
-    function downloadMerged() { download(mode === 'three' ? 'merged.txt' : (last && last.nameB !== 'modified' ? 'merged-' + last.nameB : 'merged.txt'), $('mergedText').value); }
+    function downloadMerged() { download(mode === 'three' ? 'merged.txt' : (last && last.nameB !== 'modified' ? 'merged-' + last.nameB : 'merged.txt'), mode === 'three' ? $('mergedText').value : mergedOutput()); }
     function copyText(id) { Layerbit.copy($(id).value).then(() => Layerbit.toast('Copied')); }
     function downloadReport() {
       const panel = $('outputSection').querySelector('.result-pane');

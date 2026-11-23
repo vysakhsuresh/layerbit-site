@@ -2218,6 +2218,25 @@ def _(t):
     eq(tops[2], tops[3], "left and right cells of the same row have different heights")
 
 
+@case("text-diff-checker", "edge", "bug 14: line endings and a missing final newline are reported; merged output keeps CRLF")
+def _(t):
+    t.set("text1", "a\nb"); t.set("text2", "a\nb\n")
+    t.call("run()"); t.wait(150)
+    out = t.text("outputSection")
+    expect("No newline at end of file in the original" in out and "No differences" not in out, out[:300])
+    crlf = [0x78, 0x0D, 0x0A, 0x79, 0x0D, 0x0A]
+    t.page.evaluate(DIFF_LOAD, ["text1", "a", crlf, "win.txt"])
+    t.page.evaluate(DIFF_LOAD, ["text2", "b", [0x78, 0x0A, 0x79, 0x0A], "unix.txt"])
+    t.wait_for("() => document.getElementById('meta2').textContent.includes('UTF-8')")
+    t.call("run()"); t.wait(150)
+    expect("Line endings differ" in t.text("outputSection") and "CRLF" in t.text("outputSection"), t.text("outputSection")[:300])
+    t.page.evaluate(DIFF_LOAD, ["text2", "b", [0x78, 0x0D, 0x0A, 0x59, 0x0D, 0x0A], "win2.txt"])
+    t.wait_for("() => document.getElementById('text2').value === 'x\\nY\\n'")
+    t.call("run()"); t.wait(150)
+    t.call("mergeAll('right')")
+    eq(t.call("mergedOutput()"), "x\r\nY\r\n", "merged download lost the CRLF line endings")
+
+
 @case("text-diff-checker", "typical", "audit: ignore-whitespace/case and highlight options re-run the diff live")
 def _(t):
     t.set("text1", "Hello  World\nsecond line\n")

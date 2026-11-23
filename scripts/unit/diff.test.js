@@ -287,3 +287,16 @@ t('bug 12: a fuzzy apply lists exactly the context lines that did not match', ()
   assert.strictEqual(r.text, 'one\nTWO\nTHREE\nfour\nfive\n');
   assert.deepStrictEqual(r.mismatches, [{ hunk: 1, line: 2, expected: 'two', actual: 'TWO' }]);
 });
+
+// ---- v4: bug 14, line endings and the final newline
+t('bug 14: line-ending and final-newline differences are reported', () => {
+  assert.deepStrictEqual(D.textFacts('a\r\nb\r\n'), { eol: 'CRLF', finalNewline: true });
+  assert.deepStrictEqual(D.textFacts('a\nb'), { eol: 'LF', finalNewline: false });
+  assert.deepStrictEqual(D.textFacts('a\r\nb\nc'), { eol: 'mixed', finalNewline: false });
+  assert.deepStrictEqual(D.textFacts('one line'), { eol: 'none', finalNewline: false });
+  const r = D.lineDiff('a\r\nb\r\n', 'a\nb\n');
+  assert.strictEqual(r.hunks.length, 0);
+  assert.deepStrictEqual(r.notes, ['Line endings differ: the original uses CRLF (Windows), the modified file uses LF (Unix and macOS).']);
+  assert.deepStrictEqual(D.lineDiff('a\nb', 'a\nb\n').notes, ['No newline at end of file in the original.']);
+  assert.deepStrictEqual(D.lineDiff('a\nb\n', 'a\nb\n').notes, []);
+});

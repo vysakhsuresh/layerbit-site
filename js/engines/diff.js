@@ -32,6 +32,22 @@
     return lines;
   }
 
+  /** Line-ending style and whether the text ends with a newline. */
+  function textFacts(text) {
+    var crlf = (text.match(/\r\n/g) || []).length, lf = (text.match(/\n/g) || []).length - crlf, cr = (text.match(/\r(?!\n)/g) || []).length;
+    var kinds = (crlf ? 1 : 0) + (lf ? 1 : 0) + (cr ? 1 : 0);
+    return { eol: kinds > 1 ? 'mixed' : crlf ? 'CRLF' : lf ? 'LF' : cr ? 'CR' : 'none', finalNewline: /[\r\n]$/.test(text) };
+  }
+  var EOL_NAME = { CRLF: 'CRLF (Windows)', LF: 'LF (Unix and macOS)', CR: 'CR (classic Mac)', mixed: 'a mix of line endings' };
+  /** Differences a line comparison hides: line endings and the final newline. */
+  function textNotes(a, b) {
+    var fa = textFacts(a), fb = textFacts(b), out = [];
+    if (fa.eol !== fb.eol && fa.eol !== 'none' && fb.eol !== 'none') out.push('Line endings differ: the original uses ' + EOL_NAME[fa.eol] + ', the modified file uses ' + EOL_NAME[fb.eol] + '.');
+    else if (fa.eol === 'mixed' || fb.eol === 'mixed') out.push('The ' + (fa.eol === 'mixed' ? 'original' : 'modified file') + ' mixes line-ending styles.');
+    if (a && b && fa.finalNewline !== fb.finalNewline) out.push('No newline at end of file in the ' + (fa.finalNewline ? 'modified file' : 'original') + '.');
+    return out;
+  }
+
   // ------------------------------------------------------------ alignment
   // Linear-space Myers diff (the "middle snake" bisection used by
   // diff-match-patch) over integer line ids. jsdiff 5.1's diffArrays copies
@@ -116,7 +132,7 @@
     try { parts = alignParts(ka, kb, o.workLimit == null ? 60000000 : o.workLimit); }
     catch (e) {
       if (!(e instanceof TooDifferent)) throw e;
-      return { rows: [], hunks: [], tooDifferent: true, summary: lineSummary(ka, kb), stats: { added: 0, removed: 0, modified: 0, unchanged: 0, linesA: la.length, linesB: lb.length, similarity: 0 } };
+      return { rows: [], hunks: [], tooDifferent: true, notes: textNotes(a, b), facts: { a: textFacts(a), b: textFacts(b) }, summary: lineSummary(ka, kb), stats: { added: 0, removed: 0, modified: 0, unchanged: 0, linesA: la.length, linesB: lb.length, similarity: 0 } };
     }
     var rows = [], ai = 0, bi = 0;
     for (var i = 0; i < parts.length; i++) {
@@ -146,7 +162,7 @@
         for (var k6 = 0; k6 < p.value.length; k6++) { rows.push({ type: 'ins', l: null, r: { n: bi + 1, text: lb[bi] } }); bi++; }
       }
     }
-    return { rows: rows, hunks: hunksOf(rows), stats: statsOf(rows, la.length, lb.length) };
+    return { rows: rows, hunks: hunksOf(rows), stats: statsOf(rows, la.length, lb.length), notes: textNotes(a, b), facts: { a: textFacts(a), b: textFacts(b) } };
   }
 
   /** Character-bigram Dice similarity of two lines, 0..1 (whitespace-insensitive). */
@@ -773,5 +789,5 @@
 
   return { lineDiff: lineDiff, foldContext: foldContext, intraline: intraline, tokenize: tokenize, detectLang: detectLang, renderLine: renderLine, esc: esc,
     unifiedPatch: unifiedPatch, applyPatch: applyPatch, parsePatchFiles: parsePatchFiles, applyPatchFile: applyPatchFile, diff3: diff3, structuralDiff: structuralDiff, canonicalJson: canonicalJson, canon: canon,
-    parseCsv: parseCsv, detectDelimiter: detectDelimiter, tableDiff: tableDiff, readZip: readZip, isProbablyText: isProbablyText, decodeBytes: decodeBytes, bytesEqual: bytesEqual, stripCommonRoot: stripCommonRoot, uniqueHeaders: uniqueHeaders, parseJsonLossless: parseJsonLossless, stringifyLossless: stringifyLossless, canonicalNumber: canonicalNumber, splitLines: splitLines, normalizeLine: normalizeLine, DEFAULT_OPTS: DEFAULT_OPTS };
+    parseCsv: parseCsv, detectDelimiter: detectDelimiter, tableDiff: tableDiff, readZip: readZip, isProbablyText: isProbablyText, decodeBytes: decodeBytes, bytesEqual: bytesEqual, stripCommonRoot: stripCommonRoot, uniqueHeaders: uniqueHeaders, textFacts: textFacts, textNotes: textNotes, parseJsonLossless: parseJsonLossless, stringifyLossless: stringifyLossless, canonicalNumber: canonicalNumber, splitLines: splitLines, normalizeLine: normalizeLine, DEFAULT_OPTS: DEFAULT_OPTS };
 });
