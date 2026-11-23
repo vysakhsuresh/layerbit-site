@@ -473,6 +473,7 @@
     .diff-notes { display: flex; gap: 10px; align-items: flex-start; margin: 8px; padding: 10px 12px; border-radius: 8px; border: 1px solid rgba(245,158,11,0.4); background: rgba(245,158,11,0.08); color: #fde68a; font-family: 'Space Grotesk', sans-serif; font-size: 0.86rem; white-space: normal; }
     .diff-notes ul { margin: 4px 0 0 18px; padding: 0; }
     .diff-notes svg, .diff-notes i { flex-shrink: 0; width: 18px; height: 18px; margin-top: 2px; }
+    .t-duplicate { color: #fb923c; }
 
   </style>
 </head>
@@ -996,7 +997,7 @@
   <script src="../js/kernel.js?v=40b2047872"></script>
 
   <script src="../js/shared.js?v=e2441a1728"></script>
-  <script src="../js/engines/diff.js?v=a5a367f22b"></script>
+  <script src="../js/engines/diff.js?v=289ace6636"></script>
 
   <script>
     // ------------------------------------------------------------ state
@@ -1348,11 +1349,11 @@
         const o = { arrays: $('arrMode').value, keyField: $('keyField').value.trim() || 'id' };
         const d = E.structuralDiff(a, b, o);
         const fmt = v => v === undefined ? '' : E.esc(JSON.stringify(v).length > 120 ? JSON.stringify(v).slice(0, 117) + '…' : JSON.stringify(v));
-        const counts = { added: 0, removed: 0, changed: 0, type: 0 }; d.forEach(x => counts[x.type]++);
+        const counts = { added: 0, removed: 0, changed: 0, type: 0, duplicate: 0 }; d.forEach(x => counts[x.type]++);
         $('resultTitle').textContent = 'Structural comparison';
-        $('diffStats').innerHTML = `<span class="st-add">+${counts.added} added</span><span class="st-del">−${counts.removed} removed</span><span class="st-mod">~${counts.changed} changed</span><span>${counts.type} type changes</span>`;
+        $('diffStats').innerHTML = `<span class="st-add">+${counts.added} added</span><span class="st-del">−${counts.removed} removed</span><span class="st-mod">~${counts.changed} changed</span><span>${counts.type} type changes</span>${counts.duplicate ? `<span class="st-del">${counts.duplicate} duplicate key${counts.duplicate === 1 ? '' : 's'}</span>` : ''}`;
         $('structPanel').innerHTML = d.length ? `<table class="data-table"><thead><tr><th>Path</th><th>Change</th><th>Original</th><th>Modified</th></tr></thead><tbody>` +
-          d.map(x => `<tr class="t-row"><td class="t-path">${E.esc(x.path)}</td><td class="t-${x.type}">${x.type === 'type' ? `type ${x.oldType} → ${x.newType}` : x.type}</td><td class="cell-old">${fmt(x.old)}</td><td class="cell-new">${fmt(x.new)}</td></tr>`).join('') + '</tbody></table>' +
+          d.map(x => `<tr class="t-row"><td class="t-path">${E.esc(x.path)}</td><td class="t-${x.type}">${x.type === 'type' ? `type ${x.oldType} → ${x.newType}` : x.type === 'duplicate' ? `duplicate key: ${x.countA} in original, ${x.countB} in modified` : x.type}</td><td class="cell-old">${fmt(x.old)}</td><td class="cell-new">${fmt(x.new)}</td></tr>`).join('') + '</tbody></table>' +
           `<div class="struct-foot"><button type="button" class="btn" onclick="structAsText()"><i data-lucide="file-diff"></i> Show as normalised text diff</button><span class="muted">Both documents re-serialised with sorted keys and 2-space indentation, then compared line by line.</span></div>`
           : '<div class="diff-identical"><i data-lucide="check-circle-2"></i> Semantically identical: same keys, same values. Formatting and key order may differ.</div>';
         last = null; three = null; window._structDocs = [a, b];
@@ -1382,6 +1383,7 @@
       $('resultTitle').textContent = `Row comparison${r.keyName ? ' keyed by ' + r.keyName : ' by row order'}`;
       $('diffStats').innerHTML = `<span class="st-add">+${r.added.length} rows</span><span class="st-del">−${r.removed.length} rows</span><span class="st-mod">~${r.changed.length} changed</span><span>${r.unchanged} unchanged</span>${r.colsAdded.length ? `<span class="st-add">columns added: ${E.esc(r.colsAdded.join(', '))}</span>` : ''}${r.colsRemoved.length ? `<span class="st-del">columns removed: ${E.esc(r.colsRemoved.join(', '))}</span>` : ''}`;
       let html = '';
+      if (r.duplicates && r.duplicates.length) html += `<div class="diff-notes" role="status"><i data-lucide="alert-triangle"></i><div><strong>Duplicate key${r.duplicates.length === 1 ? '' : 's'} in ${E.esc(r.keyName)}:</strong> rows that share a key are paired in file order, and any extra ones are listed as added or removed.<ul>${r.duplicates.slice(0, 50).map(d => `<li>${E.esc(d.key)}: ${d.a} in the original, ${d.b} in the modified file</li>`).join('')}${r.duplicates.length > 50 ? `<li>and ${r.duplicates.length - 50} more</li>` : ''}</ul></div></div>`;
       if (r.changed.length) html += `<h3 class="t-h">Changed rows</h3><table class="data-table"><thead><tr>${r.keyName ? '' : '<th>#</th>'}${r.columns.map(c => `<th${c === r.keyName ? ' class="t-path"' : ''}>${cell(c)}</th>`).join('')}</tr></thead><tbody>` +
         r.changed.map(x => `<tr>${r.keyName ? '' : `<td class="t-path">${cell(x.key)}</td>`}${r.columns.map(c => { const ch = x.cells.find(k => k.col === c); return ch ? `<td><span class="cell-old">${cell(ch.old) || '∅'}</span> <span class="cell-new">${cell(ch.new) || '∅'}</span></td>` : `<td class="muted">${cell(x.row[c])}</td>`; }).join('')}</tr>`).join('') + '</tbody></table>';
       if (r.added.length) html += `<h3 class="t-h t-added">Added rows</h3><table class="data-table"><thead><tr>${r.keyName ? '' : '<th>#</th>'}${r.columns.map(c => `<th${c === r.keyName ? ' class="t-path"' : ''}>${cell(c)}</th>`).join('')}</tr></thead><tbody>` + r.added.map(x => `<tr>${r.keyName ? '' : `<td class="t-path">${cell(x.key)}</td>`}${r.columns.map(c => `<td class="cell-new">${cell(x.row[c])}</td>`).join('')}</tr>`).join('') + '</tbody></table>';

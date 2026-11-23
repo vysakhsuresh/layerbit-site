@@ -2100,6 +2100,20 @@ def _(t):
     expect("src/app.js" in text and "lib/app.js" in text, "a file vanished: " + text)
 
 
+@case("text-diff-checker", "edge", "bug 6: duplicate keys are reported in table and JSON results")
+def _(t):
+    t.call("setMode('table')")
+    t.set("text1", "id,name\n1,a\n1,b\n2,c\n"); t.set("text2", "id,name\n1,a\n2,c\n")
+    t.call("refreshKeyColumns()"); t.call("run()"); t.wait(150)
+    out = t.text("tablePanel")
+    expect("Duplicate key" in out and "1" in out, "duplicate key warning missing: " + out[:300])
+    expect("−1 rows" in t.text("diffStats"), t.text("diffStats"))
+    t.call("setMode('struct')"); t.select("arrMode", "key")
+    t.set("text1", '[{"id":1,"n":"a"},{"id":1,"n":"b"}]'); t.set("text2", '[{"id":1,"n":"a"}]')
+    t.call("run()"); t.wait(150)
+    expect("duplicate key" in t.text("structPanel").lower(), t.text("structPanel"))
+
+
 @case("text-diff-checker", "typical", "audit: ignore-whitespace/case and highlight options re-run the diff live")
 def _(t):
     t.set("text1", "Hello  World\nsecond line\n")

@@ -180,3 +180,24 @@ t('bug 5: rows are keyed by header name in each file, so reordered columns still
   assert.strictEqual(D.tableDiff(A, B, 0).changed.length, 1);
   assert.throws(() => D.tableDiff(A, [['sku', 'qty']], { keys: ['id'] }), /Key column "id" is not in the modified file/);
 });
+
+// ---- v4: bug 6, duplicate keys and multisets
+t('bug 6: duplicate keys in a table are reported and compared as a multiset', () => {
+  const A = [['id', 'name'], ['1', 'a'], ['1', 'b'], ['2', 'c']], B = [['id', 'name'], ['1', 'a'], ['2', 'c']];
+  const r = D.tableDiff(A, B, { keys: ['id'] });
+  assert.deepStrictEqual(r.duplicates, [{ key: '1', a: 2, b: 1 }]);
+  assert.strictEqual(r.removed.length, 1); assert.strictEqual(r.removed[0].row.name, 'b');
+  assert.strictEqual(r.unchanged, 2);
+  const r2 = D.tableDiff([['id', 'v'], ['1', 'x'], ['1', 'y']], [['id', 'v'], ['1', 'x'], ['1', 'z']], { keys: ['id'] });
+  assert.strictEqual(r2.changed.length, 1); assert.deepStrictEqual(r2.changed[0].cells, [{ col: 'v', old: 'y', new: 'z' }]);
+});
+t('bug 6: duplicate key fields in JSON arrays are reported', () => {
+  const d = D.structuralDiff({ u: [{ id: 1, n: 'a' }, { id: 1, n: 'b' }] }, { u: [{ id: 1, n: 'a' }] }, { arrays: 'key', keyField: 'id' });
+  assert.ok(d.some(x => x.type === 'duplicate' && x.path === '$.u[id=1]' && x.countA === 2 && x.countB === 1), JSON.stringify(d));
+  assert.ok(d.some(x => x.type === 'removed' && x.old && x.old.n === 'b'), JSON.stringify(d));
+});
+t('bug 6: "as sets" compares multisets, so [1,1,2] differs from [1,2]', () => {
+  const d = D.structuralDiff([1, 1, 2], [1, 2], { arrays: 'set' });
+  assert.strictEqual(d.length, 1); assert.strictEqual(d[0].type, 'removed'); assert.strictEqual(d[0].old, 1);
+  assert.strictEqual(D.structuralDiff([2, 1, 1], [1, 2, 1], { arrays: 'set' }).length, 0);
+});

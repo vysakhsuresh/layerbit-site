@@ -399,16 +399,24 @@
         });
       } else if (tx === 'array') {
         if (o.arrays === 'key' && o.keyField && x.every(function (e) { return e && typeof e === 'object' && o.keyField in e; }) && y.every(function (e) { return e && typeof e === 'object' && o.keyField in e; })) {
-          var mx = {}, my = {}; x.forEach(function (e) { mx[String(e[o.keyField])] = e; }); y.forEach(function (e) { my[String(e[o.keyField])] = e; });
-          var all = {}; Object.keys(mx).forEach(function (k) { all[k] = 1; }); Object.keys(my).forEach(function (k) { all[k] = 1; });
-          Object.keys(all).forEach(function (k) {
-            var p = path + '[' + o.keyField + '=' + k + ']';
-            if (!(k in my)) out.push({ path: p, type: 'removed', old: mx[k] }); else if (!(k in mx)) out.push({ path: p, type: 'added', new: my[k] }); else walk(mx[k], my[k], p);
+          var mx = {}, my = {}, keysInOrder = [];
+          var group = function (arr, m) { arr.forEach(function (e) { var k = keyText(e[o.keyField]); if (!m[k]) { m[k] = []; if (keysInOrder.indexOf(k) < 0) keysInOrder.push(k); } m[k].push(e); }); };
+          group(x, mx); group(y, my);
+          keysInOrder.forEach(function (k) {
+            var p = path + '[' + o.keyField + '=' + k + ']', ax = mx[k] || [], ay = my[k] || [], n = Math.max(ax.length, ay.length);
+            if (ax.length > 1 || ay.length > 1) out.push({ path: p, type: 'duplicate', countA: ax.length, countB: ay.length });
+            for (var i = 0; i < n; i++) {
+              var pi = n > 1 ? p + '#' + (i + 1) : p;
+              if (i >= ay.length) out.push({ path: pi, type: 'removed', old: ax[i] }); else if (i >= ax.length) out.push({ path: pi, type: 'added', new: ay[i] }); else walk(ax[i], ay[i], pi);
+            }
           });
         } else if (o.arrays === 'set') {
+          // multiset: every occurrence must be matched by one on the other side
           var sx = x.map(function (v) { return JSON.stringify(canon(v)); }), sy = y.map(function (v) { return JSON.stringify(canon(v)); });
-          x.forEach(function (v, i) { if (sy.indexOf(sx[i]) < 0) out.push({ path: path + '[' + i + ']', type: 'removed', old: v }); });
-          y.forEach(function (v, i) { if (sx.indexOf(sy[i]) < 0) out.push({ path: path + '[' + i + ']', type: 'added', new: v }); });
+          var left = {}; sy.forEach(function (k) { left[k] = (left[k] || 0) + 1; });
+          x.forEach(function (v, i) { if (left[sx[i]] > 0) left[sx[i]]--; else out.push({ path: path + '[' + i + ']', type: 'removed', old: v }); });
+          var right = {}; sx.forEach(function (k) { right[k] = (right[k] || 0) + 1; });
+          y.forEach(function (v, i) { if (right[sy[i]] > 0) right[sy[i]]--; else out.push({ path: path + '[' + i + ']', type: 'added', new: v }); });
         } else {
           var n = Math.max(x.length, y.length);
           for (var i = 0; i < n; i++) { var p2 = path + '[' + i + ']'; if (i >= y.length) out.push({ path: p2, type: 'removed', old: x[i] }); else if (i >= x.length) out.push({ path: p2, type: 'added', new: y[i] }); else walk(x[i], y[i], p2); }
@@ -418,6 +426,7 @@
     walk(a, b, '$');
     return out;
   }
+  function keyText(v) { return v && typeof v === 'object' && v.isLosslessNumber ? v.value : String(v); }
   function canon(v) {
     if (Array.isArray(v)) return v.map(canon);
     if (v && typeof v === 'object') { var o = {}; Object.keys(v).sort().forEach(function (k) { o[k] = canon(v[k]); }); return o; }
@@ -470,21 +479,35 @@
     }
     var OA = objects(rowsA, ha), OB = objects(rowsB, hb);
     var keyOf = function (obj, i) { return o.keys.length ? o.keys.map(function (k) { return obj[k]; }).join('\u241F') : String(i); };
+    // Every row is kept, even when its key repeats: rows sharing a key are
+    // paired in file order (a multiset), surplus ones are added or removed,
+    // and every repeated key is listed in `duplicates`.
     function index(objs) {
       var m = {}, order = [];
-      objs.forEach(function (obj, i) { var k = keyOf(obj, i); if (!(k in m)) { m[k] = obj; order.push(k); } });
+      objs.forEach(function (obj, i) { var k = keyOf(obj, i); if (!m[k]) { m[k] = []; order.push(k); } m[k].push(obj); });
       return { m: m, order: order };
     }
     var A = index(OA), B = index(OB);
-    var added = [], removed = [], changed = [], unchanged = 0;
+    var added = [], removed = [], changed = [], unchanged = 0, duplicates = [];
+    var label = function (k, i, n) { return n > 1 ? k + ' (#' + (i + 1) + ')' : k; };
     A.order.forEach(function (k) {
-      if (!(k in B.m)) { removed.push({ key: k, row: A.m[k] }); return; }
-      var cells = [];
-      cols.forEach(function (c) { var x = A.m[k][c] == null ? '' : A.m[k][c], y = B.m[k][c] == null ? '' : B.m[k][c]; if (x !== y) cells.push({ col: c, old: x, new: y }); });
-      if (cells.length) changed.push({ key: k, cells: cells, row: B.m[k] }); else unchanged++;
+      var ra = A.m[k], rb = B.m[k] || [], n = Math.max(ra.length, rb.length);
+      if (ra.length > 1 || rb.length > 1) duplicates.push({ key: k, a: ra.length, b: rb.length });
+      for (var i = 0; i < n; i++) {
+        if (i >= rb.length) { removed.push({ key: label(k, i, n), row: ra[i] }); continue; }
+        if (i >= ra.length) { added.push({ key: label(k, i, n), row: rb[i] }); continue; }
+        var cells = [];
+        cols.forEach(function (c) { var x = ra[i][c] == null ? '' : ra[i][c], y = rb[i][c] == null ? '' : rb[i][c]; if (x !== y) cells.push({ col: c, old: x, new: y }); });
+        if (cells.length) changed.push({ key: label(k, i, n), cells: cells, row: rb[i] }); else unchanged++;
+      }
     });
-    B.order.forEach(function (k) { if (!(k in A.m)) added.push({ key: k, row: B.m[k] }); });
-    return { columns: cols, colsAdded: colsAdded, colsRemoved: colsRemoved, added: added, removed: removed, changed: changed, unchanged: unchanged, keyName: o.keys.length ? o.keys.join(' + ') : null, keys: o.keys };
+    B.order.forEach(function (k) {
+      if (A.m[k]) return;
+      var rb = B.m[k];
+      if (rb.length > 1) duplicates.push({ key: k, a: 0, b: rb.length });
+      rb.forEach(function (row, i) { added.push({ key: label(k, i, rb.length), row: row }); });
+    });
+    return { columns: cols, colsAdded: colsAdded, colsRemoved: colsRemoved, added: added, removed: removed, changed: changed, unchanged: unchanged, keyName: o.keys.length ? o.keys.join(' + ') : null, keys: o.keys, duplicates: o.keys.length ? duplicates : [] };
   }
 
   // --------------------------------------------------------------------- zip
