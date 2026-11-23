@@ -2474,6 +2474,101 @@ def _(t):
     expect(order == ["KSA 1", "UAE 2"], f"sort by qty asc: {order}")
 
 
+DIFF_HEX_SET = """([side, parts, name]) => { const toPart = p => typeof p === 'number' ? new Uint8Array(p) : Array.isArray(p) ? new Uint8Array(p) : p;
+  const f = new File(parts.map(toPart), name); const dt = new DataTransfer(); dt.items.add(f);
+  const inp = document.getElementById(side === 'a' ? 'hexAFile' : 'hexBFile'); inp.files = dt.files; inp.dispatchEvent(new Event('change')); }"""
+
+
+@case("text-diff-checker", "typical", "feature 24: hex compare shows offsets, both sides, highlighted bytes, next/previous difference and jump to offset")
+def _(t):
+    t.call("setMode('hex')")
+    expect(t.visible("#hexAPane") and t.visible("#hexBPane"), "hex inputs not shown")
+    a = list(range(256)) * 4            # 1024 bytes
+    b = list(a); b[0x1F] = 0xAA; b[0x200] = 0xFF; b[0x201] = 0xFE; b += [0x41, 0x42]   # 3 bytes changed + 2 extra
+    t.page.evaluate(DIFF_HEX_SET, ["a", [a], "fw-1.bin"])
+    t.page.evaluate(DIFF_HEX_SET, ["b", [b], "fw-2.bin"])
+    t.wait_for("() => document.getElementById('hexBInfo').textContent.includes('fw-2.bin')")
+    t.call("compare()")
+    t.wait_for("() => /differ/.test(document.getElementById('diffStats').innerText)")
+    s = t.text("diffStats")
+    expect("5 bytes differ" in s, s)
+    expect("first at 0x0000001F" in s, s)
+    expect("1 KB" in s or "1,024" in s, "sizes missing: " + s)
+    expect("sizes differ" in t.text("outputSection").lower(), "size warning missing")
+    rows = t.count("#hexRows .hx-row")
+    expect(0 < rows < 120, f"rows rendered: {rows}")
+    first = t.call("document.querySelector('#hexRows .hx-row .hx-off').textContent")
+    eq(first, "00000000", "first offset")
+    # row 0x10 holds byte 0x1F: left 1F highlighted, right AA highlighted, ASCII columns present
+    row = t.call("(() => { const r = [...document.querySelectorAll('#hexRows .hx-row')].find(x => x.querySelector('.hx-off').textContent === '00000010'); return { l: [...r.querySelectorAll('.hx-hex.l .d')].map(e => e.textContent.trim()), r: [...r.querySelectorAll('.hx-hex.r .d')].map(e => e.textContent.trim()), asc: r.querySelector('.hx-asc.l').textContent.length }; })()")
+    eq(row["l"], ["1F"], "left highlighted byte"); eq(row["r"], ["AA"], "right highlighted byte"); eq(row["asc"], 16, "ASCII column width")
+    # next / previous difference
+    t.call("navDiff(1)"); t.wait(150)
+    eq(t.text("hunkCounter"), "1 / 3", "counter after next")
+    expect(t.count("#hexRows .hx-row.hx-cur") >= 1, "current difference not marked")
+    t.call("navDiff(1)"); t.wait(150)
+    eq(t.text("hunkCounter"), "2 / 3", "second difference")
+    cur = t.call("document.querySelector('#hexRows .hx-row.hx-cur .hx-off').textContent")
+    eq(cur, "00000200", "second difference row")
+    t.call("navDiff(-1)"); t.wait(150)
+    eq(t.text("hunkCounter"), "1 / 3", "previous difference")
+    # jump to an offset (hex or decimal)
+    t.set("hexJump", "0x300"); t.click("#btnHexJump"); t.wait(150)
+    eq(t.call("document.querySelector('#hexRows .hx-row.hx-target .hx-off').textContent"), "00000300", "jump to 0x300")
+    t.set("hexJump", "1024"); t.click("#btnHexJump"); t.wait(150)
+    eq(t.call("document.querySelector('#hexRows .hx-row.hx-target .hx-off').textContent"), "00000400", "jump to decimal 1024")
+    tail = t.call("[...document.querySelectorAll('#hexRows .hx-row.hx-target .hx-hex.r .d')].map(e => e.textContent.trim())")
+    eq(tail, ["41", "42"], "bytes only on the right are highlighted")
+    t.set("hexJump", "zzz"); t.click("#btnHexJump"); t.wait(100)
+    expect("offset" in t.text("hexJumpMsg").lower(), "bad offset not reported")
+
+
+@case("text-diff-checker", "maximal", "feature 24: two 160 MB files are read in slices, scanned with progress, and stay scrollable")
+def _(t):
+    t.call("setMode('hex')")
+    mb = 1 << 20
+    # parts are shared buffers, so the page never holds the files in one array
+    t.page.evaluate("""() => { const z = new Uint8Array(8 << 20); const one = new Uint8Array([7]);
+      const mk = (name, extra) => { const parts = []; for (let i = 0; i < 20; i++) parts.push(z); parts.push(...extra); return new File(parts, name); };
+      const set = (id, f) => { const dt = new DataTransfer(); dt.items.add(f); const i = document.getElementById(id); i.files = dt.files; i.dispatchEvent(new Event('change')); };
+      set('hexAFile', mk('disk-a.img', [z]));
+      set('hexBFile', mk('disk-b.img', [one, z.subarray(1)])); }""")
+    t.call("compare()")
+    t.wait_for("() => /differ/.test(document.getElementById('diffStats').innerText)", timeout=10000)
+    s = t.text("diffStats")
+    expect("1 byte differs" in s, s)
+    expect("first at 0x0A000000" in s, s)
+    expect(t.count("#hexRows .hx-row") < 120, "rows are not virtual")
+    t.set("hexJump", "0x09FFFFF0"); t.click("#btnHexJump"); t.wait(400)
+    t.wait_for("() => !!document.querySelector('#hexRows .hx-row.hx-target')")
+    expect(t.call("[...document.querySelectorAll('#hexRows .hx-row .hx-hex.r .d')].map(e => e.textContent.trim()).join(',')") == "07", "byte at 0x0A000000 not shown as different")
+    t.call("navDiff(1)"); t.wait(300)
+    eq(t.call("document.querySelector('#hexRows .hx-row.hx-cur .hx-off').textContent"), "0A000000", "next difference in a big file")
+    eq(t.call("hexSource('a').bytes === undefined && hexSource('a').size"), 168 * mb, "left file kept as a File, read by slices")
+
+
+@case("text-diff-checker", "edge", "feature 24: empty, identical, single-sided and folder-opened binaries")
+def _(t):
+    t.call("setMode('hex')")
+    t.page.evaluate(DIFF_HEX_SET, ["a", [[]], "empty.bin"])
+    t.page.evaluate(DIFF_HEX_SET, ["b", [[0, 1, 2]], "three.bin"])
+    t.wait_for("() => document.getElementById('hexBInfo').textContent.includes('three.bin')")
+    t.call("compare()"); t.wait_for("() => /differ/.test(document.getElementById('diffStats').innerText)")
+    expect("3 bytes differ" in t.text("diffStats") and "first at 0x00000000" in t.text("diffStats"), t.text("diffStats"))
+    t.page.evaluate(DIFF_HEX_SET, ["a", [[0, 1, 2]], "same.bin"])
+    t.wait_for("() => document.getElementById('hexAInfo').textContent.includes('same.bin')")
+    t.call("compare()"); t.wait_for("() => /identical/i.test(document.getElementById('diffStats').innerText)")
+    eq(t.text("hunkCounter"), "0 / 0", "no differences to step through")
+    # a binary file opened from a folder comparison lands in the hex view
+    t.call("openHex(new Uint8Array([0, 0, 0, 5]), new Uint8Array([0, 0, 0, 6]), 'lib/a.so', 'lib/a.so')")
+    t.wait_for("() => /differ/.test(document.getElementById('diffStats').innerText)")
+    eq(t.call("mode"), "hex", "mode")
+    expect("first at 0x00000003" in t.text("diffStats") and "lib/a.so" in t.text("resultTitle"), t.text("resultTitle") + " " + t.text("diffStats"))
+    # Clear empties the hex inputs too
+    t.call("clearInputs()")
+    expect("Drop any file" in t.text("hexAInfo"), "hex input not cleared")
+
+
 @case("text-diff-checker", "typical", "audit: ignore-whitespace/case and highlight options re-run the diff live")
 def _(t):
     t.set("text1", "Hello  World\nsecond line\n")

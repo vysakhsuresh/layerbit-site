@@ -325,3 +325,26 @@
     .col-summary { padding: 0 12px 8px; font-size: 0.86em; color: var(--text-muted); display: flex; flex-wrap: wrap; gap: 6px 12px; align-items: center; }
     .col-summary:empty { display: none; }
     .col-summary .sc { display: inline-block; min-width: 18px; padding: 0 5px; border-radius: 999px; text-align: center; background: rgba(251,191,36,0.2); color: #fbbf24; }
+    .hex-output { display: flex; flex-direction: column; min-height: 0; }
+    .hex-scroll { position: relative; height: min(62vh, 620px); overflow: auto; overflow-anchor: none; scroll-behavior: auto; background: rgba(0,0,0,0.35); border-top: 1px solid var(--border-color, rgba(255,255,255,0.08)); font-family: 'JetBrains Mono', ui-monospace, Menlo, monospace; font-size: 12.5px; }
+    .hex-head, .hx-row { display: flex; gap: 14px; white-space: pre; line-height: 20px; height: 20px; padding: 0 12px; width: max-content; min-width: 100%; box-sizing: border-box; }
+    .hex-head { position: sticky; top: 0; z-index: 2; background: #0d1117; color: var(--accent-main); border-bottom: 1px solid rgba(255,255,255,0.08); }
+    .hex-spacer { width: 1px; }
+    .hex-rows { position: absolute; left: 0; right: 0; min-width: max-content; }
+    .hx-off { color: var(--text-muted); }
+    .hx-hex.l, .hx-asc.l { color: #fca5a5; }
+    .hx-hex.r, .hx-asc.r { color: #86efac; }
+    .hx-asc.l { padding-right: 10px; border-right: 1px solid rgba(255,255,255,0.08); }
+    .hx-row.hx-has { background: rgba(251,191,36,0.06); }
+    .hx-row.hx-cur { background: rgba(56,189,248,0.14); }
+    .hx-row.hx-target { outline: 1px solid rgba(56,189,248,0.6); outline-offset: -1px; }
+    .hx-row b.d { font-weight: 600; color: #0a0c10; background: #fbbf24; border-radius: 2px; }
+    .hex-jump-msg:empty { display: none; }
+    .btn[hidden], .opt-group [hidden], .toggle-label[hidden] { display: none !important; }
+    @media (max-width: 760px) {
+      .hex-head, .hx-row { display: grid; grid-template-columns: auto auto auto; grid-template-rows: 20px 20px; height: 40px; gap: 0 10px; padding: 0 8px; }
+      .hx-off { grid-row: 1 / span 2; align-self: center; }
+      .hx-hex.l { grid-column: 2; grid-row: 1; } .hx-asc.l { grid-column: 3; grid-row: 1; border-right: 0; padding-right: 0; }
+      .hx-hex.r { grid-column: 2; grid-row: 2; } .hx-asc.r { grid-column: 3; grid-row: 2; }
+      .hx-row { border-bottom: 1px solid rgba(255,255,255,0.04); }
+    }

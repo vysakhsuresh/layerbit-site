@@ -452,3 +452,35 @@ t('feature 23: dates in different formats compare equal when asked', () => {
   assert.strictEqual(D.tableDiff([['d'], ['11/05/2026']], [['d'], ['2026-11-05']], { dates: true, dayFirst: false }).changed.length, 0);
   assert.strictEqual(D.normaliseDate('2026-02-30'), null);
 });
+t('feature 24: byteRanges finds differing runs, merges across chunk boundaries and counts the tail', () => {
+  const a = Uint8Array.from([1, 2, 3, 4, 5, 6, 7, 8]), b = Uint8Array.from([1, 9, 9, 4, 5, 6, 0, 0, 0, 0]);
+  const ranges = []; let n = 0;
+  // scanned in three uneven chunks, the way the page streams big files
+  [[0, 2], [2, 7], [7, 10]].forEach(([s, e]) => { n += D.byteRanges(a.subarray(s, e), b.subarray(s, e), s, ranges); });
+  assert.deepStrictEqual(ranges.map(r => [r[0], r[1]]), [[1, 3], [6, 10]]);
+  assert.strictEqual(n, 6);  // 2 changed + 2 changed + 2 bytes only on the right
+  // identical and empty inputs
+  const r2 = []; assert.strictEqual(D.byteRanges(a, a.slice(), 0, r2), 0); assert.strictEqual(r2.length, 0);
+  const r3 = []; assert.strictEqual(D.byteRanges(new Uint8Array(0), Uint8Array.from([0]), 0, r3), 1); assert.deepStrictEqual(r3.map(r => [r[0], r[1]]), [[0, 1]]);
+  // a cap on stored ranges keeps the byte count exact and says so
+  const x = new Uint8Array(100), y = new Uint8Array(100); for (let i = 0; i < 100; i += 2) y[i] = 1;
+  const capped = []; assert.strictEqual(D.byteRanges(x, y, 0, capped, 10), 50);
+  assert.strictEqual(capped.length, 10); assert.strictEqual(capped.truncated, true);
+});
+t('feature 24: parseOffset reads hex and decimal offsets and rejects junk', () => {
+  assert.strictEqual(D.parseOffset('0x1F'), 31);
+  assert.strictEqual(D.parseOffset('1fh'), 31);
+  assert.strictEqual(D.parseOffset('  4096 '), 4096);
+  assert.strictEqual(D.parseOffset('1,048,576'), 1048576);
+  assert.strictEqual(D.parseOffset('00FF'), 255);       // hex digits without a prefix read as hex
+  assert.strictEqual(D.parseOffset('0010'), 10);        // digits only read as decimal
+  assert.strictEqual(D.parseOffset('0x'), null);
+  assert.strictEqual(D.parseOffset('-5'), null);
+  assert.strictEqual(D.parseOffset('xyz'), null);
+  assert.strictEqual(D.parseOffset(''), null);
+});
+t('feature 24: hexOffset pads to the width the file needs', () => {
+  assert.strictEqual(D.hexOffset(31, 100), '0000001F');
+  assert.strictEqual(D.hexOffset(0x123456789, 0x200000000), '123456789');
+  assert.strictEqual(D.asciiByte(65), 'A'); assert.strictEqual(D.asciiByte(0), '.'); assert.strictEqual(D.asciiByte(200), '.');
+});

@@ -1037,6 +1037,49 @@
     var all = paths.every(function (p) { var i = p.indexOf('/'); return i > 0 && p.slice(0, i) === first; });
     return all ? paths.map(function (p) { return p.slice(first.length + 1); }) : paths.slice();
   }
+  /* ---- bytes (hex mode) ---- */
+  // Appends the differing byte ranges of two chunks that start at the same
+  // file offset `base` to `ranges` ([start, end) pairs) and returns how many
+  // bytes differ. A run that touches the previous range extends it, so a big
+  // file can be scanned chunk by chunk. Bytes past the end of the shorter
+  // input count as different. At most `limit` ranges are kept (the count
+  // stays exact); `ranges.truncated` is then true.
+  function byteRanges(a, b, base, ranges, limit) {
+    var m = Math.min(a.length, b.length), n = Math.max(a.length, b.length), count = 0, i = 0;
+    if (limit == null) limit = Infinity;
+    function add(s, e) {
+      count += e - s;
+      var last = ranges[ranges.length - 1];
+      if (last && last[1] === s && !ranges.truncated) last[1] = e;
+      else if (ranges.length < limit) ranges.push([s, e]);
+      else ranges.truncated = true;
+    }
+    while (i < m) {
+      if (a[i] === b[i]) { i++; continue; }
+      var s = i; while (i < m && a[i] !== b[i]) i++;
+      add(base + s, base + i);
+    }
+    if (n > m) add(base + m, base + n);
+    return count;
+  }
+  // "0x1F", "1Fh", "00FF" (hex digits) or "4096", "1,048,576" (decimal).
+  function parseOffset(text) {
+    var s = String(text == null ? '' : text).trim().replace(/[\s_]/g, '');
+    var m;
+    if ((m = /^(?:0x|\$)([0-9a-f]+)$/i.exec(s)) || (m = /^([0-9a-f]+)h$/i.exec(s))) return parseInt(m[1], 16);
+    if (/^\d{1,3}(,\d{3})+$/.test(s)) return +s.replace(/,/g, '');
+    if (/^\d+$/.test(s)) return +s;
+    if (/^[0-9a-f]+$/i.test(s)) return parseInt(s, 16);
+    return null;
+  }
+  // Offset as hex, at least 8 digits and as many as the largest offset needs.
+  function hexOffset(n, max) {
+    var w = Math.max(8, (Math.max(max || 0, 1) - 1).toString(16).length), h = n.toString(16).toUpperCase();
+    while (h.length < w) h = '0' + h;
+    return h;
+  }
+  function asciiByte(c) { return c >= 32 && c < 127 ? String.fromCharCode(c) : '.'; }
+
   function isProbablyText(u8) {
     var n = Math.min(u8.length, 4000), ctl = 0;
     for (var i = 0; i < n; i++) { var c = u8[i]; if (c === 0) return false; if (c < 7 || (c > 13 && c < 32)) ctl++; }
@@ -1045,5 +1088,5 @@
 
   return { lineDiff: lineDiff, foldContext: foldContext, intraline: intraline, tokenize: tokenize, detectLang: detectLang, renderLine: renderLine, esc: esc,
     unifiedPatch: unifiedPatch, applyPatch: applyPatch, parsePatchFiles: parsePatchFiles, applyPatchFile: applyPatchFile, diff3: diff3, structuralDiff: structuralDiff, canonicalJson: canonicalJson, canon: canon,
-    parseCsv: parseCsv, detectDelimiter: detectDelimiter, tableDiff: tableDiff, readZip: readZip, isProbablyText: isProbablyText, decodeBytes: decodeBytes, bytesEqual: bytesEqual, stripCommonRoot: stripCommonRoot, uniqueHeaders: uniqueHeaders, pairSheets: pairSheets, normaliseDate: normaliseDate, cellEq: cellEq, DEFAULT_IGNORE: DEFAULT_IGNORE, compileIgnore: compileIgnore, folderDiff: folderDiff, buildTree: buildTree, flattenTree: flattenTree, folderCsv: folderCsv, csvLine: csvLine, dosTime: dosTime, textFacts: textFacts, textNotes: textNotes, parseJsonLossless: parseJsonLossless, stringifyLossless: stringifyLossless, canonicalNumber: canonicalNumber, splitLines: splitLines, normalizeLine: normalizeLine, DEFAULT_OPTS: DEFAULT_OPTS };
+    parseCsv: parseCsv, detectDelimiter: detectDelimiter, tableDiff: tableDiff, readZip: readZip, isProbablyText: isProbablyText, decodeBytes: decodeBytes, bytesEqual: bytesEqual, stripCommonRoot: stripCommonRoot, uniqueHeaders: uniqueHeaders, pairSheets: pairSheets, normaliseDate: normaliseDate, cellEq: cellEq, DEFAULT_IGNORE: DEFAULT_IGNORE, compileIgnore: compileIgnore, folderDiff: folderDiff, buildTree: buildTree, flattenTree: flattenTree, folderCsv: folderCsv, csvLine: csvLine, dosTime: dosTime, textFacts: textFacts, textNotes: textNotes, parseJsonLossless: parseJsonLossless, stringifyLossless: stringifyLossless, canonicalNumber: canonicalNumber, splitLines: splitLines, byteRanges: byteRanges, parseOffset: parseOffset, hexOffset: hexOffset, asciiByte: asciiByte, normalizeLine: normalizeLine, DEFAULT_OPTS: DEFAULT_OPTS };
 });

@@ -13,6 +13,7 @@
     <button type="button" class="mode-tab" data-mode="table" role="tab" aria-selected="false"><i data-lucide="table"></i> CSV / spreadsheet cells</button>
     <button type="button" class="mode-tab" data-mode="patch" role="tab" aria-selected="false"><i data-lucide="file-plus-2"></i> Apply a patch</button>
     <button type="button" class="mode-tab" data-mode="zip" role="tab" aria-selected="false"><i data-lucide="folder-git-2"></i> Folders</button>
+    <button type="button" class="mode-tab" data-mode="hex" role="tab" aria-selected="false"><i data-lucide="binary"></i> Hex / binary</button>
   </div>
 
   <!-- Two-sided inputs: text, struct and table modes share them -->
@@ -99,6 +100,26 @@
     </div>
   </div>
 
+  <!-- Hex inputs: any two files, read in slices -->
+  <div class="ide-container mode-only" data-for="hex" style="display:none;">
+    <div class="pane zip-pane" id="hexAPane">
+      <div class="pane-header"><div class="pane-title title-red"><i data-lucide="file-minus"></i> Left file</div>
+        <div class="btn-group">
+          <input type="file" id="hexAFile" style="display:none;">
+          <button class="btn" type="button" onclick="document.getElementById('hexAFile').click()"><i data-lucide="upload"></i> Open file</button>
+        </div></div>
+      <div class="zip-drop" id="hexAInfo"><i data-lucide="binary"></i><span>Drop any file here, or choose one</span></div>
+    </div>
+    <div class="pane zip-pane" id="hexBPane">
+      <div class="pane-header"><div class="pane-title title-green"><i data-lucide="file-plus"></i> Right file</div>
+        <div class="btn-group">
+          <input type="file" id="hexBFile" style="display:none;">
+          <button class="btn" type="button" onclick="document.getElementById('hexBFile').click()"><i data-lucide="upload"></i> Open file</button>
+        </div></div>
+      <div class="zip-drop" id="hexBInfo"><i data-lucide="binary"></i><span>Drop any file here, or choose one</span></div>
+    </div>
+  </div>
+
   <div class="action-bar" id="actionBar">
     <div class="opt-group mode-only" data-for="text three patch">
       <label class="toggle-label" title="Collapse runs of spaces and tabs and ignore leading/trailing whitespace"><input type="checkbox" id="ignoreWhitespace"> Ignore whitespace</label>
@@ -140,6 +161,16 @@
         <button type="button" class="btn mini-btn" id="btnIgnoreReset" title="Restore the default ignore list">Reset</button>
       </label>
     </div>
+    <div class="opt-group mode-only" data-for="hex" style="display:none;">
+      <label class="toggle-label">Bytes per row
+        <select id="hexWidth" class="mini-select"><option value="8">8</option><option value="16" selected>16</option><option value="32">32</option></select>
+      </label>
+      <label class="toggle-label" title="Hex (0x1F00, 1F00h) or decimal (7936)">Go to offset
+        <input type="text" id="hexJump" class="mini-input" size="12" spellcheck="false" autocomplete="off" placeholder="0x0000">
+        <button type="button" class="btn mini-btn" id="btnHexJump">Go</button>
+      </label>
+      <span class="muted hex-jump-msg" id="hexJumpMsg" role="status"></span>
+    </div>
     <div class="opt-group mode-only" data-for="table" style="display:none;">
       <label class="toggle-label" id="sheetValuesLabel" hidden title="Displayed: the text Excel shows (formats such as 0.00 or dates applied). Raw: the stored values.">Spreadsheet values
         <select id="sheetValues" class="mini-select"><option value="displayed" selected>as displayed</option><option value="raw">raw values</option></select>
@@ -171,7 +202,7 @@
       </details>
     </div>
     <div class="opt-group">
-      <button class="btn mode-only" data-for="text struct table" type="button" onclick="swapInputs()"><i data-lucide="arrow-left-right"></i> Swap</button>
+      <button class="btn mode-only" data-for="text struct table hex" type="button" onclick="swapInputs()"><i data-lucide="arrow-left-right"></i> Swap</button>
       <button class="btn" type="button" onclick="clearInputs()"><i data-lucide="trash-2"></i> Clear</button>
       <label class="toggle-label save-switch" title="Off: nothing is stored. On: each Compare you click is saved to this browser's history (IndexedDB) so you can reopen it with Ctrl+H. Edits while typing are never saved."><input type="checkbox" id="saveHistory"> Save to history</label>
       <button class="btn btn-primary" type="button" id="btnRun" data-lb-primary onclick="compare()"><i data-lucide="search"></i> <span id="btnRunLabel">Compare</span></button>
@@ -184,7 +215,7 @@
         <div class="pane-title"><i data-lucide="file-output"></i> <span id="resultTitle">Result</span></div>
         <div class="stats-strip" id="diffStats"></div>
         <div class="btn-group">
-          <span class="btn-group mode-only" data-for="text patch zip" id="navGroup">
+          <span class="btn-group mode-only" data-for="text patch zip hex" id="navGroup">
             <button class="btn" type="button" onclick="navDiff(-1)" title="Previous change (p)"><i data-lucide="chevron-up"></i></button>
             <span class="hunk-counter" id="hunkCounter">0 / 0</span>
             <button class="btn" type="button" onclick="navDiff(1)" title="Next change (n)"><i data-lucide="chevron-down"></i></button>
@@ -194,8 +225,8 @@
             <button class="btn" type="button" id="btnAllRight" onclick="mergeAll('right')" title="Accept every change: merged result equals the modified text"><i data-lucide="chevrons-right"></i> Accept all changes</button>
           </span>
           <span class="btn-group">
-            <button class="btn" type="button" id="btnPatch" onclick="copyPatch()" title="Copy a unified diff (git apply / patch -p0 compatible)"><i data-lucide="copy"></i> Copy patch</button>
-            <button class="btn" type="button" id="btnPatchDl" onclick="downloadPatch()" title="Download as .patch"><i data-lucide="download"></i> .patch</button>
+            <button class="btn mode-only" data-for="text three struct table patch zip" type="button" id="btnPatch" onclick="copyPatch()" title="Copy a unified diff (git apply / patch -p0 compatible)"><i data-lucide="copy"></i> Copy patch</button>
+            <button class="btn mode-only" data-for="text three struct table patch zip" type="button" id="btnPatchDl" onclick="downloadPatch()" title="Download as .patch"><i data-lucide="download"></i> .patch</button>
             <button class="btn" type="button" id="btnReport" onclick="downloadReport()" title="Download a standalone HTML report of this comparison"><i data-lucide="file-code-2"></i> HTML report</button>
             <button class="btn mode-only" data-for="zip table struct" type="button" id="btnCsv" onclick="downloadCsv()" title="Download the differences as CSV"><i data-lucide="file-spreadsheet"></i> CSV</button>
             <button class="btn" type="button" id="btnBackFolder" onclick="backToFolder()" hidden><i data-lucide="folder-tree"></i> Back to folder</button>
@@ -223,6 +254,15 @@
       <div id="threePanel" class="three-output" style="display:none;"></div>
       <!-- zip view -->
       <div id="zipPanel" class="struct-output" style="display:none;"></div>
+      <!-- hex view: a virtual list, so any file size scrolls -->
+      <div id="hexPanel" class="hex-output" style="display:none;">
+        <div id="hexNotes"></div>
+        <div class="hex-scroll" id="hexScroll" tabindex="0" aria-label="Hex view: offset, left bytes and text, right bytes and text">
+          <div class="hex-head" id="hexHead"></div>
+          <div class="hex-spacer" id="hexSpacer"></div>
+          <div class="hex-rows" id="hexRows"></div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -479,6 +519,7 @@
       $('outputSection').style.display = 'none';
       $('mergedSection').style.display = 'none';
       if (m === 'table') refreshKeyColumns();
+      if (m === 'hex') [['a', 'text1'], ['b', 'text2']].forEach(([side, id]) => { const i = fileInfo(id); if (!hexSrc[side] && i && i.file) setHexSide(side, srcFromFile(i.file)); });
       $('text1').placeholder = m === 'struct' ? 'Paste the original JSON or YAML...' : m === 'table' ? 'Paste the original CSV / TSV, or open a .csv / .xlsx file...' : 'Paste, type, or drop the original text, code, JSON or CSV here...';
       $('text2').placeholder = m === 'struct' ? 'Paste the modified JSON or YAML...' : m === 'table' ? 'Paste the modified CSV / TSV, or open a .csv / .xlsx file...' : 'Paste, type, or drop the modified version here...';
     }
@@ -509,8 +550,9 @@
       if (/\.(xlsx|xlsm|xls|ods)$/i.test(file.name)) { loadWorkbook(id, file); if (nameKey) names[nameKey] = file.name; return; }
       file.arrayBuffer().then(buf => {
         const bytes = new Uint8Array(buf), d = E.decodeBytes(bytes);
-        sideInfo[id] = { name: file.name, bytes, encoding: d.encoding, bom: d.bom, raw: d.text };
+        sideInfo[id] = { name: file.name, bytes, encoding: d.encoding, bom: d.bom, raw: d.text, file };
         $(id).value = d.text; if (nameKey) names[nameKey] = file.name;
+        if ((id === 'text1' || id === 'text2') && !E.isProbablyText(bytes.subarray(0, 4096)) && !/^UTF-16/.test(d.encoding)) Layerbit.toast(`${file.name} looks like a binary file. The Hex / binary tab compares it byte by byte.`, 'warn');
         $(id).dispatchEvent(new Event('input')); updateMeta(); if (mode === 'table') refreshKeyColumns();
       }).catch(e => showError(`${file.name}: ${e.message}`));
     }
@@ -530,6 +572,7 @@
     // Kernel drop fallback: a file dropped outside a pane goes to whichever side is empty.
     Layerbit.onDrop(files => {
       if (mode === 'zip') { loadZip(folders.a ? 'b' : 'a', files[0]); if (files[1]) loadZip('b', files[1]); return; }
+      if (mode === 'hex') { setHexSide(hexSrc.a ? 'b' : 'a', srcFromFile(files[0])); if (files[1]) setHexSide('b', srcFromFile(files[1])); return; }
       const target = mode === 'three' ? ($('baseText').value ? ($('oursText').value ? 'theirsText' : 'oursText') : 'baseText') : mode === 'patch' ? ($('patchOriginal').value ? 'patchText' : 'patchOriginal') : ($('text1').value ? 'text2' : 'text1');
       loadFileInto(target, files[0], target === 'text1' ? 'a' : target === 'text2' ? 'b' : null);
       if (files[1] && target === 'text1') loadFileInto('text2', files[1], 'b');
@@ -570,7 +613,7 @@
       return Promise.all([a ? loadWorkbookBytes('text1', a, nameA) : null, b ? loadWorkbookBytes('text2', b, nameB) : null]).then(() => { names = { a: nameA, b: nameB }; run(); });
     };
 
-    function swapInputs() { const t = $('text1').value; $('text1').value = $('text2').value; $('text2').value = t; const n = names.a; names.a = names.b; names.b = n; updateMeta(); if ($('outputSection').style.display !== 'none') run(true); }
+    function swapInputs() { if (mode === 'hex') { const x = hexSrc.a; setHexSide('a', hexSrc.b); setHexSide('b', x); if (hex) run(true); return; } const t = $('text1').value; $('text1').value = $('text2').value; $('text2').value = t; const n = names.a; names.a = names.b; names.b = n; updateMeta(); if ($('outputSection').style.display !== 'none') run(true); }
     function clearInputs() {
       keyUserChoice = null; sideInfo = {}; patchState = null;
       // a file input keeps its last value, and choosing the same file again
@@ -580,6 +623,7 @@
       delete books.text1; delete books.text2; sheetView = null; $('sheetValuesLabel').hidden = true;
       names = { a: 'original', b: 'modified' }; folders = { a: null, b: null }; folderView = null; folderReturn = false; $('btnBackFolder').hidden = true;
       $('zipAInfo').innerHTML = $('zipBInfo').innerHTML = '<i data-lucide="folder-input"></i><span>Drop a folder or a .zip here</span>';
+      hexJob++; hex = null; setHexSide('a', null); setHexSide('b', null); $('hexJumpMsg').textContent = '';
       $('outputSection').style.display = 'none'; $('mergedSection').style.display = 'none'; updateMeta(); Layerbit.state.clear(); icons();
     }
     function showError(msg) { $('errorBanner').classList.add('active'); $('errorText').textContent = msg; $('outputSection').style.display = 'grid'; }
@@ -588,7 +632,7 @@
       if (mode !== 'patch') $('patchFiles').hidden = true;
       $('splitWrap').style.display = which === 'split' ? '' : 'none';
       $('inlinePanel').style.display = which === 'unified' ? '' : 'none';
-      ['structPanel', 'tablePanel', 'threePanel', 'zipPanel'].forEach(p => $(p).style.display = which === p ? '' : 'none');
+      ['structPanel', 'tablePanel', 'threePanel', 'zipPanel', 'hexPanel'].forEach(p => $(p).style.display = which === p ? '' : 'none');
     }
     function opts() {
       return { ignoreWhitespace: $('ignoreWhitespace').checked, ignoreCase: $('ignoreCase').checked, trimTrailing: $('trimTrailing').checked, ignoreBlank: $('ignoreBlank').checked, granularity: $('granularity').value };
@@ -612,6 +656,7 @@
         else if (mode === 'table') runTable();
         else if (mode === 'patch') runPatch();
         else if (mode === 'zip') runZip();
+        else if (mode === 'hex') runHex();
       } catch (e) { showError(e.message || String(e)); }
       if (quiet !== true) $('outputSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
@@ -623,7 +668,7 @@
     let liveTimer = null;
     function rerunSoon(delay) {
       clearTimeout(liveTimer);
-      liveTimer = setTimeout(() => { if (hasResult() && mode !== 'zip') run(true); }, delay || 0);
+      liveTimer = setTimeout(() => { if (hasResult() && mode !== 'zip' && mode !== 'hex') run(true); }, delay || 0);
     }
     ['ignoreWhitespace', 'ignoreCase', 'trimTrailing', 'ignoreBlank', 'granularity', 'arrMode', 'keyCol']
       .forEach(id => $(id).addEventListener('change', () => rerunSoon(0)));
@@ -868,6 +913,7 @@
     }
     function useMergedAsOriginal() { $('text1').value = $('mergedText').value; names.a = 'merged'; updateMeta(); setMode('text'); run(); }
     function navDiff(dir) {
+      if (mode === 'hex') return hexNav(dir);
       if (!last || !last.hunks.length) return;
       currentHunk = (currentHunk + dir + last.hunks.length) % last.hunks.length;
       $('hunkCounter').textContent = `${currentHunk + 1} / ${last.hunks.length}`;
@@ -1411,6 +1457,173 @@
       if (!folderView) return;
       folderReturn = false; setMode('zip'); renderFolder();
     }
+
+
+    // ------------------------------------------------------------ hex / binary
+    // Files stay File objects and are read with Blob.slice, so comparing two
+    // disk images never loads either into memory. The scan streams 4 MB
+    // chunks of both sides (the next pair is read while this one is
+    // compared); the view is a virtual list that reads only the 64 KB blocks
+    // on screen. Past 8 million pixels the scrollbar is scaled, so a file of
+    // any size still scrolls end to end.
+    const hexSrc = { a: null, b: null };
+    let hex = null, hexJob = 0, hexPin = null;
+    const HEX_CHUNK = 4 << 20, HEX_BLOCK = 64 << 10, HEX_RANGE_CAP = 100000, HEX_MAX_PX = 8000000;
+    // a phone stacks the right file under the left one, so each row is two lines
+    const hexNarrow = window.matchMedia ? window.matchMedia('(max-width: 760px)') : { matches: false };
+    const hexRowH = () => hexNarrow.matches ? 40 : 20;
+    const HEXB = Array.from({ length: 256 }, (_, i) => (i < 16 ? '0' : '') + i.toString(16).toUpperCase());
+    const ASC = Array.from({ length: 256 }, (_, i) => E.esc(E.asciiByte(i)));
+    const HEX_EMPTY = '<i data-lucide="binary"></i><span>Drop any file here, or choose one</span>';
+    function hexSource(side) { return hexSrc[side]; }
+    function srcFromFile(f) { return { name: f.name, size: f.size, file: f, read: (s, e) => f.slice(s, e).arrayBuffer().then(b => new Uint8Array(b)) }; }
+    function srcFromBytes(u8, name) { const b = u8 || new Uint8Array(0); return { name, size: b.length, bytes: b, read: (s, e) => Promise.resolve(b.subarray(s, e)) }; }
+    const fmtB = n => `${Layerbit.fmtBytes(n)}${n >= 1024 ? ` (${n.toLocaleString()} bytes)` : ''}`;
+    function setHexSide(side, src) {
+      hexSrc[side] = src;
+      $(side === 'a' ? 'hexAInfo' : 'hexBInfo').innerHTML = src ? `<i data-lucide="binary"></i><span><strong>${E.esc(src.name)}</strong><br><span class="muted">${fmtB(src.size)}</span></span>` : HEX_EMPTY;
+      icons();
+    }
+    [['hexAFile', 'a'], ['hexBFile', 'b']].forEach(([id, side]) => $(id).addEventListener('change', e => { const f = e.target.files[0]; if (f) setHexSide(side, srcFromFile(f)); e.target.value = ''; }));
+    [['hexAPane', 'a'], ['hexBPane', 'b']].forEach(([id, side]) => {
+      const pane = $(id);
+      pane.addEventListener('dragover', e => { e.preventDefault(); pane.classList.add('dragover'); });
+      pane.addEventListener('dragleave', () => pane.classList.remove('dragover'));
+      pane.addEventListener('drop', e => { e.preventDefault(); e.stopPropagation(); pane.classList.remove('dragover'); const f = e.dataTransfer.files && e.dataTransfer.files[0]; if (f) setHexSide(side, srcFromFile(f)); });
+    });
+    window.openHex = function (a, b, nameA, nameB) {
+      setHexSide('a', a ? srcFromBytes(a, nameA) : null); setHexSide('b', b ? srcFromBytes(b, nameB) : null);
+      setMode('hex'); run();
+    };
+    async function runHex() {
+      if (!hexSrc.a && !hexSrc.b) { showError('Choose or drop the two files to compare byte by byte.'); return; }
+      const a = hexSrc.a || srcFromBytes(null, '(no file)'), b = hexSrc.b || srcFromBytes(null, '(no file)');
+      const job = ++hexJob, size = Math.max(a.size, b.size), ranges = [], t0 = performance.now();
+      let diff = 0;
+      hex = null; $('diffStats').innerHTML = ''; $('hexNotes').innerHTML = ''; $('hexRows').innerHTML = ''; $('hexJumpMsg').textContent = '';
+      $('resultTitle').textContent = `Byte comparison: ${a.name} ↔ ${b.name}`;
+      $('outputSection').style.display = 'grid'; $('mergedSection').style.display = 'none'; showPanel('hexPanel');
+      $('hunkCounter').textContent = '0 / 0';
+      const prog = size > HEX_CHUNK;
+      if (prog) { $('diffProgress').hidden = false; $('diffProgressFill').classList.remove('indeterminate'); $('diffProgressFill').style.width = '0%'; $('diffProgressLabel').textContent = 'Comparing bytes…'; $('diffProgressTime').textContent = ''; }
+      const pair = off => Promise.all([a.read(Math.min(off, a.size), Math.min(off + HEX_CHUNK, a.size)), b.read(Math.min(off, b.size), Math.min(off + HEX_CHUNK, b.size))]);
+      try {
+        let next = size ? pair(0) : null;
+        for (let off = 0; off < size; off += HEX_CHUNK) {
+          const [ca, cb] = await next;
+          if (job !== hexJob) return;
+          next = off + HEX_CHUNK < size ? pair(off + HEX_CHUNK) : null;
+          diff += E.byteRanges(ca, cb, off, ranges, HEX_RANGE_CAP);
+          if (prog) { const done = Math.min(size, off + HEX_CHUNK); $('diffProgressFill').style.width = Math.round(100 * done / size) + '%'; $('diffProgressTime').textContent = `${Layerbit.fmtBytes(done)} of ${Layerbit.fmtBytes(size)} · ${((performance.now() - t0) / 1000).toFixed(1)} s`; }
+        }
+      } catch (e) { if (job === hexJob) { $('diffProgress').hidden = true; showError(`Could not read the files: ${e.message || e}`); } return; }
+      if (job !== hexJob) return;
+      $('diffProgress').hidden = true;
+      hex = { a, b, size, ranges, diff, width: +$('hexWidth').value, cache: { a: new Map(), b: new Map() }, cur: -1, target: -1 };
+      const first = ranges.length ? ranges[0][0] : -1, nR = ranges.length;
+      $('diffStats').innerHTML = `<span>Left ${E.esc(fmtB(a.size))}</span><span>Right ${E.esc(fmtB(b.size))}</span>` + (diff
+        ? `<span class="st-del">${diff.toLocaleString()} byte${diff === 1 ? ' differs' : 's differ'}</span><span>${nR.toLocaleString()}${ranges.truncated ? '+' : ''} range${nR === 1 ? '' : 's'}</span><span>first at 0x${E.hexOffset(first, size)} (${first.toLocaleString()})</span>`
+        : `<span class="st-add">Identical: every byte matches</span>`);
+      const notes = [];
+      if (a.size !== b.size) notes.push(`The sizes differ: the left file is ${a.size.toLocaleString()} bytes and the right file ${b.size.toLocaleString()} bytes. The ${Math.abs(a.size - b.size).toLocaleString()} extra byte${Math.abs(a.size - b.size) === 1 ? '' : 's'} on the ${a.size > b.size ? 'left' : 'right'} count as different.`);
+      if (ranges.truncated) notes.push(`More than ${HEX_RANGE_CAP.toLocaleString()} separate differences: Next and Previous step through the first ${HEX_RANGE_CAP.toLocaleString()}; the byte count above covers the whole file.`);
+      $('hexNotes').innerHTML = notes.length ? `<div class="diff-notes"><i data-lucide="alert-triangle"></i><div>${notes.join('<br>')}</div></div>` : '';
+      $('hunkCounter').textContent = `0 / ${nR.toLocaleString()}${ranges.truncated ? '+' : ''}`;
+      remember(`${a.name} ↔ ${b.name} (bytes)`);
+      hexLayout(0); icons();
+    }
+    function hexGeom() {
+      const sc = $('hexScroll'), W = hex.width, rows = Math.max(1, Math.ceil(hex.size / W)), total = rows * hexRowH(), head = $('hexHead').offsetHeight;
+      const view = Math.max(1, Math.floor((sc.clientHeight - head) / hexRowH())), px = Math.min(total, HEX_MAX_PX);
+      return { W, rows, px, view, head, scaled: total > HEX_MAX_PX, maxSt: Math.max(1, px + head - sc.clientHeight) };
+    }
+    function hexLayout(row) {
+      const W = hex.width, cols = n => Array.from({ length: n }, (_, i) => HEXB[i].slice(-2)).join(' ');
+      $('hexHead').innerHTML = `<span class="hx-off">Offset</span><span class="hx-hex l">${cols(W)}</span><span class="hx-asc l">${'Left'.padEnd(W).replace(/ /g, '&nbsp;')}</span><span class="hx-hex r">${cols(W)}</span><span class="hx-asc r">${'Right'.padEnd(W).replace(/ /g, '&nbsp;')}</span>`;
+      $('hexSpacer').style.height = hexGeom().px + 'px';
+      hexScrollToRow(row || 0);
+    }
+    function hexTopRow(g) {
+      const st = $('hexScroll').scrollTop;
+      if (hexPin && hexPin.st === st) return hexPin.row;
+      hexPin = null;
+      if (!g.scaled) return Math.min(g.rows - 1, Math.floor(st / hexRowH()));
+      return Math.round(Math.min(1, st / g.maxSt) * Math.max(0, g.rows - g.view));
+    }
+    function hexScrollToRow(row) {
+      const g = hexGeom(), sc = $('hexScroll');
+      row = Math.max(0, Math.min(row, g.rows - 1));
+      sc.scrollTop = g.scaled ? Math.round(row / Math.max(1, g.rows - g.view) * g.maxSt) : row * hexRowH();
+      hexPin = { row, st: sc.scrollTop };
+      renderHex();
+    }
+    function hexBlock(side, idx) {
+      const c = hex.cache[side]; let ent = c.get(idx);
+      if (ent) { c.delete(idx); c.set(idx, ent); return ent; }
+      const src = hex[side], s = idx * HEX_BLOCK;
+      ent = { data: null };
+      ent.p = (s >= src.size ? Promise.resolve(new Uint8Array(0)) : src.read(s, Math.min(src.size, s + HEX_BLOCK))).then(u => { ent.data = u; return u; });
+      c.set(idx, ent); if (c.size > 48) c.delete(c.keys().next().value);
+      return ent;
+    }
+    let hexRaf = 0;
+    function renderHex() {
+      if (!hex) return;
+      const H = hex, g = hexGeom(), W = g.W, top = hexTopRow(g), n = Math.min(g.view + 2, g.rows - top);
+      const s0 = top * W, s1 = Math.min(H.size, (top + n) * W), blocks = [];
+      for (let k = Math.floor(s0 / HEX_BLOCK); k * HEX_BLOCK < Math.max(s1, s0 + 1); k++) blocks.push(k);
+      const ents = blocks.flatMap(k => [hexBlock('a', k), hexBlock('b', k)]);
+      if (ents.some(e => !e.data)) { Promise.all(ents.map(e => e.p)).then(() => { if (hex === H) renderHex(); }); if (!$('hexRows').children.length) $('hexRows').innerHTML = '<div class="diff-empty">Reading…</div>'; return; }
+      const cur = H.cur >= 0 ? H.ranges[H.cur] : null, out = [];
+      for (let r = 0; r < n; r++) {
+        const off = (top + r) * W, k = Math.floor(off / HEX_BLOCK), base = k * HEX_BLOCK;
+        const A = H.cache.a.get(k).data, B = H.cache.b.get(k).data, ia = off - base;
+        let hl = '', al = '', hr = '', ar = '', any = false;
+        for (let i = 0; i < W; i++) {
+          const x = ia + i < A.length ? A[ia + i] : -1, y = ia + i < B.length ? B[ia + i] : -1, d = x !== y;
+          if (d) any = true;
+          const sep = i < W - 1 ? ' ' : '';
+          hl += x < 0 ? '  ' + sep : d ? `<b class="d">${HEXB[x]}</b>${sep}` : HEXB[x] + sep;
+          hr += y < 0 ? '  ' + sep : d ? `<b class="d">${HEXB[y]}</b>${sep}` : HEXB[y] + sep;
+          al += x < 0 ? ' ' : d ? `<b class="d">${ASC[x]}</b>` : ASC[x];
+          ar += y < 0 ? ' ' : d ? `<b class="d">${ASC[y]}</b>` : ASC[y];
+        }
+        const isCur = cur && cur[0] < off + W && cur[1] > off, isT = H.target >= off && H.target < off + W;
+        out.push(`<div class="hx-row${any ? ' hx-has' : ''}${isCur ? ' hx-cur' : ''}${isT ? ' hx-target' : ''}"><span class="hx-off">${E.hexOffset(off, H.size)}</span><span class="hx-hex l">${hl}</span><span class="hx-asc l">${al}</span><span class="hx-hex r">${hr}</span><span class="hx-asc r">${ar}</span></div>`);
+      }
+      const rows = $('hexRows');
+      rows.style.top = (g.head + (g.scaled ? $('hexScroll').scrollTop : top * hexRowH())) + 'px';
+      rows.innerHTML = out.join('');
+    }
+    $('hexScroll').addEventListener('scroll', () => { if (!hex) return; cancelAnimationFrame(hexRaf); hexRaf = requestAnimationFrame(renderHex); });
+    window.addEventListener('resize', () => { if (hex && mode === 'hex') renderHex(); });
+    if (hexNarrow.addEventListener) hexNarrow.addEventListener('change', () => { if (hex) hexLayout(hexTopRow(Object.assign(hexGeom(), {})) ); });
+    $('hexWidth').addEventListener('change', () => { if (!hex) return; const off = hexTopRow(hexGeom()) * hex.width; hex.width = +$('hexWidth').value; hexLayout(Math.floor(off / hex.width)); });
+    if (window.matchMedia && window.matchMedia('(max-width: 760px)').matches) $('hexWidth').value = '8';
+    // index of the last range that starts before `off` (-1 if none)
+    function rangeBefore(off) { let lo = 0, hi = hex.ranges.length; while (lo < hi) { const m = (lo + hi) >> 1; if (hex.ranges[m][0] < off) lo = m + 1; else hi = m; } return lo - 1; }
+    function hexNav(dir) {
+      if (!hex || !hex.ranges.length) return;
+      const n = hex.ranges.length;
+      hex.cur = hex.cur < 0 ? (dir >= 0 ? 0 : n - 1) : (hex.cur + dir + n) % n;
+      if (hex.pendingFrom != null) { const i = rangeBefore(hex.pendingFrom); hex.cur = dir >= 0 ? (i + 1) % n : (i < 0 ? n - 1 : i); hex.pendingFrom = null; }
+      $('hunkCounter').textContent = `${(hex.cur + 1).toLocaleString()} / ${n.toLocaleString()}${hex.ranges.truncated ? '+' : ''}`;
+      hexScrollToRow(Math.floor(hex.ranges[hex.cur][0] / hex.width) - 2);
+    }
+    function hexJump() {
+      const msg = $('hexJumpMsg');
+      if (!hex) { msg.textContent = 'Compare two files first.'; return; }
+      const v = E.parseOffset($('hexJump').value);
+      if (v == null) { msg.textContent = 'Enter an offset such as 0x1F00 or 7936.'; return; }
+      if (v >= hex.size) { msg.textContent = `That offset is past the end (last byte at 0x${E.hexOffset(Math.max(0, hex.size - 1), hex.size)}).`; return; }
+      msg.textContent = '';
+      hex.target = v; hex.cur = -1; hex.pendingFrom = v;
+      $('hunkCounter').textContent = `0 / ${hex.ranges.length.toLocaleString()}${hex.ranges.truncated ? '+' : ''}`;
+      hexScrollToRow(Math.floor(v / hex.width) - 2);
+    }
+    $('btnHexJump').addEventListener('click', hexJump);
+    $('hexJump').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); hexJump(); } });
+    $('btnCancelDiff').addEventListener('click', () => { if (mode === 'hex') { hexJob++; $('diffProgress').hidden = true; $('diffStats').innerHTML = '<span>Cancelled</span>'; } });
 
     // ------------------------------------------------------------ share / history state
     function getState() {
