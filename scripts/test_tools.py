@@ -2197,6 +2197,96 @@ def _(t):
     expect("hello.txt" in t.text("inputMeta"), "file name not shown")
 
 
+@case("hash-generator", "typical", "2.10: SHA-3, BLAKE2, BLAKE3, RIPEMD-160, xxHash, XXH3 and CRC32/CRC32C known vectors")
+def _(t):
+    t.set("textInput", "abc")
+    want = {"SHA3-256": "3a985da74fe225b2045c172d6bd390bd855f086e3e9d525b46bfe24511431532",
+            "BLAKE2b-512": "ba80a53f981c4d0d6a2797b69f12f6e94c212f14685ac4b74b12bb6fdbffa2d17d87c5392aab792dc252d5de4533cc9518d38aa8dbf1925ab92386edd4009923",
+            "BLAKE2s-256": "508c5e8c327c14e2e1a72ba34eeb452f37458b209ed63a294d999b4c86675982",
+            "BLAKE3": "6437b3ac38465133ffb63b75273a8db548c558465d79db03fd359c6cd5bd9d85",
+            "RIPEMD-160": "8eb208f7e05d987a9b044a8e98c6b087f15a0bfc", "XXH64": "44bc2cf5ad770999", "XXH3": "78af5f94892f3950",
+            "XXH128": "06b05ab6733a618578af5f94892f3950", "CRC32": "352441c2", "CRC32C": "364b3fb7"}
+    t.wait_for("() => document.getElementById('d-BLAKE3').textContent === '6437b3ac38465133ffb63b75273a8db548c558465d79db03fd359c6cd5bd9d85'", 10000)
+    for alg, d in want.items():
+        eq(t.text("d-" + alg), d, alg)
+    t.set("expectInput", "364B3FB7")
+    expect("Match" in t.text("verifyResult") and "CRC32C" in t.text("verifyResult"), t.text("verifyResult"))
+    t.set("expectInput", "")
+
+
+@case("hash-generator", "typical", "2.10: HMAC for SHA-3 and the other cryptographic hashes; checksums have no keyed form")
+def _(t):
+    t.set("textInput", "abc"); t.set("hmacKey", "key")
+    t.wait_for("() => document.getElementById('d-SHA3-256').textContent === '%s'" % __import__("hmac").new(b"key", b"abc", __import__("hashlib").sha3_256).hexdigest(), 10000)
+    expect(t.text("d-CRC32").strip() in ("—", "-", "n/a"), "a checksum shown with a key: " + t.text("d-CRC32"))
+    t.set("hmacKey", "")
+
+
+@case("hash-generator", "maximal", "2.10: a 64 MB file is hashed by streaming through a Worker, every algorithm in one pass")
+def _(t):
+    import hashlib
+    t.call("""() => { const chunk = new Uint8Array(1 << 20); for (let i = 0; i < chunk.length; i++) chunk[i] = (i * 31 + 7) & 255;
+      window.__hf = new File(Array(64).fill(chunk), 'big.bin'); loadFile(window.__hf); }""")
+    chunk = bytes(((i * 31 + 7) & 255) for i in range(1 << 20))
+    want = hashlib.sha256(chunk * 64).hexdigest()
+    t.wait_for("() => document.getElementById('d-SHA-256').textContent === '%s'" % want, 30000)
+    t.wait_for("() => document.getElementById('d-XXH3').textContent.length === 16", 30000)
+    eq(t.text("d-SHA3-256"), hashlib.sha3_256(chunk * 64).hexdigest(), "SHA3-256 of the file")
+    expect("big.bin" in t.text("inputMeta"), t.text("inputMeta"))
+    t.click("#btnClear")
+
+
+def _hash_files(spec):
+    return [{"name": n, "mimeType": "application/octet-stream", "buffer": c.encode() if isinstance(c, str) else c} for n, c in spec]
+
+
+@case("hash-generator", "typical", "2.10: many files at once, with CSV and HTML reports and a checksum file")
+def _(t):
+    import hashlib
+    t.click("[data-ftab='batch']")
+    t.page.set_input_files("#batchFiles", _hash_files([("a.txt", "alpha"), ("b.txt", "beta"), ("=evil.csv", "z")]))
+    t.select("batchAlg", "SHA-256")
+    t.click("#btnBatchRun")
+    t.wait_for("document.querySelectorAll('#batchResult tbody tr').length === 3", 15000)
+    expect(hashlib.sha256(b"alpha").hexdigest() in t.text("batchResult"), t.text("batchResult"))
+    with t.page.expect_download() as dl:
+        t.click("#btnBatchSums")
+    sums = open(dl.value.path(), encoding="utf-8").read()
+    expect(hashlib.sha256(b"beta").hexdigest() + "  b.txt" in sums, sums)
+    expect(dl.value.suggested_filename.upper().startswith("SHA256SUMS"), dl.value.suggested_filename)
+    with t.page.expect_download() as dl:
+        t.click("#btnBatchCsv")
+    csv = open(dl.value.path(), encoding="utf-8").read()
+    expect("a.txt,5," + hashlib.sha256(b"alpha").hexdigest() in csv, csv)
+    expect("'=evil.csv" in csv, "a file name a spreadsheet would run as a formula is not guarded: " + csv)
+
+
+@case("hash-generator", "typical", "2.10: compare two sets of files by content")
+def _(t):
+    t.click("[data-ftab='compare']")
+    t.page.set_input_files("#cmpFilesA", _hash_files([("a.txt", "same"), ("b.txt", "old"), ("only-a.txt", "x")]))
+    t.page.set_input_files("#cmpFilesB", _hash_files([("a.txt", "same"), ("b.txt", "new"), ("only-b.txt", "y")]))
+    t.click("#btnCompareRun")
+    t.wait_for("document.querySelectorAll('#cmpResult tbody tr').length === 4", 15000)
+    rows = t.call("[...document.querySelectorAll('#cmpResult tbody tr')].map(tr => tr.children[0].textContent + ' ' + tr.children[1].textContent)")
+    eq(rows, ["a.txt identical", "b.txt different", "only-a.txt only in A", "only-b.txt only in B"], "compare rows")
+    expect("1 identical" in t.text("cmpResult") and "1 different" in t.text("cmpResult"), t.text("cmpResult"))
+
+
+@case("hash-generator", "typical", "2.10: check files against a SHA256SUMS list")
+def _(t):
+    import hashlib
+    t.click("[data-ftab='verify']")
+    sums = hashlib.sha256(b"good").hexdigest() + "  dist/good.bin\n" + hashlib.sha256(b"other").hexdigest() + " *bad.bin\n" + "SHA256 (gone.bin) = " + "0" * 64 + "\n"
+    t.page.set_input_files("#sumsFile", _hash_files([("SHA256SUMS", sums)]))
+    t.page.set_input_files("#sumsFiles", _hash_files([("good.bin", "good"), ("bad.bin", "tampered")]))
+    t.click("#btnSumsRun")
+    t.wait_for("document.querySelectorAll('#sumsResult tbody tr').length === 3", 15000)
+    rows = t.call("[...document.querySelectorAll('#sumsResult tbody tr')].map(tr => tr.children[0].textContent + ' ' + tr.children[1].textContent)")
+    eq(rows, ["dist/good.bin OK", "bad.bin FAILED", "gone.bin MISSING"], "check rows")
+    expect("1 OK" in t.text("sumsResult") and "1 FAILED" in t.text("sumsResult") and "1 missing" in t.text("sumsResult"), t.text("sumsResult"))
+
+
 @case("hash-generator", "maximal", "8 MB input hashes under budget")
 def _(t):
     t.set("textInput", "x" * 8_000_000)

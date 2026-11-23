@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="Compute SHA-1, SHA-256, SHA-384, SHA-512 and MD5 hashes of text or files, generate HMACs with a key, and verify a checksum, all in your browser." />
+  <meta name="description" content="Hash text or files of any size with SHA-2, SHA-3, BLAKE3, MD5, xxHash and CRC32, HMACs, whole folders, folder compare and SHA256SUMS checks. In your browser." />
   <title>SHA-256, SHA-512 & MD5 Hash Generator (HMAC) | Layerbit</title>
   <meta name="google-adsense-account" content="ca-pub-6072772587431629" />
   <link rel="preload" href="../fonts/space-grotesk-latin.woff2" as="font" type="font/woff2" crossorigin />
@@ -26,7 +26,7 @@
   <meta property="og:url" content="https://layerbit.co.in/tools/hash-generator.html" />
   <meta property="og:site_name" content="Layerbit" />
   <meta property="og:title" content="SHA-256, SHA-512 & MD5 Hash Generator (HMAC) | Layerbit" />
-  <meta property="og:description" content="Compute SHA-1, SHA-256, SHA-384, SHA-512 and MD5 hashes of text or files, generate HMACs with a key, and verify a checksum, all in your browser." />
+  <meta property="og:description" content="Hash text or files of any size with SHA-2, SHA-3, BLAKE3, MD5, xxHash and CRC32, HMACs, whole folders, folder compare and SHA256SUMS checks. In your browser." />
   <meta property="og:image" content="https://layerbit.co.in/images/og/tools-hash-generator.jpg" />
   <meta property="og:image:type" content="image/jpeg" />
   <meta property="og:image:width" content="1200" />
@@ -35,7 +35,7 @@
   <meta property="og:locale" content="en" />
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="SHA-256, SHA-512 & MD5 Hash Generator (HMAC) | Layerbit" />
-  <meta name="twitter:description" content="Compute SHA-1, SHA-256, SHA-384, SHA-512 and MD5 hashes of text or files, generate HMACs with a key, and verify a checksum, all in your browser." />
+  <meta name="twitter:description" content="Hash text or files of any size with SHA-2, SHA-3, BLAKE3, MD5, xxHash and CRC32, HMACs, whole folders, folder compare and SHA256SUMS checks. In your browser." />
   <meta name="twitter:image" content="https://layerbit.co.in/images/og/tools-hash-generator.jpg" />
   <meta name="twitter:image:alt" content="SHA-256, SHA-512 & MD5 Hash Generator (HMAC)" />
   <meta name="theme-color" content="#0a0c10" />
@@ -48,8 +48,8 @@
       "@id": "https://layerbit.co.in/tools/hash-generator.html#app",
       "name": "Hash \u0026 HMAC Generator",
       "url": "https://layerbit.co.in/tools/hash-generator.html",
-      "description": "Compute SHA-1, SHA-256, SHA-384, SHA-512 and MD5 hashes of text or files, generate HMACs with a key, and verify a checksum, all in your browser.",
-      "applicationCategory": "SecurityApplication",
+      "description": "Hash text or files of any size with SHA-2, SHA-3, BLAKE3, MD5, xxHash and CRC32, HMACs, whole folders, folder compare and SHA256SUMS checks. In your browser.",
+      "applicationCategory": "DeveloperApplication",
       "operatingSystem": "Any (runs in the browser)",
       "browserRequirements": "Requires JavaScript",
       "isAccessibleForFree": true,
@@ -58,11 +58,23 @@
         "price": "0",
         "priceCurrency": "USD"
       },
-      "keywords": "sha256 generator, hash generator, hmac generator, md5 checksum, file hash, verify checksum",
       "publisher": {
         "@id": "https://layerbit.co.in/#organization"
       },
-      "datePublished": "2026-09-27"
+      "featureList": [
+        "MD5, SHA-1, SHA-256, SHA-384, SHA-512",
+        "SHA3-256 and SHA3-512",
+        "BLAKE2b, BLAKE2s and BLAKE3",
+        "RIPEMD-160",
+        "XXH64, XXH3, XXH128, CRC32 and CRC32C checksums",
+        "HMAC with any cryptographic hash",
+        "Files of any size, hashed by streaming",
+        "Hash many files or a folder with reports",
+        "Compare two folders by content",
+        "Check files against SHA256SUMS lists",
+        "Constant-time checksum verification",
+        "Runs entirely in the browser"
+      ]
     },
     {
       "@type": "BreadcrumbList",
@@ -94,10 +106,34 @@
       "mainEntity": [
         {
           "@type": "Question",
+          "name": "Which algorithms are included, and which should I use?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Cryptographic hashes: MD5 and SHA-1 (both broken for collisions, so only for matching old checksums), SHA-256/384/512, SHA3-256/512, BLAKE2b-512, BLAKE2s-256, BLAKE3 and RIPEMD-160. Checksums, listed separately: XXH64, XXH3 and XXH128 (very fast, used by tools that index or deduplicate files) and CRC32/CRC32C (zip files, Ethernet, storage systems). Use SHA-256 to publish or verify a download, BLAKE3 when speed matters and both sides support it, and a checksum only for spotting accidental changes: anyone can forge one."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How large a file can I hash?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Any size. The file is read in 4 MB slices by a background worker that feeds all sixteen algorithms in one pass, so it never has to fit in memory and the page stays responsive; progress is shown as it goes. In our tests a 64 MB file took about 3 seconds for all of them."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Can I hash a whole folder, compare two folders, or check a SHA256SUMS file?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes, under Files and folders. Many files hashes everything you choose or drop (folders included) with one algorithm and saves a checksum file in the sha256sum format, a CSV or HTML report, or all three as a zip. Compare matches the files of two folders by their path and tells you which are identical, different, or present on one side only. Check a list reads SHA256SUMS, *.sha256, *.md5, b2sum or BSD-style lists and reports each file as OK, FAILED or missing, like sha256sum -c."
+          }
+        },
+        {
+          "@type": "Question",
           "name": "Is my text or file uploaded to compute the hash?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "No. Hashing is done by the Web Crypto API built into your browser, and the MD5 implementation is JavaScript in the page. There is no request to any server. You can verify this in the Network tab of your browser's developer tools, or by loading the page and then disconnecting from the internet before hashing a file."
+            "text": "No. Hashing is done by the Web Crypto API built into your browser and by hash-wasm, an open-source library compiled to WebAssembly that loads from this site; files are read in slices by a background worker. There is no request to any server. You can verify this in the Network tab of your browser's developer tools, or by loading the page and then disconnecting from the internet before hashing a file."
           }
         },
         {
@@ -173,6 +209,27 @@
     .field label .muted { font-weight: 400; }
     .eol-hint { padding: 8px 16px; font-size: 0.82em; color: var(--text-muted); border-top: 1px solid var(--border-color, rgba(255,255,255,0.06)); }
 
+    /* more digests, files and folders */
+    #digestTable .group-row th { font-size: 0.75em; font-weight: 600; color: var(--text-muted); text-transform: none; padding-top: 14px; border-bottom: 1px solid var(--card-border); }
+    .files-section { margin-top: -20px; }
+    .ftab { background: transparent; border: 1px solid var(--card-border); color: var(--text-muted); border-radius: 8px; padding: 6px 12px; font: inherit; font-size: 0.85em; cursor: pointer; }
+    .ftab.active { background: rgba(56,189,248,0.15); color: var(--accent-main); border-color: rgba(56,189,248,0.4); }
+    .fpanel[hidden] { display: none; }
+    .fbar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin: 10px 0; }
+    .drop-zone { border: 1px dashed var(--card-border); border-radius: 10px; padding: 18px; text-align: center; color: var(--text-muted); font-size: 0.9em; }
+    .drop-zone.small { padding: 10px; margin-top: 8px; }
+    .drop-zone.over { border-color: var(--accent-main); color: var(--accent-main); background: rgba(56,189,248,0.06); }
+    .cmp-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .cmp-side { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 10px; border: 1px solid var(--card-border); border-radius: 10px; }
+    .cmp-side .drop-zone { flex-basis: 100%; }
+    @media (max-width: 760px) { .cmp-grid { grid-template-columns: 1fr; } }
+    .fresult { overflow-x: auto; }
+    .ftable { margin-top: 8px; font-size: 0.85em; }
+    .ftable td.digest { font-family: 'Fira Code', monospace; word-break: break-all; }
+    .ftable tr.st-different td:nth-child(2), .ftable tr.st-FAILED td:nth-child(2) { color: #fca5a5; }
+    .ftable tr.st-same td:nth-child(2), .ftable tr.st-OK td:nth-child(2) { color: #4ade80; }
+    .ftable tr.st-onlyA td:nth-child(2), .ftable tr.st-onlyB td:nth-child(2), .ftable tr.st-MISSING td:nth-child(2) { color: #fde68a; }
+
   </style>
 </head>
 <body>
@@ -205,9 +262,9 @@
 
   <main id="main" class="page-main">
   <div class="hero">
-    <div class="hero-badge"><i data-lucide="shield-check"></i> Web Crypto API · nothing leaves your browser</div>
+    <div class="hero-badge"><i data-lucide="shield-check"></i> Web Crypto and WebAssembly · nothing leaves your browser</div>
     <h1>Hash &amp; HMAC Generator</h1>
-    <p>SHA-1, SHA-256, SHA-384, SHA-512 and MD5 of any text or file, keyed HMACs, and a constant-time checksum verifier — computed by your browser's own cryptography, not by a server.</p>
+    <p>MD5, SHA-1, SHA-2, SHA-3, BLAKE2, BLAKE3 and RIPEMD-160, plus xxHash, XXH3 and CRC32/CRC32C checksums, of any text or file of any size; keyed HMACs; whole folders with CSV and HTML reports; compare two folders; and check downloads against a SHA256SUMS list. Computed in your browser, not on a server.</p>
   </div>
 
   <div class="ide-container">
@@ -248,6 +305,18 @@
             <tr data-alg="SHA-256"><th>SHA-256</th><td class="digest" id="d-SHA-256"></td><td class="act"><button class="copy-btn" data-copy="d-SHA-256" type="button" title="Copy"><i data-lucide="copy"></i></button></td></tr>
             <tr data-alg="SHA-384"><th>SHA-384</th><td class="digest" id="d-SHA-384"></td><td class="act"><button class="copy-btn" data-copy="d-SHA-384" type="button" title="Copy"><i data-lucide="copy"></i></button></td></tr>
             <tr data-alg="SHA-512"><th>SHA-512</th><td class="digest" id="d-SHA-512"></td><td class="act"><button class="copy-btn" data-copy="d-SHA-512" type="button" title="Copy"><i data-lucide="copy"></i></button></td></tr>
+            <tr data-alg="SHA3-256"><th>SHA3-256</th><td class="digest" id="d-SHA3-256"></td><td class="act"><button class="copy-btn" data-copy="d-SHA3-256" type="button" title="Copy"><i data-lucide="copy"></i></button></td></tr>
+            <tr data-alg="SHA3-512"><th>SHA3-512</th><td class="digest" id="d-SHA3-512"></td><td class="act"><button class="copy-btn" data-copy="d-SHA3-512" type="button" title="Copy"><i data-lucide="copy"></i></button></td></tr>
+            <tr data-alg="BLAKE2b-512"><th>BLAKE2b-512</th><td class="digest" id="d-BLAKE2b-512"></td><td class="act"><button class="copy-btn" data-copy="d-BLAKE2b-512" type="button" title="Copy"><i data-lucide="copy"></i></button></td></tr>
+            <tr data-alg="BLAKE2s-256"><th>BLAKE2s-256</th><td class="digest" id="d-BLAKE2s-256"></td><td class="act"><button class="copy-btn" data-copy="d-BLAKE2s-256" type="button" title="Copy"><i data-lucide="copy"></i></button></td></tr>
+            <tr data-alg="BLAKE3"><th>BLAKE3</th><td class="digest" id="d-BLAKE3"></td><td class="act"><button class="copy-btn" data-copy="d-BLAKE3" type="button" title="Copy"><i data-lucide="copy"></i></button></td></tr>
+            <tr data-alg="RIPEMD-160"><th>RIPEMD-160</th><td class="digest" id="d-RIPEMD-160"></td><td class="act"><button class="copy-btn" data-copy="d-RIPEMD-160" type="button" title="Copy"><i data-lucide="copy"></i></button></td></tr>
+            <tr class="group-row"><th colspan="3">Checksums: fast, for spotting accidental changes, not for security</th></tr>
+            <tr data-alg="XXH64"><th>XXH64</th><td class="digest" id="d-XXH64"></td><td class="act"><button class="copy-btn" data-copy="d-XXH64" type="button" title="Copy"><i data-lucide="copy"></i></button></td></tr>
+            <tr data-alg="XXH3"><th>XXH3</th><td class="digest" id="d-XXH3"></td><td class="act"><button class="copy-btn" data-copy="d-XXH3" type="button" title="Copy"><i data-lucide="copy"></i></button></td></tr>
+            <tr data-alg="XXH128"><th>XXH128</th><td class="digest" id="d-XXH128"></td><td class="act"><button class="copy-btn" data-copy="d-XXH128" type="button" title="Copy"><i data-lucide="copy"></i></button></td></tr>
+            <tr data-alg="CRC32"><th>CRC32</th><td class="digest" id="d-CRC32"></td><td class="act"><button class="copy-btn" data-copy="d-CRC32" type="button" title="Copy"><i data-lucide="copy"></i></button></td></tr>
+            <tr data-alg="CRC32C"><th>CRC32C</th><td class="digest" id="d-CRC32C"></td><td class="act"><button class="copy-btn" data-copy="d-CRC32C" type="button" title="Copy"><i data-lucide="copy"></i></button></td></tr>
           </tbody>
         </table>
         <div class="field">
@@ -255,6 +324,66 @@
           <input type="text" id="expectInput" class="text-input" placeholder="paste the hash from the download page, README or email" autocomplete="off" spellcheck="false">
           <div class="hint" id="verifyResult"></div>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="ide-container single files-section">
+    <div class="pane">
+      <div class="pane-header">
+        <div class="pane-title"><i data-lucide="folder-tree"></i> Files and folders</div>
+        <div class="btn-group" role="tablist" aria-label="File tools">
+          <button class="ftab active" type="button" role="tab" data-ftab="batch" aria-selected="true">Many files</button>
+          <button class="ftab" type="button" role="tab" data-ftab="compare" aria-selected="false">Compare</button>
+          <button class="ftab" type="button" role="tab" data-ftab="verify" aria-selected="false">Check a list</button>
+        </div>
+      </div>
+      <div class="pane-body fpanel" data-fpanel="batch">
+        <p class="hint">Hash any number of files or a whole folder (choose it, or drop it here). Each file is read in slices by a background worker, so size is no limit.</p>
+        <div class="fbar">
+          <input type="file" id="batchFiles" multiple hidden><input type="file" id="batchFolder" webkitdirectory hidden>
+          <button class="btn" type="button" onclick="document.getElementById('batchFiles').click()"><i data-lucide="files"></i> Choose files</button>
+          <button class="btn" type="button" onclick="document.getElementById('batchFolder').click()"><i data-lucide="folder-open"></i> Choose a folder</button>
+          <label class="check">Algorithm <select id="batchAlg" class="mini-select" aria-label="Algorithm"><option value="MD5">MD5</option><option value="SHA-1">SHA-1</option><option value="SHA-256" selected>SHA-256</option><option value="SHA-384">SHA-384</option><option value="SHA-512">SHA-512</option><option value="SHA3-256">SHA3-256</option><option value="SHA3-512">SHA3-512</option><option value="BLAKE2b-512">BLAKE2b-512</option><option value="BLAKE2s-256">BLAKE2s-256</option><option value="BLAKE3">BLAKE3</option><option value="RIPEMD-160">RIPEMD-160</option><option value="XXH64">XXH64</option><option value="XXH3">XXH3</option><option value="XXH128">XXH128</option><option value="CRC32">CRC32</option><option value="CRC32C">CRC32C</option></select></label>
+          <button class="btn btn-primary" type="button" id="btnBatchRun" disabled><i data-lucide="play"></i> Hash</button>
+          <span class="hint" id="batchInfo">No files chosen.</span>
+        </div>
+        <div class="drop-zone" id="batchDrop">Drop files or a folder here</div>
+        <div class="fresult" id="batchResult"></div>
+        <div class="fbar" id="batchActions" hidden>
+          <button class="btn" type="button" id="btnBatchSums"><i data-lucide="file-check"></i> Checksum file</button>
+          <button class="btn" type="button" id="btnBatchCsv"><i data-lucide="sheet"></i> CSV report</button>
+          <button class="btn" type="button" id="btnBatchHtml"><i data-lucide="file-text"></i> HTML report</button>
+          <button class="btn" type="button" id="btnBatchZip"><i data-lucide="archive"></i> All as .zip</button>
+        </div>
+      </div>
+      <div class="pane-body fpanel" data-fpanel="compare" hidden>
+        <p class="hint">Compare two folders (or sets of files) by content: files are matched by their path inside each folder and compared by digest.</p>
+        <div class="cmp-grid">
+          <div class="cmp-side"><strong>A</strong><input type="file" id="cmpFilesA" multiple hidden><input type="file" id="cmpFolderA" webkitdirectory hidden>
+            <button class="btn" type="button" onclick="document.getElementById('cmpFilesA').click()"><i data-lucide="files"></i> Files</button>
+            <button class="btn" type="button" onclick="document.getElementById('cmpFolderA').click()"><i data-lucide="folder-open"></i> Folder</button>
+            <div class="drop-zone small" id="cmpDropA">or drop here</div><span class="hint" id="cmpInfoA">nothing chosen</span></div>
+          <div class="cmp-side"><strong>B</strong><input type="file" id="cmpFilesB" multiple hidden><input type="file" id="cmpFolderB" webkitdirectory hidden>
+            <button class="btn" type="button" onclick="document.getElementById('cmpFilesB').click()"><i data-lucide="files"></i> Files</button>
+            <button class="btn" type="button" onclick="document.getElementById('cmpFolderB').click()"><i data-lucide="folder-open"></i> Folder</button>
+            <div class="drop-zone small" id="cmpDropB">or drop here</div><span class="hint" id="cmpInfoB">nothing chosen</span></div>
+        </div>
+        <div class="fbar"><label class="check">Algorithm <select id="cmpAlg" class="mini-select" aria-label="Algorithm"><option value="MD5">MD5</option><option value="SHA-1">SHA-1</option><option value="SHA-256">SHA-256</option><option value="SHA-384">SHA-384</option><option value="SHA-512">SHA-512</option><option value="SHA3-256">SHA3-256</option><option value="SHA3-512">SHA3-512</option><option value="BLAKE2b-512">BLAKE2b-512</option><option value="BLAKE2s-256">BLAKE2s-256</option><option value="BLAKE3" selected>BLAKE3</option><option value="RIPEMD-160">RIPEMD-160</option><option value="XXH64">XXH64</option><option value="XXH3">XXH3</option><option value="XXH128">XXH128</option><option value="CRC32">CRC32</option><option value="CRC32C">CRC32C</option></select></label>
+          <button class="btn btn-primary" type="button" id="btnCompareRun"><i data-lucide="git-compare"></i> Compare</button></div>
+        <div class="fresult" id="cmpResult"></div>
+      </div>
+      <div class="pane-body fpanel" data-fpanel="verify" hidden>
+        <p class="hint">Check downloaded files against a published list such as <code>SHA256SUMS</code>, <code>*.sha256</code> or <code>*.md5</code> (sha256sum, md5sum, b2sum and BSD formats), the way <code>sha256sum -c</code> does.</p>
+        <div class="fbar">
+          <input type="file" id="sumsFile" hidden><input type="file" id="sumsFiles" multiple hidden><input type="file" id="sumsFolder" webkitdirectory hidden>
+          <button class="btn" type="button" onclick="document.getElementById('sumsFile').click()"><i data-lucide="file-check"></i> Checksum list</button>
+          <button class="btn" type="button" onclick="document.getElementById('sumsFiles').click()"><i data-lucide="files"></i> Files to check</button>
+          <button class="btn" type="button" onclick="document.getElementById('sumsFolder').click()"><i data-lucide="folder-open"></i> Folder to check</button>
+          <button class="btn btn-primary" type="button" id="btnSumsRun"><i data-lucide="check-check"></i> Check</button>
+          <span class="hint" id="sumsInfo">No list chosen.</span>
+        </div>
+        <div class="fresult" id="sumsResult"></div>
       </div>
     </div>
   </div>
@@ -308,8 +437,20 @@
       <h2><i data-lucide="help-circle"></i> Frequently asked questions</h2>
       <div class="faq-container">
         <div class="faq-item">
+          <button class="faq-question">Which algorithms are included, and which should I use? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>Cryptographic hashes: MD5 and SHA-1 (both broken for collisions, so only for matching old checksums), SHA-256/384/512, SHA3-256/512, BLAKE2b-512, BLAKE2s-256, BLAKE3 and RIPEMD-160. Checksums, listed separately: XXH64, XXH3 and XXH128 (very fast, used by tools that index or deduplicate files) and CRC32/CRC32C (zip files, Ethernet, storage systems). Use SHA-256 to publish or verify a download, BLAKE3 when speed matters and both sides support it, and a checksum only for spotting accidental changes: anyone can forge one.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">How large a file can I hash? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>Any size. The file is read in 4 MB slices by a background worker that feeds all sixteen algorithms in one pass, so it never has to fit in memory and the page stays responsive; progress is shown as it goes. In our tests a 64 MB file took about 3 seconds for all of them.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">Can I hash a whole folder, compare two folders, or check a SHA256SUMS file? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>Yes, under Files and folders. <strong>Many files</strong> hashes everything you choose or drop (folders included) with one algorithm and saves a checksum file in the <code>sha256sum</code> format, a CSV or HTML report, or all three as a zip. <strong>Compare</strong> matches the files of two folders by their path and tells you which are identical, different, or present on one side only. <strong>Check a list</strong> reads <code>SHA256SUMS</code>, <code>*.sha256</code>, <code>*.md5</code>, <code>b2sum</code> or BSD-style lists and reports each file as OK, FAILED or missing, like <code>sha256sum -c</code>.</p></div>
+        </div>
+        <div class="faq-item">
           <button class="faq-question">Is my text or file uploaded to compute the hash? <i data-lucide="chevron-down"></i></button>
-          <div class="faq-answer"><p>No. Hashing is done by the Web Crypto API built into your browser, and the MD5 implementation is JavaScript in the page. There is no request to any server. You can verify this in the Network tab of your browser's developer tools, or by loading the page and then disconnecting from the internet before hashing a file.</p></div>
+          <div class="faq-answer"><p>No. Hashing is done by the Web Crypto API built into your browser and by hash-wasm, an open-source library compiled to WebAssembly that loads from this site; files are read in slices by a background worker. There is no request to any server. You can verify this in the Network tab of your browser's developer tools, or by loading the page and then disconnecting from the internet before hashing a file.</p></div>
         </div>
         <div class="faq-item">
           <button class="faq-question">Why does the same text give a different SHA-256 here and on my server? <i data-lucide="chevron-down"></i></button>
@@ -364,6 +505,7 @@
     <div class="info-panel">
       <h2><i data-lucide="git-commit"></i> Changelog</h2>
       <ul class="changelog-list">
+        <li><span class="changelog-tag">v2.0.0</span> SHA3-256/512, BLAKE2b-512, BLAKE2s-256, BLAKE3 and RIPEMD-160, with HMAC; XXH64, XXH3, XXH128, CRC32 and CRC32C checksums (hash-wasm in WebAssembly). Files of any size are hashed in slices by a background worker, all algorithms in one pass, with progress (the 1 GB limit is gone). Files and folders: hash many files with a checksum file and CSV/HTML reports, compare two folders by content, and check files against SHA256SUMS, *.md5 or BSD-style lists.</li>
         <li><span class="changelog-tag">v1.1.0</span> A line-endings option: text can be hashed with CRLF line breaks, as a Windows file stores them (a text box always holds LF, so a pasted Windows file used to give the LF hash). For a file's exact bytes, use File.</li>
         <li><span class="changelog-tag">v1.0.0</span> Initial release: MD5, SHA-1, SHA-256, SHA-384, SHA-512 of text (UTF-8, hex or base64 input) and files via drag-and-drop; HMAC with a UTF-8 key; hex or base64 output; constant-time checksum verification.</li>
       </ul>
@@ -478,6 +620,11 @@
 
   <script src="../js/shared.js?v=e2441a1728"></script>
   <script src="../js/md5.js?v=ac86a35839"></script>
+  <script src="../js/engines/stream.js?v=09549f4666"></script>
+  <script src="../js/engines/hashx.js?v=9f24f52b41"></script>
+  <script src="../js/engines/csv.js?v=a78b81af7d"></script>
+  <script src="../js/engines/zip.js?v=1c95003bb0"></script>
+  <script src="../js/engines/batch.js?v=a7b8f5a639"></script>
 
   <script>
     const textInput = document.getElementById('textInput');
@@ -495,7 +642,7 @@
     const errorText = document.getElementById('errorText');
     const ALGS = ['MD5', 'SHA-1', 'SHA-256', 'SHA-384', 'SHA-512'];
 
-    let fileBytes = null, fileName = null;   // a dropped file takes precedence over the textarea
+    let fileBytes = null, fileName = null, fileHandle = null;   // a dropped file takes precedence over the textarea
     let lastDigests = {};                    // alg -> Uint8Array
     let runId = 0;
 
@@ -521,6 +668,7 @@
     function fmtBytes(n) { return n < 1024 ? `${n} bytes` : n < 1048576 ? `${(n / 1024).toFixed(1)} KB` : `${(n / 1048576).toFixed(2)} MB`; }
 
     async function digestAll() {
+      if (fileHandle) return digestFile();
       const id = ++runId;
       clearError();
       let bytes;
@@ -544,6 +692,11 @@
       }
       lastDigests = results;
       renderDigests();
+      try {
+        const hw = await loadHW();
+        for (const alg of EXTRA) { const d = await extraDigest(hw, alg, bytes, key); if (id !== runId) return; results[alg] = d; }
+        lastDigests = results; renderDigests();
+      } catch (e) { showError(e.message); }
       if (bytes.length > 1048576) inputMeta.textContent += ` · hashed in ${(performance.now() - t0).toFixed(0)} ms`;
       verify();
     }
@@ -558,9 +711,11 @@
     function concat(a, b) { const out = new Uint8Array(a.length + b.length); out.set(a); out.set(b, a.length); return out; }
 
     function renderDigests() {
-      for (const alg of ALGS) {
+      for (const alg of ALL) {
         const el = document.getElementById('d-' + alg);
         const b = lastDigests[alg];
+        if (b === null && hmacKey.value) { el.textContent = '—'; el.title = 'A checksum has no keyed (HMAC) form'; continue; }
+        el.title = '';
         if (!b) { el.textContent = ''; continue; }
         let s = outB64.checked ? toB64(b) : toHex(b);
         if (outUpper.checked && !outB64.checked) s = s.toUpperCase();
@@ -573,10 +728,10 @@
     function verify() {
       const raw = expectInput.value.trim();
       verifyResult.className = 'hint';
-      if (!raw) { verifyResult.textContent = ''; ALGS.forEach(a => document.querySelector(`tr[data-alg="${a}"]`).classList.remove('match')); return; }
+      if (!raw) { verifyResult.textContent = ''; ALL.forEach(a => document.querySelector(`tr[data-alg="${a}"]`).classList.remove('match')); return; }
       const norm = raw.replace(/\s+/g, '').toLowerCase().replace(/^0x/, '');
       let matched = null;
-      for (const alg of ALGS) {
+      for (const alg of ALL) {
         const b = lastDigests[alg]; if (!b) continue;
         for (const cand of [toHex(b), toB64(b).toLowerCase(), toB64(b).replace(/=+$/, '').toLowerCase()]) {
           let diff = cand.length ^ norm.length;
@@ -587,19 +742,167 @@
       }
       if (matched) { verifyResult.innerHTML = `<span class="ok">Match</span> — the input's ${matched} digest equals the expected value.`; }
       else {
-        const guess = { 32: 'MD5', 40: 'SHA-1', 64: 'SHA-256', 96: 'SHA-384', 128: 'SHA-512' }[norm.length];
-        verifyResult.innerHTML = `<span class="bad">No match</span>` + (guess ? ` — the expected value is ${norm.length} hex characters, which is the length of ${guess}; the input's ${guess} differs.` : ` — ${norm.length} characters is not the length of any supported digest in hex or base64.`);
+        const same = ALL.filter(a => LBHashX.byName(a).hexLen === norm.length);
+        verifyResult.innerHTML = `<span class="bad">No match</span>` + (same.length ? ` — the expected value is ${norm.length} hex characters, the length of ${same.join(', ')}; none of the input's digests of that length equals it.` : ` — ${norm.length} characters is not the length of any supported digest in hex or base64.`);
       }
     }
+
+    // ---- more algorithms (hash-wasm, loaded on first use) ----
+    const EXTRA = LBHashX.ALGS.filter(a => !ALGS.includes(a.name)).map(a => a.name);
+    const ALL = ALGS.concat(EXTRA);
+    let hwP = null;
+    const loadHW = () => window.hashwasm ? Promise.resolve(window.hashwasm) : hwP || (hwP = new Promise((res, rej) => { const sc = document.createElement('script'); sc.src = '../js/vendor/hash-wasm.min.js'; sc.onload = () => res(window.hashwasm); sc.onerror = () => { hwP = null; rej(new Error('Could not load the hash library.')); }; document.head.appendChild(sc); }));
+    const fromHex = h => Uint8Array.from(h.match(/../g) || [], x => parseInt(x, 16));
+    async function extraDigest(hw, name, bytes, key) {
+      const m = LBHashX.byName(name);
+      if (key && !m.crypto) return null;   // checksums have no keyed form
+      const make = () => m.arg !== undefined ? hw[m.wasm](m.arg) : hw[m.wasm]();
+      const h = key ? await hw.createHMAC(make(), key) : await make();
+      h.init(); h.update(bytes);
+      return fromHex(h.digest('hex'));
+    }
+    // ---- files of any size: hashed in slices by a worker, every algorithm in one pass ----
+    function workerSrc() {
+      const src = p => JSON.stringify(new URL(p, location.href).href);
+      return `importScripts(${src('../js/vendor/hash-wasm.min.js')}, ${src('../js/engines/stream.js')}, ${src('../js/engines/hashx.js')});
+        onmessage = async e => {
+          const { file, algs, key } = e.data, hw = self.hashwasm, out = {}, hs = [];
+          try {
+            for (const name of algs) {
+              const m = LBHashX.byName(name);
+              if (key && !m.crypto) { out[name] = null; continue; }
+              const make = () => m.arg !== undefined ? hw[m.wasm](m.arg) : hw[m.wasm]();
+              const h = key ? await hw.createHMAC(make(), key) : await make(); h.init(); hs.push([name, h]);
+            }
+            let last = 0;
+            for await (const c of LBStream.chunks(file, { chunkSize: 4 << 20, onProgress: (d, t) => { const now = Date.now(); if (now - last > 150) { last = now; postMessage({ progress: t ? d / t : 1 }); } } })) for (const [, h] of hs) h.update(c.bytes);
+            for (const [name, h] of hs) out[name] = h.digest('hex');
+            postMessage({ done: out });
+          } catch (err) { postMessage({ error: err.message || String(err) }); }
+        };`;
+    }
+    let workerURL = null;
+    function hashFile(file, algs, key, onProgress) {
+      if (!workerURL) workerURL = URL.createObjectURL(new Blob([workerSrc()], { type: 'text/javascript' }));
+      const w = new Worker(workerURL);
+      const p = new Promise((res, rej) => {
+        w.onmessage = e => { const m = e.data; if (m.progress !== undefined) { if (onProgress) onProgress(m.progress); return; } w.terminate(); if (m.error) rej(new Error(m.error)); else res(m.done); };
+        w.onerror = e => { w.terminate(); rej(new Error(e.message || 'The hashing worker stopped.')); };
+      });
+      w.postMessage({ file, algs, key: key || null });
+      p.cancel = () => w.terminate();
+      return p;
+    }
+    let fileJob = null;
+    async function digestFile() {
+      const id = ++runId, file = fileHandle;
+      if (fileJob && fileJob.cancel) fileJob.cancel();
+      clearError();
+      const key = hmacKey.value ? new TextEncoder().encode(hmacKey.value) : null;
+      const label = `${file.name} · ${fmtBytes(file.size)}${key ? ' · HMAC mode' : ''}`;
+      inputMeta.textContent = `${label} · hashing…`;
+      const t0 = performance.now();
+      fileJob = hashFile(file, ALL, key, f => { if (id === runId) inputMeta.textContent = `${label} · hashing… ${Math.round(f * 100)}%`; });
+      try {
+        const r = await fileJob;
+        if (id !== runId) return;
+        lastDigests = {}; ALL.forEach(a => { lastDigests[a] = r[a] ? fromHex(r[a]) : null; });
+        renderDigests(); verify();
+        inputMeta.textContent = `${label} · hashed in ${((performance.now() - t0) / 1000).toFixed(1)} s`;
+      } catch (e) { if (id === runId) showError(e.message); }
+    }
+
+    // ---- many files, compare, check a list ----
+    const $ = id => document.getElementById(id);
+    document.querySelectorAll('.ftab').forEach(b => b.addEventListener('click', () => {
+      document.querySelectorAll('.ftab').forEach(x => { x.classList.toggle('active', x === b); x.setAttribute('aria-selected', x === b); });
+      document.querySelectorAll('.fpanel').forEach(p => { p.hidden = p.dataset.fpanel !== b.dataset.ftab; });
+    }));
+    const escH = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    const sets = { batch: [], A: [], B: [], sums: [] };
+    function takeFiles(list) { return LBBatch.fromFileList(list); }
+    function wireDrop(el, fn) {
+      el.addEventListener('dragover', e => { e.preventDefault(); e.stopPropagation(); el.classList.add('over'); });
+      el.addEventListener('dragleave', () => el.classList.remove('over'));
+      el.addEventListener('drop', e => { e.preventDefault(); e.stopPropagation(); el.classList.remove('over'); LBBatch.fromDrop(e.dataTransfer).then(fn); });
+    }
+    const sizeOf = items => fmtBytes(items.reduce((n, it) => n + it.file.size, 0));
+    function setBatch(items) { sets.batch = items; $('batchInfo').textContent = items.length ? `${items.length} file${items.length === 1 ? '' : 's'}, ${sizeOf(items)}` : 'No files chosen.'; $('btnBatchRun').disabled = !items.length; }
+    $('batchFiles').addEventListener('change', e => takeFiles(e.target.files).then(setBatch));
+    $('batchFolder').addEventListener('change', e => takeFiles(e.target.files).then(setBatch));
+    wireDrop($('batchDrop'), setBatch);
+    let batchRows = null;
+    $('btnBatchRun').addEventListener('click', async () => {
+      const alg = $('batchAlg').value, items = sets.batch, box = $('batchResult');
+      $('btnBatchRun').disabled = true; $('batchActions').hidden = true;
+      const t0 = performance.now();
+      const results = await LBBatch.run(items, it => hashFile(it.file, [alg]).then(r => r[alg]), { concurrency: 2, onProgress: (d, n) => { box.innerHTML = `<div class="hint">Hashing ${d} of ${n}…</div>`; } });
+      batchRows = { alg, results, when: new Date().toISOString() };
+      const ok = results.filter(r => r.ok).length;
+      box.innerHTML = `<div class="hint">${ok} of ${results.length} hashed with ${alg} in ${((performance.now() - t0) / 1000).toFixed(1)} s.</div><table class="data-table ftable"><thead><tr><th>File</th><th>Size</th><th>${alg}</th></tr></thead><tbody>` +
+        results.map(r => `<tr><td>${escH(r.item.path)}</td><td>${fmtBytes(r.item.file.size)}</td><td class="digest">${r.ok ? r.value : `<span class="bad">${escH(r.error)}</span>`}</td></tr>`).join('') + '</tbody></table>';
+      $('batchActions').hidden = false; $('btnBatchRun').disabled = false;
+    });
+    function saveBlob(data, name, type) { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([data], { type })); a.download = name; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 60000); }
+    const sumsName = alg => alg.replace(/-/g, '').toUpperCase() + 'SUMS';
+    function batchReport() { const b = batchRows; return LBBatch.report(b.results, { title: 'Layerbit file hashes', options: b.alg, generated: b.when, columns: [{ label: 'File', get: r => r.item.path }, { label: 'Bytes', get: r => r.item.file.size }, { label: b.alg, get: r => r.ok ? r.value : '' }] }); }
+    function batchSums() { return LBHashX.formatSums(batchRows.results.filter(r => r.ok).map(r => ({ path: r.item.path, digest: r.value })), batchRows.alg); }
+    $('btnBatchSums').addEventListener('click', () => saveBlob(batchSums(), sumsName(batchRows.alg), 'text/plain'));
+    $('btnBatchCsv').addEventListener('click', () => saveBlob(batchReport().csv, `layerbit-hashes-${Date.now()}.csv`, 'text/csv'));
+    $('btnBatchHtml').addEventListener('click', () => saveBlob(batchReport().html, `layerbit-hashes-${Date.now()}.html`, 'text/html'));
+    $('btnBatchZip').addEventListener('click', () => { const r = batchReport(); saveBlob(LBBatch.archive([{ name: sumsName(batchRows.alg), data: batchSums() }, { name: 'report.csv', data: r.csv }, { name: 'report.html', data: r.html }]), `layerbit-hashes-${Date.now()}.zip`, 'application/zip'); });
+
+    ['A', 'B'].forEach(side => {
+      const set = items => { sets[side] = items; $('cmpInfo' + side).textContent = items.length ? `${items.length} file${items.length === 1 ? '' : 's'}, ${sizeOf(items)}` : 'nothing chosen'; };
+      $('cmpFiles' + side).addEventListener('change', e => takeFiles(e.target.files).then(set));
+      $('cmpFolder' + side).addEventListener('change', e => takeFiles(e.target.files).then(set));
+      wireDrop($('cmpDrop' + side), set);
+    });
+    const STATUS = { same: 'identical', different: 'different', onlyA: 'only in A', onlyB: 'only in B' };
+    $('btnCompareRun').addEventListener('click', async () => {
+      const alg = $('cmpAlg').value, box = $('cmpResult');
+      if (!sets.A.length || !sets.B.length) { box.innerHTML = '<div class="hint bad">Choose files or a folder for both A and B.</div>'; return; }
+      box.innerHTML = '<div class="hint">Hashing…</div>';
+      const hashSide = async items => { const rel = LBHashX.relPaths(items.map(i => i.path)); const res = await LBBatch.run(items, it => hashFile(it.file, [alg]).then(r => r[alg]), { concurrency: 2 }); return res.map((r, i) => ({ path: rel[i], digest: r.ok ? r.value : 'error: ' + r.error })); };
+      const [a, b] = await Promise.all([hashSide(sets.A), hashSide(sets.B)]);
+      // one file on each side: compare them whatever their names
+      const rows = a.length === 1 && b.length === 1 ? [{ path: a[0].path === b[0].path ? a[0].path : `${a[0].path} ↔ ${b[0].path}`, a: a[0].digest, b: b[0].digest, status: a[0].digest === b[0].digest ? 'same' : 'different' }] : LBHashX.compareSets(a, b);
+      const n = s => rows.filter(r => r.status === s).length;
+      box.innerHTML = `<div class="hint">${n('same')} identical, ${n('different')} different, ${n('onlyA')} only in A, ${n('onlyB')} only in B (${alg}).</div><table class="data-table ftable"><thead><tr><th>File</th><th>Result</th><th>A</th><th>B</th></tr></thead><tbody>` +
+        rows.map(r => `<tr class="st-${r.status}"><td>${escH(r.path)}</td><td>${STATUS[r.status]}</td><td class="digest">${r.a || ''}</td><td class="digest">${r.b || ''}</td></tr>`).join('') + '</tbody></table>';
+    });
+
+    let sumsList = null;
+    $('sumsFile').addEventListener('change', async e => {
+      const f = e.target.files[0]; if (!f) return;
+      sumsList = Object.assign(LBHashX.parseSums(await Layerbit.readFile(f), f.name), { name: f.name });
+      $('sumsInfo').textContent = `${f.name}: ${sumsList.entries.length} entr${sumsList.entries.length === 1 ? 'y' : 'ies'}${sumsList.errors.length ? `, ${sumsList.errors.length} line${sumsList.errors.length === 1 ? '' : 's'} not understood` : ''}${sets.sums.length ? ` · ${sets.sums.length} files to check` : ''}.`;
+    });
+    const setSums = items => { sets.sums = items; if (sumsList) $('sumsInfo').textContent = `${sumsList.name}: ${sumsList.entries.length} entries · ${items.length} files to check.`; };
+    $('sumsFiles').addEventListener('change', e => takeFiles(e.target.files).then(setSums));
+    $('sumsFolder').addEventListener('change', e => takeFiles(e.target.files).then(setSums));
+    $('btnSumsRun').addEventListener('click', async () => {
+      const box = $('sumsResult');
+      if (!sumsList || !sumsList.entries.length) { box.innerHTML = '<div class="hint bad">Choose a checksum list first (SHA256SUMS, *.sha256, *.md5…).</div>'; return; }
+      box.innerHTML = '<div class="hint">Checking…</div>';
+      // match each entry to a file first, then hash only those, with the entry's algorithm
+      const matched = LBHashX.checkSums(sumsList.entries, sets.sums.map(it => ({ path: it.path, digest: undefined, item: it })));
+      const rows = await Promise.all(matched.map(async m => {
+        if (m.status === 'MISSING') return m;
+        if (!m.alg) return Object.assign(m, { status: 'FAILED', note: 'unknown algorithm' });
+        try { const d = (await hashFile(m.file.item.file, [m.alg]))[m.alg]; return Object.assign(m, { actual: d, status: d === m.expected ? 'OK' : 'FAILED' }); }
+        catch (e) { return Object.assign(m, { status: 'FAILED', note: e.message }); }
+      }));
+      const n = s => rows.filter(r => r.status === s).length;
+      box.innerHTML = `<div class="hint"><span class="${n('FAILED') || n('MISSING') ? 'bad' : 'ok'}">${n('OK')} OK, ${n('FAILED')} FAILED, ${n('MISSING')} missing</span>${n('FAILED') ? ' — a FAILED file is corrupt or not the one the list describes.' : ''}</div><table class="data-table ftable"><thead><tr><th>File</th><th>Result</th><th>Algorithm</th><th>Expected</th><th>Actual</th></tr></thead><tbody>` +
+        rows.map(r => `<tr class="st-${r.status}"><td>${escH(r.path)}</td><td>${r.status}</td><td>${escH(r.alg || '?')}</td><td class="digest">${r.expected}</td><td class="digest">${r.actual || escH(r.note || '')}</td></tr>`).join('') + '</tbody></table>';
+    });
 
     // ---- file handling ----
     async function loadFile(file) {
       if (!file) return;
-      if (file.size > 1024 * 1024 * 1024) { showError('Files over 1 GB cannot be hashed in the browser, which needs the whole file in memory.'); return; }
-      fileName = file.name;
-      inputMeta.textContent = `reading ${file.name}…`;
-      fileBytes = new Uint8Array(await file.arrayBuffer());
-      textInput.value = ''; textInput.placeholder = `File loaded: ${file.name} (${fmtBytes(fileBytes.length)}). Clear to hash text instead.`; textInput.readOnly = true;
+      fileName = file.name; fileHandle = file; fileBytes = null;
+      textInput.value = ''; textInput.placeholder = `File loaded: ${file.name} (${fmtBytes(file.size)}). Clear to hash text instead.`; textInput.readOnly = true;
       digestAll();
     }
     fileInput.addEventListener('change', e => loadFile(e.target.files[0]));
@@ -607,14 +910,15 @@
     inputPane.addEventListener('dragleave', () => inputPane.classList.remove('dragover'));
     inputPane.addEventListener('drop', e => { e.preventDefault(); inputPane.classList.remove('dragover'); loadFile(e.dataTransfer.files[0]); });
     document.getElementById('btnClear').addEventListener('click', () => {
-      fileBytes = null; fileName = null; fileInput.value = ''; textInput.value = ''; textInput.readOnly = false;
+      if (fileJob && fileJob.cancel) fileJob.cancel();
+      fileBytes = null; fileName = null; fileHandle = null; fileInput.value = ''; textInput.value = ''; textInput.readOnly = false;
       textInput.placeholder = 'Type or paste text, or drop a file anywhere on this pane...\n\nHashes update as you type.';
       expectInput.value = ''; digestAll();
     });
 
     let timer = null;
     const debounced = () => { clearTimeout(timer); timer = setTimeout(digestAll, 60); };
-    textInput.addEventListener('input', () => { if (fileBytes) { fileBytes = null; fileName = null; textInput.readOnly = false; } debounced(); });
+    textInput.addEventListener('input', () => { if (fileBytes || fileHandle) { fileBytes = null; fileName = null; fileHandle = null; textInput.readOnly = false; } debounced(); });
     inputMode.addEventListener('change', digestAll);
     $eol.addEventListener('change', digestAll);
     hmacKey.addEventListener('input', debounced);
