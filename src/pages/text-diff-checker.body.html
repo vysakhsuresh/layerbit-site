@@ -626,7 +626,7 @@
     function alignAnyway() { if (!last) return; runText(last.a, last.b, last.nameA, last.nameB, null, last.infoA, last.infoB, { workLimit: Infinity }); }
     function finishText(res, a, b, nameA, nameB, title, infoA, infoB, wasExplicit) {
       const o = opts();
-      res.notes = (res.notes || []).concat(fileNotes(infoA, infoB)); res.infoA = infoA; res.infoB = infoB;
+      res.notes = (res.notes || []).concat(fileNotes(infoA, infoB)); res.infoA = infoA; res.infoB = infoB; openFolds = [];
       const lang = $('syntaxMode').value === 'auto' ? E.detectLang(a || b, nameA !== 'original' ? nameA : nameB !== 'modified' ? nameB : '') : $('syntaxMode').value;
       last = Object.assign(res, { a, b, nameA, nameB, lang });
       decisions = res.hunks.map(() => 'right');
@@ -638,6 +638,48 @@
       $('mergedSection').style.display = res.hunks.length ? 'grid' : 'none';
       if (wasExplicit && $('saveHistory').checked) Layerbit.history.push('text-diff-checker', getState(), `${nameA} → ${nameB}: +${res.stats.added + res.stats.modified} −${res.stats.removed + res.stats.modified}`);
     }
+    // ------------------------------------------------------------ virtual list
+    // Renders `count` items in blocks; only blocks near the visible part of
+    // the scroll container are in the DOM, the others are spacers holding
+    // their last measured (or estimated) height. Small lists render at once.
+    const vlists = new Map();
+    function VList(host, count, render, o) {
+      o = o || {};
+      const BLOCK = o.block || 80, tag = o.blockTag || 'div';
+      let est = o.rowHeight || 22;
+      const nB = Math.ceil(count / BLOCK), heights = new Array(nB).fill(0), filled = new Array(nB).fill(false);
+      const spacer = b => { const h = heights[b] || Math.min(BLOCK, count - b * BLOCK) * est; return o.spacer ? o.spacer(h) : `<div class="vspacer" style="height:${h}px"></div>`; };
+      const eager = count <= (o.eager == null ? 400 : o.eager);
+      const html = b => { let out = ''; for (let i = b * BLOCK, e = Math.min(count, i + BLOCK); i < e; i++) out += render(i); return out; };
+      host.insertAdjacentHTML('beforeend', Array.from({ length: nB }, (_, b) => `<${tag} class="vblock" data-b="${b}">${eager || b < 2 ? html(b) : spacer(b)}</${tag}>`).join(''));
+      const els = [...host.querySelectorAll(':scope > .vblock')];
+      els.forEach((el, b) => { filled[b] = eager || b < 2; });
+      // calibrate the row-height estimate from the first rendered block so
+      // spacers match real content and scrolling to the end lands there
+      const calibrate = () => {
+        if (eager || !els[0]) return;
+        const h = els[0].getBoundingClientRect().height, n = Math.min(BLOCK, count);
+        if (!h || !n) return;
+        const real = h / n; if (Math.abs(real - est) / est < 0.05) return;
+        est = real;
+        els.forEach((el, b) => { if (!filled[b] && !heights[b]) el.innerHTML = spacer(b); });
+      };
+      const fill = b => { if (filled[b]) return; els[b].innerHTML = html(b); filled[b] = true; if (o.onFill) o.onFill(els[b]); };
+      const empty = b => { if (!filled[b]) return; heights[b] = els[b].getBoundingClientRect().height || heights[b]; els[b].innerHTML = spacer(b); filled[b] = false; };
+      let io = null;
+      if (!eager && typeof IntersectionObserver === 'function') {
+        io = new IntersectionObserver(entries => entries.forEach(en => { const b = +en.target.dataset.b; if (en.isIntersecting) fill(b); else empty(b); }), { root: o.root || null, rootMargin: '1500px 0px' });
+        els.forEach(el => io.observe(el));
+      } else if (!eager) for (let b = 0; b < nB; b++) fill(b);
+      if (!eager) requestAnimationFrame(calibrate);
+      return { calibrate, reveal: i => { const b = Math.floor(i / BLOCK); fill(b); return els[b]; }, destroy: () => { if (io) io.disconnect(); } };
+    }
+    function mountList(key, host, count, render, o) {
+      if (vlists.has(key)) vlists.get(key).destroy();
+      const v = VList(host, count, render, o); vlists.set(key, v); return v;
+    }
+
+    let openFolds = [];
     function renderText() {
       if (last.tooDifferent) {
         const S = last.summary, n = v => v.toLocaleString();
@@ -650,45 +692,66 @@
       }
       const { rows, hunks, stats, lang } = last;
       const ctx = $('contextLines').value === 'all' ? null : +$('contextLines').value;
-      const view = $('viewMode').value;
+      const view = $('viewMode').value, unified = view === 'unified';
       const showWs = $('showWs').checked;
-      const shown = ctx == null ? rows : E.foldContext(rows, ctx);
+      const shown = ctx == null ? rows : E.foldContext(rows, ctx, openFolds);
       $('diffStats').innerHTML = `<span class="st-add">+${(stats.added + stats.modified).toLocaleString()}</span><span class="st-del">−${(stats.removed + stats.modified).toLocaleString()}</span><span>${hunks.length} change block${hunks.length === 1 ? '' : 's'}</span><span>${stats.similarity}% similar</span><span class="st-lang">${E.esc(lang)}</span>`;
       $('hunkCounter').textContent = `${currentHunk + 1} / ${hunks.length}`;
-      // index row -> hunk
       const rowHunk = new Map(); hunks.forEach((h, i) => { for (let r = h.start; r < h.end; r++) rowHunk.set(r, i); });
       const rowIndex = new Map(); rows.forEach((r, i) => rowIndex.set(r, i));
-      // Each side-by-side row is ONE element holding the left and right cells,
-      // so a long wrapped line on one side makes both cells the same height.
-      const S = [], U = []; let lastHunk = -1;
-      const hunkBar = i => `<div class="hunk-bar" data-hunk="${i}"><span class="hunk-label">Change ${i + 1}</span>` +
+      // Items are described first and turned into HTML only when their block
+      // scrolls into view. Each side-by-side row is ONE element holding the
+      // left and right cells, so both always share a height.
+      const items = []; let lastHunk = -1; last.barItem = [];
+      if ((last.notes || []).length) items.push({ k: 'notes' });
+      if (!rows.length) items.push({ k: 'empty' });
+      else if (!hunks.length && !(last.notes || []).length) items.push({ k: 'identical' });
+      shown.forEach(row => {
+        if (row.type === 'skip') { items.push({ k: 'skip', row }); lastHunk = -1; return; }
+        const hi = rowHunk.has(rowIndex.get(row)) ? rowHunk.get(rowIndex.get(row)) : -1;
+        if (hi >= 0 && hi !== lastHunk) { last.barItem[hi] = items.length; items.push({ k: 'bar', hi }); }
+        lastHunk = hi;
+        items.push({ k: 'row', row });
+      });
+      const hunkBar = i => `<div class="hunk-anchor" id="${unified ? 'hU' : 'hS'}${i}"></div><div class="hunk-bar${i === currentHunk ? ' current' : ''}" data-hunk="${i}"><span class="hunk-label">Change ${i + 1}</span>` +
         `<button type="button" class="hb ${decisions[i] === 'left' ? 'on' : ''}" onclick="decide(${i},'left')" title="Revert this block to the original">Keep original</button>` +
         `<button type="button" class="hb ${decisions[i] === 'right' ? 'on' : ''}" onclick="decide(${i},'right')" title="Keep the modified version of this block">Accept change</button>` +
         `<button type="button" class="hb ${decisions[i] === 'both' ? 'on' : ''}" onclick="decide(${i},'both')" title="Keep original lines followed by modified lines">Both</button></div>`;
       const cell = (side, kind, n, html) => `<div class="dside sd-${side} diff-line line-${kind}${kind !== 'match' && kind !== 'blank' ? ' has-diff' : ''}"><div class="diff-num">${n}</div><div class="diff-text">${html}</div></div>`;
-      shown.forEach(row => {
-        if (row.type === 'skip') { const s = `<div class="diff-skip" data-from="${row.from}" data-to="${row.to}" onclick="expandSkip(${row.from},${row.to})" title="Show these lines"><i data-lucide="unfold-vertical"></i> ${row.count.toLocaleString()} unchanged lines</div>`; S.push(s); U.push(s); lastHunk = -1; return; }
-        const ri = rowIndex.get(row), hi = rowHunk.has(ri) ? rowHunk.get(ri) : -1;
-        if (hi >= 0 && hi !== lastHunk) { const hb = hunkBar(hi); S.push(`<div class="hunk-anchor" id="hS${hi}"></div>${hb}`); U.push(`<div class="hunk-anchor" id="hU${hi}"></div>${hb}`); }
-        lastHunk = hi;
+      const render = i => {
+        const it = items[i];
+        if (it.k === 'notes') return `<div class="diff-notes" role="status"><i data-lucide="alert-triangle"></i><div><strong>${hunks.length ? 'Also' : 'No line differences with the current options, but the files are not byte-identical'}:</strong><ul>${last.notes.map(n => `<li>${E.esc(n)}</li>`).join('')}</ul></div></div>`;
+        if (it.k === 'empty') return '<div class="diff-empty">Both inputs are empty.</div>';
+        if (it.k === 'identical') return '<div class="diff-identical"><i data-lucide="check-circle-2"></i> No differences with the current options.</div>';
+        if (it.k === 'skip') return `<div class="diff-skip" data-from="${it.row.from}" onclick="expandSkip(${it.row.from},${it.row.to})" title="Show these lines"><i data-lucide="unfold-vertical"></i> ${it.row.count.toLocaleString()} unchanged lines</div>`;
+        if (it.k === 'bar') return hunkBar(it.hi);
+        const row = it.row, ig = row.type === 'blank';
         const lh = row.l ? E.renderLine(row.l.text, row.l.segs, lang, showWs) : '';
         const rh = row.r ? E.renderLine(row.r.text, row.r.segs, lang, showWs) : '';
-        const ig = row.type === 'blank';
+        if (unified) {
+          if (row.type === 'eq' || ig) return `<div class="diff-line line-match${ig ? ' line-ignored' : ''}"><div class="diff-num"><span>${row.l ? row.l.n : ''}</span><span>${row.r ? row.r.n : ''}</span></div><div class="diff-text">${row.l ? lh : rh}</div></div>`;
+          return (row.l ? `<div class="diff-line line-removed has-diff"><div class="diff-num"><span>${row.l.n}</span><span></span></div><div class="diff-text">${lh}</div></div>` : '') + (row.r ? `<div class="diff-line line-added has-diff"><div class="diff-num"><span></span><span>${row.r.n}</span></div><div class="diff-text">${rh}</div></div>` : '');
+        }
         const lt = row.type === 'eq' || (ig && row.l) ? 'match' : row.type === 'ins' || ig ? 'blank' : 'removed';
         const rt = row.type === 'eq' || (ig && row.r) ? 'match' : row.type === 'del' || ig ? 'blank' : 'added';
-        S.push(`<div class="drow">${cell('l', lt, row.l ? row.l.n : '', row.l ? lh : '&nbsp;')}${cell('r', rt, row.r ? row.r.n : '', row.r ? rh : '&nbsp;')}</div>`);
-        if (row.type === 'eq' || ig) U.push(`<div class="diff-line line-match${ig ? ' line-ignored' : ''}"><div class="diff-num"><span>${row.l ? row.l.n : ''}</span><span>${row.r ? row.r.n : ''}</span></div><div class="diff-text">${row.l ? lh : rh}</div></div>`);
-        else { let u = ''; if (row.l) u += `<div class="diff-line line-removed has-diff"><div class="diff-num"><span>${row.l.n}</span><span></span></div><div class="diff-text">${lh}</div></div>`; if (row.r) u += `<div class="diff-line line-added has-diff"><div class="diff-num"><span></span><span>${row.r.n}</span></div><div class="diff-text">${rh}</div></div>`; U.push(u); }
-      });
-      if (!rows.length) { S.length = 0; U.length = 0; S.push('<div class="diff-empty">Both inputs are empty.</div>'); U.push(S[0]); }
-      else if (!hunks.length && !(last.notes || []).length) { const s = '<div class="diff-identical"><i data-lucide="check-circle-2"></i> No differences with the current options.</div>'; S.unshift(s); U.unshift(s); }
-      const notesHtml = (last.notes || []).length ? `<div class="diff-notes" role="status"><i data-lucide="alert-triangle"></i><div><strong>${hunks.length ? 'Also' : 'No line differences with the current options, but the files are not byte-identical'}:</strong><ul>${last.notes.map(n => `<li>${E.esc(n)}</li>`).join('')}</ul></div></div>` : '';
-      if (notesHtml) { S.unshift(notesHtml); U.unshift(notesHtml); }
-      $('splitPanel').innerHTML = S.join(''); $('inlinePanel').innerHTML = U.join('');
-      showPanel(view === 'unified' ? 'unified' : 'split');
+        return `<div class="drow">${cell('l', lt, row.l ? row.l.n : '', row.l ? lh : '&nbsp;')}${cell('r', rt, row.r ? row.r.n : '', row.r ? rh : '&nbsp;')}</div>`;
+      };
+      const panel = unified ? $('inlinePanel') : $('splitPanel'), other = unified ? $('splitPanel') : $('inlinePanel');
+      const keepScroll = panel.scrollTop;
+      if (vlists.has('text-other')) vlists.get('text-other').destroy();
+      other.innerHTML = '';
+      panel.innerHTML = '';
+      last.view = mountList('text', panel, items.length, render, { root: panel, onFill: icons });
+      last.renderAll = () => { let out = ''; for (let i = 0; i < items.length; i++) out += render(i); return out; };
+      showPanel(unified ? 'unified' : 'split');
+      last.view.calibrate();
+      panel.scrollTop = keepScroll;
       icons();
     }
-    function expandSkip(from, to) { $('contextLines').value = 'all'; renderText(); }
+    function expandSkip(from, to) {
+      if (from == null) { $('contextLines').value = 'all'; openFolds = []; renderText(); return; }
+      openFolds.push(from); renderText();
+    }
     function decide(i, d) { decisions[i] = d; renderText(); renderMerged(); }
     function mergeAll(d) { decisions = decisions.map(() => d); renderText(); renderMerged(); }
     function mergedText() {
@@ -738,8 +801,9 @@
       const unified = $('viewMode').value === 'unified';
       const id = (unified ? 'hU' : 'hS') + currentHunk;
       const panel = unified ? $('inlinePanel') : $('splitPanel');
+      if (last.view && last.barItem && last.barItem[currentHunk] != null) last.view.reveal(last.barItem[currentHunk]);
       const a = $(id); if (!a) { $('contextLines').value = 'all'; renderText(); return navDiff(0); }
-      panel.scrollTop = a.offsetTop - 40;
+      panel.scrollTop = a.offsetTop - panel.offsetTop - 40;
       document.querySelectorAll('.hunk-bar.current').forEach(x => x.classList.remove('current'));
       document.querySelectorAll(`.hunk-bar[data-hunk="${currentHunk}"]`).forEach(x => x.classList.add('current'));
     }
@@ -765,9 +829,14 @@
     function downloadPatch() { const p = patchText(); if (!p) { Layerbit.toast('Run a comparison first'); return; } download((last && last.nameB !== 'modified' ? last.nameB : 'changes') + '.patch', p); }
     function downloadMerged() { download(mode === 'three' ? 'merged.txt' : (last && last.nameB !== 'modified' ? 'merged-' + last.nameB : 'merged.txt'), mode === 'three' ? $('mergedText').value : mergedOutput()); }
     function copyText(id) { Layerbit.copy($(id).value).then(() => Layerbit.toast('Copied')); }
+    // The on-screen view is virtual; the report renders every row.
+    function fullTextHtml() {
+      if (!last || last.tooDifferent || !last.renderAll) return $('splitPanel').outerHTML;
+      return `<div class="diff-output ${$('viewMode').value === 'unified' ? 'unified' : 'split'}">${last.renderAll()}</div>`;
+    }
     function downloadReport() {
       const panel = $('outputSection').querySelector('.result-pane');
-      const body = mode === 'text' || mode === 'patch' || mode === 'zip' ? ($('viewMode').value === 'unified' ? $('inlinePanel').outerHTML : $('splitWrap').outerHTML) : mode === 'struct' ? $('structPanel').outerHTML : mode === 'table' ? $('tablePanel').outerHTML : $('threePanel').outerHTML;
+      const body = mode === 'text' || mode === 'patch' || mode === 'zip' ? fullTextHtml() : mode === 'struct' ? $('structPanel').outerHTML : mode === 'table' ? $('tablePanel').outerHTML : $('threePanel').outerHTML;
       const css = `body{font-family:system-ui,sans-serif;background:#0a0c10;color:#f8fafc;margin:0;padding:24px}h1{font-size:1.2em}.meta{color:#94a3b8;font-size:.9em;margin-bottom:16px}.drow{display:grid;grid-template-columns:1fr 1fr}.sd-l{border-right:1px solid #222}.dside{min-width:0}.diff-output{font-family:ui-monospace,Menlo,monospace;font-size:12px;line-height:1.5;background:rgba(0,0,0,.4);border:1px solid #222;border-radius:8px;overflow:auto;max-height:none}.diff-line{display:flex}.diff-num{width:48px;flex-shrink:0;text-align:right;padding-right:8px;color:#94a3b8;border-right:1px solid #222;user-select:none}.unified .diff-num{width:80px;display:flex}.unified .diff-num span{flex:1}.diff-text{padding-left:8px;white-space:pre-wrap;word-break:break-all;flex:1}.line-removed{background:rgba(239,68,68,.15)}.line-added{background:rgba(34,197,94,.15)}.word-removed{background:rgba(239,68,68,.45);text-decoration:line-through}.word-added{background:rgba(34,197,94,.45)}.hunk-bar,.hunk-bar-spacer,.hunk-anchor{display:none}.diff-skip{color:#94a3b8;padding:4px 12px;background:rgba(255,255,255,.03)}.tk-kw{color:#38bdf8}.tk-str{color:#a7f3d0}.tk-num{color:#fdba74}.tk-cmt{color:#64748b;font-style:italic}.tk-key{color:#c084fc}.tk-tag{color:#f472b6}.tk-attr{color:#fdba74}.tk-fn{color:#f472b6}.tk-prop{color:#38bdf8}table{border-collapse:collapse;width:100%;font-size:.9em}th,td{text-align:left;padding:6px 10px;border-bottom:1px solid #222;vertical-align:top;font-family:ui-monospace,monospace}th{color:#38bdf8}.t-added{color:#4ade80}.t-removed{color:#f87171}.t-changed{color:#fbbf24}.t-type{color:#c084fc}.cell-old{color:#f87171;text-decoration:line-through}.cell-new{color:#4ade80}.three-chunk{border-left:3px solid #333;padding:4px 10px;margin:4px 0;white-space:pre-wrap;font-family:ui-monospace,monospace;font-size:12px}.three-chunk.conflict{border-color:#ef4444}.three-chunk.ours{border-color:#f87171}.three-chunk.theirs{border-color:#4ade80}.three-chunk .cb{display:none}.ws{opacity:.4}`;
       const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Layerbit diff report</title><style>${css}</style></head><body><h1>Comparison report</h1><div class="meta">${E.esc($('resultTitle').textContent)} · ${E.esc($('diffStats').innerText.replace(/\n/g, ' · '))} · generated ${new Date().toISOString()} with layerbit.co.in/tools/text-diff-checker.html</div>${body}</body></html>`;
       download('diff-report.html', html, 'text/html');
@@ -874,14 +943,20 @@
       const cell = v => E.esc(v == null ? '' : String(v));
       $('resultTitle').textContent = `Row comparison${r.keyName ? ' keyed by ' + r.keyName : ' by row order'}`;
       $('diffStats').innerHTML = `<span class="st-add">+${r.added.length} rows</span><span class="st-del">−${r.removed.length} rows</span><span class="st-mod">~${r.changed.length} changed</span><span>${r.unchanged} unchanged</span>${r.colsAdded.length ? `<span class="st-add">columns added: ${E.esc(r.colsAdded.join(', '))}</span>` : ''}${r.colsRemoved.length ? `<span class="st-del">columns removed: ${E.esc(r.colsRemoved.join(', '))}</span>` : ''}`;
+      // Each section is a table whose body is a virtual list of <tbody> blocks.
       let html = '';
       if (r.duplicates && r.duplicates.length) html += `<div class="diff-notes" role="status"><i data-lucide="alert-triangle"></i><div><strong>Duplicate key${r.duplicates.length === 1 ? '' : 's'} in ${E.esc(r.keyName)}:</strong> rows that share a key are paired in file order, and any extra ones are listed as added or removed.<ul>${r.duplicates.slice(0, 50).map(d => `<li>${E.esc(d.key)}: ${d.a} in the original, ${d.b} in the modified file</li>`).join('')}${r.duplicates.length > 50 ? `<li>and ${r.duplicates.length - 50} more</li>` : ''}</ul></div></div>`;
-      if (r.changed.length) html += `<h3 class="t-h">Changed rows</h3><table class="data-table"><thead><tr>${r.keyName ? '' : '<th>#</th>'}${r.columns.map(c => `<th${c === r.keyName ? ' class="t-path"' : ''}>${cell(c)}</th>`).join('')}</tr></thead><tbody>` +
-        r.changed.map(x => `<tr>${r.keyName ? '' : `<td class="t-path">${cell(x.key)}</td>`}${r.columns.map(c => { const ch = x.cells.find(k => k.col === c); return ch ? `<td><span class="cell-old">${cell(ch.old) || '∅'}</span> <span class="cell-new">${cell(ch.new) || '∅'}</span></td>` : `<td class="muted">${cell(x.row[c])}</td>`; }).join('')}</tr>`).join('') + '</tbody></table>';
-      if (r.added.length) html += `<h3 class="t-h t-added">Added rows</h3><table class="data-table"><thead><tr>${r.keyName ? '' : '<th>#</th>'}${r.columns.map(c => `<th${c === r.keyName ? ' class="t-path"' : ''}>${cell(c)}</th>`).join('')}</tr></thead><tbody>` + r.added.map(x => `<tr>${r.keyName ? '' : `<td class="t-path">${cell(x.key)}</td>`}${r.columns.map(c => `<td class="cell-new">${cell(x.row[c])}</td>`).join('')}</tr>`).join('') + '</tbody></table>';
-      if (r.removed.length) html += `<h3 class="t-h t-removed">Removed rows</h3><table class="data-table"><thead><tr>${r.keyName ? '' : '<th>#</th>'}${r.columns.map(c => `<th${c === r.keyName ? ' class="t-path"' : ''}>${cell(c)}</th>`).join('')}</tr></thead><tbody>` + r.removed.map(x => `<tr>${r.keyName ? '' : `<td class="t-path">${cell(x.key)}</td>`}${r.columns.map(c => `<td class="cell-old">${cell(x.row[c])}</td>`).join('')}</tr>`).join('') + '</tbody></table>';
-      if (!html) html = '<div class="diff-identical"><i data-lucide="check-circle-2"></i> Every row matches cell for cell.</div>';
+      const head = `<thead><tr>${r.keyName ? '' : '<th>#</th>'}${r.columns.map(c => `<th${r.keys.includes(c) ? ' class="t-path"' : ''}>${cell(c)}</th>`).join('')}</tr></thead>`;
+      const sections = [];
+      if (r.changed.length) sections.push(['Changed rows', '', r.changed, x => `<tr>${r.keyName ? '' : `<td class="t-path">${cell(x.key)}</td>`}${r.columns.map(c => { const ch = x.cells.find(k => k.col === c); return ch ? `<td><span class="cell-old">${cell(ch.old) || '∅'}</span> <span class="cell-new">${cell(ch.new) || '∅'}</span></td>` : `<td class="muted">${cell(x.row[c])}</td>`; }).join('')}</tr>`]);
+      if (r.added.length) sections.push(['Added rows', ' t-added', r.added, x => `<tr>${r.keyName ? '' : `<td class="t-path">${cell(x.key)}</td>`}${r.columns.map(c => `<td class="cell-new">${cell(x.row[c])}</td>`).join('')}</tr>`]);
+      if (r.removed.length) sections.push(['Removed rows', ' t-removed', r.removed, x => `<tr>${r.keyName ? '' : `<td class="t-path">${cell(x.key)}</td>`}${r.columns.map(c => `<td class="cell-old">${cell(x.row[c])}</td>`).join('')}</tr>`]);
+      sections.forEach(([title, cls], i) => { html += `<h3 class="t-h${cls}">${title}</h3><table class="data-table" id="tsec${i}">${head}</table>`; });
+      if (!sections.length && !(r.duplicates && r.duplicates.length)) html = '<div class="diff-identical"><i data-lucide="check-circle-2"></i> Every row matches cell for cell.</div>';
       $('tablePanel').innerHTML = html;
+      const ncols = r.columns.length + (r.keyName ? 0 : 1);
+      sections.forEach(([, , list, row], i) => mountList('table' + i, $('tsec' + i), list.length, k => row(list[k]), { root: $('tablePanel'), blockTag: 'tbody', rowHeight: 37, spacer: h => `<tr class="vspacer"><td colspan="${ncols}" style="height:${h}px;padding:0;border:0"></td></tr>` }));
+      window._tableSections = sections;
       last = null; three = null;
       $('outputSection').style.display = 'grid'; $('mergedSection').style.display = 'none';
       showPanel('tablePanel'); icons();
@@ -984,7 +1059,9 @@
       const c = { added: 0, removed: 0, modified: 0, same: 0 }; rows.forEach(r => c[r.s]++);
       $('resultTitle').textContent = `${zips.a.name} vs ${zips.b.name}`;
       $('diffStats').innerHTML = `<span class="st-add">+${c.added} added</span><span class="st-del">−${c.removed} removed</span><span class="st-mod">~${c.modified} modified</span><span>${c.same} identical</span>`;
-      $('zipPanel').innerHTML = `<table class="data-table zip-table"><thead><tr><th>File</th><th>Status</th><th>Size</th><th></th></tr></thead><tbody>` + rows.map((r, i) => `<tr class="z-${r.s}"><td class="t-path">${E.esc(r.n)}</td><td class="t-${r.s === 'modified' ? 'changed' : r.s}">${r.s}${r.s === 'modified' ? ` (${Layerbit.fmtBytes(r.da)} → ${Layerbit.fmtBytes(r.db)})` : ''}</td><td class="muted">${Layerbit.fmtBytes(r.size)}</td><td>${r.s === 'modified' ? `<button type="button" class="btn" onclick="zipOpen(${i})"><i data-lucide="file-diff"></i> Diff</button>` : r.s !== 'same' ? `<button type="button" class="btn" onclick="zipView(${i})"><i data-lucide="eye"></i> View</button>` : ''}</td></tr>`).join('') + '</tbody></table>';
+      $('zipPanel').innerHTML = '<table class="data-table zip-table" id="zipTable"><thead><tr><th>File</th><th>Status</th><th>Size</th><th></th></tr></thead></table>';
+      const zipRow = i => { const r = rows[i]; return `<tr class="z-${r.s}"><td class="t-path">${E.esc(r.n)}</td><td class="t-${r.s === 'modified' ? 'changed' : r.s}">${r.s}${r.s === 'modified' ? ` (${Layerbit.fmtBytes(r.da)} → ${Layerbit.fmtBytes(r.db)})` : ''}</td><td class="muted">${Layerbit.fmtBytes(r.size)}</td><td>${r.s === 'modified' ? `<button type="button" class="btn" onclick="zipOpen(${i})"><i data-lucide="file-diff"></i> Diff</button>` : r.s !== 'same' ? `<button type="button" class="btn" onclick="zipView(${i})"><i data-lucide="eye"></i> View</button>` : ''}</td></tr>`; };
+      mountList('zip', $('zipTable'), rows.length, zipRow, { root: $('zipPanel'), blockTag: 'tbody', rowHeight: 45, onFill: icons, spacer: h => `<tr class="vspacer"><td colspan="4" style="height:${h}px;padding:0;border:0"></td></tr>` });
       window._zipRows = rows;
       last = null; three = null;
       $('outputSection').style.display = 'grid'; $('mergedSection').style.display = 'none';

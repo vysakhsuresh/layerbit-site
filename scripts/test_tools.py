@@ -2289,6 +2289,55 @@ def _(t):
     expect("use-cases-grid" in parent, "Text Case Converter card is not a direct child of the grid: " + parent)
 
 
+@case("text-diff-checker", "typical", "bug 20: clicking a fold opens only that fold")
+def _(t):
+    a = "\n".join(f"l{i}" for i in range(60)); b = a.replace("l20\n", "X\n").replace("l45\n", "Y\n")
+    t.set("text1", a); t.set("text2", b); t.select("contextLines", "3")
+    t.call("run()"); t.wait(150)
+    eq(t.count("#splitPanel .diff-skip"), 3, "folds")
+    t.click("#splitPanel .diff-skip >> nth=1"); t.wait(150)
+    eq(t.count("#splitPanel .diff-skip"), 2, "one click expanded more than one fold")
+    eq(t.val("contextLines"), "3", "the context setting was changed")
+    t.select("contextLines", "all")
+
+
+@case("text-diff-checker", "maximal", "bug 20: a 100,000-line comparison renders only the rows on screen")
+def _(t):
+    t.call("""() => { const a = Array.from({length: 100000}, (_, i) => 'line ' + i);
+      const b = a.slice(); b[50000] = 'changed'; document.getElementById('text1').value = a.join('\\n'); document.getElementById('text2').value = b.join('\\n'); run(); }""")
+    t.wait_for("() => document.getElementById('diffStats').innerText.includes('1 change block')", 30000)
+    t.wait(300)
+    nodes = t.call("document.querySelectorAll('#splitPanel *').length")
+    expect(nodes < 20000, f"{nodes} DOM nodes for a 100k-line diff")
+    t.call("(() => { const p = document.getElementById('splitPanel'); p.scrollTop = p.scrollHeight; })()"); t.wait(400)
+    t.call("(() => { const p = document.getElementById('splitPanel'); p.scrollTop = p.scrollHeight; })()"); t.wait(400)
+    expect("line 99999" in t.text("splitPanel"), "last rows not rendered after scrolling to the end")
+    t.call("navDiff(1)"); t.wait(300)
+    expect("changed" in t.text("splitPanel"), "navigating to the change did not render it")
+
+
+@case("text-diff-checker", "maximal", "bug 20: 20,000 changed table rows and 5,000 zip entries render virtually")
+def _(t):
+    t.call("""() => { setMode('table');
+      document.getElementById('text1').value = 'id,v\\n' + Array.from({length: 20000}, (_, i) => i + ',a' + i).join('\\n');
+      document.getElementById('text2').value = 'id,v\\n' + Array.from({length: 20000}, (_, i) => i + ',b' + i).join('\\n');
+      refreshKeyColumns(); run(); }""")
+    t.wait_for("() => document.getElementById('diffStats').innerText.includes('20000 changed')", 30000)
+    t.wait(300)
+    rows = t.count("#tablePanel tbody tr")
+    expect(rows < 3000, f"{rows} table rows in the DOM for 20,000 changes")
+    t.call("(() => { const p = document.getElementById('tablePanel'); p.scrollTop = p.scrollHeight; })()"); t.wait(400)
+    t.call("(() => { const p = document.getElementById('tablePanel'); p.scrollTop = p.scrollHeight; })()"); t.wait(400)
+    expect("b19999" in t.text("tablePanel"), "last changed row not rendered after scrolling")
+    t.call("() => {" + DIFF_ZIP_JS + """
+      setMode('zip'); const files = n => Array.from({length: 5000}, (_, i) => ['f' + String(i).padStart(5, '0') + '.txt', 'x' + i + n]);
+      loadZip('a', _mkzip(files(''), 'a.zip')); loadZip('b', _mkzip(files('!'), 'b.zip')); }""")
+    t.wait_for("() => document.getElementById('diffStats').innerText.includes('5000 modified')", 30000)
+    t.wait(300)
+    zr = t.count("#zipPanel tbody tr")
+    expect(zr < 2000, f"{zr} folder rows in the DOM for 5,000 files")
+
+
 @case("text-diff-checker", "typical", "audit: ignore-whitespace/case and highlight options re-run the diff live")
 def _(t):
     t.set("text1", "Hello  World\nsecond line\n")

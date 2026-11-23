@@ -339,3 +339,16 @@ t('bug 17: by row order, an inserted row is one added row, not 50,000 changes', 
   assert.strictEqual(r2.changed.length, 1); assert.deepStrictEqual(r2.changed[0].cells, [{ col: 'a', old: '2', new: 'two' }]);
   assert.strictEqual(r2.changed[0].key, 'row 2');
 });
+
+// ---- v4: bug 20, expanding one fold
+t('bug 20: foldContext can keep chosen folds open', () => {
+  const a = Array.from({ length: 60 }, (_, i) => 'l' + i), b = a.slice(); b[20] = 'X'; b[45] = 'Y';
+  const rows = D.lineDiff(a.join('\n'), b.join('\n')).rows;
+  const folded = D.foldContext(rows, 2);
+  const skips = folded.filter(r => r.type === 'skip');
+  assert.strictEqual(skips.length, 3);
+  const open1 = D.foldContext(rows, 2, [skips[1].from]);
+  assert.strictEqual(open1.filter(r => r.type === 'skip').length, 2);
+  assert.deepStrictEqual(open1.filter(r => r.type === 'skip').map(r => r.from), [skips[0].from, skips[2].from]);
+  assert.strictEqual(open1.length, folded.length - 1 + skips[1].count);
+});

@@ -278,16 +278,18 @@
     return out;
   }
 
-  /** Collapse unchanged runs longer than 2*context+1 into {type:'skip', count, from} rows. */
-  function foldContext(rows, context) {
+  /** Collapse unchanged runs longer than 2*context+1 into {type:'skip', count, from} rows.
+   *  keepOpen lists the `from` of folds the visitor has expanded. */
+  function foldContext(rows, context, keepOpen) {
     if (context == null || context < 0) return rows;
+    var open = {}; (keepOpen || []).forEach(function (f) { open[f] = true; });
     var out = [], i = 0;
     while (i < rows.length) {
       var same = function (r) { return r.type === 'eq' || r.type === 'blank'; };
       if (!same(rows[i])) { out.push(rows[i]); i++; continue; }
       var j = i; while (j < rows.length && same(rows[j])) j++;
       var run = j - i, head = i === 0 ? 0 : context, tail = j === rows.length ? 0 : context;
-      if (run > head + tail + 1) {
+      if (run > head + tail + 1 && !open[i + head]) {
         for (var k = 0; k < head; k++) out.push(rows[i + k]);
         out.push({ type: 'skip', count: run - head - tail, from: i + head, to: j - tail });
         for (var k2 = j - tail; k2 < j; k2++) out.push(rows[k2]);
