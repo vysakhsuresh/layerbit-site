@@ -506,6 +506,13 @@
     .btn.ghost { background: transparent; border-color: transparent; opacity: 0.6; }
     .ignore-input { width: 260px; }
     .mini-btn { padding: 3px 8px; font-size: 0.8em; }
+    .sheet-tabs { display: flex; flex-wrap: wrap; gap: 6px; padding: 6px 12px 10px; border-bottom: 1px solid var(--card-border); margin-bottom: 6px; }
+    .sheet-tab { border: 1px solid var(--card-border); background: rgba(255,255,255,0.03); color: var(--text-muted); border-radius: 8px; padding: 5px 10px; font: 500 0.84em 'Space Grotesk', sans-serif; cursor: pointer; }
+    .sheet-tab.active { color: #fff; border-color: rgba(56,189,248,0.6); background: rgba(56,189,248,0.1); }
+    .sheet-tab .sc { display: inline-block; min-width: 18px; margin-left: 4px; padding: 0 5px; border-radius: 999px; background: rgba(255,255,255,0.08); font-size: 0.85em; text-align: center; }
+    .sheet-tab .sc.has { background: rgba(251,191,36,0.2); color: #fbbf24; }
+    .linkish { background: none; border: 0; padding: 0; color: var(--accent-main); cursor: pointer; font: inherit; text-decoration: underline; }
+    #sheetValuesLabel[hidden] { display: none; }
 
   </style>
 </head>
@@ -678,6 +685,9 @@
       </label>
     </div>
     <div class="opt-group mode-only" data-for="table" style="display:none;">
+      <label class="toggle-label" id="sheetValuesLabel" hidden title="Displayed: the text Excel shows (formats such as 0.00 or dates applied). Raw: the stored values.">Spreadsheet values
+        <select id="sheetValues" class="mini-select"><option value="displayed" selected>as displayed</option><option value="raw">raw values</option></select>
+      </label>
       <label class="toggle-label">Match rows by
         <select id="keyCol" class="mini-select"><option value="-1">row order</option></select>
       </label>
@@ -1058,7 +1068,7 @@
   <script src="../js/kernel.js?v=40b2047872"></script>
 
   <script src="../js/shared.js?v=e2441a1728"></script>
-  <script src="../js/engines/diff.js?v=a897b06841"></script>
+  <script src="../js/engines/diff.js?v=f744a70394"></script>
 
   <script>
     // ------------------------------------------------------------ state
@@ -1112,7 +1122,7 @@
 
     function loadFileInto(id, file, nameKey) {
       if (!file) return;
-      if (/\.xlsx?$/i.test(file.name)) { loadWorkbook(id, file); if (nameKey) names[nameKey] = file.name; return; }
+      if (/\.(xlsx|xlsm|xls|ods)$/i.test(file.name)) { loadWorkbook(id, file); if (nameKey) names[nameKey] = file.name; return; }
       file.arrayBuffer().then(buf => {
         const bytes = new Uint8Array(buf), d = E.decodeBytes(bytes);
         sideInfo[id] = { name: file.name, bytes, encoding: d.encoding, bom: d.bom, raw: d.text };
@@ -1141,19 +1151,40 @@
       if (files[1] && target === 'text1') loadFileInto('text2', files[1], 'b');
     });
 
-    // Excel: SheetJS is loaded only when an .xlsx is actually opened (900 KB).
-    function loadWorkbook(id, file) {
-      const go = () => file.arrayBuffer().then(buf => {
-        const wb = XLSX.read(buf, { type: 'array' });
-        const ws = wb.Sheets[wb.SheetNames[0]];
-        $(id).value = XLSX.utils.sheet_to_csv(ws);
-        $(id).dispatchEvent(new Event('input'));
-        if (mode !== 'table') setMode('table'); else refreshKeyColumns();
-        Layerbit.toast(`Loaded sheet "${wb.SheetNames[0]}" from ${file.name}`);
-      });
-      if (window.XLSX) return go();
-      const s = document.createElement('script'); s.src = '../js/vendor/xlsx.full.min.js'; s.onload = go; s.onerror = () => showError('Could not load the spreadsheet reader.'); document.head.appendChild(s);
+    // Spreadsheets: SheetJS (900 KB) loads only when one is opened. Every
+    // sheet is read; text cells stay text, so leading zeros and long digit
+    // strings are never turned into numbers.
+    const books = {};
+    function loadXlsx() {
+      if (window.XLSX) return Promise.resolve();
+      return new Promise((res, rej) => { const s = document.createElement('script'); s.src = '../js/vendor/xlsx.full.min.js'; s.onload = res; s.onerror = () => rej(new Error('Could not load the spreadsheet reader.')); document.head.appendChild(s); });
     }
+    function sheetRows(wb, name, displayed) {
+      const ws = wb.Sheets[name]; if (!ws || !ws['!ref']) return [];
+      return XLSX.utils.sheet_to_json(ws, { header: 1, raw: !displayed, defval: '', blankrows: false })
+        .map(r => r.map(v => v == null ? '' : typeof v === 'string' ? v : typeof v === 'boolean' ? (v ? 'TRUE' : 'FALSE') : v instanceof Date ? v.toISOString() : String(v)));
+    }
+    const rowsToCsv = rows => rows.map(r => E.csvLine(r)).join('');
+    const displayedValues = () => $('sheetValues').value !== 'raw';
+    function loadWorkbookBytes(id, bytes, name) {
+      return loadXlsx().then(() => {
+        const wb = XLSX.read(bytes, { type: 'array', cellNF: true, cellText: true });
+        const csv = rowsToCsv(sheetRows(wb, wb.SheetNames[0], displayedValues()));
+        books[id] = { name, wb, csv };
+        $(id).value = csv; delete sideInfo[id];
+        $(id).dispatchEvent(new Event('input')); updateMeta();
+        if (mode !== 'table') setMode('table'); else refreshKeyColumns();
+        $('sheetValuesLabel').hidden = false;
+        Layerbit.toast(`Loaded ${wb.SheetNames.length} sheet${wb.SheetNames.length === 1 ? '' : 's'} from ${name}`);
+      }).catch(e => showError(`${name}: ${e.message}`));
+    }
+    function loadWorkbook(id, file) { return file.arrayBuffer().then(b => loadWorkbookBytes(id, new Uint8Array(b), file.name)); }
+    const bookActive = () => !!(books.text1 && books.text2 && normNl(books.text1.csv) === $('text1').value && normNl(books.text2.csv) === $('text2').value);
+    // a spreadsheet opened from a folder comparison
+    window.openSheets = (a, b, nameA, nameB) => {
+      setMode('table');
+      return Promise.all([a ? loadWorkbookBytes('text1', a, nameA) : null, b ? loadWorkbookBytes('text2', b, nameB) : null]).then(() => { names = { a: nameA, b: nameB }; run(); });
+    };
 
     function swapInputs() { const t = $('text1').value; $('text1').value = $('text2').value; $('text2').value = t; const n = names.a; names.a = names.b; names.b = n; updateMeta(); if ($('outputSection').style.display !== 'none') run(true); }
     function clearInputs() {
@@ -1162,6 +1193,7 @@
       // would then fire no change event
       document.querySelectorAll('input[type="file"]').forEach(i => { i.value = ''; });
       ['text1', 'text2', 'baseText', 'oursText', 'theirsText', 'patchOriginal', 'patchText', 'mergedText'].forEach(id => $(id).value = '');
+      delete books.text1; delete books.text2; sheetView = null; $('sheetValuesLabel').hidden = true;
       names = { a: 'original', b: 'modified' }; folders = { a: null, b: null }; folderView = null; folderReturn = false; $('btnBackFolder').hidden = true;
       $('zipAInfo').innerHTML = $('zipBInfo').innerHTML = '<i data-lucide="folder-input"></i><span>Drop a folder or a .zip here</span>';
       $('outputSection').style.display = 'none'; $('mergedSection').style.display = 'none'; updateMeta(); Layerbit.state.clear(); icons();
@@ -1610,13 +1642,62 @@
     $('keyCol').addEventListener('change', () => { keyUserChoice = $('keyCol').value; });
     let keyTimer = null;
     ['text1', 'text2'].forEach(id => $(id).addEventListener('input', () => { if (mode !== 'table') return; clearTimeout(keyTimer); keyTimer = setTimeout(refreshKeyColumns, 150); }));
+    let sheetView = null;
+    function autoKey(ha, hb) { const k = ha.find(h => hb.includes(h) && /^(id|_id|key|sku|code|email|uuid|guid|ref|no\.?|number)$/i.test(String(h).trim())); return k ? [k] : []; }
+    function runBooks() {
+      const disp = displayedValues(), A = books.text1.wb, B = books.text2.wb;
+      const SA = A.SheetNames.map(n => ({ name: n, rows: sheetRows(A, n, disp) })), SB = B.SheetNames.map(n => ({ name: n, rows: sheetRows(B, n, disp) }));
+      const P = E.pairSheets(SA, SB), prev = sheetView;
+      const results = P.pairs.map(p => {
+        const ra = SA.find(x => x.name === p.a).rows, rb = SB.find(x => x.name === p.b).rows;
+        const ha = E.uniqueHeaders(ra[0] || []), hb = E.uniqueHeaders(rb[0] || []);
+        const chosen = prev && prev.keys[p.a];
+        const keys = chosen != null ? (chosen === '-1' ? [] : ha.includes(chosen) && hb.includes(chosen) ? [chosen] : autoKey(ha, hb)) : autoKey(ha, hb);
+        let r; try { r = E.tableDiff(ra.length ? ra : [[]], rb.length ? rb : [[]], { keys }); } catch (e) { r = E.tableDiff(ra.length ? ra : [[]], rb.length ? rb : [[]], { keys: [] }); }
+        return { pair: p, r, header: ha, keys };
+      });
+      sheetView = { P, results, current: prev && prev.current != null && prev.current < results.length ? prev.current : -1, keys: prev ? prev.keys : {}, disp };
+      renderBooks();
+    }
+    function renderBooks() {
+      const V = sheetView, n = r => r.changed.length + r.added.length + r.removed.length;
+      const total = V.results.reduce((t, x) => t + n(x.r), 0) + V.P.added.length + V.P.removed.length;
+      const tabs = `<div class="sheet-tabs" role="tablist"><button type="button" class="sheet-tab${V.current < 0 ? ' active' : ''}" data-sheet="-1">All sheets <span class="sc">${total}</span></button>` +
+        V.results.map((x, i) => `<button type="button" class="sheet-tab${V.current === i ? ' active' : ''}" data-sheet="${i}">${E.esc(x.pair.a)}${x.pair.renamed ? ` → ${E.esc(x.pair.b)}` : ''} <span class="sc${n(x.r) ? ' has' : ''}">${n(x.r)}</span></button>`).join('') + '</div>';
+      $('resultTitle').textContent = `${books.text1.name} vs ${books.text2.name}`;
+      if (V.current < 0) {
+        $('diffStats').innerHTML = `<span>${V.results.length} sheet${V.results.length === 1 ? '' : 's'} compared</span>${V.P.added.length ? `<span class="st-add">+${V.P.added.length} sheet${V.P.added.length === 1 ? '' : 's'} added</span>` : ''}${V.P.removed.length ? `<span class="st-del">−${V.P.removed.length} sheet${V.P.removed.length === 1 ? '' : 's'} removed</span>` : ''}<span>${V.disp ? 'displayed values' : 'raw values'}</span>`;
+        const rows = V.results.map((x, i) => `<tr><td class="t-path"><button type="button" class="linkish" data-sheet="${i}">${E.esc(x.pair.a)}</button>${x.pair.renamed ? ` <span class="t-changed">renamed to ${E.esc(x.pair.b)}?</span>` : ''}</td><td>${x.keys.length ? 'by ' + E.esc(x.keys.join(' + ')) : 'by row order'}</td><td class="t-changed">${x.r.changed.length}</td><td class="t-added">${x.r.added.length}</td><td class="t-removed">${x.r.removed.length}</td><td>${E.esc([x.r.colsAdded.length ? '+' + x.r.colsAdded.join(', ') : '', x.r.colsRemoved.length ? '−' + x.r.colsRemoved.join(', ') : ''].filter(Boolean).join(' '))}${x.r.duplicates.length ? ` <span class="t-duplicate">${x.r.duplicates.length} duplicate key${x.r.duplicates.length === 1 ? '' : 's'}</span>` : ''}</td></tr>`).join('');
+        $('tablePanel').innerHTML = tabs + `<table class="data-table"><thead><tr><th>Sheet</th><th>Rows matched</th><th>Changed</th><th>Added</th><th>Removed</th><th>Columns</th></tr></thead><tbody>${rows}</tbody></table>` +
+          (V.P.added.length ? `<p class="t-h t-added">Sheets added: ${V.P.added.map(E.esc).join(', ')}</p>` : '') + (V.P.removed.length ? `<p class="t-h t-removed">Sheets removed: ${V.P.removed.map(E.esc).join(', ')}</p>` : '');
+        last = null; three = null; $('outputSection').style.display = 'grid'; $('mergedSection').style.display = 'none'; showPanel('tablePanel'); icons();
+        return;
+      }
+      const x = V.results[V.current];
+      const sel = $('keyCol'); sel.innerHTML = '<option value="-1">row order</option>' + x.header.map(h => `<option value="${E.esc(h)}">${E.esc(h)}</option>`).join('');
+      sel.value = x.keys.length ? x.keys[0] : '-1';
+      renderTableResult(x.r, tabs, `Sheet ${x.pair.a}${x.pair.renamed ? ' → ' + x.pair.b : ''}: rows ${x.keys.length ? 'keyed by ' + x.keys.join(' + ') : 'by row order'}`);
+    }
+    $('tablePanel').addEventListener('click', e => { const b = e.target.closest('[data-sheet]'); if (b && sheetView) { sheetView.current = +b.dataset.sheet; renderBooks(); } });
+    $('sheetValues').addEventListener('change', () => { if (mode === 'table' && bookActive()) run(true); });
     function runTable() {
+      if (bookActive()) {
+        // the key picker applies to the sheet on show
+        if (sheetView && sheetView.current >= 0 && keyUserChoice != null) sheetView.keys[sheetView.results[sheetView.current].pair.a] = keyUserChoice;
+        return runBooks();
+      }
+      sheetView = null;
       const A = E.parseCsv($('text1').value), B = E.parseCsv($('text2').value);
       if (!A.length || !B.length) { showError('Both sides need at least a header row.'); return; }
       const key = $('keyCol').value;
       const r = E.tableDiff(A, B, { keys: key === '-1' ? [] : [key] });
+      renderTableResult(r, '', `Row comparison${r.keyName ? ' keyed by ' + r.keyName : ' by row order'}`);
+      remember(`rows: +${r.added.length} −${r.removed.length} ~${r.changed.length}`);
+    }
+    function renderTableResult(r, prefix, title) {
       const cell = v => E.esc(v == null ? '' : String(v));
-      $('resultTitle').textContent = `Row comparison${r.keyName ? ' keyed by ' + r.keyName : ' by row order'}`;
+      window._lastTable = r;
+      $('resultTitle').textContent = title;
       $('diffStats').innerHTML = `<span class="st-add">+${r.added.length} rows</span><span class="st-del">−${r.removed.length} rows</span><span class="st-mod">~${r.changed.length} changed</span><span>${r.unchanged} unchanged</span>${r.colsAdded.length ? `<span class="st-add">columns added: ${E.esc(r.colsAdded.join(', '))}</span>` : ''}${r.colsRemoved.length ? `<span class="st-del">columns removed: ${E.esc(r.colsRemoved.join(', '))}</span>` : ''}`;
       // Each section is a table whose body is a virtual list of <tbody> blocks.
       let html = '';
@@ -1628,14 +1709,13 @@
       if (r.removed.length) sections.push(['Removed rows', ' t-removed', r.removed, x => `<tr>${r.keyName ? '' : `<td class="t-path">${cell(x.key)}</td>`}${r.columns.map(c => `<td class="cell-old">${cell(x.row[c])}</td>`).join('')}</tr>`]);
       sections.forEach(([title, cls], i) => { html += `<h3 class="t-h${cls}">${title}</h3><table class="data-table" id="tsec${i}">${head}</table>`; });
       if (!sections.length && !(r.duplicates && r.duplicates.length)) html = '<div class="diff-identical"><i data-lucide="check-circle-2"></i> Every row matches cell for cell.</div>';
-      $('tablePanel').innerHTML = html;
+      $('tablePanel').innerHTML = prefix + html;
       const ncols = r.columns.length + (r.keyName ? 0 : 1);
       sections.forEach(([, , list, row], i) => mountList('table' + i, $('tsec' + i), list.length, k => row(list[k]), { root: $('tablePanel'), blockTag: 'tbody', rowHeight: 37, spacer: h => `<tr class="vspacer"><td colspan="${ncols}" style="height:${h}px;padding:0;border:0"></td></tr>` }));
       window._tableSections = sections;
       last = null; three = null;
       $('outputSection').style.display = 'grid'; $('mergedSection').style.display = 'none';
       showPanel('tablePanel'); icons();
-      remember(`rows: +${r.added.length} −${r.removed.length} ~${r.changed.length}`);
     }
 
     // ---- patch

@@ -2415,6 +2415,35 @@ def _(t):
     expect(t.count("#zipPanel tbody tr") < 2000, f"{t.count('#zipPanel tbody tr')} rows in the DOM")
 
 
+DIFF_BOOK_JS = """async () => { await loadXlsx();
+  const mk = (sheets, name) => { const wb = XLSX.utils.book_new();
+    for (const [sn, aoa] of sheets) { const ws = XLSX.utils.aoa_to_sheet(aoa); if (ws.C2) ws.C2.z = '0.00'; XLSX.utils.book_append_sheet(wb, ws, sn); }
+    return new File([XLSX.write(wb, { type: 'array', bookType: 'xlsx' })], name); };
+  window._bookA = mk([['Orders', [['id', 'qty', 'price', 'ref'], ['007', 5, 1.5, '12345678901234567890']]], ['Customers', [['id', 'name'], [1, 'Ann']]], ['Old', [['x'], [1]]]], 'a.xlsx');
+  window._bookB = mk([['Orders', [['id', 'qty', 'price', 'ref'], ['007', 6, 1.5, '12345678901234567890']]], ['Clients', [['id', 'name'], [1, 'Ann']]], ['New', [['z'], [9]]]], 'b.xlsx');
+  loadFileInto('text1', _bookA, 'a'); loadFileInto('text2', _bookB, 'b'); }"""
+
+
+@case("text-diff-checker", "typical", "feature 22: every sheet is compared, with tabs, a summary and renamed sheets")
+def _(t):
+    t.call(DIFF_BOOK_JS)
+    t.wait_for("() => document.getElementById('text2').value.includes('007') && document.getElementById('text1').value.includes('007')", 15000)
+    t.call("run()")
+    t.wait_for("() => document.querySelector('#tablePanel .sheet-tabs')", 8000)
+    tabs = t.call("[...document.querySelectorAll('#tablePanel .sheet-tab')].map(b => b.innerText.replace(/\\s+/g, ' ').trim())")
+    expect(tabs[0].startswith("All sheets") and any(x.startswith("Orders") and "1" in x for x in tabs) and any("Customers" in x and "Clients" in x for x in tabs), str(tabs))
+    summary = t.text("tablePanel")
+    expect("Old" in summary and "removed" in summary.lower() and "New" in summary and "added" in summary.lower(), summary[:500])
+    t.click("#tablePanel .sheet-tab[data-sheet='0']"); t.wait(200)
+    out = t.text("tablePanel")
+    expect("007" in out and "12345678901234567890" in out, "leading zeros or long numbers were changed: " + out[:400])
+    expect("1.50" in out, "displayed value missing: " + out[:400])
+    t.select("sheetValues", "raw"); t.wait(300)
+    out = t.text("tablePanel")
+    expect("1.5" in out and "1.50" not in out and "007" in out, "raw values: " + out[:400])
+    t.select("sheetValues", "displayed")
+
+
 @case("text-diff-checker", "typical", "audit: ignore-whitespace/case and highlight options re-run the diff live")
 def _(t):
     t.set("text1", "Hello  World\nsecond line\n")

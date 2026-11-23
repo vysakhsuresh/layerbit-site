@@ -403,3 +403,15 @@ t('feature 21: zip entries carry their modified time', () => {
   const date = (46 << 9) | (11 << 5) | 23, time = (10 << 11) | (30 << 5) | 10;
   assert.strictEqual(D.dosTime(date, time), new Date(2026, 10, 23, 10, 30, 20).getTime());
 });
+
+// ---- v4 feature 22: workbook sheets
+t('feature 22: sheets pair by name; renamed-looking, added and removed are listed', () => {
+  const S = (name, rows) => ({ name, rows });
+  const A = [S('Orders', [['id', 'qty'], ['1', '5']]), S('Customers', [['id', 'name'], ['1', 'Ann']]), S('Old', [['x'], ['1']]), S('Notes', [['n'], ['hi']])];
+  const B = [S('Orders', [['id', 'qty'], ['1', '6']]), S('Clients', [['id', 'name'], ['1', 'Ann']]), S('Notes', [['n'], ['hi']]), S('Extra', [['z'], ['9']])];
+  const p = D.pairSheets(A, B);
+  assert.deepStrictEqual(p.pairs.map(x => [x.a, x.b, !!x.renamed]), [['Orders', 'Orders', false], ['Customers', 'Clients', true], ['Notes', 'Notes', false]]);
+  assert.deepStrictEqual(p.removed, ['Old']); assert.deepStrictEqual(p.added, ['Extra']);
+  // a sheet with different headers is not called a rename
+  assert.deepStrictEqual(D.pairSheets([S('A', [['p', 'q']])], [S('B', [['r', 's']])]), { pairs: [], added: ['B'], removed: ['A'] });
+});

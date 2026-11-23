@@ -804,6 +804,27 @@
     return { columns: cols, colsAdded: colsAdded, colsRemoved: colsRemoved, added: added, removed: removed, changed: changed, unchanged: unchanged, keyName: o.keys.length ? o.keys.join(' + ') : null, keys: o.keys, duplicates: o.keys.length ? duplicates : [] };
   }
 
+  // ------------------------------------------------------------- workbooks
+  /** Pairs the sheets of two workbooks ([{name, rows}]): by name first, then
+   *  unmatched sheets whose content is identical or whose header row is
+   *  mostly the same are reported as renamed-looking pairs. */
+  function pairSheets(A, B) {
+    var pairs = [], usedA = {}, usedB = {};
+    A.forEach(function (sa) { var sb = B.find(function (x) { return x.name === sa.name; }); if (sb) { pairs.push({ a: sa.name, b: sb.name }); usedA[sa.name] = usedB[sb.name] = 1; } });
+    var sig = function (s) { return JSON.stringify(s.rows); };
+    var head = function (s) { return (s.rows[0] || []).map(function (h) { return String(h).trim().toLowerCase(); }).filter(Boolean); };
+    var likeness = function (x, y) { var hx = head(x), hy = head(y); if (!hx.length || !hy.length) return 0; var inter = hx.filter(function (h) { return hy.indexOf(h) >= 0; }).length; return inter / Math.max(hx.length, hy.length); };
+    A.forEach(function (sa) {
+      if (usedA[sa.name]) return;
+      var best = null, score = 0;
+      B.forEach(function (sb) { if (usedB[sb.name]) return; var v = sig(sa) === sig(sb) ? 2 : likeness(sa, sb); if (v > score) { score = v; best = sb; } });
+      if (best && score >= 0.6) { pairs.push({ a: sa.name, b: best.name, renamed: true }); usedA[sa.name] = usedB[best.name] = 1; }
+    });
+    var order = A.map(function (s) { return s.name; });
+    pairs.sort(function (x, y) { return order.indexOf(x.a) - order.indexOf(y.a); });
+    return { pairs: pairs, added: B.filter(function (s) { return !usedB[s.name]; }).map(function (s) { return s.name; }), removed: A.filter(function (s) { return !usedA[s.name]; }).map(function (s) { return s.name; }) };
+  }
+
   // ----------------------------------------------------------------- folders
   var DEFAULT_IGNORE = ['.git', 'node_modules', 'bin', 'obj', '.vs', '*.log', '.DS_Store', 'Thumbs.db'];
   function globRe(g) { return new RegExp('^' + g.replace(/[.+^${}()|[\]\\]/g, '\\$&').replace(/\*\*/g, '\u0001').replace(/\*/g, '[^/]*').replace(/\?/g, '[^/]').replace(/\u0001/g, '.*') + '$', 'i'); }
@@ -970,5 +991,5 @@
 
   return { lineDiff: lineDiff, foldContext: foldContext, intraline: intraline, tokenize: tokenize, detectLang: detectLang, renderLine: renderLine, esc: esc,
     unifiedPatch: unifiedPatch, applyPatch: applyPatch, parsePatchFiles: parsePatchFiles, applyPatchFile: applyPatchFile, diff3: diff3, structuralDiff: structuralDiff, canonicalJson: canonicalJson, canon: canon,
-    parseCsv: parseCsv, detectDelimiter: detectDelimiter, tableDiff: tableDiff, readZip: readZip, isProbablyText: isProbablyText, decodeBytes: decodeBytes, bytesEqual: bytesEqual, stripCommonRoot: stripCommonRoot, uniqueHeaders: uniqueHeaders, DEFAULT_IGNORE: DEFAULT_IGNORE, compileIgnore: compileIgnore, folderDiff: folderDiff, buildTree: buildTree, flattenTree: flattenTree, folderCsv: folderCsv, csvLine: csvLine, dosTime: dosTime, textFacts: textFacts, textNotes: textNotes, parseJsonLossless: parseJsonLossless, stringifyLossless: stringifyLossless, canonicalNumber: canonicalNumber, splitLines: splitLines, normalizeLine: normalizeLine, DEFAULT_OPTS: DEFAULT_OPTS };
+    parseCsv: parseCsv, detectDelimiter: detectDelimiter, tableDiff: tableDiff, readZip: readZip, isProbablyText: isProbablyText, decodeBytes: decodeBytes, bytesEqual: bytesEqual, stripCommonRoot: stripCommonRoot, uniqueHeaders: uniqueHeaders, pairSheets: pairSheets, DEFAULT_IGNORE: DEFAULT_IGNORE, compileIgnore: compileIgnore, folderDiff: folderDiff, buildTree: buildTree, flattenTree: flattenTree, folderCsv: folderCsv, csvLine: csvLine, dosTime: dosTime, textFacts: textFacts, textNotes: textNotes, parseJsonLossless: parseJsonLossless, stringifyLossless: stringifyLossless, canonicalNumber: canonicalNumber, splitLines: splitLines, normalizeLine: normalizeLine, DEFAULT_OPTS: DEFAULT_OPTS };
 });
