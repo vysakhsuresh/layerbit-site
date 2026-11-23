@@ -957,7 +957,13 @@
     })(root, 0);
     return out;
   }
-  function csvCell(v) { v = v == null ? '' : String(v); return /[",\r\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v; }
+  // A cell that a spreadsheet would run as a formula (=, +, -, @ followed by
+  // something that is not a plain number) gets a leading apostrophe.
+  function csvCell(v) {
+    v = v == null ? '' : String(v);
+    if (/^[=@\t\r]/.test(v) || (/^[+-]/.test(v) && !/^[+-]?(\d[\d,]*)?(\.\d+)?([eE][+-]?\d+)?$/.test(v))) v = "'" + v;
+    return /[",\r\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v;
+  }
   function csvLine(cells) { return cells.map(csvCell).join(',') + '\r\n'; }
   function isoTime(t) { return t ? new Date(t).toISOString() : ''; }
   /** Folder comparison report as CSV, starting with the options and date. */
@@ -968,6 +974,158 @@
     rows.forEach(function (r) { out += csvLine([r.path, r.status === 'same' ? 'identical' : r.status, r.a ? r.a.size : '', r.b ? r.b.size : '', r.a ? isoTime(r.a.mtime) : '', r.b ? isoTime(r.b.mtime) : '']); });
     return out;
   }
+  /* ---- exports: every report starts with what was compared, the options and the date ---- */
+  function reportHead(title, m) {
+    m = m || {};
+    return csvLine(['Report', title]) + csvLine(['Generated', m.generated || new Date().toISOString()]) + csvLine(['Left', m.left || '']) + csvLine(['Right', m.right || '']) + csvLine(['Options', m.options || '']) + '\r\n';
+  }
+  /** Table result as rows with an original/modified pair per column. marks[i]
+   *  is 'changed' | 'added' | 'removed' for the cells to highlight. */
+  function tableRows(r) {
+    var cols = r.columns, header = ['Status', 'Key'], rows = [];
+    cols.forEach(function (c) { header.push(c + ' (original)', c + ' (modified)'); });
+    header.push('Changed columns');
+    function val(row, c) { var v = row ? row[c] : ''; return v == null ? '' : v; }
+    r.changed.forEach(function (x) {
+      var by = {}, cells = ['changed', x.key], marks = [null, null];
+      x.cells.forEach(function (k) { by[k.col] = k; });
+      cols.forEach(function (c) { var k = by[c]; cells.push(k ? k.old : val(x.row, c), k ? k.new : val(x.row, c)); marks.push(k ? 'changed' : null, k ? 'changed' : null); });
+      cells.push(x.cells.map(function (k) { return k.col; }).join(', ')); marks.push(null);
+      rows.push({ status: 'changed', cells: cells, marks: marks });
+    });
+    r.added.forEach(function (x) { var cells = ['added', x.key], marks = ['added', null]; cols.forEach(function (c) { cells.push('', val(x.row, c)); marks.push(null, 'added'); }); cells.push(''); rows.push({ status: 'added', cells: cells, marks: marks }); });
+    r.removed.forEach(function (x) { var cells = ['removed', x.key], marks = ['removed', null]; cols.forEach(function (c) { cells.push(val(x.row, c), ''); marks.push('removed', null); }); cells.push(''); rows.push({ status: 'removed', cells: cells, marks: marks }); });
+    return { header: header, rows: rows };
+  }
+  function tableCsv(r, meta) {
+    var t = tableRows(r), out = reportHead('Layerbit table comparison', meta) + csvLine(t.header);
+    t.rows.forEach(function (x) { out += csvLine(x.cells); });
+    return out;
+  }
+  function structChange(x) { return x.type === 'type' ? 'type ' + x.oldType + ' → ' + x.newType : x.type === 'duplicate' ? 'duplicate key: ' + x.countA + ' in original, ' + x.countB + ' in modified' : x.type; }
+  function structCsv(d, meta) {
+    var out = reportHead('Layerbit structure comparison', meta) + csvLine(['Path', 'Change', 'Original', 'Modified']);
+    d.forEach(function (x) { out += csvLine([x.path, structChange(x), x.old === undefined ? '' : stringifyLossless(x.old), x.new === undefined ? '' : stringifyLossless(x.new)]); });
+    return out;
+  }
+  function structJson(d, meta) {
+    var m = meta || {}, o = { report: 'Layerbit structure comparison', generated: m.generated || new Date().toISOString(), left: m.left || '', right: m.right || '', options: m.options || '', changes: d.map(function (x) {
+      var c = { path: x.path, change: structChange(x) };
+      if (x.old !== undefined) c.original = x.old;
+      if (x.new !== undefined) c.modified = x.new;
+      return c;
+    }) };
+    return stringifyLossless(o, '  ') + '\n';
+  }
+  function hexBytes(u8, max) { var out = []; for (var i = 0; i < Math.min(u8.length, max); i++) out.push((u8[i] < 16 ? '0' : '') + u8[i].toString(16).toUpperCase()); return out.join(' ') + (u8.length > max ? ' …' : ''); }
+  /** rows: [{start, end, a, b}] with up to 32 bytes of each side. */
+  function hexRangesCsv(rows, m) {
+    m = m || {};
+    var size = Math.max(m.leftSize || 0, m.rightSize || 0);
+    var out = csvLine(['Report', 'Layerbit byte comparison']) + csvLine(['Generated', m.generated || new Date().toISOString()]) +
+      csvLine(['Left', (m.left || '') + ' (' + (m.leftSize || 0) + ' bytes)']) + csvLine(['Right', (m.right || '') + ' (' + (m.rightSize || 0) + ' bytes)']) +
+      csvLine(['Options', 'byte-by-byte; bytes past the end of the shorter file count as different']) + csvLine(['Differing bytes', m.differing || 0]) +
+      csvLine(['Ranges', rows.length + (m.truncated ? ' (first ' + rows.length + ' listed)' : '')]) + '\r\n' +
+      csvLine(['Start (hex)', 'Start', 'Last byte (hex)', 'Length', 'Left bytes', 'Right bytes']);
+    rows.forEach(function (r) { out += csvLine(['0x' + hexOffset(r.start, size), r.start, '0x' + hexOffset(r.end - 1, size), r.end - r.start, hexBytes(r.a, 32), hexBytes(r.b, 32)]); });
+    return out;
+  }
+
+  /* ---- a small .xlsx writer: inline strings (text stays text), a few fills ---- */
+  var CRC_T = null;
+  function crc32(u8) {
+    if (!CRC_T) { CRC_T = new Uint32Array(256); for (var n = 0; n < 256; n++) { var c = n; for (var k = 0; k < 8; k++) c = c & 1 ? 0xEDB88320 ^ (c >>> 1) : c >>> 1; CRC_T[n] = c >>> 0; } }
+    var crc = 0xFFFFFFFF; for (var i = 0; i < u8.length; i++) crc = CRC_T[(crc ^ u8[i]) & 255] ^ (crc >>> 8);
+    return (crc ^ 0xFFFFFFFF) >>> 0;
+  }
+  /** files: [{name, data: Uint8Array | string}] -> a stored (uncompressed) zip. */
+  function zipStore(files) {
+    var enc = new TextEncoder(), parts = [], central = [], off = 0, now = new Date();
+    var dt = ((now.getFullYear() - 1980) << 9) | ((now.getMonth() + 1) << 5) | now.getDate(), tm = (now.getHours() << 11) | (now.getMinutes() << 5) | (now.getSeconds() >> 1);
+    files.forEach(function (f) {
+      var name = enc.encode(f.name), data = typeof f.data === 'string' ? enc.encode(f.data) : f.data, crc = crc32(data);
+      var lh = new DataView(new ArrayBuffer(30));
+      lh.setUint32(0, 0x04034b50, true); lh.setUint16(4, 20, true); lh.setUint16(6, 0x0800, true); lh.setUint16(10, tm, true); lh.setUint16(12, dt, true);
+      lh.setUint32(14, crc, true); lh.setUint32(18, data.length, true); lh.setUint32(22, data.length, true); lh.setUint16(26, name.length, true);
+      var ch = new DataView(new ArrayBuffer(46));
+      ch.setUint32(0, 0x02014b50, true); ch.setUint16(4, 20, true); ch.setUint16(6, 20, true); ch.setUint16(8, 0x0800, true); ch.setUint16(12, tm, true); ch.setUint16(14, dt, true);
+      ch.setUint32(16, crc, true); ch.setUint32(20, data.length, true); ch.setUint32(24, data.length, true); ch.setUint16(28, name.length, true); ch.setUint32(42, off, true);
+      parts.push(new Uint8Array(lh.buffer), name, data); central.push(new Uint8Array(ch.buffer), name);
+      off += 30 + name.length + data.length;
+    });
+    var cdSize = central.reduce(function (t, p) { return t + p.length; }, 0), end = new DataView(new ArrayBuffer(22));
+    end.setUint32(0, 0x06054b50, true); end.setUint16(8, files.length, true); end.setUint16(10, files.length, true); end.setUint32(12, cdSize, true); end.setUint32(16, off, true);
+    var all = parts.concat(central, [new Uint8Array(end.buffer)]), out = new Uint8Array(off + cdSize + 22), p = 0;
+    all.forEach(function (x) { out.set(x, p); p += x.length; });
+    return out;
+  }
+  var XLSX_STYLE = { head: 1, changed: 2, added: 3, removed: 4, meta: 5 };
+  function xmlText(v) {
+    return String(v).replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\uFFFE\uFFFF]/g, function (c) { var h = c.charCodeAt(0).toString(16).toUpperCase(); return '_x' + '0000'.slice(h.length) + h + '_'; })
+      .replace(/[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(^|[^\uD800-\uDBFF])[\uDC00-\uDFFF]/g, function (m, pre) { return (pre || '') + '\uFFFD'; })
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+  function colName(i) { var s = ''; i++; while (i > 0) { var m = (i - 1) % 26; s = String.fromCharCode(65 + m) + s; i = Math.floor((i - 1) / 26); } return s; }
+  /** sheets: [{name, rows: [[cell]]}], a cell being a string, a number, null,
+   *  or {v, s} with s one of head | changed | added | removed | meta. */
+  function xlsxBuild(sheets) {
+    var used = {}, names = sheets.map(function (sh) {
+      var n = String(sh.name || 'Sheet').replace(/[\[\]:*?\/\\]/g, '').replace(/^'+|'+$/g, '').trim().slice(0, 31) || 'Sheet', base = n, i = 2;
+      while (used[n.toLowerCase()]) { var suf = ' (' + i++ + ')'; n = base.slice(0, 31 - suf.length) + suf; }
+      used[n.toLowerCase()] = true; return n;
+    });
+    var files = [], ct = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>';
+    var wb = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets>';
+    var rels = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">';
+    sheets.forEach(function (sh, k) {
+      var widths = [], xml = '';
+      (sh.rows || []).forEach(function (row, ri) {
+        xml += '<row r="' + (ri + 1) + '">';
+        row.forEach(function (cell, ci) {
+          var o = cell != null && typeof cell === 'object' ? cell : { v: cell }, v = o.v, st = XLSX_STYLE[o.s] || 0, ref = colName(ci) + (ri + 1), sa = st ? ' s="' + st + '"' : '';
+          if (v == null || v === '') { if (st) xml += '<c r="' + ref + '"' + sa + '/>'; return; }
+          if (typeof v === 'number' && isFinite(v)) xml += '<c r="' + ref + '"' + sa + '><v>' + v + '</v></c>';
+          else { var t = String(v); if (t.length > 32767) t = t.slice(0, 32760) + ' […]'; xml += '<c r="' + ref + '" t="inlineStr"' + sa + '><is><t xml:space="preserve">' + xmlText(t) + '</t></is></c>'; }
+          widths[ci] = Math.max(widths[ci] || 8, Math.min(60, String(v).length + 2));
+        });
+        xml += '</row>';
+      });
+      var cols = widths.length ? '<cols>' + widths.map(function (w, i) { return '<col min="' + (i + 1) + '" max="' + (i + 1) + '" width="' + (w || 8) + '" customWidth="1"/>'; }).join('') + '</cols>' : '';
+      var pane = sh.freeze ? '<sheetViews><sheetView workbookViewId="0"><pane ySplit="' + sh.freeze + '" topLeftCell="A' + (sh.freeze + 1) + '" activePane="bottomLeft" state="frozen"/></sheetView></sheetViews>' : '';
+      files.push({ name: 'xl/worksheets/sheet' + (k + 1) + '.xml', data: '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">' + pane + cols + '<sheetData>' + xml + '</sheetData></worksheet>' });
+      ct += '<Override PartName="/xl/worksheets/sheet' + (k + 1) + '.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>';
+      wb += '<sheet name="' + xmlText(names[k]) + '" sheetId="' + (k + 1) + '" r:id="rId' + (k + 1) + '"/>';
+      rels += '<Relationship Id="rId' + (k + 1) + '" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet' + (k + 1) + '.xml"/>';
+    });
+    rels += '<Relationship Id="rId' + (sheets.length + 1) + '" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>';
+    var fill = function (rgb) { return '<fill><patternFill patternType="solid"><fgColor rgb="' + rgb + '"/><bgColor indexed="64"/></patternFill></fill>'; };
+    var styles = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">' +
+      '<fonts count="2"><font><sz val="11"/><name val="Calibri"/></font><font><b/><sz val="11"/><name val="Calibri"/></font></fonts>' +
+      '<fills count="5"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill>' + fill('FFFDE68A') + fill('FFBBF7D0') + fill('FFFECACA') + '</fills>' +
+      '<borders count="1"><border><left/><right/><top/><bottom/><diagonal/></border></borders><cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs>' +
+      '<cellXfs count="6"><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/><xf numFmtId="0" fontId="1" fillId="0" borderId="0" xfId="0" applyFont="1"/><xf numFmtId="0" fontId="0" fillId="2" borderId="0" xfId="0" applyFill="1"/><xf numFmtId="0" fontId="0" fillId="3" borderId="0" xfId="0" applyFill="1"/><xf numFmtId="0" fontId="0" fillId="4" borderId="0" xfId="0" applyFill="1"/><xf numFmtId="0" fontId="1" fillId="0" borderId="0" xfId="0" applyFont="1"/></cellXfs>' +
+      '<cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles></styleSheet>';
+    return zipStore([
+      { name: '[Content_Types].xml', data: ct + '</Types>' },
+      { name: '_rels/.rels', data: '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>' },
+      { name: 'xl/workbook.xml', data: wb + '</sheets></workbook>' },
+      { name: 'xl/_rels/workbook.xml.rels', data: rels },
+      { name: 'xl/styles.xml', data: styles }
+    ].concat(files));
+  }
+  /** A table result as workbook rows: the options first, then the
+   *  differences with changed cells yellow, added green, removed red. */
+  function tableSheetRows(r) {
+    var t = tableRows(r), rows = [t.header.map(function (h) { return { v: h, s: 'head' }; })];
+    t.rows.forEach(function (x) { rows.push(x.cells.map(function (c, i) { return x.marks[i] ? { v: c, s: x.marks[i] } : c; })); });
+    return rows;
+  }
+  function aboutRows(title, m) {
+    m = m || {};
+    return [[{ v: 'Report', s: 'meta' }, title], [{ v: 'Generated', s: 'meta' }, m.generated || new Date().toISOString()], [{ v: 'Left', s: 'meta' }, m.left || ''], [{ v: 'Right', s: 'meta' }, m.right || ''], [{ v: 'Options', s: 'meta' }, m.options || ''], [],
+      [{ v: 'Colours', s: 'meta' }, { v: 'changed cell', s: 'changed' }, { v: 'added row', s: 'added' }, { v: 'removed row', s: 'removed' }]];
+  }
+
   /** MS-DOS date and time fields (zip headers) to a local timestamp. */
   function dosTime(date, time) { return new Date(((date >> 9) & 127) + 1980, ((date >> 5) & 15) - 1, date & 31, (time >> 11) & 31, (time >> 5) & 63, (time & 31) * 2).getTime(); }
 
@@ -1139,5 +1297,5 @@
 
   return { lineDiff: lineDiff, foldContext: foldContext, intraline: intraline, tokenize: tokenize, detectLang: detectLang, renderLine: renderLine, esc: esc,
     unifiedPatch: unifiedPatch, applyPatch: applyPatch, parsePatchFiles: parsePatchFiles, applyPatchFile: applyPatchFile, diff3: diff3, structuralDiff: structuralDiff, canonicalJson: canonicalJson, canon: canon,
-    parseCsv: parseCsv, detectDelimiter: detectDelimiter, tableDiff: tableDiff, readZip: readZip, isProbablyText: isProbablyText, decodeBytes: decodeBytes, bytesEqual: bytesEqual, stripCommonRoot: stripCommonRoot, uniqueHeaders: uniqueHeaders, pairSheets: pairSheets, normaliseDate: normaliseDate, cellEq: cellEq, DEFAULT_IGNORE: DEFAULT_IGNORE, compileIgnore: compileIgnore, folderDiff: folderDiff, buildTree: buildTree, flattenTree: flattenTree, folderCsv: folderCsv, csvLine: csvLine, dosTime: dosTime, textFacts: textFacts, textNotes: textNotes, parseJsonLossless: parseJsonLossless, stringifyLossless: stringifyLossless, canonicalNumber: canonicalNumber, splitLines: splitLines, byteRanges: byteRanges, parseOffset: parseOffset, hexOffset: hexOffset, asciiByte: asciiByte, imageFormat: imageFormat, pixelDiff: pixelDiff, normalizeLine: normalizeLine, DEFAULT_OPTS: DEFAULT_OPTS };
+    parseCsv: parseCsv, detectDelimiter: detectDelimiter, tableDiff: tableDiff, readZip: readZip, isProbablyText: isProbablyText, decodeBytes: decodeBytes, bytesEqual: bytesEqual, stripCommonRoot: stripCommonRoot, uniqueHeaders: uniqueHeaders, pairSheets: pairSheets, normaliseDate: normaliseDate, cellEq: cellEq, DEFAULT_IGNORE: DEFAULT_IGNORE, compileIgnore: compileIgnore, folderDiff: folderDiff, buildTree: buildTree, flattenTree: flattenTree, folderCsv: folderCsv, csvLine: csvLine, dosTime: dosTime, textFacts: textFacts, textNotes: textNotes, parseJsonLossless: parseJsonLossless, stringifyLossless: stringifyLossless, canonicalNumber: canonicalNumber, splitLines: splitLines, byteRanges: byteRanges, parseOffset: parseOffset, hexOffset: hexOffset, asciiByte: asciiByte, imageFormat: imageFormat, pixelDiff: pixelDiff, tableRows: tableRows, tableCsv: tableCsv, structCsv: structCsv, structJson: structJson, hexRangesCsv: hexRangesCsv, crc32: crc32, zipStore: zipStore, xlsxBuild: xlsxBuild, tableSheetRows: tableSheetRows, aboutRows: aboutRows, normalizeLine: normalizeLine, DEFAULT_OPTS: DEFAULT_OPTS };
 });

@@ -260,7 +260,10 @@
             <button class="btn mode-only" data-for="text three struct table patch zip" type="button" id="btnPatch" onclick="copyPatch()" title="Copy a unified diff (git apply / patch -p0 compatible)"><i data-lucide="copy"></i> Copy patch</button>
             <button class="btn mode-only" data-for="text three struct table patch zip" type="button" id="btnPatchDl" onclick="downloadPatch()" title="Download as .patch"><i data-lucide="download"></i> .patch</button>
             <button class="btn" type="button" id="btnReport" onclick="downloadReport()" title="Download a standalone HTML report of this comparison"><i data-lucide="file-code-2"></i> HTML report</button>
-            <button class="btn mode-only" data-for="zip table struct" type="button" id="btnCsv" onclick="downloadCsv()" title="Download the differences as CSV"><i data-lucide="file-spreadsheet"></i> CSV</button>
+            <button class="btn mode-only" data-for="zip table struct hex" type="button" id="btnCsv" onclick="downloadCsv()" title="Download the differences as CSV, with the options and date at the top"><i data-lucide="file-spreadsheet"></i> CSV</button>
+            <button class="btn mode-only" data-for="table" type="button" id="btnXlsx" onclick="exportXlsx()" title="Download an Excel workbook: changed cells yellow, added rows green, removed rows red"><i data-lucide="sheet"></i> .xlsx</button>
+            <button class="btn mode-only" data-for="struct" type="button" id="btnJson" onclick="exportJson()" title="Download the path changes as JSON"><i data-lucide="braces"></i> JSON</button>
+            <button class="btn mode-only" data-for="image" type="button" id="btnDiffPng" onclick="exportDiffPng()" title="Download the difference image as PNG"><i data-lucide="image"></i> Difference PNG</button>
             <button class="btn" type="button" id="btnBackFolder" onclick="backToFolder()" hidden><i data-lucide="folder-tree"></i> Back to folder</button>
           </span>
         </div>
@@ -998,7 +1001,16 @@
     // Options line stated in every export, so a report is an honest record.
     function optionsSummary() {
       if (mode === 'zip') return `Compared by ${$('folderBy').selectedOptions[0].textContent}; ignored: ${ignoreList().join(', ') || 'nothing'}`;
-      if (mode === 'table') return `Rows matched by ${$('keyCol').selectedOptions[0] ? $('keyCol').selectedOptions[0].textContent : 'row order'}`;
+      if (mode === 'table') {
+        const o = tableOpts(), k = $('keyCol').value === '-1' ? [] : chosenKeys(), on = [];
+        if (o.trim) on.push('trim spaces'); if (o.ignoreCase) on.push('ignore case'); if (o.emptyNull) on.push('empty = NULL'); if (o.numeric) on.push('numbers by value');
+        if (o.dates) on.push(`dates in any format (${o.dayFirst ? 'day' : 'month'} first)`); if (o.tolAbs) on.push(`tolerance ±${o.tolAbs}`); if (o.tolPct) on.push(`tolerance ±${o.tolPct}%`);
+        if (o.ignore.length) on.push('ignored columns: ' + o.ignore.join(', '));
+        if (bookActive()) on.push(displayedValues() ? 'spreadsheet values as displayed' : 'raw spreadsheet values');
+        return `Rows matched by ${k.length ? k.join(' + ') : 'row order'}${on.length ? '; ' + on.join('; ') : ''}`;
+      }
+      if (mode === 'hex') return 'Byte-by-byte comparison; bytes past the end of the shorter file count as different';
+      if (mode === 'image') { const S = imgState; return `Pixel tolerance ${$('imgTol').value} (per colour channel, 0-255); images aligned at the top-left corner${S && S.scale < 1 ? `; compared on a copy scaled to ${S.cw} × ${S.ch}` : ''}`; }
       if (mode === 'struct') return `Arrays compared ${$('arrMode').selectedOptions[0].textContent}${$('arrMode').value === 'key' ? ' (' + $('keyField').value + ')' : ''}`;
       const o = opts(), on = ['ignoreWhitespace', 'ignoreCase', 'trimTrailing', 'ignoreBlank'].filter(k => o[k]).map(k => ({ ignoreWhitespace: 'ignore whitespace', ignoreCase: 'ignore case', trimTrailing: 'trim trailing whitespace', ignoreBlank: 'ignore blank lines' }[k]));
       return `Options: ${on.length ? on.join(', ') : 'exact comparison'}; highlight ${o.granularity}`;
@@ -1010,13 +1022,16 @@
     function downloadCsv() {
       const stamp = new Date().toISOString();
       if (mode === 'zip' && folderView) { download('folder-comparison.csv', E.folderCsv(folderView.rows, { by: $('folderBy').selectedOptions[0].textContent, ignore: ignoreList(), generated: stamp, left: folders.a.name, right: folders.b.name }), 'text/csv'); return; }
-      if (window.exportCsv) return exportCsv(stamp);
+      if (mode === 'table' || mode === 'struct' || mode === 'hex') return exportCsv(stamp);
       Layerbit.toast('Run a comparison first');
     }
     function downloadReport() {
-      const panel = $('outputSection').querySelector('.result-pane');
-      const body = mode === 'zip' ? folderReportHtml() : mode === 'text' || mode === 'patch' ? fullTextHtml() : mode === 'struct' ? $('structPanel').outerHTML : mode === 'table' ? $('tablePanel').outerHTML : $('threePanel').outerHTML;
-      const css = `body{font-family:system-ui,sans-serif;background:#0a0c10;color:#f8fafc;margin:0;padding:24px}h1{font-size:1.2em}.meta{color:#94a3b8;font-size:.9em;margin-bottom:16px}.drow{display:grid;grid-template-columns:1fr 1fr}.sd-l{border-right:1px solid #222}.dside{min-width:0}.diff-output{font-family:ui-monospace,Menlo,monospace;font-size:12px;line-height:1.5;background:rgba(0,0,0,.4);border:1px solid #222;border-radius:8px;overflow:auto;max-height:none}.diff-line{display:flex}.diff-num{width:48px;flex-shrink:0;text-align:right;padding-right:8px;color:#94a3b8;border-right:1px solid #222;user-select:none}.unified .diff-num{width:80px;display:flex}.unified .diff-num span{flex:1}.diff-text{padding-left:8px;white-space:pre-wrap;word-break:break-all;flex:1}.line-removed{background:rgba(239,68,68,.15)}.line-added{background:rgba(34,197,94,.15)}.word-removed{background:rgba(239,68,68,.45);text-decoration:line-through}.word-added{background:rgba(34,197,94,.45)}.hunk-bar,.hunk-bar-spacer,.hunk-anchor{display:none}.diff-skip{color:#94a3b8;padding:4px 12px;background:rgba(255,255,255,.03)}.tk-kw{color:#38bdf8}.tk-str{color:#a7f3d0}.tk-num{color:#fdba74}.tk-cmt{color:#64748b;font-style:italic}.tk-key{color:#c084fc}.tk-tag{color:#f472b6}.tk-attr{color:#fdba74}.tk-fn{color:#f472b6}.tk-prop{color:#38bdf8}table{border-collapse:collapse;width:100%;font-size:.9em}th,td{text-align:left;padding:6px 10px;border-bottom:1px solid #222;vertical-align:top;font-family:ui-monospace,monospace}th{color:#38bdf8}.t-added{color:#4ade80}.t-removed{color:#f87171}.t-changed{color:#fbbf24}.t-type{color:#c084fc}.cell-old{color:#f87171;text-decoration:line-through}.cell-new{color:#4ade80}.three-chunk{border-left:3px solid #333;padding:4px 10px;margin:4px 0;white-space:pre-wrap;font-family:ui-monospace,monospace;font-size:12px}.three-chunk.conflict{border-color:#ef4444}.three-chunk.ours{border-color:#f87171}.three-chunk.theirs{border-color:#4ade80}.three-chunk .cb{display:none}.ws{opacity:.4}`;
+      if (mode === 'hex') { if (!hex) { Layerbit.toast('Run a comparison first'); return; } hexRangeRows(1000).then(rows => saveReport(hexReportHtml(rows))); return; }
+      if (mode === 'image') { if (!imgState) { Layerbit.toast('Run a comparison first'); return; } saveReport(imageReportHtml()); return; }
+      saveReport(mode === 'zip' ? folderReportHtml() : mode === 'text' || mode === 'patch' ? fullTextHtml() : mode === 'struct' ? $('structPanel').outerHTML : mode === 'table' ? $('tablePanel').outerHTML : $('threePanel').outerHTML);
+    }
+    function saveReport(body) {
+      const css = `body{font-family:system-ui,sans-serif;background:#0a0c10;color:#f8fafc;margin:0;padding:24px}h1{font-size:1.2em}.meta{color:#94a3b8;font-size:.9em;margin-bottom:16px}.drow{display:grid;grid-template-columns:1fr 1fr}.sd-l{border-right:1px solid #222}.dside{min-width:0}.diff-output{font-family:ui-monospace,Menlo,monospace;font-size:12px;line-height:1.5;background:rgba(0,0,0,.4);border:1px solid #222;border-radius:8px;overflow:auto;max-height:none}.diff-line{display:flex}.diff-num{width:48px;flex-shrink:0;text-align:right;padding-right:8px;color:#94a3b8;border-right:1px solid #222;user-select:none}.unified .diff-num{width:80px;display:flex}.unified .diff-num span{flex:1}.diff-text{padding-left:8px;white-space:pre-wrap;word-break:break-all;flex:1}.line-removed{background:rgba(239,68,68,.15)}.line-added{background:rgba(34,197,94,.15)}.word-removed{background:rgba(239,68,68,.45);text-decoration:line-through}.word-added{background:rgba(34,197,94,.45)}.hunk-bar,.hunk-bar-spacer,.hunk-anchor{display:none}.diff-skip{color:#94a3b8;padding:4px 12px;background:rgba(255,255,255,.03)}.tk-kw{color:#38bdf8}.tk-str{color:#a7f3d0}.tk-num{color:#fdba74}.tk-cmt{color:#64748b;font-style:italic}.tk-key{color:#c084fc}.tk-tag{color:#f472b6}.tk-attr{color:#fdba74}.tk-fn{color:#f472b6}.tk-prop{color:#38bdf8}table{border-collapse:collapse;width:100%;font-size:.9em}th,td{text-align:left;padding:6px 10px;border-bottom:1px solid #222;vertical-align:top;font-family:ui-monospace,monospace}th{color:#38bdf8}.t-added{color:#4ade80}.t-removed{color:#f87171}.t-changed{color:#fbbf24}.t-type{color:#c084fc}.cell-old{color:#f87171;text-decoration:line-through}.cell-new{color:#4ade80}.three-chunk{border-left:3px solid #333;padding:4px 10px;margin:4px 0;white-space:pre-wrap;font-family:ui-monospace,monospace;font-size:12px}.three-chunk.conflict{border-color:#ef4444}.three-chunk.ours{border-color:#f87171}.three-chunk.theirs{border-color:#4ade80}.three-chunk .cb{display:none}.ws{opacity:.4}.img-fig{display:inline-block;margin:0 12px 12px 0;vertical-align:top;max-width:100%}.img-fig img{max-width:100%;image-rendering:pixelated;background:#222;border:1px solid #333}.img-fig figcaption{color:#94a3b8;font-size:.85em}.mono{font-family:ui-monospace,monospace}.table-tools,.struct-foot,.cb{display:none}.linkish{background:none;border:0;color:inherit;font:inherit;padding:0}`;
       const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Layerbit diff report</title><style>${css}</style></head><body><h1>Comparison report</h1><div class="meta">${E.esc($('resultTitle').textContent)} · ${E.esc($('diffStats').innerText.replace(/\n/g, ' · '))}<br>${E.esc(optionsSummary())}<br>Generated ${new Date().toISOString()} with layerbit.co.in/tools/text-diff-checker.html</div>${body}</body></html>`;
       download('diff-report.html', html, 'text/html');
     }
@@ -1091,7 +1106,7 @@
           `<div class="struct-foot"><button type="button" class="btn" onclick="structAsText()"><i data-lucide="file-diff"></i> Show as normalised text diff</button><span class="muted">Both documents re-serialised with sorted keys and 2-space indentation, then compared line by line.</span></div>`
           : '<div class="diff-identical"><i data-lucide="check-circle-2"></i> Semantically identical: same keys, same values. Formatting and key order may differ.</div>';
         if (longNum) $('structPanel').insertAdjacentHTML('afterbegin', '<div class="diff-notes" role="status"><i data-lucide="alert-triangle"></i><div><strong>Check long numbers by eye:</strong> YAML numbers with more than 15 digits are read as floating point, so two that differ only in their last digits can compare as equal. JSON input is compared digit for digit.</div></div>');
-        last = null; three = null; window._structDocs = [a, b];
+        last = null; three = null; window._structDocs = [a, b]; window._structDiff = d;
         $('outputSection').style.display = 'grid'; $('mergedSection').style.display = 'none';
         showPanel('structPanel'); icons();
         if (wasExplicit && $('saveHistory').checked) Layerbit.history.push('text-diff-checker', getState(), `structural: ${d.length} change${d.length === 1 ? '' : 's'}`);
@@ -1366,9 +1381,14 @@
           const files = items.filter(it => it.file), bufs = items.filter(it => !it.file);
           try {
             const big = await new Blob(files.map(it => it.file)).arrayBuffer(); let off = 0;
-            for (const it of files) { out.push([it.k, hex(await crypto.subtle.digest('SHA-256', new Uint8Array(big, off, it.file.size)))]); off += it.file.size; }
+            // all of a batch's digests are started together: awaiting each in
+            // turn costs a thread round trip per file
+            const views = files.map(it => { const v = new Uint8Array(big, off, it.file.size); off += it.file.size; return v; });
+            const sums = await Promise.all(views.map(v => crypto.subtle.digest('SHA-256', v)));
+            files.forEach((it, i) => out.push([it.k, hex(sums[i])]));
           } catch (err) { for (const it of files) { try { out.push([it.k, hex(await crypto.subtle.digest('SHA-256', await it.file.arrayBuffer()))]); } catch (e2) { out.push([it.k, 'unreadable:' + it.k]); } } }
-          for (const it of bufs) out.push([it.k, hex(await crypto.subtle.digest('SHA-256', it.buf))]);
+          const bsums = await Promise.all(bufs.map(it => crypto.subtle.digest('SHA-256', it.buf)));
+          bufs.forEach((it, i) => out.push([it.k, hex(bsums[i])]));
           postMessage({ id, out }); };`], { type: 'text/javascript' })));
       const job = ++hashJob, w = hashWorker, t0 = Date.now();
       $('outputSection').style.display = 'grid';
@@ -1796,6 +1816,85 @@
     $('imgStage').addEventListener('pointerdown', e => { if ($('imgView').value !== 'slider') return; imgDrag = true; try { $('imgStage').setPointerCapture(e.pointerId); } catch (x) { /* synthetic events */ } imgDragTo(e); e.preventDefault(); });
     $('imgStage').addEventListener('pointermove', e => { if (imgDrag) imgDragTo(e); });
     ['pointerup', 'pointercancel'].forEach(t => $('imgStage').addEventListener(t, () => { imgDrag = false; }));
+
+
+    // ------------------------------------------------------------ exports
+    // Every export starts with what was compared, the options and the date.
+    function exportMeta(stamp) {
+      const l = mode === 'hex' && hex ? hex.a.name : mode === 'image' && imgState ? imgSrc.a.name : books.text1 ? books.text1.name : names.a;
+      const r = mode === 'hex' && hex ? hex.b.name : mode === 'image' && imgState ? imgSrc.b.name : books.text2 ? books.text2.name : names.b;
+      return { generated: stamp || new Date().toISOString(), left: l, right: r, options: optionsSummary() };
+    }
+    const baseName = (fallback) => { const n = (books.text2 && books.text2.name) || names.b; return n && n !== 'modified' ? n.replace(/\.[^.]+$/, '') + '-diff' : fallback; };
+    function exportCsv(stamp) {
+      const meta = exportMeta(stamp);
+      if (mode === 'struct') { if (!window._structDiff) { Layerbit.toast('Run a comparison first'); return; } download('structure-changes.csv', E.structCsv(window._structDiff, meta), 'text/csv'); return; }
+      if (mode === 'hex') { if (!hex) { Layerbit.toast('Run a comparison first'); return; } Layerbit.toast('Preparing the byte ranges…'); hexRangeRows(5000).then(rows => download('byte-differences.csv', E.hexRangesCsv(rows, hexMeta(meta)), 'text/csv')); return; }
+      if (sheetView && sheetView.current < 0) {
+        // workbook overview: every sheet, one block each
+        let out = E.tableCsv({ columns: [], changed: [], added: [], removed: [] }, Object.assign({}, meta)).replace(/Status,Key,Changed columns\r\n$/, '');
+        out = out.replace('Layerbit table comparison', 'Layerbit workbook comparison');
+        if (sheetView.P.added.length) out += E.csvLine(['Sheets only on the right', sheetView.P.added.join(', ')]);
+        if (sheetView.P.removed.length) out += E.csvLine(['Sheets only on the left', sheetView.P.removed.join(', ')]);
+        sheetView.results.forEach(x => { out += '\r\n' + E.csvLine(['Sheet', x.pair.a + (x.pair.renamed ? ' → ' + x.pair.b : '')]) + E.tableCsv(x.r, meta).split('\r\n\r\n').slice(1).join('\r\n\r\n'); });
+        download(baseName('workbook-diff') + '.csv', out, 'text/csv'); return;
+      }
+      if (!window._lastTable) { Layerbit.toast('Run a comparison first'); return; }
+      download(baseName('table-diff') + '.csv', E.tableCsv(window._lastTable, meta), 'text/csv');
+    }
+    function exportXlsx() {
+      if (mode !== 'table' || (!window._lastTable && !sheetView)) { Layerbit.toast('Run a comparison first'); return; }
+      const meta = exportMeta(), sheets = [];
+      if (sheetView) {
+        const about = E.aboutRows('Layerbit workbook comparison', meta);
+        about.push([], [{ v: 'Sheet', s: 'head' }, { v: 'Compared with', s: 'head' }, { v: 'Changed rows', s: 'head' }, { v: 'Added rows', s: 'head' }, { v: 'Removed rows', s: 'head' }]);
+        sheetView.results.forEach(x => about.push([x.pair.a, x.pair.b, x.r.changed.length, x.r.added.length, x.r.removed.length]));
+        sheetView.P.added.forEach(n => about.push([{ v: n, s: 'added' }, 'only in the right workbook']));
+        sheetView.P.removed.forEach(n => about.push([{ v: n, s: 'removed' }, 'only in the left workbook']));
+        sheets.push({ name: 'About', rows: about });
+        sheetView.results.forEach(x => sheets.push({ name: x.pair.a, rows: E.tableSheetRows(x.r), freeze: 1 }));
+      } else {
+        sheets.push({ name: 'About', rows: E.aboutRows('Layerbit table comparison', meta) }, { name: 'Differences', rows: E.tableSheetRows(window._lastTable), freeze: 1 });
+      }
+      download(baseName(sheetView ? 'workbook-diff' : 'table-diff') + '.xlsx', E.xlsxBuild(sheets), 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    }
+    function exportJson() {
+      if (!window._structDiff) { Layerbit.toast('Run a comparison first'); return; }
+      download('structure-changes.json', E.structJson(window._structDiff, exportMeta()), 'application/json');
+    }
+    function hexMeta(meta) { return Object.assign({}, meta, { left: hex.a.name, right: hex.b.name, leftSize: hex.a.size, rightSize: hex.b.size, differing: hex.diff, truncated: !!hex.ranges.truncated }); }
+    // the first `withBytes` ranges carry up to 32 bytes of each side
+    async function hexRangeRows(withBytes) {
+      const H = hex, out = [];
+      for (let i = 0; i < H.ranges.length; i++) {
+        const [s, e] = H.ranges[i];
+        if (i < withBytes) { const [a, b] = await Promise.all([H.a.read(Math.min(s, H.a.size), Math.min(e, s + 32, H.a.size)), H.b.read(Math.min(s, H.b.size), Math.min(e, s + 32, H.b.size))]); out.push({ start: s, end: e, a: e - s > 32 && a.length === 32 ? withMore(a) : a, b: e - s > 32 && b.length === 32 ? withMore(b) : b }); }
+        else out.push({ start: s, end: e, a: new Uint8Array(0), b: new Uint8Array(0) });
+      }
+      return out;
+    }
+    // a 33-byte view tells the CSV writer there is more than it shows
+    function withMore(u) { const x = new Uint8Array(33); x.set(u); return x; }
+    function hexReportHtml(rows) {
+      const H = hex, hb = u => Array.from(u.subarray(0, 32), c => (c < 16 ? '0' : '') + c.toString(16).toUpperCase()).join(' ') + (u.length > 32 ? ' …' : '');
+      return `<p>${E.esc(H.a.name)}: ${H.a.size.toLocaleString()} bytes · ${E.esc(H.b.name)}: ${H.b.size.toLocaleString()} bytes</p>` +
+        `<table><thead><tr><th>Start</th><th>Last byte</th><th>Length</th><th>Left bytes</th><th>Right bytes</th></tr></thead><tbody>${rows.map(r => `<tr><td>0x${E.hexOffset(r.start, H.size)} (${r.start.toLocaleString()})</td><td>0x${E.hexOffset(r.end - 1, H.size)}</td><td>${(r.end - r.start).toLocaleString()}</td><td class="cell-old">${hb(r.a)}</td><td class="cell-new">${hb(r.b)}</td></tr>`).join('')}</tbody></table>` +
+        (H.ranges.length > rows.length || H.ranges.truncated ? `<p class="meta">First ${rows.length.toLocaleString()} ranges listed.</p>` : '');
+    }
+    // canvases as PNG data URLs, scaled down to 1600 px wide for the report
+    function canvasUrl(c) {
+      if (c.width <= 1600) return c.toDataURL('image/png');
+      const k = 1600 / c.width, t = document.createElement('canvas'); t.width = 1600; t.height = Math.max(1, Math.round(c.height * k));
+      const x = t.getContext('2d'); x.imageSmoothingEnabled = false; x.drawImage(c, 0, 0, t.width, t.height); return t.toDataURL('image/png');
+    }
+    function imageReportHtml() {
+      const S = imgState, fig = (c, cap) => `<figure class="img-fig"><img src="${canvasUrl(c)}" alt="${E.esc(cap)}"><figcaption>${E.esc(cap)}</figcaption></figure>`;
+      return `${$('imgInfo').outerHTML}${$('imgNotes').innerText.trim() ? `<p>${E.esc($('imgNotes').innerText.trim())}</p>` : ''}<div>${fig(S.ca, S.A.name)}${fig(S.cb, S.B.name)}${S.dc ? fig(S.dc, 'Changed pixels in magenta') : ''}</div>`;
+    }
+    function exportDiffPng() {
+      if (!imgState || !imgState.dc) { Layerbit.toast('Run a comparison first'); return; }
+      imgState.dc.toBlob(b => { const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = 'image-difference.png'; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 500); }, 'image/png');
+    }
 
     // ------------------------------------------------------------ share / history state
     function getState() {

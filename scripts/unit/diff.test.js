@@ -522,3 +522,77 @@ t('feature 25: pixelDiff with different dimensions compares the union and counts
   // covered by both: 2x2 same; covered by one only: 4 + 4 = 8 changed; covered by neither: 4, same
   assert.strictEqual(r.changed, 8); assert.strictEqual(r.percent, 50);
 });
+// a stored (uncompressed) zip reader for checking the .xlsx writer
+function unzipStored(u8) {
+  const dv = new DataView(u8.buffer, u8.byteOffset, u8.byteLength), out = {};
+  let eocd = -1; for (let i = u8.length - 22; i >= 0; i--) if (dv.getUint32(i, true) === 0x06054b50) { eocd = i; break; }
+  let p = dv.getUint32(eocd + 16, true); const n = dv.getUint16(eocd + 10, true);
+  for (let k = 0; k < n; k++) {
+    const method = dv.getUint16(p + 10, true), crc = dv.getUint32(p + 16, true), size = dv.getUint32(p + 24, true), nl = dv.getUint16(p + 28, true), el = dv.getUint16(p + 30, true), cl = dv.getUint16(p + 32, true), off = dv.getUint32(p + 42, true);
+    const name = new TextDecoder().decode(u8.subarray(p + 46, p + 46 + nl));
+    const lnl = dv.getUint16(off + 26, true), lel = dv.getUint16(off + 28, true), data = u8.subarray(off + 30 + lnl + lel, off + 30 + lnl + lel + size);
+    out[name] = { method, crc, data, text: new TextDecoder().decode(data) };
+    p += 46 + nl + el + cl;
+  }
+  return out;
+}
+const META = { generated: '2026-11-23T10:00:00.000Z', left: 'old.csv', right: 'new.csv', options: 'Rows matched by id; numbers by value' };
+t('feature 26: tableCsv has the options and date, then old/new column pairs for every row', () => {
+  const r = D.tableDiff([['id', 'name', 'qty'], ['1', 'Pen', '5'], ['2', 'Ink', '1']], [['id', 'name', 'qty'], ['1', 'Pen', '6'], ['3', 'Pad', '2']], { keys: ['id'] });
+  const csv = D.tableCsv(r, META), lines = csv.split('\r\n');
+  assert.deepStrictEqual(lines.slice(0, 5), ['Report,Layerbit table comparison', 'Generated,2026-11-23T10:00:00.000Z', 'Left,old.csv', 'Right,new.csv', 'Options,Rows matched by id; numbers by value']);
+  assert.strictEqual(lines[6], 'Status,Key,id (original),id (modified),name (original),name (modified),qty (original),qty (modified),Changed columns');
+  assert.strictEqual(lines[7], 'changed,1,1,1,Pen,Pen,5,6,qty');
+  assert.strictEqual(lines[8], 'added,3,,3,,Pad,,2,');
+  assert.strictEqual(lines[9], 'removed,2,2,,Ink,,1,,');
+});
+t('feature 26: tableCsv quotes commas, quotes, newlines and keeps leading zeros and formula-like text', () => {
+  const r = D.tableDiff([['id', 'note'], ['007', 'a, "b"\nc']], [['id', 'note'], ['007', '=1+1']], { keys: ['id'] });
+  const csv = D.tableCsv(r, META);
+  assert.ok(csv.includes('changed,007,007,007,"a, ""b""\nc",\'=1+1,note'), csv);
+});
+t('feature 26: structure changes export as CSV and as JSON with exact long numbers', () => {
+  const a = D.parseJsonLossless('{"id": 12345678901234567890, "tags": ["x"], "on": true}'), b = D.parseJsonLossless('{"id": 12345678901234567891, "tags": [], "on": "yes"}');
+  const d = D.structuralDiff(a, b, { arrays: 'index' });
+  const csv = D.structCsv(d, META);
+  assert.ok(csv.startsWith('Report,Layerbit structure comparison\r\nGenerated,2026-11-23T10:00:00.000Z'), csv);
+  assert.ok(csv.includes('Path,Change,Original,Modified\r\n'));
+  assert.ok(csv.includes('$.id,changed,12345678901234567890,12345678901234567891\r\n'), csv);
+  assert.ok(csv.includes('$.on,type boolean → string,true,"""yes"""\r\n'), csv);
+  const j = JSON.parse(D.structJson(d, META).replace(/(\d{16,})/g, '"$1"'));
+  assert.strictEqual(j.report, 'Layerbit structure comparison'); assert.strictEqual(j.generated, META.generated); assert.strictEqual(j.options, META.options);
+  assert.ok(D.structJson(d, META).includes('"original": 12345678901234567890'), 'long number not kept exactly');
+  assert.deepStrictEqual(j.changes.map(c => [c.path, c.change]), [['$.id', 'changed'], ['$.on', 'type boolean → string'], ['$.tags[0]', 'removed']]);
+  assert.strictEqual(j.changes[2].original, 'x'); assert.ok(!('modified' in j.changes[2]), 'a removed value has no modified field');
+});
+t('feature 26: hexRangesCsv lists each differing range with offsets and the bytes on both sides', () => {
+  const csv = D.hexRangesCsv([{ start: 31, end: 32, a: Uint8Array.from([0x1F]), b: Uint8Array.from([0xAA]) }, { start: 1024, end: 1026, a: new Uint8Array(0), b: Uint8Array.from([0x41, 0x42]) }],
+    { generated: META.generated, left: 'a.bin', right: 'b.bin', leftSize: 1024, rightSize: 1026, differing: 3, truncated: false });
+  const lines = csv.split('\r\n');
+  assert.ok(csv.includes('Left,a.bin (1024 bytes)') && csv.includes('Differing bytes,3'), csv);
+  assert.ok(lines.includes('Start (hex),Start,Last byte (hex),Length,Left bytes,Right bytes'), csv);
+  assert.ok(lines.includes('0x0000001F,31,0x0000001F,1,1F,AA'), csv);
+  assert.ok(lines.includes('0x00000400,1024,0x00000401,2,,41 42'), csv);
+});
+t('feature 26: xlsxBuild writes a valid workbook with highlighted cells, exact text and safe sheet names', () => {
+  const u8 = D.xlsxBuild([
+    { name: 'About', rows: [[{ v: 'Report', s: 'meta' }, 'Layerbit table comparison']] },
+    { name: 'Diff: sheet/1 [x]', rows: [[{ v: 'Status', s: 'head' }, { v: 'qty (original)', s: 'head' }], ['changed', { v: '0012', s: 'changed' }], ['added', { v: 'a\u0001b & <c>', s: 'added' }], ['removed', { v: 5, s: 'removed' }]] },
+    { name: 'Diff: sheet/1 [x]', rows: [] }
+  ]);
+  const z = unzipStored(u8);
+  ['[Content_Types].xml', '_rels/.rels', 'xl/workbook.xml', 'xl/_rels/workbook.xml.rels', 'xl/styles.xml', 'xl/worksheets/sheet1.xml', 'xl/worksheets/sheet2.xml', 'xl/worksheets/sheet3.xml'].forEach(n => assert.ok(z[n], 'missing ' + n));
+  const zlib = require('zlib');
+  if (zlib.crc32) Object.values(z).forEach(f => assert.strictEqual(f.crc, zlib.crc32(f.data)));
+  const wb = z['xl/workbook.xml'].text;
+  assert.ok(wb.includes('name="About"') && wb.includes('name="Diff sheet1 x"') && wb.includes('name="Diff sheet1 x (2)"'), wb);
+  const s2 = z['xl/worksheets/sheet2.xml'].text, styles = z['xl/styles.xml'].text;
+  assert.ok(/<c r="B2" t="inlineStr" s="(\d)"><is><t xml:space="preserve">0012<\/t><\/is><\/c>/.test(s2), s2);   // text stays text: leading zeros kept
+  const sChanged = +/<c r="B2" t="inlineStr" s="(\d)"/.exec(s2)[1], sAdded = +/<c r="B3" t="inlineStr" s="(\d)"/.exec(s2)[1];
+  assert.ok(s2.includes('a_x0001_b &amp; &lt;c&gt;'), 'control character and XML escaping');
+  const xfs = /<cellXfs[^>]*>([\s\S]*?)<\/cellXfs>/.exec(styles)[1].match(/<xf [^>]*\/?>/g), fills = /<fills[^>]*>([\s\S]*?)<\/fills>/.exec(styles)[1].match(/<fill>[\s\S]*?<\/fill>/g);
+  const fillOf = i => fills[+/fillId="(\d+)"/.exec(xfs[i])[1]];
+  assert.ok(/FFFDE68A/.test(fillOf(sChanged)), 'changed cells are yellow');
+  assert.ok(/FFBBF7D0/.test(fillOf(sAdded)), 'added cells are green');
+  assert.ok(/<c r="B4" s="\d"><v>5<\/v><\/c>/.test(s2), 'numbers stay numbers');
+});

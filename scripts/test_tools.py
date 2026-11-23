@@ -2400,9 +2400,14 @@ def _(t):
 def _(t):
     t.call("""() => { setMode('zip'); document.getElementById('folderBy').value = 'content';
       // slices of one Blob: cheap to build, read like files (12 bytes each)
-      const mk = s => { const parts = Array.from({length: 20000}, (_, i) => String(i % 7 === 0 ? i + s : i).padStart(12, '0')); const big = new Blob(parts);
-        return parts.map((p, i) => ({ path: 'd' + (i % 50) + '/f' + i + '.txt', file: big.slice(i * 12, i * 12 + 12) })); };
-      setFolderFromFiles('a', 'big-a', mk('a')); setFolderFromFiles('b', 'big-b', mk('b')); }""")
+      // slices of one Blob: cheap to build, read like files (12 bytes each). The
+      // right side reuses the left side's slice wherever the file is the same,
+      // so building the fixture costs far less than hashing it.
+      const text = s => Array.from({length: 20000}, (_, i) => String(i % 7 === 0 ? i + s : i).padStart(12, '0'));
+      const ta = text('a'), tb = text('b'), A = new Blob([ta.join('')]), B = new Blob([tb.join('')]);
+      const left = ta.map((p, i) => ({ path: 'd' + (i % 50) + '/f' + i + '.txt', file: A.slice(i * 12, i * 12 + 12) }));
+      const right = tb.map((p, i) => ({ path: left[i].path, file: p === ta[i] ? left[i].file : B.slice(i * 12, i * 12 + 12) }));
+      setFolderFromFiles('a', 'big-a', left); setFolderFromFiles('b', 'big-b', right); }""")
     t.wait(400)
     expect(t.visible("#diffProgress") and "Hashing" in t.text("diffProgressLabel"), "no hashing progress")
     ticks = t.call("new Promise(res => { let n = 0; const id = setInterval(() => n++, 20); setTimeout(() => { clearInterval(id); res(n); }, 300); })")
@@ -2673,6 +2678,125 @@ def _(t):
     t.page.evaluate(f"""async () => {{ const a = new Uint8Array(await (await _mkimg(4, 4, {IMG_RED}, 'image/png', 'i.png')).arrayBuffer()); openImages(a, a, 'img/icon.png', 'img/icon.png'); }}""")
     t.wait_for("() => /identical/i.test(document.getElementById('diffStats').innerText)")
     expect("img/icon.png" in t.text("resultTitle"), t.text("resultTitle"))
+
+
+def _xlsx_check(path):
+    """Opens a downloaded .xlsx with zipfile (CRC check) and returns {part: xml}."""
+    import zipfile
+    z = zipfile.ZipFile(path)
+    expect(z.testzip() is None, "xlsx: bad CRC")
+    return {n: z.read(n).decode("utf-8") for n in z.namelist()}
+
+
+@case("text-diff-checker", "typical", "feature 26: table exports: CSV with original/modified columns and .xlsx with highlighted cells, both stating options and date")
+def _(t):
+    t.call("setMode('table')")
+    t.set("text1", "id,name,qty\n1,Pen,5\n2,Ink,1\n")
+    t.set("text2", "id,name,qty\n1,Pen,6\n3,Pad,2\n")
+    t.wait(300); t.select("keyCol", "id")
+    t.call("document.getElementById('tableOpts').open = true"); t.page.check("#tNumeric")
+    t.call("run()"); t.wait(200)
+    expect(t.visible("#btnCsv") and t.visible("#btnXlsx"), "table export buttons hidden")
+    with t.page.expect_download() as dl:
+        t.click("#btnCsv")
+    csv = open(dl.value.path(), encoding="utf-8").read()
+    expect(dl.value.suggested_filename.endswith(".csv"), dl.value.suggested_filename)
+    expect("Generated,20" in csv and "Options,Rows matched by id" in csv and "numbers by value" in csv, csv[:400])
+    expect("Status,Key,id (original),id (modified),name (original),name (modified),qty (original),qty (modified),Changed columns" in csv, csv)
+    expect("changed,1,1,1,Pen,Pen,5,6,qty" in csv and "added,3,,3,,Pad,,2," in csv and "removed,2,2,,Ink,,1,," in csv, csv)
+    with t.page.expect_download() as dl:
+        t.click("#btnXlsx")
+    expect(dl.value.suggested_filename.endswith(".xlsx"), dl.value.suggested_filename)
+    parts = _xlsx_check(dl.value.path())
+    wb = parts["xl/workbook.xml"]
+    expect('name="About"' in wb and 'name="Differences"' in wb, wb)
+    about, diff = parts["xl/worksheets/sheet1.xml"], parts["xl/worksheets/sheet2.xml"]
+    expect("Rows matched by id" in about and "Generated" in about, about[:500])
+    expect('<c r="H2" t="inlineStr" s="2"><is><t xml:space="preserve">6</t>' in diff, "changed cell not highlighted: " + diff[:800])
+    # a real spreadsheet reader opens it
+    vals = t.page.evaluate("""async b64 => { await loadXlsx(); const wb = XLSX.read(Uint8Array.from(atob(b64), c => c.charCodeAt(0)), { type: 'array' });
+      return [wb.SheetNames, XLSX.utils.sheet_to_json(wb.Sheets.Differences, { header: 1 })[1]]; }""", __import__("base64").b64encode(open(dl.value.path(), "rb").read()).decode())
+    eq(vals[0], ["About", "Differences"], "sheet names")
+    eq(vals[1][:2] + vals[1][-3:], ["changed", "1", "5", "6", "qty"], "first data row")
+
+
+@case("text-diff-checker", "typical", "feature 26: a workbook comparison exports every sheet to one .xlsx")
+def _(t):
+    t.call(DIFF_BOOK_JS)
+    t.wait_for("() => document.getElementById('text2').value.includes('007') && document.getElementById('text1').value.includes('007')", 15000)
+    t.call("run()"); t.wait_for("() => /sheets? compared/.test(document.getElementById('diffStats').innerText)")
+    with t.page.expect_download() as dl:
+        t.click("#btnXlsx")
+    parts = _xlsx_check(dl.value.path())
+    wb = parts["xl/workbook.xml"]
+    expect('name="About"' in wb and 'name="Orders"' in wb and 'name="Customers"' in wb, wb)
+    expect("Clients" in parts["xl/worksheets/sheet1.xml"] and "New" in parts["xl/worksheets/sheet1.xml"], "renamed/added sheets not listed in About")
+    with t.page.expect_download() as dl:
+        t.click("#btnCsv")
+    csv = open(dl.value.path(), encoding="utf-8").read()
+    expect("Sheet,Orders" in csv and "Sheet,Customers" in csv and "changed,007" in csv, csv[:600])
+
+
+@case("text-diff-checker", "typical", "feature 26: JSON/YAML path changes export as CSV and JSON; text and folder reports keep options and date")
+def _(t):
+    t.call("setMode('struct')")
+    t.set("text1", '{"id": 12345678901234567890, "tags": ["x"], "on": true}')
+    t.set("text2", '{"id": 12345678901234567891, "tags": [], "on": "yes"}')
+    t.call("run()"); t.wait_for("() => /changed/.test(document.getElementById('diffStats').innerText)")
+    expect(t.visible("#btnJson"), "JSON export hidden")
+    with t.page.expect_download() as dl:
+        t.click("#btnCsv")
+    csv = open(dl.value.path(), encoding="utf-8").read()
+    expect("Options,Arrays compared by position" in csv and "$.id,changed,12345678901234567890,12345678901234567891" in csv, csv)
+    with t.page.expect_download() as dl:
+        t.click("#btnJson")
+    js = open(dl.value.path(), encoding="utf-8").read()
+    expect(dl.value.suggested_filename.endswith(".json"), dl.value.suggested_filename)
+    expect('"original": 12345678901234567890' in js and '"generated": "20' in js and '"options": "Arrays compared by position"' in js, js[:500])
+    # text: the HTML report states the options and the date; the patch stays a clean patch
+    t.call("setMode('text')"); t.set("text1", "a\nb\n"); t.set("text2", "a\nc\n"); t.page.check("#ignoreCase"); t.call("run()"); t.wait(200)
+    with t.page.expect_download() as dl:
+        t.click("#btnReport")
+    html = open(dl.value.path(), encoding="utf-8").read()
+    expect("Options: ignore case" in html and "Generated 20" in html, html[-900:])
+    with t.page.expect_download() as dl:
+        t.click("#btnPatchDl")
+    patch = open(dl.value.path(), encoding="utf-8").read()
+    expect(patch.startswith("--- ") and "-b" in patch and "+c" in patch, patch)
+
+
+@case("text-diff-checker", "typical", "feature 26: hex exports the differing byte ranges (CSV and HTML); images export an HTML report and the difference image")
+def _(t):
+    t.call("setMode('hex')")
+    a = list(range(256)) * 4
+    b = list(a); b[0x1F] = 0xAA; b[0x200] = 0xFF; b[0x201] = 0xFE; b += [0x41, 0x42]
+    t.page.evaluate(DIFF_HEX_SET, ["a", [a], "fw-1.bin"]); t.page.evaluate(DIFF_HEX_SET, ["b", [b], "fw-2.bin"])
+    t.wait_for("() => document.getElementById('hexBInfo').textContent.includes('fw-2.bin')")
+    t.call("compare()"); t.wait_for("() => /differ/.test(document.getElementById('diffStats').innerText)")
+    expect(t.visible("#btnCsv") and not t.visible("#btnPatch"), "hex export buttons")
+    with t.page.expect_download() as dl:
+        t.click("#btnCsv")
+    csv = open(dl.value.path(), encoding="utf-8").read()
+    expect("Generated,20" in csv and "Left,fw-1.bin (1024 bytes)" in csv and "Differing bytes,5" in csv, csv[:400])
+    expect("0x0000001F,31,0x0000001F,1,1F,AA" in csv and "0x00000200,512,0x00000201,2,00 01,FF FE" in csv and "0x00000400,1024,0x00000401,2,,41 42" in csv, csv)
+    with t.page.expect_download() as dl:
+        t.click("#btnReport")
+    html = open(dl.value.path(), encoding="utf-8").read()
+    expect("0x0000001F" in html and "5 bytes differ" in html and "Generated 20" in html and "byte-by-byte" in html.lower(), html[-1200:])
+    # images
+    t.page.evaluate(DIFF_IMG_JS)
+    t.call("setMode('image')")
+    t.page.evaluate(f"""async () => {{ _setImg('a', await _mkimg(40, 30, {IMG_RED}, 'image/png', 'a.png'));
+      _setImg('b', await _mkimg(40, 30, x => {{ ({IMG_RED})(x); x.fillStyle = '#00f'; x.fillRect(0, 0, 4, 3); }}, 'image/png', 'b.png')); }}""")
+    t.wait_for("() => document.getElementById('imgBInfo').textContent.includes('b.png')")
+    t.call("compare()"); t.wait_for("() => /changed/.test(document.getElementById('diffStats').innerText)")
+    with t.page.expect_download() as dl:
+        t.click("#btnReport")
+    html = open(dl.value.path(), encoding="utf-8").read()
+    expect(html.count("data:image/png;base64,") == 3 and "1% of pixels changed" in html and "Pixel tolerance 0" in html and "Generated 20" in html, html[-1500:])
+    with t.page.expect_download() as dl:
+        t.click("#btnDiffPng")
+    expect(open(dl.value.path(), "rb").read(8) == b"\x89PNG\r\n\x1a\n", "difference image is not a PNG")
 
 
 @case("text-diff-checker", "typical", "audit: ignore-whitespace/case and highlight options re-run the diff live")
