@@ -876,9 +876,12 @@ def _(t):
     out = json.loads(t.text("jsonOutput"))[0]
     eq(out, {"id": 7, "zip": "00123", "phone": "+971501234567", "acct": "12345678901234567890", "n": 42, "ok": True}, "typed row")
     expect(t.visible("#colTypes"), "no per-column type preview")
+    t.call("window._ctEl = document.getElementById('colType-n')")
+    t.page.focus("#colType-n")
     t.select("colType-n", "text")
     out = json.loads(t.text("jsonOutput"))[0]
     eq(out["n"], "42", "column forced to text")
+    expect(t.call("document.getElementById('colType-n') === window._ctEl && document.activeElement === window._ctEl"), "the select was replaced and lost focus")
     t.select("colType-n", "auto")
 
 

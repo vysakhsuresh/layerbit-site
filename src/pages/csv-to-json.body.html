@@ -330,8 +330,20 @@
     }
     function renderColTypes(headers, rows) {
       const box = document.getElementById('colTypes');
-      if (!inferTypes.checked || !headers.length) { box.hidden = true; box.innerHTML = ''; return; }
+      if (!inferTypes.checked || !headers.length) { box.hidden = true; box.innerHTML = ''; delete box.dataset.cols; return; }
       box.hidden = false;
+      // Same columns as last time: update the "auto (type)" labels in place, so
+      // the select just changed keeps its focus and identity.
+      const same = box.dataset.cols === JSON.stringify(headers);
+      if (same) {
+        headers.forEach((h, i) => {
+          const sel = box.querySelector(`select[data-col="${CSS.escape(h)}"]`); if (!sel) return;
+          sel.options[0].textContent = `auto (${autoType(rows.map(r => (r[i] || '').trim()))})`;
+          sel.value = colChoice[h] || 'auto';
+        });
+        return;
+      }
+      box.dataset.cols = JSON.stringify(headers);
       box.innerHTML = '<span class="ct-label">Column types:</span>' + headers.map((h, i) => {
         const auto = autoType(rows.map(r => (r[i] || '').trim())), v = colChoice[h] || 'auto';
         return `<label class="ct-item">${escHtml(h)} <select class="mini-select" id="colType-${escHtml(h)}" data-col="${escHtml(h)}">` +
