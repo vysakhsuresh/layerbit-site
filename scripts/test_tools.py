@@ -3901,6 +3901,22 @@ def _(t):
     eq(res["names"], ["hashes.csv", "hashes.html"], "archive entries")
 
 
+@case("hash-generator", "typical", "shared WASM loader: loads a module on first use, once, and keeps it for offline use")
+def _(t):
+    t.page.evaluate(LOAD_SCRIPT, "../js/engines/wasm.js")
+    res = t.call("""async () => {
+      await caches.delete(LBWasm.CACHE);
+      const a = await LBWasm.load('selftest'), b = await LBWasm.load('selftest');
+      await new Promise(r => setTimeout(r, 100));
+      const cached = await (await caches.open(LBWasm.CACHE)).match(new URL('../js/vendor/wasm/selftest.wasm', location.href).href);
+      let missing = '';
+      try { await LBWasm.load('no-such-engine'); } catch (e) { missing = e.message; }
+      return [a.exports.add(2, 3), a === b, !!cached, missing];
+    }""")
+    eq(res[:3], [5, True, True], "load, memoise, cache")
+    expect("no-such-engine" in res[3] and "404" in res[3], res[3])
+
+
 # ----------------------------------------------------------------------------
 # runner
 # ----------------------------------------------------------------------------
