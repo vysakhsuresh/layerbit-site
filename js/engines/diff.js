@@ -507,6 +507,32 @@
     }
     return entries.filter(function (e) { return !e.dir; });
   }
+  // ----------------------------------------------------------------- bytes
+  /** Decodes file bytes without losing information: a BOM picks UTF-8 or
+   *  UTF-16; BOM-less UTF-16 is recognised by its zero bytes; otherwise strict
+   *  UTF-8 is tried and, if the bytes are not valid UTF-8, Windows-1252 (which
+   *  maps every byte to a character, so two different files never decode to
+   *  the same text). Returns {text, encoding, bom}. */
+  function decodeBytes(u8) {
+    var dec = function (label, bytes, fatal) { return new TextDecoder(label, fatal ? { fatal: true } : undefined).decode(bytes); };
+    if (u8.length >= 3 && u8[0] === 0xEF && u8[1] === 0xBB && u8[2] === 0xBF) return { text: dec('utf-8', u8.subarray(3)), encoding: 'UTF-8', bom: true };
+    if (u8.length >= 2 && u8[0] === 0xFF && u8[1] === 0xFE) return { text: dec('utf-16le', u8.subarray(2)), encoding: 'UTF-16 LE', bom: true };
+    if (u8.length >= 2 && u8[0] === 0xFE && u8[1] === 0xFF) return { text: dec('utf-16be', u8.subarray(2)), encoding: 'UTF-16 BE', bom: true };
+    var n = Math.min(u8.length, 4000) & ~1;
+    if (n >= 4) {
+      var even = 0, odd = 0;
+      for (var i = 0; i < n; i += 2) { if (u8[i] === 0) even++; if (u8[i + 1] === 0) odd++; }
+      if (odd > n / 2 * 0.4 && even < n / 2 * 0.05) return { text: dec('utf-16le', u8), encoding: 'UTF-16 LE', bom: false };
+      if (even > n / 2 * 0.4 && odd < n / 2 * 0.05) return { text: dec('utf-16be', u8), encoding: 'UTF-16 BE', bom: false };
+    }
+    try { return { text: dec('utf-8', u8, true), encoding: 'UTF-8', bom: false }; }
+    catch (e) { return { text: dec('windows-1252', u8), encoding: 'Windows-1252', bom: false }; }
+  }
+  function bytesEqual(a, b) {
+    if (a.length !== b.length) return false;
+    for (var i = 0; i < a.length; i++) if (a[i] !== b[i]) return false;
+    return true;
+  }
   function isProbablyText(u8) {
     var n = Math.min(u8.length, 4000), ctl = 0;
     for (var i = 0; i < n; i++) { var c = u8[i]; if (c === 0) return false; if (c < 7 || (c > 13 && c < 32)) ctl++; }
@@ -515,5 +541,5 @@
 
   return { lineDiff: lineDiff, foldContext: foldContext, intraline: intraline, tokenize: tokenize, detectLang: detectLang, renderLine: renderLine, esc: esc,
     unifiedPatch: unifiedPatch, applyPatch: applyPatch, diff3: diff3, structuralDiff: structuralDiff, canonicalJson: canonicalJson, canon: canon,
-    parseCsv: parseCsv, detectDelimiter: detectDelimiter, tableDiff: tableDiff, readZip: readZip, isProbablyText: isProbablyText, splitLines: splitLines, normalizeLine: normalizeLine, DEFAULT_OPTS: DEFAULT_OPTS };
+    parseCsv: parseCsv, detectDelimiter: detectDelimiter, tableDiff: tableDiff, readZip: readZip, isProbablyText: isProbablyText, decodeBytes: decodeBytes, bytesEqual: bytesEqual, splitLines: splitLines, normalizeLine: normalizeLine, DEFAULT_OPTS: DEFAULT_OPTS };
 });

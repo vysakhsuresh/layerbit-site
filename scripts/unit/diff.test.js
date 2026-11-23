@@ -124,4 +124,29 @@ t('readZip parses a stored zip', () => {
   const entries = D.readZip(ab); assert.strictEqual(entries.length, 1); assert.strictEqual(entries[0].name, 'a.txt'); assert.strictEqual(entries[0].size, 2);
   return entries[0].read().then(u => assert.strictEqual(Buffer.from(u).toString(), 'hi'));
 });
-console.log(`diff engine: ${n} unit tests passed`);
+
+// ---- v4: bug 2, byte decoding
+t('bug 2: Windows-1252 bytes decode losslessly and differ', () => {
+  const a = D.decodeBytes(new Uint8Array([0x63, 0x61, 0x66, 0xE9])), b = D.decodeBytes(new Uint8Array([0x63, 0x61, 0x66, 0xE8]));
+  assert.strictEqual(a.text, 'café'); assert.strictEqual(b.text, 'cafè');
+  assert.strictEqual(a.encoding, 'Windows-1252');
+  assert.strictEqual(D.lineDiff(a.text, b.text).hunks.length, 1);
+});
+t('bug 2: UTF-8 with and without BOM, UTF-16 LE/BE with BOM and without', () => {
+  const enc = new TextEncoder();
+  assert.deepStrictEqual(D.decodeBytes(enc.encode('héllo')), { text: 'héllo', encoding: 'UTF-8', bom: false });
+  assert.deepStrictEqual(D.decodeBytes(new Uint8Array([0xEF, 0xBB, 0xBF, ...enc.encode('hi')])), { text: 'hi', encoding: 'UTF-8', bom: true });
+  const le = [0xFF, 0xFE, 0x68, 0, 0xE9, 0], be = [0xFE, 0xFF, 0, 0x68, 0, 0xE9];
+  assert.deepStrictEqual(D.decodeBytes(new Uint8Array(le)), { text: 'hé', encoding: 'UTF-16 LE', bom: true });
+  assert.deepStrictEqual(D.decodeBytes(new Uint8Array(be)), { text: 'hé', encoding: 'UTF-16 BE', bom: true });
+  const noBom = new Uint8Array([...'hello world'].flatMap(c => [c.charCodeAt(0), 0]));
+  assert.deepStrictEqual(D.decodeBytes(noBom), { text: 'hello world', encoding: 'UTF-16 LE', bom: false });
+  assert.deepStrictEqual(D.decodeBytes(new Uint8Array(0)), { text: '', encoding: 'UTF-8', bom: false });
+});
+t('bug 2: bytesEqual', () => {
+  assert.ok(D.bytesEqual(new Uint8Array([1, 2]), new Uint8Array([1, 2])));
+  assert.ok(!D.bytesEqual(new Uint8Array([1, 2]), new Uint8Array([1, 3])));
+  assert.ok(!D.bytesEqual(new Uint8Array([1]), new Uint8Array([1, 0])));
+});
+
+process.on('beforeExit', () => { if (!process.exitCode) console.log(`diff engine: ${n} unit tests passed`); });

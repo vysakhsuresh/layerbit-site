@@ -431,11 +431,19 @@
     $('arrMode').addEventListener('change', () => { $('keyFieldLabel').style.display = $('arrMode').value === 'key' ? '' : 'none'; });
 
     // ------------------------------------------------------------ inputs
+    // Files are read as bytes and decoded by the engine (BOM, UTF-16, strict
+    // UTF-8, then Windows-1252), so no character is ever replaced by U+FFFD.
+    // sideInfo keeps the bytes and the raw text (with its CRLFs, which a
+    // textarea cannot hold) for as long as the textarea still shows that file.
+    let sideInfo = {};
+    const normNl = t => t.replace(/\r\n?/g, '\n');
+    function fileInfo(id) { const i = sideInfo[id]; return i && normNl(i.raw) === $(id).value ? i : null; }
+    function sideText(id) { const i = fileInfo(id); return i ? i.raw : $(id).value; }
     function updateMeta() {
       [['text1', 'meta1', 'lang1'], ['text2', 'meta2', 'lang2']].forEach(([t, m, l]) => {
-        const v = $(t).value;
-        const lines = v ? E.splitLines(v).length + (v.endsWith('\n') ? 0 : 0) : 0;
-        $(m).textContent = v ? `${lines.toLocaleString()} lines · ${Layerbit ? Layerbit.fmtBytes(new Blob([v]).size) : v.length}` : '';
+        const v = $(t).value, info = fileInfo(t);
+        const lines = v ? E.splitLines(v).length : 0;
+        $(m).textContent = v ? `${lines.toLocaleString()} lines · ${Layerbit ? Layerbit.fmtBytes(info ? info.bytes.length : new Blob([v]).size) : v.length}${info ? ' · ' + info.encoding + (info.bom ? ' with BOM' : '') : ''}` : '';
         $(l).textContent = v && mode === 'text' ? E.detectLang(v, t === 'text1' ? names.a : names.b) : '';
       });
     }
@@ -444,7 +452,12 @@
     function loadFileInto(id, file, nameKey) {
       if (!file) return;
       if (/\.xlsx?$/i.test(file.name)) { loadWorkbook(id, file); if (nameKey) names[nameKey] = file.name; return; }
-      Layerbit.readFile(file).then(text => { $(id).value = text; if (nameKey) names[nameKey] = file.name; $(id).dispatchEvent(new Event('input')); if (mode === 'table') refreshKeyColumns(); });
+      file.arrayBuffer().then(buf => {
+        const bytes = new Uint8Array(buf), d = E.decodeBytes(bytes);
+        sideInfo[id] = { name: file.name, bytes, encoding: d.encoding, bom: d.bom, raw: d.text };
+        $(id).value = d.text; if (nameKey) names[nameKey] = file.name;
+        $(id).dispatchEvent(new Event('input')); updateMeta(); if (mode === 'table') refreshKeyColumns();
+      }).catch(e => showError(`${file.name}: ${e.message}`));
     }
     [['text1File', 'text1', 'a'], ['text2File', 'text2', 'b'], ['baseFile', 'baseText'], ['oursFile', 'oursText'], ['theirsFile', 'theirsText'], ['patchOrigFile', 'patchOriginal', 'a'], ['patchFile', 'patchText']]
       .forEach(([f, t, k]) => $(f).addEventListener('change', e => loadFileInto(t, e.target.files[0], k)));
@@ -511,7 +524,7 @@
     function run(quiet) {
       clearError();
       try {
-        if (mode === 'text') runText($('text1').value, $('text2').value, names.a, names.b);
+        if (mode === 'text') runText(sideText('text1'), sideText('text2'), names.a, names.b, null, fileInfo('text1'), fileInfo('text2'));
         else if (mode === 'three') runThree();
         else if (mode === 'struct') runStruct();
         else if (mode === 'table') runTable();
@@ -542,9 +555,20 @@
     if (window.matchMedia && window.matchMedia('(max-width: 760px)').matches && !location.hash) $('viewMode').value = 'unified';
 
     // ---- text
-    function runText(a, b, nameA, nameB, title) {
+    // Differences that a line comparison cannot show: encoding, BOM, bytes.
+    function fileNotes(infoA, infoB) {
+      const notes = [];
+      if (infoA && infoB) {
+        if (infoA.encoding !== infoB.encoding) notes.push(`Encodings differ: the original is ${infoA.encoding}, the modified file is ${infoB.encoding}.`);
+        if (infoA.bom !== infoB.bom) notes.push(`Only the ${infoA.bom ? 'original' : 'modified'} file starts with a byte-order mark (BOM).`);
+        if (!notes.length && !E.bytesEqual(infoA.bytes, infoB.bytes) && infoA.raw === infoB.raw) notes.push('The files are not byte-identical, although they decode to the same text.');
+      }
+      return notes;
+    }
+    function runText(a, b, nameA, nameB, title, infoA, infoB) {
       const o = opts();
       const res = E.lineDiff(a, b, o);
+      res.notes = fileNotes(infoA, infoB);
       const lang = $('syntaxMode').value === 'auto' ? E.detectLang(a || b, nameA !== 'original' ? nameA : nameB !== 'modified' ? nameB : '') : $('syntaxMode').value;
       last = Object.assign(res, { a, b, nameA, nameB, lang });
       decisions = res.hunks.map(() => 'right');
@@ -587,7 +611,9 @@
         else { if (row.l) U += `<div class="diff-line line-removed has-diff"><div class="diff-num"><span>${row.l.n}</span><span></span></div><div class="diff-text">${lh}</div></div>`; if (row.r) U += `<div class="diff-line line-added has-diff"><div class="diff-num"><span></span><span>${row.r.n}</span></div><div class="diff-text">${rh}</div></div>`; }
       });
       if (!rows.length) { L = R = U = '<div class="diff-empty">Both inputs are empty.</div>'; }
-      else if (!hunks.length) { const s = '<div class="diff-identical"><i data-lucide="check-circle-2"></i> No differences with the current options.</div>'; L = s + L; R = R; U = s + U; }
+      else if (!hunks.length && !(last.notes || []).length) { const s = '<div class="diff-identical"><i data-lucide="check-circle-2"></i> No differences with the current options.</div>'; L = s + L; R = R; U = s + U; }
+      const notesHtml = (last.notes || []).length ? `<div class="diff-notes" role="status"><i data-lucide="alert-triangle"></i><div><strong>${hunks.length ? 'Also' : 'No line differences with the current options, but the files are not byte-identical'}:</strong><ul>${last.notes.map(n => `<li>${E.esc(n)}</li>`).join('')}</ul></div></div>` : '';
+      L = notesHtml + L; U = notesHtml + U;
       $('leftPanel').innerHTML = L; $('rightPanel').innerHTML = R; $('inlinePanel').innerHTML = U;
       showPanel(view === 'unified' ? 'unified' : 'split');
       icons();

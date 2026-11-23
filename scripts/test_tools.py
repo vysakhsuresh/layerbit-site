@@ -2055,6 +2055,27 @@ def _(t):
     t.page.uncheck("#saveHistory")
 
 
+DIFF_LOAD = """([id, side, bytes, name]) => { const f = new File([new Uint8Array(bytes)], name); loadFileInto(id, f, side); }"""
+
+
+@case("text-diff-checker", "edge", "bug 2: Windows-1252 files are decoded, labelled, and never reported identical when bytes differ")
+def _(t):
+    t.page.evaluate(DIFF_LOAD, ["text1", "a", [0x63, 0x61, 0x66, 0xE9, 0x0A], "menu-a.txt"])
+    t.page.evaluate(DIFF_LOAD, ["text2", "b", [0x63, 0x61, 0x66, 0xE8, 0x0A], "menu-b.txt"])
+    t.wait_for("() => document.getElementById('meta2').textContent.includes('Windows-1252')")
+    t.call("run()"); t.wait(150)
+    expect("1 change block" in t.text("diffStats"), "café/cafè not detected: " + t.text("diffStats"))
+    eq(t.val("text1"), "café\n", "decoded text")
+    # same characters, different bytes (UTF-8 vs Windows-1252)
+    t.page.evaluate(DIFF_LOAD, ["text1", "a", [0x63, 0x61, 0x66, 0xC3, 0xA9, 0x0A], "utf8.txt"])
+    t.page.evaluate(DIFF_LOAD, ["text2", "b", [0x63, 0x61, 0x66, 0xE9, 0x0A], "ansi.txt"])
+    t.wait_for("() => document.getElementById('meta1').textContent.includes('UTF-8') && document.getElementById('meta2').textContent.includes('Windows-1252')")
+    t.call("run()"); t.wait(150)
+    out = t.text("outputSection")
+    expect("identical" not in out.lower() or "not byte-identical" in out, "reported identical: " + out[:200])
+    expect("encoding" in out.lower() and "UTF-8" in out and "Windows-1252" in out, "encoding difference not reported: " + out[:300])
+
+
 @case("text-diff-checker", "typical", "audit: ignore-whitespace/case and highlight options re-run the diff live")
 def _(t):
     t.set("text1", "Hello  World\nsecond line\n")
