@@ -2081,6 +2081,116 @@ def _(t):
     expect("= " not in t.text("nextRunsList"), "UTC mode should not show an equivalent")
 
 
+def _cron_dialect(t, d):
+    t.select("cronDialect", d); t.wait(60)
+
+
+@case("cron-generator", "typical", "2.9: Quartz validates by its own rules and lists runs with seconds")
+def _(t):
+    _cron_dialect(t, "unix")
+    t.set("cronInput", "0 9 * * 1-5"); t.wait(60)
+    _cron_dialect(t, "quartz")
+    eq(t.val("cronInput"), "0 0 9 ? * 2-6", "switching to Quartz converts the expression")
+    tr = t.text("cronTranslation").lower()
+    expect("monday" in tr and "friday" in tr, tr)
+    expect(not t.visible("#builderMap"), "five-field builder should hide for Quartz")
+    t.set("cronInput", "30 0 12 L * ?"); t.wait(80)
+    expect(not t.call("document.getElementById('terminalPane').classList.contains('error')"), t.text("cronTranslation"))
+    items = t.call("[...document.querySelectorAll('#nextRunsList li')].map(l => l.textContent)")
+    expect(len(items) == 5 and all("12:00:30" in i for i in items), items)
+    t.set("cronInput", "0 0 9 * * MON-FRI"); t.wait(60)
+    expect("?" in t.text("cronTranslation"), "missing ? not explained: " + t.text("cronTranslation"))
+    _cron_dialect(t, "unix")
+
+
+@case("cron-generator", "typical", "2.9: AWS, GitHub, Jenkins, Spring and Azure rules")
+def _(t):
+    _cron_dialect(t, "aws")
+    expect(t.val("tzSelect") == "UTC", "AWS should preview in UTC")
+    t.set("cronInput", "cron(0 18 ? * MON-FRI *)"); t.wait(80)
+    expect(not t.call("document.getElementById('terminalPane').classList.contains('error')"), t.text("cronTranslation"))
+    eq(t.count("#nextRunsList li"), 5, "aws runs")
+    _cron_dialect(t, "github")
+    t.set("cronInput", "* * * * *"); t.wait(80)
+    expect(t.visible("#dialectWarn") and "5 minutes" in t.text("dialectWarn"), "GitHub minimum not warned")
+    t.set("cronInput", "@daily"); t.wait(60)
+    expect(t.call("document.getElementById('terminalPane').classList.contains('error')"), "GitHub accepted @daily")
+    _cron_dialect(t, "jenkins")
+    t.set("cronInput", "H H(2-4) * * *"); t.wait(80)
+    expect(not t.call("document.getElementById('terminalPane').classList.contains('error')"), t.text("cronTranslation"))
+    expect("H picks" in t.text("dialectWarn"), "H not explained")
+    _cron_dialect(t, "azure")
+    t.set("cronInput", "0 0 0 13 * 5"); t.wait(80)
+    items = t.call("[...document.querySelectorAll('#nextRunsList li')].map(l => l.textContent)")
+    expect(all(i.startswith("Fri") and " 13 " in i for i in items), "Azure uses AND for both day fields: " + str(items))
+    _cron_dialect(t, "unix")
+    t.set("cronInput", "0 0 13 * 5"); t.wait(80)
+    items = t.call("[...document.querySelectorAll('#nextRunsList li')].map(l => l.textContent)")
+    expect(any(not i.startswith("Fri") for i in items) or any(" 13 " not in i for i in items), "Unix uses OR: " + str(items))
+
+
+@case("cron-generator", "typical", "2.9: 30-day calendar counts runs per day and shows a day's hours")
+def _(t):
+    _cron_dialect(t, "unix")
+    t.set("cronInput", "*/15 9-10 * * 1-5"); t.wait(100)
+    expect(t.visible("#calPanel"), "calendar hidden")
+    days = t.call("[...document.querySelectorAll('#calGrid .cal-day')].map(b => [b.dataset.date, +b.dataset.count])")
+    eq(len(days), 30, "30 days")
+    import datetime as _dt
+    for date, n in days:
+        wd = _dt.date.fromisoformat(date).weekday()
+        eq(n, 0 if wd >= 5 else 8, date)
+    expect(str(sum(n for _, n in days)) in t.text("calTotal"), t.text("calTotal"))
+    wk = next(d for d, n in days if n)
+    t.click(f".cal-day[data-date='{wk}']"); t.wait(60)
+    expect(t.count("#calDetail .cal-hour.on") == 2, "two active hours expected")
+    expect("09:00, 09:15" in t.text("calDetail"), t.text("calDetail"))
+
+
+@case("cron-generator", "typical", "2.9: conversion between dialects, and refusals with reasons")
+def _(t):
+    _cron_dialect(t, "unix")
+    t.set("cronInput", "0 9 * * 1-5"); t.wait(60)
+    t.select("convertTo", "aws"); t.wait(60)
+    eq(t.text("convertOut").strip(), "cron(0 9 ? * 2-6 *)", "unix -> aws")
+    t.select("convertTo", "spring"); t.wait(60)
+    eq(t.text("convertOut").strip(), "0 0 9 * * 1-5", "unix -> spring")
+    t.set("cronInput", "0 0 13 * 5"); t.wait(60)
+    t.select("convertTo", "quartz"); t.wait(60)
+    expect("cannot restrict both" in t.text("convertOut"), t.text("convertOut"))
+    expect(t.call("document.getElementById('btnConvertUse').disabled"), "Use should be disabled on a refusal")
+    t.set("cronInput", "*/5 * * * *"); t.wait(60)
+    t.select("convertTo", "quartz"); t.wait(60)
+    t.click("#btnConvertUse"); t.wait(80)
+    eq(t.val("cronDialect"), "quartz", "dialect switched")
+    eq(t.val("cronInput"), "0 */5 * * * ?", "expression switched")
+    _cron_dialect(t, "unix")
+
+
+@case("cron-generator", "typical", "2.9: English text to an expression in the selected dialect")
+def _(t):
+    _cron_dialect(t, "unix")
+    for text, expr in [("weekdays at 9:30", "30 9 * * 1-5"), ("every 15 minutes", "*/15 * * * *"), ("every Monday at 5pm", "0 17 * * 1")]:
+        t.set("englishInput", text); t.click("#btnEnglish"); t.wait(60)
+        eq(t.val("cronInput"), expr, text)
+        expect(not t.call("document.getElementById('terminalPane').classList.contains('error')"), text)
+    t.set("englishInput", "last day of the month"); t.click("#btnEnglish"); t.wait(60)
+    expect("cannot" in t.text("englishMsg"), t.text("englishMsg"))
+    _cron_dialect(t, "quartz")
+    t.set("englishInput", "weekdays at 9:30"); t.click("#btnEnglish"); t.wait(60)
+    eq(t.val("cronInput"), "0 30 9 ? * 2-6", "English in Quartz")
+    _cron_dialect(t, "unix")
+
+
+@case("cron-generator", "edge", "2.9: presets follow the dialect; dialect is remembered")
+def _(t):
+    _cron_dialect(t, "spring")
+    t.call("injectPreset('0 9 * * 1-5')"); t.wait(60)
+    eq(t.val("cronInput"), "0 0 9 * * 1-5", "preset converted to Spring")
+    eq(t.call("localStorage.getItem('layerbit-cron-dialect')"), "spring", "dialect not saved")
+    _cron_dialect(t, "unix")
+
+
 # ----------------------------------------------------------------------------
 # qr-barcode
 # ----------------------------------------------------------------------------

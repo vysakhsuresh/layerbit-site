@@ -1,0 +1,55 @@
+{
+  "tool": "cron-generator",
+  "page": "tools/cron-generator.html",
+  "competitors": [
+    { "name": "crontab.guru", "price": "free", "checked": "2026-11" }
+  ],
+  "claims": [
+    {
+      "feature": "Dialects: Quartz, Spring, AWS EventBridge, GitHub Actions, Kubernetes, Azure, Jenkins H",
+      "competitor": "crontab.guru",
+      "tests": [
+        "ui:cron-generator:2.9: Quartz validates by its own rules and lists runs with seconds",
+        "ui:cron-generator:2.9: AWS, GitHub, Jenkins, Spring and Azure rules",
+        "unit:cron:quartz: seconds, 1-based weekdays, L, W, #, year",
+        "unit:cron:aws: cron() wrapper, ? rule, year",
+        "unit:cron:spring and azure: 6 fields with seconds, AND for both day fields",
+        "unit:cron:github warns about the five-minute floor",
+        "unit:cron:jenkins H"
+      ]
+    },
+    {
+      "feature": "30-day calendar of runs",
+      "competitor": "crontab.guru",
+      "tests": [
+        "ui:cron-generator:2.9: 30-day calendar counts runs per day and shows a day's hours",
+        "unit:cron:heatmap counts runs per day and hour"
+      ]
+    },
+    {
+      "feature": "Conversion between dialects",
+      "competitor": "crontab.guru",
+      "tests": [
+        "ui:cron-generator:2.9: conversion between dialects, and refusals with reasons",
+        "unit:cron:convert between dialects",
+        "unit:cron:converted expressions schedule the same runs"
+      ]
+    },
+    {
+      "feature": "English text to an expression",
+      "competitor": "crontab.guru",
+      "tests": [
+        "ui:cron-generator:2.9: English text to an expression in the selected dialect",
+        "unit:cron:English to cron"
+      ]
+    },
+    {
+      "feature": "Next runs and @ macros (B1)",
+      "competitor": "crontab.guru",
+      "tests": [
+        "ui:cron-generator:B1: month and day names, 7 for Sunday and ? all list next runs",
+        "ui:cron-generator:B1: @daily-style macros run; @reboot is explained, never a blank area"
+      ]
+    }
+  ]
+}

@@ -257,3 +257,46 @@
     .tz-select:focus { border-color: var(--accent-main); }
     .tz-select option { background: #0a0c10; }
     .run-utc { color: var(--accent-main); opacity: 0.85; margin-left: 6px; }
+
+    /* v2.0: dialects, English, calendar, conversion */
+    .dialect-row { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 10px; width: 100%; margin-bottom: 14px; }
+    .dialect-label { font-size: 0.85em; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; }
+    .dialect-select { font-size: 0.95em; padding: 6px 10px; }
+    .dialect-fields { font-family: 'Fira Code', monospace; font-size: 0.8em; color: var(--text-muted); flex-basis: 100%; text-align: center; }
+    .english-row { display: flex; gap: 10px; width: 100%; max-width: 600px; margin-bottom: 8px; }
+    .english-input { flex: 1; min-width: 0; background: rgba(0,0,0,0.3); border: 1px solid var(--card-border); border-radius: 10px; padding: 10px 14px; color: var(--text-main); font-family: inherit; font-size: 1em; outline: none; }
+    .english-input:focus { border-color: var(--accent-main); }
+    .btn-inline { margin-top: 0; padding: 8px 16px; white-space: nowrap; justify-content: center; }
+    .btn-inline:disabled { opacity: 0.45; cursor: not-allowed; }
+    .english-msg { width: 100%; max-width: 600px; font-size: 0.9em; margin-bottom: 14px; overflow-wrap: anywhere; }
+    .english-msg.good { color: var(--success-color); }
+    .english-msg.bad { color: var(--error-color); }
+    .builder-map[hidden] { display: none; }
+    .dialect-warn { list-style: none; margin-top: 12px; max-width: 600px; color: #fbbf24; font-size: 0.9em; text-align: center; }
+    .dialect-warn[hidden] { display: none; }
+    .cal-weekdays, .cal-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; }
+    .cal-weekdays span { text-align: center; font-size: 0.72em; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+    .cal-day { min-height: 44px; border-radius: 8px; border: 1px solid var(--card-border); background: rgba(255,255,255,0.03); color: var(--text-main); font-family: 'Fira Code', monospace; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 2px; line-height: 1.15; }
+    .cal-day:focus-visible, .cal-day.selected { outline: 2px solid var(--accent-main); outline-offset: 1px; }
+    .cal-num { font-size: 0.85em; font-weight: 600; }
+    .cal-count { font-size: 0.65em; color: inherit; opacity: 0.85; min-height: 1em; }
+    .cal-day.lvl-1 { background: rgba(56, 189, 248, 0.15); }
+    .cal-day.lvl-2 { background: rgba(56, 189, 248, 0.3); }
+    .cal-day.lvl-3 { background: rgba(56, 189, 248, 0.5); }
+    .cal-day.lvl-4 { background: rgba(56, 189, 248, 0.72); color: #00131f; }
+    .cal-detail { margin-top: 14px; font-size: 0.88em; color: var(--text-muted); }
+    .cal-day-head strong { color: var(--text-main); }
+    .cal-hours { display: grid; grid-template-columns: repeat(24, minmax(0, 1fr)); gap: 2px; margin-top: 8px; }
+    .cal-hour { height: 14px; border-radius: 2px; background: rgba(255,255,255,0.06); }
+    .cal-hour.on { background: var(--accent-main); }
+    .cal-hour-axis { display: flex; justify-content: space-between; font-family: 'Fira Code', monospace; font-size: 0.7em; margin-top: 2px; }
+    .cal-times { margin-top: 8px; font-family: 'Fira Code', monospace; overflow-wrap: anywhere; }
+    .convert-out { display: block; font-family: 'Fira Code', monospace; font-size: 1.05em; color: var(--accent-main); background: rgba(0,0,0,0.3); border-radius: 8px; padding: 10px 12px; overflow-wrap: anywhere; }
+    .convert-out.convert-error { color: var(--error-color); font-family: 'Space Grotesk', sans-serif; font-size: 0.9em; }
+    .convert-notes { list-style: none; margin-top: 8px; font-size: 0.85em; color: var(--text-muted); }
+    .convert-notes li + li { margin-top: 4px; }
+    .convert-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 12px; }
+    @media (max-width: 600px) {
+      .english-row { flex-direction: column; }
+      .cal-day { min-height: 40px; }
+    }
