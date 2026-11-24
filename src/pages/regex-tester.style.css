@@ -484,6 +484,11 @@
     .ref-table td { padding: 5px 6px; border-bottom: 1px solid rgba(255,255,255,0.05); color: var(--text-muted); vertical-align: top; }
     .ref-table td:first-child { white-space: nowrap; width: 46%; }
     .ref-table code { font-family: 'Fira Code', monospace; color: #fff; background: rgba(0,0,0,0.3); padding: 1px 5px; border-radius: 4px; }
+    .ref-grid > * { min-width: 0; }
+    @media (max-width: 600px) {
+      .ref-table td:first-child { white-space: normal; }
+      .ref-table td { overflow-wrap: anywhere; }
+    }
     @media (max-width: 700px) { .synth-grid { grid-template-columns: 1fr; } .regex-control { flex-direction: column; } .flags-container { flex-wrap: wrap; } .flag-btn { padding: 8px 12px; } .tests-table { display: block; overflow-x: auto; } }
     .probe-h { color: #fff; font-size: 0.95em; margin: 16px 0 6px; }
 
