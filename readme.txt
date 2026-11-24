@@ -21,7 +21,7 @@
 * **SSL Encryption:** Enabled (GoDaddy Managed)
 * **Data Privacy:** Zero-tracking for local payload execution and string formatting
 ## License
-Copyright (C) 2025-2026 Layerbit Technologies.
+Copyright (C) 2025-2026 Layerbit AI LLP.
 
 The code in this repository is free software under the GNU Affero General
 Public License v3.0 (see LICENSE). Third-party files in js/vendor/ keep their

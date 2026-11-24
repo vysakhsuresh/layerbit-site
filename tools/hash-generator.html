@@ -200,7 +200,7 @@
   <link rel="manifest" href="../manifest.json" />
   <link rel="alternate" type="application/atom+xml" title="Layerbit developer guides" href="https://layerbit.co.in/feed.xml" />
   <link rel="apple-touch-icon" href="../apple-touch-icon.png" />
-  <link rel="stylesheet" href="../css/base.css?v=ded808cb7c" />
+  <link rel="stylesheet" href="../css/base.css?v=ef7ca0cd59" />
   <link rel="stylesheet" href="../css/tool.css?v=d44299e685" />
 
   <style>
@@ -238,6 +238,12 @@
     .ftable tr.st-same td:nth-child(2), .ftable tr.st-OK td:nth-child(2) { color: #4ade80; }
     .ftable tr.st-onlyA td:nth-child(2), .ftable tr.st-onlyB td:nth-child(2), .ftable tr.st-MISSING td:nth-child(2) { color: #fde68a; }
     .fbar[hidden] { display: none; }
+
+    /* Input and Digests: the row is as tall as the digest list plus the
+       checksum field, so nothing waits below a scroll edge; the input editor
+       grows to match. */
+    .ide-container > .pane.tall { height: auto; min-height: 450px; }
+    #inputPane textarea.editor { flex: 1 1 auto; }
 
   </style>
 </head>
@@ -616,7 +622,7 @@
       </div>
     </nav>
     <div class="footer-bottom">
-      <div class="footer-copy">&copy; 2025 - 2026 <strong>Layerbit Technologies</strong>. Code open source under AGPL-3.0.</div>
+      <div class="footer-copy">&copy; 2025 - 2026 <strong>Layerbit AI LLP</strong>. Code open source under AGPL-3.0.</div>
       <div class="footer-links">
         <a href="../about.html">About</a>
         <a href="../work.html">Apps &amp; websites</a>

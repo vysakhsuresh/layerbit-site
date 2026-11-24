@@ -633,7 +633,10 @@ Raw HTML is allowed but sanitized: <a href="javascript:alert('nope')" onclick="a
       }
       await writeFile(dir, 'index.json', JSON.stringify(index));
       const keep = new Set(['index.json'].concat(index.docs.flatMap(d => ['doc-' + d.id + '.md'].concat(d.images.map(i => 'img-' + d.id + '-' + i.path.replace(/[^\w.-]/g, '_'))))));
-      for await (const name of dir.keys()) if (!keep.has(name)) await dir.removeEntry(name).catch(() => {});
+      // Remove only our own stale document and image files: never a write in
+      // progress (Chrome's .crswap) or a file this tab did not create, so a
+      // second open tab saving at the same moment is not cut off.
+      for await (const name of dir.keys()) if (!keep.has(name) && /^(doc-[\w-]+\.md|img-.+)$/.test(name) && !name.endsWith('.crswap')) await dir.removeEntry(name).catch(() => {});
     }
     async function loadAll() {
       const root = await navigator.storage.getDirectory(), dir = await root.getDirectoryHandle(DIR), out = [];

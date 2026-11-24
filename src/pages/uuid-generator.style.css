@@ -16,3 +16,12 @@
     .validate-body .bad { color: #f87171; }
     .validate-body .warn { color: #f59e0b; }
     .table-scroll { overflow: auto; max-height: 420px; max-width: 100%; }
+
+    /* Generate pane: the settings take the room they need and the output list
+       below them fills the rest, so no option is cut off or hidden in a
+       scroll box. */
+    .ide-container > .pane:first-child > .pane-body { flex: none; overflow: visible; }
+    .ide-container > .pane:first-child > #outputArea { flex: 1 1 auto; }
+
+    /* One identifier per line, never broken across two: the list scrolls sideways on narrow screens. */
+    #outputArea { white-space: pre; overflow-wrap: normal; overflow-x: auto; }
