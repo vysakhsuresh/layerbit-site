@@ -4747,6 +4747,63 @@ def _(t):
     eq(t.call(TZ_CARD % ("Asia/Kolkata", ".tz-time")), "14:30", "24-hour clock")
 
 
+@case("time-zone-converter", "typical", "2.16: ambiguous IST and CST offer their other meanings, one click switches")
+def _(t):
+    t.call("setState({ d: '2026-12-01', t: '09:00', src: 'Asia/Dubai', zones: ['Europe/London'], h12: false })")
+    t.set("quick", "3pm IST to CST"); t.click("#btnQuick"); t.wait(80)
+    expect(t.visible("#ambigBar"), "no ambiguity prompt")
+    opts = t.call("[...document.querySelectorAll('#ambigBar .ambig-opt')].map(b => [b.dataset.zone, b.getAttribute('aria-pressed')])")
+    expect(["Asia/Kolkata", "true"] in opts and ["Asia/Jerusalem", "false"] in opts and ["Asia/Shanghai", "false"] in opts, opts)
+    t.click("#ambigBar .ambig-opt[data-zone='Asia/Jerusalem']"); t.wait(60)
+    eq(t.call("document.querySelector('.tz-card.src').dataset.zone"), "Asia/Jerusalem", "source switched to Israel")
+    t.click("#ambigBar .ambig-opt[data-zone='Asia/Shanghai']"); t.wait(60)
+    zones = t.call("[...document.querySelectorAll('.tz-card')].map(c => c.dataset.zone)")
+    expect("Asia/Shanghai" in zones and "America/Chicago" not in zones, zones)
+    t.set("quick", "9am Dubai to London"); t.click("#btnQuick"); t.wait(60)
+    expect(not t.visible("#ambigBar"), "prompt should clear for unambiguous names")
+
+
+@case("time-zone-converter", "typical", "2.16: .ics invite in UTC with every local time")
+def _(t):
+    t.call("setState({ d: '2026-12-01', t: '13:00', src: 'Asia/Dubai', zones: ['Europe/London', 'America/New_York'], h12: false })")
+    t.set("meetTitle", "Quarterly review"); t.select("meetDur", "45")
+    with t.page.expect_download() as dl:
+        t.click("#btnIcs")
+    eq(dl.value.suggested_filename, "quarterly-review.ics", "file name")
+    body = open(dl.value.path(), encoding="utf-8", newline="").read().replace("\r\n ", "")
+    for needle in ["DTSTART:20261201T090000Z", "DTEND:20261201T094500Z", "SUMMARY:Quarterly review", "New York (US Eastern): Tue 2026-12-01 04:00", "?at=2026-12-01T09%3A00Z"]:
+        expect(needle in body, needle + " missing from " + body)
+    expect("Invite downloaded" in t.text("meetHint"), t.text("meetHint"))
+
+
+@case("time-zone-converter", "typical", "2.16: a meeting link opens the slot in the recipient's own zone")
+def _(t):
+    t.call("setState({ d: '2026-12-01', t: '13:00', src: 'Asia/Dubai', zones: ['Europe/London'], h12: false })")
+    t.set("meetTitle", "Launch call"); t.select("meetDur", "60")
+    t.page.context.grant_permissions(["clipboard-read", "clipboard-write"])
+    t.click("#btnSlotLink"); t.wait(80)
+    url = t.text("meetHint").split("Meeting link copied: ")[1].strip()
+    expect("at=2026-12-01T09%3A00Z" in url and "src=Asia%2FDubai" in url and "dur=60" in url and "title=Launch+call" in url, url)
+    t.page.goto(url, wait_until="load"); t.wait(300)
+    expect(t.visible("#sharedBanner"), "no banner")
+    b = t.text("sharedBanner")
+    expect('"Launch call"' in b and "1 hour" in b and "your time zone" in b, b)
+    eq(t.val("date"), "2026-12-01", "date"); eq(t.val("time"), "13:00", "time in the sender's zone")
+    eq(t.call("document.querySelector('.tz-card.src').dataset.zone"), "Asia/Dubai", "source zone")
+    zones = t.call("[...document.querySelectorAll('.tz-card')].map(c => c.dataset.zone)")
+    expect("Europe/London" in zones, zones)
+
+
+@case("time-zone-converter", "typical", "2.16: upcoming clock changes for each place")
+def _(t):
+    t.call("setState({ d: '2026-12-01', t: '13:00', src: 'Asia/Dubai', zones: ['Europe/London', 'America/New_York'], h12: false })")
+    items = t.call("[...document.querySelectorAll('#dstList li')].map(l => l.textContent.replace(/\\s+/g, ' ').trim())")
+    eq(len(items), 3, "one line per place")
+    expect("no clock changes" in items[0], items[0])
+    expect("Forward 1 h" in items[1] and "Back 1 h" in items[1] and "at 01:00" in items[1], items[1])
+    expect("at 02:00" in items[2], items[2])
+
+
 @case("number-base-converter", "minimal", "255 converts to every base")
 def _(t):
     h = t.html("outTable")

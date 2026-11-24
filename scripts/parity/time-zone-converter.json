@@ -1,0 +1,40 @@
+{
+  "tool": "time-zone-converter",
+  "page": "tools/time-zone-converter.html",
+  "competitors": [
+    { "name": "World Time Buddy", "price": "freemium", "checked": "2026-11" }
+  ],
+  "claims": [
+    {
+      "feature": ".ics invite export",
+      "competitor": "World Time Buddy",
+      "tests": [
+        "ui:time-zone-converter:2.16: .ics invite in UTC with every local time",
+        "unit:tz:ics: a valid UTC event with every local time, escaped and folded"
+      ]
+    },
+    {
+      "feature": "Shareable meeting-slot link",
+      "competitor": "World Time Buddy",
+      "tests": [
+        "ui:time-zone-converter:2.16: a meeting link opens the slot in the recipient's own zone"
+      ]
+    },
+    {
+      "feature": "Upcoming DST changes",
+      "competitor": "World Time Buddy",
+      "tests": [
+        "ui:time-zone-converter:2.16: upcoming clock changes for each place",
+        "unit:tz:upcoming clock changes"
+      ]
+    },
+    {
+      "feature": "Ambiguity prompt for CST/IST-style abbreviations",
+      "competitor": "World Time Buddy",
+      "tests": [
+        "ui:time-zone-converter:2.16: ambiguous IST and CST offer their other meanings, one click switches",
+        "unit:tz:ambiguous abbreviations are reported with every meaning"
+      ]
+    }
+  ]
+}

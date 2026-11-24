@@ -7,8 +7,8 @@
       "@id": "https://layerbit.co.in/tools/time-zone-converter.html#app",
       "name": "Time Zone Converter \u0026 Meeting Planner",
       "url": "https://layerbit.co.in/tools/time-zone-converter.html",
-      "description": "Convert time between any time zones, such as Dubai to India or IST to EST, with daylight saving handled, and find meeting hours that suit every city.",
-      "applicationCategory": "UtilitiesApplication",
+      "description": "Convert time between zones (Dubai to India, IST to EST) with daylight saving, find meeting hours for every city, and send an .ics invite or meeting link.",
+      "applicationCategory": "DeveloperApplication",
       "operatingSystem": "Any (runs in the browser)",
       "browserRequirements": "Requires JavaScript",
       "isAccessibleForFree": true,
@@ -21,13 +21,13 @@
         "@id": "https://layerbit.co.in/#organization"
       },
       "featureList": [
-        "Convert a time between any IANA time zones",
-        "Daylight saving applied for the chosen date",
+        "Conversion between any IANA time zones with daylight saving for the exact date",
         "Plain-English input such as 3pm IST to EST",
-        "Search by city, country or abbreviation",
-        "Warnings for skipped and repeated times on clock-change nights",
-        "24-hour meeting planner with shared working hours",
-        "Shareable links"
+        "Ambiguous abbreviations offered as one-click alternatives",
+        "Warnings for skipped and repeated local times",
+        "Meeting planner with shared working hours",
+        ".ics calendar invite and a meeting link that opens in each recipient's time zone",
+        "Upcoming daylight-saving changes for every city"
       ]
     },
     {
@@ -49,7 +49,7 @@
         {
           "@type": "ListItem",
           "position": 3,
-          "name": "Time Zone Converter",
+          "name": "--features",
           "item": "https://layerbit.co.in/tools/time-zone-converter.html"
         }
       ]
@@ -87,7 +87,7 @@
           "name": "What do GST, IST, EST, PST and BST stand for?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "GST is Gulf Standard Time (UTC+4) in the UAE and Oman. IST is Indian Standard Time (UTC+5:30). EST and EDT are US Eastern Standard and Daylight Time (UTC−5 and UTC−4), PST and PDT are US Pacific (UTC−8 and UTC−7), and GMT and BST are the UK's winter and summer time (UTC+0 and UTC+1). Abbreviations are ambiguous, since IST is also used in Ireland and Israel, so the converter reads IST as India and also accepts city names, which are never ambiguous."
+            "text": "GST is Gulf Standard Time (UTC+4) in the UAE and Oman. IST is Indian Standard Time (UTC+5:30). EST and EDT are US Eastern Standard and Daylight Time (UTC−5 and UTC−4), PST and PDT are US Pacific (UTC−8 and UTC−7), and GMT and BST are the UK's winter and summer time (UTC+0 and UTC+1). Abbreviations are ambiguous: IST is also Israel and Ireland, CST is also China and Cuba, BST is also Bangladesh and PST is also the Philippines. The converter picks the most common meaning, shows the others as buttons so you can switch with one click, and also accepts city names, which are never ambiguous."
           }
         },
         {
@@ -108,10 +108,18 @@
         },
         {
           "@type": "Question",
+          "name": "How do I send a meeting time to people in other countries?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Set the date and time, give the meeting a title and length, then either download the .ics invite or copy the meeting link. The invite is stored in UTC, so Google Calendar, Outlook and Apple Calendar each show it at the right local time, and its description lists the time in every city on your list. The link opens this converter at that exact moment and adds the recipient's own time zone at the top, so nobody has to do the arithmetic."
+          }
+        },
+        {
+          "@type": "Question",
           "name": "Is my time or location sent anywhere?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "No. The converter reads your device's time zone from the browser to choose a starting city, and every conversion is done by JavaScript on this page using the browser's own time zone data. Nothing is sent to a server, and the page keeps working offline once it has loaded."
+            "text": "No. The converter reads your device's time zone from the browser to choose a starting city, and every conversion is done by JavaScript on this page using the browser's own time zone data. Nothing is sent to a server, and the page keeps working offline once it has loaded. The .ics invite is built in the page, and a meeting link carries only the time, the zones, the length and the title you typed."
           }
         }
       ]

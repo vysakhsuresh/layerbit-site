@@ -39,6 +39,7 @@ def INPUTS(c):
         "cron-generator": {"cronInput": "*/15 9-17 * * 1-5"},
         "color-converter": {"colorInput": "#e11d48"},
         "timestamp-converter": {"tsInput": "1700000000"},
+        "time-zone-converter": {"quick": "3pm IST to CST"},
         "uuid-generator": {},
         "markdown-preview": {},
         "vat-gst-calculator": {"hsnSearch": "coffee"},
