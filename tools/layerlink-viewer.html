@@ -57,7 +57,7 @@
 
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6072772587431629" crossorigin="anonymous"></script>
 
-  <script src="../js/vendor/lucide.min.js?v=9ccd8f7461" async></script>
+  <script src="../js/vendor/lucide.min.js?v=978da2bf0f" async></script>
 
   <link rel="icon" href="../favicon.ico" sizes="16x16 32x32 48x48" />
   <link rel="icon" href="../favicon-48.png" type="image/png" sizes="48x48" />
@@ -66,8 +66,8 @@
   <link rel="alternate" type="application/atom+xml" title="Layerbit developer guides" href="https://layerbit.co.in/feed.xml" />
   <link rel="apple-touch-icon" href="../apple-touch-icon.png" />
   <link rel="stylesheet" href="../css/base.css?v=2b24d32e4f" />
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+  <script src="../js/vendor/firebase/firebase-app-compat.js?v=c20d6f1fae"></script>
+  <script src="../js/vendor/firebase/firebase-database-compat.js?v=786adbb153"></script>
 
   <style>
 
@@ -180,6 +180,42 @@
       .fab { bottom: 20px; left: 20px; width: 50px; height: 50px; background: rgba(20, 22, 30, 0.98); -webkit-backdrop-filter: none; backdrop-filter: none; }
     }
   
+    /* Multi-viewer rooms (v2) */
+    .draw-canvas { position: absolute; width: 100%; height: 100%; max-height: calc(100vh - 65px); z-index: 2; pointer-events: none; touch-action: none; }
+    .join-form { display: flex; flex-direction: column; gap: 12px; min-width: min(360px, 86vw); text-align: left; }
+    .join-form h2 { margin-top: 0 !important; }
+    .join-form label { display: flex; flex-direction: column; gap: 6px; font-size: 0.9em; opacity: 0.9; }
+    .join-form input, .ll-field input, .ll-inline select, .chat-form input {
+      background: rgba(0,0,0,0.35); border: 1px solid var(--card-border); color: #fff;
+      border-radius: 8px; padding: 10px 12px; font: inherit; min-width: 0;
+    }
+    .join-form .sample-btn { margin: 4px 0 0 0; border-color: var(--accent-main); color: var(--accent-main); }
+    .join-error { color: #f87171; min-height: 1.2em; margin: 0 !important; opacity: 1 !important; }
+    .collab { max-width: 1400px; width: 100%; margin: 20px auto 0 auto; padding: 0 20px; display: flex; flex-direction: column; gap: 10px; }
+    .collab[hidden] { display: none; }
+    .collab-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+    .collab-bar .sample-btn { margin: 0; display: inline-flex; align-items: center; gap: 6px; }
+    .collab-bar .sample-btn svg.lucide { width: 16px; height: 16px; }
+    .collab-grid { display: grid; grid-template-columns: 3fr 2fr; gap: 20px; }
+    .collab-card { background: rgba(255,255,255,0.03); border: 1px solid var(--card-border); border-radius: 14px; padding: 18px; display: flex; flex-direction: column; gap: 12px; }
+    .ll-sub { font-size: 1.05em; display: flex; align-items: center; gap: 8px; margin: 0; }
+    .ll-hint { font-size: 0.85em; color: var(--text-muted); margin: 0; }
+    .ll-inline { display: inline-flex; align-items: center; gap: 8px; font-size: 0.9em; color: var(--text-muted); }
+    .ll-field { display: flex; flex-direction: column; gap: 6px; font-size: 0.9em; color: var(--text-muted); }
+    .ll-danger { border-color: rgba(239,68,68,0.45) !important; color: #f87171 !important; }
+    .chat-log { min-height: 140px; max-height: 300px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; padding: 12px; border: 1px solid var(--card-border); border-radius: 10px; background: rgba(0,0,0,0.25); }
+    .chat-msg { overflow-wrap: anywhere; line-height: 1.45; }
+    .chat-msg.mine strong { color: var(--accent-main); }
+    .chat-form { display: flex; gap: 10px; }
+    .chat-form input { flex: 1; }
+    .chat-form .sample-btn { margin: 0; }
+    .file-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; overflow-wrap: anywhere; }
+    .file-list a, #recordStatus a { color: var(--accent-main); }
+    @media (max-width: 800px) { .collab-grid { grid-template-columns: 1fr; } }
+    .collab-card { min-width: 0; }
+    .ll-field input[type="file"] { max-width: 100%; }
+    @media (max-width: 800px) { .collab-grid { grid-template-columns: minmax(0, 1fr); } }
+
   </style>
 </head>
 <body>
@@ -225,7 +261,43 @@
     </div>
 
     <video id="video" autoplay playsinline muted></video>
+    <canvas id="drawCanvas" class="draw-canvas" aria-label="Drawing layer over the shared screen"></canvas>
   </div>
+
+  <section class="collab" id="collabPanel" hidden aria-label="Chat, files and drawing">
+    <div class="collab-bar">
+      <button type="button" class="sample-btn" id="btnSound" onclick="toggleSound()"><i data-lucide="volume-2"></i> <span id="soundLabel">No sound shared</span></button>
+      <button type="button" class="sample-btn" id="btnDraw" aria-pressed="false" onclick="toggleDraw()"><i data-lucide="pencil"></i> <span id="drawLabel">Draw on screen</span></button>
+      <label class="ll-inline">Colour
+        <select id="drawColor">
+          <option value="#38bdf8">Blue</option><option value="#f43f5e">Red</option><option value="#facc15">Yellow</option><option value="#22c55e">Green</option><option value="#ffffff">White</option>
+        </select>
+      </label>
+      <button type="button" class="sample-btn" id="btnClearDraw" onclick="clearDrawing()"><i data-lucide="eraser"></i> Clear drawings</button>
+      <button type="button" class="sample-btn" id="btnRecord" onclick="toggleRecording()"><i data-lucide="circle"></i> <span id="recordLabel">Record</span></button>
+      <button type="button" class="sample-btn ll-danger" id="btnLeave" onclick="leaveBroadcast()"><i data-lucide="log-out"></i> Leave</button>
+    </div>
+    <p class="ll-hint" id="drawStatus">Drawings appear over the video for the broadcaster and every viewer. They do not touch the broadcaster's computer.</p>
+    <p class="ll-hint" id="recordStatus"></p>
+    <div class="collab-grid">
+      <div class="collab-card">
+        <h2 class="ll-sub"><i data-lucide="message-square"></i> Chat</h2>
+        <div class="chat-log" id="chatLog" aria-live="polite"><p class="ll-hint" id="chatEmpty">Messages go to the broadcaster and the other viewers over the encrypted peer connection.</p></div>
+        <form class="chat-form" id="chatForm" onsubmit="event.preventDefault(); sendChat();">
+          <input type="text" id="chatInput" maxlength="2000" placeholder="Message everyone" aria-label="Chat message" autocomplete="off" />
+          <button type="submit" class="sample-btn" id="btnChatSend">Send</button>
+        </form>
+      </div>
+      <div class="collab-card">
+        <h2 class="ll-sub"><i data-lucide="paperclip"></i> Files</h2>
+        <label class="ll-field">Send a file to the broadcaster
+          <input type="file" id="fileSend" />
+        </label>
+        <p class="ll-hint" id="fileStatus">Files go only to the broadcaster, directly. Files the broadcaster sends appear here.</p>
+        <ul class="file-list" id="fileList"></ul>
+      </div>
+    </div>
+  </section>
 
   <!-- Documentation & Educational Content -->
   <div class="docs-container">
@@ -278,6 +350,20 @@
         </div>
 
         <div class="faq-item">
+          <button class="faq-question">Why am I asked for a name or a password? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer">
+            <p>Broadcasts started from the LayerLink web sharer can hold several viewers. Your name is what the broadcaster sees when deciding whether to let you in, and what labels your chat messages. If the broadcaster set a password, it is checked in your browser against an encrypted token; the password itself is never sent. Without it, the connection details cannot be decrypted, so the broadcast cannot be joined.</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question">Who sees my chat messages, drawings and files? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer">
+            <p>Chat and drawings go to the broadcaster, who passes them on to the other viewers in the room. Files you send go to the broadcaster only. All of it travels over the encrypted peer connection, not through the signalling service. Broadcasts from the LayerLink Android app are view-only.</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
           <button class="faq-question">What happens if the host disconnects? <i data-lucide="chevron-down"></i></button>
           <div class="faq-answer">
             <p>If the host stops sharing their screen or closes their browser tab, the peer-to-peer connection state will immediately detect the failure, terminate the video feed, and display a "Signal Lost" error state.</p>
@@ -325,6 +411,7 @@
     <div class="info-panel">
       <h2><i data-lucide="git-merge"></i> Deployment Changelog</h2>
       <ul class="changelog-list">
+        <li><span class="changelog-tag">v2.0.0</span> Joins multi-viewer broadcasts from the web sharer: name and optional room password before joining, a waiting screen while the broadcaster decides, sound when the broadcaster shares audio, chat, files both ways, drawing over the video and recording to your own device. Links from the LayerLink Android app keep using the original connection. The Firebase library is now served from this site rather than a CDN.</li>
         <li><span class="changelog-tag">v1.3.0</span> Deployed enterprise documentation architecture and UI state simulation tools for the viewer terminal.</li>
         <li><span class="changelog-tag">v1.2.0</span> Added automatic fallback handling for browser autoplay policies to ensure the stream plays even if muted by the client OS.</li>
         <li><span class="changelog-tag">v1.1.0</span> Resolved a critical race condition by queueing remote ICE candidates until the local WebRTC description is fully established.</li>
@@ -421,6 +508,7 @@
         <a href="../about.html">About</a>
         <a href="../work.html">Apps &amp; websites</a>
         <a href="../blog.html">Developer Blog</a>
+        <a href="../compare.html">How we compare</a>
         <a href="../contact.html">Contact</a>
         <a href="../privacy.html">Privacy Policy</a>
         <a href="../terms.html">Terms of Service</a>
@@ -439,6 +527,7 @@
   </a>
 
   <script src="../js/shared.js?v=e2441a1728"></script>
+  <script src="../js/engines/layerlink.js?v=2672b43672"></script>
 
 
   <script>
@@ -452,8 +541,13 @@
       messagingSenderId: "164370572506",
       appId: "1:164370572506:web:cbeed3bfa6cb67c902b1e3"
     };
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
+    // ?signal=local swaps Firebase for a same-browser test channel (localStorage), and only on
+    // this machine: it is how the automated tests run two pages against each other offline.
+    const LOCAL_SIGNAL = new URLSearchParams(location.search).get('signal') === 'local' && /^(localhost|127\.0\.0\.1)$/.test(location.hostname);
+    let db = null;
+    if (!LOCAL_SIGNAL && window.firebase) {
+      try { firebase.initializeApp(firebaseConfig); db = firebase.database(); } catch (e) { console.warn('Signalling service unavailable.', e); }
+    }
 
     const statusUI = document.getElementById('statusUI');
     const overlayMsg = document.getElementById('overlayMsg');
@@ -706,8 +800,8 @@
     const params = new URLSearchParams(location.search);
     const sessionId = params.get("session");
     
-    if (sessionId) {
-      // Valid session ID found, initialize WebRTC
+    // The original one-viewer protocol, shared with the LayerLink Android app. Unchanged.
+    function legacyJoin() {
       setStatus('searching');
       const conn = db.ref("sessions/" + sessionId);
 
@@ -843,6 +937,217 @@
 
       connect();
       })();
+    }
+
+    // ---------------------------------------------------------- multi-viewer rooms
+    const collabPanel = document.getElementById('collabPanel');
+    const chatLog = document.getElementById('chatLog');
+    const chatInput = document.getElementById('chatInput');
+    const fileList = document.getElementById('fileList');
+    const fileStatus = document.getElementById('fileStatus');
+    const recordStatus = document.getElementById('recordStatus');
+    let viewer = null, board = null, rec = null, recUrl = null, multiLive = false;
+
+    function el(tag, cls, text) { const e = document.createElement(tag); if (cls) e.className = cls; if (text !== undefined) e.textContent = text; return e; }
+    function fmtBytes(n) { return n < 1024 ? n + ' B' : n < 1048576 ? (n / 1024).toFixed(1) + ' KB' : (n / 1048576).toFixed(1) + ' MB'; }
+
+    function showMessage(icon, heading, body, status, retry) {
+      statusUI.className = 'status-indicator' + (status.error ? ' error' : '');
+      statusUI.innerHTML = `<i data-lucide="${status.icon}"></i> `;
+      statusUI.appendChild(document.createTextNode(status.text));
+      overlayMsg.style.display = 'flex';
+      videoElement.style.display = 'none';
+      overlayMsg.innerHTML = `
+        <i data-lucide="${icon}" style="width: 48px; height: 48px; color: var(--accent-main);"></i>
+        <h2 style="font-weight: 600; font-size: 1.5em; margin-top: 15px;"></h2>
+        <p style="opacity: 0.7; margin-top: 10px; max-width: 38ch;"></p>
+        ${retry ? TRY_AGAIN_BUTTON : ''}`;
+      overlayMsg.querySelector('h2').textContent = heading;
+      overlayMsg.querySelector('p').textContent = body;
+      safeCreateIcons();
+    }
+
+    function addChat(m, mine) {
+      const empty = document.getElementById('chatEmpty'); if (empty) empty.remove();
+      const row = el('div', 'chat-msg' + (mine ? ' mine' : ''));
+      row.appendChild(el('strong', '', (m.from || 'Host') + ': '));
+      row.appendChild(document.createTextNode(m.text));
+      row.appendChild(el('time', 'll-hint', ' ' + new Date(m.at || Date.now()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })));
+      chatLog.appendChild(row);
+      chatLog.scrollTop = chatLog.scrollHeight;
+    }
+    function sendChat() {
+      const text = chatInput.value.trim();
+      if (!text || !viewer) return;
+      const m = viewer.chat(text);
+      if (m) { addChat(m, true); chatInput.value = ''; }
+    }
+    function addFile(d) {
+      const li = el('li');
+      const a = el('a', '', d.name);
+      a.href = URL.createObjectURL(d.blob); a.download = d.name;
+      li.append(a, el('span', 'll-hint', ' ' + fmtBytes(d.size) + ' from ' + (d.from || 'the broadcaster') + (d.complete ? '' : ' (incomplete)')));
+      fileList.prepend(li);
+      fileStatus.textContent = 'Received ' + d.name + '. Only save files from people you trust.';
+    }
+    document.getElementById('fileSend').addEventListener('change', async e => {
+      const f = e.target.files[0];
+      if (!f || !viewer) return;
+      fileStatus.textContent = 'Sending ' + f.name + ' (' + fmtBytes(f.size) + ') to the broadcaster…';
+      try { await viewer.sendFile(f); fileStatus.textContent = 'Sent ' + f.name + ' (' + fmtBytes(f.size) + ') to the broadcaster.'; }
+      catch (err) { fileStatus.textContent = 'Sending ' + f.name + ' stopped: ' + err.message; }
+      e.target.value = '';
+    });
+    function toggleDraw() {
+      if (!board) return;
+      board.setEnabled(!board.enabled);
+      document.getElementById('btnDraw').setAttribute('aria-pressed', String(board.enabled));
+      document.getElementById('drawLabel').textContent = board.enabled ? 'Stop drawing' : 'Draw on screen';
+    }
+    document.getElementById('drawColor').addEventListener('change', e => {
+      if (board) board.color = e.target.value;
+      document.getElementById('drawStatus').textContent = 'New strokes are ' + e.target.selectedOptions[0].text.toLowerCase() + '. Everyone in the room sees them over the video.';
+    });
+    function clearDrawing() {
+      if (!board) return;
+      const had = board.strokes.length;
+      board.clear(); if (viewer) viewer.clear();
+      document.getElementById('drawStatus').textContent = had ? 'Cleared ' + had + (had === 1 ? ' drawing' : ' drawings') + ' for everyone.' : 'There was nothing to clear.';
+    }
+    function updateSound() {
+      const has = !!(viewer && viewer.remote.getAudioTracks().length);
+      const b = document.getElementById('btnSound');
+      b.disabled = !has;
+      document.getElementById('soundLabel').textContent = !has ? 'No sound shared' : videoElement.muted ? 'Turn sound on' : 'Mute';
+    }
+    function toggleSound() {
+      videoElement.muted = !videoElement.muted;
+      videoElement.play().catch(() => {});
+      updateSound();
+    }
+    function toggleRecording() {
+      if (!viewer) return;
+      const label = document.getElementById('recordLabel');
+      if (!rec) {
+        try { rec = LBLink.recorder(viewer.remote); rec.start(); }
+        catch (e) { rec = null; recordStatus.textContent = 'This browser cannot record here: ' + e.message; return; }
+        label.textContent = 'Stop recording';
+        recordStatus.textContent = 'Recording to this device only. Nothing is uploaded.';
+        return;
+      }
+      const r = rec; rec = null;
+      label.textContent = 'Record';
+      r.stop().then(blob => {
+        if (recUrl) URL.revokeObjectURL(recUrl);
+        recUrl = URL.createObjectURL(blob);
+        const ext = /mp4/.test(blob.type) ? 'mp4' : 'webm';
+        recordStatus.innerHTML = '';
+        const a = el('a', '', 'Save the recording (' + fmtBytes(blob.size) + ')'); a.href = recUrl; a.id = 'recordLink';
+        a.download = 'layerlink-' + new Date().toISOString().slice(0, 16).replace(/[-:T]/g, '') + '.' + ext;
+        recordStatus.appendChild(a);
+      });
+    }
+    function endRoom(kind) {
+      clearReconnectCountdown();
+      if (rec) toggleRecording();
+      if (viewer) viewer.leave();
+      viewer = null;
+      collabPanel.querySelectorAll('button, input, select').forEach(x => { x.disabled = true; });
+      if (kind === 'removed') showMessage('user-x', 'You were removed from this broadcast', 'The broadcaster ended your connection.', { icon: 'user-x', text: 'Removed' });
+      else if (kind === 'left') showMessage('log-out', 'You left the broadcast', 'Reload this page to ask to join again.', { icon: 'log-out', text: 'Left' }, true);
+      else setStatus('ended');
+    }
+    function leaveBroadcast() { endRoom('left'); }
+
+    function joinForm(meta, signal, iceServers) {
+      statusUI.className = 'status-indicator ready';
+      statusUI.innerHTML = `<i data-lucide="log-in"></i> Ready to join`;
+      overlayMsg.style.display = 'flex';
+      overlayMsg.innerHTML = `
+        <form id="joinForm" class="seo-content-block join-form">
+          <h2>Join the broadcast</h2>
+          <p>${meta.approval ? 'The broadcaster lets each viewer in, so you may wait a moment after joining.' : 'You join as soon as you continue.'}</p>
+          <label>Your name <input type="text" id="viewerName" maxlength="40" autocomplete="nickname" placeholder="Viewer" /></label>
+          ${meta.locked ? '<label>Room password <input type="password" id="joinPassword" autocomplete="current-password" /></label>' : ''}
+          <p id="joinError" class="join-error" role="alert"></p>
+          <button type="submit" class="sample-btn" id="btnJoin">Join</button>
+        </form>`;
+      safeCreateIcons();
+      const nameIn = document.getElementById('viewerName');
+      try { nameIn.value = localStorage.getItem('layerlink-viewer-name') || ''; } catch (e) {}
+      document.getElementById('joinForm').addEventListener('submit', async e => {
+        e.preventDefault();
+        const pwIn = document.getElementById('joinPassword');
+        const pw = pwIn ? pwIn.value : '';
+        const err = document.getElementById('joinError');
+        if (meta.locked && !pw) { err.textContent = 'This broadcast needs a password. Ask the broadcaster for it.'; return; }
+        document.getElementById('btnJoin').disabled = true;
+        if (meta.locked && !(await LBLink.checkPassword(meta, pw, sessionId))) {
+          err.textContent = 'That password is not right.';
+          document.getElementById('btnJoin').disabled = false;
+          return;
+        }
+        const name = (nameIn.value || '').trim().slice(0, 40) || 'Viewer';
+        try { if (nameIn.value.trim()) localStorage.setItem('layerlink-viewer-name', name); } catch (e2) {}
+        startViewer(meta, signal, iceServers, name, pw);
+      });
+    }
+
+    function startViewer(meta, signal, iceServers, name, pw) {
+      viewer = new LBLink.Viewer({ signal, sid: sessionId, name, iceServers });
+      viewer.password = pw;
+      board = new LBLink.Board(document.getElementById('drawCanvas'), videoElement, st => viewer && viewer.draw(st.pts, st.color));
+      board.color = document.getElementById('drawColor').value;
+      viewer.on('status', st => {
+        if (!viewer) return;
+        if (st === 'pending') showMessage('hourglass', 'Waiting for the broadcaster', 'You have asked to join. The broadcaster will let you in shortly.', { icon: 'loader', text: 'Waiting' });
+        else if (st === 'approved') { if (!multiLive) setStatus('connecting'); }
+        else if (st === 'denied') { viewer.leave(); viewer = null; showMessage('user-x', 'The broadcaster did not let you in', 'Ask them to try again, then reload this page.', { icon: 'user-x', text: 'Not admitted' }, true); }
+        else if (st === 'full') { viewer.leave(); viewer = null; showMessage('users', 'This broadcast is full', 'It has reached the number of viewers the broadcaster allowed. Try again when someone leaves.', { icon: 'users', text: 'Full' }, true); }
+        else if (st === 'removed') endRoom('removed');
+      });
+      viewer.on('answered', () => { setStatus('connecting'); startReconnectCountdown('connecting'); });
+      viewer.on('track', ev => {
+        videoElement.srcObject = viewer.remote;
+        if (viewer.remote.getAudioTracks().length) videoElement.muted = false;
+        videoElement.play().catch(() => { videoElement.muted = true; videoElement.play().catch(() => {}); updateSound(); });
+        updateSound();
+      });
+      viewer.on('state', st => {
+        if (st === 'connected') { clearReconnectCountdown(); multiLive = true; setStatus('live'); collabPanel.hidden = false; safeCreateIcons(); board.redraw(); }
+        else if (st === 'disconnected') { if (multiLive) startReconnectCountdown('blip'); }
+        else if (st === 'failed') { clearReconnectCountdown(); connectionFailed = true; reconnectMode = multiLive ? 'blip' : 'connecting'; setStatus('error'); }
+      });
+      viewer.on('password', msg => showMessage('lock', 'Could not open this broadcast', msg, { icon: 'lock', text: 'Password', error: true }, true));
+      viewer.on('chat', m => addChat(m, false));
+      viewer.on('draw', d => board.add({ pts: d.pts, color: d.color }));
+      viewer.on('clear', d => { board.clear(); document.getElementById('drawStatus').textContent = (d.from || 'Someone') + ' cleared the drawings.'; });
+      viewer.on('file', addFile);
+      viewer.on('file-progress', d => { fileStatus.textContent = 'Receiving ' + d.name + ': ' + Math.round(100 * d.got / Math.max(1, d.size)) + '%'; });
+      viewer.on('error', e => console.warn('LayerLink:', e));
+      signal.onValue('sessions/' + sessionId + '/multi', m => { if (!m && viewer && !connectionFailed) endRoom('ended'); });
+      setStatus('connecting');
+      viewer.join().catch(e => { console.warn(e); showMessage('wifi-off', 'Could not reach the broadcast', 'The signalling service did not accept the request to join. Try again in a moment.', { icon: 'wifi-off', text: 'Offline', error: true }, true); });
+      window.addEventListener('pagehide', () => { if (viewer) viewer.leave(); });
+    }
+
+    if (sessionId) {
+      if (!LOCAL_SIGNAL && !db) {
+        connectionFailed = true;
+        showMessage('wifi-off', 'Could not reach the signalling service', 'This page could not load the service that introduces the two browsers. Check your connection or any blocker, then try again.', { icon: 'wifi-off', text: 'Offline', error: true }, true);
+      } else {
+        const signal = LOCAL_SIGNAL ? LBLink.localSignal() : LBLink.firebaseSignal(db);
+        setStatus('searching');
+        (async () => {
+          let meta = null;
+          try {
+            meta = await Promise.race([signal.get('sessions/' + sessionId + '/multi'), new Promise(ok => setTimeout(() => ok(null), 20000))]);
+          } catch (e) { console.warn('Could not read the room settings; trying a one-viewer connection.', e); }
+          if (meta && meta.v === 1) joinForm(meta, signal, LOCAL_SIGNAL ? [] : await loadIceServers());
+          else if (LOCAL_SIGNAL) setStatus('ended');
+          else legacyJoin();
+        })();
+      }
     }
   </script>
   <script src="../main.js?v=8db3ffd433"></script>

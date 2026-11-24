@@ -1,0 +1,66 @@
+{
+  "tool": "layerlink-sharer",
+  "page": "tools/layerlink-sharer.html",
+  "competitors": [
+    {
+      "name": "AnyDesk (free personal plan)",
+      "price": "free for personal use; paid plans for business",
+      "checked": "2026-11"
+    }
+  ],
+  "claims": [
+    {
+      "feature": "Several viewers at once, each on a direct peer connection, with a room limit",
+      "competitor": "AnyDesk (free personal plan)",
+      "tests": [
+        "ui:layerlink-sharer:deny, room limit, remove and stop each reach the viewer",
+        "unit:layerlink:Sharer: approval gate, room limit, deny and remove write the viewer status"
+      ]
+    },
+    {
+      "feature": "Room password that encrypts the signalling data, checked in the viewer's browser",
+      "competitor": "AnyDesk (free personal plan)",
+      "tests": [
+        "ui:layerlink-sharer:password room: wrong password refused, host admits viewer, video and sound arrive",
+        "unit:layerlink:seal and open: password round trip, wrong or missing password refused, no password is plain JSON",
+        "unit:layerlink:checkPassword: the room token accepts the right password only; open rooms need none"
+      ]
+    },
+    {
+      "feature": "Approve, deny or remove each viewer",
+      "competitor": "AnyDesk (free personal plan)",
+      "tests": [
+        "ui:layerlink-sharer:deny, room limit, remove and stop each reach the viewer",
+        "ui:layerlink-sharer:password room: wrong password refused, host admits viewer, video and sound arrive"
+      ]
+    },
+    {
+      "feature": "Shared audio with the screen",
+      "competitor": "AnyDesk (free personal plan)",
+      "tests": [
+        "ui:layerlink-sharer:password room: wrong password refused, host admits viewer, video and sound arrive"
+      ]
+    },
+    {
+      "feature": "Chat, file transfer both ways and drawing over the shared picture, peer to peer",
+      "competitor": "AnyDesk (free personal plan)",
+      "tests": [
+        "ui:layerlink-sharer:chat and files both ways, drawings reach the host, recording saves a file",
+        "unit:layerlink:fitRect: object-fit contain letterboxing, both orientations, empty video"
+      ]
+    },
+    {
+      "feature": "Local recording to a file, nothing uploaded",
+      "competitor": "AnyDesk (free personal plan)",
+      "tests": [
+        "ui:layerlink-sharer:chat and files both ways, drawings reach the host, recording saves a file"
+      ]
+    }
+  ],
+  "gaps": [
+    "AnyDesk lets the other person control your mouse and keyboard; a web page cannot, so LayerLink is view, chat, draw and send files only.",
+    "AnyDesk's paid plans add unattended access, remote restart, remote printing and Wake-on-LAN. None of these is possible from a browser.",
+    "AnyDesk runs on phones as a sharer; browsers on iOS and Android cannot capture the screen, so LayerLink can only be viewed there.",
+    "Each LayerLink viewer is a separate upload from your computer, so it suits a handful of viewers rather than an audience."
+  ]
+}

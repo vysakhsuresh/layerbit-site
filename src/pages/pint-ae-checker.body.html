@@ -3,8 +3,9 @@
   <main id="main" class="page-main">
   <div class="hero">
     <div class="free-badge"><i data-lucide="shield-check"></i>&nbsp;100% Free &middot; Runs Locally</div>
-    <h1>UAE PINT-AE E-Invoice Compliance Checker</h1>
-    <p>Upload your invoice, get a plain-English compliance score, and download a ready-to-use PINT-AE XML file — free, and entirely inside your browser.</p>
+    <h1>UAE PINT-AE E-Invoice Readiness Checker</h1>
+    <p>Check an invoice spreadsheet or a PINT AE XML file against the 51 mandatory fields of a UAE tax invoice and the arithmetic your Accredited Service Provider will re-check, with every issue explained in plain English, then download PINT AE XML as a starting point. Free, and entirely inside your browser.</p>
+    <p class="spec-line" id="specVersion">Checks modelled on <strong>PINT AE Billing 1.0.4</strong> (OpenPeppol) and the Ministry of Finance's <strong>UAE Electronic Invoice Mandatory Fields v1.0</strong> (23 February 2026), with the PINT AE code lists. An independent implementation, not the official Schematron, and not reviewed by an accredited provider: only an ASP can validate and send a UAE e-invoice.</p>
   </div>
 
   <div class="content-wrap">
@@ -47,12 +48,12 @@
         <div class="howto-step">
           <div class="howto-step-num">4</div>
           <h3>Fix what's missing</h3>
-          <p>Follow the plain-language checklist to see exactly what your invoice is missing, if anything.</p>
+          <p>Add your business details once, then follow the checklist: each of the 51 fields is found, worked out for you, not needed, missing or wrong, with the rule behind it.</p>
         </div>
         <div class="howto-step">
           <div class="howto-step-num">5</div>
           <h3>Download your XML</h3>
-          <p>Once your required fields are mapped, download a free PINT-AE compliant XML file — no signup needed.</p>
+          <p>Download PINT AE XML, one file per invoice (a zip when the file holds several), as a starting point for your ASP. No signup needed.</p>
         </div>
       </div>
     </section>
@@ -80,6 +81,27 @@
           <h3><i data-lucide="table-properties"></i> <span id="mappingTitle">Detected Column Mapping</span></h3>
           <p class="mapping-sub" id="mappingSub">We scanned your file's column headers and matched them to PINT-AE fields automatically. Review below and correct anything that looks wrong, then confirm.</p>
           <div id="mappingBody"></div>
+          <div class="party-form" id="partyForm">
+            <div class="mapping-group-label">Your business (the seller)</div>
+            <div class="party-grid">
+              <label>Registered legal name<input type="text" id="sellerName" autocomplete="organization" placeholder="Acme Trading LLC"></label>
+              <label>VAT TRN (15 digits)<input type="text" id="sellerTrn" inputmode="numeric" placeholder="1XXXXXXXXXXXX03"></label>
+              <label>Trade licence or other registration no.<input type="text" id="sellerLegalId" placeholder="CN-1234567"></label>
+              <label>Registration type<select id="sellerLegalType"><option value="TL">TL: commercial or trade licence</option><option value="EID">EID: Emirates ID</option><option value="PAS">PAS: passport</option><option value="CD">CD: cabinet decision</option></select></label>
+              <label>Street address<input type="text" id="sellerStreet" autocomplete="street-address" placeholder="Sheikh Zayed Road"></label>
+              <label>City<input type="text" id="sellerCity" placeholder="Dubai"></label>
+              <label>Emirate<select id="sellerEmirate"><option value="">From the city</option><option value="AUH">AUH: Abu Dhabi</option><option value="DXB">DXB: Dubai</option><option value="SHJ">SHJ: Sharjah</option><option value="AJM">AJM: Ajman</option><option value="UAQ">UAQ: Umm Al Quwain</option><option value="RAK">RAK: Ras Al Khaimah</option><option value="FUJ">FUJ: Fujairah</option></select></label>
+            </div>
+            <div class="mapping-group-label">Buyers, payment and currency</div>
+            <div class="party-grid">
+              <label>Buyer emirate when the file has none<select id="buyerEmirate"><option value="">From the buyer's city</option><option value="AUH">AUH: Abu Dhabi</option><option value="DXB">DXB: Dubai</option><option value="SHJ">SHJ: Sharjah</option><option value="AJM">AJM: Ajman</option><option value="UAQ">UAQ: Umm Al Quwain</option><option value="RAK">RAK: Ras Al Khaimah</option><option value="FUJ">FUJ: Fujairah</option></select></label>
+              <label>Buyer country<input type="text" id="buyerCountry" value="AE" maxlength="2"></label>
+              <label>Payment means<select id="paymentMeans"></select></label>
+              <label>AED per unit of the invoice currency<input type="text" id="exchangeRate" inputmode="decimal" placeholder="only for non-AED invoices, e.g. 3.6725"></label>
+            </div>
+            <div class="flag-row" id="flagRow"></div>
+            <label class="remember-row"><input type="checkbox" id="rememberSeller"> Remember my business details on this device</label>
+          </div>
           <div class="btn-group-center">
             <button class="btn btn-primary" id="btnConfirmMapping"><i data-lucide="check-check"></i> Confirm Mapping &amp; Check Compliance</button>
           </div>
@@ -100,10 +122,14 @@
             </div>
           </div>
           <div class="checklist" id="checklist"></div>
+          <div class="math-list" id="mathList"></div>
+          <div class="invoice-table-wrap" id="invoiceWrap" hidden>
+            <table class="invoice-table" id="invoiceTable"><thead><tr><th>Invoice</th><th>Buyer</th><th>Lines</th><th>Total</th><th>Status</th></tr></thead><tbody></tbody></table>
+          </div>
         </div>
 
         <div class="btn-group-center" id="downloadRow" style="display:none; margin-bottom: 30px;">
-          <button class="btn btn-primary" id="btnDownloadXml" disabled><i data-lucide="download"></i> Download PINT-AE XML</button>
+          <button class="btn btn-primary" id="btnDownloadXml" disabled><i data-lucide="download"></i> <span id="downloadLabel">Download PINT-AE XML</span></button>
           <button class="btn" id="btnPreviewXml"><i data-lucide="eye"></i> Preview XML</button>
           <button class="btn" id="btnStartOver"><i data-lucide="rotate-ccw"></i> Start Over</button>
         </div>
@@ -115,6 +141,19 @@
           <div class="xml-preview" id="xmlPreview"></div>
         </div>
 
+      </div>
+
+      <div class="xmlcheck" id="xmlCheckSection">
+        <h3><i data-lucide="file-search"></i> Already have PINT AE XML? Check it</h3>
+        <p class="mapping-sub">Open or paste an invoice your system or ASP produced. It is read in the page and checked against the same 51 fields and totals.</p>
+        <div class="xmlcheck-row">
+          <label class="btn" for="xmlFile"><i data-lucide="upload"></i> Open XML</label>
+          <input type="file" id="xmlFile" accept=".xml,application/xml,text/xml" hidden>
+          <button class="btn" type="button" id="btnCheckXml"><i data-lucide="check-check"></i> Check pasted XML</button>
+          <button class="btn" type="button" id="btnXmlSample"><i data-lucide="file-code"></i> Sample</button>
+        </div>
+        <textarea id="xmlPaste" class="xml-paste" rows="6" spellcheck="false" placeholder="&lt;Invoice xmlns=&quot;urn:oasis:names:specification:ubl:schema:xsd:Invoice-2&quot; …"></textarea>
+        <div class="xml-report" id="xmlReport" aria-live="polite"></div>
       </div>
 
       <div class="disclaimer-banner">
@@ -175,6 +214,20 @@
           <button class="faq-question">What if I don't have a CSV export from my accounting software? <i data-lucide="chevron-down"></i></button>
           <div class="faq-answer">
             <p>Most accounting tools can export one. In Excel, use File &gt; Save As and choose CSV. In Tally, use Export (Alt+E) and select the Excel or CSV format for your sales register or invoice report. In Zoho Books and QuickBooks, open the Invoices list and use the Export button, choosing CSV or Excel. If none of that is available, you can build a simple spreadsheet by hand with one row per invoice line item and column headers like Invoice Number, Invoice Date, Buyer TRN, Description, Quantity, Unit Price, VAT Rate, and VAT Amount, then upload that file here.</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question">What exactly does the readiness check look at? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer">
+            <p>The 51 fields the Ministry of Finance lists as mandatory for a UAE tax invoice, each with its PINT AE business term (such as IBT-031 for the seller's TRN). For each one it says whether the field was found, worked out for you, not needed for this invoice, missing or wrong. Values are checked against the PINT AE code lists: tax categories, currencies, countries, payment means and UN/ECE unit codes. It applies the UAE rules it can, citing them: a TRN starts with 1 and ends with 03 (ibr-132-ae), the TIN is its first 10 digits (ibr-148-ae), an emirate code is needed for UAE addresses (ibr-128-ae), and a due date is needed when an amount is owed (ibr-127-ae). It also re-does the arithmetic: quantity times price, VAT per line, and every total. It does not run the official Schematron and cannot check signatures, the FTA's registers or your ASP's own rules.</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question">My spreadsheet has many invoices. Does it handle that? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer">
+            <p>Yes. Rows are grouped by the invoice-number column, each group becomes one invoice, and the checklist shows the worst result for each field across all of them with the invoice numbers involved. A table lists every invoice as ready or with its number of issues, and the download is a zip with one PINT AE XML file per invoice plus a CSV readiness report.</p>
           </div>
         </div>
 
@@ -244,6 +297,7 @@
     <div class="info-panel">
       <h2><i data-lucide="git-commit"></i> Changelog</h2>
       <ul class="changelog-list">
+        <li><span class="changelog-tag">v2.0.0</span> Repositioned as a readiness check and rebuilt on a new engine. The 51 mandatory fields of a UAE tax invoice are each checked with their PINT AE business term and, where one applies, the UAE rule (TRN and TIN format, emirate codes, due date, transaction type). PINT AE 1.0.4 code lists are used for categories, currencies, countries, payment means and units. Every total, line amount and VAT figure is recomputed. Seller details are entered once (remembered only if you ask). Several invoices in one file become a zip of XML files with a readiness report. Existing PINT AE XML can be opened and checked. The generated XML now carries the endpoint IDs, addresses, legal registration, tax breakdown, item names, prices and AED amounts the profile requires. The CSV reader is the shared one, so a stray quote no longer merges rows.</li>
         <li><span class="changelog-tag">v1.1.0</span> Added real value-level validation per field (e.g. Currency now checks for an actual ISO code, TRNs are checked for the correct 15-digit shape, numeric fields must actually be numeric) instead of only checking that a mapped column has data. Also fixed TIN derivation to use the first 10 digits of the TRN, per published UAE guidance (previously used the last 10).</li>
         <li><span class="changelog-tag">v1.0.0</span> Initial release: auto-detect &amp; manual field mapping, compliance scoring, and free UBL 2.1 / PINT-AE XML export, entirely client-side.</li>
       </ul>
@@ -263,20 +317,31 @@
   {{FOOTER}}
 
   <script src="../js/shared.js"></script>
+  <script src="../js/engines/csv.js"></script>
+  <script src="../js/engines/zip.js"></script>
+  <script src="../js/engines/pintae-codes.js"></script>
+  <script src="../js/engines/pintae.js"></script>
 
 
   <script>
         // ---------- Field definitions ----------
     const FIELDS = [
       { key: 'supplierTIN', label: 'Supplier TIN (from TRN)', hint: '15-digit TRN, starts with 100', group: 'header', groupLabel: 'Invoice Header', guidance: 'Your business\'s Tax Registration Number (TRN) issued by the FTA. Add a "Supplier TRN" column to your export.', variants: ['supplier tin','supplier trn','seller trn','my trn','trn','company trn','vendor trn','supplier tax number'] },
+      { key: 'sellerName', label: 'Seller Name', group: 'header', groupLabel: 'Invoice Header', guidance: 'Your registered business name. If it is not a column, enter it under "Your business" below.', variants: ['seller name','supplier name','company name','vendor name','sellername','suppliername'] },
+      { key: 'buyerName', label: 'Buyer Name', group: 'header', groupLabel: 'Invoice Header', guidance: 'The customer\'s registered name.', variants: ['buyer name','customer name','client name','buyername','customername','customer','bill to','party name'] },
+      { key: 'buyerAddress', label: 'Buyer Address', group: 'header', groupLabel: 'Invoice Header', guidance: 'The customer\'s street address.', variants: ['buyer address','customer address','billing address','bill to address','billing street','address'] },
+      { key: 'buyerCity', label: 'Buyer City', group: 'header', groupLabel: 'Invoice Header', guidance: 'The customer\'s city; the emirate is worked out from it.', variants: ['buyer city','customer city','billing city','bill to city','city'] },
       { key: 'buyerTIN', label: 'Buyer TIN (from TRN)', hint: '15-digit TRN, starts with 100', group: 'header', groupLabel: 'Invoice Header', guidance: 'Your customer\'s Tax Registration Number. Add a "Buyer TRN" or "Customer TRN" column to your export.', variants: ['buyer tin','buyer trn','customer trn','client trn','recipient trn','customer tax number'] },
       { key: 'invoiceNumber', label: 'Invoice Number', group: 'header', groupLabel: 'Invoice Header', guidance: 'A unique reference for this invoice, e.g. INV-2026-001. Almost every export includes this — check for a column named "Invoice No" or similar.', variants: ['invoice no','invoice number','inv no','bill no','invoice #','doc no','document number','voucher no'] },
       { key: 'issueDate', label: 'Issue Date', hint: 'a valid date', group: 'header', groupLabel: 'Invoice Header', guidance: 'The date the invoice was created. Add an "Invoice Date" column if missing.', variants: ['invoice date','issue date','date','bill date','doc date','voucher date'] },
       { key: 'dueDate', label: 'Due Date', hint: 'a valid date', group: 'header', groupLabel: 'Invoice Header', guidance: 'The date payment is due. Add a "Due Date" column, or use your invoice date plus your standard payment terms.', variants: ['due date','payment due','payment due date','due on'] },
       { key: 'currency', label: 'Currency Code', hint: '3-letter code, e.g. AED', group: 'header', groupLabel: 'Invoice Header', guidance: 'The 3-letter ISO currency code, e.g. AED or USD. If missing, we\'ll default this to AED for UAE invoices.', variants: ['currency','currency code','ccy','curr'] },
+      { key: 'itemName', label: 'Item Name', group: 'line', groupLabel: 'Line Items', guidance: 'A short name for what each line sells. If missing, the description is used.', variants: ['item name','product name','service name','itemname','productname'] },
       { key: 'description', label: 'Line Item Description', group: 'line', groupLabel: 'Line Items', guidance: 'What each line is for (a product or service description). Needed for every invoice line.', variants: ['description','item','item description','product','particulars','item name'] },
       { key: 'quantity', label: 'Quantity', hint: 'numeric', group: 'line', groupLabel: 'Line Items', guidance: 'How many units were billed on each line.', variants: ['qty','quantity','units','no of units'] },
       { key: 'unitPrice', label: 'Unit Price', hint: 'numeric', group: 'line', groupLabel: 'Line Items', guidance: 'The price per unit, before VAT.', variants: ['unit price','rate','price','unit cost','unit rate'] },
+      { key: 'unitCode', label: 'Unit of Measure', hint: 'UN/ECE code, e.g. C62, HUR', group: 'line', groupLabel: 'Line Items', guidance: 'A UN/ECE unit code such as C62 (one), HUR (hour) or KGM (kilogram). If missing, C62 is used.', variants: ['unit code','uom','unit of measure','units of measure','unit'] },
+      { key: 'taxCategory', label: 'VAT Category', hint: 'S, Z, E, O, AE or N', group: 'line', groupLabel: 'Line Items', guidance: 'S standard, Z zero-rated, E exempt, O out of scope, AE reverse charge. If missing, S is used.', variants: ['vat category','tax category','tax code','vat code','tax type','vat type'] },
       { key: 'vatRate', label: 'VAT Rate (%)', hint: 'numeric, 0-100', group: 'line', groupLabel: 'Line Items', guidance: 'The VAT percentage for this line — usually 5% in the UAE.', variants: ['vat rate','vat %','tax rate','gst rate','vat percent'] },
       { key: 'vatAmount', label: 'VAT Amount', hint: 'numeric', group: 'line', groupLabel: 'Line Items', guidance: 'The VAT charged on this line. We can calculate this from quantity, unit price, and VAT rate if it\'s missing.', variants: ['vat amount','tax amount','vat value'], autoCalc: true },
       { key: 'totalTaxable', label: 'Total Taxable Amount', hint: 'numeric', group: 'total', groupLabel: 'Invoice Totals', guidance: 'The total value of goods/services before VAT. We\'ll calculate this from your line items automatically if it\'s missing.', variants: ['taxable amount','total taxable','net amount','subtotal','sub total'], autoCalc: true },
@@ -309,6 +374,8 @@
     }
 
     const VALIDATORS = {
+      unitCode: v => LBPintAE.CODES.UNIT_CODES[String(v).trim()] !== undefined,
+      taxCategory: v => LBPintAE.CODES.TAX_CATEGORY_CODES[String(v).trim().toUpperCase()] !== undefined,
       supplierTIN: isValidTrnValue,
       buyerTIN: isValidTrnValue,
       issueDate: isValidDateValue,
@@ -373,7 +440,7 @@
       if (ext === 'csv') {
         const reader = new FileReader();
         reader.onload = (e) => {
-          const rows = parseCSV(e.target.result);
+          const rows = LBCsv.parse(e.target.result).rows;   // the shared parser: a stray quote no longer merges rows
           ingestRows(rows);
         };
         Layerbit.readFile(file).then(t => reader.onload({ target: { result: t } }));  // bytes decoded by the kernel (encoding detected)
@@ -394,19 +461,6 @@
       } else {
         Layerbit.toast('Please upload a .csv, .xlsx or .xls file.', 'warn');
       }
-    }
-
-    // Simple CSV parser (handles quoted commas/newlines)
-    function parseCSV(text) {
-      let p = '', row = [''], ret = [row], i = 0, r = 0, s = true, l;
-      for (l of text) {
-        if (l === '"') { if (s && l === p) row[i] += l; s = !s; }
-        else if (l === ',' && s) l = row[++i] = '';
-        else if (l === '\n' && s) { if (p === '\r') row[i] = row[i].slice(0, -1); row = ret[++r] = [l = '']; i = 0; }
-        else row[i] += l;
-        p = l;
-      }
-      return ret[0].length && !ret[ret.length - 1][0] ? ret.slice(0, -1) : ret;
     }
 
     function ingestRows(rawRows) {
@@ -460,6 +514,13 @@
       supplierTIN: /\b(customer|buyer|client|recipient|party|bill to|ship to)\b/,
       buyerTIN: /\b(supplier|seller|vendor|company|our|my|organi[sz]ation|business)\b/,
       invoiceNumber: /\b(id|date|status|type|amount|total)\b/,
+      buyerName: /\b(trn|tax|number|id|email|phone|code|city|address)\b/,
+      buyerAddress: /\b(email|city|trn)\b/,
+      buyerCity: /\b(code)\b/,
+      sellerName: /\b(trn|tax|number|id)\b/,
+      itemName: /\b(code|id|price|qty|quantity)\b/,
+      unitCode: /\b(price|cost|rate|amount)\b/,
+      taxCategory: /(%|\b(rate|amount|percent|percentage|number|registration|trn)\b)/,
       issueDate: /\b(due|payment|created|modified|updated)\b/,
       dueDate: /\b(invoice date|issue)\b/,
       currency: /\b(rate|exchange)\b/,
@@ -551,23 +612,27 @@
     function escapeHtml(str) { return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
     function escapeAttr(str) { return escapeHtml(str).replace(/"/g, '&quot;'); }
 
-    // ---------- Compliance check ----------
-    btnConfirmMapping.addEventListener('click', () => {
-      lastReport = buildComplianceReport();
-      renderScore(lastReport);
-      scorePanel.classList.add('active');
-      downloadRow.style.display = 'flex';
-      btnDownloadXml.disabled = !lastReport.canExport;
-      xmlPanel.classList.remove('active');
-      scorePanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    });
+    // ---------- Readiness check (js/engines/pintae.js) ----------
+    const PA = window.LBPintAE;
+    const SELLER_KEYS = ['sellerName', 'sellerTrn', 'sellerLegalId', 'sellerLegalType', 'sellerStreet', 'sellerCity', 'sellerEmirate'];
+    const $ = id => document.getElementById(id);
+    (function initPartyForm() {
+      $('paymentMeans').innerHTML = Object.entries(PA.CODES.PAYMENT_MEANS_CODES).map(([k, v]) => `<option value="${k}"${k === '30' ? ' selected' : ''}>${k}: ${escapeHtml(v)}</option>`).join('');
+      $('flagRow').innerHTML = '<span class="flag-title">This invoice is a…</span>' + PA.FLAGS.map((f, i) => `<label><input type="checkbox" data-flag="${i}"> ${f}</label>`).join('');
+      let saved = null;
+      try { saved = JSON.parse(localStorage.getItem('layerbit-pintae-seller') || 'null'); } catch (e) {}
+      if (saved) { SELLER_KEYS.forEach(k => { if (saved[k] !== undefined) $(k).value = saved[k]; }); $('rememberSeller').checked = true; }
+      const save = () => { try { if ($('rememberSeller').checked) localStorage.setItem('layerbit-pintae-seller', JSON.stringify(Object.fromEntries(SELLER_KEYS.map(k => [k, $(k).value])))); else localStorage.removeItem('layerbit-pintae-seller'); } catch (e) {} };
+      SELLER_KEYS.forEach(k => $(k).addEventListener('change', save));
+      $('rememberSeller').addEventListener('change', () => { save(); Layerbit.toast($('rememberSeller').checked ? 'Your business details will be kept in this browser' : 'Your business details were removed from this browser'); });
+    })();
+    function transactionType() { return [...document.querySelectorAll('#flagRow input[data-flag]')].sort((a, b) => a.dataset.flag - b.dataset.flag).map(c => c.checked ? '1' : '0').join(''); }
 
     function fieldValues(key) {
       const header = mapping[key];
       if (!header) return [];
       return currentRows.map(r => String(r[header] || '').trim()).filter(v => v !== '');
     }
-
     function evaluateField(field) {
       const values = fieldValues(field.key);
       if (values.length === 0) return field.autoCalc ? 'calc' : 'missing';
@@ -576,230 +641,137 @@
       return values.every(v => validator(v)) ? 'ok' : 'invalid';
     }
 
-    function buildComplianceReport() {
-      const results = FIELDS.map(field => {
-        const status = evaluateField(field);
-        return { ...field, status };
+    // Rows -> invoices: grouped by the invoice-number column, one invoice per group
+    function buildInvoices() {
+      const col = k => mapping[k] || '';
+      const val = (row, k) => col(k) ? String(row[col(k)] || '').trim() : '';
+      const groups = new Map();
+      currentRows.forEach(row => {
+        const key = val(row, 'invoiceNumber') || '(no invoice number)';
+        if (!groups.has(key)) groups.set(key, []);
+        groups.get(key).push(row);
       });
-      const total = results.length;
-      const satisfied = results.filter(r => r.status === 'ok' || r.status === 'calc').length;
-      const score = Math.round((satisfied / total) * 100);
-
-      const blockingHeader = results.some(r => r.group === 'header' && !r.autoCalc && (r.status === 'missing' || r.status === 'invalid'));
-      const blockingLine = results.some(r => r.group === 'line' && !r.autoCalc && (r.status === 'missing' || r.status === 'invalid'));
-      const canExport = !blockingHeader && !blockingLine;
-
-      return { results, score, canExport };
+      const seller = { name: $('sellerName').value, trn: $('sellerTrn').value, legalId: $('sellerLegalId').value, legalType: $('sellerLegalType').value, street: $('sellerStreet').value, city: $('sellerCity').value, emirate: $('sellerEmirate').value, country: 'AE' };
+      return [...groups.entries()].map(([no, rows]) => {
+        const first = k => { for (const r of rows) { const v = val(r, k); if (v) return v; } return ''; };
+        const s = Object.assign({}, seller);
+        if (!s.trn) s.trn = first('supplierTIN');
+        if (!s.name) s.name = first('sellerName');
+        return {
+          invoiceNumber: no === '(no invoice number)' ? '' : no, issueDate: first('issueDate'), dueDate: first('dueDate'), currencyCode: first('currency') || 'AED', exchangeRate: $('exchangeRate').value,
+          transactionType: transactionType(), paymentMeansCode: $('paymentMeans').value, seller: s,
+          buyer: { name: first('buyerName'), trn: first('buyerTIN'), street: first('buyerAddress'), city: first('buyerCity'), emirate: $('buyerEmirate').value, country: $('buyerCountry').value || 'AE' },
+          lines: rows.filter(r => val(r, 'description') || val(r, 'itemName') || val(r, 'unitPrice')).map((r, i) => ({
+            id: String(i + 1), name: val(r, 'itemName'), description: val(r, 'description'), quantity: val(r, 'quantity') || 1, unitCode: val(r, 'unitCode'), unitPrice: val(r, 'unitPrice'),
+            taxCategory: val(r, 'taxCategory'), taxPercent: val(r, 'vatRate'), vatAmount: val(r, 'vatAmount') })),
+          totals: { taxExclusive: first('totalTaxable'), tax: first('totalVAT'), taxInclusive: first('totalInvoice') }
+        };
+      });
     }
+    let invoices = [], reports = [];
+    const RANK = { invalid: 4, missing: 3, derived: 2, ok: 1, na: 0 };
+    function aggregate(reps) {
+      // the worst result for each field across every invoice
+      return reps[0].fields.map((f, i) => {
+        let worst = reps[0].fields[i], who = [];
+        reps.forEach((r, j) => { const g = r.fields[i]; if (RANK[g.status] > RANK[worst.status]) worst = g; if ((g.status === 'missing' || g.status === 'invalid') && reps.length > 1) who.push(invoices[j].invoiceNumber || '?'); });
+        return Object.assign({}, worst, { who });
+      });
+    }
+    btnConfirmMapping.addEventListener('click', () => {
+      invoices = buildInvoices();
+      reports = invoices.map(inv => PA.check(inv));
+      lastReport = { fields: aggregate(reports), math: reports.flatMap((r, j) => r.math.map(m => (invoices.length > 1 ? `${invoices[j].invoiceNumber}: ` : '') + m)), warnings: reports.flatMap(r => r.warnings) };
+      renderScore(lastReport);
+      scorePanel.classList.add('active');
+      downloadRow.style.display = 'flex';
+      btnDownloadXml.disabled = !invoices.length;
+      $('downloadLabel').textContent = invoices.length > 1 ? `Download ${invoices.length} XML files (.zip)` : 'Download PINT-AE XML';
+      xmlPanel.classList.remove('active');
+      scorePanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
 
-    function renderScore(report) {
-      const circumference = 2 * Math.PI * 38;
-      const offset = circumference - (report.score / 100) * circumference;
-      ringFill.style.strokeDasharray = circumference.toFixed(2);
-      ringFill.style.strokeDashoffset = offset.toFixed(2);
-      ringValue.textContent = report.score + '%';
-
-      if (report.score === 100) {
-        ringFill.style.stroke = 'var(--success-color)';
-        scoreHeadline.textContent = 'Fully Mapped';
-        scoreSubtext.textContent = 'All required PINT-AE fields were found or calculated. You\'re ready to export.';
-      } else if (report.canExport) {
-        ringFill.style.stroke = 'var(--accent-main)';
-        scoreHeadline.textContent = 'Mostly Compliant';
-        scoreSubtext.textContent = 'Core fields are present. A few optional totals will be auto-calculated for you.';
-      } else {
-        ringFill.style.stroke = 'var(--warn-color)';
-        const hasInvalid = report.results.some(r => r.status === 'invalid');
-        scoreHeadline.textContent = hasInvalid ? 'Check Your Field Mapping' : 'Missing Required Fields';
-        scoreSubtext.textContent = hasInvalid
-          ? 'Some mapped columns don\'t contain the right kind of data — you may have mapped the wrong column. See the flagged fields below.'
-          : 'Add the missing fields below to your source file, then re-upload.';
-      }
-
-      checklist.innerHTML = report.results.map(r => {
-        let iconName = 'check', cls = 'ok', note = 'Found in your file.';
-        if (r.status === 'calc') { iconName = 'calculator'; cls = 'calc'; note = 'Not in your file — we\'ll calculate this automatically.'; }
-        if (r.status === 'missing') { iconName = 'x'; cls = 'missing'; note = r.guidance; }
-        if (r.status === 'invalid') { iconName = 'alert-triangle'; cls = 'invalid'; note = `The column mapped to this field doesn't contain valid ${r.label.toLowerCase()} values${r.hint ? ` (expected: ${r.hint})` : ''}. Double check you mapped the correct column.`; }
-        return `
-          <div class="check-item ${cls}">
-            <div class="check-icon"><i data-lucide="${iconName}"></i></div>
+    const ICON = { ok: 'check', derived: 'calculator', na: 'minus', missing: 'x', invalid: 'alert-triangle' };
+    const CLS = { ok: 'ok', derived: 'calc', na: 'na', missing: 'missing', invalid: 'invalid' };
+    const NOTE = { ok: 'Found.', derived: 'Worked out for you.', na: 'Not needed for this invoice.' };
+    function checklistHtml(fields) {
+      return fields.map(r => `
+          <div class="check-item ${CLS[r.status]}">
+            <div class="check-icon"><i data-lucide="${ICON[r.status]}"></i></div>
             <div>
-              <div class="check-label">${r.label}</div>
-              <div class="check-guidance">${note}</div>
+              <div class="check-label">${escapeHtml(r.name)} <span class="term">${r.term}</span>${r.value != null && r.status !== 'missing' && r.value !== '' ? ` <span class="check-value">${escapeHtml(String(r.value).slice(0, 60))}</span>` : ''}</div>
+              <div class="check-guidance">${escapeHtml(r.message || NOTE[r.status] || '')}${r.who && r.who.length ? ` <span class="who">Invoices: ${escapeHtml(r.who.slice(0, 6).join(', '))}${r.who.length > 6 ? ' and ' + (r.who.length - 6) + ' more' : ''}</span>` : ''}</div>
             </div>
-          </div>`;
-      }).join('');
+          </div>`).join('');
+    }
+    function scoreOf(fields, math) { const good = fields.filter(f => f.status === 'ok' || f.status === 'derived' || f.status === 'na').length; return Math.max(0, Math.round(good / fields.length * 100) - (math.length ? 5 : 0)); }
+    function renderScore(report) {
+      const score = scoreOf(report.fields, report.math), ready = report.fields.every(f => f.status !== 'missing' && f.status !== 'invalid') && !report.math.length;
+      const circumference = 2 * Math.PI * 38;
+      ringFill.style.strokeDasharray = circumference.toFixed(2);
+      ringFill.style.strokeDashoffset = (circumference - (score / 100) * circumference).toFixed(2);
+      ringValue.textContent = score + '%';
+      const bad = report.fields.filter(f => f.status === 'missing' || f.status === 'invalid').length;
+      ringFill.style.stroke = ready ? 'var(--success-color)' : bad <= 3 ? 'var(--accent-main)' : 'var(--warn-color)';
+      scoreHeadline.textContent = ready ? 'Ready for your ASP' : `${bad} field${bad === 1 ? '' : 's'} to fix${report.math.length ? ` and ${report.math.length} sum${report.math.length === 1 ? '' : 's'} that do not add up` : ''}`;
+      scoreSubtext.textContent = ready ? `All 51 mandatory fields of a UAE tax invoice are present or worked out, and the totals add up${invoices.length > 1 ? ` in all ${invoices.length} invoices` : ''}. Your Accredited Service Provider still validates the final file.` : 'Each field below says what is wrong and how to fix it. Fields you cannot add as columns, like your trade licence, go in "Your business" above.';
+      checklist.innerHTML = checklistHtml(report.fields);
+      $('mathList').innerHTML = report.math.concat(report.warnings).map(m => `<div class="check-item invalid"><div class="check-icon"><i data-lucide="sigma"></i></div><div><div class="check-guidance">${escapeHtml(m)}</div></div></div>`).join('');
+      $('invoiceWrap').hidden = invoices.length < 2;
+      $('invoiceTable').querySelector('tbody').innerHTML = invoices.map((inv, j) => { const r = reports[j], n = r.fields.filter(f => f.status === 'missing' || f.status === 'invalid').length + r.math.length; return `<tr><td>${escapeHtml(inv.invoiceNumber || '–')}</td><td>${escapeHtml(inv.buyer.name || '–')}</td><td>${inv.lines.length}</td><td>${r.normalized.computed.payable.toFixed(2)} ${escapeHtml(r.normalized.currency)}</td><td class="${n ? 'bad' : 'good'}">${n ? n + ' to fix' : 'Ready'}</td></tr>`; }).join('');
       lucide.createIcons();
     }
 
-    // ---------- TIN normalization ----------
-    // PINT-AE identifies parties with a 10-digit Tax Identification Number (TIN), formed
-    // from the FIRST 10 digits of the UAE Federal Tax Authority's 15-digit Tax Registration
-    // Number (TRN) - every UAE TRN starts with "100". This is a best-effort derivation for
-    // this free tool, not an official FTA algorithm — always verify the final TIN with your
-    // tax advisor or ASP before filing.
-    function deriveTIN(raw) {
-      const digits = String(raw || '').replace(/\D/g, '');
-      if (!digits) return '';
-      if (digits.length >= 10) return digits.slice(0, 10);
-      return digits.padStart(10, '0');
-    }
-
-    // ---------- XML generation ----------
-    function xmlEscape(str) {
-      return String(str == null ? '' : str)
-        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;').replace(/'/g, '&apos;');
-    }
-
-    function toIsoDate(val) {
-      if (!val) return '';
-      const d = new Date(val);
-      if (isNaN(d.getTime())) return xmlEscape(val);
-      return d.toISOString().slice(0, 10);
-    }
-
-    function num(val, fallback) {
-      const n = parseFloat(String(val).replace(/[^0-9.\-]/g, ''));
-      return isNaN(n) ? (fallback !== undefined ? fallback : 0) : n;
-    }
-
-    function firstNonEmpty(header) {
-      if (!header) return '';
-      const row = currentRows.find(r => String(r[header] || '').trim() !== '');
-      return row ? row[header].trim() : '';
-    }
-
-    function generatePintAeXml() {
-      const get = key => firstNonEmpty(mapping[key]);
-      const currency = get('currency') || 'AED';
-      const invoiceNumber = get('invoiceNumber') || 'UNSPECIFIED';
-      const issueDate = toIsoDate(get('issueDate')) || new Date().toISOString().slice(0, 10);
-      const dueDate = toIsoDate(get('dueDate')) || issueDate;
-      const supplierTIN = deriveTIN(get('supplierTIN'));
-      const buyerTIN = deriveTIN(get('buyerTIN'));
-
-      // Build line items
-      const descHeader = mapping['description'], qtyHeader = mapping['quantity'], priceHeader = mapping['unitPrice'];
-      const vatRateHeader = mapping['vatRate'], vatAmtHeader = mapping['vatAmount'];
-
-      const lines = currentRows
-        .filter(r => descHeader && String(r[descHeader] || '').trim() !== '')
-        .map((r, idx) => {
-          const qty = num(r[qtyHeader], 1);
-          const price = num(r[priceHeader], 0);
-          const lineExt = qty * price;
-          const vatRate = num(r[vatRateHeader], 5);
-          const vatAmt = vatAmtHeader && r[vatAmtHeader] ? num(r[vatAmtHeader]) : +(lineExt * vatRate / 100).toFixed(2);
-          return {
-            id: idx + 1,
-            description: r[descHeader] || '',
-            qty, price, lineExt: +lineExt.toFixed(2), vatRate, vatAmt
-          };
-        });
-
-      const calcTaxable = lines.reduce((s, l) => s + l.lineExt, 0);
-      const calcVat = lines.reduce((s, l) => s + l.vatAmt, 0);
-      const calcTotal = calcTaxable + calcVat;
-
-      const totalTaxable = get('totalTaxable') ? num(get('totalTaxable')) : +calcTaxable.toFixed(2);
-      const totalVAT = get('totalVAT') ? num(get('totalVAT')) : +calcVat.toFixed(2);
-      const totalInvoice = get('totalInvoice') ? num(get('totalInvoice')) : +calcTotal.toFixed(2);
-
-      const lineXml = lines.map(l => `  <cac:InvoiceLine>
-    <cbc:ID>${l.id}</cbc:ID>
-    <cbc:InvoicedQuantity unitCode="EA">${l.qty}</cbc:InvoicedQuantity>
-    <cbc:LineExtensionAmount currencyID="${xmlEscape(currency)}">${l.lineExt.toFixed(2)}</cbc:LineExtensionAmount>
-    <cac:Item>
-      <cbc:Description>${xmlEscape(l.description)}</cbc:Description>
-    </cac:Item>
-    <cac:Price>
-      <cbc:PriceAmount currencyID="${xmlEscape(currency)}">${l.price.toFixed(2)}</cbc:PriceAmount>
-    </cac:Price>
-    <cac:TaxTotal>
-      <cbc:TaxAmount currencyID="${xmlEscape(currency)}">${l.vatAmt.toFixed(2)}</cbc:TaxAmount>
-      <cac:TaxSubtotal>
-        <cbc:TaxableAmount currencyID="${xmlEscape(currency)}">${l.lineExt.toFixed(2)}</cbc:TaxableAmount>
-        <cbc:TaxAmount currencyID="${xmlEscape(currency)}">${l.vatAmt.toFixed(2)}</cbc:TaxAmount>
-        <cac:TaxCategory>
-          <cbc:Percent>${l.vatRate}</cbc:Percent>
-          <cac:TaxScheme><cbc:ID>VAT</cbc:ID></cac:TaxScheme>
-        </cac:TaxCategory>
-      </cac:TaxSubtotal>
-    </cac:TaxTotal>
-  </cac:InvoiceLine>`).join('\n');
-
-      return `<?xml version="1.0" encoding="UTF-8"?>
-<!-- Generated for free by Layerbit's PINT-AE Checker (layerbit.co.in/tools/pint-ae-checker.html). -->
-<!-- Best-effort UBL 2.1 / PINT-AE structure based on public Peppol & FTA guidance. Verify via your ASP before filing. -->
-<Invoice xmlns="urn:oasis:names:specification:ubl:schema:xsd:Invoice-2"
-         xmlns:cac="urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2"
-         xmlns:cbc="urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2">
-  <cbc:CustomizationID>urn:peppol:pint:billing-1@ae-1</cbc:CustomizationID>
-  <cbc:ProfileID>urn:peppol:bis:billing</cbc:ProfileID>
-  <cbc:ID>${xmlEscape(invoiceNumber)}</cbc:ID>
-  <cbc:IssueDate>${issueDate}</cbc:IssueDate>
-  <cbc:DueDate>${dueDate}</cbc:DueDate>
-  <cbc:InvoiceTypeCode>380</cbc:InvoiceTypeCode>
-  <cbc:DocumentCurrencyCode>${xmlEscape(currency)}</cbc:DocumentCurrencyCode>
-  <cac:AccountingSupplierParty>
-    <cac:Party>
-      <cac:PartyTaxScheme>
-        <cbc:CompanyID>${xmlEscape(supplierTIN)}</cbc:CompanyID>
-        <cac:TaxScheme><cbc:ID>VAT</cbc:ID></cac:TaxScheme>
-      </cac:PartyTaxScheme>
-    </cac:Party>
-  </cac:AccountingSupplierParty>
-  <cac:AccountingCustomerParty>
-    <cac:Party>
-      <cac:PartyTaxScheme>
-        <cbc:CompanyID>${xmlEscape(buyerTIN)}</cbc:CompanyID>
-        <cac:TaxScheme><cbc:ID>VAT</cbc:ID></cac:TaxScheme>
-      </cac:PartyTaxScheme>
-    </cac:Party>
-  </cac:AccountingCustomerParty>
-  <cac:TaxTotal>
-    <cbc:TaxAmount currencyID="${xmlEscape(currency)}">${totalVAT.toFixed(2)}</cbc:TaxAmount>
-  </cac:TaxTotal>
-  <cac:LegalMonetaryTotal>
-    <cbc:LineExtensionAmount currencyID="${xmlEscape(currency)}">${totalTaxable.toFixed(2)}</cbc:LineExtensionAmount>
-    <cbc:TaxExclusiveAmount currencyID="${xmlEscape(currency)}">${totalTaxable.toFixed(2)}</cbc:TaxExclusiveAmount>
-    <cbc:TaxInclusiveAmount currencyID="${xmlEscape(currency)}">${totalInvoice.toFixed(2)}</cbc:TaxInclusiveAmount>
-    <cbc:PayableAmount currencyID="${xmlEscape(currency)}">${totalInvoice.toFixed(2)}</cbc:PayableAmount>
-  </cac:LegalMonetaryTotal>
-${lineXml || '  <!-- No line items detected -->'}
-</Invoice>
-`;
-    }
-
     // ---------- Export actions ----------
+    const safeName = s => String(s || 'invoice').replace(/[^a-z0-9\-_]/gi, '_');
     btnPreviewXml.addEventListener('click', () => {
-      lastXml = generatePintAeXml();
+      if (!invoices.length) return;
+      lastXml = PA.toXml(invoices[0]);
       xmlPreview.textContent = lastXml;
+      xmlPanel.querySelector('.xml-panel-header div').lastChild.textContent = ` pint-ae_${safeName(invoices[0].invoiceNumber)}.xml${invoices.length > 1 ? ` (1 of ${invoices.length})` : ''}`;
       xmlPanel.classList.add('active');
       xmlPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
     });
-
+    function saveBlob(blob, name) { const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 2000); }
     btnDownloadXml.addEventListener('click', () => {
-      if (btnDownloadXml.disabled) return;
-      lastXml = generatePintAeXml();
-      const blob = new Blob([lastXml], { type: 'application/xml' });
-      const link = document.createElement('a');
-      link.href = URL.createObjectURL(blob);
-      const invNum = (firstNonEmpty(mapping['invoiceNumber']) || 'invoice').replace(/[^a-z0-9\-_]/gi, '_');
-      link.download = `pint-ae_${invNum}.xml`;
-      link.click();
+      if (btnDownloadXml.disabled || !invoices.length) return;
+      if (invoices.length === 1) { saveBlob(new Blob([PA.toXml(invoices[0])], { type: 'application/xml' }), `pint-ae_${safeName(invoices[0].invoiceNumber)}.xml`); return; }
+      const files = invoices.map(inv => ({ name: `pint-ae_${safeName(inv.invoiceNumber)}.xml`, data: PA.toXml(inv) }));
+      const rows = [['invoice', 'buyer', 'lines', 'amount_due', 'currency', 'ready', 'issues']].concat(invoices.map((inv, j) => { const r = reports[j]; return [inv.invoiceNumber, inv.buyer.name, inv.lines.length, r.normalized.computed.payable.toFixed(2), r.normalized.currency, r.ready ? 'yes' : 'no', r.fields.filter(f => f.status === 'missing' || f.status === 'invalid').map(f => `${f.term} ${f.name}: ${f.message}`).concat(r.math).join(' | ')]; }));
+      files.push({ name: 'readiness-report.csv', data: LBCsv.stringify(rows, { safe: true, newline: '\n' }) });
+      saveBlob(new Blob([LBZip.zipStore(files)], { type: 'application/zip' }), 'pint-ae-invoices.zip');
     });
 
     btnStartOver.addEventListener('click', () => {
-      currentHeaders = []; currentRows = []; mapping = {}; lastReport = null; lastXml = '';
+      currentHeaders = []; currentRows = []; mapping = {}; lastReport = null; lastXml = ''; invoices = []; reports = [];
       fileInput.value = ''; fileNameDisplay.textContent = '';
       workspace.classList.remove('active');
       scorePanel.classList.remove('active');
       downloadRow.style.display = 'none';
       xmlPanel.classList.remove('active');
       uploadZone.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+
+    // ---------- Check an existing PINT AE XML ----------
+    function checkXmlText(text, name) {
+      const out = $('xmlReport');
+      let input;
+      try { input = PA.fromXml(new DOMParser().parseFromString(text, 'application/xml')); }
+      catch (e) { out.innerHTML = `<div class="check-item invalid"><div class="check-icon"><i data-lucide="alert-triangle"></i></div><div><div class="check-guidance">${escapeHtml(e.message)}</div></div></div>`; lucide.createIcons(); return; }
+      const r = PA.check(input), bad = r.fields.filter(f => f.status === 'missing' || f.status === 'invalid').length;
+      out.innerHTML = `<div class="xml-verdict ${r.ready ? 'good' : 'bad'}"><strong>${escapeHtml(name || 'Pasted XML')}: invoice ${escapeHtml(input.invoiceNumber || '–')}</strong> · ${r.ready ? 'ready for your ASP' : `${bad} field${bad === 1 ? '' : 's'} to fix${r.math.length ? `, ${r.math.length} sum${r.math.length === 1 ? '' : 's'} off` : ''}`} · ${scoreOf(r.fields, r.math)}%</div>` +
+        r.math.concat(r.warnings).map(m => `<div class="check-item invalid"><div class="check-icon"><i data-lucide="sigma"></i></div><div><div class="check-guidance">${escapeHtml(m)}</div></div></div>`).join('') +
+        `<div class="checklist">${checklistHtml(r.fields)}</div>`;
+      lucide.createIcons();
+    }
+    $('xmlFile').addEventListener('change', async e => { const f = e.target.files[0]; if (!f) return; const t = await Layerbit.readFile(f); $('xmlPaste').value = t.length < 200000 ? t : ''; checkXmlText(t, f.name); e.target.value = ''; });
+    $('btnCheckXml').addEventListener('click', () => { const t = $('xmlPaste').value.trim(); if (!t) { $('xmlReport').innerHTML = '<p class="mapping-sub">Paste an XML invoice above, or open a file.</p>'; return; } checkXmlText(t); });
+    $('btnXmlSample').addEventListener('click', () => {
+      $('xmlPaste').value = PA.toXml({ invoiceNumber: 'INV-2026-0042', issueDate: '2026-11-24', dueDate: '2026-12-24', paymentMeansCode: '30',
+        seller: { name: 'Layerbit Sample Trading LLC', trn: '123456789301003', legalId: 'CN-1234567', legalType: 'TL', street: 'Sheikh Zayed Road', city: 'Dubai' },
+        buyer: { name: 'Example Buyer LLC', trn: '187654321601003', street: 'Al Maryah Island', city: 'Abu Dhabi' },
+        lines: [{ name: 'Consulting', description: 'E-invoicing readiness review', quantity: 8, unitCode: 'HUR', unitPrice: 450 }] }).replace('<cbc:CountrySubentity>AUH</cbc:CountrySubentity>', '');
+      checkXmlText($('xmlPaste').value, 'Sample');
     });
 
     // ---------- FAQ Accordion ----------

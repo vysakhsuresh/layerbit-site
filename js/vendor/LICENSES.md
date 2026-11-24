@@ -28,6 +28,7 @@ offline, and sends no visitor IP to a CDN operator).
 | `eff-wordlist.js` | EFF Large Wordlist (via diceware-wordlist-en-eff 1.0.1), repackaged as one script | 2016 | CC BY 3.0 US |
 | `jmespath.min.js` | jmespath (`jmespath.js`, minified with esbuild) | 0.16.0 | Apache-2.0 |
 | `jsonquery.min.js` | @jsonquerylang/jsonquery (`lib/jsonquery.js` bundled as `window.JSONQuery` with esbuild) | 5.1.1 | ISC |
+| `firebase/firebase-app-compat.js`, `firebase/firebase-database-compat.js` | firebase (the compat builds the CDN serves, copied from the npm package with the source-map comment removed; LayerLink signalling only) | 9.6.1 | Apache-2.0 |
 | `smol-toml.min.js` | smol-toml (`dist/index.js` bundled as `window.TOML` with esbuild) | 1.9.1 | BSD-3-Clause |
 | `wasm/jq.js`, `wasm/jq.wasm` | jq-web (jq 1.7 compiled to WebAssembly; jq itself is MIT) | 0.6.2 | ISC (jq-web), MIT (jq) |
 | `fontoxpath.min.js` | fontoxpath (XPath 3.1 / XQuery 3.1; bundled as `window.fontoxpath` with esbuild, with its dependencies) | 3.34.0 | MIT |
@@ -55,4 +56,5 @@ where `entry.js` re-exports the functions the page uses.
 
 ## Reference implementations
 
+- **PINT AE code lists** (`js/engines/pintae-codes.js`): the tax category, currency, country, payment means, invoice type, unit and other code lists published in OpenPeppol's PINT AE Billing 1.0.4 resources (docs.peppol.eu/poac/ae/pint-ae). They were read with `scripts/build_pintae_codes.py` from the data file of the npm package uae-einvoice-mcp 0.2.2 (MIT, Mirza Abu Bakr), which extracts them from that release; only the data was taken, and no code from the package is bundled or run. The 51-field list and rule identifiers used by `js/engines/pintae.js` follow the same package's summary of PINT AE 1.0.4 and the Ministry of Finance's mandatory-field list; the engine itself is written for Layerbit.
 - **CyberChef** (GCHQ, Apache-2.0, https://github.com/gchq/CyberChef): the Flow tool's operation names, arguments and expected outputs follow CyberChef's where the two have the same operation, so recipes read the same. No CyberChef code is bundled; `js/engines/flowops.js` is written for Layerbit.
