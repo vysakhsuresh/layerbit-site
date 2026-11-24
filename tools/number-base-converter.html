@@ -143,6 +143,14 @@
         },
         {
           "@type": "Question",
+          "name": "What is the difference between float16 and bfloat16?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Both are 16 bits. float16, or IEEE half precision, spends 5 bits on the exponent and 10 on the mantissa: about three significant decimal digits, but the largest value is only 65504 and small values become subnormal below 6.1e-5. bfloat16 keeps float32's 8 exponent bits and keeps only 7 mantissa bits: about two significant digits, but the same range as float32, up to 3.4e38, which is why training hardware prefers it. Choose 16-bit width to read a pattern both ways, or pick float16 or bfloat16 next to the decimal box to see how a number is stored and rounded."
+          }
+        },
+        {
+          "@type": "Question",
           "name": "Is the number I enter sent anywhere?",
           "acceptedAnswer": {
             "@type": "Answer",
@@ -234,7 +242,7 @@
   <div class="hero">
     <div class="hero-badge"><i data-lucide="shield-check"></i> Runs entirely in your browser</div>
     <h1>Number Base Converter: Binary, Hex, Decimal</h1>
-    <p>Convert integers of any size between binary, octal, decimal, hexadecimal and any base up to 36, then inspect the same value as two's-complement bits you can toggle, big- and little-endian bytes, and IEEE-754 floats, with a bitwise calculator alongside.</p>
+    <p>Convert integers of any size between binary, octal, decimal, hexadecimal and any base up to 36, then inspect the same value as two's-complement bits you can toggle, big- and little-endian bytes, and IEEE-754 floats from bfloat16 and float16 to float64, with a bitwise calculator alongside.</p>
   </div>
 
   <div class="ide-container">
@@ -286,9 +294,10 @@
           <label for="floatInput"><i data-lucide="sigma"></i> Decimal to IEEE-754 bits</label>
           <div class="in-row">
             <input type="text" id="floatInput" class="text-input" placeholder="e.g. 0.1 or -2.5e-3" spellcheck="false" autocomplete="off">
-            <select id="floatWidth" class="select-input base-select" aria-label="Float width"><option value="32">float32</option><option value="64" selected>float64</option></select>
+            <select id="floatWidth" class="select-input base-select" aria-label="Float width"><option value="16">float16 (half)</option><option value="bf16">bfloat16</option><option value="32">float32</option><option value="64" selected>float64</option></select>
             <button class="btn" type="button" id="btnFloat">Load bits</button>
           </div>
+          <div class="hint" id="floatHint">float64: 1 sign, 11 exponent and 52 mantissa bits, about 15–17 significant digits.</div>
         </div>
       </div>
     </div>
@@ -339,7 +348,7 @@
       <p>A multi-byte value has to be laid out in memory in some order. Big-endian puts the most significant byte first, the way we write numbers; it is the network byte order used by TCP/IP headers and most file formats. Little-endian puts the least significant byte first, and is what x86 and ARM processors use in memory. The value <code>0x12345678</code> is stored as <code>12 34 56 78</code> big-endian and <code>78 56 34 12</code> little-endian. When a hex dump of a file or packet does not match the number you expected, reversing the byte order is the first thing to try; both layouts are shown side by side.</p>
 
       <h2><i data-lucide="sigma"></i> Floating point bits</h2>
-      <p>At 32 and 64 bits the same pattern can also be read as an IEEE-754 floating-point number, the format used by <code>float</code> and <code>double</code> in nearly every language. The bits split into a sign, an exponent and a mantissa. The panel decodes them and reports whether the value is normal, subnormal, zero, infinity or NaN. Use the decimal-to-bits field to see why <code>0.1</code> cannot be stored exactly: its float64 pattern is <code>0x3FB999999999999A</code>, a repeating binary fraction rounded at the last bit, which is why 0.1 + 0.2 is not exactly 0.3.</p>
+      <p>At 32 and 64 bits the same pattern can also be read as an IEEE-754 floating-point number, the format used by <code>float</code> and <code>double</code> in nearly every language. At 16 bits it is read two ways: as IEEE half precision (float16: 5 exponent bits, 10 mantissa bits, largest value 65504), used in graphics and for storing model weights, and as bfloat16 (8 exponent bits like float32, 7 mantissa bits), which machine-learning hardware uses because it keeps float32's range. Converting a decimal to either rounds once, to nearest with ties to even, as the hardware does. The bits split into a sign, an exponent and a mantissa. The panel decodes them and reports whether the value is normal, subnormal, zero, infinity or NaN. Use the decimal-to-bits field to see why <code>0.1</code> cannot be stored exactly: its float64 pattern is <code>0x3FB999999999999A</code>, a repeating binary fraction rounded at the last bit, which is why 0.1 + 0.2 is not exactly 0.3.</p>
     </div>
 
     <div class="info-panel">
@@ -364,6 +373,10 @@
         <div class="faq-item">
           <button class="faq-question">What is the difference between signed and unsigned? <i data-lucide="chevron-down"></i></button>
           <div class="faq-answer"><p>They are two readings of the same bits. Unsigned treats every bit as positive, so 8 bits hold 0 to 255. Signed two's complement gives the top bit a negative weight, so 8 bits hold −128 to 127. The pattern 11111111 is 255 unsigned and −1 signed. Bugs appear when a value written as one type is read as the other, for example a length of 200 stored in a signed byte reading back as −56.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">What is the difference between float16 and bfloat16? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>Both are 16 bits. float16, or IEEE half precision, spends 5 bits on the exponent and 10 on the mantissa: about three significant decimal digits, but the largest value is only 65504 and small values become subnormal below 6.1e-5. bfloat16 keeps float32's 8 exponent bits and keeps only 7 mantissa bits: about two significant digits, but the same range as float32, up to 3.4e38, which is why training hardware prefers it. Choose 16-bit width to read a pattern both ways, or pick float16 or bfloat16 next to the decimal box to see how a number is stored and rounded.</p></div>
         </div>
         <div class="faq-item">
           <button class="faq-question">Is the number I enter sent anywhere? <i data-lucide="chevron-down"></i></button>
@@ -398,6 +411,7 @@
     <div class="info-panel">
       <h2><i data-lucide="git-commit"></i> Changelog</h2>
       <ul class="changelog-list">
+        <li><span class="changelog-tag">v1.1.0</span> float16 (IEEE half precision) and bfloat16: at 16-bit width the bits are decoded both ways, and decimals encode to either with round-to-nearest-even, subnormals and overflow to infinity. Every one of the 65,536 float16 patterns is checked to round-trip.</li>
         <li><span class="changelog-tag">v1.0.0</span> Initial release: arbitrary-precision conversion in bases 2–36 with prefix, suffix and separator parsing, two's complement at 8–128 bits with overflow detection, clickable bit grid, big- and little-endian bytes with ASCII, IEEE-754 float32/float64 decoding and encoding, and a bitwise and arithmetic calculator.</li>
       </ul>
     </div>
@@ -510,7 +524,7 @@
   <script src="../js/kernel.js?v=eb69348d32"></script>
 
   <script src="../js/shared.js?v=e2441a1728"></script>
-  <script src="../js/engines/numbase.js?v=7dd93e0f4f"></script>
+  <script src="../js/engines/numbase.js?v=215ff5bd49"></script>
   <script>
     const $ = id => document.getElementById(id);
     const N = window.LBNum;
@@ -563,11 +577,12 @@
       $('bits').innerHTML = html;
       const be = N.bytes(t.unsigned, width, false), le = N.bytes(t.unsigned, width, true), hex = a => a.map(b => b.toString(16).padStart(2, '0').toUpperCase()).join(' ');
       const rows = [['Big-endian bytes', hex(be)], ['Little-endian bytes', hex(le)], ['As ASCII', esc(N.ascii(be))]];
-      if (width === 32 || width === 64) {
-        const f = N.asFloat(t.unsigned, width);
-        rows.push([`As float${width}`, `${esc(f.kind === 'NaN' ? 'NaN' : String(f.value))} <span class="tag">${f.kind}</span>`]);
+      const floatRows = (label, f) => {
+        rows.push([label, `${esc(f.kind === 'NaN' ? 'NaN' : String(f.value))} <span class="tag">${f.kind}</span>`]);
         rows.push(['Sign · exponent · mantissa', `<span class="fbits"><b class="s">${f.sign}</b> <b class="e">${f.exponent}</b> <b class="m">${f.mantissa}</b></span>${f.unbiased != null ? ` <span class="muted">2^${f.unbiased}</span>` : ''}`]);
-      }
+      };
+      if (width === 32 || width === 64) floatRows(`As float${width}`, N.asFloat(t.unsigned, width));
+      if (width === 16) { floatRows('As float16 (half)', N.asFloat(t.unsigned, 16)); floatRows('As bfloat16', N.asFloat(t.unsigned, 16, 'bf16')); }
       $('byteGrid').innerHTML = rows.map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join('');
     }
     $('bits').addEventListener('click', e => {
@@ -585,10 +600,12 @@
     $('btnFloat').addEventListener('click', () => {
       const x = Number($('floatInput').value.trim().replace(/_/g, ''));
       if ($('floatInput').value.trim() === '' || Number.isNaN(x) && !/^nan$/i.test($('floatInput').value.trim())) { Layerbit.toast('Enter a decimal number such as 0.1, -2.5 or 1e-7.', 'warn'); return; }
-      const w = +$('floatWidth').value, u = N.floatBits(x, w);
+      const fw = $('floatWidth').value, w = fw === 'bf16' ? 16 : +fw, u = N.floatBits(x, fw === 'bf16' ? 'bf16' : w);
       $('width').value = String(w); value = u; $('numInput').value = '0x' + N.format(u, 16, { upper: true }).padStart(w / 4, '0'); $('inBase').value = 'auto'; width = w; render();
     });
     $('floatInput').addEventListener('keydown', e => { if (e.key === 'Enter') $('btnFloat').click(); });
+    const FLOAT_HINT = { 16: 'float16 (IEEE half): 1 sign, 5 exponent and 10 mantissa bits, about 3 significant digits, largest 65504.', bf16: 'bfloat16: 1 sign, 8 exponent and 7 mantissa bits, about 2 significant digits, with float32\'s range up to 3.4e38.', 32: 'float32: 1 sign, 8 exponent and 23 mantissa bits, about 7 significant digits.', 64: 'float64: 1 sign, 11 exponent and 52 mantissa bits, about 15–17 significant digits.' };
+    $('floatWidth').addEventListener('change', () => { $('floatHint').textContent = FLOAT_HINT[$('floatWidth').value]; if ($('floatInput').value.trim()) $('btnFloat').click(); });
     document.addEventListener('click', e => { const b = e.target.closest('[data-copy]'); if (b) Layerbit.copy(b.dataset.copy).then(() => Layerbit.toast('Copied ' + b.dataset.copy)); });
 
     // calculator

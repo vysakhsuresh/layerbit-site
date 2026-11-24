@@ -4960,6 +4960,21 @@ def _(t):
     for v in ("1111 1111", "377", "FF", "73"): expect(v in h, v)
 
 
+@case("number-base-converter", "typical", "2.27: float16 and bfloat16 decode at 16 bits and encode from a decimal")
+def _(t):
+    t.set("floatInput", "0.1"); t.select("floatWidth", "16"); t.click("#btnFloat"); t.wait(40)
+    eq(t.val("numInput"), "0x2E66", "float16 of 0.1")
+    g = t.text("byteGrid")
+    expect("As float16 (half)" in g and "0.0999755859375" in g and "As bfloat16" in g, g)
+    t.set("floatInput", "3.14159"); t.select("floatWidth", "bf16"); t.click("#btnFloat"); t.wait(40)
+    eq(t.val("numInput"), "0x4049", "bfloat16 of pi")
+    expect("3.140625" in t.text("byteGrid"), t.text("byteGrid"))
+    t.set("floatInput", "70000"); t.select("floatWidth", "16"); t.click("#btnFloat"); t.wait(40)
+    eq(t.val("numInput"), "0x7C00", "overflow to infinity")
+    expect("infinity" in t.text("byteGrid"), t.text("byteGrid"))
+    t.select("floatWidth", "64")
+
+
 @case("number-base-converter", "typical", "huge values stay exact (2^64-1, a 256-bit hash)")
 def _(t):
     t.set("numInput", "18446744073709551615"); t.wait(60)
