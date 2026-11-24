@@ -4,7 +4,7 @@
   <div class="hero">
     <div class="hero-badge"><i data-lucide="shield-check"></i> Runs entirely in your browser</div>
     <h1>VAT &amp; GST Calculator: UAE, Saudi Arabia, India</h1>
-    <p>Add VAT or GST to a price or take it out of a total, split Indian GST into CGST and SGST or IGST, total an invoice with several rates, and get the amount in words, calculated to the exact fils or paisa.</p>
+    <p>Add VAT or GST to a price or take it out of a total, split Indian GST into CGST and SGST or IGST, total an invoice with several rates and HSN or SAC codes from the full code list, mark reverse-charge supplies, and get the amount in words, calculated to the exact fils or paisa.</p>
   </div>
 
   <div class="ide-container single">
@@ -33,6 +33,7 @@
             </select>
           </div>
           <label class="check"><input type="checkbox" id="whole"> Round the tax to whole units</label>
+          <label class="check" title="The buyer, not the seller, pays this tax to the government (for example legal services and imported services in India, or designated goods in the UAE)"><input type="checkbox" id="reverseCharge"> Reverse charge</label>
         </div>
         <div class="error-inline" id="calcError" role="alert" hidden></div>
         <p class="big-result" id="headline"></p>
@@ -55,12 +56,18 @@
       <div class="pane-body">
         <div class="lines-wrap">
           <table class="lines" id="lines">
-            <thead><tr><th>Item</th><th>Qty</th><th>Unit price</th><th>Rate %</th><th class="num">Net</th><th class="num">Tax</th><th class="num">Total</th><th><span class="sr-only">Remove</span></th></tr></thead>
+            <thead><tr><th>Item</th><th>HSN / SAC</th><th>Qty</th><th>Unit price</th><th>Rate %</th><th class="num">Net</th><th class="num">Tax</th><th class="num">Total</th><th><span class="sr-only">Remove</span></th></tr></thead>
             <tbody></tbody>
           </table>
         </div>
         <div class="error-inline" id="linesError" role="alert" hidden></div>
         <dl class="kv-grid" id="linesOut"></dl>
+        <div class="hsn-box">
+          <label for="hsnSearch"><i data-lucide="search"></i> Find an HSN or SAC code</label>
+          <input type="search" id="hsnSearch" class="text-input" placeholder="coffee, laptop, 8471, construction, 9983…" autocomplete="off" spellcheck="false">
+          <div class="hsn-results" id="hsnResults" aria-live="polite"></div>
+          <p class="muted small" id="hsnData"></p>
+        </div>
         <div class="hint-bar inline">Prices here are before tax, in the currency chosen above. Tax is worked out and rounded on each line, the way most invoicing software does it, and totals are grouped by rate.</div>
       </div>
     </div>
@@ -122,6 +129,14 @@
           <div class="faq-answer"><p>Yes. Use the invoice panel: add a line for each item with its quantity, unit price and rate. The calculator works out the tax on each line, groups the totals by rate as an Indian GST invoice or a UAE tax invoice summary would, and gives the grand total in figures and words. It does not produce a legal tax invoice, which also needs your registration number, the customer's details and other fields.</p></div>
         </div>
         <div class="faq-item">
+          <button class="faq-question">How do I find the HSN or SAC code for a product or service? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>Type a word or the first digits into Find an HSN or SAC code under the invoice. The search covers 12,604 eight-digit HSN codes and 496 SAC codes for services, with the list's source and date shown below it, and a click adds an invoice line with that code. The list does not hold GST rates: since 22 September 2025 rates are set heading by heading in Notification No. 9/2025-Central Tax (Rate) for goods, and headings in the same chapter can carry different rates, so check the schedule for your exact heading. The list is refreshed by a monthly check that proposes updates for review.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">What is reverse charge and how is it shown? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>Under reverse charge the buyer, not the seller, pays the tax to the government: in India for supplies such as legal services from an advocate or services imported from abroad, and in the UAE for imports and some designated goods. Tick Reverse charge and the calculator shows the amount the supplier is paid without tax, the tax the recipient must pay, and the line "Tax payable on reverse charge: Yes" that an Indian tax invoice has to carry.</p></div>
+        </div>
+        <div class="faq-item">
           <button class="faq-question">Is the amount I enter sent anywhere? <i data-lucide="chevron-down"></i></button>
           <div class="faq-answer"><p>No. Every calculation runs in JavaScript on this page, and prices and invoice lines never leave your device. The page keeps working offline once it has loaded.</p></div>
         </div>
@@ -154,6 +169,7 @@
     <div class="info-panel">
       <h2><i data-lucide="git-commit"></i> Changelog</h2>
       <ul class="changelog-list">
+        <li><span class="changelog-tag">v1.2.0</span> HSN and SAC code search over 12,604 HSN and 496 SAC codes (hsn-code-package 3.0.0, list dated and sourced on the page; no rates, because that data set still carries the slabs that ended on 22 September 2025), an HSN/SAC column on invoice lines, a reverse charge option, and a monthly workflow that proposes code-list updates as a pull request.</li>
         <li><span class="changelog-tag">v1.1.0</span> CGST and SGST (or UTGST) are now each worked out on the taxable value at half the rate, so the two halves are always equal (18% on 100.05 gave CGST 9.01 and SGST 9.00); the tax is their sum, and a note shows when that differs by a paisa from the rate times the value.</li>
         <li><span class="changelog-tag">v1.0.0</span> Initial release: add or remove VAT or GST for the UAE, Saudi Arabia, Bahrain, Oman and India, or any rate; exact arithmetic in minor units including three-decimal currencies; CGST, SGST, UTGST and IGST split; rounding to whole units; amount in words with lakh and crore; multi-line invoices grouped by rate; share links.</li>
       </ul>
@@ -213,10 +229,19 @@
       const rows = [[`Amount before ${name}`, money(r.net, c)]];
       if (r.split) r.split.forEach(s => rows.push([`${s.name} ${T.rateText(s.rate)}`, money(s.amount, c)]));
       rows.push([`${name} ${rt}${r.split && r.split.length > 1 ? ' in total' : ''}`, money(r.tax, c)]);
-      rows.push([`Total including ${name}`, `<strong>${money(r.gross, c)}</strong>`]);
-      rows.push(['Total in words', esc(T.amountWords(r.gross, c.code))]);
+      const rc = $('reverseCharge').checked;
+      if (rc) {
+        rows.push([`Paid to the supplier`, `<strong>${money(r.net, c)}</strong>`]);
+        rows.push(['Reverse charge', `${money(r.tax, c)} ${name} is payable by the recipient directly to the government, not to the supplier; the invoice must say "Tax payable on reverse charge: Yes".`]);
+        rows.push(['Total in words', esc(T.amountWords(r.net, c.code))]);
+      } else {
+        rows.push([`Total including ${name}`, `<strong>${money(r.gross, c)}</strong>`]);
+        rows.push(['Total in words', esc(T.amountWords(r.gross, c.code))]);
+      }
       if (r.rate > 0n) rows.push([`${name} share of the total`, `${T.inclusiveFraction(r.rate)} <span class="muted">(${(Number(r.rate) / (1e6 + Number(r.rate)) * 100).toFixed(4).replace(/0+$/, '').replace(/\.$/, '')}%)</span>`]);
-      $('headline').innerHTML = mode === 'add'
+      $('headline').innerHTML = rc && mode === 'add'
+        ? `<strong>${money(r.net, c)}</strong> payable to the supplier; the recipient pays ${money(r.tax, c)} ${name} under reverse charge`
+        : mode === 'add'
         ? `<strong>${money(r.gross, c)}</strong> including ${money(r.tax, c)} ${name}`
         : `<strong>${money(r.net, c)}</strong> before ${name}; the ${name} is ${money(r.tax, c)}`;
       $('calcOut').innerHTML = rows.map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join('') + (r.note ? `<dt>Note</dt><dd class="gst-note" id="gstNote">${esc(r.note)}</dd>` : '');
@@ -227,6 +252,7 @@
     function lineRow(l, i) {
       return `<tr data-i="${i}">
         <td><input type="text" class="text-input" data-k="d" value="${esc(l.d)}" aria-label="Item ${i + 1} description" spellcheck="false"></td>
+        <td><input type="text" class="text-input hsn" data-k="h" value="${esc(l.h || '')}" inputmode="numeric" aria-label="Item ${i + 1} HSN or SAC code" spellcheck="false"></td>
         <td><input type="text" class="text-input qty" data-k="q" value="${esc(l.q)}" inputmode="decimal" aria-label="Item ${i + 1} quantity"></td>
         <td><input type="text" class="text-input" data-k="p" value="${esc(l.p)}" inputmode="decimal" aria-label="Item ${i + 1} unit price"></td>
         <td><input type="text" class="text-input rate" data-k="r" value="${esc(l.r)}" inputmode="decimal" aria-label="Item ${i + 1} tax rate"></td>
@@ -256,7 +282,10 @@
         if (isGst() && $('supply').value !== 'inter' && rate > 0n) T.gstSplit(g.tax, rate, $('supply').value).forEach(s => rows.push([`${s.name} ${T.rateText(s.rate)} on ${money(g.net, c)}`, money(s.amount, c)]));
         else rows.push([`${isGst() && rate > 0n ? 'IGST' : name} ${T.rateText(rate)} on ${money(g.net, c)}`, money(g.tax, c)]);
       });
-      $('linesOut').innerHTML = lines.length ? [[`Total before ${name}`, money(net, c)]].concat(rows, [[`Total ${name}`, money(tax, c)], ['Grand total', `<strong>${money(net + tax, c)}</strong>`], ['In words', esc(T.amountWords(net + tax, c.code))]])
+      const rcl = $('reverseCharge').checked;
+      $('linesOut').innerHTML = lines.length ? [[`Total before ${name}`, money(net, c)]].concat(rows, rcl
+          ? [[`Total ${name} (payable by the recipient)`, money(tax, c)], ['Grand total', `<strong>${money(net, c)}</strong>`], ['In words', esc(T.amountWords(net, c.code))], ['Reverse charge', 'Tax payable on reverse charge: Yes']]
+          : [[`Total ${name}`, money(tax, c)], ['Grand total', `<strong>${money(net + tax, c)}</strong>`], ['In words', esc(T.amountWords(net + tax, c.code))]])
         .map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join('') : '';
     }
 
@@ -268,13 +297,41 @@
     $('preset').addEventListener('change', applyPreset);
     ['amount', 'rate'].forEach(id => $(id).addEventListener('input', () => { if (id === 'rate') syncPresetFromInputs(); calc(); }));
     $('currency').addEventListener('change', () => { syncPresetFromInputs(); calc(); });
-    ['supply', 'whole'].forEach(id => $(id).addEventListener('change', calc));
+    ['supply', 'whole', 'reverseCharge'].forEach(id => $(id).addEventListener('change', calc));
     $('lines').addEventListener('input', e => { const inp = e.target.closest('[data-k]'); if (!inp) return; lines[+inp.closest('tr').dataset.i][inp.dataset.k] = inp.value; renderLines(); });
     $('lines').addEventListener('click', e => { const b = e.target.closest('[data-rm]'); if (!b) return; lines.splice(+b.dataset.rm, 1); drawLines(); });
     $('btnAddLine').addEventListener('click', () => { lines.push({ d: '', q: '1', p: '', r: $('rate').value || '5' }); drawLines(); const ins = $('lines').querySelectorAll('tbody tr:last-child input'); if (ins[0]) ins[0].focus(); });
     $('btnCopy').addEventListener('click', () => { if (!lastSummary) { Layerbit.toast('Enter an amount first.', 'warn'); return; } Layerbit.copy(lastSummary).then(() => Layerbit.toast('Breakdown copied')); });
 
-    function getState() { return { mode, amount: $('amount').value, rate: $('rate').value, currency: $('currency').value, supply: $('supply').value, whole: $('whole').checked, lines: lines.map(l => Object.assign({}, l)) }; }
+    // ---- HSN / SAC code search (codes and descriptions only; rates are not in the list)
+    let hsnList = null, hsnLoad = null;
+    const hsnReady = () => hsnLoad || (hsnLoad = fetch('../js/vendor/gst/hsn-sac.json').then(r => { if (!r.ok) throw new Error('The code list did not load'); return r.json(); }).then(d => {
+      hsnList = d.hsn.map(([c, t]) => ({ c, t, k: 'HSN', l: (c + ' ' + t).toLowerCase() })).concat(d.sac.map(([c, t]) => ({ c, t, k: 'SAC', l: (c + ' ' + t).toLowerCase() })));
+      $('hsnData').textContent = `${d.hsn.length.toLocaleString('en-IN')} HSN and ${d.sac.length} SAC codes from ${d.source}; list dated ${d.listUpdated}. The list carries no GST rates: check the rate schedules (Notification No. 9/2025-Central Tax (Rate) for goods, from 22 September 2025) before you invoice.`;
+      return hsnList;
+    }).catch(e => { hsnLoad = null; throw e; }));
+    let hsnHits = [];
+    async function hsnSearch() {
+      const q = $('hsnSearch').value.trim().toLowerCase(), box = $('hsnResults');
+      if (q.length < 2) { box.innerHTML = ''; return; }
+      try { await hsnReady(); } catch (e) { box.textContent = e.message; return; }
+      if ($('hsnSearch').value.trim().toLowerCase() !== q) return;
+      const words = q.split(/\s+/).filter(Boolean), digits = /^\d+$/.test(q);
+      hsnHits = hsnList.filter(x => digits ? x.c.startsWith(q) : words.every(w => x.l.includes(w)))
+        .sort((a, b) => (digits ? a.c.length - b.c.length : 0) || (a.c < b.c ? -1 : 1)).slice(0, 40);
+      box.innerHTML = hsnHits.length ? hsnHits.map((x, i) => `<button type="button" class="hsn-pick" data-i="${i}" title="Add an invoice line with this code"><span class="hsn-code">${x.k} ${esc(x.c)}</span> ${esc(x.t.length > 160 ? x.t.slice(0, 160) + '…' : x.t)}</button>`).join('') : '<span class="muted">No code matches. Try fewer words, or the first digits of the code.</span>';
+    }
+    let hsnTimer = null;
+    $('hsnSearch').addEventListener('input', () => { clearTimeout(hsnTimer); hsnTimer = setTimeout(hsnSearch, 150); });
+    $('hsnResults').addEventListener('click', e => {
+      const b = e.target.closest('.hsn-pick'); if (!b) return;
+      const x = hsnHits[+b.dataset.i], short = x.t.split(/ (?=[A-Z][a-z])/).pop().replace(/^[\s:-]+/, '').slice(0, 80);
+      lines.push({ d: short, h: x.c, q: '1', p: '', r: $('rate').value || '18' }); drawLines();
+      const ins = $('lines').querySelectorAll('tbody tr'); const p = ins[ins.length - 1].querySelector('[data-k="p"]'); if (p) p.focus();
+      Layerbit.toast(`Added a line for ${x.k} ${x.c}; enter the price and check the rate`);
+    });
+
+    function getState() { return { mode, amount: $('amount').value, rate: $('rate').value, currency: $('currency').value, supply: $('supply').value, whole: $('whole').checked, reverse: $('reverseCharge').checked, lines: lines.map(l => Object.assign({}, l)) }; }
     function setState(s) {
       if (!s) return;
       if (s.mode === 'add' || s.mode === 'remove') document.querySelector(`[data-mode="${s.mode}"]`).click();
@@ -283,7 +340,8 @@
       if (typeof s.rate === 'string') $('rate').value = s.rate;
       if (s.supply) $('supply').value = s.supply;
       if (typeof s.whole === 'boolean') $('whole').checked = s.whole;
-      if (Array.isArray(s.lines)) lines = s.lines.slice(0, 200).map(l => ({ d: String(l.d || ''), q: String(l.q ?? '1'), p: String(l.p ?? ''), r: String(l.r ?? '') }));
+      if (typeof s.reverse === 'boolean') $('reverseCharge').checked = s.reverse;
+      if (Array.isArray(s.lines)) lines = s.lines.slice(0, 200).map(l => ({ d: String(l.d || ''), h: String(l.h || ''), q: String(l.q ?? '1'), p: String(l.p ?? ''), r: String(l.r ?? '') }));
       syncPresetFromInputs(); drawLines(); calc();
     }
     if (window.Layerbit) Layerbit.register({ slug: 'vat-gst-calculator', getState, setState, run: calc, input: t => { $('amount').value = String(t).trim(); calc(); } });

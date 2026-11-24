@@ -89,5 +89,23 @@ t('words', () => {
   assert.strictEqual(D.words({ days: 13339 }), '13,339 days');
 });
 
+t('Hijri: Umm al-Qura dates both ways, month lengths, impossible days', () => {
+  const h = D.toHijri('2026-03-20');
+  assert.deepStrictEqual([h.y, h.m, h.d, h.monthName], [1447, 10, 1, 'Shawwal']);
+  assert.strictEqual(D.fromHijri(1447, 9, 1), '2026-02-18');
+  assert.strictEqual(D.fromHijri(1446, 12, 10), '2025-06-06');
+  for (const g of ['2000-01-01', '2024-07-07', '2030-12-31']) { const x = D.toHijri(g); assert.strictEqual(D.fromHijri(x.y, x.m, x.d), g); }
+  assert.ok([29, 30].includes(D.hijriMonthLength(1447, 9)));
+  assert.strictEqual(D.fromHijri(1447, 9, 31), null);
+});
+t('moments and durations: times kept, DST-free arithmetic', () => {
+  const a = D.parseMoment('2026-11-23T09:15'), b = D.parseMoment('2026-11-25T17:45');
+  const d = D.duration(b - a);
+  assert.deepStrictEqual([d.days, d.hours, d.minutes, d.totalHours], [2, 8, 30, 56.5]);
+  assert.strictEqual(D.durationWords(d), '2 days, 8 hours and 30 minutes');
+  assert.strictEqual(D.parseMoment('2026-02-30T10:00'), null);
+  assert.ok(D.duration(a - b).negative);
+});
+
 console.log(`datecalc: ${pass} passed, ${fail} failed`);
 if (fail) process.exit(1);

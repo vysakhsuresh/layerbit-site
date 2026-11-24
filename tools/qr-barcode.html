@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="Free QR code generator for UPI payments, Wi-Fi, WhatsApp, links and vCards, plus EAN-13, UPC and Code 128 barcodes as PNG or SVG. Runs in your browser." />
+  <meta name="description" content="Free QR code designer with logos, dot styles and frames, a scan check, PDF/EPS export and bulk from CSV, plus Data Matrix, PDF417 and GS1 barcodes." />
   <title>QR Code Generator: UPI, Wi-Fi, WhatsApp & Barcode | Layerbit</title>
   <meta name="google-adsense-account" content="ca-pub-6072772587431629" />
   <link rel="preload" href="../fonts/space-grotesk-latin.woff2" as="font" type="font/woff2" crossorigin />
@@ -26,7 +26,7 @@
   <meta property="og:url" content="https://layerbit.co.in/tools/qr-barcode.html" />
   <meta property="og:site_name" content="Layerbit" />
   <meta property="og:title" content="QR Code Generator: UPI, Wi-Fi, WhatsApp & Barcode | Layerbit" />
-  <meta property="og:description" content="Free QR code generator for UPI payments, Wi-Fi, WhatsApp, links and vCards, plus EAN-13, UPC and Code 128 barcodes as PNG or SVG. Runs in your browser." />
+  <meta property="og:description" content="Free QR code designer with logos, dot styles and frames, a scan check, PDF/EPS export and bulk from CSV, plus Data Matrix, PDF417 and GS1 barcodes." />
   <meta property="og:image" content="https://layerbit.co.in/images/og/tools-qr-barcode.jpg" />
   <meta property="og:image:type" content="image/jpeg" />
   <meta property="og:image:width" content="1200" />
@@ -35,7 +35,7 @@
   <meta property="og:locale" content="en" />
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="QR Code Generator: UPI, Wi-Fi, WhatsApp & Barcode | Layerbit" />
-  <meta name="twitter:description" content="Free QR code generator for UPI payments, Wi-Fi, WhatsApp, links and vCards, plus EAN-13, UPC and Code 128 barcodes as PNG or SVG. Runs in your browser." />
+  <meta name="twitter:description" content="Free QR code designer with logos, dot styles and frames, a scan check, PDF/EPS export and bulk from CSV, plus Data Matrix, PDF417 and GS1 barcodes." />
   <meta name="twitter:image" content="https://layerbit.co.in/images/og/tools-qr-barcode.jpg" />
   <meta name="twitter:image:alt" content="QR Code Generator: UPI, Wi-Fi, WhatsApp & Barcode" />
   <meta name="theme-color" content="#0a0c10" />
@@ -48,8 +48,8 @@
       "@id": "https://layerbit.co.in/tools/qr-barcode.html#app",
       "name": "QR Code \u0026 Barcode Generator",
       "url": "https://layerbit.co.in/tools/qr-barcode.html",
-      "description": "Free QR code generator for UPI payments, Wi-Fi, WhatsApp, links and vCards, plus EAN-13, UPC and Code 128 barcodes as PNG or SVG. Runs in your browser.",
-      "applicationCategory": "UtilitiesApplication",
+      "description": "Free QR code designer with logos, dot styles and frames, a scan check, PDF/EPS export and bulk from CSV, plus Data Matrix, PDF417 and GS1 barcodes.",
+      "applicationCategory": "DeveloperApplication",
       "operatingSystem": "Any (runs in the browser)",
       "browserRequirements": "Requires JavaScript",
       "isAccessibleForFree": true,
@@ -60,7 +60,16 @@
       },
       "publisher": {
         "@id": "https://layerbit.co.in/#organization"
-      }
+      },
+      "featureList": [
+        "QR codes for links, UPI, SEPA payments, Wi-Fi, WhatsApp, events and contacts",
+        "Dot and eye shapes, centre logo and frames",
+        "Scan check of the finished code",
+        "PNG, SVG, PDF and EPS export",
+        "Bulk generation from CSV",
+        "Data Matrix, PDF417, Aztec and GS1-128",
+        "EAN, UPC, ITF-14, Code 128 and Code 39 barcodes"
+      ]
     },
     {
       "@type": "BreadcrumbList",
@@ -135,7 +144,7 @@
           "name": "Which error correction level should I choose?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "Level M, the default, suits screens and most printing. Choose Q or H for codes on packaging, outdoor signs or anything that will be scuffed, or when you plan to place a small logo over the middle, because higher levels let a scanner rebuild up to about 30% of a damaged code. Higher levels also make the code denser for the same content, so use L only when you need the most capacity for clean, on-screen use."
+            "text": "Level M, the default, suits screens and most printing. Choose Q or H for codes on packaging, outdoor signs or anything that will be scuffed, or when you place a logo over the middle (adding a logo switches to H for you), because higher levels let a scanner rebuild up to about 30% of a damaged code. Higher levels also make the code denser for the same content, so use L only when you need the most capacity for clean, on-screen use."
           }
         },
         {
@@ -143,7 +152,7 @@
           "name": "Should I download the QR code as PNG or SVG?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "Use SVG for anything printed, such as menus, packaging, business cards or signs, because a vector image stays sharp at any size and print software scales it without blurring the modules. Use PNG for websites, documents and messages, and pick an export size large enough that the image is not stretched later; an enlarged small PNG goes soft at the edges and can stop scanning."
+            "text": "Use SVG, PDF or EPS for anything printed, such as menus, packaging, business cards or signs, because a vector file stays sharp at any size and print software scales it without blurring the modules. PDF suits printers and office software; EPS suits older design and sign-making software. Use PNG for websites, documents and messages, and pick an export size large enough that the image is not stretched later; an enlarged small PNG goes soft at the edges and can stop scanning."
           }
         },
         {
@@ -156,10 +165,18 @@
         },
         {
           "@type": "Question",
+          "name": "Will a QR code with a logo and round dots still scan?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Usually, if the logo is small and error correction is high. A logo covers modules, and the scanner rebuilds them from the error-correction data, so the tool clears a square in the centre, switches to level H, and then reads the finished image back with a QR decoder and tells you whether it worked. A green scan check means the drawn code decodes to exactly what you typed. Low contrast, light dots on a dark background and very large logos are what break codes; test the printed copy with a couple of phones before a print run."
+          }
+        },
+        {
+          "@type": "Question",
           "name": "Is this QR code generator free, and is my data private?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "Yes on both counts. There is no sign-up, no limit on how many codes you make, no watermark, and the codes are yours to use commercially. The code is generated by JavaScript running in your own browser, so the link, Wi-Fi password or contact details you type are never sent to a server; you can disconnect from the internet after the page loads and it keeps working."
+            "text": "Yes on both counts. There is no sign-up, no limit on how many codes you make, including the spreadsheet export, no watermark, and the codes are yours to use commercially. The code is generated by JavaScript running in your own browser, so the link, Wi-Fi password or contact details you type are never sent to a server; you can disconnect from the internet after the page loads and it keeps working."
           }
         }
       ]
@@ -170,9 +187,8 @@
 
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6072772587431629" crossorigin="anonymous"></script>
 
-  <script src="../js/vendor/lucide.min.js?v=3228cee26a" async></script>
+  <script src="../js/vendor/lucide.min.js?v=a267465fbd" async></script>
   <script src="../js/vendor/JsBarcode.all.min.js?v=e307d9489a"></script>
-  <script src="../js/vendor/qrcode.min.js?v=c541ef0632"></script>
 
   <link rel="icon" href="../favicon.ico" sizes="16x16 32x32 48x48" />
   <link rel="icon" href="../favicon-48.png" type="image/png" sizes="48x48" />
@@ -665,6 +681,23 @@
     @media (max-width: 600px) { .qr-options { grid-template-columns: 1fr; } }
     .control-pane textarea { resize: vertical; min-height: 58px; line-height: 1.4; }
 
+    /* style, scan check, bulk */
+    .qr-style { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .logo-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+    .logo-row select, .logo-row input[type="text"] { flex: 1; min-width: 90px; }
+    .btn-mini { display: inline-flex; align-items: center; gap: 4px; padding: 7px 12px; border-radius: 8px; border: 1px solid var(--card-border); background: rgba(255,255,255,0.05); color: var(--text-main); cursor: pointer; font: inherit; font-size: 0.85em; }
+    .btn-mini:disabled { opacity: 0.45; cursor: not-allowed; }
+    .scan-check { font-size: 0.85em; color: var(--text-muted); min-height: 1.2em; margin: 8px 0 0; overflow-wrap: anywhere; }
+    .scan-check.ok { color: #22c55e; }
+    .scan-check.warn { color: #f59e0b; }
+    #outputArea canvas, #outputArea .code-svg { max-width: 100%; height: auto; }
+    #outputArea .code-svg { width: 320px; }
+    .bulk-pane { max-width: 1200px; margin: 0 auto 30px; padding: 22px 24px; border: 1px solid var(--card-border); border-radius: 16px; background: var(--card-bg); }
+    .bulk-pane h2 { font-size: 1.2em; margin: 0 0 6px; display: flex; align-items: center; gap: 8px; }
+    .bulk-pane p { color: var(--text-muted); margin: 0 0 14px; }
+    .bulk-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; align-items: end; }
+    @media (max-width: 800px) { .bulk-grid, .qr-style { grid-template-columns: 1fr; } }
+
   </style>
 </head>
 <body>
@@ -699,7 +732,7 @@
   <div class="hero">
     <div class="osint-badge"><i data-lucide="shield-check"></i> Runs entirely in your browser</div>
     <h1>QR Code &amp; Barcode Generator</h1>
-    <p>Generate print-ready QR codes for links, UPI payments, Wi-Fi, WhatsApp and contact cards, plus linear barcodes, with structural checks on the URL you are encoding.</p>
+    <p>Design QR codes with dot and eye shapes, a logo and a framed call to action, checked to make sure they still scan, for links, UPI, SEPA payments, Wi-Fi, events and contacts. Also Data Matrix, PDF417, Aztec, GS1-128 and retail barcodes, as PNG, SVG, PDF or EPS, one at a time or a whole spreadsheet at once.</p>
   </div>
 
   <div class="synth-container">
@@ -715,6 +748,12 @@
           <option value="EAN8">EAN-8 (7 digits + check digit)</option>
           <option value="UPC">UPC-A (11 digits + check digit)</option>
           <option value="ITF14">ITF-14 (13 digits + check digit)</option>
+          <option value="GS1_128">GS1-128 (Application Identifiers)</option>
+          <optgroup label="2D codes">
+            <option value="DATAMATRIX">Data Matrix</option>
+            <option value="PDF417">PDF417</option>
+            <option value="AZTEC">Aztec</option>
+          </optgroup>
         </select>
       </div>
 
@@ -731,6 +770,8 @@
             <option value="sms">SMS</option>
             <option value="vcard">Contact card (vCard)</option>
             <option value="geo">Map location</option>
+            <option value="event">Calendar event</option>
+            <option value="epc">SEPA payment (EPC, euro)</option>
           </select>
         </div>
         <div id="payloadFields"></div>
@@ -778,6 +819,32 @@
         <div class="payload-meta" id="contrastMeta"></div>
       </div>
 
+      <div class="qr-style" id="qrStyle">
+        <div class="input-group">
+          <label for="dotStyle"><i data-lucide="grip"></i> Dots</label>
+          <select id="dotStyle"><option value="square">Square</option><option value="rounded">Rounded</option><option value="dots">Dots</option></select>
+        </div>
+        <div class="input-group">
+          <label for="eyeStyle"><i data-lucide="scan-eye"></i> Corner eyes</label>
+          <select id="eyeStyle"><option value="square">Square</option><option value="rounded">Rounded</option><option value="circle">Circle</option></select>
+        </div>
+        <div class="input-group">
+          <label for="logoFile"><i data-lucide="image"></i> Logo in the centre</label>
+          <div class="logo-row">
+            <label class="btn-mini" title="PNG, JPEG or SVG; it is drawn in a cleared square in the middle">Choose<input type="file" id="logoFile" accept="image/*" hidden></label>
+            <select id="logoSize" aria-label="Logo size" disabled><option value="0.15">Small</option><option value="0.2" selected>Medium</option><option value="0.25">Large</option></select>
+            <button type="button" class="btn-mini" id="btnLogoClear" disabled>Remove</button>
+          </div>
+        </div>
+        <div class="input-group">
+          <label for="frameStyle"><i data-lucide="frame"></i> Frame</label>
+          <div class="logo-row">
+            <select id="frameStyle"><option value="none">None</option><option value="banner">Banner below</option><option value="box">Box</option></select>
+            <input type="text" id="frameText" value="SCAN ME" maxlength="40" aria-label="Frame text" autocomplete="off">
+          </div>
+        </div>
+      </div>
+
       <button class="btn-generate" data-lb-primary onclick="generateCode()">
         <i data-lucide="zap"></i> Generate Code
       </button>
@@ -791,12 +858,19 @@
         </div>
       </div>
 
+      <div class="scan-check" id="scanCheck" aria-live="polite"></div>
       <div class="action-row">
         <button class="btn-action" id="btnDownload" onclick="downloadCode('png')" disabled>
           <i data-lucide="download"></i> PNG
         </button>
         <button class="btn-action" id="btnDownloadSvg" onclick="downloadCode('svg')" disabled>
           <i data-lucide="file-code"></i> SVG
+        </button>
+        <button class="btn-action" id="btnDownloadPdf" disabled title="Vector PDF, for print">
+          <i data-lucide="file-text"></i> PDF
+        </button>
+        <button class="btn-action" id="btnDownloadEps" disabled title="Vector EPS, for design and print software">
+          <i data-lucide="file-image"></i> EPS
         </button>
         <button class="btn-action" id="btnAnalyze" onclick="analyzeCode()" disabled>
           <i data-lucide="search"></i> Analyze
@@ -806,8 +880,42 @@
 
   </div>
 
+  <section class="bulk-pane" aria-labelledby="bulkTitle">
+    <h2 id="bulkTitle"><i data-lucide="files"></i> Many codes from a spreadsheet</h2>
+    <p>Choose a CSV file with one row per code. Each row becomes a file in a zip, drawn with the format, colours and style above. There is no limit on the number of rows.</p>
+    <div class="bulk-grid">
+      <div class="input-group">
+        <label for="bulkFile">CSV file</label>
+        <input type="file" id="bulkFile" accept=".csv,.tsv,.txt,text/csv">
+      </div>
+      <div class="input-group">
+        <label for="bulkColumn">Content column</label>
+        <select id="bulkColumn" disabled><option value="">(choose a file)</option></select>
+      </div>
+      <div class="input-group">
+        <label for="bulkTemplate">Or a template</label>
+        <input type="text" id="bulkTemplate" placeholder="https://example.com/p/{sku}" autocomplete="off" spellcheck="false">
+      </div>
+      <div class="input-group">
+        <label for="bulkNameColumn">File names from</label>
+        <select id="bulkNameColumn" disabled><option value="">Row number</option></select>
+      </div>
+      <div class="input-group">
+        <label for="bulkFormat">Format</label>
+        <select id="bulkFormat" disabled><option value="png">PNG</option><option value="svg">SVG</option><option value="pdf">PDF</option><option value="eps">EPS</option></select>
+      </div>
+      <button class="btn-generate" type="button" id="btnBulk" disabled><i data-lucide="file-archive"></i> Make the zip</button>
+    </div>
+    <div class="payload-meta" id="bulkStatus"></div>
+  </section>
+
   <!-- Practical guidance panes -->
   <div class="edu-container">
+
+    <div class="edu-pane">
+      <h3><i data-lucide="infinity"></i> Static codes: never tracked, never expire</h3>
+      <p>Every code here is static: the link or text is written into the pattern itself, so it works for as long as the print lasts, with no account, no redirect and no scan counting. "Dynamic" codes that you can re-point after printing, and scan statistics, need a server in the middle that every scan passes through; that server can log the people scanning, and the code stops working when the subscription ends. If you need to change a destination later, encode a link to a page you control and change the page.</p>
+    </div>
 
     <div class="edu-pane">
       <h3><i data-lucide="qr-code"></i> Before you print a code</h3>
@@ -912,14 +1020,14 @@
         <div class="faq-item">
           <button class="faq-question">Which error correction level should I choose? <i data-lucide="chevron-down"></i></button>
           <div class="faq-answer">
-            <p>Level M, the default, suits screens and most printing. Choose Q or H for codes on packaging, outdoor signs or anything that will be scuffed, or when you plan to place a small logo over the middle, because higher levels let a scanner rebuild up to about 30% of a damaged code. Higher levels also make the code denser for the same content, so use L only when you need the most capacity for clean, on-screen use.</p>
+            <p>Level M, the default, suits screens and most printing. Choose Q or H for codes on packaging, outdoor signs or anything that will be scuffed, or when you place a logo over the middle (adding a logo switches to H for you), because higher levels let a scanner rebuild up to about 30% of a damaged code. Higher levels also make the code denser for the same content, so use L only when you need the most capacity for clean, on-screen use.</p>
           </div>
         </div>
 
         <div class="faq-item">
           <button class="faq-question">Should I download the QR code as PNG or SVG? <i data-lucide="chevron-down"></i></button>
           <div class="faq-answer">
-            <p>Use SVG for anything printed, such as menus, packaging, business cards or signs, because a vector image stays sharp at any size and print software scales it without blurring the modules. Use PNG for websites, documents and messages, and pick an export size large enough that the image is not stretched later; an enlarged small PNG goes soft at the edges and can stop scanning.</p>
+            <p>Use SVG, PDF or EPS for anything printed, such as menus, packaging, business cards or signs, because a vector file stays sharp at any size and print software scales it without blurring the modules. PDF suits printers and office software; EPS suits older design and sign-making software. Use PNG for websites, documents and messages, and pick an export size large enough that the image is not stretched later; an enlarged small PNG goes soft at the edges and can stop scanning.</p>
           </div>
         </div>
 
@@ -931,9 +1039,16 @@
         </div>
 
         <div class="faq-item">
+          <button class="faq-question">Will a QR code with a logo and round dots still scan? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer">
+            <p>Usually, if the logo is small and error correction is high. A logo covers modules, and the scanner rebuilds them from the error-correction data, so the tool clears a square in the centre, switches to level H, and then reads the finished image back with a QR decoder and tells you whether it worked. A green scan check means the drawn code decodes to exactly what you typed. Low contrast, light dots on a dark background and very large logos are what break codes; test the printed copy with a couple of phones before a print run.</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
           <button class="faq-question">Is this QR code generator free, and is my data private? <i data-lucide="chevron-down"></i></button>
           <div class="faq-answer">
-            <p>Yes on both counts. There is no sign-up, no limit on how many codes you make, no watermark, and the codes are yours to use commercially. The code is generated by JavaScript running in your own browser, so the link, Wi-Fi password or contact details you type are never sent to a server; you can disconnect from the internet after the page loads and it keeps working.</p>
+            <p>Yes on both counts. There is no sign-up, no limit on how many codes you make, including the spreadsheet export, no watermark, and the codes are yours to use commercially. The code is generated by JavaScript running in your own browser, so the link, Wi-Fi password or contact details you type are never sent to a server; you can disconnect from the internet after the page loads and it keeps working.</p>
           </div>
         </div>
 
@@ -975,7 +1090,8 @@
       <li><i data-lucide="check"></i> <strong>QR Code (matrix):</strong> any text up to 2,953 bytes at level L. The payload builder composes the exact string a phone expects for UPI payments, Wi-Fi, WhatsApp, contact cards, email, SMS and map locations, so you are not guessing the format.</li>
       <li><i data-lucide="check"></i> <strong>Code 128 and Code 39:</strong> free-text linear barcodes for inventory and asset tags. Code 128 takes any ASCII; Code 39 is restricted to uppercase, digits and a few symbols but is readable by older scanners.</li>
       <li><i data-lucide="check"></i> <strong>EAN-13, EAN-8, UPC-A, ITF-14:</strong> the retail and logistics symbologies. The check digit is calculated for you when you supply the data digits, and a wrong length is refused before anything is drawn.</li>
-      <li><i data-lucide="check"></i> <strong>Export:</strong> PNG at a size you choose, or SVG for print work, where a vector scales to any dimension without the blur that stops codes scanning.</li>
+      <li><i data-lucide="check"></i> <strong>GS1-128, Data Matrix, PDF417 and Aztec:</strong> drawn with bwip-js. GS1-128 takes Application Identifiers in brackets, such as (01) for the GTIN and (10) for the batch, and refuses values the GS1 rules do not allow.</li>
+      <li><i data-lucide="check"></i> <strong>Export:</strong> PNG at a size you choose, or SVG, PDF and EPS for print work, where a vector scales to any dimension without the blur that stops codes scanning.</li>
     </ul>
   </div>
 
@@ -983,6 +1099,10 @@
     <div class="changelog-panel">
         <h2><i data-lucide="git-branch"></i> Deployment changelog</h2>
         <ul class="changelog-list">
+            <li class="changelog-item">
+                <span class="changelog-version">v1.6.0</span>
+                <span>QR design: dot and eye shapes, a centre logo (error correction raised to H), frames with call-to-action text, and a scan check that decodes the drawn code. Vector PDF and EPS export for every format. Bulk from a CSV with templates and no row limit. Calendar event and SEPA (EPC) payloads with IBAN check digits. Data Matrix, PDF417, Aztec and GS1-128. QR drawing moved from qrcodejs to qrcode-generator.</span>
+            </li>
             <li class="changelog-item">
                 <span class="changelog-version">v1.5.0</span>
                 <span>UPI payment QR codes (UPI ID, payee name, amount and note, in the upi://pay format every UPI app reads) and WhatsApp click-to-chat codes with an optional pre-filled message.</span>
@@ -1117,9 +1237,15 @@
   <script src="../js/kernel.js?v=eb69348d32"></script>
 
   <script src="../js/shared.js?v=e2441a1728"></script>
+  <script src="../js/vendor/qrcode-generator.min.js?v=1ffea4331a"></script>
+  <script src="../js/vendor/jsQR.min.js?v=c4fa012ce7"></script>
+  <script src="../js/engines/codes.js?v=0c196a6a7f"></script>
+  <script src="../js/engines/csv.js?v=a78b81af7d"></script>
+  <script src="../js/engines/zip.js?v=1c95003bb0"></script>
 
 
   <script>
+    const $id = id => document.getElementById(id);
     const outputArea = document.getElementById('outputArea');
     const typeSelect = document.getElementById('typeSelect');
     const payloadType = document.getElementById('payloadType');
@@ -1150,6 +1276,10 @@
       EAN8:    { test: v => /^\d{7,8}$/.test(v),   hint: 'EAN-8 needs 7 data digits (8 with the check digit).' },
       UPC:     { test: v => /^\d{11,12}$/.test(v), hint: 'UPC-A needs 11 data digits (12 with the check digit).' },
       ITF14:   { test: v => /^\d{13,14}$/.test(v), hint: 'ITF-14 needs 13 data digits (14 with the check digit).' },
+      GS1_128: { test: v => /^\(\d{2,4}\)/.test(v), hint: 'GS1-128 needs Application Identifiers in brackets, for example (01)09521234543213(10)ABC123.' },
+      DATAMATRIX: { test: v => v.length > 0, hint: 'Enter the text to encode.' },
+      PDF417:  { test: v => v.length > 0, hint: 'Enter the text to encode.' },
+      AZTEC:   { test: v => v.length > 0, hint: 'Enter the text to encode.' },
     };
 
     // ---- payload builder ------------------------------------------------
@@ -1174,6 +1304,10 @@
                               f.org && `ORG:${vEsc(f.org)}`, f.title && `TITLE:${vEsc(f.title)}`, f.tel && `TEL;TYPE=CELL:${f.tel}`,
                               f.email && `EMAIL:${f.email}`, f.url && `URL:${f.url}`, 'END:VCARD'].filter(Boolean).join('\n') },
       geo:   { fields: [['lat','Latitude'],['lng','Longitude']], compose: f => `geo:${Number(f.lat) || 0},${Number(f.lng) || 0}` },
+      event: { fields: [['title','Event title'],['start','Starts','datetime'],['end','Ends','datetime'],['location','Location (optional)'],['description','Details (optional)']],
+               compose: f => LBCodes.vevent(f) },
+      epc:   { fields: [['name','Beneficiary name'],['iban','IBAN'],['bic','BIC (optional inside the EEA)'],['amount','Amount in euro (optional)'],['ref','Structured reference (optional)'],['text','Message to the payee (optional)']],
+               compose: f => { const r = LBCodes.epc(f); payloadErrors = r.errors.map(e => e.replace(/^The IBAN/, 'IBAN')); return r.text; } },
     };
     const wifiEsc = v => String(v).replace(/([\;,":])/g, '\\$1');
     // upi://pay?pa=<UPI ID>&pn=<name>&am=<amount>&cu=INR&tn=<note>. The '@' in
@@ -1196,22 +1330,30 @@
     const lastFirst = n => { const p = n.trim().split(/\s+/); return p.length > 1 ? `${vEsc(p.pop())};${vEsc(p.join(' '))}` : `${vEsc(n)};`; };
     const query = o => { const q = Object.entries(o).filter(([, v]) => v).map(([k, v]) => `${k}=${encodeURIComponent(v)}`).join('&'); return q ? '?' + q : ''; };
 
+    // the plain text typed before switching to a builder comes back when you switch back
+    let plainText = '', lastPayloadType = 'text';
     function renderPayloadFields() {
       const def = PAYLOADS[payloadType.value];
+      if (lastPayloadType === 'text' && payloadType.value !== 'text') plainText = dataInput.value;
+      const backToText = lastPayloadType !== 'text' && payloadType.value === 'text';
+      lastPayloadType = payloadType.value;
       payloadFields.innerHTML = def.fields.map(([key, label, kind, opts]) => {
         if (kind === 'select') return `<div class="input-group"><label for="pf-${key}">${label}</label><select id="pf-${key}" data-pf="${key}">${opts.map(o => `<option value="${o}">${o === 'nopass' ? 'Open (no password)' : o}</option>`).join('')}</select></div>`;
+        if (kind === 'datetime') return `<div class="input-group"><label for="pf-${key}">${label}</label><input type="datetime-local" id="pf-${key}" data-pf="${key}"></div>`;
         if (kind === 'checkbox') return `<div class="checkbox-group"><input type="checkbox" id="pf-${key}" data-pf="${key}"><label for="pf-${key}">${label}</label></div>`;
         return `<div class="input-group"><label for="pf-${key}">${label}</label><input type="text" id="pf-${key}" data-pf="${key}" autocomplete="off"></div>`;
       }).join('');
       payloadFields.querySelectorAll('[data-pf]').forEach(el => el.addEventListener('input', composePayload));
       payloadFields.querySelectorAll('select[data-pf]').forEach(el => el.addEventListener('change', composePayload));
       dataInput.readOnly = def.fields.length > 0;
+      if (backToText) { dataInput.value = plainText; regenerateSoon(0); }
       composePayload();
     }
+    let payloadErrors = [];
     function composePayload() {
       const def = PAYLOADS[payloadType.value];
-      if (!def.fields.length) { updateMeta(); return; }
-      const f = {};
+      if (!def.fields.length) { payloadErrors = []; updateMeta(); return; }
+      const f = {}; payloadErrors = [];
       payloadFields.querySelectorAll('[data-pf]').forEach(el => { f[el.dataset.pf] = el.type === 'checkbox' ? el.checked : el.value; });
       dataInput.value = def.compose(f);
       updateMeta();
@@ -1221,7 +1363,10 @@
     // ---- live readouts --------------------------------------------------
     function updateMeta() {
       const bytes = new TextEncoder().encode(dataInput.value).length;
-      if (typeSelect.value === 'qr') {
+      if (typeSelect.value === 'qr' && payloadErrors.length) {
+        payloadMeta.textContent = payloadErrors.join(' ');
+        payloadMeta.classList.add('warn');
+      } else if (typeSelect.value === 'qr') {
         const cap = QR_CAPACITY[ecSelect.value];
         const over = bytes > cap;
         payloadMeta.textContent = `${bytes.toLocaleString()} bytes - ${over ? 'exceeds' : 'within'} the ${cap.toLocaleString()}-byte limit at level ${ecSelect.value}`;
@@ -1252,6 +1397,7 @@
     function syncControls() {
       const isQR = typeSelect.value === 'qr';
       qrOptions.style.display = isQR ? 'grid' : 'none';
+      $id('qrStyle').style.display = isQR ? 'grid' : 'none';
       payloadBuilder.style.display = isQR ? 'flex' : 'none';
       if (!isQR) { payloadType.value = 'text'; renderPayloadFields(); }
       btnAnalyze.style.display = isQR ? '' : 'none';
@@ -1283,18 +1429,66 @@
     }
 
     // ---- generation ----------------------------------------------------
-    let lastSvg = null;
+    // QR codes are drawn from the module matrix (qrcode-generator), so dots,
+    // eyes, logo and frame are shapes we control and every export is vector.
+    // 2D codes and GS1-128 come from bwip-js; the other linear codes from JsBarcode.
+    const BWIP = { DATAMATRIX: 'datamatrix', PDF417: 'pdf417', AZTEC: 'azteccode', GS1_128: 'gs1-128' };
+    let bwipLoad = null;
+    const bwipReady = () => bwipLoad || (bwipLoad = new Promise((res, rej) => { const s = document.createElement('script'); s.src = '../js/vendor/bwip-js.min.js'; s.onload = () => res(window.bwipjs); s.onerror = () => { bwipLoad = null; rej(new Error('The 2D barcode library did not load')); }; document.head.appendChild(s); }));
+    let lastSvg = null, lastLayout = null, logo = null, genSeq = 0;
+    const measureCtx = document.createElement('canvas').getContext('2d');
+    const FONT = 'Helvetica, Arial, sans-serif';
+    const measure = (text, size) => { measureCtx.font = `bold 100px ${FONT}`; return measureCtx.measureText(text).width / 100 * size; };
+    function styleOpts() {
+      return { dots: $id('dotStyle').value, eyes: $id('eyeStyle').value, logo: logo ? +$id('logoSize').value : 0,
+               frame: { style: $id('frameStyle').value, text: $id('frameText').value.trim() }, measure };
+    }
+    function qrLayout(text) { return LBCodes.layout(LBCodes.matrix(qrcode, text, ecSelect.value), styleOpts()); }
+    function paint(ctx, L, scale, fg, bg) {
+      const col = k => k === 'bg' ? bg : fg;
+      ctx.save(); ctx.scale(scale, scale);
+      for (const it of L.items) {
+        if (it.t === 'image') { if (logo) { const k = Math.min(it.w / logo.img.naturalWidth, it.h / logo.img.naturalHeight), w = logo.img.naturalWidth * k * 0.92, h = logo.img.naturalHeight * k * 0.92; ctx.drawImage(logo.img, it.x + (it.w - w) / 2, it.y + (it.h - h) / 2, w, h); } continue; }
+        ctx.fillStyle = col(it.fill);
+        if (it.t === 'rect') { ctx.beginPath(); if (it.r && ctx.roundRect) ctx.roundRect(it.x, it.y, it.w, it.h, it.r); else ctx.rect(it.x, it.y, it.w, it.h); ctx.fill(); }
+        else if (it.t === 'circle') { ctx.beginPath(); ctx.arc(it.cx, it.cy, it.r, 0, Math.PI * 2); ctx.fill(); }
+        else if (it.t === 'path') { const p = new Path2D(); it.d.forEach(c => c[0] === 'M' ? p.moveTo(c[1], c[2]) : c[0] === 'L' ? p.lineTo(c[1], c[2]) : c[0] === 'C' ? p.bezierCurveTo(c[1], c[2], c[3], c[4], c[5], c[6]) : p.closePath()); ctx.fill(p); }
+        else if (it.t === 'text') { ctx.font = `bold ${it.size}px ${FONT}`; ctx.textAlign = it.anchor === 'middle' ? 'center' : 'left'; ctx.fillText(it.text, it.x, it.y); }
+      }
+      ctx.restore();
+    }
+    function qrCanvas(L, px, fg, bg) {
+      const scale = px / L.w, c = document.createElement('canvas');
+      c.width = Math.round(L.w * scale); c.height = Math.round(L.h * scale);
+      paint(c.getContext('2d'), L, scale, fg, bg);
+      return c;
+    }
+    // does the drawn code read back? (jsQR, the decoder many web scanners use)
+    function scanCheck(canvas, expected) {
+      const el = $id('scanCheck');
+      try {
+        const d = canvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.height), r = jsQR(d.data, d.width, d.height, { inversionAttempts: 'attemptBoth' });
+        if (r && r.data === expected) { el.className = 'scan-check ok'; el.textContent = 'Scan check: the code reads back as ' + (expected.length > 80 ? expected.slice(0, 80) + '…' : expected); }
+        else { el.className = 'scan-check warn'; el.textContent = 'Scan check: this code does not read back' + (r ? ' correctly' : '') + '. Use a smaller logo, raise error correction to H, increase contrast or use square dots.'; }
+      } catch (e) { el.className = 'scan-check'; el.textContent = ''; }
+    }
+    const svgEsc = s => String(s).replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
+    function bwipSvg(type, data, fg, bg) {
+      return bwipjs.toSVG({ bcid: BWIP[type], text: data, scale: 3, includetext: type === 'GS1_128', textxalign: 'center', barcolor: fg.slice(1), textcolor: fg.slice(1), backgroundcolor: bg.slice(1), paddingwidth: 4, paddingheight: 4 });
+    }
+    function bwipError(type, e) {
+      const m = String(e && e.message || e).replace(/^bwipp\.\w+#\d+:\s*/, '').replace(/^bwip-js:\s*/, '');
+      return (type === 'GS1_128' ? 'GS1: ' : '') + m + (type === 'GS1_128' ? '. Write each Application Identifier in brackets, for example (01)09521234543213(10)ABC123.' : '');
+    }
+
     function generateCode() {
       const data = dataInput.value.trim();
       const type = typeSelect.value;
-      const fgColor = document.getElementById('colorDark').value;
-      const bgColor = document.getElementById('colorLight').value;
-
+      const fgColor = $id('colorDark').value, bgColor = $id('colorLight').value, seq = ++genSeq;
+      $id('scanCheck').textContent = ''; $id('scanCheck').className = 'scan-check';
       if (!data) { showMessage('Please enter payload data.', '#ef4444'); return; }
-
-      outputArea.innerHTML = '';
-      outputArea.style.backgroundColor = bgColor;
-      lastSvg = null;
+      if (type === 'qr' && payloadErrors.length) { showMessage(payloadErrors.join(' '), '#ef4444'); return; }
+      lastSvg = null; lastLayout = null;
 
       if (type === 'qr') {
         const cap = QR_CAPACITY[ecSelect.value];
@@ -1303,69 +1497,192 @@
           showMessage(`Payload is ${bytes.toLocaleString()} bytes; a QR code at level ${ecSelect.value} holds at most ${cap.toLocaleString()}. Shorten it or lower the error-correction level (L holds ${QR_CAPACITY.L.toLocaleString()}).`, '#ef4444');
           return;
         }
-        const size = Number(sizeSelect.value);
-        const qrWrapper = document.createElement('div');
-        outputArea.appendChild(qrWrapper);
-        try {
-          new QRCode(qrWrapper, { text: data, width: size, height: size, colorDark: fgColor, colorLight: bgColor,
-                                  correctLevel: QRCode.CorrectLevel[ecSelect.value] });
-        } catch (e) {
-          // qrcodejs throws on payloads that fit the byte table but overflow its
-          // internal version selection (multi-byte text counts differently).
-          showMessage('This payload is too long for a QR code at the chosen error-correction level. Shorten it or choose level L.', '#ef4444');
-          return;
-        }
-        // A vector copy for SVG export: read the module grid back off the canvas.
-        lastSvg = qrToSvg(qrWrapper, fgColor, bgColor);
-      } else {
-        const rule = BARCODE_RULES[type];
-        if (!rule.test(data)) { showMessage(rule.hint, '#ef4444'); return; }
-        const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-        outputArea.appendChild(svg);
-        try {
-          JsBarcode(svg, data, { format: type, lineColor: fgColor, background: bgColor, width: 2.5, height: 100, displayValue: true, margin: 10 });
-        } catch (e) {
-          showMessage(`${rule.hint} ${String(e.message || e).replace(/^.*?:\s*/, '')}`, '#ef4444');
-          return;
-        }
-        lastSvg = svg.outerHTML;
+        let L;
+        try { L = qrLayout(data); }
+        catch (e) { showMessage('This payload is too long for a QR code at the chosen error-correction level. Shorten it or choose level L.', '#ef4444'); return; }
+        const canvas = qrCanvas(L, Number(sizeSelect.value), fgColor, bgColor);
+        outputArea.innerHTML = ''; outputArea.style.backgroundColor = bgColor; outputArea.appendChild(canvas);
+        lastLayout = L;
+        lastSvg = LBCodes.svg(L, { fg: fgColor, bg: bgColor, scale: Number(sizeSelect.value) / L.w, imageHref: logo && logo.dataUrl, font: FONT });
+        scanCheck(canvas, data);
+        enableActions();
+        return;
       }
+      const rule = BARCODE_RULES[type];
+      if (!rule.test(data)) { showMessage(rule.hint, '#ef4444'); return; }
+      if (BWIP[type]) {
+        disableActions();
+        bwipReady().then(() => {
+          if (seq !== genSeq) return;
+          let svgText;
+          try { svgText = bwipSvg(type, data, fgColor, bgColor); }
+          catch (e) { showMessage(bwipError(type, e), '#ef4444'); return; }
+          outputArea.innerHTML = svgText; outputArea.style.backgroundColor = bgColor;
+          const el = outputArea.querySelector('svg'); el.removeAttribute('width'); el.removeAttribute('height'); el.classList.add('code-svg');
+          lastSvg = svgText.replace('<svg ', `<svg width="${el.viewBox.baseVal.width * 3}" height="${el.viewBox.baseVal.height * 3}" `);
+          enableActions();
+        }).catch(e => showMessage(e.message, '#ef4444'));
+        return;
+      }
+      outputArea.innerHTML = ''; outputArea.style.backgroundColor = bgColor;
+      const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      outputArea.appendChild(svg);
+      try {
+        JsBarcode(svg, data, { format: type, lineColor: fgColor, background: bgColor, width: 2.5, height: 100, displayValue: true, margin: 10 });
+      } catch (e) {
+        showMessage(`${rule.hint} ${String(e.message || e).replace(/^.*?:\s*/, '')}`, '#ef4444');
+        return;
+      }
+      lastSvg = svg.outerHTML;
       enableActions();
     }
 
-    // Rebuild the QR as SVG rects by sampling the rendered canvas at module
-    // resolution. qrcodejs does not expose its module matrix, but the canvas is
-    // drawn at an exact integer scale so sampling cell centres is lossless.
-    function qrToSvg(wrapper, fg, bg) {
-      const canvas = wrapper.querySelector('canvas');
-      if (!canvas) return null;
-      const ctx = canvas.getContext('2d');
-      const px = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
-      // module count: scan the first row for the first colour transition.
-      let first = -1;
-      for (let x = 0; x < canvas.width; x++) { const i = x * 4; if (px[i] < 128 && px[i+1] < 128 && px[i+2] < 128) { first = x; break; } }
-      if (first < 0) return null;
-      let run = 0; for (let x = first; x < canvas.width; x++) { const i = x * 4; if (px[i] < 128) run++; else break; }
-      const modulePx = run / 7; // the finder pattern's outer run is 7 modules wide
-      const n = Math.round(canvas.width / modulePx);
-      const rects = [];
-      for (let r = 0; r < n; r++) for (let c = 0; c < n; c++) {
-        const x = Math.floor((c + 0.5) * modulePx), y = Math.floor((r + 0.5) * modulePx);
-        const i = (y * canvas.width + x) * 4;
-        if (px[i] < 128 && px[i+1] < 128 && px[i+2] < 128) rects.push(`<rect x="${c}" y="${r}" width="1" height="1"/>`);
-      }
-      return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="-4 -4 ${n + 8} ${n + 8}" shape-rendering="crispEdges"><rect x="-4" y="-4" width="${n + 8}" height="${n + 8}" fill="${bg}"/><g fill="${fg}">${rects.join('')}</g></svg>`;
+    // any drawn SVG (JsBarcode, bwip-js) as layout items, so PDF and EPS stay vector
+    function svgToLayout(svgText, fg, bg) {
+      const doc = new DOMParser().parseFromString(svgText, 'image/svg+xml'), root = doc.documentElement;
+      const vb = (root.getAttribute('viewBox') || '').split(/[\s,]+/).map(Number);
+      const W = vb.length === 4 ? vb[2] : parseFloat(root.getAttribute('width')), H = vb.length === 4 ? vb[3] : parseFloat(root.getAttribute('height'));
+      const norm = c => { if (!c) return null; c = c.trim().toLowerCase(); if (c === 'none' || c === 'transparent') return 'none'; measureCtx.fillStyle = '#000'; measureCtx.fillStyle = c; return measureCtx.fillStyle; };
+      const bgN = norm(bg), items = [{ t: 'rect', x: 0, y: 0, w: W, h: H, fill: 'bg' }];
+      const styleOf = (el, key) => { const m = new RegExp('(?:^|;)\\s*' + key + '\\s*:\\s*([^;]+)').exec(el.getAttribute('style') || ''); return m ? m[1].trim() : el.getAttribute(key); };
+      (function walk(el, dx, dy, inheritFill) {
+        const tr = /translate\(\s*([-\d.]+)[\s,]*([-\d.]*)\s*\)/.exec(el.getAttribute && el.getAttribute('transform') || '');
+        if (tr) { dx += +tr[1]; dy += +(tr[2] || 0); }
+        const fillRaw = el.getAttribute ? styleOf(el, 'fill') : null, fill = fillRaw ? norm(fillRaw) : inheritFill;
+        const kind = f => f === bgN ? 'bg' : 'fg';
+        const tag = el.localName;
+        if (tag === 'rect') {
+          const w = el.getAttribute('width'), h = el.getAttribute('height');
+          if (fill !== 'none') items.push({ t: 'rect', x: dx + (+el.getAttribute('x') || 0), y: dy + (+el.getAttribute('y') || 0), w: /%$/.test(w) ? W : +w, h: /%$/.test(h) ? H : +h, fill: kind(fill) });
+        } else if (tag === 'path') {
+          const d = LBCodes.parsePath(el.getAttribute('d')).map(c => c[0] === 'Z' ? c : [c[0]].concat(c.slice(1).map((v, i) => v + (i % 2 ? dy : dx))));
+          const stroke = styleOf(el, 'stroke'), sw = parseFloat(styleOf(el, 'stroke-width')) || 1;
+          if (stroke && norm(stroke) !== 'none') {
+            // stroked bars: each segment becomes a filled band of the stroke's width
+            let p0 = null;
+            d.forEach(c => { if (c[0] === 'M') p0 = [c[1], c[2]]; else if (c[0] === 'L' && p0) { const ex = c[1] - p0[0], ey = c[2] - p0[1], len = Math.hypot(ex, ey) || 1, nx = -ey / len * sw / 2, ny = ex / len * sw / 2; items.push({ t: 'path', fill: kind(norm(stroke)), d: [['M', p0[0] + nx, p0[1] + ny], ['L', c[1] + nx, c[2] + ny], ['L', c[1] - nx, c[2] - ny], ['L', p0[0] - nx, p0[1] - ny], ['Z']] }); p0 = [c[1], c[2]]; } });
+          }
+          if (fill !== 'none' && (fillRaw || !stroke)) items.push({ t: 'path', fill: kind(fill || norm(fg)), d });
+        } else if (tag === 'text') {
+          const font = styleOf(el, 'font') || '', size = parseFloat(styleOf(el, 'font-size')) || parseFloat((/(\d+(?:\.\d+)?)px/.exec(font) || [])[1]) || 16;
+          items.push({ t: 'text', x: dx + (+el.getAttribute('x') || 0), y: dy + (+el.getAttribute('y') || 0), size, text: el.textContent, fill: kind(fill || norm(fg)), anchor: el.getAttribute('text-anchor') === 'middle' ? 'middle' : 'start' });
+        }
+        [...(el.children || [])].forEach(ch => walk(ch, dx, dy, fill));
+      })(root, 0, 0, norm(fg));
+      return { w: W, h: H, items };
     }
+    const exportScale = L => Math.max(1, 288 / Math.max(L.w, L.h));   // about 4 inches on the long side
+    async function logoJpeg() {
+      if (!logo) return null;
+      const n = 256, c = document.createElement('canvas'); c.width = c.height = n;
+      const g = c.getContext('2d'); g.fillStyle = $id('colorLight').value; g.fillRect(0, 0, n, n);
+      const k = Math.min(n / logo.img.naturalWidth, n / logo.img.naturalHeight) * 0.92, w = logo.img.naturalWidth * k, h = logo.img.naturalHeight * k;
+      g.drawImage(logo.img, (n - w) / 2, (n - h) / 2, w, h);
+      const blob = await new Promise(r => c.toBlob(r, 'image/jpeg', 0.92));
+      const small = document.createElement('canvas'); small.width = small.height = 96; small.getContext('2d').drawImage(c, 0, 0, 96, 96);
+      const px = small.getContext('2d').getImageData(0, 0, 96, 96).data; let hex = '';
+      for (let i = 0; i < px.length; i += 4) hex += ((1 << 24) | (px[i] << 16) | (px[i + 1] << 8) | px[i + 2]).toString(16).slice(1);
+      return { jpeg: { data: new Uint8Array(await blob.arrayBuffer()), w: n, h: n }, rgb: { w: 96, h: 96, hex } };
+    }
+    async function vectorFile(kind, L, fg, bg) {
+      const o = Object.assign({ fg, bg, scale: exportScale(L), measure }, L === lastLayout || L.n ? await logoJpeg() || {} : {});
+      return kind === 'pdf' ? new Blob([LBCodes.pdf(L, o)], { type: 'application/pdf' }) : new Blob([LBCodes.eps(L, o)], { type: 'application/postscript' });
+    }
+    async function downloadVector(kind) {
+      const fg = $id('colorDark').value, bg = $id('colorLight').value;
+      const L = lastLayout || (lastSvg && svgToLayout(lastSvg, fg, bg));
+      if (!L) return;
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(await vectorFile(kind, L, fg, bg)); a.download = `layerbit-${typeSelect.value.toLowerCase()}-${Date.now()}.${kind}`; a.click();
+      setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+    }
+    $id('btnDownloadPdf').addEventListener('click', () => downloadVector('pdf'));
+    $id('btnDownloadEps').addEventListener('click', () => downloadVector('eps'));
+
+    // logo
+    $id('logoFile').addEventListener('change', e => {
+      const f = e.target.files[0]; e.target.value = ''; if (!f) return;
+      const r = new FileReader();
+      r.onload = () => {
+        const img = new Image();
+        img.onload = () => {
+          logo = { img, dataUrl: r.result }; $id('btnLogoClear').disabled = false; $id('logoSize').disabled = false;
+          if (ecSelect.value !== 'H') { ecSelect.value = 'H'; updateMeta(); Layerbit.toast('Error correction raised to H so the code still reads with the logo over it'); }
+          regenerateSoon(0);
+        };
+        img.onerror = () => Layerbit.toast('That file is not an image this browser can draw', 'warn');
+        img.src = r.result;
+      };
+      r.readAsDataURL(f);
+    });
+    $id('btnLogoClear').addEventListener('click', () => { logo = null; $id('btnLogoClear').disabled = true; $id('logoSize').disabled = true; regenerateSoon(0); });
+    ['dotStyle', 'eyeStyle', 'logoSize', 'frameStyle'].forEach(id => $id(id).addEventListener('change', () => regenerateSoon(0)));
+    $id('frameText').addEventListener('input', () => regenerateSoon(200));
+
+    // ---- many codes from a CSV --------------------------------------------
+    let bulk = null;
+    $id('bulkFile').addEventListener('change', async e => {
+      const f = e.target.files[0]; if (!f) return;
+      const parsed = LBCsv.parse(await Layerbit.readFile(f));
+      const rows = parsed.rows.filter(r => r.some(v => String(v).trim()));
+      if (rows.length < 2) { $id('bulkStatus').textContent = 'The file needs a header row and at least one data row.'; return; }
+      const head = LBCsv.uniqueHeaders(rows[0]);
+      bulk = { head, rows: rows.slice(1) };
+      const opts = head.map(h => `<option value="${svgEsc(h)}">${svgEsc(h)}</option>`).join('');
+      $id('bulkColumn').innerHTML = opts; $id('bulkNameColumn').innerHTML = '<option value="">Row number</option>' + opts;
+      $id('btnBulk').disabled = false; ['bulkColumn', 'bulkNameColumn', 'bulkFormat'].forEach(id => { $id(id).disabled = false; });
+      $id('bulkStatus').textContent = `${bulk.rows.length.toLocaleString()} rows, ${head.length} columns. Use a column as it is, or a template such as https://example.com/p/{${head[0]}}.`;
+    });
+    async function bulkRun() {
+      if (!bulk) return;
+      const type = typeSelect.value, fmt = $id('bulkFormat').value, fg = $id('colorDark').value, bg = $id('colorLight').value, tpl = $id('bulkTemplate').value.trim();
+      const col = bulk.head.indexOf($id('bulkColumn').value), nameCol = bulk.head.indexOf($id('bulkNameColumn').value);
+      if (BWIP[type]) await bwipReady();
+      const files = [], report = [['File', 'Content', 'Result']], used = new Set(), t0 = performance.now();
+      const ext = fmt, logoBits = (fmt === 'pdf' || fmt === 'eps') && type === 'qr' ? await logoJpeg() : null;
+      for (let i = 0; i < bulk.rows.length; i++) {
+        const row = bulk.rows[i];
+        const text = (tpl ? tpl.replace(/\{([^}]+)\}/g, (m, k) => { const j = bulk.head.indexOf(k.trim()); return j >= 0 ? (row[j] || '') : m; }) : (row[col] || '')).trim();
+        let base = (nameCol >= 0 && String(row[nameCol] || '').trim() ? String(row[nameCol]).trim() : String(i + 1).padStart(String(bulk.rows.length).length, '0')).replace(/[\\/:*?"<>|\x00-\x1f]+/g, '_').slice(0, 80);
+        let name = base, k = 2; while (used.has(name)) name = base + '-' + k++; used.add(name);
+        try {
+          if (!text) throw new Error('empty');
+          let svgText = null, L = null;
+          if (type === 'qr') L = qrLayout(text);
+          else if (BWIP[type]) svgText = bwipSvg(type, text, fg, bg);
+          else { if (!BARCODE_RULES[type].test(text)) throw new Error(BARCODE_RULES[type].hint); const el = document.createElementNS('http://www.w3.org/2000/svg', 'svg'); JsBarcode(el, text, { format: type, lineColor: fg, background: bg, width: 2.5, height: 100, displayValue: true, margin: 10 }); svgText = el.outerHTML; }
+          let data;
+          if (fmt === 'svg') data = L ? LBCodes.svg(L, { fg, bg, scale: Number(sizeSelect.value) / L.w, imageHref: logo && logo.dataUrl, font: FONT }) : svgText;
+          else if (fmt === 'pdf' || fmt === 'eps') { const lay = L || svgToLayout(svgText, fg, bg), o = Object.assign({ fg, bg, scale: exportScale(lay), measure }, L ? logoBits || {} : {}); data = fmt === 'pdf' ? LBCodes.pdf(lay, o) : LBCodes.eps(lay, o); }
+          else {
+            let canvas;
+            if (L) canvas = qrCanvas(L, Number(sizeSelect.value), fg, bg);
+            else { const img = new Image(); img.src = URL.createObjectURL(new Blob([svgText], { type: 'image/svg+xml' })); await img.decode(); canvas = document.createElement('canvas'); canvas.width = img.width * 3; canvas.height = img.height * 3; canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height); URL.revokeObjectURL(img.src); }
+            data = new Uint8Array(await (await new Promise(r => canvas.toBlob(r, 'image/png'))).arrayBuffer());
+          }
+          files.push({ name: name + '.' + ext, data }); report.push([name + '.' + ext, text, 'OK']);
+        } catch (e) { report.push(['', text, e.message === 'empty' ? 'empty content, skipped' : (BWIP[type] ? bwipError(type, e) : e.message)]); }
+        if (i % 50 === 49) { $id('bulkStatus').textContent = `Drawing ${i + 1} of ${bulk.rows.length}…`; await new Promise(r => setTimeout(r)); }
+      }
+      files.push({ name: 'report.csv', data: LBCsv.stringify(report, { safe: true }) });
+      const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([LBZip.zipStore(files)], { type: 'application/zip' })); a.download = `layerbit-codes-${files.length - 1}.zip`; a.click();
+      setTimeout(() => URL.revokeObjectURL(a.href), 60000);
+      const bad = report.length - 1 - (files.length - 1);
+      $id('bulkStatus').textContent = `${(files.length - 1).toLocaleString()} codes in ${((performance.now() - t0) / 1000).toFixed(1)} s${bad ? `; ${bad} rows skipped, listed in report.csv` : ''}.`;
+    }
+    $id('btnBulk').addEventListener('click', () => { $id('btnBulk').disabled = true; bulkRun().catch(e => { $id('bulkStatus').textContent = e.message; }).finally(() => { $id('btnBulk').disabled = false; }); });
 
     function enableActions() {
       btnDownload.disabled = false;
       btnDownloadSvg.disabled = !lastSvg;
       btnAnalyze.disabled = false;
+      $id('btnDownloadPdf').disabled = $id('btnDownloadEps').disabled = !(lastLayout || lastSvg);
     }
     function disableActions() {
       btnDownload.disabled = true;
       btnDownloadSvg.disabled = true;
       btnAnalyze.disabled = true;
+      $id('btnDownloadPdf').disabled = $id('btnDownloadEps').disabled = true;
       outputArea.style.backgroundColor = '#ffffff';
     }
 

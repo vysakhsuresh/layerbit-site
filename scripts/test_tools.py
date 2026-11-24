@@ -2128,6 +2128,107 @@ def _(t):
     expect("inverted" in t.text("contrastMeta"), "inversion warning missing")
 
 
+QR_LOGO_PNG = "iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAIAAAD8GO2jAAAAKklEQVR4nGN4FiVCU8QwasGoBaMWjFowasGoBaMWjFowasGoBaMWDBULADeGUEwy9mfaAAAAAElFTkSuQmCC"
+
+
+@case("qr-barcode", "typical", "2.12: dot and eye shapes, a centre logo and a frame with text; the code still reads back")
+def _(t):
+    t.select("typeSelect", "qr")
+    t.set("dataInput", "https://layerbit.co.in/tools/qr-barcode.html")
+    t.select("dotStyle", "dots"); t.select("eyeStyle", "circle")
+    t.page.set_input_files("#logoFile", [{"name": "logo.png", "mimeType": "image/png", "buffer": base64.b64decode(QR_LOGO_PNG)}])
+    t.wait_for("document.getElementById('ecSelect').value === 'H'", 3000)
+    t.select("frameStyle", "banner"); t.set("frameText", "SCAN ME")
+    t.call("generateCode()")
+    t.wait_for("/reads back/i.test(document.getElementById('scanCheck').textContent)", 5000)
+    c = t.call("(() => { const c = document.querySelector('#outputArea canvas'); return [c.width, c.height]; })()")
+    expect(c[1] > c[0], f"the frame should add height: {c}")
+    svg = t.call("lastSvg")
+    expect("<circle" in svg and "<image" in svg and "SCAN ME" in svg, svg[:300])
+    expect("https://layerbit.co.in/tools/qr-barcode.html" in t.text("scanCheck"), t.text("scanCheck"))
+
+
+@case("qr-barcode", "typical", "2.12: PDF and EPS export are vector files, for QR codes and barcodes")
+def _(t):
+    import re as _re
+    t.select("typeSelect", "qr"); t.set("dataInput", "https://layerbit.co.in"); t.call("generateCode()"); t.wait(300)
+    with t.page.expect_download() as dl:
+        t.click("#btnDownloadPdf")
+    pdf = open(dl.value.path(), "rb").read()
+    expect(pdf.startswith(b"%PDF-1.4") and pdf.rstrip().endswith(b"%%EOF"), pdf[:40])
+    off = int(_re.search(rb"startxref\s+(\d+)", pdf).group(1))
+    expect(pdf[off:off + 4] == b"xref", "startxref does not point at the xref table")
+    expect(b" re" in pdf or b" c\n" in pdf or b" l\n" in pdf, "no vector drawing operators")
+    with t.page.expect_download() as dl:
+        t.click("#btnDownloadEps")
+    eps = open(dl.value.path(), "rb").read().decode("latin-1")
+    expect(eps.startswith("%!PS-Adobe-3.0 EPSF-3.0") and "%%BoundingBox: 0 0 " in eps and "fill" in eps, eps[:200])
+    t.select("typeSelect", "EAN13"); t.set("dataInput", "590123412345"); t.call("generateCode()"); t.wait(300)
+    with t.page.expect_download() as dl:
+        t.click("#btnDownloadPdf")
+    pdf = open(dl.value.path(), "rb").read()
+    expect(pdf.startswith(b"%PDF-1.4") and b"(901234) Tj" in pdf and b"(123457) Tj" in pdf, "barcode PDF should carry the digits as text")
+
+
+@case("qr-barcode", "maximal", "2.12: bulk from CSV: 600 codes (past the 500 cap of paid plans) zipped under budget")
+def _(t):
+    import zipfile, time as _time
+    rows = "sku,name\n" + "\n".join(f"A{i:04d},Item {i}" for i in range(1, 601))
+    t.select("typeSelect", "qr")
+    t.page.set_input_files("#bulkFile", [{"name": "items.csv", "mimeType": "text/csv", "buffer": rows.encode()}])
+    t.wait_for("document.getElementById('bulkNameColumn').options.length >= 2", 3000)
+    t.set("bulkTemplate", "https://shop.example/p/{sku}")
+    t.select("bulkNameColumn", "sku"); t.select("bulkFormat", "svg")
+    t0 = _time.time()
+    with t.page.expect_download(timeout=20000) as dl:
+        t.click("#btnBulk")
+    z = zipfile.ZipFile(dl.value.path())
+    svgs = [n for n in z.namelist() if n.endswith(".svg")]
+    eq(len(svgs), 600, "one file per row")
+    expect("A0001.svg" in svgs and "A0600.svg" in svgs, svgs[:3])
+    expect(_time.time() - t0 < 10, f"bulk took {_time.time() - t0:.1f}s")
+    expect("600" in t.text("bulkStatus"), t.text("bulkStatus"))
+
+
+@case("qr-barcode", "typical", "2.12: calendar event and SEPA (EPC) payment payloads, with IBAN checked")
+def _(t):
+    t.select("typeSelect", "qr")
+    t.select("payloadType", "event")
+    t.set("pf-title", "Launch; party"); t.set("pf-start", "2026-12-01T18:30"); t.set("pf-end", "2026-12-01T21:00"); t.set("pf-location", "Dubai, Marina")
+    eq(t.val("dataInput"), "BEGIN:VEVENT\nSUMMARY:Launch\; party\nDTSTART:20261201T183000\nDTEND:20261201T210000\nLOCATION:Dubai\\, Marina\nEND:VEVENT", "vevent")
+    t.select("payloadType", "epc")
+    t.set("pf-name", "Red Cross Belgium"); t.set("pf-iban", "BE72 0000 0000 1616"); t.set("pf-bic", "BPOTBEB1"); t.set("pf-amount", "10.5"); t.set("pf-text", "Donation")
+    eq(t.val("dataInput"), "BCD\n002\n1\nSCT\nBPOTBEB1\nRed Cross Belgium\nBE72000000001616\nEUR10.50\n\n\nDonation", "epc")
+    t.set("pf-iban", "BE72 0000 0000 1617")
+    expect("IBAN" in t.text("payloadMeta") and "check" in t.text("payloadMeta").lower(), t.text("payloadMeta"))
+
+
+@case("qr-barcode", "typical", "2.12: Data Matrix, PDF417, Aztec and GS1-128 render; a bad GS1 string is explained")
+def _(t):
+    for kind, data in [("DATAMATRIX", "LB-2026-000123"), ("PDF417", "Layerbit PDF417 test 1234567890"), ("AZTEC", "https://layerbit.co.in"), ("GS1_128", "(01)09521234543213(17)261231(10)ABC123")]:
+        t.select("typeSelect", kind); t.set("dataInput", data); t.call("generateCode()")
+        t.wait_for("document.querySelector('#outputArea svg') && !document.getElementById('btnDownload').disabled", 8000)
+        expect(t.call("[...document.querySelectorAll('#outputArea svg path')].reduce((n, p) => n + (p.getAttribute('d') || '').length, 0)") > 200, kind + " did not draw")
+    t.set("dataInput", "(01)123"); t.call("generateCode()"); t.wait(300)
+    expect("GS1" in t.text("outputArea") and t.call("document.getElementById('btnDownload').disabled"), t.text("outputArea"))
+
+
+@case("qr-barcode", "edge", "switching the payload type and back keeps the plain text you typed")
+def _(t):
+    t.select("typeSelect", "qr"); t.select("payloadType", "text")
+    t.set("dataInput", "https://layerbit.co.in/keep-me")
+    t.select("payloadType", "upi"); t.select("payloadType", "text")
+    eq(t.val("dataInput"), "https://layerbit.co.in/keep-me", "plain text restored")
+    t.wait(400)
+    expect(t.count("#outputArea canvas") == 1, "the code should be drawn again")
+
+
+@case("qr-barcode", "minimal", "2.12: the page says codes are static: never tracked, never expire")
+def _(t):
+    body = t.call("document.body.innerText")
+    expect("never expire" in body and "server" in body, "static-code note missing")
+
+
 @case("qr-barcode", "maximal", "payload beyond QR capacity reports an error, not an exception")
 def _(t):
     t.select("typeSelect", "qr")
@@ -2754,6 +2855,82 @@ def _(t):
 # ----------------------------------------------------------------------------
 # flow
 # ----------------------------------------------------------------------------
+@case("flow", "minimal", "2.21: more than 200 operations, and the page shows the registry's own count")
+def _(t):
+    n = t.call("LBFlow.OPS.length")
+    expect(n >= 200, f"only {n} operations")
+    expect(str(n) in t.text("opCount"), t.text("opCount"))
+    expect(t.call("new Set(LBFlow.OPS.map(o => o.id)).size") == n, "duplicate operation ids")
+
+
+@case("flow", "typical", "2.21: Fork runs the following steps on each line, Merge joins them")
+def _(t):
+    t.set("flowInput", "alpha\nbeta\ngamma")
+    t.call("() => { addStep('fork', { split: '\\\\n', join: '\\\\n' }); addStep('base64-encode'); addStep('merge'); addStep('case', { to: 'lower' }); }")
+    t.call("runAll()"); t.wait_for("document.getElementById('flowOutput').textContent.split('\\n').length === 3", 5000)
+    eq(t.text("flowOutput"), "ywxwage=\nymv0yq==\nz2ftbwe=", "each line encoded, then lower-cased as a whole")
+
+
+@case("flow", "typical", "2.21: a breakpoint pauses the recipe; Step and Continue resume it")
+def _(t):
+    t.set("flowInput", "Hello")
+    t.call("() => { addStep('case', { to: 'UPPER' }); addStep('reverse'); addStep('base64-encode'); }")
+    t.click(".step[data-i='0'] .bp-toggle")
+    t.call("runAll()"); t.wait_for("document.getElementById('btnContinue') && !document.getElementById('btnContinue').hidden", 5000)
+    eq(t.text("flowOutput"), "HELLO", "paused after step 1")
+    expect(t.count(".step.paused") == 2, "the two later steps should show as paused")
+    t.click("#btnStep"); t.wait_for("document.getElementById('flowOutput').textContent === 'OLLEH'", 5000)
+    t.click("#btnContinue"); t.wait_for("document.getElementById('flowOutput').textContent === 'T0xMRUg='", 5000)
+    expect(t.call("document.getElementById('btnContinue').hidden"), "Continue should hide once the recipe finished")
+
+
+@case("flow", "maximal", "2.21: a large file streams line by line through line-by-line steps")
+def _(t):
+    t.call("window.flowStreamMin = 1000000")
+    body = "".join(f"{i} {'error disk full' if i % 10 == 0 else 'all good'}\n" for i in range(120000)).encode()
+    t.page.set_input_files("#flowFile", [{"name": "big.log", "mimeType": "text/plain", "buffer": body}])
+    t.wait_for("/streamed/i.test(document.getElementById('inMeta').textContent)", 5000)
+    t.call("() => { addStep('filter-lines', { pattern: 'error', mode: 'keep matching' }); addStep('case', { to: 'UPPER' }); }")
+    t.call("runAll()")
+    t.wait_for("/12,000 lines/.test(document.getElementById('outMeta').textContent)", 15000)
+    with t.page.expect_download() as dl:
+        t.click("#btnDownloadOut")
+    out = open(dl.value.path(), encoding="utf-8").read().split("\n")
+    out = [l for l in out if l]
+    eq(len(out), 12000, "lines kept")
+    eq(out[1], "10 ERROR DISK FULL", "second kept line")
+    t.call("() => { addStep('number-lines'); }"); t.call("runAll()")
+    t.wait_for("document.getElementById('errorBanner').classList.contains('active')", 5000)
+    expect("line by line" in t.text("errorText"), t.text("errorText"))
+
+
+@case("flow", "typical", "2.21: Send to opens the output in another Layerbit tool")
+def _(t):
+    t.set("flowInput", '{"b":1,"a":[1,2]}')
+    t.call("() => { addStep('json-format', { indent: 'minify' }); }"); t.call("runAll()"); t.wait(300)
+    t.click("#btnSendTo")
+    t.wait_for("document.getElementById('lbPalInput') && document.activeElement === document.getElementById('lbPalInput')", 3000)
+    t.page.keyboard.type("JSON Formatter")
+    with t.page.expect_navigation():
+        t.page.keyboard.press("Enter")
+    t.wait_for("document.getElementById('jsonInput') && document.getElementById('jsonInput').value.includes('\"a\":[1,2]')", 8000)
+
+
+@case("flow", "typical", "2.21: new operations: hashes from hash-wasm, ciphers, Base58/85, TOML, JWT signing")
+def _(t):
+    for op, args, inp, want in [
+        ("sha3", {"bits": "256"}, "abc", "3a985da74fe225b2045c172d6bd390bd855f086e3e9d525b46bfe24511431532"),
+        ("blake2b", {"bits": "512"}, "abc", "ba80a53f981c4d0d6a2797b69f12f6e94c212f14685ac4b74b12bb6fdbffa2d17d87c5392aab792dc252d5de4533cc9518d38aa8dbf1925ab92386edd4009923"),
+        ("base58-encode", {}, "hello world", "StV1DL6CwTryKyV"),
+        ("base85-encode", {}, "Man ", "9jqo^"),
+        ("vigenere-encode", {"key": "LEMON"}, "ATTACKATDAWN", "LXFOPVEFRNHR"),
+        ("toml-to-json", {}, 'title = "x"\n[owner]\nname = "Tom"', '{\n  "title": "x",\n  "owner": {\n    "name": "Tom"\n  }\n}'),
+        ("jwt-sign", {"alg": "HS256", "secret": "your-256-bit-secret"}, '{"sub":"1234567890","name":"John Doe","iat":1516239022}', "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"),
+    ]:
+        got = t.page.evaluate("([op, args, inp]) => LBFlow.run([{ op, args }], inp).then(r => r[0].error ? 'ERR ' + r[0].error : r[0].output)", [op, args, inp])
+        eq(got, want, op)
+
+
 @case("flow", "minimal", "empty input and no steps: output mirrors input, no error")
 def _(t):
     expect(t.count("#opList .op-item") >= 60, "operation list not rendered")
@@ -3938,6 +4115,35 @@ def _(t):
     expect(t.count("#gstNote") == 1 and "0.01" in t.text("gstNote"), "no note about the paisa: " + out)
 
 
+@case("vat-gst-calculator", "typical", "2.29: HSN/SAC search finds codes, shows the list's source and date, and fills an invoice line")
+def _(t):
+    t.set("hsnSearch", "coffee roasted")
+    t.wait_for("document.querySelectorAll('#hsnResults .hsn-pick').length > 0", 10000)
+    expect("0901" in t.text("hsnResults"), t.text("hsnResults")[:300])
+    d = t.text("hsnData")
+    expect("hsn-code-package 3.0.0" in d and "rate" in d.lower(), d)
+    n0 = t.count("#lines tbody tr")
+    t.click("#hsnResults .hsn-pick")
+    t.wait(200)
+    eq(t.count("#lines tbody tr"), n0 + 1, "a line was added")
+    h = t.call("[...document.querySelectorAll('#lines tbody tr')].pop().querySelector('[data-k=h]').value")
+    expect(h.startswith("0901"), h)
+    t.set("hsnSearch", "9954")
+    t.wait_for("/Construction services/.test(document.getElementById('hsnResults').textContent)", 5000)
+
+
+@case("vat-gst-calculator", "typical", "2.29: reverse charge: the buyer pays the tax, the invoice says so")
+def _(t):
+    t.call("setState({ mode: 'add', currency: 'INR', amount: '1000', rate: '18', supply: 'intra', whole: false, lines: [{ d: 'Legal services', q: '1', p: '50000', r: '18' }] })")
+    t.click("#reverseCharge")
+    out = t.text("calcOut")
+    expect("reverse charge" in out.lower() and "recipient" in out.lower(), out)
+    expect("1,000.00" in t.text("headline") and "payable to the supplier" in t.text("headline"), t.text("headline"))
+    lo = t.text("linesOut")
+    expect("50,000.00" in lo and "Tax payable on reverse charge: Yes" in lo, lo)
+    expect("59,000.00" not in lo.split("Grand total")[1].split("\n")[0], "grand total must not include the reverse-charge tax: " + lo)
+
+
 @case("vat-gst-calculator", "minimal", "opens with UAE VAT on AED 1,000 and a two-line invoice")
 def _(t):
     expect("AED 1,050.00" in t.text("headline"), t.text("headline"))
@@ -4028,6 +4234,62 @@ def _(t):
     expect("21" in out and "2 holidays skipped" in out, out)
     t.select("weekend", "fri-sat")
     expect("Friday and Saturday off" in t.text("betweenOut"), "weekend label did not update")
+
+
+@case("date-calculator", "typical", "2.15: public holidays for a country are skipped, listed, and the data version is shown")
+def _(t):
+    t.call("setState({ start: '2026-12-01', end: '2026-12-04', inclusive: true, weekend: 'sat-sun', holidays: '' })")
+    expect("4" in t.text("betweenOut") and "holiday" not in t.text("betweenOut"), t.text("betweenOut"))
+    t.select("holidayCountry", "AE")
+    t.wait_for("/National Day/.test(document.getElementById('holidayList').textContent)", 10000)
+    out = t.text("betweenOut")
+    expect("holiday skipped" in out or "holidays skipped" in out, out)
+    expect("date-holidays" in t.text("holidayData") and "3.39.2" in t.text("holidayData"), t.text("holidayData"))
+    t.select("holidayCountry", "IN")
+    t.call("setState({ start: '2026-01-20', end: '2026-01-31', inclusive: true, weekend: 'sun', holidays: '' })")
+    t.wait_for("/Republic Day/.test(document.getElementById('holidayList').textContent)", 10000)
+    expect(t.count("#holidayCountry option") >= 38, "GCC, India and the top 30 should be offered")
+    t.select("holidayCountry", "QA")
+    t.call("setState({ start: '2026-12-17', end: '2026-12-19', inclusive: true, weekend: 'fri-sat', holidays: '' })")
+    t.wait_for("/Qatar National Day/.test(document.getElementById('holidayList').textContent)", 5000)
+    expect("labour law" in t.text("holidayData"), t.text("holidayData"))
+    for code in ["AE", "SA", "QA", "KW", "BH", "OM", "IN", "US", "GB", "DE", "JP", "BR"]:
+        expect(t.count(f"#holidayCountry option[value='{code}']") == 1, code)
+
+
+@case("date-calculator", "typical", "2.15: Hijri (Umm al-Qura) conversion both ways")
+def _(t):
+    t.set("hijriFromG", "2026-03-20")
+    t.wait_for("/1 Shawwal 1447/.test(document.getElementById('hijriOut').textContent)", 3000)
+    t.set("hijriY", "1447"); t.select("hijriM", "9"); t.set("hijriD", "1")
+    t.wait_for("/2026-02-18/.test(document.getElementById('gregOut').textContent)", 3000)
+    t.set("hijriD", "31")
+    t.wait_for("/29 or 30 days/.test(document.getElementById('gregOut').textContent)", 3000)
+
+
+@case("date-calculator", "typical", "2.15: time between two moments, with hours and minutes")
+def _(t):
+    t.set("dtStart", "2026-11-23T09:15"); t.set("dtEnd", "2026-11-25T17:45")
+    out = t.text("durationOut")
+    expect("2 days, 8 hours and 30 minutes" in out and "56.5" in out and "203,400" in out, out)
+
+
+@case("date-calculator", "typical", "2.15: a countdown ticks towards a date and time")
+def _(t):
+    t.set("countdownTo", "2099-01-01T00:00"); t.set("countdownLabel", "Launch")
+    a = t.text("countdownOut"); t.wait(1200); b = t.text("countdownOut")
+    expect("Launch" in a and "days" in a and a != b, f"{a} / {b}")
+
+
+@case("date-calculator", "typical", "2.15: date maths on a whole column, with bad lines reported")
+def _(t):
+    t.set("batchInput", "2026-01-31\n2026-02-28\nnot a date\n2026-12-31")
+    t.select("batchOp", "add"); t.set("batchN", "1"); t.select("batchUnit", "months")
+    out = t.val("batchOut").split("\n")
+    eq(out, ["2026-02-28", "2026-03-28", "not a date\tnot a date (use YYYY-MM-DD)", "2027-01-31"], "add a month")
+    t.select("batchOp", "weekday")
+    eq(t.val("batchOut").split("\n")[0], "Saturday", "weekday")
+    expect("1 line" in t.text("batchMeta") and "could not" in t.text("batchMeta"), t.text("batchMeta"))
 
 
 @case("date-calculator", "typical", "90 days, 1 month from 31 Jan, and working days over a weekend")
@@ -4597,12 +4859,15 @@ def _(t):
     eq(json.loads(t.text("jsonOutput")), [{"a": 1}, {"a": 2}], "JSON Lines")
     t.select("inMode", "yaml")
     t.set("jsonInput", "name: Ada\ntags: [a, b]\nzip: '00123'\n"); t.click("#btnFormat")
+    t.wait_for("document.getElementById('jsonOutput').textContent.includes('00123')", 8000)
     eq(json.loads(t.text("jsonOutput")), {"name": "Ada", "tags": ["a", "b"], "zip": "00123"}, "YAML in")
     t.select("inMode", "toml")
     t.set("jsonInput", 'title = "x"\n[owner]\nname = "Ada"\n'); t.click("#btnFormat")
+    t.wait_for("document.getElementById('jsonOutput').textContent.includes('owner')", 8000)
     eq(json.loads(t.text("jsonOutput")), {"title": "x", "owner": {"name": "Ada"}}, "TOML in")
     t.select("inMode", "xml")
     t.set("jsonInput", '<a id="1"><b>x</b><b>y</b></a>'); t.click("#btnFormat")
+    t.wait_for("document.getElementById('jsonOutput').textContent.includes('@id')", 8000)
     eq(json.loads(t.text("jsonOutput")), {"a": {"@id": "1", "b": ["x", "y"]}}, "XML in")
     t.select("inMode", "auto")
 

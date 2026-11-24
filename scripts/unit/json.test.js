@@ -104,4 +104,12 @@ t('A3: every view works on lossless numbers: JSONPath, filters, schema, inferenc
   assert.ok(J.toCsv(v.items).includes('12345678901234567890'), 'CSV');
   assert.ok(J.toSql(v.items).sql.includes('12345678901234567890'), 'SQL keeps the digits');
 });
+t('lossless: arrays inside flattened rows and the stats sizes keep big numbers exactly', () => {
+  const LL = require('../../js/engines/lossless-json.js');
+  const v = LL.parse('[{"a":{"ids":[12345678901234567891]}}]');
+  assert.strictEqual(J.flatten(v[0]).a_ids, '[12345678901234567891]');
+  assert.ok(J.toCsv(v).includes('12345678901234567891'), J.toCsv(v));
+  const s = J.stats(LL.parse('{"x":[1.50]}'), '{"x":[1.50]}');
+  assert.strictEqual(s.bytesMin, '{"x":[1.50]}'.length);
+});
 console.log(`json engine: ${n} unit tests passed`);

@@ -1,0 +1,66 @@
+{
+  "tool": "qr-barcode",
+  "page": "tools/qr-barcode.html",
+  "competitors": [
+    {
+      "name": "QR Code Generator Pro",
+      "price": "Professional plan, bulk capped at 500 codes per upload",
+      "checked": "2026-11"
+    },
+    {
+      "name": "QRStuff",
+      "price": "$10 to $250 a month",
+      "checked": "2026-11"
+    }
+  ],
+  "claims": [
+    {
+      "feature": "Logo, colours with a contrast check, dot and eye shapes, frames with call-to-action text",
+      "competitor": "QR Code Generator Pro",
+      "tests": [
+        "ui:qr-barcode:2.12: dot and eye shapes, a centre logo and a frame with text; the code still reads back",
+        "ui:qr-barcode:inverted colours are warned about",
+        "unit:codes:layout: every dot and eye style, with a centre logo at level H, still decodes"
+      ]
+    },
+    {
+      "feature": "PDF and EPS export",
+      "competitor": "QRStuff",
+      "tests": [
+        "ui:qr-barcode:2.12: PDF and EPS export are vector files, for QR codes and barcodes",
+        "unit:codes:pdf: header, objects, xref offsets that point at each object, trailer",
+        "unit:codes:eps: bounding box, rectfill, curves and centred text"
+      ]
+    },
+    {
+      "feature": "Bulk generation from CSV (no row limit)",
+      "competitor": "QR Code Generator Pro",
+      "tests": [
+        "ui:qr-barcode:2.12: bulk from CSV: 600 codes (past the 500 cap of paid plans) zipped under budget"
+      ]
+    },
+    {
+      "feature": "Event, SEPA/EPC, geo, email and SMS content",
+      "competitor": "QRStuff",
+      "tests": [
+        "ui:qr-barcode:2.12: calendar event and SEPA (EPC) payment payloads, with IBAN checked",
+        "unit:codes:epc and ibanValid: SEPA credit transfer text, checks",
+        "unit:codes:vevent: escaped text, floating local times"
+      ]
+    },
+    {
+      "feature": "Data Matrix, PDF417, Aztec, GS1-128",
+      "competitor": "QRStuff",
+      "tests": [
+        "ui:qr-barcode:2.12: Data Matrix, PDF417, Aztec and GS1-128 render; a bad GS1 string is explained"
+      ]
+    },
+    {
+      "feature": "Static codes, never tracked and never expiring (dynamic codes need a server)",
+      "competitor": "QR Code Generator Pro",
+      "tests": [
+        "ui:qr-barcode:2.12: the page says codes are static: never tracked, never expire"
+      ]
+    }
+  ]
+}

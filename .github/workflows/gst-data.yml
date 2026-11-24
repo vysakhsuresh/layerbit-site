@@ -1,0 +1,46 @@
+name: GST code list refresh
+
+# Once a month, rebuild js/vendor/gst/hsn-sac.json (the HSN and SAC codes the
+# VAT & GST calculator searches) from the latest hsn-code-package release, and
+# open a pull request when the list changed. Nothing is merged automatically.
+on:
+  schedule:
+    - cron: "17 4 3 * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: gst-data
+  cancel-in-progress: true
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Rebuild the code list
+        run: |
+          python3 scripts/update_gst_codes.py
+          python3 build.py
+      - name: Open a pull request if it changed
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if git diff --quiet; then echo "No change."; exit 0; fi
+          ver=$(python3 -c "import json; print(json.load(open('js/vendor/gst/hsn-sac.json'))['version'])")
+          branch="gst-data/hsn-code-package-$ver"
+          if git ls-remote --exit-code --heads origin "$branch" >/dev/null; then echo "A pull request branch for $ver already exists."; exit 0; fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -b "$branch"
+          git add -A
+          git commit -m "GST code list: hsn-code-package $ver"
+          git push origin "$branch"
+          gh pr create --base main --head "$branch" --title "GST code list: hsn-code-package $ver" \
+            --body "The monthly refresh found a new HSN/SAC code list (hsn-code-package $ver). Check the diff of js/vendor/gst/hsn-sac.json and run the VAT & GST tests before merging."

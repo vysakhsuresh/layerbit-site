@@ -165,7 +165,45 @@
     return out.length === 1 ? out[0] : out.slice(0, -1).join(', ') + ' and ' + out[out.length - 1];
   }
 
+  // ---- Hijri (Umm al-Qura), through the ICU calendar every modern browser and Node carry
+  var HIJRI_MONTHS = ['Muharram', 'Safar', "Rabi' al-awwal", "Rabi' al-thani", 'Jumada al-awwal', 'Jumada al-thani', 'Rajab', "Sha'ban", 'Ramadan', 'Shawwal', "Dhu al-Qi'dah", 'Dhu al-Hijjah'];
+  var hijriFmt = null;
+  function hijriParts(ms) {
+    hijriFmt = hijriFmt || new Intl.DateTimeFormat('en-u-ca-islamic-umalqura-nu-latn', { timeZone: 'UTC', year: 'numeric', month: 'numeric', day: 'numeric' });
+    var o = {}; hijriFmt.formatToParts(new Date(ms)).forEach(function (p) { if (p.type === 'year' || p.type === 'month' || p.type === 'day') o[p.type] = parseInt(p.value, 10); });
+    return { y: o.year, m: o.month, d: o.day };
+  }
+  /** 'YYYY-MM-DD' -> {y, m, d, monthName} in the Umm al-Qura calendar. */
+  function toHijri(s) { var p = req(s), h = hijriParts(Date.UTC(p.y, p.m - 1, p.d, 12)); h.monthName = HIJRI_MONTHS[h.m - 1]; return h; }
+  /** Hijri year, month (1-12), day -> 'YYYY-MM-DD', or null when that month has no such day. */
+  function fromHijri(y, m, d) {
+    if (!(y >= 1 && m >= 1 && m <= 12 && d >= 1 && d <= 30)) return null;
+    var est = Date.UTC(622, 6, 19, 12) + ((y - 1) * 354.36667 + (m - 1) * 29.5306 + d - 1) * DAY;
+    for (var k = -4; k <= 4; k++) { var ms = est + k * DAY, h = hijriParts(ms); if (h.y === y && h.m === m && h.d === d) { var g = new Date(ms); return fmt({ y: g.getUTCFullYear(), m: g.getUTCMonth() + 1, d: g.getUTCDate() }); } }
+    return null;
+  }
+  function hijriMonthLength(y, m) { return fromHijri(y, m, 30) ? 30 : 29; }
+
+  // ---- moments with times (local wall-clock values, compared as UTC so DST never shifts them)
+  /** 'YYYY-MM-DDTHH:mm[:ss]' -> ms, or null. */
+  function parseMoment(s) {
+    var m = /^\s*(\d{4})-(\d{2})-(\d{2})(?:[T ](\d{2}):(\d{2})(?::(\d{2}))?)?\s*$/.exec(String(s || ''));
+    if (!m || !parse(m[1] + '-' + m[2] + '-' + m[3]) || +(m[4] || 0) > 23 || +(m[5] || 0) > 59 || +(m[6] || 0) > 59) return null;
+    return Date.UTC(+m[1], +m[2] - 1, +m[3], +(m[4] || 0), +(m[5] || 0), +(m[6] || 0));
+  }
+  /** Split a span in ms into days, hours, minutes and seconds, with totals. */
+  function duration(ms) {
+    var neg = ms < 0, a = Math.abs(ms), sec = Math.floor(a / 1000);
+    return { negative: neg, days: Math.floor(sec / 86400), hours: Math.floor(sec % 86400 / 3600), minutes: Math.floor(sec % 3600 / 60), seconds: sec % 60, totalHours: a / 3600000, totalMinutes: a / 60000, totalSeconds: a / 1000 };
+  }
+  function durationWords(d) {
+    var out = []; [['days', 'day'], ['hours', 'hour'], ['minutes', 'minute'], ['seconds', 'second']].forEach(function (u) { var v = d[u[0]]; if (v) out.push(v.toLocaleString('en-US') + ' ' + u[1] + (v === 1 ? '' : 's')); });
+    if (!out.length) return '0 seconds';
+    return out.length === 1 ? out[0] : out.slice(0, -1).join(', ') + ' and ' + out[out.length - 1];
+  }
+
   return {
+    HIJRI_MONTHS: HIJRI_MONTHS, toHijri: toHijri, fromHijri: fromHijri, hijriMonthLength: hijriMonthLength, parseMoment: parseMoment, duration: duration, durationWords: durationWords,
     WEEKDAYS: WEEKDAYS, MONTHS: MONTHS, WEEKENDS: WEEKENDS,
     isLeap: isLeap, daysInMonth: daysInMonth, parse: parse, format: fmt, weekday: function (s) { return weekday(req(s)); },
     today: today, addDays: addDays, addMonths: addMonths, addYears: addYears, daysBetween: daysBetween, diff: diff,

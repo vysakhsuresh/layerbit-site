@@ -7,8 +7,8 @@
       "@id": "https://layerbit.co.in/tools/date-calculator.html#app",
       "name": "Date Calculator: Days Between Dates, Add Days \u0026 Age",
       "url": "https://layerbit.co.in/tools/date-calculator.html",
-      "description": "Count the days or working days between two dates, add or subtract days, months or working days, and calculate an exact age, with Gulf and Indian weekends.",
-      "applicationCategory": "UtilitiesApplication",
+      "description": "Days and working days between dates with public holidays of 48 countries, add days, exact age, Hijri conversion, countdowns and date maths on a column.",
+      "applicationCategory": "DeveloperApplication",
       "operatingSystem": "Any (runs in the browser)",
       "browserRequirements": "Requires JavaScript",
       "isAccessibleForFree": true,
@@ -21,13 +21,14 @@
         "@id": "https://layerbit.co.in/#organization"
       },
       "featureList": [
-        "Days, weeks, months and years between two dates",
-        "Optional counting of the end date",
-        "Working days with five weekend patterns and a holiday list",
-        "Add or subtract days, weeks, months, years or working days",
-        "Exact age in years, months and days with the next birthday",
-        "ISO 8601 week numbers",
-        "Shareable links"
+        "Days and working days between two dates",
+        "Public holidays of 48 countries, including every Gulf state and India",
+        "Add or subtract days, months, years or working days",
+        "Exact age and next birthday",
+        "Hijri (Umm al-Qura) conversion both ways",
+        "Time between two moments",
+        "Countdown to a date",
+        "Date maths on a column with CSV export"
       ]
     },
     {
@@ -87,7 +88,7 @@
           "name": "How do I count working days in the UAE or Saudi Arabia?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "Choose the weekend that applies: Saturday and Sunday for the UAE, or Friday and Saturday for Saudi Arabia, Qatar, Kuwait, Oman and Bahrain. Then paste the public holidays for the period into the holidays box. The working-day count excludes both, and adding working days in the second panel skips them as well."
+            "text": "Choose the weekend that applies: Saturday and Sunday for the UAE, or Friday and Saturday for Saudi Arabia, Qatar, Kuwait, Oman and Bahrain. Then pick the country under Public holidays of, and its holidays in the range are listed and left out of the count; adding working days in the second panel skips them as well. Eid holidays follow the Umm al-Qura calendar and can move by a day after moon sighting, and governments often add days by decree, so type any extra days into the holidays box."
           }
         },
         {
@@ -111,7 +112,15 @@
           "name": "Are the dates I enter sent anywhere?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "No. All the arithmetic runs in JavaScript on this page, and dates of birth and holiday lists never leave your device. The page keeps working offline once it has loaded."
+            "text": "No. All the arithmetic runs in JavaScript on this page, and dates of birth and holiday lists never leave your device. The holiday calendars are a file this site serves, loaded when you pick a country, so no date is sent anywhere to look them up. The page keeps working offline once it has loaded."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How do I convert a Hijri date to Gregorian?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Enter the Hijri day, month and year in the Hijri panel and the Gregorian date appears beside it; enter a Gregorian date above it for the other direction. The conversion uses the Umm al-Qura calendar, Saudi Arabia's official calendar, as built into your browser, and covers 1300 to 1600 AH. Hijri months have 29 or 30 days, and the panel tells you which when a day does not exist."
           }
         }
       ]

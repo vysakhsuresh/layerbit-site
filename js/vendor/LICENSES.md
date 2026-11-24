@@ -12,7 +12,11 @@ offline, and sends no visitor IP to a CDN operator).
 | `sql-formatter.min.js` | sql-formatter | 15.6.2 | MIT |
 | `cronstrue.min.js` | cronstrue | 2.47.0 | MIT |
 | `JsBarcode.all.min.js` | jsbarcode | 3.11.5 | MIT |
-| `qrcode.min.js` | qrcodejs | 1.0.0 | MIT |
+| `qrcode-generator.min.js` | qrcode-generator (Kazuhiko Arase; `dist/qrcode.js` minified with esbuild) | 2.0.4 | MIT |
+| `jsQR.min.js` | jsQR (`dist/jsQR.js` minified with esbuild; used for the scan check) | 1.4.0 | Apache-2.0 |
+| `bwip-js.min.js` | bwip-js (`dist/bwip-js-min.js`, Barcode Writer in Pure PostScript; loaded for Data Matrix, PDF417, Aztec and GS1-128) | 4.11.4 | MIT |
+| `date-holidays.min.js` | date-holidays (bundled as `window.LBHolidays` with esbuild; loaded when a country is picked) | 3.39.2 | ISC (code), CC BY-SA 4.0 (holiday data) |
+| `gst/hsn-sac.json` | HSN and SAC codes and descriptions from hsn-code-package (CBIC / WCO nomenclature), rebuilt by `scripts/update_gst_codes.py`; its GST rates are not included | 3.0.0 | ISC |
 | `xlsx.full.min.js` | xlsx (SheetJS CE) | 0.18.5 | Apache-2.0 |
 | `marked.umd.js` | marked (`lib/marked.umd.js`) | 18.0.14 | MIT |
 | `purify.min.js` | dompurify | 3.4.16 | MPL-2.0 OR Apache-2.0 |
@@ -42,3 +46,7 @@ tarball, replace it here, and update this table. Packages published only as
 ES modules are bundled into one browser script with
 `npx esbuild entry.js --bundle --minify --format=iife --global-name=NAME`,
 where `entry.js` re-exports the functions the page uses.
+
+## Reference implementations
+
+- **CyberChef** (GCHQ, Apache-2.0, https://github.com/gchq/CyberChef): the Flow tool's operation names, arguments and expected outputs follow CyberChef's where the two have the same operation, so recipes read the same. No CyberChef code is bundled; `js/engines/flowops.js` is written for Layerbit.

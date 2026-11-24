@@ -7,7 +7,7 @@
       "@id": "https://layerbit.co.in/tools/flow.html#app",
       "name": "Flow: Build Data Transformation Pipelines",
       "url": "https://layerbit.co.in/tools/flow.html",
-      "description": "Chain 74 operations into one recipe: Base64, gzip, JWT, JSON and JSONPath, CSV, YAML, hashes, regex, URLs, timestamps and AES. Magic detection and share links.",
+      "description": "Chain 200+ operations into one recipe: encodings, ciphers, hashes, JSON, CSV, TOML, JWT and dates, with Fork, breakpoints and streaming of big files.",
       "applicationCategory": "DeveloperApplication",
       "operatingSystem": "Any (runs in the browser)",
       "browserRequirements": "Requires JavaScript",
@@ -21,13 +21,13 @@
         "@id": "https://layerbit.co.in/#organization"
       },
       "featureList": [
-        "74 chainable operations",
-        "Per-step previews and errors",
-        "Magic detection of pasted input",
-        "Preset recipes",
-        "Recipe copy, import and share links",
-        "JSONPath, CSV, YAML, gzip, JWT, hashes, AES-GCM",
-        "File input and send-to"
+        "More than 200 chainable operations",
+        "Fork and Merge to run steps on each line",
+        "Breakpoints with Step and Continue",
+        "Line-by-line streaming of large files",
+        "Magic detection of the input",
+        "Recipes shared as links",
+        "Send the output to another Layerbit tool"
       ]
     },
     {
@@ -49,7 +49,7 @@
         {
           "@type": "ListItem",
           "position": 3,
-          "name": "Flow: Data Pipeline Builder",
+          "name": "Flow",
           "item": "https://layerbit.co.in/tools/flow.html"
         }
       ]
@@ -103,7 +103,7 @@
           "name": "How is this different from CyberChef?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "CyberChef is a large, security-analysis-oriented toolkit with hundreds of operations and a correspondingly dense interface. Flow covers the operations developers reach for daily — encodings, hashes, JSON, CSV, YAML, text cleanup, URLs, timestamps — with per-step previews, magic suggestions, presets for common jobs, and recipes that share as links. If you need cipher cryptanalysis or forensic file carving, CyberChef is the right tool; if you need to get a JSON payload out of a Base64 blob and pick one field, this page is faster."
+            "text": "CyberChef (GCHQ, Apache-2.0) has over 300 operations; Flow has more than 200, named the way CyberChef names them where they overlap, so a recipe you know there reads the same here. Flow adds per-step previews, magic suggestions, presets, recipes that share as links, and Send to, which opens the result in another Layerbit tool such as the JSON Formatter or Diff Checker. CyberChef still has operations Flow does not, such as image forensics, file carving and many legacy ciphers; for those it remains the right tool."
           }
         },
         {
@@ -111,7 +111,15 @@
           "name": "Can I run a recipe on many inputs at once?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "Most text operations are line-aware: hash each line, filter lines, sort, unique, cut column, number conversion, timestamp conversion and IP conversion all work on every line of the input independently. Paste a list, build the recipe once, and every line is processed. For per-file batch work on a pattern, the regex tester's batch mode is the complement."
+            "text": "Yes, two ways. Many operations already work on every line: hash each line, filter, sort, unique, cut a column, convert numbers, timestamps or IPs. For any other step, put Fork before it and Merge after it: Fork splits the input (by line, or by any separator you choose), runs the steps in between on each part, and Merge joins the results. A file too big to open in the page is read from disk line by line, as long as every step works line by line, and the full result downloads as a file."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How do I debug a long recipe?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Click the ● on a step to set a breakpoint. Run stops after that step and shows its output; the later steps are marked paused. Step runs one more step, and Continue runs on to the next breakpoint or the end. Every step also shows a preview of its own output, so you can see where a value went wrong."
           }
         }
       ]

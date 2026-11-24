@@ -228,7 +228,7 @@
 
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6072772587431629" crossorigin="anonymous"></script>
 
-  <script src="../js/vendor/lucide.min.js?v=3228cee26a" async></script>
+  <script src="../js/vendor/lucide.min.js?v=a267465fbd" async></script>
 
   <link rel="icon" href="../favicon.ico" sizes="16x16 32x32 48x48" />
   <link rel="icon" href="../favicon-48.png" type="image/png" sizes="48x48" />
@@ -1147,8 +1147,8 @@
   <script src="../js/kernel.js?v=eb69348d32"></script>
 
   <script src="../js/shared.js?v=e2441a1728"></script>
-  <script src="../js/engines/json.js?v=22c280d000"></script>
-  <script src="../js/engines/lossless-json.js?v=88a67e6c17"></script>
+  <script src="../js/engines/json.js?v=4a0cc2569d"></script>
+  <script src="../js/engines/lossless-json.js?v=e885ae972e"></script>
   <script src="../js/engines/csv.js?v=a78b81af7d"></script>
   <script src="../js/engines/tabular.js?v=729bf51eab"></script>
   <script src="../js/engines/jsonx.js?v=350f9c740a"></script>
@@ -1365,10 +1365,14 @@
       return new Worker(URL.createObjectURL(new Blob([`importScripts(${src('engines/lossless-json.js')}, ${src('engines/json.js')});
         onmessage = async e => { const o = e.data;
           try { const text = await o.file.text();
-            try { JSON.parse(text); } catch (err) { const l = LBJson.locateError(err.message, text); postMessage({ error: 'Invalid JSON: ' + l.message + (l.pos >= 0 ? ' — line ' + l.line + ', column ' + l.col : '') }); return; }
-            let v = LBLossless.parse(text); if (o.sort) v = LBLossless.sortKeys(v);
+            let v;
+            // one parse when the file is valid; the native parser only runs to word an error
+            try { v = LBLossless.parse(text); } catch (e0) { try { JSON.parse(text); throw e0; } catch (err) { const l = LBJson.locateError(err.message, text); postMessage({ error: 'Invalid JSON: ' + l.message + (l.pos >= 0 ? ' — line ' + l.line + ', column ' + l.col : '') }); return; } }
+            if (o.sort) v = LBLossless.sortKeys(v);
             const out = o.action === 'minify' ? LBLossless.stringify(v) : LBLossless.stringify(v, o.indent);
-            postMessage({ value: v, out, stats: LBJson.stats(v, text) });
+            const texts = o.action === 'minify' ? { min: out } : o.indent === 2 ? { pretty: out } : {};
+            // the tree is not posted back: cloning 500,000 objects costs more than parsing the file again
+            postMessage({ out, stats: LBJson.stats(v, text, texts) });
           } catch (err) { postMessage({ error: err.message || String(err) }); } };`], { type: 'text/javascript' })));
     }
     function openBig(file) {
@@ -1382,11 +1386,17 @@
       errorBanner.classList.remove('active');
       notice(`${file.name} (${Layerbit.fmtBytes(file.size)}) is being read in the background…`);
       job.worker = bigWorker();
-      job.worker.onmessage = e => {
+      // the page builds its own tree while the worker writes the text and counts
+      const sorted = sortKeys.checked;
+      const valueP = new Promise(r => setTimeout(r, 30)).then(() => file.text()).then(t => { try { const v = LBLossless.parse(t); return sorted ? LBLossless.sortKeys(v) : v; } catch (err) { return null; } });
+      job.worker.onmessage = async e => {
         if (bigDoc !== job) return;
         job.worker.terminate(); job.worker = null;
         const m = e.data;
         if (m.error) { showErr(m.error); window.jsonBig = { done: true, error: m.error }; return; }
+        const value = await valueP;
+        if (bigDoc !== job || value === null) return;
+        m.value = value;
         lastResultText = m.out;
         showBigText(m.out);
         bigExpanded = new Set(['$']); if (bigTreeList) { bigTreeList.destroy(); bigTreeList = null; }

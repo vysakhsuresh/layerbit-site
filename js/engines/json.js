@@ -372,7 +372,8 @@
   // -------------------------------------------------------------- SQL/CSV
   // A lossless number (js/engines/lossless-json.js) holds its digits as text.
   function isLN(v) { return !!(v && v.isLosslessNumber === true); }
-  function jsonText(v, ind) { return JSON.stringify(v, function (k, x) { return isLN(x) ? '\u0000LN' + x.value + '\u0000' : x; }, ind).replace(/"\\u0000LN([^"\\]*)\\u0000"/g, '$1'); }
+  // this[k] is the value before toJSON, which would turn a lossless number into a rounded Number
+  function jsonText(v, ind) { var tok = '\u0001LN' + Math.random().toString(36).slice(2) + ':', used = false; var out = JSON.stringify(v, function (k, x) { var o = this[k]; if (isLN(o)) { used = true; return tok + o.value; } return x; }, ind); return used ? out.replace(new RegExp('"' + JSON.stringify(tok).slice(1, -1).replace(/[\\^$.*+?()[\]{}|]/g, '\\$&') + '([^"]*)"', 'g'), '$1') : out; }
   // A value a spreadsheet would run as a formula: =, @, tab or CR first, or
   // + / - followed by something that is not a plain number (-5 stays -5).
   function formulaLike(s) { return /^[=@\t\r]/.test(s) || (/^[+-]/.test(s) && !/^[+-]?(\d[\d,]*)?(\.\d+)?([eE][+-]?\d+)?$/.test(s)); }
@@ -429,18 +430,24 @@
   function looksNdjson(text) { var lines = text.trim().split(/\r?\n/); if (lines.length < 2) return false; var n = 0; for (var i = 0; i < Math.min(lines.length, 20); i++) { var t = lines[i].trim(); if (!t) continue; if (!/^[\[{]/.test(t) || !/[\]}]$/.test(t)) return false; n++; } return n >= 2 && (function () { try { JSON.parse(text); return false; } catch (e) { return true; } })(); }
 
   // ---------------------------------------------------------------- stats
-  function stats(value, raw) {
+  // texts: {min, pretty} already serialised by the caller, so a large document is not written out again
+  function stats(value, raw, texts) {
     var objects = 0, arrays = 0, keys = 0, primitives = 0, depth = 0, strings = 0, numbers = 0, nulls = 0, bools = 0, maxArr = 0;
-    (function walk(v, d) {
-      depth = Math.max(depth, d);
-      if (Array.isArray(v)) { arrays++; maxArr = Math.max(maxArr, v.length); v.forEach(function (x) { walk(x, d + 1); }); }
-      else if (v && typeof v === 'object' && !isLN(v)) { objects++; var ks = Object.keys(v); keys += ks.length; ks.forEach(function (k) { walk(v[k], d + 1); }); }
+    // an explicit stack: fast on half a million objects and no recursion limit
+    var stack = [value], depths = [1];
+    while (stack.length) {
+      var v = stack.pop(), d = depths.pop(), i, n;
+      if (d > depth) depth = d;
+      if (Array.isArray(v)) { arrays++; n = v.length; if (n > maxArr) maxArr = n; for (i = n - 1; i >= 0; i--) { stack.push(v[i]); depths.push(d + 1); } }
+      else if (v && typeof v === 'object' && !isLN(v)) { objects++; var ks = Object.keys(v); keys += ks.length; for (i = ks.length - 1; i >= 0; i--) { stack.push(v[ks[i]]); depths.push(d + 1); } }
       else { primitives++; if (typeof v === 'string') strings++; else if (typeof v === 'number' || isLN(v)) numbers++; else if (v === null) nulls++; else bools++; }
-    })(value, 1);
+    }
+    // UTF-8 size: ASCII text is its own length, so only non-ASCII text is encoded
     var enc = typeof TextEncoder !== 'undefined' ? new TextEncoder() : null;
-    var bytes = function (s) { return enc ? enc.encode(s).length : Buffer.byteLength(s); };
-    var minified = jsonText(value);
-    return { objects: objects, arrays: arrays, keys: keys, primitives: primitives, strings: strings, numbers: numbers, nulls: nulls, booleans: bools, depth: depth, maxArray: maxArr, bytesIn: raw != null ? bytes(raw) : null, bytesMin: bytes(minified), bytesPretty: bytes(jsonText(value, 2)) };
+    var bytes = function (s) { return !/[^\x00-\x7f]/.test(s) ? s.length : enc ? enc.encode(s).length : Buffer.byteLength(s); };
+    texts = texts || {};
+    var minified = texts.min != null ? texts.min : jsonText(value);
+    return { objects: objects, arrays: arrays, keys: keys, primitives: primitives, strings: strings, numbers: numbers, nulls: nulls, booleans: bools, depth: depth, maxArray: maxArr, bytesIn: raw != null ? bytes(raw) : null, bytesMin: bytes(minified), bytesPretty: bytes(texts.pretty != null ? texts.pretty : jsonText(value, 2)) };
   }
   function sortKeysDeep(v) { if (Array.isArray(v)) return v.map(sortKeysDeep); if (v && typeof v === "object" && !isLN(v)) return Object.keys(v).sort().reduce(function (o, k) { o[k] = sortKeysDeep(v[k]); return o; }, {}); return v; }
   /** Finds integers beyond 2^53 in the raw text, which JSON.parse silently rounds. */

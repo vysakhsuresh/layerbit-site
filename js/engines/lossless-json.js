@@ -96,20 +96,20 @@
     return v;
   }
 
-  function stringify(v, indent, depth) {
-    if (typeof indent === 'number') indent = indent > 0 ? new Array(Math.min(indent, 10) + 1).join(' ') : '';
-    depth = depth || 0;
-    var pad = indent ? '\n' + new Array(depth + 2).join(indent) : '', close = indent ? '\n' + new Array(depth + 1).join(indent) : '';
-    if (isLosslessNumber(v)) return v.value;
-    if (v && typeof v.toJSON === 'function') return stringify(v.toJSON(), indent, depth);
-    if (Array.isArray(v)) return v.length ? '[' + v.map(function (x) { return pad + stringify(x === undefined ? null : x, indent, depth + 1); }).join(',') + close + ']' : '[]';
-    if (v && typeof v === 'object') {
-      var ks = Object.keys(v).filter(function (k) { return v[k] !== undefined && typeof v[k] !== 'function'; });
-      return ks.length ? '{' + ks.map(function (k) { return pad + JSON.stringify(k) + (indent ? ': ' : ':') + stringify(v[k], indent, depth + 1); }).join(',') + close + '}' : '{}';
-    }
-    if (typeof v === 'number' && !isFinite(v)) return 'null';
-    return v === undefined ? 'null' : JSON.stringify(v);
+  // The native serializer does the work; numbers kept as text are swapped in
+  // through a token unique to this call. The replacer reads the holder (this[k])
+  // because JSON.stringify applies toJSON before the replacer sees a value.
+  function stringify(v, indent) {
+    if (typeof indent === 'number') indent = indent > 0 ? Math.min(indent, 10) : undefined;
+    else if (!indent) indent = undefined;
+    var tok = '\u0001LN' + Math.random().toString(36).slice(2) + ':', used = false;
+    var out = JSON.stringify(v, function (k, x) { var o = this[k]; if (isLosslessNumber(o)) { used = true; return tok + o.value; } return x; }, indent);
+    if (out === undefined) return 'null';
+    if (!used) return out;
+    var esc = JSON.stringify(tok).slice(1, -1).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    return out.replace(new RegExp('"' + esc + '([^"]*)"', 'g'), '$1');
   }
+
 
   function sortKeys(v) {
     if (Array.isArray(v)) return v.map(sortKeys);
