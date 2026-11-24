@@ -872,6 +872,26 @@ def _(t):
     expect(t.visible("#decodeError") or t.val("plainText") == "100%", "malformed % not handled")
 
 
+@case("url-encoder", "typical", "2.23: '+ means space' decodes form data, only in a URL's query, and encodes spaces as +")
+def _(t):
+    t.call("setMode('smart')")
+    t.set("encodedText", "q=hello+world%2B1"); t.wait(30)
+    eq(t.val("plainText"), "q=hello+world+1", "off by default: + stays +")
+    t.click("#optPlus"); t.wait(30)
+    eq(t.val("plainText"), "q=hello world+1", "form decoding")
+    t.set("encodedText", "https://x.test/a+b?q=c+d&r=%2B#e+f"); t.wait(30)
+    eq(t.val("plainText"), "https://x.test/a+b?q=c d&r=+#e+f", "only the query is form data")
+    t.call("setMode('batch')")
+    t.set("encodedText", "a+b\nc%20d+e"); t.wait(30)
+    eq(t.val("plainText"), "a b\nc d e", "batch lines")
+    t.call("setMode('raw')")
+    t.set("plainText", "a b+c"); t.wait(30)
+    eq(t.val("encodedText"), "a+b%2Bc", "raw encoding writes spaces as +")
+    t.click("#optPlus"); t.wait(30)
+    eq(t.val("encodedText"), "a%20b%2Bc", "toggling re-encodes")
+    t.call("setMode('smart')")
+
+
 @case("url-encoder", "maximal", "batch mode: 5,000 lines")
 def _(t):
     t.click("#btnModeBatch")

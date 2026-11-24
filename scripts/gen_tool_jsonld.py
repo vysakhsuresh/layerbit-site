@@ -24,7 +24,9 @@ def main():
     if "--features" in sys.argv:
         features = [f.strip() for f in sys.argv[sys.argv.index("--features") + 1].split("|") if f.strip()]
     if "--crumb" in sys.argv:
-        crumb = sys.argv[sys.argv.index("--crumb") + 1]
+        crumb = sys.argv[sys.argv.index("--crumb") + 1] if sys.argv.index("--crumb") + 1 < len(sys.argv) else ""
+        if not crumb or crumb.startswith("--"):
+            sys.exit('--crumb needs a name, for example --crumb "Cron Expression Generator"')
     page = json.load(io.open(f"{ROOT}/src/pages/{slug}.json", encoding="utf-8"))
     body = io.open(f"{ROOT}/src/pages/{slug}.body.html", encoding="utf-8").read()
     url = "https://layerbit.co.in/" + page["file"]
