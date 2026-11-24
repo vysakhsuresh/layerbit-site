@@ -2485,6 +2485,71 @@ def _(t):
     expect("not a contiguous mask" in t.text("errorText"), "bad mask")
 
 
+@case("subnet-calculator", "typical", "2.18: VLSM wizard allocates largest first, shows spare and free space, exports CSV")
+def _(t):
+    t.click("#btnVlsmExample"); t.wait(60)
+    rows = t.call("[...document.querySelectorAll('#vlsmTable tbody tr')].map(r => [...r.children].map(c => c.textContent.trim()))")
+    eq([r[0] for r in rows], ["Office", "Sales", "Lab", "WAN link"], "largest first")
+    eq([r[2] for r in rows], ["192.168.10.0/25", "192.168.10.128/26", "192.168.10.192/27", "192.168.10.224/30"], "blocks")
+    eq([r[7] for r in rows], ["26", "12", "10", "0"], "spare")
+    expect("192.168.10.228/30" in t.text("vlsmFree") and "192.168.10.240/28" in t.text("vlsmFree"), t.text("vlsmFree"))
+    expect("228 of 256" in t.text("vlsmSummary"), t.text("vlsmSummary"))
+    t.click("#vlsmP2P"); t.wait(40)
+    expect("192.168.10.224/31" in t.text("vlsmTable"), "/31 option")
+    t.click("#vlsmP2P")
+    with t.page.expect_download() as dl:
+        t.click("#btnVlsmCsv")
+    body = open(dl.value.path()).read()
+    expect(body.startswith("name,hosts_needed,block") and "Office,100,192.168.10.0/25" in body, body[:200])
+    t.set("vlsmInput", "Office, 200\nSales, 100"); t.wait(40)
+    expect("Out of space at Sales" in t.text("vlsmSummary"), t.text("vlsmSummary"))
+    eq(t.count("#vlsmTable tbody tr"), 0, "no partial plan on failure")
+
+
+@case("subnet-calculator", "typical", "2.18: IPv6 planning in /64s with nibble alignment; parent follows the main block")
+def _(t):
+    t.set("vlsmParent", ""); t.wait(20)
+    t.set("cidrInput", "10.20.0.0/22"); t.wait(40)
+    eq(t.val("vlsmParent"), "10.20.0.0/22", "parent follows the block above until typed")
+    t.click("#btnVlsmExample6"); t.wait(60)
+    eq(t.text("vlsmNeedHead").strip(), "/64s needed", "column header")
+    blocks = t.call("[...document.querySelectorAll('#vlsmTable tbody tr td:nth-child(3)')].map(c => c.textContent)")
+    eq(blocks, ["2001:db8:abcd::/56", "2001:db8:abcd:100::/60", "2001:db8:abcd:110::/64"], "v6 plan")
+    t.click("#vlsmNibble"); t.wait(40)
+    blocks = t.call("[...document.querySelectorAll('#vlsmTable tbody tr td:nth-child(3)')].map(c => c.textContent)")
+    eq(blocks, ["2001:db8:abcd::/56", "2001:db8:abcd:100::/60", "2001:db8:abcd:110::/64"], "already nibble-aligned")
+    t.set("vlsmInput", "HQ, 200\nBranch, 20\nDMZ, 3"); t.wait(40)
+    blocks = t.call("[...document.querySelectorAll('#vlsmTable tbody tr td:nth-child(3)')].map(c => c.textContent)")
+    eq(blocks, ["2001:db8:abcd::/56", "2001:db8:abcd:100::/56", "2001:db8:abcd:200::/60"], "nibble rounding")
+    t.click("#vlsmNibble")
+    t.set("cidrInput", "172.16.0.0/16"); t.wait(40)
+    eq(t.val("vlsmParent"), "2001:db8:abcd::/48", "a typed parent is not overwritten")
+
+
+@case("subnet-calculator", "typical", "2.18: range to the minimal CIDR list")
+def _(t):
+    t.set("rangeInput", "10.0.0.5 - 10.0.0.200"); t.wait(40)
+    eq(t.text("rangeOut").split(), ["10.0.0.5/32", "10.0.0.6/31", "10.0.0.8/29", "10.0.0.16/28", "10.0.0.32/27", "10.0.0.64/26", "10.0.0.128/26", "10.0.0.192/29", "10.0.0.200/32"], "cidrs")
+    expect("9 blocks" in t.text("rangeCount"), t.text("rangeCount"))
+    t.set("rangeInput", "10.0.0.9 - 10.0.0.1"); t.wait(40)
+    expect("after the last" in t.text("rangeCount"), t.text("rangeCount"))
+    expect(t.call("document.getElementById('btnRangeCopy').disabled"), "copy should be disabled on error")
+
+
+@case("subnet-calculator", "typical", "2.18: overlap and conflict check, with a summarized list")
+def _(t):
+    t.set("overlapInput", "vpc-prod 10.0.0.0/16\nvpc-staging 10.1.0.0/16\noffice 10.0.128.0/20\nvpn 10.0.128.0 255.255.240.0\nbad 10.0.0.300/24")
+    t.wait(60)
+    out = t.text("overlapOut")
+    expect("vpc-prod" in out and "contains" in out and "office" in out, out)
+    expect("is the same block as" in out, out)
+    expect("Line 5" in out, out)
+    expect("10.0.0.0/15" in t.text("aggOut"), t.text("aggOut"))
+    t.set("overlapInput", "10.0.0.0/24\n10.0.1.0/24"); t.wait(40)
+    expect("No overlaps among 2 blocks" in t.text("overlapOut"), t.text("overlapOut"))
+    expect("10.0.0.0/23" in t.text("aggOut"), t.text("aggOut"))
+
+
 @case("subnet-calculator", "maximal", "split a /16 into 4,096 x /28 (show all)")
 def _(t):
     t.set("cidrInput", "172.16.0.0/16")

@@ -1,0 +1,44 @@
+{
+  "tool": "subnet-calculator",
+  "page": "tools/subnet-calculator.html",
+  "competitors": [
+    { "name": "SolarWinds IPAM / Advanced Subnet Calculator", "price": "IPAM paid; calculator free", "checked": "2026-11" }
+  ],
+  "claims": [
+    {
+      "feature": "VLSM allocation wizard from a list of host counts",
+      "competitor": "SolarWinds IPAM / Advanced Subnet Calculator",
+      "tests": [
+        "ui:subnet-calculator:2.18: VLSM wizard allocates largest first, shows spare and free space, exports CSV",
+        "unit:ipplan:VLSM: largest first, aligned, no gaps; spare hosts and free space",
+        "unit:ipplan:VLSM: /31 for point-to-point links on request, /32 for a single host, ties keep input order",
+        "unit:ipplan:VLSM: refuses what does not fit, with the numbers"
+      ]
+    },
+    {
+      "feature": "Range to minimal CIDR list",
+      "competitor": "SolarWinds IPAM / Advanced Subnet Calculator",
+      "tests": [
+        "ui:subnet-calculator:2.18: range to the minimal CIDR list",
+        "unit:ipplan:range to the minimal CIDR list"
+      ]
+    },
+    {
+      "feature": "Overlap / conflict check",
+      "competitor": "SolarWinds IPAM / Advanced Subnet Calculator",
+      "tests": [
+        "ui:subnet-calculator:2.18: overlap and conflict check, with a summarized list",
+        "unit:ipplan:conflicts: duplicates, containment and partial overlaps, with labels and bad lines",
+        "unit:ipplan:aggregate merges adjacent blocks; free lists what is left"
+      ]
+    },
+    {
+      "feature": "IPv6 planning",
+      "competitor": "SolarWinds IPAM / Advanced Subnet Calculator",
+      "tests": [
+        "ui:subnet-calculator:2.18: IPv6 planning in /64s with nibble alignment; parent follows the main block",
+        "unit:ipplan:IPv6 planning: /64s per segment, nibble-aligned on request"
+      ]
+    }
+  ]
+}
