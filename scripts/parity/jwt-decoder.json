@@ -1,0 +1,19 @@
+{
+  "tool": "jwt-decoder",
+  "page": "tools/jwt-decoder.html",
+  "competitors": [
+    { "name": "jwt.io", "price": "free", "checked": "2026-11" }
+  ],
+  "claims": [
+    {
+      "feature": "Fetch a JWKS from a URL, off by default and shown in the privacy counter",
+      "competitor": "jwt.io",
+      "tests": ["ui:jwt-decoder:2.19: JWKS fetch is off by default; when allowed it fetches once, verifies by kid and shows in the privacy pill"]
+    },
+    {
+      "feature": "Pasted tokens are not saved (A1)",
+      "competitor": "jwt.io",
+      "tests": ["ui:jwt-decoder:A1: a pasted token is never saved; with the switch on, only Save run saves, and Undo removes it"]
+    }
+  ]
+}

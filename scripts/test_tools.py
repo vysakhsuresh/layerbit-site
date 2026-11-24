@@ -544,6 +544,42 @@ def _(t):
     t.wait_for("() => /No key with kid/.test(document.getElementById('verifyResult').innerText)")
 
 
+@case("jwt-decoder", "typical", "2.19: JWKS fetch is off by default; when allowed it fetches once, verifies by kid and shows in the privacy pill")
+def _(t):
+    t.select("signAlg", "RS256")
+    t.set("signKid", "rs-key-1")
+    t.set("signPayload", '{"iss": "https://idp.layerbit.test", "sub": "u1"}') if t.count("#signPayload") else None
+    t.call("generateKeys()")
+    t.wait_for("() => document.getElementById('signKey').value.includes('BEGIN PRIVATE KEY')", timeout=20000)
+    t.click("#btnSign")
+    t.wait_for("() => document.getElementById('signOutput').innerText.startsWith('eyJ')")
+    t.click("#btnSignLoad")
+    t.wait_for("() => /Signature Valid/.test(document.getElementById('verifyResult').innerText)")
+    jwks = t.call("JSON.stringify(generated.jwks)")
+    hits = []
+    def handle(route):
+        hits.append(route.request.url)
+        route.fulfill(status=200, content_type="application/json", headers={"Access-Control-Allow-Origin": "*"}, body=jwks)
+    t.page.route("https://idp.layerbit.test/**", handle)
+    t.call("() => { document.getElementById('publicKeyPem').value = ''; runVerify(); }")
+    expect(not t.call("document.getElementById('allowJwksFetch').checked"), "must be off by default")
+    expect(not t.visible("#jwksRow"), "URL field hidden until allowed")
+    eq(hits, [], "nothing fetched before the switch")
+    t.click("#allowJwksFetch")
+    t.set("jwksUrl", "https://idp.layerbit.test/.well-known/jwks.json")
+    t.click("#btnFetchJwks")
+    t.wait_for("() => /Signature Valid/.test(document.getElementById('verifyResult').innerText)", timeout=8000)
+    eq(len(hits), 1, "exactly one request")
+    expect("kid rs-key-1" in t.text("verifyResult"), t.text("verifyResult"))
+    expect("Fetched 1 key" in t.text("jwksStatus"), t.text("jwksStatus"))
+    expect(any("idp.layerbit.test" in r for r in t.call("Layerbit.netRequests()")), "privacy pill must count it")
+    t.set("jwksUrl", "http://idp.layerbit.test/jwks.json"); t.click("#btnFetchJwks"); t.wait(40)
+    expect("Only https" in t.text("jwksStatus"), t.text("jwksStatus"))
+    t.page.route("https://nojson.layerbit.test/**", lambda r: r.fulfill(status=200, content_type="application/json", headers={"Access-Control-Allow-Origin": "*"}, body='{"issuer": "x"}'))
+    t.set("jwksUrl", "https://nojson.layerbit.test/x"); t.click("#btnFetchJwks")
+    t.wait_for("() => /not a JWKS/.test(document.getElementById('jwksStatus').innerText)")
+
+
 @case("jwt-decoder", "typical", "signer: RS256, PS256 and EdDSA round trips")
 def _(t):
     for alg in ("RS256", "PS256", "EdDSA"):
@@ -4442,6 +4478,29 @@ def _(t):
     s = t.call("JSON.stringify(window.LB_TOOL.getState())")
     expect(t.text("pwOut") not in s, "password leaked into state")
 
+
+
+@case("password-generator", "typical", "2.20: breach check is off by default and sends only a 5-character SHA-1 prefix with padding")
+def _(t):
+    reqs = []
+    def handle(route):
+        reqs.append((route.request.url, route.request.headers.get("add-padding")))
+        route.fulfill(status=200, content_type="text/plain", headers={"Access-Control-Allow-Origin": "*"},
+                      body="003D68EB55068C33ACE09247EE4C639306B:3\r\n1E4C9B93F3F0682250B6CF8331B7EE68FD8:9545824\r\nFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF:0")
+    t.page.route("https://api.pwnedpasswords.com/**", handle)
+    expect(not t.call("document.getElementById('allowBreach').checked"), "must be off by default")
+    expect(not t.visible("#btnBreach"), "no button until allowed")
+    t.set("checkInput", "password"); t.wait(60)
+    eq(reqs, [], "typing must never send anything")
+    t.click("#allowBreach"); t.click("#btnBreach")
+    t.wait_for("() => /breached/.test(document.getElementById('breachResult').innerText)", timeout=8000)
+    eq(len(reqs), 1, "one request")
+    expect(reqs[0][0].endswith("/range/5BAA6") and reqs[0][1] == "true", reqs)
+    expect("9,545,824" in t.text("breachResult"), t.text("breachResult"))
+    t.set("checkInput", "correct horse battery staple zebra"); t.click("#btnBreach")
+    t.wait_for("() => /Not found/.test(document.getElementById('breachResult').innerText)", timeout=8000)
+    expect("among the 2 breached hashes" in t.text("breachResult"), t.text("breachResult"))
+    expect("password" not in "".join(u for u, _ in reqs).lower().replace("pwnedpasswords", ""), "the password must not appear in any URL")
 
 @case("color-converter", "minimal", "default color shows every format")
 def _(t):

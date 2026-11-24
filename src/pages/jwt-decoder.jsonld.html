@@ -94,6 +94,14 @@
         },
         {
           "@type": "Question",
+          "name": "Can it fetch my identity provider's JWKS for me?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes, if you allow it. Under the public key box, tick \"Fetch a JWKS from a URL\", check the address (it is filled in from the token's https issuer as /.well-known/jwks.json, which you can change to your provider's jwks_uri), and press Fetch. One request goes to that server, without the token, cookies or a referrer, and the keys it returns are used to verify the signature by kid. The tool never fetches the URL in a token's own jku or x5u header, because whoever made the token chose it. Some providers do not allow requests from other websites (CORS); for those, open the URL in a new tab and paste the JSON."
+          }
+        },
+        {
+          "@type": "Question",
           "name": "Are generated keys safe to use in production?",
           "acceptedAnswer": {
             "@type": "Answer",

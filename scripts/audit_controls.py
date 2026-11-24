@@ -42,6 +42,7 @@ def INPUTS(c):
         "number-base-converter": {"numInput": "0x3C00"},
         "time-zone-converter": {"quick": "3pm IST to CST"},
         "uuid-generator": {},
+        "password-generator": {},
         "markdown-preview": {},
         "vat-gst-calculator": {"hsnSearch": "coffee"},
         "date-calculator": {"batchInput": "2026-01-31\n2026-02-28\n2026-12-31", "dtStart": "2026-11-23T09:15", "dtEnd": "2026-11-25T17:45"},
