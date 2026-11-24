@@ -40,6 +40,7 @@ def INPUTS(c):
         "timestamp-converter": {"tsInput": "1700000000"},
         "uuid-generator": {},
         "markdown-preview": {},
+        "date-calculator": {"batchInput": "2026-01-31\n2026-02-28\n2026-12-31", "dtStart": "2026-11-23T09:15", "dtEnd": "2026-11-25T17:45"},
         "subnet-calculator": {"cidrInput": "10.20.0.0/22", "splitSelect": "24"},
         "unicode-inspector": {"textInput": head(j("unicode-sample.txt"), 120)},
         "log-analyzer": {"logInput": open(j("apache.log")).read()},

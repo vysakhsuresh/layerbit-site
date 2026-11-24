@@ -15,6 +15,7 @@ offline, and sends no visitor IP to a CDN operator).
 | `qrcode-generator.min.js` | qrcode-generator (Kazuhiko Arase; `dist/qrcode.js` minified with esbuild) | 2.0.4 | MIT |
 | `jsQR.min.js` | jsQR (`dist/jsQR.js` minified with esbuild; used for the scan check) | 1.4.0 | Apache-2.0 |
 | `bwip-js.min.js` | bwip-js (`dist/bwip-js-min.js`, Barcode Writer in Pure PostScript; loaded for Data Matrix, PDF417, Aztec and GS1-128) | 4.11.4 | MIT |
+| `date-holidays.min.js` | date-holidays (bundled as `window.LBHolidays` with esbuild; loaded when a country is picked) | 3.39.2 | ISC (code), CC BY-SA 4.0 (holiday data) |
 | `xlsx.full.min.js` | xlsx (SheetJS CE) | 0.18.5 | Apache-2.0 |
 | `marked.umd.js` | marked (`lib/marked.umd.js`) | 18.0.14 | MIT |
 | `purify.min.js` | dompurify | 3.4.16 | MPL-2.0 OR Apache-2.0 |

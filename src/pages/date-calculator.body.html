@@ -4,7 +4,7 @@
   <div class="hero">
     <div class="hero-badge"><i data-lucide="shield-check"></i> Runs entirely in your browser</div>
     <h1>Date Calculator: Days Between Dates, Add Days &amp; Age</h1>
-    <p>Count the days or working days between two dates, find the date 30, 60 or 90 days from today, and work out an exact age in years, months and days, with the weekend your country actually uses.</p>
+    <p>Count the days or working days between two dates with the weekend and public holidays of 48 countries, including every Gulf state and India; add days, months or working days; work out an exact age; convert to and from the Hijri (Umm al-Qura) calendar; measure the time between two moments; count down to a date; and do date maths on a whole column at once.</p>
   </div>
 
   <div class="ide-container single">
@@ -34,6 +34,32 @@
           <label for="holidays"><i data-lucide="calendar-x"></i> Holidays to skip (optional, one per line)</label>
           <textarea id="holidays" class="text-input holidays" rows="3" spellcheck="false" placeholder="2026-12-02 National Day&#10;2026-12-03"></textarea>
         </div>
+        <div class="row opts-row">
+          <div class="field">
+            <label for="holidayCountry"><i data-lucide="flag"></i> Public holidays of</label>
+            <select id="holidayCountry" class="select-input">
+              <option value="">No country (only the dates above)</option>
+              <optgroup label="Gulf">
+                <option value="AE">United Arab Emirates</option><option value="SA">Saudi Arabia</option><option value="QA">Qatar</option><option value="KW">Kuwait</option><option value="BH">Bahrain</option><option value="OM">Oman</option>
+              </optgroup>
+              <optgroup label="South and East Asia">
+                <option value="IN">India</option><option value="PK">Pakistan</option><option value="BD">Bangladesh</option><option value="LK">Sri Lanka</option><option value="SG">Singapore</option><option value="MY">Malaysia</option><option value="ID">Indonesia</option><option value="PH">Philippines</option><option value="TH">Thailand</option><option value="VN">Vietnam</option><option value="CN">China</option><option value="JP">Japan</option><option value="KR">South Korea</option>
+              </optgroup>
+              <optgroup label="Europe">
+                <option value="GB">United Kingdom</option><option value="IE">Ireland</option><option value="DE">Germany</option><option value="FR">France</option><option value="IT">Italy</option><option value="ES">Spain</option><option value="PT">Portugal</option><option value="NL">Netherlands</option><option value="BE">Belgium</option><option value="CH">Switzerland</option><option value="AT">Austria</option><option value="SE">Sweden</option><option value="NO">Norway</option><option value="DK">Denmark</option><option value="FI">Finland</option><option value="PL">Poland</option><option value="CZ">Czechia</option><option value="TR">Türkiye</option>
+              </optgroup>
+              <optgroup label="Americas, Africa and Oceania">
+                <option value="US">United States</option><option value="CA">Canada</option><option value="MX">Mexico</option><option value="BR">Brazil</option><option value="AR">Argentina</option><option value="EG">Egypt</option><option value="ZA">South Africa</option><option value="NG">Nigeria</option><option value="KE">Kenya</option><option value="AU">Australia</option><option value="NZ">New Zealand</option>
+              </optgroup>
+            </select>
+          </div>
+          <div class="field" id="holidayRegionField" hidden>
+            <label for="holidayRegion">State or region</label>
+            <select id="holidayRegion" class="select-input"><option value="">Nationwide holidays only</option></select>
+          </div>
+        </div>
+        <div class="holiday-list" id="holidayList" aria-live="polite"></div>
+        <p class="muted small" id="holidayData"></p>
         <div class="error-inline" id="betweenError" role="alert" hidden></div>
         <p class="big-result" id="betweenHeadline"></p>
         <dl class="kv-grid" id="betweenOut"></dl>
@@ -88,6 +114,80 @@
     </div>
   </div>
 
+  <div class="ide-container single">
+    <div class="pane">
+      <div class="pane-header"><div class="pane-title"><i data-lucide="moon-star"></i> Hijri dates (Umm al-Qura)</div></div>
+      <div class="pane-body">
+        <div class="date-row">
+          <div class="field"><label for="hijriFromG">Gregorian date</label><div class="in-row"><input type="date" id="hijriFromG" class="text-input"><button class="btn" type="button" data-today="hijriFromG">Today</button></div></div>
+          <div class="field"><span class="field-label">In the Hijri calendar</span><p class="big-result" id="hijriOut"></p></div>
+        </div>
+        <div class="date-row hijri-row">
+          <div class="field"><label for="hijriD">Hijri day</label><input type="number" id="hijriD" class="text-input" min="1" max="30" value="1"></div>
+          <div class="field"><label for="hijriM">Month</label><select id="hijriM" class="select-input"></select></div>
+          <div class="field"><label for="hijriY">Year (AH)</label><input type="number" id="hijriY" class="text-input" min="1300" max="1600" value="1447"></div>
+        </div>
+        <p class="big-result" id="gregOut"></p>
+        <p class="muted small">Umm al-Qura is Saudi Arabia's official calendar, computed by your browser's built-in calendar data. Religious dates such as the start of Ramadan and the Eids are set by moon sighting in many countries and can differ by a day.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="ide-container single">
+    <div class="pane">
+      <div class="pane-header"><div class="pane-title"><i data-lucide="clock"></i> Time between two moments</div></div>
+      <div class="pane-body">
+        <div class="date-row">
+          <div class="field"><label for="dtStart">From</label><input type="datetime-local" id="dtStart" class="text-input" step="1"></div>
+          <div class="field"><label for="dtEnd">To</label><input type="datetime-local" id="dtEnd" class="text-input" step="1"></div>
+        </div>
+        <div id="durationOut"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="ide-container single">
+    <div class="pane">
+      <div class="pane-header"><div class="pane-title"><i data-lucide="timer"></i> Countdown</div></div>
+      <div class="pane-body">
+        <div class="date-row">
+          <div class="field"><label for="countdownTo">Count down to</label><input type="datetime-local" id="countdownTo" class="text-input"></div>
+          <div class="field"><label for="countdownLabel">Label</label><input type="text" id="countdownLabel" class="text-input" placeholder="Product launch" autocomplete="off"></div>
+        </div>
+        <p class="big-result countdown" id="countdownOut"></p>
+        <p class="muted small">Uses this device's clock and time zone. Use Share link in the header to send the countdown to someone.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="ide-container single">
+    <div class="pane">
+      <div class="pane-header">
+        <div class="pane-title"><i data-lucide="list-ordered"></i> Date maths on a column</div>
+        <div class="btn-group">
+          <button class="btn" type="button" id="btnBatchCopy" title="Copy the results"><i data-lucide="copy"></i></button>
+          <button class="btn" type="button" id="btnBatchCsv" title="Download the input and results as CSV"><i data-lucide="download"></i> CSV</button>
+        </div>
+      </div>
+      <div class="pane-body">
+        <div class="row opts-row">
+          <div class="field"><label for="batchOp">For each date</label>
+            <select id="batchOp" class="select-input">
+              <option value="add">add</option><option value="subtract">subtract</option><option value="weekday">day of the week</option><option value="isoweek">ISO week</option><option value="until">days from today</option><option value="hijri">Hijri date</option><option value="long">written out</option>
+            </select>
+          </div>
+          <div class="field"><label for="batchN">Amount</label><input type="number" id="batchN" class="text-input" value="30" min="0" step="1"></div>
+          <div class="field"><label for="batchUnit">Unit</label><select id="batchUnit" class="select-input"><option value="days">days</option><option value="weeks">weeks</option><option value="months">months</option><option value="years">years</option><option value="working">working days</option></select></div>
+        </div>
+        <div class="date-row">
+          <div class="field"><label for="batchInput">Dates, one per line (YYYY-MM-DD; paste a spreadsheet column)</label><textarea id="batchInput" class="text-input batch-area" rows="8" spellcheck="false" placeholder="2026-01-31&#10;2026-02-28"></textarea></div>
+          <div class="field"><label for="batchOut">Results</label><textarea id="batchOut" class="text-input batch-area" rows="8" readonly spellcheck="false"></textarea></div>
+        </div>
+        <p class="muted small" id="batchMeta"></p>
+      </div>
+    </div>
+  </div>
+
   <div class="docs-container">
     <div class="info-panel">
       <h2><i data-lucide="book-open"></i> How the days are counted</h2>
@@ -96,7 +196,7 @@
 
       <h2><i data-lucide="briefcase"></i> Working days in the UAE, Saudi Arabia and India</h2>
       <p>"Working days" means the days that are not weekends or holidays, and the weekend depends on the country. Since January 2022 the UAE works Monday to Friday with a Saturday and Sunday weekend, as most of the world does. Saudi Arabia, Qatar, Kuwait, Oman and Bahrain keep a Friday and Saturday weekend, so a deadline of ten working days lands on a different date in Riyadh than in Dubai. In India many offices, shops and factories work six days with only Sunday off, while most banks also close on the second and fourth Saturday of each month.</p>
-      <p>Public holidays change every year, and Islamic holidays such as Eid move with the lunar calendar and are confirmed only days in advance. Paste the official list for your country and year into the holidays box, one date per line, and the calculator leaves them out of the count. A holiday that falls on a weekend is counted once, as a weekend day. Notice periods, visa validity and legal deadlines often have their own counting rules, so check the wording of the contract or regulation as well.</p>
+      <p>Public holidays change every year, and Islamic holidays such as Eid move with the lunar calendar and are confirmed only days in advance. Pick a country to skip its public holidays: the list comes from the open date-holidays data set (version shown under the list), except for Qatar, Kuwait and Oman, which that data set does not cover, where Layerbit applies the holidays set out in each country's labour law. Government decrees often lengthen the Eid holidays at short notice, so add any extra days to the holidays box, one date per line, and the calculator leaves them out of the count. A holiday that falls on a weekend is counted once, as a weekend day. Notice periods, visa validity and legal deadlines often have their own counting rules, so check the wording of the contract or regulation as well.</p>
 
       <h2><i data-lucide="calendar-plus"></i> Adding days or months</h2>
       <p>Adding days is exact: 90 days from 21 November 2026 is 19 February 2027. Adding months keeps the same day of the month, and when that day does not exist the result moves back to the last day of the shorter month, so 31 January plus one month is 28 February, or 29 February in a leap year. That is why 90 days and 3 months are not the same thing: from 21 November, 3 months later is 21 February. Working days skip weekends and listed holidays, and adding one working day to a Friday gives Monday with a Saturday and Sunday weekend, but Sunday with a Friday and Saturday weekend.</p>
@@ -125,7 +225,7 @@
         </div>
         <div class="faq-item">
           <button class="faq-question">How do I count working days in the UAE or Saudi Arabia? <i data-lucide="chevron-down"></i></button>
-          <div class="faq-answer"><p>Choose the weekend that applies: Saturday and Sunday for the UAE, or Friday and Saturday for Saudi Arabia, Qatar, Kuwait, Oman and Bahrain. Then paste the public holidays for the period into the holidays box. The working-day count excludes both, and adding working days in the second panel skips them as well.</p></div>
+          <div class="faq-answer"><p>Choose the weekend that applies: Saturday and Sunday for the UAE, or Friday and Saturday for Saudi Arabia, Qatar, Kuwait, Oman and Bahrain. Then pick the country under Public holidays of, and its holidays in the range are listed and left out of the count; adding working days in the second panel skips them as well. Eid holidays follow the Umm al-Qura calendar and can move by a day after moon sighting, and governments often add days by decree, so type any extra days into the holidays box.</p></div>
         </div>
         <div class="faq-item">
           <button class="faq-question">What happens when you add one month to 31 January? <i data-lucide="chevron-down"></i></button>
@@ -137,7 +237,11 @@
         </div>
         <div class="faq-item">
           <button class="faq-question">Are the dates I enter sent anywhere? <i data-lucide="chevron-down"></i></button>
-          <div class="faq-answer"><p>No. All the arithmetic runs in JavaScript on this page, and dates of birth and holiday lists never leave your device. The page keeps working offline once it has loaded.</p></div>
+          <div class="faq-answer"><p>No. All the arithmetic runs in JavaScript on this page, and dates of birth and holiday lists never leave your device. The holiday calendars are a file this site serves, loaded when you pick a country, so no date is sent anywhere to look them up. The page keeps working offline once it has loaded.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">How do I convert a Hijri date to Gregorian? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>Enter the Hijri day, month and year in the Hijri panel and the Gregorian date appears beside it; enter a Gregorian date above it for the other direction. The conversion uses the Umm al-Qura calendar, Saudi Arabia's official calendar, as built into your browser, and covers 1300 to 1600 AH. Hijri months have 29 or 30 days, and the panel tells you which when a day does not exist.</p></div>
         </div>
       </div>
     </div>
@@ -168,6 +272,7 @@
     <div class="info-panel">
       <h2><i data-lucide="git-commit"></i> Changelog</h2>
       <ul class="changelog-list">
+        <li><span class="changelog-tag">v1.1.0</span> Public holidays of 48 countries skipped in working-day counts and listed for the range (date-holidays 3.39.2; Qatar, Kuwait and Oman from their labour laws, which that data set lacks), with an optional state or region. Hijri (Umm al-Qura) conversion both ways, time between two moments with hours and minutes, a live countdown, and date maths on a pasted column with CSV export.</li>
         <li><span class="changelog-tag">v1.0.0</span> Initial release: days, weeks, months and years between dates with optional end-date counting; working days with five weekend patterns and a holiday list; adding or subtracting days, weeks, months, years or working days; exact age with next birthday; ISO week numbers; share links.</li>
       </ul>
     </div>
@@ -186,6 +291,7 @@
 
   <script src="../js/shared.js"></script>
   <script src="../js/engines/datecalc.js"></script>
+  <script src="../js/engines/csv.js"></script>
   <script>
     const $ = id => document.getElementById(id);
     const D = window.LBDate;
@@ -197,10 +303,75 @@
     const WEEKEND_NAMES = { 'sat-sun': 'Saturday and Sunday off', 'fri-sat': 'Friday and Saturday off', 'sun': 'Sunday off', 'fri': 'Friday off', 'none': 'no weekend' };
     function fail(id, msg) { $(id).hidden = !msg; $(id).textContent = msg || ''; }
     function week(s) { const w = D.isoWeek(s); return `week ${w.week} of ${w.year}`; }
-    function holidays() {
+    // ---- public holidays: date-holidays data, plus labour-law rules for the Gulf states it does not cover
+    const HD_VERSION = '3.39.2';
+    const GULF_RULES = {
+      QA: { name: 'Qatar', rules: [['National Sport Day', { nth: [2, 2, 2] }], ['Eid al-Fitr', { hijri: [10, 1], days: 3 }], ['Eid al-Adha', { hijri: [12, 10], days: 3 }], ['Qatar National Day', { md: '12-18' }]] },
+      KW: { name: 'Kuwait', rules: [["New Year's Day", { md: '01-01' }], ['National Day', { md: '02-25' }], ['Liberation Day', { md: '02-26' }], ["Isra and Mi'raj", { hijri: [7, 27] }], ['Eid al-Fitr', { hijri: [10, 1], days: 3 }], ['Arafat Day', { hijri: [12, 9] }], ['Eid al-Adha', { hijri: [12, 10], days: 3 }], ['Islamic New Year', { hijri: [1, 1] }], ["Prophet's Birthday", { hijri: [3, 12] }]] },
+      OM: { name: 'Oman', rules: [['Accession Day of Sultan Haitham', { md: '01-11' }], ["Isra and Mi'raj", { hijri: [7, 27] }], ['Eid al-Fitr', { hijri: [10, 1], days: 3 }], ['Arafat Day', { hijri: [12, 9] }], ['Eid al-Adha', { hijri: [12, 10], days: 3 }], ['Islamic New Year', { hijri: [1, 1] }], ["Prophet's Birthday", { hijri: [3, 12] }], ['National Day', { md: '11-20' }], ['National Day (second day)', { md: '11-21' }]] }
+    };
+    let hdLoad = null; const hdCache = {};
+    const hdReady = () => hdLoad || (hdLoad = new Promise((res, rej) => { const sc = document.createElement('script'); sc.src = '../js/vendor/date-holidays.min.js'; sc.onload = () => res(window.LBHolidays); sc.onerror = () => { hdLoad = null; rej(new Error('The holiday data did not load')); }; document.head.appendChild(sc); }));
+    function gulfYear(code, y) {
+      const out = [];
+      GULF_RULES[code].rules.forEach(([name, r]) => {
+        const span = r.days || 1;
+        if (r.md) out.push({ date: y + '-' + r.md, name });
+        else if (r.nth) { const [m, wd, n] = r.nth; let d = new Date(Date.UTC(y, m - 1, 1)); while (d.getUTCDay() !== wd) d = new Date(d.getTime() + 864e5); out.push({ date: D.addDays(d.toISOString().slice(0, 10), 7 * (n - 1)), name }); }
+        else {
+          const h0 = D.toHijri(y + '-01-01').y, h1 = D.toHijri(y + '-12-31').y;
+          for (let hy = h0; hy <= h1; hy++) { const g = D.fromHijri(hy, r.hijri[0], r.hijri[1]); if (!g) continue; for (let k = 0; k < span; k++) { const day = D.addDays(g, k); if (day.slice(0, 4) === String(y)) out.push({ date: day, name: name + (span > 1 ? ` (day ${k + 1})` : '') }); } }
+        }
+      });
+      return out;
+    }
+    function countryYear(code, region, y) {
+      const key = code + '/' + region + '/' + y;
+      if (hdCache[key]) return hdCache[key];
+      let list = [];
+      if (GULF_RULES[code]) list = gulfYear(code, y);
+      else if (window.LBHolidays) {
+        const h = region ? new LBHolidays(code, region, { languages: ['en'] }) : new LBHolidays(code, { languages: ['en'] });
+        (h.getHolidays(y) || []).filter(x => x.type === 'public').forEach(x => {
+          const days = Math.max(1, Math.round((x.end - x.start) / 864e5)), d0 = x.date.slice(0, 10);
+          for (let k = 0; k < days; k++) list.push({ date: D.addDays(d0, k), name: x.name });
+        });
+      }
+      return (hdCache[key] = list);
+    }
+    function countryHolidays(y0, y1) {
+      const code = $('holidayCountry').value, out = [];
+      if (!code || (!GULF_RULES[code] && !window.LBHolidays)) return out;
+      for (let y = y0; y <= y1; y++) countryYear(code, $('holidayRegion').value, y).forEach(h => out.push(h));
+      return out;
+    }
+    function yearsAround(...ds) { const ys = ds.filter(d => D.parse(d)).map(d => +d.slice(0, 4)); return ys.length ? [Math.min(...ys) - 1, Math.max(...ys) + 1] : [new Date().getFullYear(), new Date().getFullYear()]; }
+    function holidays(range) {
       const h = D.parseHolidays($('holidays').value);
+      const [y0, y1] = range || yearsAround($('start').value, $('end').value, $('addBase').value);
+      countryHolidays(y0, y1).forEach(x => { h.dates[x.date] = true; });
       return h;
     }
+    function renderHolidayList() {
+      const code = $('holidayCountry').value, list = $('holidayList'), a = $('start').value, b = $('end').value;
+      if (!code) { list.innerHTML = ''; $('holidayData').textContent = ''; return; }
+      const from = a <= b ? a : b, to = a <= b ? b : a;
+      const inRange = D.parse(from) && D.parse(to) ? countryHolidays(+from.slice(0, 4), +to.slice(0, 4)).filter(x => x.date >= from && x.date <= to) : [];
+      list.innerHTML = inRange.length ? '<strong>Public holidays in this range:</strong><ul>' + inRange.map(x => `<li><span>${esc(D.longDate(x.date))}</span> ${esc(x.name)}</li>`).join('') + '</ul>' : '<span class="muted">No public holidays in this range.</span>';
+      $('holidayData').textContent = GULF_RULES[code] ? `${GULF_RULES[code].name}: holidays set by its labour law, applied by Layerbit (date-holidays ${HD_VERSION} has no data for ${GULF_RULES[code].name}). Islamic dates use the Umm al-Qura calendar and can move by a day; decrees often add days.` : `Public holidays from date-holidays ${HD_VERSION} (data CC BY-SA 4.0, github.com/commenthol/date-holidays). Islamic and lunar holidays are calculated in advance and can move by a day.`;
+    }
+    $('holidayCountry').addEventListener('change', async () => {
+      const code = $('holidayCountry').value;
+      $('holidayRegionField').hidden = true; $('holidayRegion').innerHTML = '<option value="">Nationwide holidays only</option>';
+      if (code && !GULF_RULES[code]) {
+        $('holidayList').innerHTML = '<span class="muted">Loading the holiday calendar…</span>';
+        try { await hdReady(); } catch (e) { $('holidayList').textContent = e.message; return; }
+        const states = new LBHolidays().getStates(code, 'en');
+        if (states && Object.keys(states).length) { $('holidayRegion').innerHTML += Object.keys(states).map(k => `<option value="${esc(k)}">${esc(states[k])}</option>`).join(''); $('holidayRegionField').hidden = false; }
+      }
+      all(); try { localStorage.setItem('layerbit-date-country', code); } catch (e) { /* not kept */ }
+    });
+    $('holidayRegion').addEventListener('change', all);
 
     function between() {
       const a = $('start').value, b = $('end').value;
@@ -211,6 +382,7 @@
       const span = c.total, back = D.daysBetween(a, b) < 0;
       const from = back ? b : a, to = back ? a : b;
       const dd = D.diff(from, inclusive ? D.addDays(to, 1) : to);
+      renderHolidayList();
       fail('betweenError', h.bad.length ? `Skipped ${h.bad.length === 1 ? 'a holiday line' : h.bad.length + ' holiday lines'} that did not start with a date in YYYY-MM-DD form: ${h.bad.slice(0, 3).join('; ')}` : '');
       $('betweenHeadline').innerHTML = `<strong>${plural(span, 'day')}</strong> ${back ? 'between' : 'from'} ${esc(D.longDate(from))} ${back ? 'and' : 'to'} ${esc(D.longDate(to))}${inclusive ? ', counting both dates' : ''}`;
       kv([
@@ -266,7 +438,72 @@
       ], 'ageOut');
     }
 
-    function all() { between(); addCalc(); ageCalc(); icons(); }
+    // ---- Hijri
+    $('hijriM').innerHTML = D.HIJRI_MONTHS.map((m, i) => `<option value="${i + 1}">${i + 1}. ${esc(m)}</option>`).join('');
+    function hijriCalc() {
+      const g = $('hijriFromG').value;
+      if (D.parse(g)) { const h = D.toHijri(g); $('hijriOut').innerHTML = `<strong>${h.d} ${esc(h.monthName)} ${h.y} AH</strong> <span class="muted">(${h.d}/${h.m}/${h.y})</span>`; } else $('hijriOut').textContent = '';
+      const y = Math.trunc(+$('hijriY').value), m = +$('hijriM').value, d = Math.trunc(+$('hijriD').value);
+      if (!(y >= 1300 && y <= 1600)) { $('gregOut').textContent = 'Enter a Hijri year between 1300 and 1600 (1882–2174 CE).'; return; }
+      const r = D.fromHijri(y, m, d);
+      $('gregOut').innerHTML = r ? `${d} ${esc(D.HIJRI_MONTHS[m - 1])} ${y} AH is <strong>${esc(D.longDate(r))}</strong> (${r})` : `${esc(D.HIJRI_MONTHS[m - 1])} ${y} has ${D.hijriMonthLength(y, m)} days; Hijri months have 29 or 30 days.`;
+    }
+    ['hijriFromG', 'hijriY', 'hijriM', 'hijriD'].forEach(id => { $(id).addEventListener('input', hijriCalc); $(id).addEventListener('change', hijriCalc); });
+
+    // ---- time between two moments
+    function durationCalc() {
+      const a = D.parseMoment($('dtStart').value), b = D.parseMoment($('dtEnd').value), out = $('durationOut');
+      if (a === null || b === null) { out.innerHTML = ''; return; }
+      const d = D.duration(b - a), r = n => n.toLocaleString('en-US', { maximumFractionDigits: 2 });
+      out.innerHTML = `<p class="big-result"><strong>${D.durationWords(d)}</strong>${d.negative ? ' (the second moment is earlier)' : ''}</p><dl class="kv-grid"><dt>Hours</dt><dd>${r(d.totalHours)}</dd><dt>Minutes</dt><dd>${r(d.totalMinutes)}</dd><dt>Seconds</dt><dd>${r(d.totalSeconds)}</dd><dt>Days (decimal)</dt><dd>${r(d.totalHours / 24)}</dd></dl><p class="muted small">Wall-clock times as entered; a daylight-saving change in between is not counted.</p>`;
+    }
+    ['dtStart', 'dtEnd'].forEach(id => { $(id).addEventListener('input', durationCalc); $(id).addEventListener('change', durationCalc); });
+
+    // ---- countdown
+    let cdTimer = null;
+    function countdown() {
+      const v = $('countdownTo').value, label = $('countdownLabel').value.trim(), out = $('countdownOut');
+      clearInterval(cdTimer); cdTimer = null;
+      if (!v) { out.textContent = ''; return; }
+      const target = new Date(v).getTime();
+      if (isNaN(target)) { out.textContent = 'Enter a date and time.'; return; }
+      const tick = () => {
+        const ms = target - Date.now(), d = D.duration(ms);
+        out.innerHTML = (label ? `<span class="muted">${esc(label)}:</span> ` : '') + (ms <= 0 ? `<strong>reached</strong> ${D.durationWords(d)} ago` : `<strong>${num(d.days)} days</strong> ${String(d.hours).padStart(2, '0')}:${String(d.minutes).padStart(2, '0')}:${String(d.seconds).padStart(2, '0')}`);
+      };
+      tick(); cdTimer = setInterval(tick, 1000);
+    }
+    ['countdownTo', 'countdownLabel'].forEach(id => { $(id).addEventListener('input', countdown); $(id).addEventListener('change', countdown); });
+
+    // ---- date maths on a column
+    let batchRows = [];
+    function batchCalc() {
+      const op = $('batchOp').value, n = Math.trunc(+$('batchN').value || 0), unit = $('batchUnit').value;
+      $('batchN').disabled = $('batchUnit').disabled = !(op === 'add' || op === 'subtract');
+      const lines = $('batchInput').value.split(/\r?\n/), today = D.today();
+      let bad = 0, good = 0;
+      if (lines.length && lines[lines.length - 1] === '') lines.pop();
+      const hol = unit === 'working' ? holidays(yearsAround(...lines.map(l => l.trim()).filter(l => D.parse(l)))).dates : {};
+      batchRows = lines.map(raw => {
+        const l = raw.trim();
+        if (!l) return [raw, ''];
+        if (!D.parse(l)) { bad++; return [raw, 'not a date (use YYYY-MM-DD)']; }
+        good++;
+        try {
+          const k = op === 'subtract' ? -n : n;
+          const v = op === 'add' || op === 'subtract' ? (unit === 'days' ? D.addDays(l, k) : unit === 'weeks' ? D.addDays(l, 7 * k) : unit === 'months' ? D.addMonths(l, k) : unit === 'years' ? D.addYears(l, k) : D.addWorkingDays(l, k, { weekend: $('weekend').value, holidays: hol }))
+            : op === 'weekday' ? D.WEEKDAYS[D.weekday(l)] : op === 'isoweek' ? (w => `${w.year}-W${String(w.week).padStart(2, '0')}`)(D.isoWeek(l)) : op === 'until' ? String(D.daysBetween(today, l)) : op === 'hijri' ? (h => `${h.d} ${h.monthName} ${h.y}`)(D.toHijri(l)) : D.longDate(l);
+          return [raw, v];
+        } catch (e) { bad++; good--; return [raw, e.message]; }
+      });
+      $('batchOut').value = batchRows.map(([raw, v]) => v === 'not a date (use YYYY-MM-DD)' || (!D.parse(raw.trim()) && raw.trim()) ? raw.trim() + '\t' + v : v).join('\n');
+      $('batchMeta').textContent = lines.length ? `${num(good)} ${good === 1 ? 'date' : 'dates'} worked out${bad ? `; ${plural(bad, 'line')} could not be read and ${bad === 1 ? 'is' : 'are'} marked` : ''}.` : '';
+    }
+    ['batchInput', 'batchOp', 'batchN', 'batchUnit'].forEach(id => { $(id).addEventListener('input', batchCalc); $(id).addEventListener('change', batchCalc); });
+    $('btnBatchCopy').addEventListener('click', () => { if ($('batchOut').value) Layerbit.copy($('batchOut').value).then(() => Layerbit.toast('Results copied')); });
+    $('btnBatchCsv').addEventListener('click', () => { if (!batchRows.length) return; const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([LBCsv.stringify([['Input', 'Result']].concat(batchRows), { safe: true })], { type: 'text/csv' })); a.download = 'dates.csv'; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 1000); });
+
+    function all() { between(); addCalc(); ageCalc(); hijriCalc(); durationCalc(); batchCalc(); icons(); }
     ['start', 'end', 'inclusive', 'weekend', 'holidays'].forEach(id => $(id).addEventListener('input', () => { between(); addCalc(); }));
     $('weekend').addEventListener('change', () => { between(); addCalc(); });
     $('inclusive').addEventListener('change', between);
@@ -275,13 +512,13 @@
     document.querySelectorAll('[data-today]').forEach(b => b.addEventListener('click', () => { const el = $(b.dataset.today); el.value = D.today(); el.dispatchEvent(new Event('input', { bubbles: true })); }));
     $('addChips').addEventListener('click', e => { const b = e.target.closest('[data-n]'); if (!b) return; $('addN').value = b.dataset.n; $('addUnit').value = b.dataset.u; $('addOp').value = '1'; addCalc(); });
 
-    const FIELDS = ['start', 'end', 'holidays', 'weekend', 'addBase', 'addOp', 'addN', 'addUnit', 'dob', 'asOf'];
+    const FIELDS = ['start', 'end', 'holidays', 'weekend', 'addBase', 'addOp', 'addN', 'addUnit', 'dob', 'asOf', 'countdownTo', 'countdownLabel', 'dtStart', 'dtEnd'];
     function getState() { const s = { inclusive: $('inclusive').checked }; FIELDS.forEach(f => { s[f] = $(f).value; }); return s; }
     function setState(s) {
       if (!s) return;
       FIELDS.forEach(f => { if (typeof s[f] === 'string') $(f).value = s[f]; });
       if (typeof s.inclusive === 'boolean') $('inclusive').checked = s.inclusive;
-      all();
+      all(); countdown();
     }
     function input(t) {
       const dates = (String(t).match(/\d{4}-\d{1,2}-\d{1,2}/g) || []).filter(d => D.parse(d)).map(d => D.format(D.parse(d)));
@@ -293,6 +530,8 @@
 
     const t0 = D.today();
     $('start').value = t0; $('end').value = D.parse(t0).y + '-12-31';
-    $('addBase').value = t0; $('asOf').value = t0;
+    $('addBase').value = t0; $('asOf').value = t0; $('hijriFromG').value = t0;
+    { const h = D.toHijri(t0); $('hijriY').value = h.y; $('hijriM').value = h.m; $('hijriD').value = h.d; }
     all();
+    try { const c = localStorage.getItem('layerbit-date-country'); if (c && $('holidayCountry').querySelector(`option[value="${c}"]`)) { $('holidayCountry').value = c; $('holidayCountry').dispatchEvent(new Event('change')); } } catch (e) { /* none kept */ }
   </script>

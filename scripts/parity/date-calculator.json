@@ -1,0 +1,50 @@
+{
+  "tool": "date-calculator",
+  "page": "tools/date-calculator.html",
+  "competitors": [
+    {
+      "name": "timeanddate.com",
+      "price": "free site; holiday API sold per country (archived: $250 a year for one)",
+      "checked": "2026-11"
+    }
+  ],
+  "claims": [
+    {
+      "feature": "Business days that exclude each country's public holidays",
+      "competitor": "timeanddate.com",
+      "tests": [
+        "ui:date-calculator:2.15: public holidays for a country are skipped, listed, and the data version is shown"
+      ]
+    },
+    {
+      "feature": "Hijri (Umm al-Qura) conversion",
+      "competitor": "timeanddate.com",
+      "tests": [
+        "ui:date-calculator:2.15: Hijri (Umm al-Qura) conversion both ways",
+        "unit:datecalc:Hijri: Umm al-Qura dates both ways, month lengths, impossible days"
+      ]
+    },
+    {
+      "feature": "Durations with times",
+      "competitor": "timeanddate.com",
+      "tests": [
+        "ui:date-calculator:2.15: time between two moments, with hours and minutes",
+        "unit:datecalc:moments and durations: times kept, DST-free arithmetic"
+      ]
+    },
+    {
+      "feature": "Countdowns",
+      "competitor": "timeanddate.com",
+      "tests": [
+        "ui:date-calculator:2.15: a countdown ticks towards a date and time"
+      ]
+    },
+    {
+      "feature": "Batch date maths on a column",
+      "competitor": "timeanddate.com",
+      "tests": [
+        "ui:date-calculator:2.15: date maths on a whole column, with bad lines reported"
+      ]
+    }
+  ]
+}

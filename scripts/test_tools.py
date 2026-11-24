@@ -4207,6 +4207,62 @@ def _(t):
     expect("Friday and Saturday off" in t.text("betweenOut"), "weekend label did not update")
 
 
+@case("date-calculator", "typical", "2.15: public holidays for a country are skipped, listed, and the data version is shown")
+def _(t):
+    t.call("setState({ start: '2026-12-01', end: '2026-12-04', inclusive: true, weekend: 'sat-sun', holidays: '' })")
+    expect("4" in t.text("betweenOut") and "holiday" not in t.text("betweenOut"), t.text("betweenOut"))
+    t.select("holidayCountry", "AE")
+    t.wait_for("/National Day/.test(document.getElementById('holidayList').textContent)", 10000)
+    out = t.text("betweenOut")
+    expect("holiday skipped" in out or "holidays skipped" in out, out)
+    expect("date-holidays" in t.text("holidayData") and "3.39.2" in t.text("holidayData"), t.text("holidayData"))
+    t.select("holidayCountry", "IN")
+    t.call("setState({ start: '2026-01-20', end: '2026-01-31', inclusive: true, weekend: 'sun', holidays: '' })")
+    t.wait_for("/Republic Day/.test(document.getElementById('holidayList').textContent)", 10000)
+    expect(t.count("#holidayCountry option") >= 38, "GCC, India and the top 30 should be offered")
+    t.select("holidayCountry", "QA")
+    t.call("setState({ start: '2026-12-17', end: '2026-12-19', inclusive: true, weekend: 'fri-sat', holidays: '' })")
+    t.wait_for("/Qatar National Day/.test(document.getElementById('holidayList').textContent)", 5000)
+    expect("labour law" in t.text("holidayData"), t.text("holidayData"))
+    for code in ["AE", "SA", "QA", "KW", "BH", "OM", "IN", "US", "GB", "DE", "JP", "BR"]:
+        expect(t.count(f"#holidayCountry option[value='{code}']") == 1, code)
+
+
+@case("date-calculator", "typical", "2.15: Hijri (Umm al-Qura) conversion both ways")
+def _(t):
+    t.set("hijriFromG", "2026-03-20")
+    t.wait_for("/1 Shawwal 1447/.test(document.getElementById('hijriOut').textContent)", 3000)
+    t.set("hijriY", "1447"); t.select("hijriM", "9"); t.set("hijriD", "1")
+    t.wait_for("/2026-02-18/.test(document.getElementById('gregOut').textContent)", 3000)
+    t.set("hijriD", "31")
+    t.wait_for("/29 or 30 days/.test(document.getElementById('gregOut').textContent)", 3000)
+
+
+@case("date-calculator", "typical", "2.15: time between two moments, with hours and minutes")
+def _(t):
+    t.set("dtStart", "2026-11-23T09:15"); t.set("dtEnd", "2026-11-25T17:45")
+    out = t.text("durationOut")
+    expect("2 days, 8 hours and 30 minutes" in out and "56.5" in out and "203,400" in out, out)
+
+
+@case("date-calculator", "typical", "2.15: a countdown ticks towards a date and time")
+def _(t):
+    t.set("countdownTo", "2099-01-01T00:00"); t.set("countdownLabel", "Launch")
+    a = t.text("countdownOut"); t.wait(1200); b = t.text("countdownOut")
+    expect("Launch" in a and "days" in a and a != b, f"{a} / {b}")
+
+
+@case("date-calculator", "typical", "2.15: date maths on a whole column, with bad lines reported")
+def _(t):
+    t.set("batchInput", "2026-01-31\n2026-02-28\nnot a date\n2026-12-31")
+    t.select("batchOp", "add"); t.set("batchN", "1"); t.select("batchUnit", "months")
+    out = t.val("batchOut").split("\n")
+    eq(out, ["2026-02-28", "2026-03-28", "not a date\tnot a date (use YYYY-MM-DD)", "2027-01-31"], "add a month")
+    t.select("batchOp", "weekday")
+    eq(t.val("batchOut").split("\n")[0], "Saturday", "weekday")
+    expect("1 line" in t.text("batchMeta") and "could not" in t.text("batchMeta"), t.text("batchMeta"))
+
+
 @case("date-calculator", "typical", "90 days, 1 month from 31 Jan, and working days over a weekend")
 def _(t):
     t.call("setState({ addBase: '2026-11-21', addOp: '1', addN: '90', addUnit: 'days', weekend: 'sat-sun', holidays: '' })")
