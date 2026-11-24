@@ -4115,6 +4115,35 @@ def _(t):
     expect(t.count("#gstNote") == 1 and "0.01" in t.text("gstNote"), "no note about the paisa: " + out)
 
 
+@case("vat-gst-calculator", "typical", "2.29: HSN/SAC search finds codes, shows the list's source and date, and fills an invoice line")
+def _(t):
+    t.set("hsnSearch", "coffee roasted")
+    t.wait_for("document.querySelectorAll('#hsnResults .hsn-pick').length > 0", 10000)
+    expect("0901" in t.text("hsnResults"), t.text("hsnResults")[:300])
+    d = t.text("hsnData")
+    expect("hsn-code-package 3.0.0" in d and "rate" in d.lower(), d)
+    n0 = t.count("#lines tbody tr")
+    t.click("#hsnResults .hsn-pick")
+    t.wait(200)
+    eq(t.count("#lines tbody tr"), n0 + 1, "a line was added")
+    h = t.call("[...document.querySelectorAll('#lines tbody tr')].pop().querySelector('[data-k=h]').value")
+    expect(h.startswith("0901"), h)
+    t.set("hsnSearch", "9954")
+    t.wait_for("/Construction services/.test(document.getElementById('hsnResults').textContent)", 5000)
+
+
+@case("vat-gst-calculator", "typical", "2.29: reverse charge: the buyer pays the tax, the invoice says so")
+def _(t):
+    t.call("setState({ mode: 'add', currency: 'INR', amount: '1000', rate: '18', supply: 'intra', whole: false, lines: [{ d: 'Legal services', q: '1', p: '50000', r: '18' }] })")
+    t.click("#reverseCharge")
+    out = t.text("calcOut")
+    expect("reverse charge" in out.lower() and "recipient" in out.lower(), out)
+    expect("1,000.00" in t.text("headline") and "payable to the supplier" in t.text("headline"), t.text("headline"))
+    lo = t.text("linesOut")
+    expect("50,000.00" in lo and "Tax payable on reverse charge: Yes" in lo, lo)
+    expect("59,000.00" not in lo.split("Grand total")[1].split("\n")[0], "grand total must not include the reverse-charge tax: " + lo)
+
+
 @case("vat-gst-calculator", "minimal", "opens with UAE VAT on AED 1,000 and a two-line invoice")
 def _(t):
     expect("AED 1,050.00" in t.text("headline"), t.text("headline"))

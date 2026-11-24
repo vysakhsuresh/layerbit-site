@@ -1,0 +1,34 @@
+{
+  "tool": "vat-gst-calculator",
+  "page": "tools/vat-gst-calculator.html",
+  "competitors": [
+    {
+      "name": "Zoho Invoice",
+      "price": "free",
+      "checked": "2026-11"
+    }
+  ],
+  "claims": [
+    {
+      "feature": "Correct CGST/SGST split",
+      "competitor": "Zoho Invoice",
+      "tests": [
+        "ui:vat-gst-calculator:B2: CGST and SGST are equal halves worked out on the taxable value, with a note on the paisa"
+      ]
+    },
+    {
+      "feature": "HSN/SAC code lookup from a dated, sourced list",
+      "competitor": "Zoho Invoice",
+      "tests": [
+        "ui:vat-gst-calculator:2.29: HSN/SAC search finds codes, shows the list's source and date, and fills an invoice line"
+      ]
+    },
+    {
+      "feature": "Reverse charge",
+      "competitor": "Zoho Invoice",
+      "tests": [
+        "ui:vat-gst-calculator:2.29: reverse charge: the buyer pays the tax, the invoice says so"
+      ]
+    }
+  ]
+}
