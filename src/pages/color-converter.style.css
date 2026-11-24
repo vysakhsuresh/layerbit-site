@@ -56,3 +56,46 @@
       .fmt-table td.muted { width: 96px; }
       .ratio span { font-size: 1.5em; }
     }
+
+    /* v2.0: generator, image extraction, gradients, saved palettes */
+    .gen-row { display: flex; gap: 8px; min-height: 190px; }
+    .gen-col { flex: 1 1 0; min-width: 0; border-radius: 12px; padding: 12px 8px; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; gap: 6px; box-shadow: inset 0 0 0 1px rgba(255,255,255,0.08); transition: flex 0.2s; }
+    .gen-col.locked { box-shadow: inset 0 0 0 3px currentColor; }
+    .gen-hex { background: none; border: 0; color: inherit; font-family: 'Fira Code', monospace; font-weight: 700; font-size: 0.95em; cursor: pointer; padding: 2px 4px; border-radius: 6px; }
+    .gen-hex:hover, .gen-hex:focus-visible { background: rgba(127,127,127,0.25); }
+    .gen-name { font-size: 0.72em; opacity: 0.85; text-align: center; overflow-wrap: anywhere; }
+    .gen-tools { display: flex; gap: 4px; }
+    .gen-flag { font-size: 0.72em; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+    .eye-status { font-size: 0.85em; color: var(--text-muted); margin: 0; }
+    .eye-status[hidden] { display: none; }
+    .gen-btn { background: rgba(127,127,127,0.18); border: 0; color: inherit; width: 32px; height: 32px; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; }
+    .gen-btn:hover, .gen-btn:focus-visible { background: rgba(127,127,127,0.35); }
+    .gen-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+    .gen-btn i, .gen-btn svg.lucide { width: 16px; height: 16px; }
+    .hint-bar kbd { font-family: 'Fira Code', monospace; font-size: 0.85em; border: 1px solid var(--card-border); border-radius: 4px; padding: 0 5px; }
+    .gen-actions { flex-wrap: wrap; }
+    .saved { display: flex; flex-direction: column; gap: 8px; }
+    .saved .h-label { margin-bottom: 0; }
+    .saved-row { display: flex; gap: 8px; align-items: center; }
+    .saved-load { flex: 1; display: flex; height: 32px; border-radius: 8px; overflow: hidden; border: 1px solid var(--card-border); padding: 0; cursor: pointer; background: none; }
+    .saved-load span { flex: 1; }
+    .saved-row .gen-btn { color: var(--text-muted); }
+    .img-drop { border: 2px dashed var(--card-border); border-radius: 12px; padding: 14px; text-align: center; color: var(--text-muted); font-size: 0.88em; }
+    .img-drop canvas { max-width: 100%; height: auto; border-radius: 8px; cursor: crosshair; display: block; margin: 0 auto 8px; }
+    .img-drop canvas[hidden] { display: none; }
+    .img-colors { display: grid; grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)); gap: 6px; }
+    .grad-preview { height: 120px; border-radius: 12px; box-shadow: inset 0 0 0 1px rgba(255,255,255,0.08); }
+    .grad-stops { display: flex; flex-direction: column; gap: 8px; }
+    .grad-stop { display: flex; gap: 8px; align-items: center; }
+    .grad-stop .swatch { width: 34px; height: 34px; border-radius: 8px; }
+    .grad-stop .stop-hex { width: 110px; flex: 0 0 auto; font-size: 0.9em; }
+    .grad-stop .stop-pos { flex: 1; min-width: 60px; accent-color: var(--accent-main); }
+    .stop-pct { width: 40px; text-align: right; font-family: 'Fira Code', monospace; font-size: 0.8em; color: var(--text-muted); }
+    .grad-css { white-space: pre-wrap; overflow-wrap: anywhere; font-family: 'Fira Code', monospace; font-size: 0.8em; background: rgba(0,0,0,0.3); border-radius: 8px; padding: 10px 12px; margin: 0; }
+    .field[hidden] { display: none; }
+    @media (max-width: 700px) {
+      .gen-row { flex-direction: column; min-height: 0; }
+      .gen-col { flex-direction: row; justify-content: space-between; padding: 8px 10px; min-height: 56px; }
+      .gen-name { display: none; }
+      .grad-stop .stop-hex { width: 90px; }
+    }

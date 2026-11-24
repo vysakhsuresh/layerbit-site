@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="Free IPv4 and IPv6 subnet calculator: network, broadcast, host range, netmask and wildcard from any CIDR, plus splitting, membership and supernet checks." />
+  <meta name="description" content="IPv4 and IPv6 subnet calculator with a VLSM planner, IPv6 planning, range to CIDR, overlap checks, splitting and supernets, computed in your browser." />
   <title>CIDR & Subnet Calculator (IPv4 & IPv6) | Layerbit</title>
   <meta name="google-adsense-account" content="ca-pub-6072772587431629" />
   <link rel="preload" href="../fonts/space-grotesk-latin.woff2" as="font" type="font/woff2" crossorigin />
@@ -26,7 +26,7 @@
   <meta property="og:url" content="https://layerbit.co.in/tools/subnet-calculator.html" />
   <meta property="og:site_name" content="Layerbit" />
   <meta property="og:title" content="CIDR & Subnet Calculator (IPv4 & IPv6) | Layerbit" />
-  <meta property="og:description" content="Free IPv4 and IPv6 subnet calculator: network, broadcast, host range, netmask and wildcard from any CIDR, plus splitting, membership and supernet checks." />
+  <meta property="og:description" content="IPv4 and IPv6 subnet calculator with a VLSM planner, IPv6 planning, range to CIDR, overlap checks, splitting and supernets, computed in your browser." />
   <meta property="og:image" content="https://layerbit.co.in/images/og/tools-subnet-calculator.jpg" />
   <meta property="og:image:type" content="image/jpeg" />
   <meta property="og:image:width" content="1200" />
@@ -35,7 +35,7 @@
   <meta property="og:locale" content="en" />
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="CIDR & Subnet Calculator (IPv4 & IPv6) | Layerbit" />
-  <meta name="twitter:description" content="Free IPv4 and IPv6 subnet calculator: network, broadcast, host range, netmask and wildcard from any CIDR, plus splitting, membership and supernet checks." />
+  <meta name="twitter:description" content="IPv4 and IPv6 subnet calculator with a VLSM planner, IPv6 planning, range to CIDR, overlap checks, splitting and supernets, computed in your browser." />
   <meta name="twitter:image" content="https://layerbit.co.in/images/og/tools-subnet-calculator.jpg" />
   <meta name="twitter:image:alt" content="CIDR & Subnet Calculator (IPv4 & IPv6)" />
   <meta name="theme-color" content="#0a0c10" />
@@ -48,8 +48,8 @@
       "@id": "https://layerbit.co.in/tools/subnet-calculator.html#app",
       "name": "CIDR \u0026 Subnet Calculator",
       "url": "https://layerbit.co.in/tools/subnet-calculator.html",
-      "description": "Free IPv4 and IPv6 subnet calculator: network, broadcast, host range, netmask and wildcard from any CIDR, plus splitting, membership and supernet checks.",
-      "applicationCategory": "NetworkingApplication",
+      "description": "IPv4 and IPv6 subnet calculator with a VLSM planner, IPv6 planning, range to CIDR, overlap checks, splitting and supernets, computed in your browser.",
+      "applicationCategory": "DeveloperApplication",
       "operatingSystem": "Any (runs in the browser)",
       "browserRequirements": "Requires JavaScript",
       "isAccessibleForFree": true,
@@ -58,11 +58,18 @@
         "price": "0",
         "priceCurrency": "USD"
       },
-      "keywords": "subnet calculator, CIDR calculator, IPv6 subnet, netmask, wildcard mask, supernet",
       "publisher": {
         "@id": "https://layerbit.co.in/#organization"
       },
-      "datePublished": "2026-09-27"
+      "featureList": [
+        "IPv4 and IPv6 with exact 128-bit arithmetic",
+        "Network, broadcast, host range, netmask and wildcard",
+        "VLSM planner with spare hosts, free space and CSV export",
+        "IPv6 planning in /64s with nibble alignment",
+        "Range to the minimal CIDR list",
+        "Overlap and conflict check with a summarized list",
+        "Subnet splitting, membership and supernet checks"
+      ]
     },
     {
       "@type": "BreadcrumbList",
@@ -83,7 +90,7 @@
         {
           "@type": "ListItem",
           "position": 3,
-          "name": "CIDR \u0026 Subnet Calculator",
+          "name": "--features",
           "item": "https://layerbit.co.in/tools/subnet-calculator.html"
         }
       ]
@@ -134,6 +141,30 @@
         },
         {
           "@type": "Question",
+          "name": "How does the VLSM planner decide where each subnet goes?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Each request is rounded up to the smallest block that holds it: for IPv4 that is the hosts plus the network and broadcast addresses, so 100 hosts need a /25 (126 usable) and a two-host link needs a /30, or a /31 if you tick the RFC 3021 option. The blocks are then placed largest first from the start of the parent block. Because every block size is a power of two and the sizes only shrink, each one starts on its own boundary with no gaps, and the space left at the end is listed as free CIDRs you can use later. If the requests do not fit, the planner says which subnet ran out of room and how many addresses were still needed, rather than producing a partial plan."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How do I plan IPv6 subnets?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Give the planner an IPv6 parent, such as the /48 a provider assigns to a site, and for each site or segment the number of /64 subnets it needs (every IPv6 LAN is a /64). A site needing 200 /64s gets a /56, which holds 256; one needing 16 gets a /60. Ticking nibble boundaries rounds each block to a prefix divisible by four, so every allocation lines up with a hex digit, which keeps addresses readable and lets reverse DNS be delegated cleanly."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How do I turn an IP range into CIDR blocks?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Type the first and last address into Range to CIDR list, for example 10.0.0.5 - 10.0.0.200. The tool returns the fewest CIDR blocks that cover exactly that range and nothing more (nine for that example), which is what firewall rules, security groups and allow-lists that only accept CIDR notation need. The Overlap and conflict check works the other way: paste the blocks already in use, optionally with a name on each line, and it reports duplicates, blocks that contain others and partial overlaps, then summarizes the list into the fewest covering CIDRs."
+          }
+        },
+        {
+          "@type": "Question",
           "name": "Is anything I type sent anywhere?",
           "acceptedAnswer": {
             "@type": "Answer",
@@ -148,7 +179,7 @@
 
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6072772587431629" crossorigin="anonymous"></script>
 
-  <script src="../js/vendor/lucide.min.js?v=a267465fbd" async></script>
+  <script src="../js/vendor/lucide.min.js?v=73dc5075c6" async></script>
 
   <link rel="icon" href="../favicon.ico" sizes="16x16 32x32 48x48" />
   <link rel="icon" href="../favicon-48.png" type="image/png" sizes="48x48" />
@@ -179,6 +210,23 @@
     .kv-grid dd sup { font-size: 0.7em; }
     .kv-grid dd .muted { font-size: 0.9em; }
 
+    /* v2.0: VLSM, range to CIDR, overlap check */
+    .vlsm-body { display: grid; grid-template-columns: minmax(240px, 1fr) 2fr; gap: 20px; align-items: start; }
+    .vlsm-inputs { display: flex; flex-direction: column; gap: 12px; }
+    .vlsm-inputs .check { white-space: normal; }
+    .vlsm-text { font-family: 'Fira Code', monospace; font-size: 0.85em; resize: vertical; min-height: 120px; }
+    .vlsm-out { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+    .usage-bar { display: flex; height: 14px; border-radius: 7px; overflow: hidden; gap: 2px; }
+    .usage-bar:empty { display: none; }
+    .usage-bar span { min-width: 3px; }
+    .usage-bar .free { background: rgba(255,255,255,0.08); }
+    .vlsm-dot { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 8px; vertical-align: middle; }
+    .table-scroll { overflow-x: auto; max-width: 100%; }
+    .hint code { font-family: 'Fira Code', monospace; color: var(--text-main); background: rgba(255,255,255,0.05); padding: 1px 5px; border-radius: 4px; margin-right: 2px; display: inline-block; }
+    .cidr-list { font-family: 'Fira Code', monospace; font-size: 0.85em; background: rgba(0,0,0,0.3); border-radius: 8px; padding: 10px 12px; margin: 0; max-height: 260px; overflow: auto; white-space: pre; }
+    .cidr-list:empty { display: none; }
+    @media (max-width: 900px) { .vlsm-body { grid-template-columns: 1fr; } }
+
   </style>
 </head>
 <body>
@@ -206,14 +254,14 @@
     <span class="sep">/</span>
     <a href="../#tools">Developer tools</a>
     <span class="sep">/</span>
-    <span aria-current="page">CIDR &amp; Subnet Calculator</span>
+    <span aria-current="page">--features</span>
   </nav>
 
   <main id="main" class="page-main">
   <div class="hero">
     <div class="hero-badge"><i data-lucide="shield-check"></i> Runs entirely in your browser</div>
     <h1>CIDR &amp; Subnet Calculator</h1>
-    <p>IPv4 and IPv6. Network, broadcast, host range, masks and address class from any CIDR — plus subnet splitting, membership checks and supernet aggregation, computed locally with exact 128-bit arithmetic.</p>
+    <p>IPv4 and IPv6. Network, broadcast, host range, masks and address class from any CIDR — plus subnet splitting, membership checks, supernets, a VLSM planner for IPv4 and IPv6, range to CIDR conversion and an overlap check, computed locally with exact 128-bit arithmetic.</p>
   </div>
 
   <div class="ide-container wide-right">
@@ -285,6 +333,79 @@
           <thead><tr><th>#</th><th>Network</th><th>First host</th><th>Last host</th><th>Broadcast</th><th>Usable</th></tr></thead>
           <tbody></tbody>
         </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="ide-container single" id="vlsmSection">
+    <div class="pane">
+      <div class="pane-header">
+        <div class="pane-title"><i data-lucide="layers"></i> VLSM planner</div>
+        <div class="btn-group">
+          <button class="btn" id="btnVlsmExample" type="button">IPv4 example</button>
+          <button class="btn" id="btnVlsmExample6" type="button">IPv6 example</button>
+          <button class="btn" id="btnVlsmCopy" type="button" disabled><i data-lucide="copy"></i> Copy plan</button>
+          <button class="btn" id="btnVlsmCsv" type="button" disabled><i data-lucide="download"></i> CSV</button>
+        </div>
+      </div>
+      <div class="pane-body vlsm-body">
+        <div class="vlsm-inputs">
+          <div class="field">
+            <label for="vlsmParent"><i data-lucide="box"></i> Parent block</label>
+            <input type="text" id="vlsmParent" class="text-input" placeholder="192.168.10.0/24  ·  2001:db8:abcd::/48" autocomplete="off" spellcheck="false">
+          </div>
+          <div class="field">
+            <label for="vlsmInput"><i data-lucide="list"></i> <span id="vlsmNeedLabel">Subnets and the hosts each needs</span></label>
+            <textarea id="vlsmInput" class="text-input vlsm-text" rows="6" spellcheck="false" placeholder="Office, 100&#10;Sales, 50&#10;Lab, 20&#10;WAN link, 2"></textarea>
+            <div class="hint">One per line: a name and a number. For an IPv4 parent the number is the usable hosts needed; for IPv6 it is the number of /64 subnets.</div>
+          </div>
+          <label class="check"><input type="checkbox" id="vlsmP2P"> Use /31 for two-host links (RFC 3021)</label>
+          <label class="check"><input type="checkbox" id="vlsmNibble"> Round IPv6 blocks to nibble boundaries (/52, /56, /60)</label>
+        </div>
+        <div class="vlsm-out">
+          <div class="hint" id="vlsmSummary">Enter a parent block and the subnets you need. The largest are placed first, so every block is aligned and nothing is wasted between them.</div>
+          <div class="usage-bar" id="vlsmBar" aria-hidden="true"></div>
+          <div class="table-scroll">
+            <table class="data-table" id="vlsmTable">
+              <thead><tr><th>Name</th><th id="vlsmNeedHead">Hosts needed</th><th>Block</th><th>First host</th><th>Last host</th><th>Broadcast</th><th>Capacity</th><th>Spare</th></tr></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+          <div class="hint" id="vlsmFree"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="ide-container">
+    <div class="pane">
+      <div class="pane-header">
+        <div class="pane-title"><i data-lucide="arrow-left-right"></i> Range to CIDR list</div>
+        <div class="btn-group"><button class="btn" id="btnRangeCopy" type="button" disabled><i data-lucide="copy"></i> Copy</button></div>
+      </div>
+      <div class="pane-body">
+        <div class="field">
+          <label for="rangeInput"><i data-lucide="move-horizontal"></i> First and last address</label>
+          <input type="text" id="rangeInput" class="text-input" placeholder="10.0.0.5 - 10.0.0.200" autocomplete="off" spellcheck="false">
+          <div class="hint" id="rangeCount">The fewest CIDR blocks that cover exactly this range, for firewall rules and allow-lists that only take CIDRs.</div>
+        </div>
+        <pre class="cidr-list" id="rangeOut"></pre>
+      </div>
+    </div>
+
+    <div class="pane">
+      <div class="pane-header">
+        <div class="pane-title"><i data-lucide="shield-alert"></i> Overlap and conflict check</div>
+        <div class="btn-group"><button class="btn" id="btnAggCopy" type="button" disabled><i data-lucide="copy"></i> Copy summary list</button></div>
+      </div>
+      <div class="pane-body">
+        <div class="field">
+          <label for="overlapInput"><i data-lucide="list-checks"></i> Blocks in use, one per line</label>
+          <textarea id="overlapInput" class="text-input" rows="6" spellcheck="false" placeholder="vpc-prod 10.0.0.0/16&#10;vpc-staging 10.1.0.0/16&#10;office 10.0.128.0/20&#10;vpn 192.168.0.0 255.255.255.0"></textarea>
+          <div class="hint">An optional name, then a CIDR or an address and mask. Lines starting with # are ignored.</div>
+        </div>
+        <div class="findings" id="overlapOut"></div>
+        <div class="hint" id="aggOut"></div>
       </div>
     </div>
   </div>
@@ -365,6 +486,18 @@
           <div class="faq-answer"><p>For IPv4: 10.0.0.0/8, 172.16.0.0/12 and 192.168.0.0/16 (RFC 1918 private), 100.64.0.0/10 (RFC 6598 carrier-grade NAT), 127.0.0.0/8 (loopback), 169.254.0.0/16 (link-local), 224.0.0.0/4 (multicast), 240.0.0.0/4 (reserved), and the three documentation ranges 192.0.2.0/24, 198.51.100.0/24 and 203.0.113.0/24. For IPv6: ::1 (loopback), fc00::/7 (unique local), fe80::/10 (link-local), ff00::/8 (multicast), 2001:db8::/32 (documentation), ::ffff:0:0/96 (IPv4-mapped) and 2002::/16 (6to4).</p></div>
         </div>
         <div class="faq-item">
+          <button class="faq-question">How does the VLSM planner decide where each subnet goes? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>Each request is rounded up to the smallest block that holds it: for IPv4 that is the hosts plus the network and broadcast addresses, so 100 hosts need a /25 (126 usable) and a two-host link needs a /30, or a /31 if you tick the RFC 3021 option. The blocks are then placed largest first from the start of the parent block. Because every block size is a power of two and the sizes only shrink, each one starts on its own boundary with no gaps, and the space left at the end is listed as free CIDRs you can use later. If the requests do not fit, the planner says which subnet ran out of room and how many addresses were still needed, rather than producing a partial plan.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">How do I plan IPv6 subnets? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>Give the planner an IPv6 parent, such as the /48 a provider assigns to a site, and for each site or segment the number of /64 subnets it needs (every IPv6 LAN is a /64). A site needing 200 /64s gets a /56, which holds 256; one needing 16 gets a /60. Ticking nibble boundaries rounds each block to a prefix divisible by four, so every allocation lines up with a hex digit, which keeps addresses readable and lets reverse DNS be delegated cleanly.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">How do I turn an IP range into CIDR blocks? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>Type the first and last address into Range to CIDR list, for example 10.0.0.5 - 10.0.0.200. The tool returns the fewest CIDR blocks that cover exactly that range and nothing more (nine for that example), which is what firewall rules, security groups and allow-lists that only accept CIDR notation need. The Overlap and conflict check works the other way: paste the blocks already in use, optionally with a name on each line, and it reports duplicates, blocks that contain others and partial overlaps, then summarizes the list into the fewest covering CIDRs.</p></div>
+        </div>
+        <div class="faq-item">
           <button class="faq-question">Is anything I type sent anywhere? <i data-lucide="chevron-down"></i></button>
           <div class="faq-answer"><p>No. The whole calculation runs in the page as JavaScript, and there is no server endpoint involved. You can confirm this by watching the Network tab of your browser's developer tools while you use the tool, or by loading the page and then disconnecting from the internet — it keeps working. Internal addressing plans are sensitive, and a subnet calculator is exactly the kind of tool that should never see them leave your machine.</p></div>
         </div>
@@ -397,6 +530,7 @@
     <div class="info-panel">
       <h2><i data-lucide="git-commit"></i> Changelog</h2>
       <ul class="changelog-list">
+        <li><span class="changelog-tag">v2.0.0</span> VLSM planner: give a parent block and the hosts each subnet needs, and get an aligned largest-first plan with spare hosts, a usage bar, the free space left and a CSV export; optional /31 point-to-point links. IPv6 planning in /64s with optional nibble alignment. Range to the minimal CIDR list. Overlap and conflict check for a list of named blocks, with a summarized list. "Show all" is greyed out when every subnet is already shown.</li>
         <li><span class="changelog-tag">v1.0.0</span> Initial release: IPv4 and IPv6 with exact 128-bit arithmetic, dotted-mask input, address classification, binary view, subnet splitting with CSV export, membership check and supernet aggregation.</li>
       </ul>
     </div>
@@ -510,6 +644,7 @@
 
   <script src="../js/shared.js?v=e2441a1728"></script>
   <script src="../js/engines/csv.js?v=a78b81af7d"></script>
+  <script src="../js/engines/ipplan.js?v=105126dab0"></script>
 
   <script>
     // ---------------------------------------------------------------
@@ -699,6 +834,7 @@
         binaryView.innerHTML = `<div class="bin-label">Hex nibbles — <span class="net">network</span> · <span class="host">host</span></div><div class="bin-row">${hex.split('').map((ch, i) => `<span class="${i * 4 < b.prefix ? 'net' : 'host'}">${ch}</span>${i % 4 === 3 && i < 31 ? '<span class="dot">:</span>' : ''}`).join('')}</div>`;
       }
       btnCopyAll.disabled = false;
+      if (vlsmParentAuto) { $('vlsmParent').value = `${fmt(b, b.network)}/${b.prefix}`; renderVlsm(); }
       populateSplit(b);
       renderSplit();
       updateMember();
@@ -719,6 +855,7 @@
       const b = current, p = Number(splitSelect.value);
       if (!b || !p) { splitSection.style.display = 'none'; return; }
       const n = 1n << BigInt(p - b.prefix), step = 1n << BigInt(b.bits - p);
+      splitAll.disabled = n <= 64n;   // nothing more to show
       const limit = splitAll.checked ? Number(n > 4096n ? 4096n : n) : Number(n > 64n ? 64n : n);
       const rows = [];
       for (let i = 0n; i < BigInt(limit); i++) {
@@ -778,6 +915,86 @@
       btnCopyAll.innerHTML = '<i data-lucide="check"></i> Copied'; if (window.lucide) lucide.createIcons();
       setTimeout(() => { btnCopyAll.innerHTML = '<i data-lucide="copy"></i> Copy summary'; if (window.lucide) lucide.createIcons(); }, 1500);
     }
+
+
+    // ---------------------------------------------------------------
+    // Planning: VLSM, range to CIDR, overlap check (js/engines/ipplan.js)
+    // ---------------------------------------------------------------
+    const IP = window.LBIPPlan;
+    const $ = id => document.getElementById(id);
+    const escH = t => String(t).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+    let vlsmParentAuto = true, plan = null;
+    function readNeeds() {
+      return $('vlsmInput').value.split('\n').map(l => l.replace(/#.*/, '').trim()).filter(Boolean).map((l, i) => {
+        const m = /^(.*?)[\s,;:=]+(\S+)\s*$/.exec(l);
+        return m ? { name: m[1].replace(/[,;:=]+$/, '').trim() || `Subnet ${i + 1}`, hosts: m[2] } : { name: `Subnet ${i + 1}`, hosts: l };
+      });
+    }
+    const VLSM_COLORS = ['#38bdf8', '#a78bfa', '#34d399', '#fbbf24', '#f472b6', '#60a5fa', '#f87171', '#2dd4bf'];
+    function renderVlsm() {
+      const parentText = $('vlsmParent').value.trim(), needs = readNeeds();
+      let fam = 4; try { fam = IP.parse(parentText).family; } catch (e) {}
+      $('vlsmNeedLabel').textContent = fam === 6 ? 'Subnets and the /64s each needs' : 'Subnets and the hosts each needs';
+      $('vlsmNeedHead').textContent = fam === 6 ? '/64s needed' : 'Hosts needed';
+      // each option belongs to one family
+      $('vlsmP2P').disabled = fam === 6; $('vlsmNibble').disabled = fam === 4;
+      const tbody = $('vlsmTable').querySelector('tbody');
+      plan = null; $('btnVlsmCopy').disabled = $('btnVlsmCsv').disabled = true;
+      if (!parentText || !needs.length) { tbody.innerHTML = ''; $('vlsmBar').innerHTML = ''; $('vlsmFree').textContent = ''; $('vlsmSummary').className = 'hint'; $('vlsmSummary').textContent = 'Enter a parent block and the subnets you need. The largest are placed first, so every block is aligned and nothing is wasted between them.' + (fam === 4 ? ($('vlsmP2P').checked ? ' Two-host links will get a /31.' : ' Two-host links will get a /30.') : ($('vlsmNibble').checked ? ' Blocks will be rounded to /52, /56 or /60.' : '')); return; }
+      const r = IP.vlsm(parentText, needs, { p2p31: $('vlsmP2P').checked, nibble: $('vlsmNibble').checked });
+      if (!r.ok) { tbody.innerHTML = ''; $('vlsmBar').innerHTML = ''; $('vlsmFree').textContent = ''; $('vlsmSummary').className = 'hint bad'; $('vlsmSummary').textContent = r.error; return; }
+      plan = r;
+      const f = r.parent.family, pct = x => Number(x * 10000n / r.total) / 100;
+      $('vlsmSummary').className = 'hint';
+      $('vlsmSummary').innerHTML = `<span class="ok">${r.allocations.length} subnet${r.allocations.length === 1 ? '' : 's'} fit</span> in ${IP.cidr(r.parent)}, using ${big(r.used)} of ${big(r.total)} addresses (${pct(r.used)}%).`;
+      tbody.innerHTML = r.allocations.map((a, i) => { const b = a.block; return `<tr><td><span class="vlsm-dot" style="background:${VLSM_COLORS[i % VLSM_COLORS.length]}"></span>${escH(a.name)}</td><td>${big(BigInt(a.hosts))}</td><td>${IP.cidr(b)}</td><td>${IP.fmt(f, b.firstHost)}</td><td>${IP.fmt(f, b.lastHost)}</td><td>${f === 4 ? (b.prefix >= 31 ? '<span class="muted">—</span>' : IP.fmt(4, b.last)) : '<span class="muted">n/a</span>'}</td><td>${big(a.capacity)}${f === 6 ? ' × /64' : ''}</td><td>${big(a.spare)}</td></tr>`; }).join('');
+      $('vlsmBar').innerHTML = r.allocations.map((a, i) => `<span style="flex:${Math.max(0.4, pct(a.block.size))};background:${VLSM_COLORS[i % VLSM_COLORS.length]}" title="${escH(a.name)} ${IP.cidr(a.block)}"></span>`).join('') + (r.used < r.total ? `<span class="free" style="flex:${pct(r.total - r.used)}" title="free"></span>` : '');
+      $('vlsmFree').innerHTML = r.free.length ? `Free for later: ${r.free.map(b => `<code>${IP.cidr(b)}</code>`).join(' ')}` : 'The parent block is fully used.';
+      $('btnVlsmCopy').disabled = $('btnVlsmCsv').disabled = false;
+    }
+    function vlsmRows() { return plan.allocations.map(a => { const b = a.block, f = b.family; return [a.name, String(a.hosts), IP.cidr(b), IP.fmt(f, b.firstHost), IP.fmt(f, b.lastHost), f === 4 && b.prefix < 31 ? IP.fmt(4, b.last) : '', String(a.capacity), String(a.spare)]; }); }
+    $('vlsmParent').addEventListener('input', () => { vlsmParentAuto = !$('vlsmParent').value.trim(); renderVlsm(); });
+    ['vlsmInput'].forEach(id => $(id).addEventListener('input', renderVlsm));
+    ['vlsmP2P', 'vlsmNibble'].forEach(id => $(id).addEventListener('change', renderVlsm));
+    $('btnVlsmExample').addEventListener('click', () => { $('vlsmParent').value = '192.168.10.0/24'; vlsmParentAuto = false; $('vlsmInput').value = 'Office, 100\nSales, 50\nLab, 20\nWAN link, 2'; renderVlsm(); });
+    $('btnVlsmExample6').addEventListener('click', () => { $('vlsmParent').value = '2001:db8:abcd::/48'; vlsmParentAuto = false; $('vlsmInput').value = 'Head office, 200\nBranch, 16\nDMZ, 1'; renderVlsm(); });
+    $('btnVlsmCopy').addEventListener('click', () => { if (!plan) return; navigator.clipboard.writeText(vlsmRows().map(r => `${r[0]}\t${r[2]}`).join('\n')).then(() => Layerbit.toast('Plan copied')); });
+    $('btnVlsmCsv').addEventListener('click', () => {
+      if (!plan) return;
+      const csv = LBCsv.stringify([['name', plan.parent.family === 6 ? 'subnets_64_needed' : 'hosts_needed', 'block', 'first_host', 'last_host', 'broadcast', 'capacity', 'spare'], ...vlsmRows()], { safe: true, newline: '\n' });
+      const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' })); a.download = `vlsm-${IP.fmt(plan.parent.family, plan.parent.network).replace(/:/g, '-')}-${plan.parent.prefix}.csv`; a.click();
+    });
+
+    let rangeList = [];
+    function renderRange() {
+      const t = $('rangeInput').value.trim(); rangeList = [];
+      $('rangeCount').className = 'hint';
+      if (!t) { $('rangeOut').textContent = ''; $('rangeCount').textContent = 'The fewest CIDR blocks that cover exactly this range, for firewall rules and allow-lists that only take CIDRs.'; $('btnRangeCopy').disabled = true; return; }
+      try { rangeList = IP.rangeToCidrs(t); } catch (e) { $('rangeOut').textContent = ''; $('rangeCount').classList.add('bad'); $('rangeCount').textContent = e.message; $('btnRangeCopy').disabled = true; return; }
+      $('rangeOut').textContent = rangeList.join('\n');
+      $('rangeCount').textContent = `${rangeList.length} block${rangeList.length === 1 ? '' : 's'} cover this range exactly.`;
+      $('btnRangeCopy').disabled = false;
+    }
+    $('rangeInput').addEventListener('input', renderRange);
+    $('btnRangeCopy').addEventListener('click', () => navigator.clipboard.writeText(rangeList.join('\n')).then(() => Layerbit.toast('CIDR list copied')));
+
+    let aggList = [];
+    function renderOverlap() {
+      const lines = $('overlapInput').value.split('\n');
+      aggList = [];
+      if (!lines.some(l => l.replace(/#.*/, '').trim())) { $('overlapOut').innerHTML = ''; $('aggOut').textContent = ''; $('btnAggCopy').disabled = true; return; }
+      const r = IP.conflicts(lines), name = b => `${b.label ? `<strong>${escH(b.label)}</strong> ` : ''}<code>${escH(b.text)}</code> <span class="muted">(line ${b.line})</span>`;
+      const KIND = { duplicate: ['bad', 'is the same block as'], contains: ['warn', 'contains'], overlap: ['bad', 'partly overlaps'] };
+      const items = r.findings.map(x => `<div class="finding ${KIND[x.kind][0]}"><span>${name(x.a)} ${KIND[x.kind][1]} ${name(x.b)}</span></div>`);
+      r.invalid.forEach(x => items.push(`<div class="finding bad"><span>Line ${x.line}: ${escH(x.error)}</span></div>`));
+      if (!r.findings.length && r.blocks.length) items.unshift(`<div class="finding ok"><span>No overlaps among ${r.blocks.length} block${r.blocks.length === 1 ? '' : 's'}.</span></div>`);
+      $('overlapOut').innerHTML = items.join('');
+      aggList = r.aggregate;
+      $('aggOut').innerHTML = r.blocks.length ? `Summarized: ${r.blocks.length} block${r.blocks.length === 1 ? '' : 's'} → ${aggList.length} CIDR${aggList.length === 1 ? '' : 's'}: ${aggList.map(c => `<code>${c}</code>`).join(' ')}` : '';
+      $('btnAggCopy').disabled = !aggList.length;
+    }
+    $('overlapInput').addEventListener('input', renderOverlap);
+    $('btnAggCopy').addEventListener('click', () => navigator.clipboard.writeText(aggList.join('\n')).then(() => Layerbit.toast('Summary list copied')));
 
     cidrInput.addEventListener('input', render);
     splitSelect.addEventListener('change', renderSplit);

@@ -770,6 +770,56 @@ def _(t):
     eq(t.text("testsSummary"), "· 2/2 passing", "tests not restored")
 
 
+@case("regex-tester", "typical", "2.8: real engines: PCRE2, Python, Go and Rust each apply their own syntax")
+def _(t):
+    t.set("testInput", "2026-2026 2025-2024")
+    t.set("regexInput", r"(?P<y>\d{4})-(?P=y)")
+    expect("Error" in t.text("matchCount"), "JavaScript has no (?P<y> syntax")
+    t.select("rxEngine", "pcre2")
+    t.wait_for("/^\\s*1 Match\\b/.test(document.getElementById('matchCount').textContent)", 8000)
+    t.select("rxEngine", "go")
+    t.wait_for("/Error/.test(document.getElementById('matchCount').textContent) && /invalid|unsupported/i.test(document.getElementById('errorMsg').textContent)", 8000)
+    t.select("rxEngine", "rust")
+    t.wait_for("/Error/.test(document.getElementById('matchCount').textContent) && document.getElementById('errorMsg').textContent.length > 5", 8000)
+    t.select("rxEngine", "python")
+    t.wait_for("/^\\s*1 Match\\b/.test(document.getElementById('matchCount').textContent)", 11000)
+    expect("Python" in t.text("engineNote"), t.text("engineNote"))
+    t.set("replaceInput", r"\g<y>!")
+    t.wait_for("document.getElementById('replaceOutput').textContent === '2026! 2025-2024'", 5000)
+
+
+@case("regex-tester", "typical", "2.8: compare engines side by side on the same pattern and text")
+def _(t):
+    t.set("testInput", "aaab xaab")
+    t.set("regexInput", "a++b")
+    t.click(".rx-tab[data-tab='engines']")
+    t.click("#btnCompare")
+    t.wait_for("document.querySelectorAll('#engineCompare tbody tr[data-engine]').length >= 5 && !/running/i.test(document.getElementById('engineCompare').textContent)", 11000)
+    rows = t.call("Object.fromEntries([...document.querySelectorAll('#engineCompare tbody tr[data-engine]')].map(tr => [tr.dataset.engine, tr.children[1].textContent]))")
+    expect("error" in rows["js"].lower(), rows["js"])
+    expect(rows["pcre2"].startswith("2 matches"), rows["pcre2"])
+    expect("error" in rows["go"].lower() and rows["python"].startswith("2 matches"), rows)
+    expect("not available" in t.text("engineCompare").lower(), "Java and .NET should be listed as not available")
+
+
+@case("regex-tester", "typical", "2.8: the debugger steps through backtracking and counts the steps")
+def _(t):
+    t.set("testInput", "abc")
+    t.set("regexInput", "^(a|ab)c$")
+    t.click(".rx-tab[data-tab='debug']")
+    t.click("#btnDebug")
+    t.wait_for("/Match at 0/.test(document.getElementById('dbgSummary').textContent)", 5000)
+    expect("backtrack" in t.text("dbgSummary").lower(), t.text("dbgSummary"))
+    s1 = t.text("dbgEvent"); t.click("#dbgNext"); s2 = t.text("dbgEvent")
+    expect(s1 != s2 and "Step 2" in s2, f"{s1} / {s2}")
+    expect(t.count("#dbgPattern .dbg-cur") == 1 and t.count("#dbgText .dbg-caret") == 1, "current token and position should be marked")
+    t.set("testInput", "aaaaaaaaaaaaaaaaaaaaaaaaab")
+    t.set("regexInput", "^(a+)+$")
+    t.click("#btnDebug")
+    t.wait_for("/steps/.test(document.getElementById('dbgSummary').textContent)", 8000)
+    expect("stopped" in t.text("dbgSummary").lower() or "no match" in t.text("dbgSummary").lower(), t.text("dbgSummary"))
+
+
 @case("regex-tester", "maximal", "100k-char subject with 20,000 matches under budget")
 def _(t):
     t.set("regexInput", r"\b\d+\b")
@@ -2031,6 +2081,116 @@ def _(t):
     expect("= " not in t.text("nextRunsList"), "UTC mode should not show an equivalent")
 
 
+def _cron_dialect(t, d):
+    t.select("cronDialect", d); t.wait(60)
+
+
+@case("cron-generator", "typical", "2.9: Quartz validates by its own rules and lists runs with seconds")
+def _(t):
+    _cron_dialect(t, "unix")
+    t.set("cronInput", "0 9 * * 1-5"); t.wait(60)
+    _cron_dialect(t, "quartz")
+    eq(t.val("cronInput"), "0 0 9 ? * 2-6", "switching to Quartz converts the expression")
+    tr = t.text("cronTranslation").lower()
+    expect("monday" in tr and "friday" in tr, tr)
+    expect(not t.visible("#builderMap"), "five-field builder should hide for Quartz")
+    t.set("cronInput", "30 0 12 L * ?"); t.wait(80)
+    expect(not t.call("document.getElementById('terminalPane').classList.contains('error')"), t.text("cronTranslation"))
+    items = t.call("[...document.querySelectorAll('#nextRunsList li')].map(l => l.textContent)")
+    expect(len(items) == 5 and all("12:00:30" in i for i in items), items)
+    t.set("cronInput", "0 0 9 * * MON-FRI"); t.wait(60)
+    expect("?" in t.text("cronTranslation"), "missing ? not explained: " + t.text("cronTranslation"))
+    _cron_dialect(t, "unix")
+
+
+@case("cron-generator", "typical", "2.9: AWS, GitHub, Jenkins, Spring and Azure rules")
+def _(t):
+    _cron_dialect(t, "aws")
+    expect(t.val("tzSelect") == "UTC", "AWS should preview in UTC")
+    t.set("cronInput", "cron(0 18 ? * MON-FRI *)"); t.wait(80)
+    expect(not t.call("document.getElementById('terminalPane').classList.contains('error')"), t.text("cronTranslation"))
+    eq(t.count("#nextRunsList li"), 5, "aws runs")
+    _cron_dialect(t, "github")
+    t.set("cronInput", "* * * * *"); t.wait(80)
+    expect(t.visible("#dialectWarn") and "5 minutes" in t.text("dialectWarn"), "GitHub minimum not warned")
+    t.set("cronInput", "@daily"); t.wait(60)
+    expect(t.call("document.getElementById('terminalPane').classList.contains('error')"), "GitHub accepted @daily")
+    _cron_dialect(t, "jenkins")
+    t.set("cronInput", "H H(2-4) * * *"); t.wait(80)
+    expect(not t.call("document.getElementById('terminalPane').classList.contains('error')"), t.text("cronTranslation"))
+    expect("H picks" in t.text("dialectWarn"), "H not explained")
+    _cron_dialect(t, "azure")
+    t.set("cronInput", "0 0 0 13 * 5"); t.wait(80)
+    items = t.call("[...document.querySelectorAll('#nextRunsList li')].map(l => l.textContent)")
+    expect(all(i.startswith("Fri") and " 13 " in i for i in items), "Azure uses AND for both day fields: " + str(items))
+    _cron_dialect(t, "unix")
+    t.set("cronInput", "0 0 13 * 5"); t.wait(80)
+    items = t.call("[...document.querySelectorAll('#nextRunsList li')].map(l => l.textContent)")
+    expect(any(not i.startswith("Fri") for i in items) or any(" 13 " not in i for i in items), "Unix uses OR: " + str(items))
+
+
+@case("cron-generator", "typical", "2.9: 30-day calendar counts runs per day and shows a day's hours")
+def _(t):
+    _cron_dialect(t, "unix")
+    t.set("cronInput", "*/15 9-10 * * 1-5"); t.wait(100)
+    expect(t.visible("#calPanel"), "calendar hidden")
+    days = t.call("[...document.querySelectorAll('#calGrid .cal-day')].map(b => [b.dataset.date, +b.dataset.count])")
+    eq(len(days), 30, "30 days")
+    import datetime as _dt
+    for date, n in days:
+        wd = _dt.date.fromisoformat(date).weekday()
+        eq(n, 0 if wd >= 5 else 8, date)
+    expect(str(sum(n for _, n in days)) in t.text("calTotal"), t.text("calTotal"))
+    wk = next(d for d, n in days if n)
+    t.click(f".cal-day[data-date='{wk}']"); t.wait(60)
+    expect(t.count("#calDetail .cal-hour.on") == 2, "two active hours expected")
+    expect("09:00, 09:15" in t.text("calDetail"), t.text("calDetail"))
+
+
+@case("cron-generator", "typical", "2.9: conversion between dialects, and refusals with reasons")
+def _(t):
+    _cron_dialect(t, "unix")
+    t.set("cronInput", "0 9 * * 1-5"); t.wait(60)
+    t.select("convertTo", "aws"); t.wait(60)
+    eq(t.text("convertOut").strip(), "cron(0 9 ? * 2-6 *)", "unix -> aws")
+    t.select("convertTo", "spring"); t.wait(60)
+    eq(t.text("convertOut").strip(), "0 0 9 * * 1-5", "unix -> spring")
+    t.set("cronInput", "0 0 13 * 5"); t.wait(60)
+    t.select("convertTo", "quartz"); t.wait(60)
+    expect("cannot restrict both" in t.text("convertOut"), t.text("convertOut"))
+    expect(t.call("document.getElementById('btnConvertUse').disabled"), "Use should be disabled on a refusal")
+    t.set("cronInput", "*/5 * * * *"); t.wait(60)
+    t.select("convertTo", "quartz"); t.wait(60)
+    t.click("#btnConvertUse"); t.wait(80)
+    eq(t.val("cronDialect"), "quartz", "dialect switched")
+    eq(t.val("cronInput"), "0 */5 * * * ?", "expression switched")
+    _cron_dialect(t, "unix")
+
+
+@case("cron-generator", "typical", "2.9: English text to an expression in the selected dialect")
+def _(t):
+    _cron_dialect(t, "unix")
+    for text, expr in [("weekdays at 9:30", "30 9 * * 1-5"), ("every 15 minutes", "*/15 * * * *"), ("every Monday at 5pm", "0 17 * * 1")]:
+        t.set("englishInput", text); t.click("#btnEnglish"); t.wait(60)
+        eq(t.val("cronInput"), expr, text)
+        expect(not t.call("document.getElementById('terminalPane').classList.contains('error')"), text)
+    t.set("englishInput", "last day of the month"); t.click("#btnEnglish"); t.wait(60)
+    expect("cannot" in t.text("englishMsg"), t.text("englishMsg"))
+    _cron_dialect(t, "quartz")
+    t.set("englishInput", "weekdays at 9:30"); t.click("#btnEnglish"); t.wait(60)
+    eq(t.val("cronInput"), "0 30 9 ? * 2-6", "English in Quartz")
+    _cron_dialect(t, "unix")
+
+
+@case("cron-generator", "edge", "2.9: presets follow the dialect; dialect is remembered")
+def _(t):
+    _cron_dialect(t, "spring")
+    t.call("injectPreset('0 9 * * 1-5')"); t.wait(60)
+    eq(t.val("cronInput"), "0 0 9 * * 1-5", "preset converted to Spring")
+    eq(t.call("localStorage.getItem('layerbit-cron-dialect')"), "spring", "dialect not saved")
+    _cron_dialect(t, "unix")
+
+
 # ----------------------------------------------------------------------------
 # qr-barcode
 # ----------------------------------------------------------------------------
@@ -2323,6 +2483,71 @@ def _(t):
     expect("longer than the 32-bit" in t.text("errorText"), "bad prefix")
     t.set("cidrInput", "10.1.1.0 255.255.0.255")
     expect("not a contiguous mask" in t.text("errorText"), "bad mask")
+
+
+@case("subnet-calculator", "typical", "2.18: VLSM wizard allocates largest first, shows spare and free space, exports CSV")
+def _(t):
+    t.click("#btnVlsmExample"); t.wait(60)
+    rows = t.call("[...document.querySelectorAll('#vlsmTable tbody tr')].map(r => [...r.children].map(c => c.textContent.trim()))")
+    eq([r[0] for r in rows], ["Office", "Sales", "Lab", "WAN link"], "largest first")
+    eq([r[2] for r in rows], ["192.168.10.0/25", "192.168.10.128/26", "192.168.10.192/27", "192.168.10.224/30"], "blocks")
+    eq([r[7] for r in rows], ["26", "12", "10", "0"], "spare")
+    expect("192.168.10.228/30" in t.text("vlsmFree") and "192.168.10.240/28" in t.text("vlsmFree"), t.text("vlsmFree"))
+    expect("228 of 256" in t.text("vlsmSummary"), t.text("vlsmSummary"))
+    t.click("#vlsmP2P"); t.wait(40)
+    expect("192.168.10.224/31" in t.text("vlsmTable"), "/31 option")
+    t.click("#vlsmP2P")
+    with t.page.expect_download() as dl:
+        t.click("#btnVlsmCsv")
+    body = open(dl.value.path()).read()
+    expect(body.startswith("name,hosts_needed,block") and "Office,100,192.168.10.0/25" in body, body[:200])
+    t.set("vlsmInput", "Office, 200\nSales, 100"); t.wait(40)
+    expect("Out of space at Sales" in t.text("vlsmSummary"), t.text("vlsmSummary"))
+    eq(t.count("#vlsmTable tbody tr"), 0, "no partial plan on failure")
+
+
+@case("subnet-calculator", "typical", "2.18: IPv6 planning in /64s with nibble alignment; parent follows the main block")
+def _(t):
+    t.set("vlsmParent", ""); t.wait(20)
+    t.set("cidrInput", "10.20.0.0/22"); t.wait(40)
+    eq(t.val("vlsmParent"), "10.20.0.0/22", "parent follows the block above until typed")
+    t.click("#btnVlsmExample6"); t.wait(60)
+    eq(t.text("vlsmNeedHead").strip(), "/64s needed", "column header")
+    blocks = t.call("[...document.querySelectorAll('#vlsmTable tbody tr td:nth-child(3)')].map(c => c.textContent)")
+    eq(blocks, ["2001:db8:abcd::/56", "2001:db8:abcd:100::/60", "2001:db8:abcd:110::/64"], "v6 plan")
+    t.click("#vlsmNibble"); t.wait(40)
+    blocks = t.call("[...document.querySelectorAll('#vlsmTable tbody tr td:nth-child(3)')].map(c => c.textContent)")
+    eq(blocks, ["2001:db8:abcd::/56", "2001:db8:abcd:100::/60", "2001:db8:abcd:110::/64"], "already nibble-aligned")
+    t.set("vlsmInput", "HQ, 200\nBranch, 20\nDMZ, 3"); t.wait(40)
+    blocks = t.call("[...document.querySelectorAll('#vlsmTable tbody tr td:nth-child(3)')].map(c => c.textContent)")
+    eq(blocks, ["2001:db8:abcd::/56", "2001:db8:abcd:100::/56", "2001:db8:abcd:200::/60"], "nibble rounding")
+    t.click("#vlsmNibble")
+    t.set("cidrInput", "172.16.0.0/16"); t.wait(40)
+    eq(t.val("vlsmParent"), "2001:db8:abcd::/48", "a typed parent is not overwritten")
+
+
+@case("subnet-calculator", "typical", "2.18: range to the minimal CIDR list")
+def _(t):
+    t.set("rangeInput", "10.0.0.5 - 10.0.0.200"); t.wait(40)
+    eq(t.text("rangeOut").split(), ["10.0.0.5/32", "10.0.0.6/31", "10.0.0.8/29", "10.0.0.16/28", "10.0.0.32/27", "10.0.0.64/26", "10.0.0.128/26", "10.0.0.192/29", "10.0.0.200/32"], "cidrs")
+    expect("9 blocks" in t.text("rangeCount"), t.text("rangeCount"))
+    t.set("rangeInput", "10.0.0.9 - 10.0.0.1"); t.wait(40)
+    expect("after the last" in t.text("rangeCount"), t.text("rangeCount"))
+    expect(t.call("document.getElementById('btnRangeCopy').disabled"), "copy should be disabled on error")
+
+
+@case("subnet-calculator", "typical", "2.18: overlap and conflict check, with a summarized list")
+def _(t):
+    t.set("overlapInput", "vpc-prod 10.0.0.0/16\nvpc-staging 10.1.0.0/16\noffice 10.0.128.0/20\nvpn 10.0.128.0 255.255.240.0\nbad 10.0.0.300/24")
+    t.wait(60)
+    out = t.text("overlapOut")
+    expect("vpc-prod" in out and "contains" in out and "office" in out, out)
+    expect("is the same block as" in out, out)
+    expect("Line 5" in out, out)
+    expect("10.0.0.0/15" in t.text("aggOut"), t.text("aggOut"))
+    t.set("overlapInput", "10.0.0.0/24\n10.0.1.0/24"); t.wait(40)
+    expect("No overlaps among 2 blocks" in t.text("overlapOut"), t.text("overlapOut"))
+    expect("10.0.0.0/23" in t.text("aggOut"), t.text("aggOut"))
 
 
 @case("subnet-calculator", "maximal", "split a /16 into 4,096 x /28 (show all)")
@@ -4099,6 +4324,116 @@ def _(t):
     t.set("colorInput", "#38bdf8"); t.wait(60)
     eq(t.count("#scale .sw"), 11, "scale steps")
     eq(t.count("#cvd .cvd-cell"), 5, "vision simulations")
+
+
+def _gen_hexes(t):
+    return t.call("[...document.querySelectorAll('#genRow .gen-hex')].map(b => b.textContent.trim())")
+
+
+@case("color-converter", "typical", "2.14: spacebar generates, locks hold, shuffle reorders the rest")
+def _(t):
+    eq(t.count("#genRow .gen-col"), 5, "a first palette on load")
+    first = _gen_hexes(t)
+    t.click("#genRow .gen-lock[data-i='1']"); t.wait(40)
+    eq(t.call("document.querySelector('#genRow .gen-lock[data-i=\"1\"]').getAttribute('aria-pressed')"), "true", "lock state")
+    t.call("() => document.activeElement && document.activeElement.blur()")
+    t.page.keyboard.press("Space"); t.wait(60)
+    second = _gen_hexes(t)
+    eq(second[1], first[1], "locked colour moved")
+    expect(second != first, "spacebar did not generate")
+    t.focus("#colorInput") if hasattr(t, "focus") else t.call("document.getElementById('colorInput').focus()")
+    t.page.keyboard.press("Space"); t.wait(40)
+    eq(_gen_hexes(t), second, "space typed in an input must not generate")
+    t.click("#btnShuffle"); t.wait(40)
+    third = _gen_hexes(t)
+    eq(third[1], second[1], "shuffle moved a locked colour")
+    eq(sorted(third), sorted(second), "shuffle must only reorder")
+    expect(third != second, "shuffle did nothing")
+    t.select("genCount", "8"); t.wait(40)
+    eq(t.count("#genRow .gen-col"), 8, "count")
+    eq(_gen_hexes(t)[1], second[1], "lock kept when the count changes")
+    t.select("genCount", "5")
+    t.click("#genRow .gen-use[data-i='1']"); t.wait(40)
+    eq(t.val("colorInput").lower(), second[1].lower(), "edit sends the colour to the converter")
+
+
+@case("color-converter", "typical", "2.14: palette downloads as .ase, Procreate, PDF and GPL")
+def _(t):
+    hexes = _gen_hexes(t)
+    files = {}
+    for fmt, ext in [("ase", ".ase"), ("procreate", ".swatches"), ("pdf", ".pdf"), ("gpl", ".gpl")]:
+        t.select("paletteFmt", fmt)
+        with t.page.expect_download() as dl:
+            t.click("#btnExportPalette")
+        expect(dl.value.suggested_filename.endswith(ext), dl.value.suggested_filename)
+        files[fmt] = open(dl.value.path(), "rb").read()
+    expect(files["ase"][:4] == b"ASEF" and int.from_bytes(files["ase"][8:12], "big") == len(hexes) + 2, "ase header")
+    import zipfile, io, json as _json
+    sw = _json.loads(zipfile.ZipFile(io.BytesIO(files["procreate"])).read("Swatches.json"))
+    eq(len(sw["swatches"]), len(hexes), "procreate swatches")
+    expect(files["pdf"].startswith(b"%PDF-1.4") and files["pdf"].count(b" re f") == len(hexes), "pdf swatches")
+    expect(files["gpl"].startswith(b"GIMP Palette") and all(h.upper() in files["gpl"].decode().upper() for h in hexes), "gpl")
+
+
+@case("color-converter", "typical", "2.14: palettes are saved only when asked, and load back")
+def _(t):
+    t.call("localStorage.removeItem('layerbit-color-palettes')")
+    t.click("#btnGenerate"); t.wait(40)
+    expect(t.call("localStorage.getItem('layerbit-color-palettes')") is None, "saved without being asked")
+    hexes = _gen_hexes(t)
+    t.click("#btnSavePalette"); t.wait(40)
+    eq(t.count("#savedPalettes .saved-row"), 1, "saved row")
+    t.click("#btnGenerate"); t.wait(40)
+    t.click("#savedPalettes .saved-load"); t.wait(40)
+    eq(_gen_hexes(t), hexes, "load")
+    t.click("#savedPalettes .saved-del"); t.wait(40)
+    eq(t.count("#savedPalettes .saved-row"), 0, "delete")
+    eq(t.call("localStorage.getItem('layerbit-color-palettes')"), "[]", "deleted from storage")
+
+
+@case("color-converter", "typical", "2.14: colours from an image, with shares, pixel picking and Use as palette")
+def _(t):
+    t.call("""() => new Promise(res => { const c = document.createElement('canvas'); c.width = 20; c.height = 10;
+      const x = c.getContext('2d'); x.fillStyle = '#dc1e28'; x.fillRect(0, 0, 14, 10); x.fillStyle = '#1e3cc8'; x.fillRect(14, 0, 6, 10);
+      c.toBlob(b => { loadImage(new File([b], 'two.png', { type: 'image/png' })); res(1); }); })""")
+    t.select("imgCount", "4"); t.wait(300)
+    sw = t.call("[...document.querySelectorAll('#imgColors .sw')].map(b => [b.dataset.copy, b.querySelector('span').textContent])")
+    expect(len(sw) >= 2, sw)
+    eq(sw[0], ["#dc1e28", "70%"], "dominant colour first with its share")
+    expect(["#1e3cc8", "30%"] in sw, sw)
+    expect("two.png" in t.text("imgHint"), t.text("imgHint"))
+    t.call("""() => { const cv = document.getElementById('imgCanvas'), r = cv.getBoundingClientRect();
+      cv.dispatchEvent(new MouseEvent('click', { clientX: r.right - 2, clientY: r.top + r.height / 2, bubbles: true })); }""")
+    t.wait(40)
+    eq(t.val("colorInput").lower(), "#1e3cc8", "pixel pick")
+    t.click("#btnImgToGen"); t.wait(40)
+    eq(_gen_hexes(t)[:2], ["#DC1E28", "#1E3CC8"], "extracted colours sent to the generator")
+    t.select("genCount", "5"); t.wait(40)
+
+
+@case("color-converter", "typical", "2.14: gradient builder in OKLCH with an sRGB fallback")
+def _(t):
+    css = t.text("gradCss")
+    expect("linear-gradient(in oklch shorter hue 90deg, #38bdf8 0%, #a855f7 100%)" in css, css)
+    expect(css.startswith("background: linear-gradient(90deg, #38bdf8 0%"), css)
+    t.select("gradType", "conic"); t.wait(30)
+    expect("conic-gradient(in oklch shorter hue from 90deg" in t.text("gradCss"), t.text("gradCss"))
+    t.select("gradType", "radial"); t.wait(30)
+    expect(not t.visible("#gradAngleField"), "angle has no meaning for radial")
+    t.select("gradType", "linear"); t.select("gradSpace", "srgb"); t.wait(30)
+    expect("linear-gradient(90deg, #38bdf8 0%, #a855f7 100%)" in t.text("gradCss"), t.text("gradCss"))
+    t.click("#btnAddStop"); t.wait(30)
+    eq(t.count("#gradStops .grad-stop"), 3, "stop added")
+    eq(t.call("document.querySelectorAll('#gradStops .stop-pos')[2].value"), "50", "new stop in the widest gap")
+    t.call("() => { const el = document.querySelectorAll('#gradStops .stop-hex')[0]; el.value = 'tomato'; el.dispatchEvent(new Event('input', { bubbles: true })); }")
+    t.wait(30)
+    expect("#ff6347 0%" in t.text("gradCss"), t.text("gradCss"))
+    t.click("#gradStops .stop-del[data-i='2']"); t.wait(30)
+    eq(t.count("#gradStops .grad-stop"), 2, "stop removed")
+    expect(t.call("document.querySelector('#gradStops .stop-del').disabled"), "two stops is the minimum")
+    t.click("#btnGradFromPal"); t.wait(30)
+    eq(t.count("#gradStops .grad-stop"), len(_gen_hexes(t)), "stops from the generator")
+    t.select("gradSpace", "oklch")
 
 
 # ----------------------------------------------------------------------------

@@ -7,8 +7,8 @@
       "@id": "https://layerbit.co.in/tools/subnet-calculator.html#app",
       "name": "CIDR \u0026 Subnet Calculator",
       "url": "https://layerbit.co.in/tools/subnet-calculator.html",
-      "description": "Free IPv4 and IPv6 subnet calculator: network, broadcast, host range, netmask and wildcard from any CIDR, plus splitting, membership and supernet checks.",
-      "applicationCategory": "NetworkingApplication",
+      "description": "IPv4 and IPv6 subnet calculator with a VLSM planner, IPv6 planning, range to CIDR, overlap checks, splitting and supernets, computed in your browser.",
+      "applicationCategory": "DeveloperApplication",
       "operatingSystem": "Any (runs in the browser)",
       "browserRequirements": "Requires JavaScript",
       "isAccessibleForFree": true,
@@ -17,11 +17,18 @@
         "price": "0",
         "priceCurrency": "USD"
       },
-      "keywords": "subnet calculator, CIDR calculator, IPv6 subnet, netmask, wildcard mask, supernet",
       "publisher": {
         "@id": "https://layerbit.co.in/#organization"
       },
-      "datePublished": "2026-09-27"
+      "featureList": [
+        "IPv4 and IPv6 with exact 128-bit arithmetic",
+        "Network, broadcast, host range, netmask and wildcard",
+        "VLSM planner with spare hosts, free space and CSV export",
+        "IPv6 planning in /64s with nibble alignment",
+        "Range to the minimal CIDR list",
+        "Overlap and conflict check with a summarized list",
+        "Subnet splitting, membership and supernet checks"
+      ]
     },
     {
       "@type": "BreadcrumbList",
@@ -42,7 +49,7 @@
         {
           "@type": "ListItem",
           "position": 3,
-          "name": "CIDR \u0026 Subnet Calculator",
+          "name": "--features",
           "item": "https://layerbit.co.in/tools/subnet-calculator.html"
         }
       ]
@@ -89,6 +96,30 @@
           "acceptedAnswer": {
             "@type": "Answer",
             "text": "For IPv4: 10.0.0.0/8, 172.16.0.0/12 and 192.168.0.0/16 (RFC 1918 private), 100.64.0.0/10 (RFC 6598 carrier-grade NAT), 127.0.0.0/8 (loopback), 169.254.0.0/16 (link-local), 224.0.0.0/4 (multicast), 240.0.0.0/4 (reserved), and the three documentation ranges 192.0.2.0/24, 198.51.100.0/24 and 203.0.113.0/24. For IPv6: ::1 (loopback), fc00::/7 (unique local), fe80::/10 (link-local), ff00::/8 (multicast), 2001:db8::/32 (documentation), ::ffff:0:0/96 (IPv4-mapped) and 2002::/16 (6to4)."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How does the VLSM planner decide where each subnet goes?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Each request is rounded up to the smallest block that holds it: for IPv4 that is the hosts plus the network and broadcast addresses, so 100 hosts need a /25 (126 usable) and a two-host link needs a /30, or a /31 if you tick the RFC 3021 option. The blocks are then placed largest first from the start of the parent block. Because every block size is a power of two and the sizes only shrink, each one starts on its own boundary with no gaps, and the space left at the end is listed as free CIDRs you can use later. If the requests do not fit, the planner says which subnet ran out of room and how many addresses were still needed, rather than producing a partial plan."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How do I plan IPv6 subnets?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Give the planner an IPv6 parent, such as the /48 a provider assigns to a site, and for each site or segment the number of /64 subnets it needs (every IPv6 LAN is a /64). A site needing 200 /64s gets a /56, which holds 256; one needing 16 gets a /60. Ticking nibble boundaries rounds each block to a prefix divisible by four, so every allocation lines up with a hex digit, which keeps addresses readable and lets reverse DNS be delegated cleanly."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How do I turn an IP range into CIDR blocks?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Type the first and last address into Range to CIDR list, for example 10.0.0.5 - 10.0.0.200. The tool returns the fewest CIDR blocks that cover exactly that range and nothing more (nine for that example), which is what firewall rules, security groups and allow-lists that only accept CIDR notation need. The Overlap and conflict check works the other way: paste the blocks already in use, optionally with a name on each line, and it reports duplicates, blocks that contain others and partial overlaps, then summarizes the list into the fewest covering CIDRs."
           }
         },
         {

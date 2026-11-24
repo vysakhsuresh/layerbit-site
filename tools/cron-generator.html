@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="Build cron expressions with dropdowns, read them in plain English, validate every field, and preview the next five run times in any time zone." />
+  <meta name="description" content="Cron expressions for Unix, GitHub Actions, Kubernetes, Jenkins, Quartz, Spring, AWS and Azure: English to cron, a 30-day calendar, dialect conversion." />
   <title>Cron Expression Generator & Examples (Crontab) | Layerbit</title>
   <meta name="google-adsense-account" content="ca-pub-6072772587431629" />
   <link rel="preload" href="../fonts/space-grotesk-latin.woff2" as="font" type="font/woff2" crossorigin />
@@ -26,7 +26,7 @@
   <meta property="og:url" content="https://layerbit.co.in/tools/cron-generator.html" />
   <meta property="og:site_name" content="Layerbit" />
   <meta property="og:title" content="Cron Expression Generator & Examples (Crontab) | Layerbit" />
-  <meta property="og:description" content="Build cron expressions with dropdowns, read them in plain English, validate every field, and preview the next five run times in any time zone." />
+  <meta property="og:description" content="Cron expressions for Unix, GitHub Actions, Kubernetes, Jenkins, Quartz, Spring, AWS and Azure: English to cron, a 30-day calendar, dialect conversion." />
   <meta property="og:image" content="https://layerbit.co.in/images/og/tools-cron-generator.jpg" />
   <meta property="og:image:type" content="image/jpeg" />
   <meta property="og:image:width" content="1200" />
@@ -35,7 +35,7 @@
   <meta property="og:locale" content="en" />
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="Cron Expression Generator & Examples (Crontab) | Layerbit" />
-  <meta name="twitter:description" content="Build cron expressions with dropdowns, read them in plain English, validate every field, and preview the next five run times in any time zone." />
+  <meta name="twitter:description" content="Cron expressions for Unix, GitHub Actions, Kubernetes, Jenkins, Quartz, Spring, AWS and Azure: English to cron, a 30-day calendar, dialect conversion." />
   <meta name="twitter:image" content="https://layerbit.co.in/images/og/tools-cron-generator.jpg" />
   <meta name="twitter:image:alt" content="Cron Expression Generator & Examples (Crontab)" />
   <meta name="theme-color" content="#0a0c10" />
@@ -48,7 +48,7 @@
       "@id": "https://layerbit.co.in/tools/cron-generator.html#app",
       "name": "Cron Expression Generator \u0026 Explainer",
       "url": "https://layerbit.co.in/tools/cron-generator.html",
-      "description": "Build cron expressions with dropdowns, read them in plain English, validate every field, and preview the next five run times in any time zone.",
+      "description": "Cron expressions for Unix, GitHub Actions, Kubernetes, Jenkins, Quartz, Spring, AWS and Azure: English to cron, a 30-day calendar, dialect conversion.",
       "applicationCategory": "DeveloperApplication",
       "operatingSystem": "Any (runs in the browser)",
       "browserRequirements": "Requires JavaScript",
@@ -60,7 +60,15 @@
       },
       "publisher": {
         "@id": "https://layerbit.co.in/#organization"
-      }
+      },
+      "featureList": [
+        "Eight cron dialects: Unix, GitHub Actions, Kubernetes, Jenkins H, Quartz, Spring, AWS EventBridge, Azure",
+        "Plain-English description of every expression",
+        "English text to a cron expression",
+        "Next run times in any IANA time zone",
+        "30-day run calendar with per-hour detail",
+        "Conversion between dialects, with reasons when a schedule cannot convert"
+      ]
     },
     {
       "@type": "BreadcrumbList",
@@ -81,13 +89,14 @@
         {
           "@type": "ListItem",
           "position": 3,
-          "name": "Cron Expression Generator",
+          "name": "--features",
           "item": "https://layerbit.co.in/tools/cron-generator.html"
         }
       ]
     },
     {
       "@type": "FAQPage",
+      "@id": "https://layerbit.co.in/tools/cron-generator.html#faq",
       "mainEntity": [
         {
           "@type": "Question",
@@ -95,6 +104,30 @@
           "acceptedAnswer": {
             "@type": "Answer",
             "text": "A cron expression is a string comprising five or six fields separated by white space that represents a set of times, normally as a schedule to execute a specific routine or script. It is the standard time-based job scheduler in Unix-like computer operating systems."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Can I convert a schedule from one dialect to another?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes. The Convert panel rewrites the current expression for any other dialect: seconds and year fields are added or dropped, weekday numbers are shifted for Quartz and AWS, and ? is put where Quartz and AWS need it. When a schedule cannot be expressed in the target, it says why instead of guessing: Unix cron has no L, W or #, no seconds and no year, and Quartz and AWS cannot restrict both day fields at once. Unix cron runs when either day field matches, but Spring and Azure need both to match, so those two cases are refused too. Every conversion the tool offers is checked by a test that compares a year of run times in both dialects."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Can I type the schedule in plain English?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes, for the common shapes: \"every 15 minutes\", \"weekdays at 9:30\", \"every Monday at 5pm\", \"on the 1st of every month at 6am\", \"twice a day at 9 and 21\", \"weekends at noon\" or \"at 9am in January and July\". The phrase becomes an expression in the dialect you have selected, and the description, next runs and calendar update so you can check it says what you meant. Phrases cron cannot express, such as \"last day of the month\" in Unix cron, are refused with the reason."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What does Jenkins' H mean?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "H stands for \"hash\": Jenkins picks one value in the field's range from a hash of the job's name, so many jobs written as H * * * * spread across the hour instead of all starting at minute 0. H(0-29) limits the range and H/15 runs every 15 minutes from a hashed offset. The exact value depends on the job name, which this page cannot know, so the next runs show the earliest value H can take and say so."
           }
         },
         {
@@ -110,11 +143,10 @@
           "name": "What is the difference between standard and non-standard syntax?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "Standard POSIX cron utilizes 5 fields (Minute, Hour, Day of Month, Month, Day of Week). Some advanced schedulers (like Quartz) utilize a 6th or 7th field for Seconds and Years. Layerbit currently generates universal 5-field syntax, which guarantees the highest compatibility across all major operating systems and cloud providers."
+            "text": "Unix cron, GitHub Actions, Kubernetes and Jenkins use five fields (minute, hour, day of month, month, day of week). Quartz adds seconds in front and an optional year at the end, and numbers weekdays 1 (Sunday) to 7 (Saturday). Spring and Azure add seconds but keep Sunday as 0. AWS EventBridge has six fields ending in a year and is written as cron(...). Quartz and AWS insist on ? in one of the two day fields, and Quartz, Spring and AWS accept L, W and #. Pick the dialect above and the tool validates, explains and schedules the expression by that dialect's rules."
           }
         }
-      ],
-      "@id": "https://layerbit.co.in/tools/cron-generator.html#faq"
+      ]
     }
   ]
 }
@@ -122,8 +154,9 @@
 
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6072772587431629" crossorigin="anonymous"></script>
 
-  <script src="../js/vendor/lucide.min.js?v=a267465fbd" async></script>
+  <script src="../js/vendor/lucide.min.js?v=73dc5075c6" async></script>
   <script src="../js/vendor/cronstrue.min.js?v=ab14cc655f"></script>
+  <script src="../js/engines/cron.js?v=04ff8270ea"></script>
 
   <link rel="icon" href="../favicon.ico" sizes="16x16 32x32 48x48" />
   <link rel="icon" href="../favicon-48.png" type="image/png" sizes="48x48" />
@@ -394,6 +427,49 @@
     .tz-select option { background: #0a0c10; }
     .run-utc { color: var(--accent-main); opacity: 0.85; margin-left: 6px; }
 
+    /* v2.0: dialects, English, calendar, conversion */
+    .dialect-row { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 10px; width: 100%; margin-bottom: 14px; }
+    .dialect-label { font-size: 0.85em; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; }
+    .dialect-select { font-size: 0.95em; padding: 6px 10px; }
+    .dialect-fields { font-family: 'Fira Code', monospace; font-size: 0.8em; color: var(--text-muted); flex-basis: 100%; text-align: center; }
+    .english-row { display: flex; gap: 10px; width: 100%; max-width: 600px; margin-bottom: 8px; }
+    .english-input { flex: 1; min-width: 0; background: rgba(0,0,0,0.3); border: 1px solid var(--card-border); border-radius: 10px; padding: 10px 14px; color: var(--text-main); font-family: inherit; font-size: 1em; outline: none; }
+    .english-input:focus { border-color: var(--accent-main); }
+    .btn-inline { margin-top: 0; padding: 8px 16px; white-space: nowrap; justify-content: center; }
+    .btn-inline:disabled { opacity: 0.45; cursor: not-allowed; }
+    .english-msg { width: 100%; max-width: 600px; font-size: 0.9em; margin-bottom: 14px; overflow-wrap: anywhere; }
+    .english-msg.good { color: var(--success-color); }
+    .english-msg.bad { color: var(--error-color); }
+    .builder-map[hidden] { display: none; }
+    .dialect-warn { list-style: none; margin-top: 12px; max-width: 600px; color: #fbbf24; font-size: 0.9em; text-align: center; }
+    .dialect-warn[hidden] { display: none; }
+    .cal-weekdays, .cal-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; }
+    .cal-weekdays span { text-align: center; font-size: 0.72em; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+    .cal-day { min-height: 44px; border-radius: 8px; border: 1px solid var(--card-border); background: rgba(255,255,255,0.03); color: var(--text-main); font-family: 'Fira Code', monospace; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 2px; line-height: 1.15; }
+    .cal-day:focus-visible, .cal-day.selected { outline: 2px solid var(--accent-main); outline-offset: 1px; }
+    .cal-num { font-size: 0.85em; font-weight: 600; }
+    .cal-count { font-size: 0.65em; color: inherit; opacity: 0.85; min-height: 1em; }
+    .cal-day.lvl-1 { background: rgba(56, 189, 248, 0.15); }
+    .cal-day.lvl-2 { background: rgba(56, 189, 248, 0.3); }
+    .cal-day.lvl-3 { background: rgba(56, 189, 248, 0.5); }
+    .cal-day.lvl-4 { background: rgba(56, 189, 248, 0.72); color: #00131f; }
+    .cal-detail { margin-top: 14px; font-size: 0.88em; color: var(--text-muted); }
+    .cal-day-head strong { color: var(--text-main); }
+    .cal-hours { display: grid; grid-template-columns: repeat(24, minmax(0, 1fr)); gap: 2px; margin-top: 8px; }
+    .cal-hour { height: 14px; border-radius: 2px; background: rgba(255,255,255,0.06); }
+    .cal-hour.on { background: var(--accent-main); }
+    .cal-hour-axis { display: flex; justify-content: space-between; font-family: 'Fira Code', monospace; font-size: 0.7em; margin-top: 2px; }
+    .cal-times { margin-top: 8px; font-family: 'Fira Code', monospace; overflow-wrap: anywhere; }
+    .convert-out { display: block; font-family: 'Fira Code', monospace; font-size: 1.05em; color: var(--accent-main); background: rgba(0,0,0,0.3); border-radius: 8px; padding: 10px 12px; overflow-wrap: anywhere; }
+    .convert-out.convert-error { color: var(--error-color); font-family: 'Space Grotesk', sans-serif; font-size: 0.9em; }
+    .convert-notes { list-style: none; margin-top: 8px; font-size: 0.85em; color: var(--text-muted); }
+    .convert-notes li + li { margin-top: 4px; }
+    .convert-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 12px; }
+    @media (max-width: 600px) {
+      .english-row { flex-direction: column; }
+      .cal-day { min-height: 40px; }
+    }
+
   </style>
 </head>
 <body>
@@ -421,20 +497,41 @@
     <span class="sep">/</span>
     <a href="../#tools">Developer tools</a>
     <span class="sep">/</span>
-    <span aria-current="page">Cron Expression Generator</span>
+    <span aria-current="page">--features</span>
   </nav>
 
   <main id="main" class="page-main">
   <div class="hero">
     <h1>Cron Expression Generator &amp; Explainer</h1>
-    <p>Build, decode and validate cron schedules in real time, with the next run times shown in the zone your server actually uses.</p>
+    <p>Build, decode and validate cron schedules for Unix cron, GitHub Actions, Kubernetes, Jenkins, Quartz, Spring, AWS EventBridge and Azure. Type a schedule in plain English, see the next runs and a 30-day calendar in the zone your server uses, and convert between dialects.</p>
   </div>
 
   <div class="app-container">
     
     <div class="terminal-pane" id="terminalPane">
-      
-      <div class="builder-map">
+
+      <div class="dialect-row">
+        <label class="dialect-label" for="cronDialect">Dialect</label>
+        <select id="cronDialect" class="tz-select dialect-select">
+          <option value="unix">Unix cron (crontab)</option>
+          <option value="github">GitHub Actions</option>
+          <option value="k8s">Kubernetes CronJob</option>
+          <option value="jenkins">Jenkins</option>
+          <option value="quartz">Quartz</option>
+          <option value="spring">Spring @Scheduled</option>
+          <option value="aws">AWS EventBridge</option>
+          <option value="azure">Azure Functions</option>
+        </select>
+        <span class="dialect-fields" id="dialectFields"></span>
+      </div>
+
+      <form class="english-row" id="englishForm" autocomplete="off">
+        <input type="text" id="englishInput" class="english-input" placeholder="Or describe it: weekdays at 9:30, every 15 minutes…" aria-label="Describe the schedule in plain English" spellcheck="false" />
+        <button type="submit" class="btn-copy btn-inline" id="btnEnglish"><i data-lucide="wand-2"></i> Build</button>
+      </form>
+      <p class="english-msg" id="englishMsg" role="status" hidden></p>
+
+      <div class="builder-map" id="builderMap">
         <div class="map-segment">
           <span class="map-label">Minute</span>
           <select class="map-select" id="selMin">
@@ -496,6 +593,8 @@
         <i data-lucide="check-circle" style="color: var(--success-color);"></i> Every minute
       </div>
 
+      <ul class="dialect-warn" id="dialectWarn" hidden></ul>
+
       <button class="btn-copy" id="btnCopy" onclick="copyCron()">
         <i data-lucide="copy"></i> Copy Expression
       </button>
@@ -505,6 +604,34 @@
           <label class="next-runs-tz">in <select id="tzSelect" class="tz-select"><option value="UTC">UTC</option></select></label>
         </div>
         <ol class="next-runs-list" id="nextRunsList"></ol>
+      </div>
+
+      <div class="next-runs cal-panel" id="calPanel">
+        <div class="next-runs-header"><i data-lucide="calendar-days"></i> Next 30 days <span class="next-runs-tz" id="calTotal"></span></div>
+        <div class="cal-weekdays" aria-hidden="true"><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span></div>
+        <div class="cal-grid" id="calGrid"></div>
+        <div class="cal-detail" id="calDetail" aria-live="polite"></div>
+      </div>
+
+      <div class="next-runs convert-panel" id="convertPanel">
+        <div class="next-runs-header"><i data-lucide="repeat"></i> Convert to
+          <select id="convertTo" class="tz-select" aria-label="Dialect to convert to">
+            <option value="unix">Unix cron (crontab)</option>
+            <option value="github">GitHub Actions</option>
+            <option value="k8s">Kubernetes CronJob</option>
+            <option value="jenkins">Jenkins</option>
+            <option value="quartz">Quartz</option>
+            <option value="spring">Spring @Scheduled</option>
+            <option value="aws">AWS EventBridge</option>
+            <option value="azure">Azure Functions</option>
+          </select>
+        </div>
+        <code class="convert-out" id="convertOut"></code>
+        <ul class="convert-notes" id="convertNotes"></ul>
+        <div class="convert-actions">
+          <button type="button" class="btn-copy btn-inline" id="btnConvertCopy"><i data-lucide="copy"></i> Copy</button>
+          <button type="button" class="btn-copy btn-inline" id="btnConvertUse"><i data-lucide="arrow-right-left"></i> Switch to this dialect</button>
+        </div>
       </div>
 
     </div>
@@ -574,6 +701,27 @@
         </div>
 
         <div class="faq-item">
+          <button class="faq-question">Can I convert a schedule from one dialect to another? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer">
+            <p>Yes. The Convert panel rewrites the current expression for any other dialect: seconds and year fields are added or dropped, weekday numbers are shifted for Quartz and AWS, and <code>?</code> is put where Quartz and AWS need it. When a schedule cannot be expressed in the target, it says why instead of guessing: Unix cron has no <code>L</code>, <code>W</code> or <code>#</code>, no seconds and no year, and Quartz and AWS cannot restrict both day fields at once. Unix cron runs when either day field matches, but Spring and Azure need both to match, so those two cases are refused too. Every conversion the tool offers is checked by a test that compares a year of run times in both dialects.</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question">Can I type the schedule in plain English? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer">
+            <p>Yes, for the common shapes: "every 15 minutes", "weekdays at 9:30", "every Monday at 5pm", "on the 1st of every month at 6am", "twice a day at 9 and 21", "weekends at noon" or "at 9am in January and July". The phrase becomes an expression in the dialect you have selected, and the description, next runs and calendar update so you can check it says what you meant. Phrases cron cannot express, such as "last day of the month" in Unix cron, are refused with the reason.</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question">What does Jenkins' H mean? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer">
+            <p><code>H</code> stands for "hash": Jenkins picks one value in the field's range from a hash of the job's name, so many jobs written as <code>H * * * *</code> spread across the hour instead of all starting at minute 0. <code>H(0-29)</code> limits the range and <code>H/15</code> runs every 15 minutes from a hashed offset. The exact value depends on the job name, which this page cannot know, so the next runs show the earliest value H can take and say so.</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
           <button class="faq-question">Why did my Cron job run at the wrong time? <i data-lucide="chevron-down"></i></button>
           <div class="faq-answer">
             <p>The most common reason for unexpected scheduling is timezone discrepancies. By default, most cloud servers and CI/CD pipelines (like GitHub Actions) operate strictly on Coordinated Universal Time (UTC). If you schedule a job for 9:00 AM local time, you must calculate and apply the correct UTC offset in your expression.</p>
@@ -583,7 +731,7 @@
         <div class="faq-item">
           <button class="faq-question">What is the difference between standard and non-standard syntax? <i data-lucide="chevron-down"></i></button>
           <div class="faq-answer">
-            <p>Standard POSIX cron utilizes 5 fields (Minute, Hour, Day of Month, Month, Day of Week). Some advanced schedulers (like Quartz) utilize a 6th or 7th field for Seconds and Years. Layerbit currently generates universal 5-field syntax, which guarantees the highest compatibility across all major operating systems and cloud providers.</p>
+            <p>Unix cron, GitHub Actions, Kubernetes and Jenkins use five fields (minute, hour, day of month, month, day of week). Quartz adds seconds in front and an optional year at the end, and numbers weekdays 1 (Sunday) to 7 (Saturday). Spring and Azure add seconds but keep Sunday as 0. AWS EventBridge has six fields ending in a year and is written as <code>cron(...)</code>. Quartz and AWS insist on <code>?</code> in one of the two day fields, and Quartz, Spring and AWS accept <code>L</code>, <code>W</code> and <code>#</code>. Pick the dialect above and the tool validates, explains and schedules the expression by that dialect's rules.</p>
           </div>
         </div>
 
@@ -615,8 +763,8 @@
       </div>
 
       <h2><i data-lucide="clock"></i> Why the next-run preview matters</h2>
-      <p>Because a wrong expression looks reasonable, the only reliable verification is to read the schedule back as a sentence and look at the actual dates it will fire on. This tool does both: it translates the expression into plain English and computes the next five fire times in UTC. If the sentence does not match your intent, or the dates include days that surprise you, the expression is wrong regardless of how sensible it looks.</p>
-      <p>The times are shown in UTC deliberately rather than in your local timezone. Most managed schedulers — GitHub Actions, AWS EventBridge, Google Cloud Scheduler — evaluate cron in UTC, and presenting local times would hide exactly the offset that causes the mistakes.</p>
+      <p>Because a wrong expression looks reasonable, the only reliable verification is to read the schedule back as a sentence and look at the actual dates it will fire on. This tool does both: it translates the expression into plain English, computes the next five fire times, and colours the next 30 days by how many runs each one gets, so a job that skips weekends, or fires 1,440 times on the 13th, shows up at a glance. Select a day to see its hours.</p>
+      <p>Times start in UTC rather than in your local time zone. Most managed schedulers (GitHub Actions, AWS EventBridge, Azure Functions) evaluate cron in UTC, and presenting local times would hide exactly the offset that causes the mistakes. Picking GitHub Actions, AWS or Azure switches the preview back to UTC; choose the zone your own daemon runs in for the others.</p>
 
       <h2><i data-lucide="layers"></i> The operational failures that are not the expression</h2>
       <p>When a schedule is correct but nothing happens, it is usually one of these rather than the cron syntax:</p>
@@ -651,6 +799,7 @@
     <div class="info-panel">
       <h2><i data-lucide="git-commit"></i> Changelog</h2>
       <ul class="changelog-list">
+        <li><span class="changelog-tag">v2.0.0</span> Eight dialects: Unix cron, GitHub Actions (with its five-minute minimum), Kubernetes, Jenkins (<code>H</code>), Quartz (seconds, year, <code>L</code>, <code>W</code>, <code>#</code>, 1-based weekdays), Spring, AWS EventBridge (<code>cron(...)</code> with a year) and Azure. Each is validated, explained and scheduled by its own rules, including whether both day fields mean OR or AND. A 30-day calendar shows how many runs each day gets, with the hours of any day you select. Expressions convert between dialects, or say why they cannot. A schedule can be typed in plain English ("weekdays at 9:30").</li>
         <li><span class="changelog-tag">v1.6.0</span> Next run times now appear for month and weekday names (JAN, MON-FRI), 7 for Sunday and ? (they were hidden before), and for the @yearly, @annually, @monthly, @weekly, @daily, @midnight and @hourly shortcuts; @reboot is explained. An expression whose runs cannot be listed says so instead of leaving a blank area.</li>
         <li><span class="changelog-tag">v1.5.0</span> Next run times can be computed in the zone the cron daemon actually runs in — any IANA zone, with the browser's own zone offered first — and each run also shows its UTC equivalent, so a "9 am" job in Dubai is visibly 05:00 UTC. The choice is remembered.</li>
         <li><span class="changelog-tag">v1.4.0</span> Each field is range-checked before translation: <code>61 * * * *</code> is refused with the offending field and its valid range, instead of being rendered as "at 61 minutes past the hour". Month and weekday names are validated too.</li>
@@ -773,12 +922,29 @@
 
 
   <script>
-        const cronInput = document.getElementById("cronInput");
+    const cronInput = document.getElementById("cronInput");
     const terminalPane = document.getElementById("terminalPane");
     const cronTranslation = document.getElementById("cronTranslation");
     const btnCopy = document.getElementById("btnCopy");
+    const dialectSel = document.getElementById("cronDialect");
+    const dialectFields = document.getElementById("dialectFields");
+    const dialectWarn = document.getElementById("dialectWarn");
+    const builderMap = document.getElementById("builderMap");
+    const englishForm = document.getElementById("englishForm");
+    const englishInput = document.getElementById("englishInput");
+    const englishMsg = document.getElementById("englishMsg");
+    const calPanel = document.getElementById("calPanel");
+    const calGrid = document.getElementById("calGrid");
+    const calTotal = document.getElementById("calTotal");
+    const calDetail = document.getElementById("calDetail");
+    const convertPanel = document.getElementById("convertPanel");
+    const convertTo = document.getElementById("convertTo");
+    const convertOut = document.getElementById("convertOut");
+    const convertNotes = document.getElementById("convertNotes");
+    const btnConvertCopy = document.getElementById("btnConvertCopy");
+    const btnConvertUse = document.getElementById("btnConvertUse");
 
-    // Dropdowns
+    // Dropdowns (five-field dialects only)
     const selects = {
       min: document.getElementById("selMin"),
       hour: document.getElementById("selHour"),
@@ -787,107 +953,24 @@
       week: document.getElementById("selWeek")
     };
 
-    // --- Next 5 Run Times --------------------------------------------
-    // A small hand-rolled cron field parser + forward scheduler, all in
-    // UTC (the timezone this tool has always assumed, per its own FAQ).
-    // It only needs to understand *, */step, a-b, a-b/step, comma lists,
-    // and the 'L' (last day of month) token the Day dropdown offers -
-    // anything cronstrue accepts but this parser doesn't (e.g. month
-    // names typed by hand) just hides the panel rather than guessing.
+    // Parsing, scheduling, conversion and English all live in js/engines/cron.js
+    // (LBCron), which follows each dialect's own rules: field count, seconds,
+    // year, 0- or 1-based weekdays, ?, L/W/#, H, and whether two restricted
+    // day fields mean OR (Unix) or AND (Spring, Azure).
+    const FIVE = ['unix', 'github', 'k8s', 'jenkins'];
+    const UTC_ONLY = ['github', 'aws', 'azure'];
+    const LABEL = { sec: 'second', min: 'minute', hour: 'hour', dom: 'day', mon: 'month', dow: 'weekday', year: 'year' };
     const nextRunsEl = document.getElementById("nextRuns");
     const nextRunsList = document.getElementById("nextRunsList");
     const WEEKDAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
     const MONTH_NAMES = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-
-    // names: month (jan=1) or weekday (sun=0) names, any case; '?' means any.
-    function parseCronField(str, min, max, names) {
-      if (str === 'L') return { values: new Set(), isLast: true, restricted: true };
-      if (str === '?') str = '*';
-      if (names) str = str.toLowerCase().replace(/[a-z]{3}/g, n => { const i = names.indexOf(n); if (i < 0) throw new Error(`Unknown name "${n}"`); return String(i + min); });
-      const values = new Set();
-      for (const part of str.split(',')) {
-        const m = part.match(/^(\*|\d+-\d+|\d+)(?:\/(\d+))?$/);
-        if (!m) throw new Error(`Unsupported field syntax: "${part}"`);
-        const [, range, stepStr] = m;
-        const step = stepStr ? parseInt(stepStr, 10) : 1;
-        let start, end;
-        if (range === '*') { start = min; end = max; }
-        else if (range.includes('-')) { [start, end] = range.split('-').map(Number); }
-        else { start = end = Number(range); }
-        if (start < min || end > max || start > end || step < 1) throw new Error(`Field value out of range: "${part}"`);
-        for (let v = start; v <= end; v += step) values.add(v);
-      }
-      return { values, isLast: false, restricted: str !== '*' };
-    }
-
-    function lastDayOfMonth(year, monthIndex0) {
-      return new Date(Date.UTC(year, monthIndex0 + 1, 0)).getUTCDate();
-    }
-
-    function getNextRuns(cronStr, count, startWall) {
-      const parts = cronStr.trim().split(/\s+/);
-      if (parts.length !== 5) return [];
-
-      const minute = parseCronField(parts[0], 0, 59);
-      const hour = parseCronField(parts[1], 0, 23);
-      const dom = parseCronField(parts[2], 1, 31);
-      const month = parseCronField(parts[3], 1, 12, CRON_FIELDS[3].names);
-      const dow = parseCronField(parts[4], 0, 7, CRON_FIELDS[4].names);
-      // some dialects allow 7 for Sunday too
-      if (dow.values.has(7)) { dow.values.delete(7); dow.values.add(0); }
-
-      const results = [];
-      let candidate = startWall ? new Date(startWall) : new Date();
-      candidate.setUTCSeconds(0, 0);
-      candidate.setUTCMinutes(candidate.getUTCMinutes() + 1);
-
-      const maxIterations = 300000; // generous bound; jumps skip whole units, not minutes
-      let i = 0;
-      while (results.length < count && i < maxIterations) {
-        i++;
-        const y = candidate.getUTCFullYear();
-        const mo = candidate.getUTCMonth(); // 0-indexed
-        const d = candidate.getUTCDate();
-        const h = candidate.getUTCHours();
-        const mi = candidate.getUTCMinutes();
-        const wd = candidate.getUTCDay();
-
-        if (!month.values.has(mo + 1)) {
-          candidate = new Date(Date.UTC(y, mo + 1, 1, 0, 0));
-          continue;
-        }
-
-        const domMatch = dom.isLast ? (d === lastDayOfMonth(y, mo)) : dom.values.has(d);
-        const dowMatch = dow.values.has(wd);
-        const dayMatches = (dom.restricted && dow.restricted) ? (domMatch || dowMatch)
-                          : dom.restricted ? domMatch
-                          : dow.restricted ? dowMatch
-                          : true;
-
-        if (!dayMatches) {
-          candidate = new Date(Date.UTC(y, mo, d + 1, 0, 0));
-          continue;
-        }
-        if (!hour.values.has(h)) {
-          candidate = new Date(Date.UTC(y, mo, d, h + 1, 0));
-          continue;
-        }
-        if (!minute.values.has(mi)) {
-          candidate = new Date(candidate.getTime() + 60000);
-          continue;
-        }
-
-        results.push(new Date(candidate));
-        candidate = new Date(candidate.getTime() + 60000);
-      }
-      return results;
-    }
+    let current = null;       // the last valid parse
+    let selectedDay = null;   // the calendar day whose hours are shown
 
     // A cron schedule is wall-clock time in the zone the daemon runs in. The
-    // engine above works in UTC fields, so to schedule in another zone we feed
-    // it "now" as wall-clock in that zone, treat its results as wall-clock,
-    // and convert each back to an instant using the zone's offset at that
-    // moment (looked up through Intl, which knows the DST rules).
+    // engine works in UTC fields, so to schedule in another zone we feed it
+    // "now" as wall-clock in that zone, treat its results as wall-clock, and
+    // convert each back to an instant using the zone's offset at that moment.
     const tzSelect = document.getElementById('tzSelect');
     const localZone = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
     (function populateZones() {
@@ -909,115 +992,167 @@
       guess = wallMs - zoneOffset(guess, tz);
       return guess;
     }
+    const pad = n => String(n).padStart(2, '0');
+    const hasSeconds = () => current && current.d.fields[0] === 'sec';
+    function clock(wall) { return `${pad(wall.getUTCHours())}:${pad(wall.getUTCMinutes())}` + (hasSeconds() ? `:${pad(wall.getUTCSeconds())}` : ''); }
     function formatRunTime(wall, tz) {
       const wd = WEEKDAY_NAMES[wall.getUTCDay()];
       const mo = MONTH_NAMES[wall.getUTCMonth()];
-      const hh = String(wall.getUTCHours()).padStart(2, '0');
-      const mm = String(wall.getUTCMinutes()).padStart(2, '0');
-      const local = `${wd}, ${mo} ${wall.getUTCDate()} ${wall.getUTCFullYear()} · ${hh}:${mm}`;
+      const local = `${wd}, ${mo} ${wall.getUTCDate()} ${wall.getUTCFullYear()} · ${clock(wall)}`;
       if (tz === 'UTC') return `${local} UTC`;
       const inst = new Date(wallToInstant(wall.getTime(), tz));
-      const u = `${String(inst.getUTCHours()).padStart(2, '0')}:${String(inst.getUTCMinutes()).padStart(2, '0')}`;
       const dayShift = inst.getUTCDate() !== wall.getUTCDate() ? ` ${MONTH_NAMES[inst.getUTCMonth()]} ${inst.getUTCDate()}` : '';
-      return `${local} <span class="run-utc">= ${u}${dayShift} UTC</span>`;
+      return `${local} <span class="run-utc">= ${clock(inst)}${dayShift} UTC</span>`;
     }
+    const nowWall = () => { const tz = tzSelect.value || 'UTC'; return tz === 'UTC' ? Date.now() : zoneParts(Date.now(), tz); };
 
-    function updateNextRuns(cronStr) {
+    function updateNextRuns() {
       try {
         const tz = tzSelect.value || 'UTC';
-        const startWall = tz === 'UTC' ? undefined : zoneParts(Date.now(), tz);
-        const runs = getNextRuns(cronStr, 5, startWall);
+        const runs = LBCron.next(current, nowWall(), 5).map(ms => new Date(ms));
         if (!runs.length) {
-          nextRunsList.innerHTML = `<li class="next-runs-empty">No matches found in the next few years — this expression may be impossible (e.g. Feb 31).</li>`;
+          nextRunsList.innerHTML = `<li class="next-runs-empty">No matches found in the next 30 years — this expression may be impossible (e.g. Feb 31).</li>`;
         } else {
           nextRunsList.innerHTML = runs.map(d => `<li>${formatRunTime(d, tz)}</li>`).join('');
         }
-        nextRunsEl.style.display = 'block';
       } catch (e) {
         // never a blank area: say why the runs cannot be listed
         nextRunsList.innerHTML = `<li class="next-runs-empty">Next runs cannot be listed for this expression (${escapeText(e.message)}). The description above is still correct.</li>`;
-        nextRunsEl.style.display = 'block';
       }
+      nextRunsEl.style.display = 'block';
     }
-    function escapeText(s) { return String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); }
-    // Vixie cron's shortcuts. @reboot has no schedule: it runs at boot.
-    const CRON_MACROS = { '@yearly': '0 0 1 1 *', '@annually': '0 0 1 1 *', '@monthly': '0 0 1 * *', '@weekly': '0 0 * * 0', '@daily': '0 0 * * *', '@midnight': '0 0 * * *', '@hourly': '0 * * * *' };
 
-    // Guard against lucide's async CDN script not having loaded yet (e.g. a
-    // browser restoring <select> state and firing 'change' before it lands),
-    // so a missing icon library never gets mistaken for a cron syntax error.
+    // ---- 30-day calendar ---------------------------------------------------
+    const fmtCount = n => n >= 10000 ? Math.round(n / 1000) + 'k' : String(n);
+    function updateCalendar() {
+      const start = nowWall(), day0 = start - start % 86400000;
+      const h = LBCron.heatmap(current, day0, 30);
+      const max = Math.max(1, ...h.counts.map(c => c.hours.reduce((a, b) => a + b, 0)));
+      const lead = (new Date(day0).getUTCDay() + 6) % 7;   // Monday first
+      let html = '<span class="cal-blank"></span>'.repeat(lead);
+      h.counts.forEach(c => {
+        const n = c.hours.reduce((a, b) => a + b, 0);
+        const lvl = n ? Math.min(4, 1 + Math.floor(3 * Math.log(n) / Math.log(max + 1))) : 0;
+        const d = new Date(c.date + 'T00:00:00Z');
+        const label = `${WEEKDAY_NAMES[d.getUTCDay()]} ${d.getUTCDate()} ${MONTH_NAMES[d.getUTCMonth()]}: ${n} run${n === 1 ? '' : 's'}`;
+        html += `<button type="button" class="cal-day lvl-${lvl}${c.date === selectedDay ? ' selected' : ''}" data-date="${c.date}" data-count="${n}" aria-label="${label}" title="${label}"><span class="cal-num">${d.getUTCDate()}</span><span class="cal-count">${n ? fmtCount(n) : ''}</span></button>`;
+      });
+      calGrid.innerHTML = html;
+      calTotal.textContent = `· ${h.total.toLocaleString('en-US')} run${h.total === 1 ? '' : 's'}`;
+      // until a day is picked, preview the first day that has runs
+      if (selectedDay && !h.counts.some(c => c.date === selectedDay)) selectedDay = null;
+      const shown = selectedDay || (h.counts.find(c => c.hours.some(Boolean)) || h.counts[0]).date;
+      calGrid.querySelectorAll('.cal-day').forEach(b => b.classList.toggle('selected', b.dataset.date === selectedDay));
+      showDay(h.counts.find(c => c.date === shown), !selectedDay);
+      calPanel.style.display = 'block';
+    }
+    function showDay(c, preview) {
+      const n = c.hours.reduce((a, b) => a + b, 0), d = new Date(c.date + 'T00:00:00Z');
+      const head = (preview ? 'First day with runs (select any day to see its hours) · ' : '') + `<strong>${WEEKDAY_NAMES[d.getUTCDay()]} ${d.getUTCDate()} ${MONTH_NAMES[d.getUTCMonth()]}</strong>: ${n ? n.toLocaleString('en-US') + ' run' + (n === 1 ? '' : 's') : 'no runs'}`;
+      const strip = c.hours.map((x, i) => `<span class="cal-hour${x ? ' on' : ''}" title="${pad(i)}:00 · ${x} run${x === 1 ? '' : 's'}"></span>`).join('');
+      let times = '';
+      if (n) {
+        const first = LBCron.next(current, d.getTime() - 1, Math.min(n, 8)).map(ms => clock(new Date(ms)));
+        times = `<div class="cal-times">${first.join(', ')}${n > first.length ? ` … and ${(n - first.length).toLocaleString('en-US')} more` : ''}</div>`;
+      }
+      calDetail.innerHTML = `<div class="cal-day-head">${head}</div><div class="cal-hours" aria-hidden="true">${strip}</div><div class="cal-hour-axis" aria-hidden="true"><span>00</span><span>06</span><span>12</span><span>18</span><span>23</span></div>${times}`;
+    }
+    calGrid.addEventListener('click', e => {
+      const b = e.target.closest('.cal-day'); if (!b) return;
+      selectedDay = b.dataset.date;
+      if (current) updateCalendar();
+    });
+
+    // ---- dialect conversion -----------------------------------------------
+    let lastConverted = null;
+    function updateConvert() {
+      if (convertTo.value === dialectSel.value) convertTo.value = dialectSel.value === 'unix' ? 'quartz' : 'unix';
+      const r = LBCron.convert(cronInput.value.trim(), dialectSel.value, convertTo.value);
+      convertOut.classList.toggle('convert-error', !r.ok);
+      convertOut.textContent = r.ok ? r.expr : r.error;
+      convertNotes.innerHTML = (r.ok ? r.notes : []).map(n => `<li>${escapeText(n)}</li>`).join('');
+      lastConverted = r.ok ? r.expr : null;
+      btnConvertCopy.disabled = btnConvertUse.disabled = !r.ok;
+      convertPanel.style.display = 'block';
+    }
+    convertTo.addEventListener('change', updateConvert);
+    btnConvertCopy.addEventListener('click', () => { if (lastConverted) copyText(lastConverted, btnConvertCopy); });
+    btnConvertUse.addEventListener('click', () => {
+      if (!lastConverted) return;
+      const to = convertTo.value, expr = lastConverted;
+      dialectSel.value = to; prevDialect = to;
+      cronInput.value = expr;
+      dialectChanged(false);
+    });
+
+    function escapeText(s) { return String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); }
+
+    // Guard against the icon library not having loaded yet (e.g. a browser
+    // restoring <select> state and firing 'change' before it lands), so a
+    // missing icon library never gets mistaken for a cron syntax error.
     function safeCreateIcons() {
       try {
         if (window.lucide) lucide.createIcons();
       } catch (e) {}
     }
 
-    // Initialize cronstrue
-    // cronstrue is a translator, not a validator: it happily renders "61 * * * *"
-    // as "At 61 minutes past the hour". Check every numeric token against its
-    // field's range first so an impossible schedule is refused up front.
-    const CRON_FIELDS = [
-      { name: 'minute',       min: 0, max: 59 },
-      { name: 'hour',         min: 0, max: 23 },
-      { name: 'day-of-month', min: 1, max: 31 },
-      { name: 'month',        min: 1, max: 12, names: ['jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec'] },
-      { name: 'day-of-week',  min: 0, max: 7,  names: ['sun','mon','tue','wed','thu','fri','sat'] },
-    ];
-    function validateCronRanges(expr) {
-      const parts = expr.trim().split(/\s+/);
-      if (parts.length !== 5) return `Expected 5 fields, found ${parts.length}`;
-      for (let i = 0; i < 5; i++) {
-        const f = CRON_FIELDS[i];
-        for (const item of parts[i].toLowerCase().split(',')) {
-          const [range, step] = item.split('/');
-          if (step !== undefined && !/^\d+$/.test(step)) return `${f.name}: bad step "/${step}"`;
-          if (step !== undefined && Number(step) === 0) return `${f.name}: step cannot be 0`;
-          if (range === '*' || range === '?') continue;
-          for (let tok of range.split('-')) {
-            if (f.names && f.names.includes(tok)) tok = String(f.names.indexOf(tok) + f.min);
-            if (!/^\d+$/.test(tok)) return `${f.name}: unrecognised value "${tok}"`;
-            const n = Number(tok);
-            if (n < f.min || n > f.max) return `${f.name} value ${n} is out of range ${f.min}-${f.max}`;
-          }
-        }
+    // cronstrue only translates; LBCron has already validated the expression by
+    // the dialect's rules. Give cronstrue the shape it understands: seconds
+    // first, weekdays 1-based for Quartz and AWS, Jenkins H as its value.
+    function describe(p, raw) {
+      const d = p.d;
+      let fields;
+      if (p.macro) fields = (d.fields[0] === 'sec' ? '0 ' : '') + LBCron.MACROS[p.macro];
+      else {
+        const parts = raw.replace(/^cron\((.*)\)$/i, '$1').trim().split(/\s+/);
+        fields = d.fields.map((k, i) => {
+          const key = k.replace('?', ''), f = p.f[key];
+          if (parts[i] === undefined) return null;
+          if (f && f.hashed) return Array.from(f.values).join(',');
+          return parts[i];
+        }).filter(x => x !== null);
+        if (d.fields[0] !== 'sec') fields.unshift('0');
+        fields = fields.join(' ');
       }
-      return null;
+      const oneBased = !p.macro && d.dowBase === 1;
+      return cronstrue.toString(fields, { throwExceptionOnParseError: true, dayOfWeekStartIndexZero: !oneBased });
     }
 
     function translateCron() {
+      const d = dialectSel.value;
       let val = cronInput.value.trim();
-      const macro = val.toLowerCase();
-      if (macro === '@reboot') {
+      const p = LBCron.parse(val, d);
+      current = null;
+      if (p.reboot) {
         setValid('At boot: runs once each time the system (or the cron daemon) starts, not on a schedule.');
         nextRunsList.innerHTML = '<li class="next-runs-empty">@reboot has no schedule, so there are no next run times.</li>';
         nextRunsEl.style.display = 'block';
+        hideExtras();
         return;
       }
-      if (CRON_MACROS[macro]) val = CRON_MACROS[macro];
-      else if (macro.startsWith('@')) { setInvalid(`Unknown shortcut "${val}" (use @yearly, @annually, @monthly, @weekly, @daily, @midnight, @hourly or @reboot)`); return; }
-
-      if(val.split(' ').length < 5) {
-        setInvalid("Incomplete Expression");
-        return;
-      }
-
-      const rangeError = validateCronRanges(val);
-      if (rangeError) {
-        setInvalid(rangeError);
-        return;
-      }
+      if (!val) { setInvalid('Incomplete Expression'); return; }
+      if (!p.ok) { setInvalid(p.error); return; }
 
       let readable;
       try {
-        readable = cronstrue.toString(val, { throwExceptionOnParseError: true });
+        readable = describe(p, val);
       } catch (err) {
-        setInvalid(err.toString().replace("Error: ", ""));
+        setInvalid(String(err).replace("Error: ", ""));
         return;
       }
-
-      setValid(readable);
-      syncDropdowns(val);
-      updateNextRuns(val);
+      current = p;
+      setValid(escapeText(readable));
+      dialectWarn.innerHTML = p.warnings.map(w => `<li>${escapeText(w)}</li>`).join('');
+      dialectWarn.hidden = !p.warnings.length;
+      if (FIVE.includes(d) && !p.macro) syncDropdowns(val);
+      updateNextRuns();
+      updateCalendar();
+      updateConvert();
+    }
+    function hideExtras() {
+      dialectWarn.hidden = true;
+      calPanel.style.display = 'none';
+      convertPanel.style.display = 'none';
     }
 
     function setValid(text) {
@@ -1028,15 +1163,16 @@
 
     function setInvalid(text) {
       terminalPane.classList.add("error");
-      cronTranslation.innerHTML = `<i data-lucide="alert-triangle"></i> Syntax Error: ${text}`;
+      cronTranslation.innerHTML = `<i data-lucide="alert-triangle"></i> Syntax Error: ${escapeText(text)}`;
       nextRunsEl.style.display = 'none';
+      hideExtras();
       safeCreateIcons();
     }
 
     // Sync from Terminal -> Dropdowns
     function syncDropdowns(cronStr) {
-      const parts = cronStr.split(' ');
-      if(parts.length >= 5) {
+      const parts = cronStr.split(/\s+/);
+      if (parts.length === 5) {
         setSelectValue(selects.min, parts[0]);
         setSelectValue(selects.hour, parts[1]);
         setSelectValue(selects.day, parts[2]);
@@ -1046,74 +1182,111 @@
     }
 
     function setSelectValue(selectEl, val) {
-      // Check if value exists in options
-      let exists = false;
-      for (let i = 0; i < selectEl.options.length; i++) {
-        if (selectEl.options[i].value === val) {
-          exists = true;
-          break;
-        }
-      }
+      const exists = Array.from(selectEl.options).some(o => o.value === val);
       selectEl.value = exists ? val : "custom";
     }
 
     // Sync from Dropdowns -> Terminal
     function buildCronFromDropdowns() {
       // If a dropdown is on "custom", we preserve the existing value from the input for that segment
-      const currentParts = cronInput.value.trim().split(' ');
-      
-      const getVal = (sel, index) => {
-        return sel.value === 'custom' ? (currentParts[index] || '*') : sel.value;
-      };
-
-      const newCron = [
+      const currentParts = cronInput.value.trim().split(/\s+/);
+      const getVal = (sel, index) => sel.value === 'custom' ? (currentParts[index] || '*') : sel.value;
+      cronInput.value = [
         getVal(selects.min, 0),
         getVal(selects.hour, 1),
         getVal(selects.day, 2),
         getVal(selects.month, 3),
         getVal(selects.week, 4)
       ].join(' ');
-
-      cronInput.value = newCron;
       translateCron();
     }
+
+    // ---- dialect switching ------------------------------------------------
+    let prevDialect = 'unix';
+    function showDialectInfo() {
+      const D = LBCron.DIALECTS[dialectSel.value];
+      dialectFields.textContent = D.fields.map(k => LABEL[k.replace('?', '')] + (k.slice(-1) === '?' ? ' (optional)' : '')).join(' · ');
+      builderMap.hidden = !FIVE.includes(dialectSel.value);
+    }
+    // Switching dialect converts the expression when it can; when it cannot,
+    // the text stays and the error says what the new dialect lacks.
+    function dialectChanged(convert) {
+      const to = dialectSel.value;
+      if (convert !== false && prevDialect !== to) {
+        const r = LBCron.convert(cronInput.value.trim(), prevDialect, to);
+        if (r.ok) cronInput.value = r.expr;
+      }
+      prevDialect = to;
+      if (UTC_ONLY.includes(to)) tzSelect.value = 'UTC';
+      try { localStorage.setItem('layerbit-cron-dialect', to); } catch (e) {}
+      showDialectInfo();
+      translateCron();
+    }
+    dialectSel.addEventListener('change', () => dialectChanged(true));
+
+    // ---- English -> expression ---------------------------------------------
+    englishForm.addEventListener('submit', e => {
+      e.preventDefault();
+      const text = englishInput.value.trim();
+      englishMsg.hidden = false;
+      if (!text) { englishMsg.className = 'english-msg bad'; englishMsg.textContent = 'Type a schedule first, for example "weekdays at 9:30" or "every 15 minutes".'; englishInput.focus(); return; }
+      const r = LBCron.fromEnglish(text);
+      if (!r.ok) { englishMsg.className = 'english-msg bad'; englishMsg.textContent = r.error; return; }
+      let expr = r.expr;
+      if (dialectSel.value !== 'unix') {
+        const c = LBCron.convert(expr, 'unix', dialectSel.value);
+        if (!c.ok) { englishMsg.className = 'english-msg bad'; englishMsg.textContent = c.error; return; }
+        expr = c.expr;
+      }
+      cronInput.value = expr;
+      englishMsg.className = 'english-msg good';
+      englishMsg.textContent = `"${text}" → ${expr}. Check the description and the runs below.`;
+      translateCron();
+    });
 
     // Event Listeners
     cronInput.addEventListener('input', translateCron);
     tzSelect.addEventListener('change', () => {
       try { localStorage.setItem('layerbit-cron-tz', tzSelect.value); } catch (e) {}
-      if (!terminalPane.classList.contains('error') && cronInput.value.trim()) updateNextRuns(cronInput.value.trim());
+      if (current) { updateNextRuns(); updateCalendar(); }
     });
 
     Object.values(selects).forEach(sel => {
       sel.addEventListener('change', buildCronFromDropdowns);
     });
 
-    // FAQ Accordion Logic
-    
-    // Presets Logic
+    // Presets are written in Unix syntax and converted to the current dialect.
     function injectPreset(cronStr) {
-      cronInput.value = cronStr;
+      const d = dialectSel.value;
+      const r = d === 'unix' ? { ok: true, expr: cronStr } : LBCron.convert(cronStr, 'unix', d);
+      cronInput.value = r.ok ? r.expr : cronStr;
       translateCron();
-      // Scroll to terminal smoothly
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
-    // Copy Logic
-    function copyCron() {
-      const text = cronInput.value;
+    function copyText(text, btn) {
       navigator.clipboard.writeText(text).then(() => {
-        const originalText = btnCopy.innerHTML;
-        btnCopy.innerHTML = '<i data-lucide="check"></i> Copied!';
+        const originalText = btn.innerHTML;
+        btn.innerHTML = '<i data-lucide="check"></i> Copied!';
         safeCreateIcons();
         setTimeout(() => {
-          btnCopy.innerHTML = originalText;
+          btn.innerHTML = originalText;
           safeCreateIcons();
         }, 2000);
       });
     }
+    function copyCron() { copyText(cronInput.value, btnCopy); }
 
-    // Initial Translation on Load
+    // Initial state: the remembered dialect, then the first translation.
+    try {
+      const saved = localStorage.getItem('layerbit-cron-dialect');
+      if (saved && LBCron.DIALECTS[saved] && saved !== 'unix') {
+        const r = LBCron.convert(cronInput.value.trim(), 'unix', saved);
+        dialectSel.value = saved; prevDialect = saved;
+        if (r.ok) cronInput.value = r.expr;
+      }
+    } catch (e) {}
+    showDialectInfo();
     translateCron();
 
   </script>

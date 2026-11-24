@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="Convert HEX, RGB, HSL, HWB, LAB, LCH, OKLCH and CMYK colors, check WCAG and APCA contrast, fix failing colors, build palettes and simulate color blindness." />
+  <meta name="description" content="Convert HEX, RGB, HSL and OKLCH, check WCAG and APCA contrast, generate palettes, pull colours from images, build gradients, export .ase and Procreate." />
   <title>Color Converter: HEX to RGB, HSL & Contrast Checker | Layerbit</title>
   <meta name="google-adsense-account" content="ca-pub-6072772587431629" />
   <link rel="preload" href="../fonts/space-grotesk-latin.woff2" as="font" type="font/woff2" crossorigin />
@@ -26,7 +26,7 @@
   <meta property="og:url" content="https://layerbit.co.in/tools/color-converter.html" />
   <meta property="og:site_name" content="Layerbit" />
   <meta property="og:title" content="Color Converter: HEX to RGB, HSL & Contrast Checker | Layerbit" />
-  <meta property="og:description" content="Convert HEX, RGB, HSL, HWB, LAB, LCH, OKLCH and CMYK colors, check WCAG and APCA contrast, fix failing colors, build palettes and simulate color blindness." />
+  <meta property="og:description" content="Convert HEX, RGB, HSL and OKLCH, check WCAG and APCA contrast, generate palettes, pull colours from images, build gradients, export .ase and Procreate." />
   <meta property="og:image" content="https://layerbit.co.in/images/og/tools-color-converter.jpg" />
   <meta property="og:image:type" content="image/jpeg" />
   <meta property="og:image:width" content="1200" />
@@ -35,7 +35,7 @@
   <meta property="og:locale" content="en" />
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="Color Converter: HEX to RGB, HSL & Contrast Checker | Layerbit" />
-  <meta name="twitter:description" content="Convert HEX, RGB, HSL, HWB, LAB, LCH, OKLCH and CMYK colors, check WCAG and APCA contrast, fix failing colors, build palettes and simulate color blindness." />
+  <meta name="twitter:description" content="Convert HEX, RGB, HSL and OKLCH, check WCAG and APCA contrast, generate palettes, pull colours from images, build gradients, export .ase and Procreate." />
   <meta name="twitter:image" content="https://layerbit.co.in/images/og/tools-color-converter.jpg" />
   <meta name="twitter:image:alt" content="Color Converter: HEX to RGB, HSL & Contrast Checker" />
   <meta name="theme-color" content="#0a0c10" />
@@ -48,7 +48,7 @@
       "@id": "https://layerbit.co.in/tools/color-converter.html#app",
       "name": "Color Converter \u0026 WCAG Contrast Checker",
       "url": "https://layerbit.co.in/tools/color-converter.html",
-      "description": "Convert HEX, RGB, HSL, HWB, LAB, LCH, OKLCH and CMYK colors, check WCAG and APCA contrast, fix failing colors, build palettes and simulate color blindness.",
+      "description": "Convert HEX, RGB, HSL and OKLCH, check WCAG and APCA contrast, generate palettes, pull colours from images, build gradients, export .ase and Procreate.",
       "applicationCategory": "DeveloperApplication",
       "operatingSystem": "Any (runs in the browser)",
       "browserRequirements": "Requires JavaScript",
@@ -62,17 +62,13 @@
         "@id": "https://layerbit.co.in/#organization"
       },
       "featureList": [
-        "Parses every CSS Color 4 notation: hex, rgb, hsl, hwb, lab, lch, oklab, oklch, cmyk and 148 named colors",
-        "CSS Color 4 gamut mapping for out-of-sRGB colors",
-        "Outputs HEX, RGB, HSL, HWB, OKLCH, OKLab, LCH, Lab, CMYK, integer, Android ARGB and SwiftUI",
-        "Nearest named color with perceptual distance",
-        "WCAG 2.2 contrast ratio with AA, AAA and non-text results",
-        "APCA lightness contrast (Lc) with usage guidance",
-        "One-click contrast fix that keeps hue and chroma",
-        "11-step OKLCH tint and shade scale with CSS, Tailwind, JSON and SCSS export",
-        "Complementary, analogous, triadic, split and tetradic harmonies",
-        "Protanopia, deuteranopia, tritanopia and achromatopsia simulation",
-        "Runs entirely in the browser"
+        "Every CSS Color 4 format including OKLCH",
+        "WCAG 2.2 and APCA contrast with one-click fixes",
+        "Palette generator with spacebar, lock and shuffle",
+        "Colours from an image and a screen eyedropper",
+        "Gradient builder in OKLCH, OKLab or sRGB",
+        "Export to Adobe .ase, Procreate .swatches, PDF swatch sheet and GIMP .gpl",
+        "Color-vision deficiency simulation"
       ]
     },
     {
@@ -94,7 +90,7 @@
         {
           "@type": "ListItem",
           "position": 3,
-          "name": "Color Converter \u0026 Contrast Checker",
+          "name": "--features",
           "item": "https://layerbit.co.in/tools/color-converter.html"
         }
       ]
@@ -145,10 +141,26 @@
         },
         {
           "@type": "Question",
+          "name": "Can I get a palette from a photo or screenshot?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes. Open or drop an image into the Colours from an image panel and the tool clusters its pixels into four to ten colours, ordered by how much of the image each covers. Click the image to pick one exact pixel, or use the Eyedropper button (Chrome and Edge) to pick a colour from anywhere on your screen. The image is decoded in the page and never uploaded. Use as palette sends the result to the generator, where you can lock, regenerate and export it."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How do I get a palette into Illustrator, Photoshop or Procreate?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Choose Adobe .ase and Download, then in Illustrator open the Swatches panel menu and choose Open Swatch Library, Other Library; Photoshop and InDesign import .ase from their Swatches panel too. For Procreate, download the .swatches file and open it on the iPad (from Files, AirDrop or a share sheet) and it appears in the Palettes tab. Procreate keeps at most 30 colours per palette. The PDF swatch sheet is for sharing with a client or a printer and lists each colour's HEX, RGB, CMYK and OKLCH values."
+          }
+        },
+        {
+          "@type": "Question",
           "name": "Is anything I enter sent to a server?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "No. Parsing, conversion, contrast, palettes and color-vision simulation are all computed by JavaScript in this page, using published formulas from the CSS Color 4 specification, WCAG 2.2, APCA and the Machado 2009 model. There are no network requests, which you can confirm in your browser's developer tools, and the page keeps working offline once loaded."
+            "text": "No. Parsing, conversion, contrast, palettes, image extraction, gradients, swatch files and color-vision simulation are all computed by JavaScript in this page, using published formulas from the CSS Color 4 specification, WCAG 2.2, APCA and the Machado 2009 model. Images you open are read in the page and never uploaded, and saved palettes stay in this browser. There are no network requests, which you can confirm in your browser's developer tools, and the page keeps working offline once loaded."
           }
         }
       ]
@@ -159,7 +171,7 @@
 
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6072772587431629" crossorigin="anonymous"></script>
 
-  <script src="../js/vendor/lucide.min.js?v=a267465fbd" async></script>
+  <script src="../js/vendor/lucide.min.js?v=73dc5075c6" async></script>
 
   <link rel="icon" href="../favicon.ico" sizes="16x16 32x32 48x48" />
   <link rel="icon" href="../favicon-48.png" type="image/png" sizes="48x48" />
@@ -230,6 +242,49 @@
       .ratio span { font-size: 1.5em; }
     }
 
+    /* v2.0: generator, image extraction, gradients, saved palettes */
+    .gen-row { display: flex; gap: 8px; min-height: 190px; }
+    .gen-col { flex: 1 1 0; min-width: 0; border-radius: 12px; padding: 12px 8px; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; gap: 6px; box-shadow: inset 0 0 0 1px rgba(255,255,255,0.08); transition: flex 0.2s; }
+    .gen-col.locked { box-shadow: inset 0 0 0 3px currentColor; }
+    .gen-hex { background: none; border: 0; color: inherit; font-family: 'Fira Code', monospace; font-weight: 700; font-size: 0.95em; cursor: pointer; padding: 2px 4px; border-radius: 6px; }
+    .gen-hex:hover, .gen-hex:focus-visible { background: rgba(127,127,127,0.25); }
+    .gen-name { font-size: 0.72em; opacity: 0.85; text-align: center; overflow-wrap: anywhere; }
+    .gen-tools { display: flex; gap: 4px; }
+    .gen-flag { font-size: 0.72em; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+    .eye-status { font-size: 0.85em; color: var(--text-muted); margin: 0; }
+    .eye-status[hidden] { display: none; }
+    .gen-btn { background: rgba(127,127,127,0.18); border: 0; color: inherit; width: 32px; height: 32px; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; }
+    .gen-btn:hover, .gen-btn:focus-visible { background: rgba(127,127,127,0.35); }
+    .gen-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+    .gen-btn i, .gen-btn svg.lucide { width: 16px; height: 16px; }
+    .hint-bar kbd { font-family: 'Fira Code', monospace; font-size: 0.85em; border: 1px solid var(--card-border); border-radius: 4px; padding: 0 5px; }
+    .gen-actions { flex-wrap: wrap; }
+    .saved { display: flex; flex-direction: column; gap: 8px; }
+    .saved .h-label { margin-bottom: 0; }
+    .saved-row { display: flex; gap: 8px; align-items: center; }
+    .saved-load { flex: 1; display: flex; height: 32px; border-radius: 8px; overflow: hidden; border: 1px solid var(--card-border); padding: 0; cursor: pointer; background: none; }
+    .saved-load span { flex: 1; }
+    .saved-row .gen-btn { color: var(--text-muted); }
+    .img-drop { border: 2px dashed var(--card-border); border-radius: 12px; padding: 14px; text-align: center; color: var(--text-muted); font-size: 0.88em; }
+    .img-drop canvas { max-width: 100%; height: auto; border-radius: 8px; cursor: crosshair; display: block; margin: 0 auto 8px; }
+    .img-drop canvas[hidden] { display: none; }
+    .img-colors { display: grid; grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)); gap: 6px; }
+    .grad-preview { height: 120px; border-radius: 12px; box-shadow: inset 0 0 0 1px rgba(255,255,255,0.08); }
+    .grad-stops { display: flex; flex-direction: column; gap: 8px; }
+    .grad-stop { display: flex; gap: 8px; align-items: center; }
+    .grad-stop .swatch { width: 34px; height: 34px; border-radius: 8px; }
+    .grad-stop .stop-hex { width: 110px; flex: 0 0 auto; font-size: 0.9em; }
+    .grad-stop .stop-pos { flex: 1; min-width: 60px; accent-color: var(--accent-main); }
+    .stop-pct { width: 40px; text-align: right; font-family: 'Fira Code', monospace; font-size: 0.8em; color: var(--text-muted); }
+    .grad-css { white-space: pre-wrap; overflow-wrap: anywhere; font-family: 'Fira Code', monospace; font-size: 0.8em; background: rgba(0,0,0,0.3); border-radius: 8px; padding: 10px 12px; margin: 0; }
+    .field[hidden] { display: none; }
+    @media (max-width: 700px) {
+      .gen-row { flex-direction: column; min-height: 0; }
+      .gen-col { flex-direction: row; justify-content: space-between; padding: 8px 10px; min-height: 56px; }
+      .gen-name { display: none; }
+      .grad-stop .stop-hex { width: 90px; }
+    }
+
   </style>
 </head>
 <body>
@@ -257,14 +312,14 @@
     <span class="sep">/</span>
     <a href="../#tools">Developer tools</a>
     <span class="sep">/</span>
-    <span aria-current="page">Color Converter &amp; Contrast Checker</span>
+    <span aria-current="page">--features</span>
   </nav>
 
   <main id="main" class="page-main">
   <div class="hero">
     <div class="hero-badge"><i data-lucide="shield-check"></i> Runs entirely in your browser</div>
     <h1>Color Converter &amp; WCAG Contrast Checker</h1>
-    <p>Paste a color in any CSS notation, such as HEX, RGB or HSL, and get every other format, check text contrast against WCAG 2.2 and APCA with a one-click fix for failing pairs, build a tint and shade scale, and see how the pair looks to people with color-vision deficiencies.</p>
+    <p>Paste a color in any CSS notation, such as HEX, RGB or HSL, and get every other format, check text contrast against WCAG 2.2 and APCA with a one-click fix for failing pairs, generate palettes with the spacebar, pull colours from an image, build OKLCH gradients, and export swatches to Adobe .ase, Procreate or a PDF sheet.</p>
   </div>
 
   <div class="ide-container">
@@ -336,7 +391,7 @@
             <option value="json">JSON</option>
             <option value="scss">SCSS variables</option>
           </select>
-          <button class="btn" type="button" id="btnCopyScale"><i data-lucide="copy"></i> Copy scale</button>
+          <button class="btn" type="button" id="btnCopyScale"><i data-lucide="copy"></i> <span id="scaleLabel">Copy scale as CSS</span></button>
         </div>
       </div>
       <div class="pane-body">
@@ -347,6 +402,96 @@
           <div class="cvd" id="cvd"></div>
         </div>
         <div class="hint-bar inline">Click any swatch to copy its hex value. Scales and harmonies are computed in OKLCH, so steps look evenly spaced and hues stay true.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="ide-container single">
+    <div class="pane" id="genPane">
+      <div class="pane-header">
+        <div class="pane-title"><i data-lucide="sparkles"></i> Palette generator</div>
+        <div class="btn-group">
+          <select id="genMode" class="mini-select" aria-label="Palette style">
+            <option value="auto">Any harmony</option>
+            <option value="analogous">Analogous</option>
+            <option value="monochrome">Monochrome</option>
+            <option value="complementary">Complementary</option>
+            <option value="triadic">Triadic</option>
+            <option value="split">Split complementary</option>
+            <option value="pastel">Pastel</option>
+            <option value="vivid">Vivid</option>
+            <option value="earth">Earth tones</option>
+          </select>
+          <select id="genCount" class="mini-select" aria-label="Number of colours">
+            <option value="3">3 colours</option><option value="4">4 colours</option><option value="5" selected>5 colours</option><option value="6">6 colours</option><option value="7">7 colours</option><option value="8">8 colours</option><option value="10">10 colours</option>
+          </select>
+          <button class="btn primary" type="button" id="btnGenerate" title="Generate (spacebar)"><i data-lucide="refresh-cw"></i> Generate</button>
+          <button class="btn" type="button" id="btnShuffle" title="Reorder the unlocked colours"><i data-lucide="shuffle"></i> Shuffle</button>
+        </div>
+      </div>
+      <div class="pane-body">
+        <div class="gen-row" id="genRow"></div>
+        <div class="hint-bar inline">Press the <kbd>spacebar</kbd> to generate a new palette. Lock the colours you want to keep and they stay in place; shuffle reorders the rest. A locked colour also steers the hues of the new ones.</div>
+        <div class="btn-group gen-actions">
+          <select id="paletteFmt" class="mini-select" aria-label="Palette file format">
+            <option value="ase">Adobe .ase</option>
+            <option value="procreate">Procreate .swatches</option>
+            <option value="pdf">PDF swatch sheet</option>
+            <option value="gpl">GIMP / Inkscape .gpl</option>
+            <option value="css">CSS variables</option>
+            <option value="json">JSON</option>
+          </select>
+          <button class="btn" type="button" id="btnExportPalette"><i data-lucide="download"></i> <span id="exportLabel">Download .ase</span></button>
+          <button class="btn" type="button" id="btnCopyPalette"><i data-lucide="copy"></i> Copy hex list</button>
+          <button class="btn" type="button" id="btnSavePalette" title="Keep this palette in this browser"><i data-lucide="bookmark-plus"></i> Save on this device</button>
+        </div>
+        <div class="saved" id="savedPalettes"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="ide-container">
+    <div class="pane" id="imgPane">
+      <div class="pane-header">
+        <div class="pane-title"><i data-lucide="image"></i> Colours from an image</div>
+        <div class="btn-group">
+          <label class="btn" for="imgFile"><i data-lucide="upload"></i> Open image</label>
+          <input type="file" id="imgFile" accept="image/*" hidden>
+          <select id="imgCount" class="mini-select" aria-label="Colours to extract" disabled>
+            <option value="4">4 colours</option><option value="5">5 colours</option><option value="6" selected>6 colours</option><option value="8">8 colours</option><option value="10">10 colours</option>
+          </select>
+          <button class="btn" type="button" id="btnEyedropper" title="Pick a colour from anywhere on the screen"><i data-lucide="pipette"></i> Eyedropper</button>
+        </div>
+      </div>
+      <div class="pane-body">
+        <div class="img-drop" id="imgDrop">
+          <canvas id="imgCanvas" hidden></canvas>
+          <p id="imgHint">Open or drop an image (a screenshot, a photo, a logo). It never leaves this page. Click the image to pick a single pixel.</p>
+        </div>
+        <p class="eye-status" id="eyeStatus" role="status" hidden></p>
+        <div class="img-colors" id="imgColors"></div>
+        <div class="btn-group"><button class="btn" type="button" id="btnImgToGen" disabled><i data-lucide="arrow-right"></i> Use as palette</button></div>
+      </div>
+    </div>
+
+    <div class="pane" id="gradPane">
+      <div class="pane-header">
+        <div class="pane-title"><i data-lucide="blend"></i> Gradient builder</div>
+        <div class="btn-group">
+          <select id="gradType" class="mini-select" aria-label="Gradient type"><option value="linear">Linear</option><option value="radial">Radial</option><option value="conic">Conic</option></select>
+          <select id="gradSpace" class="mini-select" aria-label="Interpolation colour space"><option value="oklch">OKLCH</option><option value="oklab">OKLab</option><option value="srgb">sRGB</option></select>
+        </div>
+      </div>
+      <div class="pane-body">
+        <div class="grad-preview" id="gradPreview"></div>
+        <div class="field" id="gradAngleField"><label for="gradAngle"><i data-lucide="rotate-cw"></i> Angle <strong id="gradAngleOut">90°</strong></label><input type="range" id="gradAngle" min="0" max="360" value="90"></div>
+        <div class="grad-stops" id="gradStops"></div>
+        <div class="btn-group">
+          <button class="btn" type="button" id="btnAddStop"><i data-lucide="plus"></i> Add stop</button>
+          <button class="btn" type="button" id="btnGradFromPal"><i data-lucide="swatch-book"></i> From the generator</button>
+          <button class="btn" type="button" id="btnCopyGrad"><i data-lucide="copy"></i> Copy CSS</button>
+        </div>
+        <pre class="grad-css" id="gradCss"></pre>
       </div>
     </div>
   </div>
@@ -377,6 +522,10 @@
       <h2><i data-lucide="wand-2"></i> How the contrast fix works</h2>
       <p>The fix buttons keep the text color's hue and chroma and move only its OKLCH lightness, searching for the value closest to the original that reaches the target ratio against the current background. The result stays recognizably the same color, just darker or lighter, instead of being replaced by black or white. If no lightness can reach the target, for example a saturated mid-tone background that sits too close to the middle of the range, the tool falls back to black or white, whichever contrasts more. The tint and shade scale below uses the same space, so the 600 or 700 step of your brand color is often already a compliant text color on white.</p>
 
+      <h2><i data-lucide="sparkles"></i> Generating, extracting and exporting palettes</h2>
+      <p>The generator picks a harmony (analogous, monochrome, complementary, triadic or split complementary, or a pastel, vivid or earth-tone mood) and spaces the colours out in OKLCH lightness, so a five-colour palette runs from a dark anchor to a light background rather than five mid-tones. Lock a colour and it stays put while the others regenerate around its hue. Image extraction runs k-means clustering in OKLab on up to 12,000 sampled pixels, ignoring transparent ones, and reports what share of the image each colour covers, so the dominant colour comes first. The gradient builder interpolates in OKLCH by default, which keeps blue-to-red gradients vivid through the middle instead of passing through grey, and also writes an sRGB fallback sampled from the same curve for browsers that predate <code>in oklch</code>.</p>
+      <p>Palettes download as Adobe Swatch Exchange (.ase, for Illustrator, Photoshop, InDesign and Affinity), Procreate .swatches, a printable PDF swatch sheet with HEX, RGB, CMYK and OKLCH for each colour, a GIMP/Inkscape .gpl file, CSS variables or JSON. Saved palettes stay in this browser's local storage and only when you press Save; nothing is uploaded.</p>
+
       <h2><i data-lucide="eye"></i> Designing for color-vision deficiencies</h2>
       <p>About 1 in 12 men and 1 in 200 women have a color-vision deficiency, most often deuteranomaly or protanomaly, which reduce the ability to tell red from green. The simulations use the Machado, Oliveira and Fernandes (2009) model at full severity for protanopia, deuteranopia and tritanopia, plus full achromatopsia, and recompute the contrast ratio for each. Contrast based on luminance survives most deficiencies, which is exactly why WCAG measures luminance; the real risk is relying on hue alone. Never use color as the only way to convey meaning: pair a red error state with an icon and text, and give chart series different shapes or line styles as well as colors.</p>
     </div>
@@ -405,8 +554,16 @@
           <div class="faq-answer"><p>APCA predicts readability more accurately, especially for dark themes and mid-tone colors, and accounts for whether text is lighter or darker than its background. But WCAG 2.2's ratio is the standard referenced by accessibility laws today, so a design must still pass it. The practical approach is to meet the WCAG 2 thresholds for compliance and use APCA to catch pairs that technically pass but are uncomfortable to read.</p></div>
         </div>
         <div class="faq-item">
+          <button class="faq-question">Can I get a palette from a photo or screenshot? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>Yes. Open or drop an image into the Colours from an image panel and the tool clusters its pixels into four to ten colours, ordered by how much of the image each covers. Click the image to pick one exact pixel, or use the Eyedropper button (Chrome and Edge) to pick a colour from anywhere on your screen. The image is decoded in the page and never uploaded. Use as palette sends the result to the generator, where you can lock, regenerate and export it.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">How do I get a palette into Illustrator, Photoshop or Procreate? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>Choose Adobe .ase and Download, then in Illustrator open the Swatches panel menu and choose Open Swatch Library, Other Library; Photoshop and InDesign import .ase from their Swatches panel too. For Procreate, download the .swatches file and open it on the iPad (from Files, AirDrop or a share sheet) and it appears in the Palettes tab. Procreate keeps at most 30 colours per palette. The PDF swatch sheet is for sharing with a client or a printer and lists each colour's HEX, RGB, CMYK and OKLCH values.</p></div>
+        </div>
+        <div class="faq-item">
           <button class="faq-question">Is anything I enter sent to a server? <i data-lucide="chevron-down"></i></button>
-          <div class="faq-answer"><p>No. Parsing, conversion, contrast, palettes and color-vision simulation are all computed by JavaScript in this page, using published formulas from the CSS Color 4 specification, WCAG 2.2, APCA and the Machado 2009 model. There are no network requests, which you can confirm in your browser's developer tools, and the page keeps working offline once loaded.</p></div>
+          <div class="faq-answer"><p>No. Parsing, conversion, contrast, palettes, image extraction, gradients, swatch files and color-vision simulation are all computed by JavaScript in this page, using published formulas from the CSS Color 4 specification, WCAG 2.2, APCA and the Machado 2009 model. Images you open are read in the page and never uploaded, and saved palettes stay in this browser. There are no network requests, which you can confirm in your browser's developer tools, and the page keeps working offline once loaded.</p></div>
         </div>
       </div>
     </div>
@@ -437,6 +594,7 @@
     <div class="info-panel">
       <h2><i data-lucide="git-commit"></i> Changelog</h2>
       <ul class="changelog-list">
+        <li><span class="changelog-tag">v2.0.0</span> Palette generator: spacebar to generate, lock, shuffle, nine harmony and mood styles, 3 to 10 colours. Colours from an image (k-means in OKLab, with each colour's share), click-to-pick on the image and a screen eyedropper. Gradient builder (linear, radial, conic) interpolated in OKLCH, OKLab or sRGB, with an sRGB fallback. Palettes saved on this device when you press Save. Downloads as Adobe .ase, Procreate .swatches, a PDF swatch sheet, GIMP .gpl, CSS or JSON.</li>
         <li><span class="changelog-tag">v1.0.0</span> Initial release: CSS Color 4 parsing (hex, rgb, hsl, hwb, lab, lch, oklab, oklch, cmyk, 148 named colors), gamut mapping, eleven output formats plus Android and SwiftUI, nearest named color, WCAG 2.2 and APCA contrast with OKLCH lightness fixes, 11-step scale with CSS/Tailwind/JSON/SCSS export, harmonies, and color-vision simulation.</li>
       </ul>
     </div>
@@ -550,6 +708,8 @@
 
   <script src="../js/shared.js?v=e2441a1728"></script>
   <script src="../js/engines/color.js?v=b352023be0"></script>
+  <script src="../js/engines/zip.js?v=1c95003bb0"></script>
+  <script src="../js/engines/palette.js?v=56871c77e0"></script>
   <script>
     const $ = id => document.getElementById(id);
     const C = window.LBColor;
@@ -644,18 +804,209 @@
       if (fmt === 'json') return JSON.stringify({ [base]: Object.fromEntries(scale.map(s => [s.step, hex(s)])) }, null, 2);
       return `// tailwind.config.js\nmodule.exports = {\n  theme: { extend: { colors: {\n    ${base}: {\n` + scale.map(s => `      ${s.step}: '${hex(s)}',`).join('\n') + '\n    },\n  } } },\n};';
     }
+    $('exportFmt').addEventListener('change', () => { $('scaleLabel').textContent = 'Copy scale as ' + $('exportFmt').selectedOptions[0].text.replace(/ variables| config/, ''); });
     $('btnCopyScale').addEventListener('click', () => Layerbit.copy(exportScale()).then(() => Layerbit.toast('Scale copied as ' + $('exportFmt').selectedOptions[0].text)));
 
+
+    // ---- palette generator
+    const P = window.LBPalette;
+    let gen = [], locks = [];
+    const textOn = c => C.wcag({ r: 0, g: 0, b: 0, a: 1 }, c).ratio >= 4.5 ? '#000' : '#fff';
+    function renderGen() {
+      $('genRow').innerHTML = gen.map((c, i) => {
+        const h = C.toHex(c, false), name = C.nearestName(c).name;
+        return `<div class="gen-col${locks[i] ? ' locked' : ''}" style="background:${h};color:${textOn(c)}" data-i="${i}">
+          <button type="button" class="gen-hex" data-copy="${h}" title="Copy ${h}">${h.toUpperCase()}</button>
+          ${locks[i] ? '<span class="gen-flag">Locked</span>' : ''}<span class="gen-name">${esc(name)}</span>
+          <div class="gen-tools">
+            <button type="button" class="gen-btn gen-lock" data-i="${i}" aria-pressed="${!!locks[i]}" aria-label="${locks[i] ? 'Unlock' : 'Lock'} ${h}" title="${locks[i] ? 'Unlock' : 'Lock'}"><i data-lucide="${locks[i] ? 'lock' : 'lock-open'}"></i></button>
+            <button type="button" class="gen-btn gen-use" data-i="${i}" aria-label="Edit ${h} above" title="Use as the main colour"><i data-lucide="pencil"></i></button>
+          </div></div>`;
+      }).join('');
+      icons();
+      renderGradStops(false);
+    }
+    function generate() {
+      const n = +$('genCount').value;
+      const slots = Array.from({ length: n }, (_, i) => locks[i] && gen[i] ? gen[i] : null);
+      gen = P.generate(slots, { count: n, mode: $('genMode').value });
+      locks = locks.slice(0, n);
+      renderGen();
+    }
+    $('btnGenerate').addEventListener('click', generate);
+    $('genCount').addEventListener('change', generate);
+    $('genMode').addEventListener('change', generate);
+    $('btnShuffle').addEventListener('click', () => {
+      const free = gen.map((c, i) => locks[i] ? -1 : i).filter(i => i >= 0), vals = free.map(i => gen[i]);
+      if (vals.length < 2) { Layerbit.toast('Unlock at least two colours to shuffle'); return; }
+      const before = vals.map(c => C.toHex(c, false)).join();
+      for (let k = 0; k < 8 && vals.map(c => C.toHex(c, false)).join() === before; k++)
+        for (let i = vals.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [vals[i], vals[j]] = [vals[j], vals[i]]; }
+      free.forEach((i, k) => { gen[i] = vals[k]; });
+      renderGen();
+    });
+    $('genRow').addEventListener('click', e => {
+      const lk = e.target.closest('.gen-lock'), use = e.target.closest('.gen-use');
+      if (lk) { const i = +lk.dataset.i; locks[i] = !locks[i]; renderGen(); }
+      if (use) { $('colorInput').value = C.formats(gen[+use.dataset.i]).hex; readMain($('colorInput').value); $('colorInput').scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+    });
+    document.addEventListener('keydown', e => {
+      if (e.code !== 'Space' || e.repeat || e.ctrlKey || e.metaKey || e.altKey) return;
+      if (e.target.closest && e.target.closest('input, textarea, select, button, a, [contenteditable], [role=dialog]')) return;
+      e.preventDefault(); generate();
+    });
+    const entries = () => gen.map((c, i) => ({ name: C.toHex(c, false).toUpperCase(), color: c }));
+    function saveBytes(data, name, type) {
+      const url = URL.createObjectURL(new Blob([data], { type }));
+      const a = document.createElement('a'); a.href = url; a.download = name; document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+      Layerbit.toast('Downloaded ' + name);
+    }
+    function pdfBytes(str) { const u = new Uint8Array(str.length); for (let i = 0; i < str.length; i++) u[i] = str.charCodeAt(i) & 255; return u; }
+    $('btnExportPalette').addEventListener('click', () => {
+      const f = $('paletteFmt').value, e = entries(), title = 'Layerbit palette';
+      if (f === 'ase') saveBytes(P.ase(e, title), 'palette.ase', 'application/octet-stream');
+      else if (f === 'procreate') saveBytes(P.procreate(e, title), 'palette.swatches', 'application/zip');
+      else if (f === 'pdf') saveBytes(pdfBytes(P.pdf(e, title)), 'palette.pdf', 'application/pdf');
+      else if (f === 'gpl') saveBytes(P.gpl(e, title), 'palette.gpl', 'text/plain');
+      else if (f === 'css') saveBytes(':root {\n' + e.map((x, i) => `  --palette-${i + 1}: ${C.toHex(x.color, false)};`).join('\n') + '\n}\n', 'palette.css', 'text/css');
+      else saveBytes(JSON.stringify(e.map(x => C.toHex(x.color, false)), null, 2) + '\n', 'palette.json', 'application/json');
+    });
+    const EXT = { ase: '.ase', procreate: '.swatches', pdf: 'PDF', gpl: '.gpl', css: 'CSS', json: 'JSON' };
+    $('paletteFmt').addEventListener('change', () => { $('exportLabel').textContent = 'Download ' + EXT[$('paletteFmt').value]; });
+    $('btnCopyPalette').addEventListener('click', () => { const t = gen.map(c => C.toHex(c, false)).join(', '); Layerbit.copy(t).then(() => Layerbit.toast('Copied ' + t)); });
+
+    // saved palettes: written only when Save is pressed, kept in this browser
+    const SAVED = 'layerbit-color-palettes';
+    const readSaved = () => { try { return JSON.parse(localStorage.getItem(SAVED) || '[]'); } catch (e) { return []; } };
+    function renderSaved() {
+      const list = readSaved();
+      $('savedPalettes').innerHTML = list.length ? '<div class="h-label">Saved on this device</div>' + list.map((p, i) => `<div class="saved-row" data-i="${i}">
+        <button type="button" class="saved-load" data-i="${i}" title="Load this palette" aria-label="Load palette ${i + 1}: ${p.colors.join(' ')}">${p.colors.map(h => `<span style="background:${esc(h)}"></span>`).join('')}</button>
+        <button type="button" class="gen-btn saved-del" data-i="${i}" aria-label="Delete saved palette ${i + 1}" title="Delete"><i data-lucide="trash-2"></i></button></div>`).join('') : '';
+      icons();
+    }
+    $('btnSavePalette').addEventListener('click', () => {
+      const list = readSaved(), colors = gen.map(c => C.toHex(c, false));
+      if (list.some(p => p.colors.join() === colors.join())) { Layerbit.toast('This palette is already saved'); return; }
+      list.unshift({ colors, at: Date.now() });
+      try { localStorage.setItem(SAVED, JSON.stringify(list.slice(0, 40))); Layerbit.toast('Saved in this browser'); } catch (e) { Layerbit.toast('This browser is not allowing storage'); }
+      renderSaved();
+    });
+    $('savedPalettes').addEventListener('click', e => {
+      const ld = e.target.closest('.saved-load'), del = e.target.closest('.saved-del'), list = readSaved();
+      if (ld) { const p = list[+ld.dataset.i]; gen = p.colors.map(h => C.parse(h)); locks = []; $('genCount').value = String(gen.length); if ($('genCount').value !== String(gen.length)) $('genCount').add(new Option(gen.length + ' colours', String(gen.length), true, true)); renderGen(); }
+      if (del) { list.splice(+del.dataset.i, 1); try { localStorage.setItem(SAVED, JSON.stringify(list)); } catch (err) {} renderSaved(); }
+    });
+
+    // ---- colours from an image
+    let imgPixels = null, extracted = [];
+    function loadImage(file) {
+      if (!file || !/^image\//.test(file.type)) { Layerbit.toast('That file is not an image'); return; }
+      const url = URL.createObjectURL(file), im = new Image();
+      im.onload = () => {
+        const cv = $('imgCanvas'), scale = Math.min(1, 480 / Math.max(im.naturalWidth, im.naturalHeight));
+        cv.width = Math.max(1, Math.round(im.naturalWidth * scale)); cv.height = Math.max(1, Math.round(im.naturalHeight * scale));
+        const ctx = cv.getContext('2d', { willReadFrequently: true }); ctx.drawImage(im, 0, 0, cv.width, cv.height);
+        imgPixels = ctx.getImageData(0, 0, cv.width, cv.height).data;
+        cv.hidden = false; $('imgCount').disabled = false; $('imgHint').textContent = `${file.name} · ${im.naturalWidth}×${im.naturalHeight}. Click the image to pick a pixel.`;
+        URL.revokeObjectURL(url); runExtract();
+      };
+      im.onerror = () => { URL.revokeObjectURL(url); Layerbit.toast('This image could not be decoded'); };
+      im.src = url;
+    }
+    function runExtract() {
+      if (!imgPixels) return;
+      extracted = P.extract(imgPixels, { count: +$('imgCount').value, rng: P.rng(1) });
+      $('imgColors').innerHTML = extracted.map(x => { const h = C.toHex(x.color, false); return `<button type="button" class="sw" data-copy="${h}" style="background:${h};color:${textOn(x.color)}" title="Copy ${h}"><span>${Math.round(x.share * 100)}%</span><code>${h}</code></button>`; }).join('');
+      $('btnImgToGen').disabled = !extracted.length;
+    }
+    $('imgFile').addEventListener('change', () => { loadImage($('imgFile').files[0]); $('imgFile').value = ''; });
+    $('imgCount').addEventListener('change', runExtract);
+    ['dragover', 'drop'].forEach(ev => $('imgDrop').addEventListener(ev, e => { e.preventDefault(); e.stopPropagation(); if (ev === 'drop') loadImage(e.dataTransfer.files[0]); }));
+    $('imgCanvas').addEventListener('click', e => {
+      const cv = $('imgCanvas'), r = cv.getBoundingClientRect();
+      const x = Math.min(cv.width - 1, Math.floor((e.clientX - r.left) * cv.width / r.width)), y = Math.min(cv.height - 1, Math.floor((e.clientY - r.top) * cv.height / r.height));
+      const o = (y * cv.width + x) * 4, h = '#' + [0, 1, 2].map(k => imgPixels[o + k].toString(16).padStart(2, '0')).join('');
+      $('colorInput').value = h; readMain(h); Layerbit.toast('Picked ' + h);
+    });
+    $('btnImgToGen').addEventListener('click', () => {
+      gen = extracted.map(x => x.color); locks = gen.map(() => false);
+      if (![...$('genCount').options].some(o => o.value === String(gen.length))) $('genCount').add(new Option(gen.length + ' colours', String(gen.length)));
+      $('genCount').value = String(gen.length); renderGen();
+      $('genPane').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+    if (!('EyeDropper' in window)) { $('btnEyedropper').disabled = true; $('btnEyedropper').title = 'This browser has no screen eyedropper (Chrome and Edge do); click an opened image instead'; }
+    $('btnEyedropper').addEventListener('click', async () => {
+      const st = $('eyeStatus'); st.hidden = false; st.textContent = 'Click anywhere on the screen to pick a colour, or press Esc to cancel.';
+      try { const r = await new EyeDropper().open(); $('colorInput').value = r.sRGBHex; readMain(r.sRGBHex); st.textContent = 'Picked ' + r.sRGBHex + ' from the screen.'; }
+      catch (e) { st.textContent = e && e.name === 'AbortError' ? 'Eyedropper closed without picking a colour.' : 'The eyedropper is not available here: ' + (e && e.message || e); }
+    });
+
+    // ---- gradient builder
+    let stops = [{ color: C.parse('#38bdf8'), pos: 0 }, { color: C.parse('#a855f7'), pos: 100 }];
+    function renderGradStops(rebuild) {
+      if (rebuild !== false || !$('gradStops').children.length || $('gradStops').children.length !== stops.length) {
+        $('gradStops').innerHTML = stops.map((st, i) => `<div class="grad-stop" data-i="${i}">
+          <label class="swatch-pick"><input type="color" class="stop-pick" data-i="${i}" value="${C.toHex(st.color, false)}" aria-label="Stop ${i + 1} colour"><span class="swatch" style="background:${C.toHex(st.color, false)}"></span></label>
+          <input type="text" class="text-input stop-hex" data-i="${i}" value="${C.toHex(st.color, false)}" spellcheck="false" autocomplete="off" aria-label="Stop ${i + 1} colour value">
+          <input type="range" class="stop-pos" data-i="${i}" min="0" max="100" value="${st.pos}" aria-label="Stop ${i + 1} position">
+          <span class="stop-pct">${st.pos}%</span>
+          <button type="button" class="gen-btn stop-del" data-i="${i}" aria-label="Remove stop ${i + 1}" title="Remove"${stops.length <= 2 ? ' disabled' : ''}><i data-lucide="x"></i></button></div>`).join('');
+        icons();
+      }
+      renderGrad();
+    }
+    function renderGrad() {
+      const type = $('gradType').value, space = $('gradSpace').value, angle = +$('gradAngle').value;
+      $('gradAngleOut').textContent = angle + '°';
+      $('gradAngleField').hidden = type === 'radial';
+      const g = P.gradientCss(stops, { type, angle, space });
+      $('gradPreview').style.background = g.fallback;
+      $('gradPreview').style.background = g.modern;   // ignored by browsers without "in <space>"
+      $('gradCss').textContent = `background: ${g.fallback};\nbackground: ${g.modern};`;
+    }
+    $('gradStops').addEventListener('input', e => {
+      const i = +e.target.dataset.i; if (isNaN(i)) return;
+      const row = e.target.closest('.grad-stop');
+      if (e.target.classList.contains('stop-pos')) { stops[i].pos = +e.target.value; row.querySelector('.stop-pct').textContent = e.target.value + '%'; }
+      else {
+        const c = C.parse(e.target.value); e.target.classList.toggle('bad', !c); if (!c) return;
+        stops[i].color = Object.assign({}, c, { a: 1 });
+        const hx = C.toHex(c, false); row.querySelector('.swatch').style.background = hx;
+        if (e.target.classList.contains('stop-pick')) row.querySelector('.stop-hex').value = hx; else row.querySelector('.stop-pick').value = hx;
+      }
+      renderGrad();
+    });
+    $('gradStops').addEventListener('click', e => { const d = e.target.closest('.stop-del'); if (d && stops.length > 2) { stops.splice(+d.dataset.i, 1); renderGradStops(); } });
+    $('btnAddStop').addEventListener('click', () => {
+      const s = stops.slice().sort((a, b) => a.pos - b.pos); let best = 0;
+      for (let i = 1; i < s.length; i++) if (s[i].pos - s[i - 1].pos > s[best + 1 > s.length - 1 ? 0 : best + 1].pos - s[best].pos) best = i - 1;
+      const pos = Math.round((s[best].pos + s[best + 1].pos) / 2);
+      stops.push({ color: P.sample(stops, pos / 100, $('gradSpace').value), pos }); renderGradStops();
+    });
+    $('btnGradFromPal').addEventListener('click', () => { stops = gen.map((c, i) => ({ color: c, pos: gen.length > 1 ? Math.round(i * 100 / (gen.length - 1)) : 0 })); renderGradStops(); });
+    ['gradType', 'gradSpace'].forEach(id => $(id).addEventListener('change', renderGrad));
+    $('gradAngle').addEventListener('input', renderGrad);
+    $('btnCopyGrad').addEventListener('click', () => Layerbit.copy($('gradCss').textContent).then(() => Layerbit.toast('Gradient CSS copied')));
+
     // ---- state
-    function getState() { return { color: $('colorInput').value, fg: $('fgInput').value, bg: $('bgInput').value, a: color.a }; }
+    function getState() { return { color: $('colorInput').value, fg: $('fgInput').value, bg: $('bgInput').value, a: color.a, pal: gen.map(c => C.toHex(c, false)), locks: locks.map(Boolean) }; }
     function setState(s) {
       if (!s) return;
       if (s.color) { $('colorInput').value = s.color; readMain(s.color); }
       if (typeof s.a === 'number' && color) { color = Object.assign({}, color, { a: s.a }); renderColor(); }
       if (s.fg) $('fgInput').value = s.fg; if (s.bg) $('bgInput').value = s.bg; readPair();
+      if (Array.isArray(s.pal) && s.pal.length) {
+        const cs = s.pal.map(h => C.parse(h)).filter(Boolean);
+        if (cs.length) { gen = cs; locks = (s.locks || []).slice(0, cs.length); if ([...$('genCount').options].some(o => o.value === String(cs.length))) $('genCount').value = String(cs.length); renderGen(); }
+      }
     }
     if (window.Layerbit) Layerbit.register({ slug: 'color-converter', getState, setState, run: () => readMain($('colorInput').value), input: t => { $('colorInput').value = t.trim(); readMain(t); } });
     renderColor(); readPair();
+    // a first palette built around the starting colour, so the panel is never empty
+    gen = P.generate([C.parse('#38bdf8'), null, null, null, null], { mode: 'analogous', rng: P.rng(20) }); locks = [];
+    renderGen(); renderSaved(); renderGradStops();
   </script>
 </body>
 </html>

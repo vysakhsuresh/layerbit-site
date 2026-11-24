@@ -7,7 +7,7 @@
       "@id": "https://layerbit.co.in/tools/regex-tester.html#app",
       "name": "Regex Tester \u0026 Debugger",
       "url": "https://layerbit.co.in/tools/regex-tester.html",
-      "description": "Test regex with live highlighting, token explanation, railroad diagram, ReDoS check, unit tests, code for 10 languages and patterns inferred from examples.",
+      "description": "Test regex on the real JavaScript, PCRE2, Python, Go and Rust engines, with a backtracking debugger, explanation, ReDoS check, unit tests and code.",
       "applicationCategory": "DeveloperApplication",
       "operatingSystem": "Any (runs in the browser)",
       "browserRequirements": "Requires JavaScript",
@@ -21,16 +21,14 @@
         "@id": "https://layerbit.co.in/#organization"
       },
       "featureList": [
-        "Live match highlighting with capture groups",
-        "Token-by-token explanation",
-        "Railroad diagram with SVG export",
-        "Catastrophic backtracking analysis and growth measurement",
+        "Real engines: JavaScript, PCRE2, Python, Go, Rust and Oniguruma",
+        "Engines compared side by side",
+        "Step-by-step backtracking debugger",
+        "Token-by-token explanation and railroad diagram",
+        "Catastrophic backtracking check with growth measurement",
         "Unit tests saved in share links",
-        "Code generation for 10 languages",
-        "Whole-file batch testing",
-        "Pattern synthesis from examples",
-        "Replacement preview",
-        "Quick reference"
+        "Code for ten languages",
+        "Patterns inferred from examples"
       ]
     },
     {
@@ -52,7 +50,7 @@
         {
           "@type": "ListItem",
           "position": 3,
-          "name": "Regex Tester \u0026 Debugger",
+          "name": "Regex Tester",
           "item": "https://layerbit.co.in/tools/regex-tester.html"
         }
       ]
@@ -66,7 +64,15 @@
           "name": "Which regex flavour does this tool use?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "The native JavaScript (ECMAScript) engine in your browser, which covers lookbehind, named groups, Unicode property escapes and the v flag in current Chrome, Firefox and Safari. The Code tab converts flags and syntax for Python, Go, Java, C#, PHP, Ruby, Rust and the shell tools, and lists any feature the target engine lacks, so a pattern that works here is carried over correctly or you learn why it cannot be."
+            "text": "You choose. JavaScript runs on your browser's own engine. PCRE2 (used by PHP's preg functions, R and nginx), Python's re module, Go's regexp, Rust's regex crate and Oniguruma run as the real engines of those languages compiled to WebAssembly, so a match or a syntax error is exactly what that language gives you, not an imitation. Python's engine is CPython itself, through Pyodide, and downloads about 13 MB the first time you pick it. Java and .NET have no engine that can run inside a web page, so for them the Code tab lists the features that differ. The Engines tab runs one pattern on every engine at once and marks where they disagree."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How does the regex debugger work?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "The Debugger tab runs the pattern on a traced backtracking matcher that follows JavaScript's rules and records every step: each token tried at each position, whether it matched, and every time the engine gives back characters from a repeat or moves to the next alternative. Step through with the arrows or drag the slider; the current token is marked in the pattern and the current position in the text. A pattern that backtracks catastrophically stops at 100,000 steps, which shows the problem far more directly than a timeout."
           }
         },
         {
@@ -90,7 +96,7 @@
           "name": "What syntax does the Replacement Preview support?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "The same replacement patterns JavaScript's native String.replace() understands: $1, $2 and so on for numbered capture groups, $\u003cname\u003e for named groups, $\u0026 for the whole match, $` and $' for the text before and after it, and $$ for a literal dollar sign. It respects whichever flags are active, so without the g flag only the first match is replaced, the same as the highlighting above it."
+            "text": "The syntax of the engine you picked, because each language writes replacements differently. JavaScript uses $1, $\u003cname\u003e, $\u0026 for the whole match and $$ for a dollar sign; PCRE2, Go and Rust use $1 or ${1} and ${name}; Python uses \\1, \\g\u003c1\u003e and \\g\u003cname\u003e. The preview is produced by that engine's own replace function and respects the g flag, so without it only the first match is replaced."
           }
         },
         {

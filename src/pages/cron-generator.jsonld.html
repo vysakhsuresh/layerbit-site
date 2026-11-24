@@ -7,7 +7,7 @@
       "@id": "https://layerbit.co.in/tools/cron-generator.html#app",
       "name": "Cron Expression Generator \u0026 Explainer",
       "url": "https://layerbit.co.in/tools/cron-generator.html",
-      "description": "Build cron expressions with dropdowns, read them in plain English, validate every field, and preview the next five run times in any time zone.",
+      "description": "Cron expressions for Unix, GitHub Actions, Kubernetes, Jenkins, Quartz, Spring, AWS and Azure: English to cron, a 30-day calendar, dialect conversion.",
       "applicationCategory": "DeveloperApplication",
       "operatingSystem": "Any (runs in the browser)",
       "browserRequirements": "Requires JavaScript",
@@ -19,7 +19,15 @@
       },
       "publisher": {
         "@id": "https://layerbit.co.in/#organization"
-      }
+      },
+      "featureList": [
+        "Eight cron dialects: Unix, GitHub Actions, Kubernetes, Jenkins H, Quartz, Spring, AWS EventBridge, Azure",
+        "Plain-English description of every expression",
+        "English text to a cron expression",
+        "Next run times in any IANA time zone",
+        "30-day run calendar with per-hour detail",
+        "Conversion between dialects, with reasons when a schedule cannot convert"
+      ]
     },
     {
       "@type": "BreadcrumbList",
@@ -40,13 +48,14 @@
         {
           "@type": "ListItem",
           "position": 3,
-          "name": "Cron Expression Generator",
+          "name": "--features",
           "item": "https://layerbit.co.in/tools/cron-generator.html"
         }
       ]
     },
     {
       "@type": "FAQPage",
+      "@id": "https://layerbit.co.in/tools/cron-generator.html#faq",
       "mainEntity": [
         {
           "@type": "Question",
@@ -54,6 +63,30 @@
           "acceptedAnswer": {
             "@type": "Answer",
             "text": "A cron expression is a string comprising five or six fields separated by white space that represents a set of times, normally as a schedule to execute a specific routine or script. It is the standard time-based job scheduler in Unix-like computer operating systems."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Can I convert a schedule from one dialect to another?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes. The Convert panel rewrites the current expression for any other dialect: seconds and year fields are added or dropped, weekday numbers are shifted for Quartz and AWS, and ? is put where Quartz and AWS need it. When a schedule cannot be expressed in the target, it says why instead of guessing: Unix cron has no L, W or #, no seconds and no year, and Quartz and AWS cannot restrict both day fields at once. Unix cron runs when either day field matches, but Spring and Azure need both to match, so those two cases are refused too. Every conversion the tool offers is checked by a test that compares a year of run times in both dialects."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Can I type the schedule in plain English?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes, for the common shapes: \"every 15 minutes\", \"weekdays at 9:30\", \"every Monday at 5pm\", \"on the 1st of every month at 6am\", \"twice a day at 9 and 21\", \"weekends at noon\" or \"at 9am in January and July\". The phrase becomes an expression in the dialect you have selected, and the description, next runs and calendar update so you can check it says what you meant. Phrases cron cannot express, such as \"last day of the month\" in Unix cron, are refused with the reason."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What does Jenkins' H mean?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "H stands for \"hash\": Jenkins picks one value in the field's range from a hash of the job's name, so many jobs written as H * * * * spread across the hour instead of all starting at minute 0. H(0-29) limits the range and H/15 runs every 15 minutes from a hashed offset. The exact value depends on the job name, which this page cannot know, so the next runs show the earliest value H can take and say so."
           }
         },
         {
@@ -69,11 +102,10 @@
           "name": "What is the difference between standard and non-standard syntax?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "Standard POSIX cron utilizes 5 fields (Minute, Hour, Day of Month, Month, Day of Week). Some advanced schedulers (like Quartz) utilize a 6th or 7th field for Seconds and Years. Layerbit currently generates universal 5-field syntax, which guarantees the highest compatibility across all major operating systems and cloud providers."
+            "text": "Unix cron, GitHub Actions, Kubernetes and Jenkins use five fields (minute, hour, day of month, month, day of week). Quartz adds seconds in front and an optional year at the end, and numbers weekdays 1 (Sunday) to 7 (Saturday). Spring and Azure add seconds but keep Sunday as 0. AWS EventBridge has six fields ending in a year and is written as cron(...). Quartz and AWS insist on ? in one of the two day fields, and Quartz, Spring and AWS accept L, W and #. Pick the dialect above and the tool validates, explains and schedules the expression by that dialect's rules."
           }
         }
-      ],
-      "@id": "https://layerbit.co.in/tools/cron-generator.html#faq"
+      ]
     }
   ]
 }

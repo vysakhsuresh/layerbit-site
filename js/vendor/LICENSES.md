@@ -17,6 +17,11 @@ offline, and sends no visitor IP to a CDN operator).
 | `bwip-js.min.js` | bwip-js (`dist/bwip-js-min.js`, Barcode Writer in Pure PostScript; loaded for Data Matrix, PDF417, Aztec and GS1-128) | 4.11.4 | MIT |
 | `date-holidays.min.js` | date-holidays (bundled as `window.LBHolidays` with esbuild; loaded when a country is picked) | 3.39.2 | ISC (code), CC BY-SA 4.0 (holiday data) |
 | `gst/hsn-sac.json` | HSN and SAC codes and descriptions from hsn-code-package (CBIC / WCO nomenclature), rebuilt by `scripts/update_gst_codes.py`; its GST rates are not included | 3.0.0 | ISC |
+| `pcre2.min.js` | pcre2-wasm (PCRE2 10.49 in WebAssembly, inline; bundled as `window.LBPcre2` with esbuild) | 10.49.3 | MIT (wrapper), BSD-3-Clause WITH PCRE2-exception (PCRE2) |
+| `wasm/regex-rust.wasm` | Rust `regex` crate 1.13.2 with regex-syntax, regex-automata, aho-corasick and memchr, built by Layerbit from `wasm/src/regex-rust.rs` (rustc 1.97, wasm32-unknown-unknown) | 1.13.2 | MIT OR Apache-2.0 (memchr: MIT OR Unlicense) |
+| `wasm/regex-go.wasm`, `go-wasm-exec.js` | Go 1.24.7 standard library `regexp`, built by Layerbit from `wasm/src/regex-go.go` (GOOS=js GOARCH=wasm); `wasm_exec.js` from the Go distribution | 1.24.7 | BSD-3-Clause |
+| `onig/onig.js`, `onig/onig.wasm` | vscode-oniguruma (Oniguruma in WebAssembly) | 2.0.1 | MIT (wrapper), BSD-2-Clause (Oniguruma) |
+| `pyodide/*` | Pyodide (CPython in WebAssembly; only the core files and standard library are copied) | 314.0.8 | MPL-2.0 (Pyodide), PSF License 2.0 (CPython) |
 | `xlsx.full.min.js` | xlsx (SheetJS CE) | 0.18.5 | Apache-2.0 |
 | `marked.umd.js` | marked (`lib/marked.umd.js`) | 18.0.14 | MIT |
 | `purify.min.js` | dompurify | 3.4.16 | MPL-2.0 OR Apache-2.0 |

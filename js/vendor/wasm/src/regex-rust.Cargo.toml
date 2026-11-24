@@ -1,0 +1,17 @@
+[package]
+name = "lb_regex_rust"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+regex = { version = "1.11", default-features = false, features = ["std", "unicode", "perf"] }
+
+[profile.release]
+opt-level = "z"
+lto = true
+codegen-units = 1
+panic = "abort"
+strip = true
