@@ -2814,7 +2814,7 @@ def _(t):
     g = t.text("decodeGrid")
     expect("v1" in g and "1998-02-04 22:13:53.151 UTC" in g and "00:c0:4f:d4:30:c8" in g, f"v1 decode: {g[:300]!r}")
     t.set("decodeInput", "not-an-id")
-    expect("not a UUID or ULID" in t.text("decodeGrid"), "garbage")
+    expect("not recognised" in t.text("decodeGrid") and "KSUID" in t.text("decodeGrid"), "garbage: " + t.text("decodeGrid"))
 
 
 @case("uuid-generator", "maximal", "10,000 v4s, all unique, under budget")
@@ -2829,6 +2829,75 @@ def _(t):
 # ----------------------------------------------------------------------------
 # timestamp-converter
 # ----------------------------------------------------------------------------
+
+@case("uuid-generator", "typical", "2.26: v1, v6, NanoID, KSUID, CUID2 and Snowflake generate valid ids that decode")
+def _(t):
+    import re as _re
+    checks = [("v1", r"^[0-9a-f]{8}-[0-9a-f]{4}-1[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"), ("v6", r"^[0-9a-f]{8}-[0-9a-f]{4}-6[0-9a-f]{3}-[89ab]"),
+              ("nanoid", r"^[A-Za-z0-9_-]{21}$"), ("ksuid", r"^[0-9A-Za-z]{27}$"), ("snowflake", r"^\d{17,19}$")]
+    t.set("countInput", "5")
+    for kind, rx in checks:
+        t.select("kindSelect", kind); t.wait(60)
+        lines = t.val("outputArea").split("\n")
+        eq(len(lines), 5, kind + " count")
+        expect(all(_re.match(rx, l) for l in lines), f"{kind}: {lines[:2]}")
+        expect(len(set(lines)) == 5, kind + " duplicates")
+    t.select("kindSelect", "v6"); t.wait(40)
+    lines = t.val("outputArea").split("\n")
+    eq(lines, sorted(lines), "v6 ids sort in creation order")
+    expect("v6" in t.text("decodeGrid") and "Timestamp" in t.text("decodeGrid"), t.text("decodeGrid")[:200])
+    t.select("kindSelect", "v1"); t.wait(40)
+    expect("random (multicast bit set)" in t.text("decodeGrid"), "v1 must not carry a real MAC address")
+    t.select("kindSelect", "cuid2")
+    t.page.wait_for_function("/^[a-z][0-9a-z]{23}(\\n[a-z][0-9a-z]{23}){4}$/.test(document.getElementById('outputArea').value)", timeout=8000)
+    t.select("kindSelect", "nanoid"); t.set("nanoSize", "8"); t.set("nanoAlphabet", "0123456789abcdef"); t.wait(40)
+    expect(all(_re.match(r"^[0-9a-f]{8}$", l) for l in t.val("outputArea").split("\n")), t.val("outputArea"))
+    t.set("nanoAlphabet", "aab"); t.wait(40)
+    expect("repeated" in t.val("outputArea"), t.val("outputArea"))
+    t.set("nanoSize", "21"); t.set("nanoAlphabet", "useandom-26T198340PX75pxJACKVERYMINDBUSHWOLF_GQZbfghjklqvwyzrict")
+    t.select("kindSelect", "v4")
+
+
+@case("uuid-generator", "typical", "2.26: Snowflake epochs and Sqids encode and decode like the reference library")
+def _(t):
+    t.set("decodeInput", "175928847299117063"); t.wait(40)
+    t.select("kindSelect", "snowflake"); t.select("sfEpoch", "discord"); t.wait(60)
+    g = t.text("decodeGrid")
+    expect("2016-04-30 11:18:25.796 UTC" in g and "Discord: worker 1, process 0" in g and "Sequence\n7" in g, g)
+    t.select("sfEpoch", "twitter"); t.wait(40)
+    expect("2012-" in t.text("decodeGrid"), "twitter epoch reading: " + t.text("decodeGrid")[:200])
+    t.select("kindSelect", "sqids"); t.wait(60)
+    eq(t.val("outputArea").split("\n"), ["86Rf07", "Jg", "OzwJD"], "default alphabet (values from the sqids library)")
+    t.set("sqidMinLen", "10"); t.wait(40)
+    eq(t.val("outputArea").split("\n")[0], "86Rf07xd4z", "min length 10 (spec example)")
+    t.set("sqidMinLen", "0")
+    t.set("sqidNumbers", "1, -2"); t.wait(40)
+    expect("whole number" in t.val("outputArea"), t.val("outputArea"))
+    t.set("sqidNumbers", "1, 2, 3"); t.wait(40)
+    t.set("decodeInput", "86Rf07"); t.wait(40)
+    expect("Sqids" in t.text("decodeGrid") and "1, 2, 3" in t.text("decodeGrid"), t.text("decodeGrid"))
+    t.set("decodeInput", "0ujtsYcgvSTl8PAuAdqWYSMnLOv"); t.wait(40)
+    expect("KSUID" in t.text("decodeGrid") and "2017-10-10 04:00:47" in t.text("decodeGrid"), t.text("decodeGrid"))
+    t.select("kindSelect", "v4")
+
+
+@case("uuid-generator", "edge", "2.26: list validation finds invalid ids, wrong kinds and duplicates hidden by case and braces")
+def _(t):
+    t.set("validateInput", "018f4a6c-9e3b-7c4d-8a2e-1f3b5c7d9e0f\n{C56A4180-65AA-42EC-A945-5FD21DEC0538}\nc56a4180-65aa-42ec-a945-5fd21dec0538\n018f4a6c-9e3b-7c4d-ca2e-1f3b5c7d9e0f\nnot-an-id\n01ARZ3NDEKTSV4RRFFQ69G5FAV")
+    t.wait(60)
+    summ = t.text("validateSummary")
+    expect("4 of 6 valid" in summ and "2 invalid" in summ and "1 duplicate" in summ, summ)
+    rows = t.call("[...document.querySelectorAll('#validateTable tbody tr')].map(r => [...r.children].map(c => c.textContent))")
+    expect("duplicate of line 2" in rows[2][3], rows[2])
+    expect("variant" in rows[3][3], rows[3])
+    t.select("validateExpect", "uuid-v7"); t.wait(40)
+    expect("1 of 6 valid" in t.text("validateSummary"), t.text("validateSummary"))
+    with t.page.expect_download() as dl:
+        t.click("#btnValidateCsv")
+    body = open(dl.value.path(), encoding="utf-8").read()
+    expect(body.startswith("line,value,kind,valid,detail,duplicate_of") and ",3\n" in body or "duplicate" in body, body[:300])
+    t.select("validateExpect", "any")
+
 @case("timestamp-converter", "minimal", "clock ticks and Now button fills the input")
 def _(t):
     expect(t.text("nowSec").isdigit(), "now not shown")
