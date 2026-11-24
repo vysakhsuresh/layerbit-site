@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="Share your screen from a desktop browser to anyone with a link. Peer-to-peer WebRTC, encrypted in transit, no installation or account required." />
-  <title>Free Browser Screen Sharing, No Install | LayerLink</title>
+  <meta name="description" content="Share your screen from a desktop browser with up to eight viewers: room password, chat, files, drawing and local recording. Peer-to-peer WebRTC, no install." />
+  <title>Screen Sharing to Up to 8 Viewers, No Install | LayerLink</title>
   <meta name="google-adsense-account" content="ca-pub-6072772587431629" />
   <link rel="preload" href="../fonts/space-grotesk-latin.woff2" as="font" type="font/woff2" crossorigin />
   <script>
@@ -25,19 +25,19 @@
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://layerbit.co.in/tools/layerlink-sharer.html" />
   <meta property="og:site_name" content="Layerbit" />
-  <meta property="og:title" content="Free Browser Screen Sharing, No Install | LayerLink" />
-  <meta property="og:description" content="Share your screen from a desktop browser to anyone with a link. Peer-to-peer WebRTC, encrypted in transit, no installation or account required." />
+  <meta property="og:title" content="Screen Sharing to Up to 8 Viewers, No Install | LayerLink" />
+  <meta property="og:description" content="Share your screen from a desktop browser with up to eight viewers: room password, chat, files, drawing and local recording. Peer-to-peer WebRTC, no install." />
   <meta property="og:image" content="https://layerbit.co.in/images/og/tools-layerlink-sharer.jpg" />
   <meta property="og:image:type" content="image/jpeg" />
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
-  <meta property="og:image:alt" content="Free Browser Screen Sharing, No Install | LayerLink" />
+  <meta property="og:image:alt" content="Screen Sharing to Up to 8 Viewers, No Install | LayerLink" />
   <meta property="og:locale" content="en" />
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="Free Browser Screen Sharing, No Install | LayerLink" />
-  <meta name="twitter:description" content="Share your screen from a desktop browser to anyone with a link. Peer-to-peer WebRTC, encrypted in transit, no installation or account required." />
+  <meta name="twitter:title" content="Screen Sharing to Up to 8 Viewers, No Install | LayerLink" />
+  <meta name="twitter:description" content="Share your screen from a desktop browser with up to eight viewers: room password, chat, files, drawing and local recording. Peer-to-peer WebRTC, no install." />
   <meta name="twitter:image" content="https://layerbit.co.in/images/og/tools-layerlink-sharer.jpg" />
-  <meta name="twitter:image:alt" content="Free Browser Screen Sharing, No Install | LayerLink" />
+  <meta name="twitter:image:alt" content="Screen Sharing to Up to 8 Viewers, No Install | LayerLink" />
   <meta name="theme-color" content="#0a0c10" />
   <script type="application/ld+json">
 {
@@ -48,7 +48,7 @@
       "@id": "https://layerbit.co.in/tools/layerlink-sharer.html#app",
       "name": "LayerLink Screen Sharing",
       "url": "https://layerbit.co.in/tools/layerlink-sharer.html",
-      "description": "Share your screen from a desktop browser to anyone with a link. Peer-to-peer WebRTC, encrypted in transit, no installation or account required.",
+      "description": "Share your screen from a desktop browser with up to eight viewers: room password, chat, files, drawing and local recording. Peer-to-peer WebRTC, no install.",
       "applicationCategory": "CommunicationApplication",
       "operatingSystem": "Any (runs in the browser)",
       "browserRequirements": "Requires JavaScript",
@@ -60,7 +60,17 @@
       },
       "publisher": {
         "@id": "https://layerbit.co.in/#organization"
-      }
+      },
+      "featureList": [
+        "Up to eight viewers, each on a direct peer connection",
+        "Optional room password that encrypts the signalling data",
+        "Approve, deny or remove each viewer",
+        "Tab or system audio and microphone",
+        "Text chat",
+        "File transfer both ways",
+        "Drawing over the shared picture",
+        "Local recording to a WebM file"
+      ]
     },
     {
       "@type": "BreadcrumbList",
@@ -88,6 +98,7 @@
     },
     {
       "@type": "FAQPage",
+      "@id": "https://layerbit.co.in/tools/layerlink-sharer.html#faq",
       "mainEntity": [
         {
           "@type": "Question",
@@ -102,7 +113,31 @@
           "name": "What is Firebase used for in this app?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "Firebase Realtime Database acts purely as the \"Signaling Server.\" In order for a P2P connection to occur, both browsers need to exchange connection data (SDP offers and ICE candidates) so they know how to find each other on the internet. Once the connection is established, Firebase's job is done."
+            "text": "Firebase Realtime Database acts purely as the \"Signaling Server.\" In order for a P2P connection to occur, both browsers need to exchange connection data (SDP offers and ICE candidates) so they know how to find each other on the internet. Once the connection is established, Firebase's job is done. Chat, files and drawings never go through it."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What does the room password protect?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "With a password, the connection details your browser and each viewer's browser exchange through the signalling service (the session descriptions and network candidates, which include IP addresses) are encrypted with AES-GCM under a key derived from the password with PBKDF2 (150,000 rounds of SHA-256). Someone who has the link but not the password cannot connect, and the signalling service only ever stores ciphertext for those fields. The password itself is never sent anywhere; send it to your viewers separately from the link."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Can I record the session?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes. Record saves your shared screen, with the audio you chose to share, to a WebM file on your own computer using the browser's MediaRecorder. Nothing is uploaded. Viewers can record what they receive the same way, so tell people when you are recording and assume they may record too."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Can a viewer control my computer?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "No, and a web page cannot offer that. Browsers do not let a page move your mouse, type into other applications, or act on your computer when you are not there. Viewers can watch, chat, draw on top of the video (the drawing is only an overlay in the page) and send you files, which you choose whether to save."
           }
         },
         {
@@ -110,11 +145,10 @@
           "name": "Can multiple people view the stream?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "No, this architecture is strictly a 1-to-1 P2P connection. Scaling WebRTC to multiple viewers requires an SFU (Selective Forwarding Unit) server to process and distribute the video streams, which breaks the zero-trust P2P model used here."
+            "text": "Yes, up to eight at once (you choose the limit before you start). Each viewer gets their own direct connection from your browser, so there is still no media server in the middle. The cost is upload bandwidth: your computer sends a separate copy of the stream to every viewer, so on a slow uplink keep the number small. Large audiences need an SFU (a media server that redistributes one stream), which is a different design from this one."
           }
         }
-      ],
-      "@id": "https://layerbit.co.in/tools/layerlink-sharer.html#faq"
+      ]
     }
   ]
 }
@@ -122,7 +156,7 @@
 
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6072772587431629" crossorigin="anonymous"></script>
 
-  <script src="../js/vendor/lucide.min.js?v=9ccd8f7461" async></script>
+  <script src="../js/vendor/lucide.min.js?v=978da2bf0f" async></script>
 
   <link rel="icon" href="../favicon.ico" sizes="16x16 32x32 48x48" />
   <link rel="icon" href="../favicon-48.png" type="image/png" sizes="48x48" />
@@ -131,8 +165,8 @@
   <link rel="alternate" type="application/atom+xml" title="Layerbit developer guides" href="https://layerbit.co.in/feed.xml" />
   <link rel="apple-touch-icon" href="../apple-touch-icon.png" />
   <link rel="stylesheet" href="../css/base.css?v=2b24d32e4f" />
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+  <script src="../js/vendor/firebase/firebase-app-compat.js?v=c20d6f1fae"></script>
+  <script src="../js/vendor/firebase/firebase-database-compat.js?v=786adbb153"></script>
 
   <style>
 
@@ -266,6 +300,49 @@
       .fab { bottom: 20px; left: 20px; width: 50px; height: 50px; background: rgba(20, 22, 30, 0.98); -webkit-backdrop-filter: none; backdrop-filter: none; }
     }
   
+    /* Room options, viewers, chat, files, drawing (v2) */
+    .room-form { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 16px; }
+    .ll-field { display: flex; flex-direction: column; gap: 6px; font-size: 0.9em; color: var(--text-muted); }
+    .ll-field input, .ll-field select, .ll-inline select, .chat-form input {
+      background: rgba(0,0,0,0.35); border: 1px solid var(--card-border); color: var(--text-main);
+      border-radius: 8px; padding: 10px 12px; font: inherit; min-width: 0;
+    }
+    .ll-field input[type="file"] { padding: 8px; }
+    .ll-check { grid-column: 1 / -1; display: flex; align-items: center; gap: 8px; font-size: 0.92em; cursor: pointer; }
+    .ll-check input { width: 18px; height: 18px; accent-color: var(--accent-main); }
+    .ll-summary { grid-column: 1 / -1; font-size: 0.85em; color: var(--accent-main); margin: 0; }
+    .ll-hint { font-size: 0.85em; color: var(--text-muted); font-weight: 400; }
+    .ll-sub { font-size: 1.05em; display: flex; align-items: center; gap: 8px; margin: 0; }
+    .ll-row { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+    .ll-row .sample-btn, .viewer-actions .sample-btn { margin: 0; display: inline-flex; align-items: center; gap: 6px; }
+    .ll-row .sample-btn svg.lucide { width: 16px; height: 16px; }
+    .ll-inline { display: inline-flex; align-items: center; gap: 8px; font-size: 0.9em; color: var(--text-muted); }
+    .ll-danger { border-color: rgba(239,68,68,0.45) !important; color: var(--danger) !important; }
+    .live-panel { display: flex; flex-direction: column; gap: 12px; }
+    .live-panel[hidden], .collab[hidden], .ll-row[hidden], .room-form[hidden] { display: none; }
+    .viewer-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+    .viewer-item { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; padding: 10px 12px; border: 1px solid var(--card-border); border-radius: 10px; background: rgba(0,0,0,0.2); }
+    .viewer-name { font-weight: 600; overflow-wrap: anywhere; }
+    .viewer-state { font-size: 0.85em; color: var(--warning); }
+    .viewer-state.is-live { color: var(--success); }
+    .viewer-actions { margin-left: auto; display: flex; gap: 8px; }
+    .video-wrapper { flex-direction: column; }
+    .draw-canvas { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; touch-action: none; z-index: 2; }
+    .collab { max-width: 1400px; width: 100%; margin: -30px auto 60px auto; display: grid; grid-template-columns: 3fr 2fr; gap: 30px; }
+    .chat-log { min-height: 160px; max-height: 320px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; padding: 12px; border: 1px solid var(--card-border); border-radius: 10px; background: rgba(0,0,0,0.25); }
+    .chat-msg { overflow-wrap: anywhere; line-height: 1.45; }
+    .chat-msg.mine strong { color: var(--accent-main); }
+    .chat-form { display: flex; gap: 10px; }
+    .chat-form input { flex: 1; }
+    .chat-form .sample-btn { margin: 0; }
+    .file-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; overflow-wrap: anywhere; }
+    .file-list a, #recordStatus a { color: var(--accent-main); }
+    @media (max-width: 900px) { .collab { grid-template-columns: 1fr; margin-top: 0; } }
+    @media (max-width: 600px) { .room-form { grid-template-columns: 1fr; } .viewer-actions { margin-left: 0; } }
+    .collab > .pane, .dashboard > .pane { min-width: 0; }
+    .ll-field input[type="file"] { max-width: 100%; }
+    @media (max-width: 900px) { .collab { grid-template-columns: minmax(0, 1fr); } }
+
   </style>
 </head>
 <body>
@@ -307,24 +384,54 @@
   </div>
 
   <div class="dashboard" id="mainDashboard">
-    
+
     <div class="pane">
       <h2 style="font-size:1.2em; display:flex; align-items:center; gap:10px;"><i data-lucide="radio"></i> Transmission Control</h2>
-      
+
       <div id="statusBadge" class="status-badge status-idle">
         <i data-lucide="moon"></i> System Idle
       </div>
+
+      <form id="roomForm" class="room-form" onsubmit="event.preventDefault(); start();">
+        <label class="ll-field">Room password <span class="ll-hint">(optional)</span>
+          <input type="password" id="roomPassword" autocomplete="new-password" maxlength="128" placeholder="Leave empty for an open link" />
+        </label>
+        <label class="ll-field">Your name in chat
+          <input type="text" id="hostName" maxlength="40" value="Host" autocomplete="nickname" />
+        </label>
+        <label class="ll-field">Viewers at once
+          <select id="optMax">
+            <option value="1">1</option><option value="2">2</option><option value="3">3</option>
+            <option value="4" selected>4</option><option value="6">6</option><option value="8">8</option>
+          </select>
+        </label>
+        <label class="ll-check"><input type="checkbox" id="optApproval" checked /> Ask me before each viewer joins</label>
+        <label class="ll-check"><input type="checkbox" id="optAudio" /> Share tab or system audio</label>
+        <label class="ll-check"><input type="checkbox" id="optMic" /> Add my microphone</label>
+        <p class="ll-summary" id="roomSummary" aria-live="polite"></p>
+      </form>
 
       <button class="btn-start" id="btnStart" onclick="start()">
         <i data-lucide="cast"></i> Initialize Broadcast
       </button>
 
       <div class="link-container" id="linkContainer">
-        <p style="font-size:0.9em; color:var(--text-muted);">Share this secure link with your viewer:</p>
+        <p style="font-size:0.9em; color:var(--text-muted);">Share this secure link with your viewers:</p>
         <div class="link-input-group">
-          <input type="text" id="shareLink" readonly />
+          <input type="text" id="shareLink" readonly aria-label="Viewer link" />
           <button class="btn-copy" id="btnCopy" onclick="copyLink()" aria-label="Copy share link"><i data-lucide="copy"></i></button>
         </div>
+        <p class="ll-hint" id="linkNote"></p>
+      </div>
+
+      <div class="live-panel" id="livePanel" hidden>
+        <h3 class="ll-sub"><i data-lucide="users"></i> Viewers <span id="viewerCount" class="ll-hint"></span></h3>
+        <ul class="viewer-list" id="viewerList"><li class="ll-hint">Nobody has asked to join yet.</li></ul>
+        <div class="ll-row">
+          <button type="button" class="sample-btn" id="btnRecord" onclick="toggleRecording()"><i data-lucide="circle"></i> <span id="recordLabel">Record</span></button>
+          <button type="button" class="sample-btn ll-danger" id="btnStop" onclick="stopBroadcast()"><i data-lucide="square"></i> Stop broadcast</button>
+        </div>
+        <p class="ll-hint" id="recordStatus"></p>
       </div>
     </div>
 
@@ -335,9 +442,39 @@
           <span>Stream Offline</span>
         </div>
         <video id="video" autoplay playsinline muted></video>
+        <canvas id="drawCanvas" class="draw-canvas" aria-label="Drawing layer over the shared screen"></canvas>
+      </div>
+      <div class="ll-row" id="drawBar" hidden>
+        <button type="button" class="sample-btn" id="btnDraw" aria-pressed="false" onclick="toggleDraw()"><i data-lucide="pencil"></i> <span id="drawLabel">Draw on screen</span></button>
+        <label class="ll-inline">Colour
+          <select id="drawColor">
+            <option value="#f43f5e">Red</option><option value="#facc15">Yellow</option><option value="#22c55e">Green</option><option value="#38bdf8">Blue</option><option value="#ffffff">White</option>
+          </select>
+        </label>
+        <button type="button" class="sample-btn" id="btnClearDraw" onclick="clearDrawing()"><i data-lucide="eraser"></i> Clear drawings</button>
+        <span class="ll-hint" id="drawStatus">Drawings show on top of the video for you and every viewer. They are not added to your actual screen.</span>
       </div>
     </div>
 
+  </div>
+
+  <div class="collab" id="collabPanel" hidden>
+    <div class="pane">
+      <h2 class="ll-sub"><i data-lucide="message-square"></i> Chat</h2>
+      <div class="chat-log" id="chatLog" aria-live="polite"><p class="ll-hint" id="chatEmpty">Messages go straight to every viewer over the encrypted peer connection, not through a server.</p></div>
+      <form class="chat-form" id="chatForm" onsubmit="event.preventDefault(); sendChat();">
+        <input type="text" id="chatInput" maxlength="2000" placeholder="Message everyone" aria-label="Chat message" autocomplete="off" />
+        <button type="submit" class="sample-btn" id="btnChatSend">Send</button>
+      </form>
+    </div>
+    <div class="pane">
+      <h2 class="ll-sub"><i data-lucide="paperclip"></i> Files</h2>
+      <label class="ll-field">Send a file to every viewer
+        <input type="file" id="fileSend" />
+      </label>
+      <p class="ll-hint" id="fileStatus">Files travel directly to each viewer. Viewers can send files back to you; they never see each other's files.</p>
+      <ul class="file-list" id="fileList"></ul>
+    </div>
   </div>
 
   <div class="docs-container">
@@ -357,7 +494,7 @@
         </div>
         <div class="use-case-card">
           <h3><i data-lucide="lock"></i> Secure Troubleshooting</h3>
-          <p>Share highly sensitive internal dashboards or server logs with remote IT staff, knowing the video stream is encrypted end-to-end and unrecorded.</p>
+          <p>Share highly sensitive internal dashboards or server logs with remote IT staff, knowing the video stream is encrypted in transit and never recorded by a server.</p>
         </div>
       </div>
     </div>
@@ -386,14 +523,35 @@
         <div class="faq-item">
           <button class="faq-question">What is Firebase used for in this app? <i data-lucide="chevron-down"></i></button>
           <div class="faq-answer">
-            <p>Firebase Realtime Database acts purely as the "Signaling Server." In order for a P2P connection to occur, both browsers need to exchange connection data (SDP offers and ICE candidates) so they know how to find each other on the internet. Once the connection is established, Firebase's job is done.</p>
+            <p>Firebase Realtime Database acts purely as the "Signaling Server." In order for a P2P connection to occur, both browsers need to exchange connection data (SDP offers and ICE candidates) so they know how to find each other on the internet. Once the connection is established, Firebase's job is done. Chat, files and drawings never go through it.</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question">What does the room password protect? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer">
+            <p>With a password, the connection details your browser and each viewer's browser exchange through the signalling service (the session descriptions and network candidates, which include IP addresses) are encrypted with AES-GCM under a key derived from the password with PBKDF2 (150,000 rounds of SHA-256). Someone who has the link but not the password cannot connect, and the signalling service only ever stores ciphertext for those fields. The password itself is never sent anywhere; send it to your viewers separately from the link.</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question">Can I record the session? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer">
+            <p>Yes. Record saves your shared screen, with the audio you chose to share, to a WebM file on your own computer using the browser's MediaRecorder. Nothing is uploaded. Viewers can record what they receive the same way, so tell people when you are recording and assume they may record too.</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question">Can a viewer control my computer? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer">
+            <p>No, and a web page cannot offer that. Browsers do not let a page move your mouse, type into other applications, or act on your computer when you are not there. Viewers can watch, chat, draw on top of the video (the drawing is only an overlay in the page) and send you files, which you choose whether to save.</p>
           </div>
         </div>
 
         <div class="faq-item">
           <button class="faq-question">Can multiple people view the stream? <i data-lucide="chevron-down"></i></button>
           <div class="faq-answer">
-            <p>No, this architecture is strictly a 1-to-1 P2P connection. Scaling WebRTC to multiple viewers requires an SFU (Selective Forwarding Unit) server to process and distribute the video streams, which breaks the zero-trust P2P model used here.</p>
+            <p>Yes, up to eight at once (you choose the limit before you start). Each viewer gets their own direct connection from your browser, so there is still no media server in the middle. The cost is upload bandwidth: your computer sends a separate copy of the stream to every viewer, so on a slow uplink keep the number small. Large audiences need an SFU (a media server that redistributes one stream), which is a different design from this one.</p>
           </div>
         </div>
 
@@ -416,14 +574,26 @@
           <p>Screen capture is deliberately unavailable to web pages on iOS and unreliable on Android — the operating systems do not expose it. So hosting a session requires a desktop browser. <em>Viewing</em> one works on any modern device, since receiving a video stream needs no special permission.</p>
         </div>
         <div class="use-case-card">
-          <h3><i data-lucide="users"></i> One-to-one by design</h3>
-          <p>This is a direct peer connection, not a broadcast. Serving many viewers from one sender requires an SFU — a media server that receives the stream and redistributes it — which necessarily means your video passes through infrastructure rather than going peer to peer.</p>
+          <h3><i data-lucide="users"></i> A few viewers, all direct</h3>
+          <p>Every viewer has a separate peer connection to your browser, so your upload is shared between them. That suits a handful of people; serving many viewers needs an SFU, a media server that receives the stream and redistributes it, which means your video passes through infrastructure rather than going peer to peer.</p>
         </div>
         <div class="use-case-card">
           <h3><i data-lucide="wifi-off"></i> When direct fails</h3>
           <p>Symmetric NAT and restrictive corporate firewalls can block every direct path. Without a TURN relay the connection simply does not establish. If a session fails on a corporate network but works on a home one, this is almost always why.</p>
         </div>
       </div>
+
+      <h2><i data-lucide="ban"></i> What a browser cannot do</h2>
+      <p>Desktop remote-support programs install software on both computers. A web page cannot, so some things those programs do are not possible here, and LayerLink does not pretend otherwise:</p>
+      <ul>
+        <li><strong>Remote control.</strong> A viewer cannot move your mouse or type on your computer. Browsers give pages no way to inject input into other applications.</li>
+        <li><strong>Unattended access.</strong> Someone has to be at the sharing computer to start the share and pick a screen, every time.</li>
+        <li><strong>Restarting the remote computer</strong> and reconnecting afterwards.</li>
+        <li><strong>Printing</strong> to a printer attached to the other computer.</li>
+        <li><strong>Wake-on-LAN</strong>, or reaching a computer that is asleep or switched off.</li>
+        <li><strong>Sharing from a phone.</strong> iOS and Android do not let web pages capture the screen; phones can view, chat, draw and send files.</li>
+      </ul>
+      <p>What does work in a browser, and is built in: several viewers, a room password, approving each viewer, audio from a tab or the system plus your microphone, text chat, file transfer in both directions, drawing over the shared picture, and recording to a file on your own computer.</p>
 
       <h2><i data-lucide="eye"></i> What to know before you share a screen</h2>
       <p>Screen sharing leaks more than people intend, and the mistakes are consistent enough to be worth listing:</p>
@@ -436,12 +606,13 @@
       </ul>
 
       <h2><i data-lucide="shield-check"></i> The honest privacy position</h2>
-      <p>LayerLink is the one tool on this site that is not purely local, and it is badged <em>Cloud API</em> for that reason. What we can say precisely: the video stream travels directly between the two browsers and is encrypted in transit; the signalling service sees only the connection metadata required to introduce the peers, never media. What we do not claim is that this is equivalent to the fully offline guarantee the other tools make — it is a different and weaker property, and the badge exists so you know which you are getting before you click.</p>
+      <p>LayerLink is the one tool on this site that is not purely local, and it is badged <em>Cloud API</em> for that reason. What we can say precisely: the video stream, chat, files and drawings travel directly between the browsers and are encrypted in transit; the signalling service sees only the connection metadata required to introduce the peers, never media, and with a room password even that metadata is stored encrypted. The service does see each viewer's chosen display name, the room settings, and when people join. What we do not claim is that this is equivalent to the fully offline guarantee the other tools make — it is a different and weaker property, and the badge exists so you know which you are getting before you click.</p>
     </div>
 
     <div class="info-panel">
       <h2><i data-lucide="git-merge"></i> Deployment Changelog</h2>
       <ul class="changelog-list">
+        <li><span class="changelog-tag">v2.0.0</span> Several viewers at once (up to eight), each on their own peer connection; optional room password that encrypts the signalling data; approve, deny or remove each viewer; tab, system and microphone audio; chat; file transfer both ways; drawing over the shared picture; local recording. The Firebase library is now served from this site rather than a CDN. If the signalling service refuses the newer session type, the page falls back to the original one-viewer connection.</li>
         <li><span class="changelog-tag">v1.3.0</span> Deployed enterprise documentation architecture and UI state simulation tools.</li>
         <li><span class="changelog-tag">v1.2.0</span> Implemented mobile OS detection to gracefully disable the host UI on unsupported devices.</li>
         <li><span class="changelog-tag">v1.1.0</span> Resolved a critical race condition by queueing remote ICE candidates until the remote description is fully established.</li>
@@ -557,6 +728,7 @@
   </a>
 
   <script src="../js/shared.js?v=e2441a1728"></script>
+  <script src="../js/engines/layerlink.js?v=2672b43672"></script>
 
 
   <script>
@@ -570,8 +742,13 @@
       messagingSenderId: "164370572506",
       appId: "1:164370572506:web:cbeed3bfa6cb67c902b1e3"
     };
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
+    // ?signal=local swaps Firebase for a same-browser test channel (localStorage), and only on
+    // this machine: it is how the automated tests run two pages against each other offline.
+    const LOCAL_SIGNAL = new URLSearchParams(location.search).get('signal') === 'local' && /^(localhost|127\.0\.0\.1)$/.test(location.hostname);
+    let db = null;
+    if (!LOCAL_SIGNAL && window.firebase) {
+      try { firebase.initializeApp(firebaseConfig); db = firebase.database(); } catch (e) { console.warn('Signalling service unavailable.', e); }
+    }
 
     const mobileError = document.getElementById('mobileError');
     const mainDashboard = document.getElementById('mainDashboard');
@@ -620,6 +797,12 @@
       } else if (state === 'closed') {
         statusBadge.className = 'status-badge status-idle';
         statusBadge.innerHTML = `<i data-lucide="alert-circle"></i> Viewer Disconnected`;
+      } else if (state === 'offline') {
+        statusBadge.className = 'status-badge status-idle';
+        statusBadge.innerHTML = `<i data-lucide="wifi-off"></i> Signalling service unreachable`;
+      } else if (state === 'ended') {
+        statusBadge.className = 'status-badge status-idle';
+        statusBadge.innerHTML = `<i data-lucide="square"></i> Broadcast stopped`;
       } else if (state === 'never-connected') {
         // Distinct from 'closed' on purpose: nobody actually connected and then left here -
         // the connection never got through at all, almost always a NAT/firewall combination
@@ -765,26 +948,259 @@
       }
     }
 
+    // ------------------------------------------------------------------ room options
+    const roomPassword = document.getElementById('roomPassword');
+    const hostName = document.getElementById('hostName');
+    const optMax = document.getElementById('optMax');
+    const optApproval = document.getElementById('optApproval');
+    const optAudio = document.getElementById('optAudio');
+    const optMic = document.getElementById('optMic');
+    const roomSummary = document.getElementById('roomSummary');
+    const roomForm = document.getElementById('roomForm');
+    const livePanel = document.getElementById('livePanel');
+    const collabPanel = document.getElementById('collabPanel');
+    const viewerList = document.getElementById('viewerList');
+    const viewerCount = document.getElementById('viewerCount');
+    const linkNote = document.getElementById('linkNote');
+    const chatLog = document.getElementById('chatLog');
+    const chatInput = document.getElementById('chatInput');
+    const fileList = document.getElementById('fileList');
+    const fileStatus = document.getElementById('fileStatus');
+    const recordStatus = document.getElementById('recordStatus');
+    const drawBar = document.getElementById('drawBar');
+
+    function updateSummary() {
+      const n = +optMax.value;
+      roomSummary.textContent = [
+        roomPassword.value ? 'Password required' : 'Open link, no password',
+        optApproval.checked ? 'you let each viewer in' : 'viewers join straight away',
+        'up to ' + n + (n === 1 ? ' viewer' : ' viewers'),
+        optAudio.checked && optMic.checked ? 'shared audio and your microphone' : optAudio.checked ? 'shared audio' : optMic.checked ? 'your microphone' : 'no sound'
+      ].join(' · ');
+    }
+    [roomPassword, optMax, optApproval, optAudio, optMic].forEach(el => el.addEventListener(el.type === 'password' ? 'input' : 'change', updateSummary));
+    updateSummary();
+
+    let stopCapture = () => {};
+    let sharer = null, outStream = null, audioMix = null, board = null, rec = null, recUrl = null;
+    const STATE_LABEL = { pending: 'Waiting for you', approved: 'Connecting', denied: 'Denied', removed: 'Removed', full: 'Room full', left: 'Left' };
+
+    function fmtBytes(n) { return n < 1024 ? n + ' B' : n < 1048576 ? (n / 1024).toFixed(1) + ' KB' : (n / 1048576).toFixed(1) + ' MB'; }
+    function el(tag, cls, text) { const e = document.createElement(tag); if (cls) e.className = cls; if (text !== undefined) e.textContent = text; return e; }
+
+    function renderViewers(list) {
+      viewerList.innerHTML = '';
+      if (!list.length) { viewerList.appendChild(el('li', 'll-hint', 'Nobody has asked to join yet.')); }
+      let watching = 0, waiting = 0;
+      list.forEach(v => {
+        const live = v.state === 'approved' && v.conn === 'connected';
+        if (live) watching++;
+        if (v.state === 'pending') waiting++;
+        const li = el('li', 'viewer-item');
+        li.dataset.vid = v.vid;
+        li.appendChild(el('span', 'viewer-name', v.name));
+        li.appendChild(el('span', 'viewer-state' + (live ? ' is-live' : ''), live ? 'Watching' : v.state === 'approved' && v.conn === 'failed' ? 'Could not connect' : STATE_LABEL[v.state] || v.state));
+        const act = el('span', 'viewer-actions');
+        if (v.state === 'pending') {
+          const ok = el('button', 'sample-btn', 'Let in'); ok.type = 'button'; ok.onclick = () => sharer.approve(v.vid);
+          const no = el('button', 'sample-btn ll-danger', 'Deny'); no.type = 'button'; no.onclick = () => sharer.deny(v.vid);
+          act.append(ok, no);
+        } else if (v.state === 'approved') {
+          const rm = el('button', 'sample-btn ll-danger', 'Remove'); rm.type = 'button'; rm.onclick = () => sharer.remove(v.vid);
+          act.append(rm);
+        }
+        li.appendChild(act);
+        viewerList.appendChild(li);
+      });
+      viewerCount.textContent = list.length ? '(' + watching + ' watching' + (waiting ? ', ' + waiting + ' waiting' : '') + ')' : '';
+      document.title = (waiting ? '(' + waiting + ') ' : '') + document.title.replace(/^\(\d+\) /, '');
+      if (watching) { everConnected = true; clearReconnectCountdown(); setStatus('live'); }
+      else if (waiting) { statusBadge.className = 'status-badge status-waiting'; statusBadge.innerHTML = `<i data-lucide="user-plus"></i> ${waiting} waiting to join`; safeCreateIcons(); }
+      else if (sharer) setStatus('waiting');
+    }
+
+    function addChat(m, mine) {
+      const empty = document.getElementById('chatEmpty'); if (empty) empty.remove();
+      const row = el('div', 'chat-msg' + (mine ? ' mine' : ''));
+      row.appendChild(el('strong', '', m.from + ': '));
+      row.appendChild(document.createTextNode(m.text));
+      row.appendChild(el('time', 'll-hint', ' ' + new Date(m.at || Date.now()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })));
+      chatLog.appendChild(row);
+      chatLog.scrollTop = chatLog.scrollHeight;
+    }
+    function sendChat() {
+      const text = chatInput.value.trim();
+      if (!text || !sharer) return;
+      addChat(sharer.chat(text), true);
+      chatInput.value = '';
+    }
+    function addFile(d) {
+      const li = el('li');
+      const a = el('a', '', d.name);
+      a.href = URL.createObjectURL(d.blob); a.download = d.name;
+      li.append(a, el('span', 'll-hint', ' ' + fmtBytes(d.size) + ' from ' + d.from + (d.complete ? '' : ' (incomplete)')));
+      fileList.prepend(li);
+      fileStatus.textContent = 'Received ' + d.name + ' from ' + d.from + '. Only save files from people you trust.';
+    }
+    document.getElementById('fileSend').addEventListener('change', async e => {
+      const f = e.target.files[0];
+      if (!f || !sharer) return;
+      const n = sharer.channels().length;
+      if (!n) { fileStatus.textContent = 'Nobody is connected yet, so there is no one to send ' + f.name + ' to.'; e.target.value = ''; return; }
+      fileStatus.textContent = 'Sending ' + f.name + ' (' + fmtBytes(f.size) + ') to ' + n + (n === 1 ? ' viewer' : ' viewers') + '…';
+      try { await sharer.sendFile(f); fileStatus.textContent = 'Sent ' + f.name + ' (' + fmtBytes(f.size) + ') to ' + n + (n === 1 ? ' viewer.' : ' viewers.'); }
+      catch (err) { fileStatus.textContent = 'Sending ' + f.name + ' stopped: ' + err.message; }
+      e.target.value = '';
+    });
+
+    function toggleDraw() {
+      if (!board) return;
+      board.setEnabled(!board.enabled);
+      const b = document.getElementById('btnDraw');
+      b.setAttribute('aria-pressed', String(board.enabled));
+      document.getElementById('drawLabel').textContent = board.enabled ? 'Stop drawing' : 'Draw on screen';
+    }
+    document.getElementById('drawColor').addEventListener('change', e => {
+      if (board) board.color = e.target.value;
+      document.getElementById('drawStatus').textContent = 'New strokes are ' + e.target.selectedOptions[0].text.toLowerCase() + '. Drawings show on top of the video for you and every viewer, not on your actual screen.';
+    });
+    function clearDrawing() {
+      if (!board) return;
+      const had = board.strokes.length;
+      board.clear(); if (sharer) sharer.clear();
+      document.getElementById('drawStatus').textContent = had ? 'Cleared ' + had + (had === 1 ? ' drawing' : ' drawings') + ' for everyone.' : 'There was nothing to clear.';
+    }
+
+    function toggleRecording() {
+      if (!outStream) return;
+      const label = document.getElementById('recordLabel');
+      if (!rec) {
+        try { rec = LBLink.recorder(outStream); rec.start(); }
+        catch (e) { rec = null; recordStatus.textContent = 'This browser cannot record here: ' + e.message; return; }
+        label.textContent = 'Stop recording';
+        recordStatus.textContent = 'Recording to this computer only. Nothing is uploaded.';
+        return;
+      }
+      const r = rec; rec = null;
+      label.textContent = 'Record';
+      r.stop().then(blob => {
+        if (recUrl) URL.revokeObjectURL(recUrl);
+        recUrl = URL.createObjectURL(blob);
+        const ext = /mp4/.test(blob.type) ? 'mp4' : 'webm';
+        const name = 'layerlink-' + new Date().toISOString().slice(0, 16).replace(/[-:T]/g, '') + '.' + ext;
+        recordStatus.innerHTML = '';
+        const a = el('a', '', 'Save the recording (' + fmtBytes(blob.size) + ')'); a.href = recUrl; a.download = name; a.id = 'recordLink';
+        recordStatus.appendChild(a);
+      });
+    }
+
+    function stopBroadcast() {
+      if (rec) toggleRecording();
+      if (sharer) sharer.stop();
+      sharer = null;
+      if (outStream) outStream.getTracks().forEach(t => t.stop());
+      stopCapture();
+      if (audioMix) audioMix.close();
+      clearReconnectCountdown();
+      setStatus('ended');
+      livePanel.querySelectorAll('button').forEach(b => { if (b.id !== 'btnRecord') b.disabled = true; });
+      document.getElementById('btnRecord').disabled = true;
+      document.getElementById('btnChatSend').disabled = true;
+      document.getElementById('fileSend').disabled = true;
+      linkNote.textContent = 'The link no longer works. Start a new broadcast for a new one.';
+      videoOverlay.style.display = '';
+      btnStart.style.display = '';
+      btnStart.innerHTML = '<i data-lucide="cast"></i> Start a new broadcast';
+      btnStart.onclick = () => location.reload();
+      safeCreateIcons();
+    }
+
     // Core WebRTC Logic
     async function start() {
+      if (!LOCAL_SIGNAL && !db) { setStatus('offline'); return; }
+      let capture;
       try {
-        const localStream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: false });
-        
-        videoElement.srcObject = localStream;
-        videoOverlay.style.display = 'none';
-        btnStart.style.display = 'none';
-        
-        const sessionId = Math.random().toString(36).substring(2, 8);
-        let baseDomain = window.location.origin;
-        if (baseDomain === "file://" || baseDomain === "null") {
-          baseDomain = "https://layerbit.co.in";
-        }
-        const viewerUrl = baseDomain + "/tools/layerlink-viewer.html?session=" + sessionId;
-        shareLink.value = viewerUrl;
-        linkContainer.classList.add('active');
-        setStatus('waiting');
+        capture = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: optAudio.checked });
+      } catch (err) {
+        console.error("Screen sharing cancelled or failed.", err);
+        return;
+      }
+      let micTracks = [];
+      if (optMic.checked) {
+        try { micTracks = (await navigator.mediaDevices.getUserMedia({ audio: true })).getAudioTracks(); }
+        catch (e) { linkNote.textContent = 'The microphone was not available, so only the screen is being shared.'; }
+      }
+      audioMix = LBLink.mixAudio(capture.getAudioTracks().concat(micTracks));
+      outStream = new MediaStream(capture.getVideoTracks().concat(audioMix.track ? [audioMix.track] : []));
+      stopCapture = () => { capture.getTracks().concat(micTracks).forEach(t => t.stop()); };
 
-        const configuration = { iceServers: await loadIceServers() };
+      videoElement.srcObject = outStream;
+      videoOverlay.style.display = 'none';
+      btnStart.style.display = 'none';
+      roomForm.hidden = true;
+
+      const sessionId = LBLink.sessionId();
+      let baseDomain = window.location.origin;
+      if (baseDomain === "file://" || baseDomain === "null") {
+        baseDomain = "https://layerbit.co.in";
+      }
+      shareLink.value = baseDomain + "/tools/layerlink-viewer.html?session=" + sessionId + (LOCAL_SIGNAL ? '&signal=local' : '');
+      const iceServers = LOCAL_SIGNAL ? [] : await loadIceServers();
+      console.log('ICE servers:', iceServers.map(x => [].concat(x.urls).join(' ')));
+      const signal = LOCAL_SIGNAL ? LBLink.localSignal() : LBLink.firebaseSignal(db);
+
+      const s = new LBLink.Sharer({
+        signal, sid: sessionId, stream: outStream, iceServers,
+        password: roomPassword.value, approval: optApproval.checked, max: +optMax.value,
+        name: (hostName.value || 'Host').trim().slice(0, 40) || 'Host'
+      });
+      try {
+        // Firebase queues writes while offline rather than failing, so a dead network would
+        // otherwise leave this waiting forever with no link on screen.
+        await Promise.race([s.start(), new Promise((_, no) => setTimeout(() => no(Object.assign(new Error('timeout'), { timeout: true })), 15000))]);
+      } catch (e) {
+        if (e && e.timeout) {
+          s.stop();
+          stopCapture(); if (audioMix) audioMix.close();
+          videoElement.srcObject = null; videoOverlay.style.display = ''; btnStart.style.display = ''; roomForm.hidden = false;
+          setStatus('offline');
+          return;
+        }
+        console.warn('The signalling service refused a multi-viewer session; using the one-viewer connection.', e);
+        linkContainer.classList.add('active');
+        linkNote.textContent = 'One viewer at a time on this connection: the signalling service did not accept a multi-viewer room, so the password, chat, files and drawing are off.';
+        setStatus('waiting');
+        return startLegacy(outStream, sessionId, iceServers);
+      }
+      sharer = s;
+      linkContainer.classList.add('active');
+      linkNote.textContent = roomPassword.value ? 'Send the password separately from the link, for example by phone.' : 'Anyone with this link can ask to join' + (optApproval.checked ? '; you decide who gets in.' : '.');
+      livePanel.hidden = false;
+      collabPanel.hidden = false;
+      drawBar.hidden = false;
+      setStatus('waiting');
+
+      board = new LBLink.Board(document.getElementById('drawCanvas'), videoElement, st => sharer && sharer.draw(st.pts, st.color));
+      board.color = document.getElementById('drawColor').value;
+      s.on('viewers', renderViewers);
+      s.on('request', v => { try { if (document.hidden && 'Notification' in window && Notification.permission === 'granted') new Notification('LayerLink: ' + v.name + ' wants to join'); } catch (e) {} });
+      s.on('chat', m => addChat(m, false));
+      s.on('draw', d => board.add({ pts: d.pts, color: d.color }));
+      s.on('clear', d => { board.clear(); document.getElementById('drawStatus').textContent = d.from + ' cleared the drawings.'; });
+      s.on('file', addFile);
+      s.on('file-progress', d => { fileStatus.textContent = 'Receiving ' + d.name + ' from a viewer: ' + Math.round(100 * d.got / Math.max(1, d.size)) + '%'; });
+      s.on('error', e => console.warn('LayerLink:', e));
+
+      capture.getVideoTracks()[0].onended = () => stopBroadcast();
+      window.addEventListener('pagehide', () => { if (sharer) sharer.stop(); });
+      safeCreateIcons();
+    }
+
+    // The original one-viewer protocol, unchanged: the LayerLink Android app and older viewer
+    // pages speak it. Used only when the signalling service refuses the newer session type.
+    async function startLegacy(localStream, sessionId, iceServers) {
+      try {
+        const configuration = { iceServers };
         console.log('ICE servers:', configuration.iceServers.map(x => [].concat(x.urls).join(' ')));
 
         const peer = new RTCPeerConnection(configuration);
@@ -807,6 +1223,7 @@
 
         localStream.getVideoTracks()[0].onended = () => {
           peer.close();
+          conn.remove();
           window.location.reload();
         };
 
@@ -856,7 +1273,7 @@
         });
 
       } catch (err) {
-        console.error("Screen sharing cancelled or failed.", err);
+        console.error("Legacy broadcast failed.", err);
       }
     }
   </script>

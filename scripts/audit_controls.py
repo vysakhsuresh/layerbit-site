@@ -51,6 +51,7 @@ def INPUTS(c):
         "log-analyzer": {"logInput": open(j("apache.log")).read()},
         "qr-barcode": {"dataInput": "https://layerbit.co.in/tools/qr-barcode.html?utm_source=print"},
         "pint-ae-checker": {},
+        "layerlink-sharer": {},
     }
 
 SNAP = r"""(ex) => {

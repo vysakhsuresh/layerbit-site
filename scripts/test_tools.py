@@ -2465,6 +2465,170 @@ def _(t):
 
 
 # ----------------------------------------------------------------------------
+# layerlink (two pages in one browser, signalled through localStorage)
+# ----------------------------------------------------------------------------
+LL_FAKE_SCREEN = r"""
+(() => {
+  if (!navigator.mediaDevices) return;
+  navigator.mediaDevices.getDisplayMedia = async (c) => {
+    const cv = document.createElement('canvas'); cv.width = 640; cv.height = 360;
+    const g = cv.getContext('2d'); let n = 0;
+    const paint = () => { g.fillStyle = '#123456'; g.fillRect(0, 0, 640, 360); g.fillStyle = '#fff'; g.fillRect((n++ * 7) % 600, 100, 40, 40); };
+    paint(); setInterval(paint, 60);
+    const st = cv.captureStream(15);
+    if (c && c.audio) {
+      const ac = new AudioContext(), o = ac.createOscillator(), d = ac.createMediaStreamDestination();
+      o.connect(d); o.start(); st.addTrack(d.stream.getAudioTracks()[0]);
+    }
+    return st;
+  };
+})();
+"""
+
+
+def _ll_room(t, password="", approval=True, audio=False, max_viewers="4"):
+    """Start a broadcast on t.page (the sharer) and return the viewer link."""
+    base = t.page.url.split("/tools/")[0]
+    t.page.evaluate("Object.keys(localStorage).filter(k => k.startsWith('llsig:')).forEach(k => localStorage.removeItem(k))")
+    t.page.add_init_script(LL_FAKE_SCREEN)
+    t.page.goto(f"{base}/tools/layerlink-sharer.html?signal=local", wait_until="load")
+    t.page.evaluate("document.querySelectorAll('.cookie-consent-banner').forEach(e=>e.remove())")
+    t.set("roomPassword", password)
+    t.page.evaluate("([a, au, m]) => { const s = id => document.getElementById(id); s('optApproval').checked = a; s('optAudio').checked = au; s('optMax').value = m; s('optMax').dispatchEvent(new Event('change')); }", [approval, audio, max_viewers])
+    t.call("document.getElementById('btnStart').click()")
+    t.wait_for("document.getElementById('shareLink').value.includes('signal=local') && !document.getElementById('livePanel').hidden")
+    return t.val("shareLink")
+
+
+def _ll_viewer(t, link, name, password=""):
+    pg = t.page.context.new_page()
+    pg.on("pageerror", lambda e: t.errors.append("viewer pageerror: " + str(e)))
+    pg.goto(link, wait_until="load")
+    pg.evaluate("document.querySelectorAll('.cookie-consent-banner').forEach(e=>e.remove())")
+    pg.wait_for_selector("#joinForm", timeout=8000)
+    pg.fill("#viewerName", name)
+    if password:
+        pg.fill("#joinPassword", password)
+    pg.evaluate("document.getElementById('btnJoin').click()")
+    return pg
+
+
+def _ll_admit(t, name):
+    t.wait_for(f"[...document.querySelectorAll('#viewerList .viewer-item')].some(li => li.textContent.includes({json.dumps(name)}) && li.textContent.includes('Let in'))")
+    t.page.evaluate("n => [...document.querySelectorAll('#viewerList .viewer-item')].find(li => li.textContent.includes(n)).querySelector('button').click()", name)
+
+
+@case("layerlink-sharer", "typical", "password room: wrong password refused, host admits viewer, video and sound arrive")
+def _(t):
+    link = _ll_room(t, password="tiger-42", audio=True)
+    expect("Send the password separately" in t.text("linkNote"), f"link note: {t.text('linkNote')!r}")
+    pg = t.page.context.new_page()
+    pg.goto(link, wait_until="load")
+    pg.wait_for_selector("#joinPassword", timeout=8000)
+    stored = t.call("JSON.stringify(Object.entries(localStorage).filter(([k]) => k.startsWith('llsig:')))")
+    expect("tiger-42" not in stored, "the password is never written to the signalling store")
+    pg.fill("#viewerName", "Asha")
+    pg.fill("#joinPassword", "wrong")
+    pg.evaluate("document.getElementById('btnJoin').click()")
+    pg.wait_for_function("document.getElementById('joinError').textContent.includes('not right')", timeout=8000)
+    pg.fill("#joinPassword", "tiger-42")
+    pg.evaluate("document.getElementById('btnJoin').click()")
+    pg.wait_for_function("document.getElementById('overlayMsg').innerText.includes('Waiting for the broadcaster')", timeout=8000)
+    _ll_admit(t, "Asha")
+    pg.wait_for_function("document.getElementById('statusUI').innerText.includes('LIVE')", timeout=10000)
+    pg.wait_for_function("document.getElementById('video').videoWidth === 640", timeout=8000)
+    eq(pg.evaluate("document.getElementById('video').srcObject.getAudioTracks().length"), 1, "audio tracks at the viewer")
+    eq(pg.evaluate("document.getElementById('btnSound').disabled"), False, "sound button enabled when audio is shared")
+    t.wait_for("document.getElementById('viewerCount').textContent.includes('1 watching')")
+    t.wait_for("document.getElementById('statusBadge').textContent.includes('Live')")
+    sealed = t.call("Object.entries(localStorage).filter(([k]) => /\\/viewers\\/[^/]+\\/(offer|answer)$/.test(k)).map(([k, v]) => JSON.parse(JSON.parse(v)))")
+    eq(len(sealed), 2, "one offer and one answer stored")
+    expect(all(x.get("sealed") == 1 and "sdp" not in x for x in sealed), "offer and answer are stored sealed when the room has a password")
+    pg.close()
+
+
+@case("layerlink-sharer", "typical", "chat and files both ways, drawings reach the host, recording saves a file")
+def _(t):
+    link = _ll_room(t, approval=False)
+    pg = _ll_viewer(t, link, "Ben")
+    pg.wait_for_function("document.getElementById('statusUI').innerText.includes('LIVE') && !document.getElementById('collabPanel').hidden", timeout=10000)
+    pg.wait_for_function("document.getElementById('btnChatSend') && LBLink && viewer && viewer.ch && viewer.ch.readyState === 'open'", timeout=8000)
+    pg.fill("#chatInput", "hello <b>host</b>")
+    pg.evaluate("sendChat()")
+    t.wait_for("document.getElementById('chatLog').innerText.includes('Ben: hello <b>host</b>')")
+    eq(t.call("document.querySelectorAll('#chatLog b').length"), 0, "chat text is never parsed as HTML")
+    t.set("chatInput", "hi all")
+    t.call("sendChat()")
+    pg.wait_for_function("document.getElementById('chatLog').innerText.includes('Host: hi all')", timeout=6000)
+    t.page.set_input_files("#fileSend", {"name": "notes.txt", "mimeType": "text/plain", "buffer": ("x" * 40000 + "END").encode()})
+    pg.wait_for_function("document.querySelector('#fileList a') && document.querySelector('#fileList a').textContent === 'notes.txt'", timeout=8000)
+    got = pg.evaluate("fetch(document.querySelector('#fileList a').href).then(r => r.text())")
+    eq(len(got), 40003, "file size at the viewer"); expect(got.endswith("END"), "file content intact")
+    t.wait_for("document.getElementById('fileStatus').textContent.startsWith('Sent notes.txt')")
+    pg.set_input_files("#fileSend", {"name": "reply.csv", "mimeType": "text/csv", "buffer": b"a,b\n1,2\n"})
+    t.wait_for("document.querySelector('#fileList a') && document.querySelector('#fileList a').textContent === 'reply.csv' && document.getElementById('fileList').innerText.includes('from Ben')")
+    eq(t.call("fetch(document.querySelector('#fileList a').href).then(r => r.text())"), "a,b\n1,2\n", "file from viewer")
+    pg.evaluate("toggleDraw()")
+    box = pg.locator("#drawCanvas").bounding_box()
+    pg.mouse.move(box["x"] + box["width"] * 0.3, box["y"] + box["height"] * 0.4)
+    pg.mouse.down(); pg.mouse.move(box["x"] + box["width"] * 0.6, box["y"] + box["height"] * 0.5, steps=5); pg.mouse.up()
+    t.wait_for("board && board.strokes.length === 1")
+    pts = t.call("board.strokes[0].pts")
+    expect(all(-0.01 <= x <= 1.01 and -0.01 <= y <= 1.01 for x, y in pts), f"points are fractions of the picture: {pts[:3]}")
+    t.call("clearDrawing()")
+    pg.wait_for_function("board.strokes.length === 0 && document.getElementById('drawStatus').textContent.includes('cleared')", timeout=6000)
+    t.call("toggleRecording()")
+    eq(t.text("recordLabel"), "Stop recording", "record label while recording")
+    t.wait(1300)
+    t.call("toggleRecording()")
+    t.wait_for("document.getElementById('recordLink')")
+    size = t.call("fetch(document.getElementById('recordLink').href).then(r => r.blob()).then(b => b.size)")
+    expect(size > 0, "recording has data")
+    expect(t.call("document.getElementById('recordLink').download").startswith("layerlink-"), "recording file name")
+    pg.close()
+
+
+@case("layerlink-sharer", "edge", "deny, room limit, remove and stop each reach the viewer")
+def _(t):
+    link = _ll_room(t, approval=True, max_viewers="1")
+    a = _ll_viewer(t, link, "Asha")
+    _ll_admit(t, "Asha")
+    a.wait_for_function("document.getElementById('statusUI').innerText.includes('LIVE')", timeout=10000)
+    b = _ll_viewer(t, link, "Ben")
+    b.wait_for_function("document.getElementById('overlayMsg').innerText.includes('This broadcast is full')", timeout=8000)
+    t.wait_for("document.getElementById('viewerList').innerText.includes('Room full')")
+    t.page.evaluate("[...document.querySelectorAll('#viewerList .viewer-item')].find(li => li.textContent.includes('Asha')).querySelector('button').click()")
+    a.wait_for_function("document.getElementById('overlayMsg').innerText.includes('You were removed')", timeout=8000)
+    c = _ll_viewer(t, link, "Chen")
+    t.wait_for("[...document.querySelectorAll('#viewerList .viewer-item')].some(li => li.textContent.includes('Chen') && li.textContent.includes('Deny'))")
+    t.page.evaluate("[...document.querySelectorAll('#viewerList .viewer-item')].find(li => li.textContent.includes('Chen')).querySelectorAll('button')[1].click()")
+    c.wait_for_function("document.getElementById('overlayMsg').innerText.includes('did not let you in')", timeout=8000)
+    d = _ll_viewer(t, link, "Dev")
+    _ll_admit(t, "Dev")
+    d.wait_for_function("document.getElementById('statusUI').innerText.includes('LIVE')", timeout=10000)
+    t.call("stopBroadcast()")
+    d.wait_for_function("document.getElementById('overlayMsg').innerText.includes('This broadcast has ended')", timeout=8000)
+    expect("Broadcast stopped" in t.text("statusBadge"), "sharer status after stop")
+    eq(t.call("Object.keys(localStorage).filter(k => k.startsWith('llsig:sessions/')).length"), 0, "stopping removes the session from the signalling store")
+    for pg in (a, b, c, d):
+        pg.close()
+
+
+@case("layerlink-sharer", "edge", "room summary follows the options; a viewer link for a missing room says it ended")
+def _(t):
+    t.set("roomPassword", "x")
+    t.page.evaluate("document.getElementById('optApproval').click(); document.getElementById('optMic').click()")
+    s = t.text("roomSummary")
+    for part in ("Password required", "viewers join straight away", "up to 4 viewers", "your microphone"):
+        expect(part in s, f"{part!r} in {s!r}")
+    base = t.page.url.split("/tools/")[0]
+    pg = t.page.context.new_page()
+    pg.goto(f"{base}/tools/layerlink-viewer.html?session=nosuch&signal=local", wait_until="load")
+    pg.wait_for_function("document.getElementById('overlayMsg').innerText.includes('This broadcast has ended')", timeout=8000)
+    pg.close()
+
+
+# ----------------------------------------------------------------------------
 # pint-ae-checker
 # ----------------------------------------------------------------------------
 PINT_CSV = ("InvoiceNumber,IssueDate,SellerName,SellerTRN,BuyerName,BuyerTRN,Currency,LineDescription,Quantity,UnitPrice,TaxRate,TaxAmount,TotalAmount\n"
