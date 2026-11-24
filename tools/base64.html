@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="Encode text or files to Base64 and decode it back, including the URL-safe alphabet and unpadded JWT segments. Runs in your browser with a live byte count." />
+  <meta name="description" content="Encode and decode Base64: text or 100 MB+ files, URL-safe, MIME or PEM wrapped, UTF-8, UTF-16 or Windows-1252, with file-type detection and a hex view." />
   <title>Base64 Decode & Encode Online (Text, Files, Images) | Layerbit</title>
   <meta name="google-adsense-account" content="ca-pub-6072772587431629" />
   <link rel="preload" href="../fonts/space-grotesk-latin.woff2" as="font" type="font/woff2" crossorigin />
@@ -26,7 +26,7 @@
   <meta property="og:url" content="https://layerbit.co.in/tools/base64.html" />
   <meta property="og:site_name" content="Layerbit" />
   <meta property="og:title" content="Base64 Decode & Encode Online (Text, Files, Images) | Layerbit" />
-  <meta property="og:description" content="Encode text or files to Base64 and decode it back, including the URL-safe alphabet and unpadded JWT segments. Runs in your browser with a live byte count." />
+  <meta property="og:description" content="Encode and decode Base64: text or 100 MB+ files, URL-safe, MIME or PEM wrapped, UTF-8, UTF-16 or Windows-1252, with file-type detection and a hex view." />
   <meta property="og:image" content="https://layerbit.co.in/images/og/tools-base64.jpg" />
   <meta property="og:image:type" content="image/jpeg" />
   <meta property="og:image:width" content="1200" />
@@ -35,7 +35,7 @@
   <meta property="og:locale" content="en" />
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="Base64 Decode & Encode Online (Text, Files, Images) | Layerbit" />
-  <meta name="twitter:description" content="Encode text or files to Base64 and decode it back, including the URL-safe alphabet and unpadded JWT segments. Runs in your browser with a live byte count." />
+  <meta name="twitter:description" content="Encode and decode Base64: text or 100 MB+ files, URL-safe, MIME or PEM wrapped, UTF-8, UTF-16 or Windows-1252, with file-type detection and a hex view." />
   <meta name="twitter:image" content="https://layerbit.co.in/images/og/tools-base64.jpg" />
   <meta name="twitter:image:alt" content="Base64 Decode & Encode Online (Text, Files, Images)" />
   <meta name="theme-color" content="#0a0c10" />
@@ -48,7 +48,7 @@
       "@id": "https://layerbit.co.in/tools/base64.html#app",
       "name": "Base64 Encoder \u0026 Decoder",
       "url": "https://layerbit.co.in/tools/base64.html",
-      "description": "Encode text or files to Base64 and decode it back, including the URL-safe alphabet and unpadded JWT segments. Runs in your browser with a live byte count.",
+      "description": "Encode and decode Base64: text or 100 MB+ files, URL-safe, MIME or PEM wrapped, UTF-8, UTF-16 or Windows-1252, with file-type detection and a hex view.",
       "applicationCategory": "DeveloperApplication",
       "operatingSystem": "Any (runs in the browser)",
       "browserRequirements": "Requires JavaScript",
@@ -60,7 +60,16 @@
       },
       "publisher": {
         "@id": "https://layerbit.co.in/#organization"
-      }
+      },
+      "featureList": [
+        "Real-time Base64 encoding and decoding of text",
+        "Standard and URL-safe (base64url) alphabets, with or without padding",
+        "MIME (76) and PEM (64) line wrapping",
+        "UTF-8, UTF-8 with BOM, UTF-16 LE/BE and Windows-1252 text",
+        "File-type detection from magic bytes, with a hex view",
+        "Streaming encode and decode for 100 MB+ files",
+        "Data URI preview for images and PDFs"
+      ]
     },
     {
       "@type": "BreadcrumbList",
@@ -88,6 +97,7 @@
     },
     {
       "@type": "FAQPage",
+      "@id": "https://layerbit.co.in/tools/base64.html#faq",
       "mainEntity": [
         {
           "@type": "Question",
@@ -112,9 +122,32 @@
             "@type": "Answer",
             "text": "Because Base64 uses a limited character set to represent binary data, it requires 4 standard ASCII characters to represent every 3 bytes of raw data. This mathematical conversion means that encoding any file into Base64 will automatically increase its overall size by approximately 33%. This is why it is best used for small assets rather than massive video or audio files."
           }
+        },
+        {
+          "@type": "Question",
+          "name": "What are MIME and PEM line lengths?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Email (MIME, RFC 2045) limits Base64 lines to 76 characters, and PEM files such as certificates and private keys (RFC 7468) use 64. Many tools expect those exact widths, and some refuse a single long line. Choose the width under the Base64 box or in the file panel; lines end with CRLF as both standards require. The decoder ignores line breaks and spaces, so wrapped input of any width decodes as is."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How do I find out what a Base64 string contains?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Paste it into the Base64 box. Below the editors the tool shows the decoded size, the file type recognised from the first bytes (the \"magic number\", such as 89 50 4E 47 for PNG or 25 50 44 46 for PDF), and a hex view of the first 256 bytes. Download saves the bytes with the matching extension. Text is decoded with the encoding you pick: UTF-8, UTF-16 or Windows-1252. Bytes that are not valid UTF-8 are shown one character per byte rather than as replacement characters."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Can it handle very large files?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes. Files are read and encoded in 4 MB slices into a downloadable file, so a 100 MB+ video or disk image never has to exist as one giant string in memory. Files up to 8 MB are also shown as a data URI you can copy. \"Decode a Base64 file\" works the same way in reverse and names the result from its detected type. Everything happens in this page; nothing is uploaded."
+          }
         }
-      ],
-      "@id": "https://layerbit.co.in/tools/base64.html#faq"
+      ]
     }
   ]
 }
@@ -122,7 +155,7 @@
 
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6072772587431629" crossorigin="anonymous"></script>
 
-  <script src="../js/vendor/lucide.min.js?v=73dc5075c6" async></script>
+  <script src="../js/vendor/lucide.min.js?v=9325ae5e8e" async></script>
 
   <link rel="icon" href="../favicon.ico" sizes="16x16 32x32 48x48" />
   <link rel="icon" href="../favicon-48.png" type="image/png" sizes="48x48" />
@@ -403,6 +436,23 @@
     .b64-toggle { display: flex; align-items: center; gap: 5px; font-size: 0.8em; color: var(--text-muted); cursor: pointer; user-select: none; white-space: nowrap; }
     .b64-toggle input { accent-color: var(--accent-main); cursor: pointer; }
 
+    /* v2.0: bytes panel, file tools */
+    .bytes-panel { margin: 16px auto 0; max-width: 1400px; border: 1px solid var(--card-border); border-radius: 14px; background: rgba(0,0,0,0.25); padding: 14px 16px; }
+    .bytes-panel[hidden] { display: none; }
+    .bytes-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; font-size: 0.9em; color: var(--text-muted); margin-bottom: 10px; }
+    .bytes-head strong { color: var(--text-main); }
+    .hex-view { margin: 0; font-family: 'Fira Code', monospace; font-size: 0.78em; line-height: 1.5; color: var(--text-main); overflow-x: auto; white-space: pre; max-height: 260px; }
+    .file-tools { padding: 12px 16px; display: flex; flex-direction: column; gap: 10px; border-top: 1px solid rgba(255,255,255,0.06); }
+    .file-info { font-size: 0.85em; color: var(--text-muted); overflow-wrap: anywhere; }
+    .file-info strong { color: var(--text-main); }
+    .file-info:empty { display: none; }
+    .warn-text { color: #f59e0b; }
+    .file-actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+    .file-tools progress { width: 100%; height: 6px; accent-color: var(--accent-main); }
+    .file-tools progress[hidden] { display: none; }
+    .btn-action:disabled { opacity: 0.45; cursor: not-allowed; }
+    label.btn-action { cursor: pointer; }
+
   </style>
 </head>
 <body>
@@ -436,7 +486,7 @@
   <main id="main" class="page-main">
   <div class="hero">
     <h1>Base64 Encoder &amp; Decoder</h1>
-    <p>Encode and decode Base64 in real time — text or files, standard or URL-safe alphabet — without your data leaving the browser.</p>
+    <p>Encode and decode Base64 in real time — text or files of any size, standard or URL-safe, one line or MIME and PEM wrapped, in UTF-8, UTF-16 or Windows-1252 — and see what decoded bytes really are, with a hex view, without your data leaving the browser.</p>
   </div>
 
   <div class="tab-container">
@@ -452,6 +502,9 @@
           <div class="header-actions">
             <span id="decodeError" class="error-text"><i data-lucide="alert-circle" style="width: 14px; display: inline; vertical-align: middle;"></i> Invalid Base64 String</span>
             <select id="lineEndings" class="mini-select" title="A text box always holds LF line breaks. Choose CRLF to process the text the way a Windows file stores it."><option value="lf">LF line breaks (as typed)</option><option value="crlf">CRLF line breaks (Windows)</option></select>
+            <select id="textEnc" class="mini-select" title="How the text becomes bytes before encoding, and how decoded bytes are read back as text">
+              <option value="utf-8">UTF-8</option><option value="utf-8-bom">UTF-8 with BOM</option><option value="utf-16le">UTF-16 LE</option><option value="utf-16be">UTF-16 BE</option><option value="windows-1252">Windows-1252</option>
+            </select>
             <button class="btn-action" onclick="clearContent('plainText', 'base64Text')"><i data-lucide="trash-2"></i> <span>Clear</span></button>
             <button class="btn-action" onclick="copyContent('plainText', this)"><i data-lucide="copy"></i> <span>Copy</span></button>
           </div>
@@ -464,12 +517,22 @@
           <div class="pane-title"><i data-lucide="binary"></i> Base64 Encoded <span class="b64-stats" id="b64Stats"></span></div>
           <div class="header-actions">
             <label class="b64-toggle" title="Use - and _ instead of + and /, and drop the = padding (RFC 4648 §5, as used by JWTs and URLs)"><input type="checkbox" id="urlSafe"> URL-safe</label>
+            <select id="wrapMode" class="mini-select" title="Line breaks in the Base64 output">
+              <option value="0">One line</option><option value="76">MIME (76 per line)</option><option value="64">PEM (64 per line)</option>
+            </select>
             <button class="btn-action" onclick="clearContent('base64Text', 'plainText')"><i data-lucide="trash-2"></i> <span>Clear</span></button>
             <button class="btn-action" onclick="copyContent('base64Text', this)"><i data-lucide="copy"></i> <span>Copy</span></button>
           </div>
         </div>
         <textarea id="base64Text" class="editor" placeholder="Type or paste a Base64 string here...&#10;It will automatically decode to Plain Text in real-time." spellcheck="false"></textarea>
       </div>
+    </div>
+    <div class="bytes-panel" id="bytesPanel" hidden>
+      <div class="bytes-head">
+        <span id="bytesInfo"></span>
+        <button class="btn-action" id="btnSaveBytes" type="button"><i data-lucide="download"></i> <span>Download bytes</span></button>
+      </div>
+      <pre class="hex-view" id="hexView" aria-label="Hex view of the decoded bytes"></pre>
     </div>
   </div>
 
@@ -491,6 +554,16 @@
           <p style="font-size: 0.8em; margin-top: 10px;">Synthesizes file to raw Base64 string</p>
         </label>
         <textarea id="imageOutputText" class="editor" style="display:none;" placeholder="Base64 string will appear here..." readonly></textarea>
+        <div class="file-tools">
+          <div class="file-info" id="fileInfo" aria-live="polite"></div>
+          <progress id="fileProgress" max="100" value="0" hidden></progress>
+          <div class="file-actions">
+            <select id="fileWrap" class="mini-select" title="Line breaks in the downloaded Base64"><option value="0">One line</option><option value="76">MIME (76 per line)</option><option value="64">PEM (64 per line)</option></select>
+            <button class="btn-action" id="btnDownloadB64" type="button" disabled><i data-lucide="download"></i> <span>Download Base64</span></button>
+            <label class="btn-action" for="b64FileIn"><i data-lucide="file-up"></i> <span>Decode a Base64 file</span></label>
+            <input type="file" id="b64FileIn" accept=".b64,.txt,.base64,text/plain" hidden>
+          </div>
+        </div>
       </div>
 
       <div class="pane">
@@ -569,6 +642,27 @@
           </div>
         </div>
 
+        <div class="faq-item">
+          <button class="faq-question">What are MIME and PEM line lengths? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer">
+            <p>Email (MIME, RFC 2045) limits Base64 lines to 76 characters, and PEM files such as certificates and private keys (RFC 7468) use 64. Many tools expect those exact widths, and some refuse a single long line. Choose the width under the Base64 box or in the file panel; lines end with CRLF as both standards require. The decoder ignores line breaks and spaces, so wrapped input of any width decodes as is.</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question">How do I find out what a Base64 string contains? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer">
+            <p>Paste it into the Base64 box. Below the editors the tool shows the decoded size, the file type recognised from the first bytes (the "magic number", such as <code>89 50 4E 47</code> for PNG or <code>25 50 44 46</code> for PDF), and a hex view of the first 256 bytes. Download saves the bytes with the matching extension. Text is decoded with the encoding you pick: UTF-8, UTF-16 or Windows-1252. Bytes that are not valid UTF-8 are shown one character per byte rather than as replacement characters.</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question">Can it handle very large files? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer">
+            <p>Yes. Files are read and encoded in 4 MB slices into a downloadable file, so a 100 MB+ video or disk image never has to exist as one giant string in memory. Files up to 8 MB are also shown as a data URI you can copy. "Decode a Base64 file" works the same way in reverse and names the result from its detected type. Everything happens in this page; nothing is uploaded.</p>
+          </div>
+        </div>
+
       </div>
     </div>
 
@@ -631,6 +725,7 @@
     <div class="info-panel">
       <h2><i data-lucide="git-commit"></i> Changelog</h2>
       <ul class="changelog-list">
+        <li><span class="changelog-tag">v2.0.0</span> MIME (76 characters) and PEM (64) line wrapping. Text encodings: UTF-8 with or without a BOM, UTF-16 LE and BE, and Windows-1252, both ways. Decoded bytes show their file type from their magic bytes (PNG, PDF, ZIP, DOCX, MP4, WebAssembly and about 40 more), a hex view, and download with the right extension; an invalid string says which character, at which position. Files of any size are encoded and decoded in slices, so a 100 MB+ file never becomes one giant string, and a file whose bytes disagree with its declared type is flagged.</li>
         <li><span class="changelog-tag">v1.5.0</span> A line-endings option: text can be encoded with CRLF line breaks, as a Windows file stores them.</li>
         <li><span class="changelog-tag">v1.4.1</span> Added a URL-safe output toggle (RFC 4648 §5 alphabet, no padding) and a live byte/character readout, so the 33% overhead is visible on the input you actually have.</li>
         <li><span class="changelog-tag">v1.4.0</span> Decoder now accepts the URL-safe alphabet (<code>-</code> and <code>_</code>), ignores line wrapping and whitespace, and tolerates missing padding, so JWT segments and copied-from-a-log strings decode directly. Encoding and decoding use <code>TextEncoder</code>/<code>TextDecoder</code> for correct UTF-8 on multi-megabyte input.</li>
@@ -748,6 +843,7 @@
   <script src="../js/kernel.js?v=eb69348d32"></script>
 
   <script src="../js/shared.js?v=e2441a1728"></script>
+  <script src="../js/engines/b64.js?v=ef4414af63"></script>
 
 
   <script>
@@ -899,6 +995,30 @@
     function encodeUtf8ToBase64(str) {
       return btoa(bytesToBinary(new TextEncoder().encode(str)));
     }
+    const B64 = window.LBB64;
+    const textEnc = document.getElementById('textEnc'), wrapMode = document.getElementById('wrapMode');
+    let lastBytes = null;
+    function showBytes(bytes) {
+      lastBytes = bytes;
+      const panel = document.getElementById('bytesPanel');
+      if (!bytes || !bytes.length) { panel.hidden = true; return; }
+      const m = B64.magic(bytes);
+      document.getElementById('bytesInfo').innerHTML = `<strong>${bytes.length.toLocaleString()} bytes</strong> · ${m ? `looks like <strong>${m.name}</strong> (${m.mime}), from its first bytes` : 'no known file signature'}`;
+      document.getElementById('hexView').textContent = B64.hexdump(bytes, { max: 256 }) + (bytes.length > 256 ? `\n… ${(bytes.length - 256).toLocaleString()} more bytes` : '');
+      document.querySelector('#btnSaveBytes span').textContent = m ? `Download .${m.ext}` : 'Download bytes';
+      panel.hidden = false;
+    }
+    document.getElementById('btnSaveBytes').addEventListener('click', () => {
+      if (!lastBytes) return;
+      const m = B64.magic(lastBytes);
+      saveBlob(new Blob([lastBytes], { type: m ? m.mime : 'application/octet-stream' }), 'decoded.' + (m ? m.ext : 'bin'));
+    });
+    function saveBlob(blob, name) {
+      const url = URL.createObjectURL(blob), a = document.createElement('a');
+      a.href = url; a.download = name; document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 2000);
+      Layerbit.toast(`Downloaded ${name} (${Layerbit.fmtBytes ? Layerbit.fmtBytes(blob.size) : blob.size + ' bytes'})`);
+    }
     // Accepts standard and URL-safe alphabets, ignores whitespace/newlines (MIME
     // wrapping, copied-from-a-log input) and tolerates missing padding, which
     // is how JWT segments and most base64url producers emit it.
@@ -920,38 +1040,51 @@
     const urlSafe = document.getElementById('urlSafe');
     const b64Stats = document.getElementById('b64Stats');
     function encodePlain() {
-      try {
-        let enc = encodeUtf8ToBase64(Layerbit.eol(plainText.value, document.getElementById('lineEndings').value));
-        if (urlSafe.checked) enc = enc.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
-        base64Text.value = enc;
-        decodeError.classList.remove('active');
-        const bytes = new TextEncoder().encode(plainText.value).length;
-        b64Stats.textContent = bytes ? `${bytes.toLocaleString()} bytes → ${enc.length.toLocaleString()} chars` : '';
-      } catch(e) {
-        console.error("Encoding error", e);
-      }
+      let bytes, warn = '';
+      const text = Layerbit.eol(plainText.value, document.getElementById('lineEndings').value);
+      try { bytes = B64.textToBytes(text, textEnc.value); } catch (e) { bytes = e.bytes; warn = e.message; }
+      if (!bytes) return;
+      const enc = B64.encode(bytes, { urlSafe: urlSafe.checked, wrap: +wrapMode.value, newline: '\r\n' });
+      base64Text.value = enc;
+      decodeError.classList.remove('active');
+      b64Stats.textContent = bytes.length ? `${bytes.length.toLocaleString()} bytes → ${enc.length.toLocaleString()} chars` : '';
+      if (warn) { decodeError.innerHTML = '<i data-lucide="alert-circle"></i> ' + warn; decodeError.classList.add('active'); if (window.lucide) lucide.createIcons(); }
+      document.getElementById('bytesPanel').hidden = true;
     }
+    textEnc.addEventListener('change', () => { if (lastSide === 'b64') decodeB64(); else encodePlain(); });
+    wrapMode.addEventListener('change', encodePlain);
+    let lastSide = 'plain';
+    plainText.addEventListener('input', () => { lastSide = 'plain'; });
     plainText.addEventListener('input', encodePlain);
     document.getElementById('lineEndings').addEventListener('change', encodePlain);
     urlSafe.addEventListener('change', encodePlain);
 
-    base64Text.addEventListener('input', () => {
+    const ERR0 = decodeError.innerHTML;
+    function decodeB64() {
       const val = base64Text.value.trim();
+      decodeError.innerHTML = ERR0;
       if(!val) {
         plainText.value = '';
         decodeError.classList.remove('active');
+        showBytes(null);
         return;
       }
-      try {
-        plainText.value = decodeBase64ToUtf8(val);
-        decodeError.classList.remove('active');
-        const bytes = new TextEncoder().encode(plainText.value).length;
-        b64Stats.textContent = `${val.length.toLocaleString()} chars → ${bytes.toLocaleString()} bytes`;
-      } catch (e) {
-        decodeError.classList.add('active');
-        b64Stats.textContent = '';
+      let bytes;
+      try { bytes = B64.decode(val.replace(/^data:[^,]*,/, '')); }
+      catch (e) {
+        decodeError.innerHTML = '<i data-lucide="alert-circle"></i> ' + e.message.replace(/[<>&]/g, c => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;' }[c]));
+        decodeError.classList.add('active'); if (window.lucide) lucide.createIcons();
+        b64Stats.textContent = ''; showBytes(null);
+        return;
       }
-    });
+      decodeError.classList.remove('active');
+      // fatal UTF-8: genuinely binary input is shown as-is, not as replacement characters
+      try { plainText.value = B64.bytesToText(bytes, textEnc.value); }
+      catch (e) { plainText.value = B64.bytesToText(bytes, 'iso-8859-1'); }
+      b64Stats.textContent = `${val.length.toLocaleString()} chars → ${bytes.length.toLocaleString()} bytes`;
+      showBytes(bytes);
+    }
+    base64Text.addEventListener('input', () => { lastSide = 'b64'; decodeB64(); });
 
     /* ------------------------------
        TAB 2: ASSET ENCODER/DECODER 
@@ -982,18 +1115,57 @@
       }
     });
 
-    function handleFile(e) {
+    // Files of any size: Base64 is produced slice by slice into a Blob, so a
+    // 100 MB+ file never becomes one giant string. Up to INLINE bytes the
+    // data URI is also shown in the box.
+    const INLINE = window.lbB64Inline || 8 * 1024 * 1024;
+    let fileB64 = null, fileName = '';
+    const fmtB = n => Layerbit.fmtBytes ? Layerbit.fmtBytes(n) : n + ' bytes';
+    async function handleFile(e) {
       const file = e.target.files[0];
       if (!file) return;
-
-      const reader = new FileReader();
-      reader.onload = function(event) {
-        dropzone.style.display = 'none';
-        imageOutputText.style.display = 'block';
-        imageOutputText.value = event.target.result;
-      };
-      reader.readAsDataURL(file);
+      fileName = file.name; fileB64 = null;
+      const btn = document.getElementById('btnDownloadB64'), prog = document.getElementById('fileProgress'), info = document.getElementById('fileInfo');
+      btn.disabled = true;
+      const head = new Uint8Array(await file.slice(0, 4096).arrayBuffer()), m = B64.magic(head);
+      const declared = file.type || 'unknown';
+      info.innerHTML = `<strong>${escapeHtml(file.name)}</strong> · ${fmtB(file.size)} · ${m ? `content: <strong>${m.name}</strong>` : 'content: no known signature'}` +
+        (m && file.type && m.mime !== file.type ? ` <span class="warn-text">(the file says ${escapeHtml(declared)}; its bytes say ${m.mime})</span>` : '');
+      prog.hidden = false; prog.value = 0;
+      try {
+        fileB64 = await B64.encodeBlob(file, { wrap: +document.getElementById('fileWrap').value }, (done, total) => { prog.value = Math.round(done / total * 100); });
+      } catch (err) { info.innerHTML += ` · <span class="warn-text">could not read the file: ${escapeHtml(err.message)}</span>`; prog.hidden = true; return; }
+      prog.hidden = true;
+      dropzone.style.display = 'none';
+      imageOutputText.style.display = 'block';
+      if (file.size <= INLINE) {
+        const raw = await (await B64.encodeBlob(file, {})).text();
+        imageOutputText.value = `data:${m ? m.mime : declared === 'unknown' ? 'application/octet-stream' : declared};base64,${raw}`;
+      } else {
+        imageOutputText.value = `This file is ${fmtB(file.size)}, too large to show here. Its Base64 (${fmtB(fileB64.size)}) is ready: use Download Base64.`;
+      }
+      btn.disabled = false;
+      btn.querySelector('span').textContent = `Download Base64 (${fmtB(fileB64.size)}${WRAPNAME[document.getElementById('fileWrap').value]})`;
     }
+    function escapeHtml(s) { return String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); }
+    const WRAPNAME = { 0: '', 76: ', MIME lines', 64: ', PEM lines' };
+    document.getElementById('fileWrap').addEventListener('change', () => {
+      if (fileInput.files[0]) handleFile({ target: fileInput });
+      else document.querySelector('#btnDownloadB64 span').textContent = 'Download Base64' + WRAPNAME[document.getElementById('fileWrap').value];
+    });
+    document.getElementById('btnDownloadB64').addEventListener('click', () => { if (fileB64) saveBlob(fileB64, fileName + '.b64'); });
+    document.getElementById('b64FileIn').addEventListener('change', async e => {
+      const f = e.target.files[0]; if (!f) return;
+      const prog = document.getElementById('fileProgress'), info = document.getElementById('fileInfo');
+      prog.hidden = false; prog.value = 0;
+      try {
+        const out = await B64.decodeBlob(f, (d, t) => { prog.value = Math.round(d / t * 100); });
+        const m = out.detected, base = f.name.replace(/\.(b64|base64|txt)$/i, '');
+        info.innerHTML = `Decoded <strong>${escapeHtml(f.name)}</strong>: ${fmtB(out.size)}${m ? `, <strong>${m.name}</strong>` : ''}.`;
+        saveBlob(out, /\.[a-z0-9]{2,5}$/i.test(base) ? base : base + '.' + (m ? m.ext : 'bin'));
+      } catch (err) { info.innerHTML = `<span class="warn-text">${escapeHtml(f.name)} is not valid Base64: ${escapeHtml(err.message)}</span>`; }
+      prog.hidden = true; e.target.value = '';
+    });
 
     imageDecodeInput.addEventListener('input', () => {
       let val = imageDecodeInput.value.trim();

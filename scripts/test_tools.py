@@ -5139,6 +5139,67 @@ def _(t):
 # ----------------------------------------------------------------------------
 # site-wide: consent, redirects, footer directory, feed (AdSense / SEO pass)
 # ----------------------------------------------------------------------------
+@case("base64", "typical", "2.25: MIME and PEM wrapping; text encodings other than UTF-8")
+def _(t):
+    t.select("wrapMode", "0"); t.select("textEnc", "utf-8")
+    t.set("plainText", "x" * 200)
+    t.select("wrapMode", "76"); t.wait(30)
+    lines = t.val("base64Text").split("\n")
+    expect(len(lines) == 4 and all(len(l.rstrip("\r")) == 76 for l in lines[:-1]), [len(l) for l in lines])
+    t.select("wrapMode", "64"); t.wait(30)
+    expect(all(len(l.rstrip("\r")) == 64 for l in t.val("base64Text").split("\n")[:-1]), "PEM width")
+    t.select("wrapMode", "0")
+    t.set("plainText", "hé")
+    for enc, want in [("utf-8", "aMOp"), ("utf-8-bom", "77u/aMOp"), ("utf-16le", "aADpAA=="), ("utf-16be", "AGgA6Q=="), ("windows-1252", "aOk=")]:
+        t.select("textEnc", enc); t.wait(30)
+        eq(t.val("base64Text"), want, enc)
+    t.set("base64Text", "gOk="); t.wait(30)
+    eq(t.val("plainText"), "€é", "decoded as Windows-1252")
+    t.set("plainText", "日本"); t.wait(30)
+    expect("cannot be written in windows-1252" in t.text("decodeError"), t.text("decodeError"))
+    t.select("textEnc", "utf-8")
+
+
+@case("base64", "typical", "2.25: decoded bytes show their file type and a hex view, and download with that extension")
+def _(t):
+    t.set("base64Text", "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=="); t.wait(60)
+    expect(t.visible("#bytesPanel"), "bytes panel hidden")
+    expect("PNG image" in t.text("bytesInfo") and "70 bytes" in t.text("bytesInfo"), t.text("bytesInfo"))
+    expect(t.text("hexView").startswith("00000000  89 50 4e 47 0d 0a 1a 0a"), t.text("hexView")[:80])
+    with t.page.expect_download() as dl:
+        t.click("#btnSaveBytes")
+    eq(dl.value.suggested_filename, "decoded.png", "extension from the magic bytes")
+    eq(len(open(dl.value.path(), "rb").read()), 70, "bytes")
+    t.set("base64Text", "SGVsbG8*IExh"); t.wait(30)
+    expect('"*" at position 8' in t.text("decodeError"), t.text("decodeError"))
+    t.set("base64Text", "SGVsbG8="); t.wait(30)
+    expect("no known file signature" in t.text("bytesInfo"), t.text("bytesInfo"))
+
+
+@case("base64", "maximal", "2.25: a 12 MB file is encoded in slices to a download and decodes back byte for byte")
+def _(t):
+    t.call("switchTab('image')")
+    t.call("""() => { const n = 12 * 1024 * 1024, b = new Uint8Array(n); for (let i = 0; i < n; i++) b[i] = (i * 2654435761) >>> 24;
+      b.set([0x25, 0x50, 0x44, 0x46, 0x2d]); window.__big = b;
+      const dt = new DataTransfer(); dt.items.add(new File([b], 'report.pdf', { type: 'application/pdf' })); const fi = document.getElementById('fileInput'); fi.files = dt.files; fi.dispatchEvent(new Event('change')); }""")
+    t.page.wait_for_function("!document.getElementById('btnDownloadB64').disabled", timeout=20000)
+    expect("report.pdf" in t.text("fileInfo") and "PDF document" in t.text("fileInfo"), t.text("fileInfo"))
+    expect("too large to show here" in t.val("imageOutputText"), "a 12 MB data URI should not be put in the text box")
+    with t.page.expect_download() as dl:
+        t.click("#btnDownloadB64")
+    eq(dl.value.suggested_filename, "report.pdf.b64", "name")
+    path = dl.value.path()
+    import base64 as _b64
+    data = _b64.b64decode(open(path, "rb").read())
+    eq(len(data), 12 * 1024 * 1024, "decoded length")
+    with t.page.expect_download() as dl2:
+        t.page.set_input_files("#b64FileIn", files=[{"name": "report.pdf.b64", "mimeType": "text/plain", "buffer": open(path, "rb").read()}])
+    eq(dl2.value.suggested_filename, "report.pdf", "decoded name")
+    eq(open(dl2.value.path(), "rb").read(), data, "round trip")
+    expect("PDF document" in t.text("fileInfo"), t.text("fileInfo"))
+    t.call("switchTab('text')")
+
+
 @case("base64", "typical", "site: Reject all stores the choice and sends denied consent to Google")
 def _(t):
     t.call("localStorage.removeItem('layerbit-cookie-consent'); initCookieConsent(true)")
