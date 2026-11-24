@@ -7,7 +7,7 @@
       "@id": "https://layerbit.co.in/tools/color-converter.html#app",
       "name": "Color Converter \u0026 WCAG Contrast Checker",
       "url": "https://layerbit.co.in/tools/color-converter.html",
-      "description": "Convert HEX, RGB, HSL, HWB, LAB, LCH, OKLCH and CMYK colors, check WCAG and APCA contrast, fix failing colors, build palettes and simulate color blindness.",
+      "description": "Convert HEX, RGB, HSL and OKLCH, check WCAG and APCA contrast, generate palettes, pull colours from images, build gradients, export .ase and Procreate.",
       "applicationCategory": "DeveloperApplication",
       "operatingSystem": "Any (runs in the browser)",
       "browserRequirements": "Requires JavaScript",
@@ -21,17 +21,13 @@
         "@id": "https://layerbit.co.in/#organization"
       },
       "featureList": [
-        "Parses every CSS Color 4 notation: hex, rgb, hsl, hwb, lab, lch, oklab, oklch, cmyk and 148 named colors",
-        "CSS Color 4 gamut mapping for out-of-sRGB colors",
-        "Outputs HEX, RGB, HSL, HWB, OKLCH, OKLab, LCH, Lab, CMYK, integer, Android ARGB and SwiftUI",
-        "Nearest named color with perceptual distance",
-        "WCAG 2.2 contrast ratio with AA, AAA and non-text results",
-        "APCA lightness contrast (Lc) with usage guidance",
-        "One-click contrast fix that keeps hue and chroma",
-        "11-step OKLCH tint and shade scale with CSS, Tailwind, JSON and SCSS export",
-        "Complementary, analogous, triadic, split and tetradic harmonies",
-        "Protanopia, deuteranopia, tritanopia and achromatopsia simulation",
-        "Runs entirely in the browser"
+        "Every CSS Color 4 format including OKLCH",
+        "WCAG 2.2 and APCA contrast with one-click fixes",
+        "Palette generator with spacebar, lock and shuffle",
+        "Colours from an image and a screen eyedropper",
+        "Gradient builder in OKLCH, OKLab or sRGB",
+        "Export to Adobe .ase, Procreate .swatches, PDF swatch sheet and GIMP .gpl",
+        "Color-vision deficiency simulation"
       ]
     },
     {
@@ -53,7 +49,7 @@
         {
           "@type": "ListItem",
           "position": 3,
-          "name": "Color Converter \u0026 Contrast Checker",
+          "name": "--features",
           "item": "https://layerbit.co.in/tools/color-converter.html"
         }
       ]
@@ -104,10 +100,26 @@
         },
         {
           "@type": "Question",
+          "name": "Can I get a palette from a photo or screenshot?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes. Open or drop an image into the Colours from an image panel and the tool clusters its pixels into four to ten colours, ordered by how much of the image each covers. Click the image to pick one exact pixel, or use the Eyedropper button (Chrome and Edge) to pick a colour from anywhere on your screen. The image is decoded in the page and never uploaded. Use as palette sends the result to the generator, where you can lock, regenerate and export it."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How do I get a palette into Illustrator, Photoshop or Procreate?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Choose Adobe .ase and Download, then in Illustrator open the Swatches panel menu and choose Open Swatch Library, Other Library; Photoshop and InDesign import .ase from their Swatches panel too. For Procreate, download the .swatches file and open it on the iPad (from Files, AirDrop or a share sheet) and it appears in the Palettes tab. Procreate keeps at most 30 colours per palette. The PDF swatch sheet is for sharing with a client or a printer and lists each colour's HEX, RGB, CMYK and OKLCH values."
+          }
+        },
+        {
+          "@type": "Question",
           "name": "Is anything I enter sent to a server?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "No. Parsing, conversion, contrast, palettes and color-vision simulation are all computed by JavaScript in this page, using published formulas from the CSS Color 4 specification, WCAG 2.2, APCA and the Machado 2009 model. There are no network requests, which you can confirm in your browser's developer tools, and the page keeps working offline once loaded."
+            "text": "No. Parsing, conversion, contrast, palettes, image extraction, gradients, swatch files and color-vision simulation are all computed by JavaScript in this page, using published formulas from the CSS Color 4 specification, WCAG 2.2, APCA and the Machado 2009 model. Images you open are read in the page and never uploaded, and saved palettes stay in this browser. There are no network requests, which you can confirm in your browser's developer tools, and the page keeps working offline once loaded."
           }
         }
       ]

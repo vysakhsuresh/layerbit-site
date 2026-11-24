@@ -37,6 +37,7 @@ def INPUTS(c):
         "yaml-json-converter": {"yamlInput": open(j("openapi-petstore.yaml")).read()},
         "xml-formatter": {"xmlInput": open(j("pom.xml")).read(), "xpathInput": "//dependency/artifactId"},
         "cron-generator": {"cronInput": "*/15 9-17 * * 1-5"},
+        "color-converter": {"colorInput": "#e11d48"},
         "timestamp-converter": {"tsInput": "1700000000"},
         "uuid-generator": {},
         "markdown-preview": {},

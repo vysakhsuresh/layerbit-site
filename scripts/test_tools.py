@@ -4261,6 +4261,116 @@ def _(t):
     eq(t.count("#cvd .cvd-cell"), 5, "vision simulations")
 
 
+def _gen_hexes(t):
+    return t.call("[...document.querySelectorAll('#genRow .gen-hex')].map(b => b.textContent.trim())")
+
+
+@case("color-converter", "typical", "2.14: spacebar generates, locks hold, shuffle reorders the rest")
+def _(t):
+    eq(t.count("#genRow .gen-col"), 5, "a first palette on load")
+    first = _gen_hexes(t)
+    t.click("#genRow .gen-lock[data-i='1']"); t.wait(40)
+    eq(t.call("document.querySelector('#genRow .gen-lock[data-i=\"1\"]').getAttribute('aria-pressed')"), "true", "lock state")
+    t.call("() => document.activeElement && document.activeElement.blur()")
+    t.page.keyboard.press("Space"); t.wait(60)
+    second = _gen_hexes(t)
+    eq(second[1], first[1], "locked colour moved")
+    expect(second != first, "spacebar did not generate")
+    t.focus("#colorInput") if hasattr(t, "focus") else t.call("document.getElementById('colorInput').focus()")
+    t.page.keyboard.press("Space"); t.wait(40)
+    eq(_gen_hexes(t), second, "space typed in an input must not generate")
+    t.click("#btnShuffle"); t.wait(40)
+    third = _gen_hexes(t)
+    eq(third[1], second[1], "shuffle moved a locked colour")
+    eq(sorted(third), sorted(second), "shuffle must only reorder")
+    expect(third != second, "shuffle did nothing")
+    t.select("genCount", "8"); t.wait(40)
+    eq(t.count("#genRow .gen-col"), 8, "count")
+    eq(_gen_hexes(t)[1], second[1], "lock kept when the count changes")
+    t.select("genCount", "5")
+    t.click("#genRow .gen-use[data-i='1']"); t.wait(40)
+    eq(t.val("colorInput").lower(), second[1].lower(), "edit sends the colour to the converter")
+
+
+@case("color-converter", "typical", "2.14: palette downloads as .ase, Procreate, PDF and GPL")
+def _(t):
+    hexes = _gen_hexes(t)
+    files = {}
+    for fmt, ext in [("ase", ".ase"), ("procreate", ".swatches"), ("pdf", ".pdf"), ("gpl", ".gpl")]:
+        t.select("paletteFmt", fmt)
+        with t.page.expect_download() as dl:
+            t.click("#btnExportPalette")
+        expect(dl.value.suggested_filename.endswith(ext), dl.value.suggested_filename)
+        files[fmt] = open(dl.value.path(), "rb").read()
+    expect(files["ase"][:4] == b"ASEF" and int.from_bytes(files["ase"][8:12], "big") == len(hexes) + 2, "ase header")
+    import zipfile, io, json as _json
+    sw = _json.loads(zipfile.ZipFile(io.BytesIO(files["procreate"])).read("Swatches.json"))
+    eq(len(sw["swatches"]), len(hexes), "procreate swatches")
+    expect(files["pdf"].startswith(b"%PDF-1.4") and files["pdf"].count(b" re f") == len(hexes), "pdf swatches")
+    expect(files["gpl"].startswith(b"GIMP Palette") and all(h.upper() in files["gpl"].decode().upper() for h in hexes), "gpl")
+
+
+@case("color-converter", "typical", "2.14: palettes are saved only when asked, and load back")
+def _(t):
+    t.call("localStorage.removeItem('layerbit-color-palettes')")
+    t.click("#btnGenerate"); t.wait(40)
+    expect(t.call("localStorage.getItem('layerbit-color-palettes')") is None, "saved without being asked")
+    hexes = _gen_hexes(t)
+    t.click("#btnSavePalette"); t.wait(40)
+    eq(t.count("#savedPalettes .saved-row"), 1, "saved row")
+    t.click("#btnGenerate"); t.wait(40)
+    t.click("#savedPalettes .saved-load"); t.wait(40)
+    eq(_gen_hexes(t), hexes, "load")
+    t.click("#savedPalettes .saved-del"); t.wait(40)
+    eq(t.count("#savedPalettes .saved-row"), 0, "delete")
+    eq(t.call("localStorage.getItem('layerbit-color-palettes')"), "[]", "deleted from storage")
+
+
+@case("color-converter", "typical", "2.14: colours from an image, with shares, pixel picking and Use as palette")
+def _(t):
+    t.call("""() => new Promise(res => { const c = document.createElement('canvas'); c.width = 20; c.height = 10;
+      const x = c.getContext('2d'); x.fillStyle = '#dc1e28'; x.fillRect(0, 0, 14, 10); x.fillStyle = '#1e3cc8'; x.fillRect(14, 0, 6, 10);
+      c.toBlob(b => { loadImage(new File([b], 'two.png', { type: 'image/png' })); res(1); }); })""")
+    t.select("imgCount", "4"); t.wait(300)
+    sw = t.call("[...document.querySelectorAll('#imgColors .sw')].map(b => [b.dataset.copy, b.querySelector('span').textContent])")
+    expect(len(sw) >= 2, sw)
+    eq(sw[0], ["#dc1e28", "70%"], "dominant colour first with its share")
+    expect(["#1e3cc8", "30%"] in sw, sw)
+    expect("two.png" in t.text("imgHint"), t.text("imgHint"))
+    t.call("""() => { const cv = document.getElementById('imgCanvas'), r = cv.getBoundingClientRect();
+      cv.dispatchEvent(new MouseEvent('click', { clientX: r.right - 2, clientY: r.top + r.height / 2, bubbles: true })); }""")
+    t.wait(40)
+    eq(t.val("colorInput").lower(), "#1e3cc8", "pixel pick")
+    t.click("#btnImgToGen"); t.wait(40)
+    eq(_gen_hexes(t)[:2], ["#DC1E28", "#1E3CC8"], "extracted colours sent to the generator")
+    t.select("genCount", "5"); t.wait(40)
+
+
+@case("color-converter", "typical", "2.14: gradient builder in OKLCH with an sRGB fallback")
+def _(t):
+    css = t.text("gradCss")
+    expect("linear-gradient(in oklch shorter hue 90deg, #38bdf8 0%, #a855f7 100%)" in css, css)
+    expect(css.startswith("background: linear-gradient(90deg, #38bdf8 0%"), css)
+    t.select("gradType", "conic"); t.wait(30)
+    expect("conic-gradient(in oklch shorter hue from 90deg" in t.text("gradCss"), t.text("gradCss"))
+    t.select("gradType", "radial"); t.wait(30)
+    expect(not t.visible("#gradAngleField"), "angle has no meaning for radial")
+    t.select("gradType", "linear"); t.select("gradSpace", "srgb"); t.wait(30)
+    expect("linear-gradient(90deg, #38bdf8 0%, #a855f7 100%)" in t.text("gradCss"), t.text("gradCss"))
+    t.click("#btnAddStop"); t.wait(30)
+    eq(t.count("#gradStops .grad-stop"), 3, "stop added")
+    eq(t.call("document.querySelectorAll('#gradStops .stop-pos')[2].value"), "50", "new stop in the widest gap")
+    t.call("() => { const el = document.querySelectorAll('#gradStops .stop-hex')[0]; el.value = 'tomato'; el.dispatchEvent(new Event('input', { bubbles: true })); }")
+    t.wait(30)
+    expect("#ff6347 0%" in t.text("gradCss"), t.text("gradCss"))
+    t.click("#gradStops .stop-del[data-i='2']"); t.wait(30)
+    eq(t.count("#gradStops .grad-stop"), 2, "stop removed")
+    expect(t.call("document.querySelector('#gradStops .stop-del').disabled"), "two stops is the minimum")
+    t.click("#btnGradFromPal"); t.wait(30)
+    eq(t.count("#gradStops .grad-stop"), len(_gen_hexes(t)), "stops from the generator")
+    t.select("gradSpace", "oklch")
+
+
 # ----------------------------------------------------------------------------
 # vat-gst-calculator
 # ----------------------------------------------------------------------------

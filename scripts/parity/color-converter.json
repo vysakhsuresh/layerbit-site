@@ -1,0 +1,51 @@
+{
+  "tool": "color-converter",
+  "page": "tools/color-converter.html",
+  "competitors": [
+    { "name": "Coolors", "price": "free; Pro $3/month billed yearly", "checked": "2026-11" }
+  ],
+  "claims": [
+    {
+      "feature": "Palette generator: spacebar, lock, shuffle",
+      "competitor": "Coolors",
+      "tests": [
+        "ui:color-converter:2.14: spacebar generates, locks hold, shuffle reorders the rest",
+        "unit:palette:generate: locked colours stay put, the rest are new and repeatable with a seed",
+        "unit:palette:generate: every mode yields in-gamut colours; count grows and shrinks"
+      ]
+    },
+    {
+      "feature": "Extraction from an image, plus an eyedropper",
+      "competitor": "Coolors",
+      "tests": [
+        "ui:color-converter:2.14: colours from an image, with shares, pixel picking and Use as palette",
+        "unit:palette:extract: finds the dominant colours of an image with their shares"
+      ]
+    },
+    {
+      "feature": "Gradient builder",
+      "competitor": "Coolors",
+      "tests": [
+        "ui:color-converter:2.14: gradient builder in OKLCH with an sRGB fallback",
+        "unit:palette:gradient: OKLCH, OKLab and sRGB interpolation and CSS"
+      ]
+    },
+    {
+      "feature": "Saved palettes (local, opt-in)",
+      "competitor": "Coolors",
+      "tests": [
+        "ui:color-converter:2.14: palettes are saved only when asked, and load back"
+      ]
+    },
+    {
+      "feature": ".ase / Procreate / PDF swatch export (Coolors Pro)",
+      "competitor": "Coolors",
+      "tests": [
+        "ui:color-converter:2.14: palette downloads as .ase, Procreate, PDF and GPL",
+        "unit:palette:ase: Adobe Swatch Exchange layout",
+        "unit:palette:procreate: zip with Swatches.json in HSB, at most 30",
+        "unit:palette:pdf: a valid swatch sheet with a correct xref"
+      ]
+    }
+  ]
+}
