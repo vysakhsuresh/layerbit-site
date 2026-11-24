@@ -7,8 +7,8 @@
       "@id": "https://layerbit.co.in/tools/timestamp-converter.html#app",
       "name": "Unix Timestamp \u0026 Epoch Converter",
       "url": "https://layerbit.co.in/tools/timestamp-converter.html",
-      "description": "Convert Unix epoch seconds or milliseconds to ISO 8601, RFC 2822 and any time zone, and back. Auto-detects units, shows relative time, weeks and date math.",
-      "applicationCategory": "UtilitiesApplication",
+      "description": "Convert Unix epoch time, .NET ticks, Windows FILETIME/LDAP, Excel serials, Cocoa and GPS time to ISO 8601 in any time zone, one value or a whole column.",
+      "applicationCategory": "DeveloperApplication",
       "operatingSystem": "Any (runs in the browser)",
       "browserRequirements": "Requires JavaScript",
       "isAccessibleForFree": true,
@@ -17,11 +17,18 @@
         "price": "0",
         "priceCurrency": "USD"
       },
-      "keywords": "unix timestamp converter, epoch converter, epoch to date, iso 8601, timestamp to date, time zone converter",
       "publisher": {
         "@id": "https://layerbit.co.in/#organization"
       },
-      "datePublished": "2026-09-27"
+      "featureList": [
+        "Unix seconds, milliseconds, microseconds and nanoseconds, detected from the size",
+        ".NET ticks, Windows FILETIME and LDAP/Active Directory timestamps",
+        "Excel serial dates in the 1900 and 1904 systems",
+        "Apple Cocoa, GPS (with leap seconds and week numbers), WebKit and HFS+ times",
+        "ISO 8601, RFC 2822 and any IANA time zone",
+        "Batch conversion of a pasted or CSV column with CSV export",
+        "Date arithmetic and differences"
+      ]
     },
     {
       "@type": "BreadcrumbList",
@@ -56,7 +63,23 @@
           "name": "How does the tool know whether my number is seconds or milliseconds?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "By its size. Current Unix time in seconds is a 10-digit number, in milliseconds 13 digits, in microseconds 16 and in nanoseconds 19. The tool picks the unit whose range contains the number and states the assumption next to the result. If a value was genuinely meant as seconds but is 13 digits long, it would represent a date tens of thousands of years away, which is almost never what anyone intended."
+            "text": "By its size. Current Unix time in seconds is a 10-digit number, in milliseconds 13 digits, in microseconds 16 and in nanoseconds 19. The tool picks the unit whose range contains the number and states the assumption next to the result. If a value was genuinely meant as seconds but is 13 digits long, it would represent a date tens of thousands of years away, which is almost never what anyone intended. When the Unix reading lands outside 1990 to 2100 and the number has the shape of another clock (an 18-digit Windows FILETIME or .NET tick count, or an Excel serial with a fraction), that reading is used and the hint says so. Other plausible readings, such as Apple Cocoa seconds, are offered as one-click buttons, and \"The number is\" sets the format explicitly."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How do I convert .NET ticks, a Windows FILETIME or an LDAP timestamp?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Paste the number and pick its format under \"The number is\", or leave it on detect. .NET DateTime.Ticks counts 100-nanosecond intervals since 1 January 0001. A Windows FILETIME counts 100-nanosecond intervals since 1 January 1601, and Active Directory attributes such as lastLogonTimestamp and pwdLastSet, often called LDAP timestamps, use the same count; 0 and 9223372036854775807 mean \"never\". FILETIME is also accepted as two hexadecimal DWORDs, 0x01C98E33:0x3296F500. The conversion uses exact integer arithmetic, so no 100-nanosecond tick is lost."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How do Excel serial dates and GPS time work?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Excel stores a date as the number of days since 30 December 1899, with the time of day as the fraction, so 45678.5 is noon on 21 January 2025. For compatibility with Lotus 1-2-3 it counts 29 February 1900, a day that never existed, so serial 60 is refused and serials below 61 are shifted by one day. Workbooks from old Macs use the 1904 system, which starts on 1 January 1904. GPS time counts seconds since 6 January 1980 without leap seconds, so it is now 18 seconds ahead of UTC. It is usually given as a week number and seconds into the week, and the tool accepts 1518:516705 as well as plain seconds."
           }
         },
         {

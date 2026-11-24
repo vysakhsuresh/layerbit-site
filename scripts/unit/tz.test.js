@@ -71,12 +71,13 @@ t('parseTime formats', () => {
   for (const [s, [h, mi]] of Object.entries(c)) assert.deepStrictEqual(Z.parseTime(s), { h, mi }, s);
   ['13pm', '25:00', '9:75', 'abc', ''].forEach(s => assert.strictEqual(Z.parseTime(s), null, s));
 });
+const PQ = q => { const r = Z.parseQuery(q); return r.error ? r : { time: r.time, from: r.from, to: r.to }; };
 t('parseQuery phrases', () => {
-  assert.deepStrictEqual(Z.parseQuery('3pm IST to EST'), { time: { h: 15, mi: 0 }, from: 'Asia/Kolkata', to: 'America/New_York' });
-  assert.deepStrictEqual(Z.parseQuery('9:30 Dubai in London'), { time: { h: 9, mi: 30 }, from: 'Asia/Dubai', to: 'Europe/London' });
-  assert.deepStrictEqual(Z.parseQuery('Dubai to India'), { time: null, from: 'Asia/Dubai', to: 'Asia/Kolkata' });
-  assert.deepStrictEqual(Z.parseQuery('now in Tokyo'), { time: null, from: null, to: 'Asia/Tokyo' });
-  assert.deepStrictEqual(Z.parseQuery('10am'), { time: { h: 10, mi: 0 }, from: null, to: null });
+  assert.deepStrictEqual(PQ('3pm IST to EST'), { time: { h: 15, mi: 0 }, from: 'Asia/Kolkata', to: 'America/New_York' });
+  assert.deepStrictEqual(PQ('9:30 Dubai in London'), { time: { h: 9, mi: 30 }, from: 'Asia/Dubai', to: 'Europe/London' });
+  assert.deepStrictEqual(PQ('Dubai to India'), { time: null, from: 'Asia/Dubai', to: 'Asia/Kolkata' });
+  assert.deepStrictEqual(PQ('now in Tokyo'), { time: null, from: null, to: 'Asia/Tokyo' });
+  assert.deepStrictEqual(PQ('10am'), { time: { h: 10, mi: 0 }, from: null, to: null });
   assert.ok(/Atlantis/.test(Z.parseQuery('3pm IST to Atlantis').error));
   assert.ok(Z.parseQuery('').error);
 });
@@ -96,6 +97,45 @@ t('planner skips the hour that does not exist on a DST day', () => {
 t('bands', () => { assert.strictEqual(Z.band(9, 0), 'work'); assert.strictEqual(Z.band(17, 0), 'work'); assert.strictEqual(Z.band(17, 30), 'edge'); assert.strictEqual(Z.band(18, 0), 'edge'); assert.strictEqual(Z.band(23, 0), 'night'); assert.strictEqual(Z.band(7, 30), 'edge'); });
 t('clock text', () => { assert.strictEqual(Z.clock(0, 5, true), '12:05 AM'); assert.strictEqual(Z.clock(13, 0, true), '1:00 PM'); assert.strictEqual(Z.clock(9, 0, false), '09:00'); });
 t('zones list includes UTC and common zones', () => { const z = Z.zones(); assert.ok(z.length > 300); ['UTC', 'Etc/GMT', 'Asia/Dubai', 'Asia/Kolkata', 'Asia/Ho_Chi_Minh'].forEach(x => assert.ok(z.includes(x), x)); assert.ok(!z.includes('Asia/Calcutta')); assert.strictEqual(Z.resolve('buenos aires'), 'America/Argentina/Buenos_Aires'); assert.strictEqual(Z.resolve('calcutta'), 'Asia/Kolkata'); assert.strictEqual(Z.resolve('Asia/Calcutta'), 'Asia/Kolkata'); assert.strictEqual(Z.resolve('US/Eastern'), 'US/Eastern'); assert.ok(Z.isZone('Asia/Dubai')); assert.ok(!Z.isZone('Mars/Olympus')); });
+
+t('ambiguous abbreviations are reported with every meaning', () => {
+  assert.deepStrictEqual(Z.ambiguous('IST').map(x => x.zone), ['Asia/Kolkata', 'Asia/Jerusalem', 'Europe/Dublin']);
+  assert.deepStrictEqual(Z.ambiguous('cst').map(x => x.zone), ['America/Chicago', 'Asia/Shanghai', 'America/Havana']);
+  assert.strictEqual(Z.ambiguous('Dubai'), null);
+  assert.strictEqual(Z.ambiguous('Asia/Kolkata'), null);
+  const q = Z.parseQuery('3pm IST to CST');
+  assert.strictEqual(q.from, 'Asia/Kolkata');
+  assert.strictEqual(q.ambiguous.from.length, 3); assert.strictEqual(q.ambiguous.to.length, 3);
+  assert.strictEqual(Z.parseQuery('3pm Dubai to London').ambiguous.from, null);
+  // the first meaning is always what resolve() picks
+  ['ist', 'cst', 'bst', 'gst', 'pst', 'mst', 'est', 'ast', 'sst'].forEach(a => { const r = Z.resolve(a), m = Z.ambiguous(a); if (r) assert.strictEqual(m[0].zone, r, a); });
+});
+t('upcoming clock changes', () => {
+  const from = Date.UTC(2026, 10, 24);
+  const lon = Z.transitions('Europe/London', from, 2);
+  assert.deepStrictEqual(lon.map(x => new Date(x.ms).toISOString()), ['2027-03-28T01:00:00.000Z', '2027-10-31T01:00:00.000Z']);
+  assert.deepStrictEqual(lon.map(x => x.delta), [60, -60]);
+  const ny = Z.transitions('America/New_York', from, 1);
+  assert.strictEqual(new Date(ny[0].ms).toISOString(), '2027-03-14T07:00:00.000Z');
+  const syd = Z.transitions('Australia/Sydney', from, 1);
+  assert.strictEqual(new Date(syd[0].ms).toISOString(), '2027-04-03T16:00:00.000Z');
+  assert.deepStrictEqual(Z.transitions('Asia/Dubai', from, 2), []);
+  assert.deepStrictEqual(Z.transitions('Asia/Kolkata', from, 2), []);
+});
+t('ics: a valid UTC event with every local time, escaped and folded', () => {
+  const start = Date.UTC(2026, 11, 1, 9, 0);
+  const s = Z.ics({ start, minutes: 45, title: 'Sync; Q4, plan', zones: ['Asia/Dubai', 'Europe/London', 'America/New_York'], uid: 'x@y', now: Date.UTC(2026, 10, 24), url: 'https://layerbit.co.in/tools/time-zone-converter.html?at=2026-12-01T09:00Z' });
+  assert.ok(s.startsWith('BEGIN:VCALENDAR\r\nVERSION:2.0\r\n'));
+  assert.ok(s.endsWith('END:VEVENT\r\nEND:VCALENDAR\r\n'));
+  assert.ok(s.includes('\r\nDTSTART:20261201T090000Z\r\n'));
+  assert.ok(s.includes('\r\nDTEND:20261201T094500Z\r\n'));
+  assert.ok(s.includes('\r\nDTSTAMP:20261124T000000Z\r\n'));
+  assert.ok(s.includes('SUMMARY:Sync\\; Q4\\, plan'));
+  const unfolded = s.replace(/\r\n /g, '');
+  assert.ok(unfolded.includes('Dubai\\, UAE: Tue 2026-12-01 13:00 (GST)') || unfolded.includes('Dubai\\, UAE: Tue 2026-12-01 13:00 (GMT+4)'), unfolded);
+  assert.ok(unfolded.includes('New York (US Eastern): Tue 2026-12-01 04:00 (EST)'), unfolded);
+  s.split('\r\n').forEach(l => assert.ok(Buffer.byteLength(l) <= 75, 'line over 75 octets: ' + l));
+});
 
 console.log(`tz: ${pass} passed, ${fail} failed`);
 if (fail) process.exit(1);

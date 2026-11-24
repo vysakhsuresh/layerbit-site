@@ -66,21 +66,51 @@
     if (!littleEndian) out.reverse();
     return out;
   }
-  /** Reads the bit pattern of `u` as an IEEE-754 float of 32 or 64 bits. */
-  function asFloat(u, width) {
+  /** Reads the bit pattern of `u` as an IEEE-754 float: 64, 32, 16 (half),
+   *  or 16 with kind 'bf16' (bfloat16: float32's sign and exponent, 7 mantissa bits). */
+  function asFloat(u, width, kind) {
     var buf = new DataView(new ArrayBuffer(8));
     if (width === 32) { buf.setUint32(0, Number(u & 0xffffffffn)); return describeFloat(buf.getFloat32(0), u, 32); }
     if (width === 64) { buf.setBigUint64(0, u & 0xffffffffffffffffn); return describeFloat(buf.getFloat64(0), u, 64); }
+    if (width === 16) { var h = Number(u & 0xffffn), f = kind === 'bf16' ? [8, 7] : [5, 10]; return describeFloat(decodeSmall(h, f[0], f[1]), BigInt(h), 16, f[0], f[1]); }
     return null;
   }
-  function describeFloat(value, u, width) {
-    var eb = width === 32 ? 8 : 11, mb = width === 32 ? 23 : 52, bias = width === 32 ? 127 : 1023;
+  // a small IEEE-754 format with eb exponent bits and mb mantissa bits
+  function decodeSmall(h, eb, mb) {
+    var sign = h >> (eb + mb) ? -1 : 1, e = (h >> mb) & ((1 << eb) - 1), m = h & ((1 << mb) - 1), bias = (1 << (eb - 1)) - 1;
+    if (e === (1 << eb) - 1) return m ? NaN : sign * Infinity;
+    if (e === 0) return sign * m * Math.pow(2, 1 - bias - mb);
+    return sign * (1 + m / Math.pow(2, mb)) * Math.pow(2, e - bias);
+  }
+  function roundEven(v) { var f = Math.floor(v), d = v - f; return d > 0.5 ? f + 1 : d < 0.5 ? f : (f % 2 === 0 ? f : f + 1); }
+  // one rounding, to nearest with ties to even, straight from the double
+  function encodeSmall(x, eb, mb) {
+    var top = 1 << (eb + mb), bias = (1 << (eb - 1)) - 1, emax = (1 << eb) - 1, inf = emax << mb;
+    if (x !== x) return inf | (1 << (mb - 1));
+    var sign = x < 0 || (x === 0 && 1 / x < 0) ? top : 0; x = Math.abs(x);
+    if (x === Infinity) return sign | inf;
+    if (x === 0) return sign;
+    var e = Math.floor(Math.log2(x));
+    if (Math.pow(2, e) > x) e--; else if (Math.pow(2, e + 1) <= x) e++;
+    if (e < 1 - bias) {
+      var sm = roundEven(x / Math.pow(2, 1 - bias - mb));
+      return sign | sm;   // sm === 2^mb carries into the smallest normal exponent by itself
+    }
+    var m = roundEven((x / Math.pow(2, e) - 1) * Math.pow(2, mb));
+    if (m === Math.pow(2, mb)) { m = 0; e++; }
+    if (e + bias >= emax) return sign | inf;
+    return sign | ((e + bias) << mb) | m;
+  }
+  function describeFloat(value, u, width, ebits, mbits) {
+    var eb = ebits || (width === 32 ? 8 : 11), mb = mbits || (width === 32 ? 23 : 52), bias = (1 << (eb - 1)) - 1;
     var bits = u.toString(2).padStart(width, '0'), sign = bits[0], exp = bits.slice(1, 1 + eb), man = bits.slice(1 + eb);
     var e = parseInt(exp, 2), kind = e === 0 ? (/1/.test(man) ? 'subnormal' : 'zero') : e === (1 << eb) - 1 ? (/1/.test(man) ? 'NaN' : 'infinity') : 'normal';
     return { value: value, sign: sign, exponent: exp, mantissa: man, unbiased: kind === 'normal' ? e - bias : kind === 'subnormal' ? 1 - bias : null, kind: kind };
   }
-  /** Bit pattern of a decimal number as float32/float64. */
+  /** Bit pattern of a decimal number as float64, float32, float16 (16) or bfloat16 ('bf16'). */
   function floatBits(x, width) {
+    if (width === 16) return BigInt(encodeSmall(x, 5, 10));
+    if (width === 'bf16') return BigInt(encodeSmall(x, 8, 7));
     var buf = new DataView(new ArrayBuffer(8));
     if (width === 32) { buf.setFloat32(0, x); return BigInt(buf.getUint32(0)); }
     buf.setFloat64(0, x); return buf.getBigUint64(0);

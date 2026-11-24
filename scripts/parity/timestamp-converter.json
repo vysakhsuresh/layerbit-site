@@ -1,0 +1,29 @@
+{
+  "tool": "timestamp-converter",
+  "page": "tools/timestamp-converter.html",
+  "competitors": [
+    { "name": "epochconverter.com", "price": "free", "checked": "2026-11" }
+  ],
+  "claims": [
+    {
+      "feature": ".NET ticks, Windows FILETIME, Excel serial dates, LDAP/AD, Apple/Cocoa, GPS time",
+      "competitor": "epochconverter.com",
+      "tests": [
+        "ui:timestamp-converter:2.17: .NET ticks, FILETIME/LDAP, Excel, Cocoa, GPS and WebKit both ways",
+        "ui:timestamp-converter:2.17: an 18-digit FILETIME is not silently read as nanoseconds",
+        "unit:epochs:.NET ticks both ways, exact to 100 ns",
+        "unit:epochs:FILETIME / LDAP, with hex and DWORD pairs and the \"never\" values",
+        "unit:epochs:Excel serial dates, 1900 and 1904 systems, with the 1900 leap-year bug",
+        "unit:epochs:Cocoa, HFS+, WebKit",
+        "unit:epochs:GPS time: leap seconds, weeks and time of week"
+      ]
+    },
+    {
+      "feature": "Batch conversion of a column",
+      "competitor": "epochconverter.com",
+      "tests": [
+        "ui:timestamp-converter:2.17: batch conversion of a pasted column and of a CSV column, with CSV export"
+      ]
+    }
+  ]
+}

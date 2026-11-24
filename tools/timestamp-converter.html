@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="Convert Unix epoch seconds or milliseconds to ISO 8601, RFC 2822 and any time zone, and back. Auto-detects units, shows relative time, weeks and date math." />
+  <meta name="description" content="Convert Unix epoch time, .NET ticks, Windows FILETIME/LDAP, Excel serials, Cocoa and GPS time to ISO 8601 in any time zone, one value or a whole column." />
   <title>Unix Timestamp & Epoch Converter: Epoch to Date | Layerbit</title>
   <meta name="google-adsense-account" content="ca-pub-6072772587431629" />
   <link rel="preload" href="../fonts/space-grotesk-latin.woff2" as="font" type="font/woff2" crossorigin />
@@ -26,7 +26,7 @@
   <meta property="og:url" content="https://layerbit.co.in/tools/timestamp-converter.html" />
   <meta property="og:site_name" content="Layerbit" />
   <meta property="og:title" content="Unix Timestamp & Epoch Converter: Epoch to Date | Layerbit" />
-  <meta property="og:description" content="Convert Unix epoch seconds or milliseconds to ISO 8601, RFC 2822 and any time zone, and back. Auto-detects units, shows relative time, weeks and date math." />
+  <meta property="og:description" content="Convert Unix epoch time, .NET ticks, Windows FILETIME/LDAP, Excel serials, Cocoa and GPS time to ISO 8601 in any time zone, one value or a whole column." />
   <meta property="og:image" content="https://layerbit.co.in/images/og/tools-timestamp-converter.jpg" />
   <meta property="og:image:type" content="image/jpeg" />
   <meta property="og:image:width" content="1200" />
@@ -35,7 +35,7 @@
   <meta property="og:locale" content="en" />
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="Unix Timestamp & Epoch Converter: Epoch to Date | Layerbit" />
-  <meta name="twitter:description" content="Convert Unix epoch seconds or milliseconds to ISO 8601, RFC 2822 and any time zone, and back. Auto-detects units, shows relative time, weeks and date math." />
+  <meta name="twitter:description" content="Convert Unix epoch time, .NET ticks, Windows FILETIME/LDAP, Excel serials, Cocoa and GPS time to ISO 8601 in any time zone, one value or a whole column." />
   <meta name="twitter:image" content="https://layerbit.co.in/images/og/tools-timestamp-converter.jpg" />
   <meta name="twitter:image:alt" content="Unix Timestamp & Epoch Converter: Epoch to Date" />
   <meta name="theme-color" content="#0a0c10" />
@@ -48,8 +48,8 @@
       "@id": "https://layerbit.co.in/tools/timestamp-converter.html#app",
       "name": "Unix Timestamp \u0026 Epoch Converter",
       "url": "https://layerbit.co.in/tools/timestamp-converter.html",
-      "description": "Convert Unix epoch seconds or milliseconds to ISO 8601, RFC 2822 and any time zone, and back. Auto-detects units, shows relative time, weeks and date math.",
-      "applicationCategory": "UtilitiesApplication",
+      "description": "Convert Unix epoch time, .NET ticks, Windows FILETIME/LDAP, Excel serials, Cocoa and GPS time to ISO 8601 in any time zone, one value or a whole column.",
+      "applicationCategory": "DeveloperApplication",
       "operatingSystem": "Any (runs in the browser)",
       "browserRequirements": "Requires JavaScript",
       "isAccessibleForFree": true,
@@ -58,11 +58,18 @@
         "price": "0",
         "priceCurrency": "USD"
       },
-      "keywords": "unix timestamp converter, epoch converter, epoch to date, iso 8601, timestamp to date, time zone converter",
       "publisher": {
         "@id": "https://layerbit.co.in/#organization"
       },
-      "datePublished": "2026-09-27"
+      "featureList": [
+        "Unix seconds, milliseconds, microseconds and nanoseconds, detected from the size",
+        ".NET ticks, Windows FILETIME and LDAP/Active Directory timestamps",
+        "Excel serial dates in the 1900 and 1904 systems",
+        "Apple Cocoa, GPS (with leap seconds and week numbers), WebKit and HFS+ times",
+        "ISO 8601, RFC 2822 and any IANA time zone",
+        "Batch conversion of a pasted or CSV column with CSV export",
+        "Date arithmetic and differences"
+      ]
     },
     {
       "@type": "BreadcrumbList",
@@ -97,7 +104,23 @@
           "name": "How does the tool know whether my number is seconds or milliseconds?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "By its size. Current Unix time in seconds is a 10-digit number, in milliseconds 13 digits, in microseconds 16 and in nanoseconds 19. The tool picks the unit whose range contains the number and states the assumption next to the result. If a value was genuinely meant as seconds but is 13 digits long, it would represent a date tens of thousands of years away, which is almost never what anyone intended."
+            "text": "By its size. Current Unix time in seconds is a 10-digit number, in milliseconds 13 digits, in microseconds 16 and in nanoseconds 19. The tool picks the unit whose range contains the number and states the assumption next to the result. If a value was genuinely meant as seconds but is 13 digits long, it would represent a date tens of thousands of years away, which is almost never what anyone intended. When the Unix reading lands outside 1990 to 2100 and the number has the shape of another clock (an 18-digit Windows FILETIME or .NET tick count, or an Excel serial with a fraction), that reading is used and the hint says so. Other plausible readings, such as Apple Cocoa seconds, are offered as one-click buttons, and \"The number is\" sets the format explicitly."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How do I convert .NET ticks, a Windows FILETIME or an LDAP timestamp?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Paste the number and pick its format under \"The number is\", or leave it on detect. .NET DateTime.Ticks counts 100-nanosecond intervals since 1 January 0001. A Windows FILETIME counts 100-nanosecond intervals since 1 January 1601, and Active Directory attributes such as lastLogonTimestamp and pwdLastSet, often called LDAP timestamps, use the same count; 0 and 9223372036854775807 mean \"never\". FILETIME is also accepted as two hexadecimal DWORDs, 0x01C98E33:0x3296F500. The conversion uses exact integer arithmetic, so no 100-nanosecond tick is lost."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How do Excel serial dates and GPS time work?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Excel stores a date as the number of days since 30 December 1899, with the time of day as the fraction, so 45678.5 is noon on 21 January 2025. For compatibility with Lotus 1-2-3 it counts 29 February 1900, a day that never existed, so serial 60 is refused and serials below 61 are shifted by one day. Workbooks from old Macs use the 1904 system, which starts on 1 January 1904. GPS time counts seconds since 6 January 1980 without leap seconds, so it is now 18 seconds ahead of UTC. It is usually given as a week number and seconds into the week, and the tool accepts 1518:516705 as well as plain seconds."
           }
         },
         {
@@ -148,7 +171,7 @@
 
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6072772587431629" crossorigin="anonymous"></script>
 
-  <script src="../js/vendor/lucide.min.js?v=73dc5075c6" async></script>
+  <script src="../js/vendor/lucide.min.js?v=9ccd8f7461" async></script>
 
   <link rel="icon" href="../favicon.ico" sizes="16x16 32x32 48x48" />
   <link rel="icon" href="../favicon-48.png" type="image/png" sizes="48x48" />
@@ -172,6 +195,21 @@
     .muted { color: var(--text-muted); font-family: 'Space Grotesk', sans-serif; }
     .kv-grid dd sup { font-size: 0.7em; }
     @media (max-width: 900px) { .now-strip { grid-template-columns: 1fr; } }
+
+    /* v1.2: other clocks, batch column */
+    .fmt-alt { border: 1px solid var(--card-border); background: rgba(0,0,0,0.25); color: var(--accent-main); border-radius: 999px; padding: 1px 10px; font-family: inherit; font-size: 1em; cursor: pointer; margin: 2px 0; }
+    .fmt-alt:hover { border-color: var(--accent-main); }
+    .batch-body { display: grid; grid-template-columns: minmax(260px, 1fr) 2fr; gap: 20px; align-items: start; }
+    .batch-in { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+    .batch-in textarea { font-family: 'Fira Code', monospace; font-size: 0.85em; resize: vertical; min-height: 150px; }
+    .sr-label { font-size: 0.85em; color: var(--text-muted); display: flex; gap: 6px; align-items: center; }
+    .sr-label svg.lucide { width: 15px; height: 15px; color: var(--accent-main); }
+    .batch-opts { flex-wrap: wrap; gap: 10px; }
+    .inline-field { display: flex; align-items: center; gap: 8px; font-size: 0.85em; color: var(--text-muted); }
+    .inline-field[hidden] { display: none; }
+    .table-scroll { overflow: auto; max-width: 100%; max-height: 420px; }
+    .batch-out .data-table td { white-space: nowrap; }
+    @media (max-width: 900px) { .batch-body { grid-template-columns: 1fr; } }
 
   </style>
 </head>
@@ -207,7 +245,7 @@
   <div class="hero">
     <div class="hero-badge"><i data-lucide="shield-check"></i> Runs entirely in your browser</div>
     <h1>Unix Timestamp &amp; Epoch Converter</h1>
-    <p>Epoch seconds, milliseconds, microseconds or nanoseconds to a readable date and back — with time zones, ISO 8601 and RFC 2822 forms, relative time, week numbers and date arithmetic. Units are detected from the number's size.</p>
+    <p>Epoch seconds, milliseconds, microseconds or nanoseconds to a readable date and back — with time zones, ISO 8601 and RFC 2822 forms, relative time, week numbers and date arithmetic. Also .NET ticks, Windows FILETIME and LDAP, Excel serial dates, Apple Cocoa, GPS and WebKit time, and a whole column at once.</p>
   </div>
 
   <div class="now-strip" id="nowStrip">
@@ -230,6 +268,17 @@
           <label for="tsInput"><i data-lucide="text-cursor-input"></i> Timestamp or date</label>
           <input type="text" id="tsInput" class="text-input" placeholder="1727438400  ·  1727438400000  ·  2026-09-27T12:00:00Z  ·  Sat, 27 Sep 2026 12:00:00 GMT  ·  2026-09-27 15:30" autocomplete="off" spellcheck="false">
           <div class="hint" id="parseHint">A bare number is treated as seconds, milliseconds, microseconds or nanoseconds depending on its size. A date without a zone is read in the zone selected below.</div>
+        </div>
+        <div class="field">
+          <label for="fmtSelect"><i data-lucide="binary"></i> The number is</label>
+          <select id="fmtSelect" class="select-input">
+            <option value="auto">Detect from the value</option>
+            <option value="unix">Unix seconds</option><option value="unix_ms">Unix milliseconds</option><option value="unix_us">Unix microseconds</option><option value="unix_ns">Unix nanoseconds</option>
+            <option value="dotnet">.NET ticks</option><option value="filetime">Windows FILETIME / LDAP / AD</option>
+            <option value="excel">Excel serial (1900)</option><option value="excel1904">Excel serial (1904, old Mac)</option>
+            <option value="cocoa">Apple Cocoa / Core Data</option><option value="gps">GPS time (seconds or week:seconds)</option>
+            <option value="webkit">WebKit / Chrome (µs since 1601)</option><option value="hfs">Mac HFS+ seconds</option>
+          </select>
         </div>
         <div class="field">
           <label for="tzSelect"><i data-lucide="globe"></i> Time zone for display and for zone-less input</label>
@@ -265,6 +314,40 @@
           <thead><tr><th>Zone</th><th>Local time</th><th>Offset</th></tr></thead>
           <tbody></tbody>
         </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="ide-container single">
+    <div class="pane">
+      <div class="pane-header">
+        <div class="pane-title"><i data-lucide="table"></i> Convert a column</div>
+        <div class="btn-group">
+          <button class="btn" id="btnBatchExample" type="button">Example</button>
+          <button class="btn" id="btnBatchCopy" type="button" disabled><i data-lucide="copy"></i> Copy</button>
+          <button class="btn" id="btnBatchCsv" type="button" disabled><i data-lucide="download"></i> CSV</button>
+        </div>
+      </div>
+      <div class="pane-body batch-body">
+        <div class="batch-in">
+          <label for="batchInput" class="sr-label"><i data-lucide="list"></i> One value per line, or a CSV with a header row</label>
+          <textarea id="batchInput" class="text-input" rows="8" spellcheck="false" placeholder="1727438400&#10;1727438400000&#10;133800000000000000&#10;45678.5&#10;2026-09-27T12:00:00Z"></textarea>
+          <div class="row batch-opts">
+            <label class="inline-field">Read as <select id="batchFrom" class="select-input">
+            <option value="auto">Detect from the value</option>
+            <option value="unix">Unix seconds</option><option value="unix_ms">Unix milliseconds</option><option value="unix_us">Unix microseconds</option><option value="unix_ns">Unix nanoseconds</option>
+            <option value="dotnet">.NET ticks</option><option value="filetime">Windows FILETIME / LDAP / AD</option>
+            <option value="excel">Excel serial (1900)</option><option value="excel1904">Excel serial (1904, old Mac)</option>
+            <option value="cocoa">Apple Cocoa / Core Data</option><option value="gps">GPS time (seconds or week:seconds)</option>
+            <option value="webkit">WebKit / Chrome (µs since 1601)</option><option value="hfs">Mac HFS+ seconds</option>
+            </select></label>
+            <label class="inline-field" id="batchColumnWrap" hidden>Column <select id="batchColumn" class="select-input"></select></label>
+          </div>
+          <div class="hint" id="batchMeta">Paste a column from a spreadsheet or a log. Each value is converted on its own, so seconds, milliseconds and dates can be mixed. Times are shown in UTC and in the zone selected above.</div>
+        </div>
+        <div class="table-scroll batch-out">
+          <table class="data-table" id="batchTable"><thead></thead><tbody></tbody></table>
+        </div>
       </div>
     </div>
   </div>
@@ -322,7 +405,15 @@
       <div class="faq-container">
         <div class="faq-item">
           <button class="faq-question">How does the tool know whether my number is seconds or milliseconds? <i data-lucide="chevron-down"></i></button>
-          <div class="faq-answer"><p>By its size. Current Unix time in seconds is a 10-digit number, in milliseconds 13 digits, in microseconds 16 and in nanoseconds 19. The tool picks the unit whose range contains the number and states the assumption next to the result. If a value was genuinely meant as seconds but is 13 digits long, it would represent a date tens of thousands of years away, which is almost never what anyone intended.</p></div>
+          <div class="faq-answer"><p>By its size. Current Unix time in seconds is a 10-digit number, in milliseconds 13 digits, in microseconds 16 and in nanoseconds 19. The tool picks the unit whose range contains the number and states the assumption next to the result. If a value was genuinely meant as seconds but is 13 digits long, it would represent a date tens of thousands of years away, which is almost never what anyone intended. When the Unix reading lands outside 1990 to 2100 and the number has the shape of another clock (an 18-digit Windows FILETIME or .NET tick count, or an Excel serial with a fraction), that reading is used and the hint says so. Other plausible readings, such as Apple Cocoa seconds, are offered as one-click buttons, and "The number is" sets the format explicitly.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">How do I convert .NET ticks, a Windows FILETIME or an LDAP timestamp? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>Paste the number and pick its format under "The number is", or leave it on detect. .NET <code>DateTime.Ticks</code> counts 100-nanosecond intervals since 1 January 0001. A Windows FILETIME counts 100-nanosecond intervals since 1 January 1601, and Active Directory attributes such as <code>lastLogonTimestamp</code> and <code>pwdLastSet</code>, often called LDAP timestamps, use the same count; 0 and 9223372036854775807 mean "never". FILETIME is also accepted as two hexadecimal DWORDs, <code>0x01C98E33:0x3296F500</code>. The conversion uses exact integer arithmetic, so no 100-nanosecond tick is lost.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">How do Excel serial dates and GPS time work? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>Excel stores a date as the number of days since 30 December 1899, with the time of day as the fraction, so 45678.5 is noon on 21 January 2025. For compatibility with Lotus 1-2-3 it counts 29 February 1900, a day that never existed, so serial 60 is refused and serials below 61 are shifted by one day. Workbooks from old Macs use the 1904 system, which starts on 1 January 1904. GPS time counts seconds since 6 January 1980 without leap seconds, so it is now 18 seconds ahead of UTC. It is usually given as a week number and seconds into the week, and the tool accepts <code>1518:516705</code> as well as plain seconds.</p></div>
         </div>
         <div class="faq-item">
           <button class="faq-question">Why does my date come out one day earlier or later than expected? <i data-lucide="chevron-down"></i></button>
@@ -369,6 +460,7 @@
     <div class="info-panel">
       <h2><i data-lucide="git-commit"></i> Changelog</h2>
       <ul class="changelog-list">
+        <li><span class="changelog-tag">v1.2.0</span> .NET ticks, Windows FILETIME and LDAP/Active Directory (also as hex DWORDs), Excel serial dates in both the 1900 and 1904 systems, Apple Cocoa, GPS time with leap seconds and week numbers, WebKit/Chrome and HFS+ times, both ways and exact to 100 ns. An 18-digit FILETIME is no longer read as nanoseconds. Convert a whole column, pasted or from a CSV, with a CSV export.</li>
         <li><span class="changelog-tag">v1.0.0</span> Initial release: unit auto-detection (s/ms/µs/ns), ISO 8601, RFC 2822, any IANA zone with a multi-zone table, relative time, ISO week and week-year, quarter, day of year, 32-bit range warning, date arithmetic and difference between two timestamps.</li>
       </ul>
     </div>
@@ -481,6 +573,8 @@
   <script src="../js/kernel.js?v=eb69348d32"></script>
 
   <script src="../js/shared.js?v=e2441a1728"></script>
+  <script src="../js/engines/csv.js?v=a78b81af7d"></script>
+  <script src="../js/engines/epochs.js?v=977e35a4a4"></script>
 
   <script>
     const tsInput = document.getElementById('tsInput');
@@ -526,20 +620,32 @@
     }
 
     // ---- parsing ----
-    // Returns {ms, note} or throws.
-    function parseInput(raw) {
+    // Returns {ms, ns, note, unit} or throws. ns is exact (BigInt) when known.
+    const EP = window.LBEpochs, FNAME = Object.fromEntries(EP.FORMATS.map(f => [f.id, f.name]));
+    function fromEpoch(id, s, note) {
+      const ns = EP.toNs(id, s), ms = Number(ns) / 1e6;
+      if (!isFinite(ms) || Math.abs(ms) > 8.64e15) throw new Error('That value is outside the range JavaScript dates can represent (about ±273,000 years).');
+      return { ms, ns, unit: id, note };
+    }
+    function parseInput(raw, fmt) {
       const s = raw.trim();
       if (!s) throw new Error('empty');
       const tz = tzSelect.value;
+      fmt = fmt || 'auto';
+      if (fmt !== 'auto') return fromEpoch(fmt, s, `read as ${FNAME[fmt]}`);
       if (/^-?\d+(\.\d+)?$/.test(s)) {
-        const n = Number(s), a = Math.abs(n);
-        let ms, unit;
-        if (a < 1e11) { ms = n * 1000; unit = 'seconds'; }
-        else if (a < 1e14) { ms = n; unit = 'milliseconds'; }
-        else if (a < 1e17) { ms = n / 1000; unit = 'microseconds'; }
-        else { ms = n / 1e6; unit = 'nanoseconds'; }
-        if (!isFinite(ms) || Math.abs(ms) > 8.64e15) throw new Error('That value is outside the range JavaScript dates can represent (about ±273,000 years).');
-        return { ms, note: `read as ${unit} (${s.replace('-', '').length} digits)` };
+        const a = Math.abs(Number(s));
+        const id = a < 1e11 ? 'unix' : a < 1e14 ? 'unix_ms' : a < 1e17 ? 'unix_us' : 'unix_ns';
+        const unit = { unix: 'seconds', unix_ms: 'milliseconds', unix_us: 'microseconds', unix_ns: 'nanoseconds' }[id];
+        if (id === 'unix_ns' && /\./.test(s)) throw new Error('Nanoseconds have no fraction; pick the right unit under "The number is".');
+        const asUnix = fromEpoch(id, s, `read as ${unit} (${s.replace('-', '').replace(/\..*/, '').length} digits)`);
+        // an implausible Unix reading of a number with a distinctive size is
+        // probably another clock: 18 digits is FILETIME or .NET, n.5 is Excel
+        if (asUnix.ms < Date.UTC(1990, 0, 1) || asUnix.ms >= Date.UTC(2100, 0, 1)) {
+          const alt = EP.guess(s).find(g => g === 'filetime' || g === 'dotnet' || g === 'webkit' || (g === 'excel' && /\./.test(s)));
+          if (alt) return fromEpoch(alt, s, `read as ${FNAME[alt]}: as Unix ${unit} it would be ${new Date(asUnix.ms).toISOString().slice(0, 10)}`);
+        }
+        return asUnix;
       }
       // date-time without zone: interpret in the selected zone
       let m = /^(\d{4})-(\d{2})-(\d{2})(?:[T ](\d{2}):(\d{2})(?::(\d{2})(?:\.(\d{1,9}))?)?)?$/.exec(s);
@@ -573,13 +679,20 @@
     function fmtZone(ms, tz) { const p = partsIn(ms, tz); return `${p.weekday} ${p.year}-${p.month}-${p.day} ${p.hour}:${p.minute}:${p.second}`; }
 
     let currentMs = null;
+    const fmtSelect = document.getElementById('fmtSelect');
+    const escH = t => String(t).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
     function render() {
       const raw = tsInput.value;
       errorBanner.classList.remove('active');
       if (!raw.trim()) { currentMs = null; resultGrid.innerHTML = '<dt>Waiting</dt><dd class="muted">Enter a timestamp or date, or press Now.</dd>'; zoneTable.style.display = 'none'; btnCopyAll.disabled = true; parseHint.textContent = 'A bare number is treated as seconds, milliseconds, microseconds or nanoseconds depending on its size. A date without a zone is read in the zone selected below.'; updateDelta(); updateDiff(); return; }
       let r;
-      try { r = parseInput(raw); } catch (e) { currentMs = null; errorText.textContent = e.message; errorBanner.classList.add('active'); btnCopyAll.disabled = true; return; }
+      try { r = parseInput(raw, fmtSelect.value); } catch (e) { currentMs = null; errorText.textContent = e.message; errorBanner.classList.add('active'); btnCopyAll.disabled = true; return; }
       currentMs = r.ms; parseHint.textContent = r.note;
+      // a bare number might be another clock: offer the likely ones
+      if (fmtSelect.value === 'auto' && r.unit) {
+        const alts = EP.guess(raw).filter(id => id !== r.unit).slice(0, 3);
+        if (alts.length) parseHint.innerHTML = escH(r.note) + '. Could also be: ' + alts.map(id => `<button type="button" class="fmt-alt" data-fmt="${id}">${escH(FNAME[id])} (${new Date(Number(EP.toNs(id, raw.trim())) / 1e6).toISOString().slice(0, 10)})</button>`).join(' ');
+      }
       const ms = r.ms, tz = tzSelect.value, d = new Date(ms);
       const sec = Math.floor(ms / 1000);
       const p = partsIn(ms, tz), off = offsetMinutes(ms, tz);
@@ -595,6 +708,13 @@
       rows.push(['ISO week', `${weekYear}-W${pad(week)}` + (weekYear !== +p.year ? ` <span class="tag warn">week-year ${weekYear} ≠ calendar year ${p.year}</span>` : '')]);
       rows.push(['Day of year', `${dayOfYear(+p.year, +p.month, +p.day)} · Q${Math.ceil(+p.month / 3)} · ${p.weekday}`]);
       rows.push(['Unix date command', `date -u -d @${sec}`]);
+      const ns = r.ns !== undefined ? r.ns : BigInt(Math.round(ms * 1000)) * 1000n, A = EP.all(ns);
+      rows.push(['.NET ticks', A.dotnet]);
+      rows.push(['FILETIME / LDAP', A.filetime ? `${A.filetime} <span class="muted">${A.filetimeHex} · ${A.filetimeDwords}</span>` : '<span class="muted">before 1601</span>']);
+      rows.push(['Excel serial', `${A.excel} <span class="muted">1900 system · ${A.excel1904} in the 1904 system</span>`]);
+      rows.push(['Apple Cocoa', `${A.cocoa} <span class="muted">seconds since 2001-01-01</span>`]);
+      rows.push(['GPS time', A.gpsWeek ? `${A.gps} <span class="muted">week ${A.gpsWeek}, ${A.gpsTow} s into the week · GPS is ${A.leap} s ahead of UTC</span>` : '<span class="muted">before 1980-01-06</span>']);
+      rows.push(['WebKit / Chrome', `${A.webkit} <span class="muted">µs since 1601</span>`]);
       resultGrid.innerHTML = rows.map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join('');
       // zone table
       const zones = ['UTC', 'America/Los_Angeles', 'America/New_York', 'Europe/London', 'Europe/Berlin', 'Asia/Dubai', 'Asia/Kolkata', 'Asia/Singapore', 'Asia/Tokyo', 'Australia/Sydney'];
@@ -642,12 +762,67 @@
     }
     tick(); setInterval(tick, 1000);
 
+
+    // ---- batch: convert a column
+    let batchRows = [], batchHeader = [];
+    function batchParse() {
+      const text = $b('batchInput').value.replace(/\s+$/, '');
+      if (!text.trim()) return null;
+      const first = text.split(/\r?\n/)[0];
+      if (/[,\t;|]/.test(first) && text.split(/\r?\n/).length > 1) {
+        const p = LBCsv.parse(text), header = LBCsv.uniqueHeaders(p.rows[0] || []);
+        return { table: true, header, rows: p.rows.slice(1) };
+      }
+      return { table: false, header: ['value'], rows: text.split(/\r?\n/).map(l => [l.trim()]) };
+    }
+    const $b = id => document.getElementById(id);
+    function renderBatch() {
+      const P = batchParse(), tz = tzSelect.value, fmt = $b('batchFrom').value;
+      const thead = $b('batchTable').querySelector('thead'), tbody = $b('batchTable').querySelector('tbody');
+      batchRows = []; batchHeader = [];
+      $b('btnBatchCopy').disabled = $b('btnBatchCsv').disabled = true;
+      if (!P) { thead.innerHTML = ''; tbody.innerHTML = ''; $b('batchColumnWrap').hidden = true; $b('batchMeta').textContent = 'Paste a column from a spreadsheet or a log. Each value is converted on its own, so seconds, milliseconds and dates can be mixed. Times are shown in UTC and in the zone selected above.'; return; }
+      let col = 0;
+      if (P.table) {
+        const sel = $b('batchColumn'), prev = sel.value;
+        sel.innerHTML = P.header.map((h, i) => `<option value="${i}">${escH(h)}</option>`).join('');
+        // pick the first column that converts, unless one was chosen
+        let pick = P.header.findIndex((h, i) => P.rows.slice(0, 5).some(r => { try { parseInput(r[i] || '', fmt); return true; } catch (e) { return false; } }));
+        sel.value = prev !== '' && +prev < P.header.length ? prev : String(Math.max(0, pick));
+        col = +sel.value; $b('batchColumnWrap').hidden = false;
+      } else $b('batchColumnWrap').hidden = true;
+      let ok = 0, bad = 0;
+      const out = P.rows.filter(r => r.some(c => String(c).trim())).map(r => {
+        const v = String(r[col] || '').trim();
+        try { const x = parseInput(v, fmt); ok++; return { r, v, x }; } catch (e) { bad++; return { r, v, err: v ? e.message : 'empty' }; }
+      });
+      batchHeader = (P.table ? P.header : ['value']).concat(['read as', 'ISO 8601 UTC', `in ${tz}`, 'unix seconds']);
+      batchRows = out.map(o => (P.table ? o.r : [o.v]).concat(o.x ? [o.x.unit ? FNAME[o.x.unit] : 'date text', new Date(o.x.ms).toISOString(), fmtZone(o.x.ms, tz), String(Math.floor(o.x.ms / 1000))] : ['', o.err, '', '']));
+      const showCols = P.table ? [col] : [0];
+      thead.innerHTML = '<tr>' + showCols.map(i => `<th>${escH(batchHeader[i])}</th>`).join('') + '<th>Read as</th><th>ISO 8601 UTC</th><th>' + escH('In ' + tz) + '</th><th>Unix seconds</th></tr>';
+      const base = P.table ? P.header.length : 1, LIM = 2000;
+      tbody.innerHTML = batchRows.slice(0, LIM).map((row, i) => `<tr${out[i].err ? ' class="flag"' : ''}>` + showCols.map(c => `<td>${escH(row[c])}</td>`).join('') + (out[i].err ? `<td class="muted" colspan="4">${escH(out[i].err)}</td>` : `<td class="muted">${escH(row[base])}</td><td>${row[base + 1]}</td><td>${escH(row[base + 2])}</td><td>${row[base + 3]}</td>`) + '</tr>').join('');
+      $b('batchMeta').textContent = `${ok} converted${bad ? `, ${bad} could not be read (highlighted)` : ''}${batchRows.length > LIM ? `; showing the first ${LIM}, the CSV has all ${batchRows.length}` : ''}.`;
+      $b('btnBatchCopy').disabled = $b('btnBatchCsv').disabled = !ok;
+    }
+    $b('batchInput').addEventListener('input', () => { $b('batchColumn').value = ''; renderBatch(); });
+    $b('batchFrom').addEventListener('change', renderBatch);
+    $b('batchColumn').addEventListener('change', renderBatch);
+    $b('btnBatchExample').addEventListener('click', () => { $b('batchInput').value = 'event,when\nsignup,1727438400\nfirst order,1727524800000\nlast logon (AD),133800000000000000\nreport date (Excel),45678.5\nmigration,2026-09-27T12:00:00Z'; $b('batchFrom').value = 'auto'; $b('batchColumn').value = ''; renderBatch(); });
+    $b('btnBatchCopy').addEventListener('click', () => navigator.clipboard.writeText([batchHeader].concat(batchRows).map(r => r.join('\t')).join('\n')).then(() => Layerbit.toast('Copied ' + batchRows.length + ' rows')));
+    $b('btnBatchCsv').addEventListener('click', () => {
+      const csv = LBCsv.stringify([batchHeader].concat(batchRows), { safe: true, newline: '\n' });
+      const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' })); a.download = 'timestamps-converted.csv'; document.body.appendChild(a); a.click(); a.remove();
+    });
+
     tsInput.addEventListener('input', render);
-    tzSelect.addEventListener('change', () => { try { localStorage.setItem('layerbit-ts-tz', tzSelect.value); } catch (e) {} render(); });
+    fmtSelect.addEventListener('change', render);
+    parseHint.addEventListener('click', e => { const b = e.target.closest('.fmt-alt'); if (b) { fmtSelect.value = b.dataset.fmt; render(); } });
+    tzSelect.addEventListener('change', () => { try { localStorage.setItem('layerbit-ts-tz', tzSelect.value); } catch (e) {} render(); renderBatch(); });
     deltaN.addEventListener('input', updateDelta); deltaUnit.addEventListener('change', updateDelta);
     diffInput.addEventListener('input', updateDiff);
     document.getElementById('btnNow').addEventListener('click', () => { tsInput.value = String(Math.floor(Date.now() / 1000)); render(); });
-    document.getElementById('btnClear').addEventListener('click', () => { tsInput.value = ''; diffInput.value = ''; deltaN.value = 0; render(); });
+    document.getElementById('btnClear').addEventListener('click', () => { tsInput.value = ''; diffInput.value = ''; deltaN.value = 0; fmtSelect.value = 'auto'; render(); });
     btnCopyAll.addEventListener('click', async () => {
       const lines = [...resultGrid.querySelectorAll('dt')].map((dt, i) => `${dt.textContent}: ${resultGrid.querySelectorAll('dd')[i].textContent.trim()}`);
       await navigator.clipboard.writeText(lines.join('\n'));

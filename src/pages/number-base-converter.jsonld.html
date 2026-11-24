@@ -102,6 +102,14 @@
         },
         {
           "@type": "Question",
+          "name": "What is the difference between float16 and bfloat16?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Both are 16 bits. float16, or IEEE half precision, spends 5 bits on the exponent and 10 on the mantissa: about three significant decimal digits, but the largest value is only 65504 and small values become subnormal below 6.1e-5. bfloat16 keeps float32's 8 exponent bits and keeps only 7 mantissa bits: about two significant digits, but the same range as float32, up to 3.4e38, which is why training hardware prefers it. Choose 16-bit width to read a pattern both ways, or pick float16 or bfloat16 next to the decimal box to see how a number is stored and rounded."
+          }
+        },
+        {
+          "@type": "Question",
           "name": "Is the number I enter sent anywhere?",
           "acceptedAnswer": {
             "@type": "Answer",

@@ -41,5 +41,39 @@ t('bitwise and arithmetic', () => {
   assert.throws(() => N.op(1n, 0n, 'div'), /Division by zero/);
 });
 t('popcount and ascii', () => { assert.strictEqual(N.popcount(0xffn), 8); assert.strictEqual(N.ascii([72, 105, 0, 200]), 'Hi··'); });
+t('float16 and bfloat16: decode, encode with round-to-nearest-even, specials', () => {
+  // float16 (1-5-10)
+  assert.strictEqual(N.asFloat(0x3c00n, 16).value, 1);
+  assert.strictEqual(N.asFloat(0xc000n, 16).value, -2);
+  assert.strictEqual(N.asFloat(0x7bffn, 16).value, 65504);
+  assert.strictEqual(N.asFloat(0x0001n, 16).value, Math.pow(2, -24));
+  assert.strictEqual(N.asFloat(0x0001n, 16).kind, 'subnormal');
+  assert.strictEqual(N.asFloat(0x7c00n, 16).kind, 'infinity');
+  assert.strictEqual(N.asFloat(0x7e00n, 16).kind, 'NaN');
+  assert.strictEqual(N.asFloat(0x3555n, 16).value, 0.333251953125);
+  assert.strictEqual(N.floatBits(1, 16), 0x3c00n);
+  assert.strictEqual(N.floatBits(0.1, 16), 0x2e66n);
+  assert.strictEqual(N.floatBits(65504, 16), 0x7bffn);
+  assert.strictEqual(N.floatBits(65520, 16), 0x7c00n, 'rounds up to infinity');
+  assert.strictEqual(N.floatBits(65519, 16), 0x7bffn);
+  assert.strictEqual(N.floatBits(-0, 16), 0x8000n);
+  assert.strictEqual(N.floatBits(Math.pow(2, -25), 16), 0x0000n, 'tie to even: zero');
+  assert.strictEqual(N.floatBits(3 * Math.pow(2, -25), 16), 0x0002n, 'tie to even: 2');
+  assert.strictEqual(N.floatBits(1 + Math.pow(2, -11), 16), 0x3c00n, 'tie between 1 and the next: even');
+  assert.strictEqual(N.floatBits(1 + 3 * Math.pow(2, -11), 16), 0x3c02n);
+  assert.strictEqual(N.floatBits(Math.pow(2, -14) * (1 - Math.pow(2, -11)), 16), 0x0400n, 'largest subnormal rounds up to the smallest normal');
+  assert.strictEqual(N.floatBits(NaN, 16) & 0x7c00n, 0x7c00n);
+  // bfloat16 (1-8-7): the top half of a float32
+  assert.strictEqual(N.asFloat(0x3f80n, 16, 'bf16').value, 1);
+  assert.strictEqual(N.asFloat(0x4049n, 16, 'bf16').value, 3.140625);
+  assert.strictEqual(N.asFloat(0x7f7fn, 16, 'bf16').value, 3.3895313892515355e38);
+  assert.strictEqual(N.floatBits(Math.PI, 'bf16'), 0x4049n);
+  assert.strictEqual(N.floatBits(0.1, 'bf16'), 0x3dcdn);
+  assert.strictEqual(N.floatBits(1e39, 'bf16'), 0x7f80n);
+  assert.strictEqual(N.asFloat(0xff80n, 16, 'bf16').kind, 'infinity');
+  // every float16 pattern round-trips
+  for (let h = 0; h < 0x10000; h++) { const f = N.asFloat(BigInt(h), 16); if (f.kind !== 'NaN') assert.strictEqual(N.floatBits(f.value, 16), BigInt(h), 'h=' + h.toString(16)); }
+  for (let h = 0; h < 0x10000; h += 7) { const f = N.asFloat(BigInt(h), 16, 'bf16'); if (f.kind !== 'NaN') assert.strictEqual(N.floatBits(f.value, 'bf16'), BigInt(h), 'bf=' + h.toString(16)); }
+});
 console.log(`number engine: ${pass} unit tests passed` + (fail ? `, ${fail} FAILED` : ''));
 process.exit(fail ? 1 : 0);

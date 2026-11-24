@@ -1,0 +1,32 @@
+{
+  "tool": "uuid-generator",
+  "page": "tools/uuid-generator.html",
+  "competitors": [
+    { "name": "uuidgenerator.net", "price": "free", "checked": "2026-11" }
+  ],
+  "claims": [
+    {
+      "feature": "v1/v6 generation",
+      "competitor": "uuidgenerator.net",
+      "tests": ["ui:uuid-generator:2.26: v1, v6, NanoID, KSUID, CUID2 and Snowflake generate valid ids that decode", "unit:ids:UUID v1 and v6: RFC 9562 layout, timestamp, random multicast node, ordering"]
+    },
+    {
+      "feature": "NanoID, KSUID, CUID2, Snowflake, Sqids",
+      "competitor": "uuidgenerator.net",
+      "tests": [
+        "ui:uuid-generator:2.26: v1, v6, NanoID, KSUID, CUID2 and Snowflake generate valid ids that decode",
+        "ui:uuid-generator:2.26: Snowflake epochs and Sqids encode and decode like the reference library",
+        "unit:ids:NanoID: default size and alphabet, custom alphabet, no bias",
+        "unit:ids:KSUID: segmentio reference value and round trip",
+        "unit:ids:CUID2: shape, uniqueness, length option",
+        "unit:ids:Snowflake: Discord reference id, Twitter epoch, generation",
+        "unit:ids:Sqids (vendored): spec examples"
+      ]
+    },
+    {
+      "feature": "List validation",
+      "competitor": "uuidgenerator.net",
+      "tests": ["ui:uuid-generator:2.26: list validation finds invalid ids, wrong kinds and duplicates hidden by case and braces", "unit:ids:identify and validate a mixed list, with duplicates and an expected kind"]
+    }
+  ]
+}

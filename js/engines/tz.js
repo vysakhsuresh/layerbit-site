@@ -329,7 +329,7 @@
     var to = null;
     if (right) { to = resolve(right); if (!to) return { error: 'Could not find a time zone called "' + right + '".' }; }
     if (!time && !from && !to) return { error: 'Could not read a time or a time zone in "' + s + '".' };
-    return { time: time, from: from, to: to };
+    return { time: time, from: from, to: to, ambiguous: { from: fromText ? ambiguous(fromText) : null, to: right ? ambiguous(right) : null }, fromText: fromText, toText: right };
   }
 
   // ---------------------------------------------------------------- planner
@@ -370,10 +370,84 @@
     return out;
   }
 
+
+  // ------------------------------------------------------- ambiguity
+  /** Abbreviations that name more than one zone. The first entry is what
+   *  resolve() picks; the page offers the others. */
+  var AMBIG = {
+    ist: [['Asia/Kolkata', 'India Standard Time'], ['Asia/Jerusalem', 'Israel Standard Time'], ['Europe/Dublin', 'Irish Standard Time']],
+    cst: [['America/Chicago', 'US Central Time'], ['Asia/Shanghai', 'China Standard Time'], ['America/Havana', 'Cuba Standard Time']],
+    cdt: [['America/Chicago', 'US Central Daylight Time'], ['America/Havana', 'Cuba Daylight Time']],
+    bst: [['Europe/London', 'British Summer Time'], ['Asia/Dhaka', 'Bangladesh Standard Time']],
+    gst: [['Asia/Dubai', 'Gulf Standard Time'], ['Atlantic/South_Georgia', 'South Georgia Time']],
+    ast: [['America/Halifax', 'Atlantic Standard Time'], ['Asia/Riyadh', 'Arabia Standard Time']],
+    pst: [['America/Los_Angeles', 'US Pacific Time'], ['Asia/Manila', 'Philippine Standard Time']],
+    mst: [['America/Denver', 'US Mountain Time'], ['Asia/Kuala_Lumpur', 'Malaysia Standard Time']],
+    sst: [['Asia/Singapore', 'Singapore Standard Time'], ['Pacific/Pago_Pago', 'Samoa Standard Time']],
+    est: [['America/New_York', 'US Eastern Time'], ['Australia/Brisbane', 'Australian Eastern Standard Time']],
+    amt: [['America/Manaus', 'Amazon Time'], ['Asia/Yerevan', 'Armenia Time']]
+  };
+  /** [{zone, name}] when q is an ambiguous abbreviation, else null. */
+  function ambiguous(q) {
+    var list = AMBIG[norm(String(q || ''))];
+    if (!list) return null;
+    return list.filter(function (x) { return isZone(x[0]); }).map(function (x) { return { zone: x[0], name: x[1] }; });
+  }
+
+  // ------------------------------------------------------- transitions
+  /** The next `count` UTC-offset changes in `zone` after `fromMs`, within
+   *  `years` (default 2): [{ms, before, after, delta}] with offsets in minutes. */
+  function transitions(zone, fromMs, count, years) {
+    var out = [], end = fromMs + (years || 2) * 366 * DAY, t = fromMs, off = offset(t, zone);
+    count = count || 2;
+    while (t < end && out.length < count) {
+      var n = Math.min(t + DAY, end), o2 = offset(n, zone);
+      if (o2 !== off) {
+        var lo = t, hi = n;
+        while (hi - lo > 60000) { var mid = lo + Math.floor((hi - lo) / 120000) * 60000; if (mid <= lo) mid = lo + 60000; if (offset(mid, zone) === off) lo = mid; else hi = mid; }
+        out.push({ ms: hi, before: off, after: o2, delta: o2 - off });
+        off = o2;
+      }
+      t = n;
+    }
+    return out;
+  }
+
+  // ------------------------------------------------------- iCalendar
+  function icsEsc(s) { return String(s).replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\r?\n/g, '\\n'); }
+  function icsFold(line) {
+    // RFC 5545: lines are at most 75 octets; continuation lines start with a space
+    var out = [], cur = '', bytes = 0;
+    for (var i = 0; i < line.length; i++) {
+      var ch = line[i], code = line.charCodeAt(i);
+      if (code >= 0xd800 && code <= 0xdbff && i + 1 < line.length) { ch += line[++i]; }
+      var b = unescape(encodeURIComponent(ch)).length;
+      if (bytes + b > (out.length ? 74 : 75)) { out.push(cur); cur = ''; bytes = 0; }
+      cur += ch; bytes += b;
+    }
+    out.push(cur);
+    return out.join('\r\n ');
+  }
+  function icsTime(ms) { return new Date(ms).toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, ''); }
+  /** An iCalendar (RFC 5545) event in UTC, with each zone's local time in the description. */
+  function ics(o) {
+    var start = o.start, end = start + (o.minutes || 30) * 60000, title = o.title || 'Meeting';
+    var lines = (o.zones || []).map(function (z) { var w = wall(start, z); return label(z) + ': ' + w.wd + ' ' + w.date + ' ' + clock(w.h, w.mi, false) + ' (' + (w.abbr || w.offsetLabel) + ')'; });
+    var desc = (o.description ? o.description + '\n\n' : '') + (lines.length ? 'Local times:\n' + lines.join('\n') : '') + (o.url ? '\n\n' + o.url : '');
+    var ev = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Layerbit//Time Zone Converter//EN', 'CALSCALE:GREGORIAN', 'METHOD:PUBLISH', 'BEGIN:VEVENT',
+      'UID:' + (o.uid || (icsTime(start) + '-' + Math.random().toString(36).slice(2, 10) + '@layerbit.co.in')),
+      'DTSTAMP:' + icsTime(o.now || Date.now()), 'DTSTART:' + icsTime(start), 'DTEND:' + icsTime(end),
+      'SUMMARY:' + icsEsc(title)];
+    if (desc) ev.push('DESCRIPTION:' + icsEsc(desc));
+    if (o.url) ev.push('URL:' + o.url);
+    ev.push('END:VEVENT', 'END:VCALENDAR');
+    return ev.map(icsFold).join('\r\n') + '\r\n';
+  }
   return {
     isZone: isZone, parts: parts, offset: offset, toInstant: toInstant, wall: wall, isDst: isDst,
     offsetLabel: offsetLabel, diffLabel: diffLabel, abbr: abbr, dayDiff: dayDiff, clock: clock,
     zones: zones, label: label, resolve: resolve, search: search,
-    parseTime: parseTime, parseQuery: parseQuery, band: band, planner: planner, overlaps: overlaps
+    parseTime: parseTime, parseQuery: parseQuery, band: band, planner: planner, overlaps: overlaps,
+    ambiguous: ambiguous, transitions: transitions, ics: ics
   };
 });

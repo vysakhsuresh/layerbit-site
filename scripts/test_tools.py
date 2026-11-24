@@ -544,6 +544,42 @@ def _(t):
     t.wait_for("() => /No key with kid/.test(document.getElementById('verifyResult').innerText)")
 
 
+@case("jwt-decoder", "typical", "2.19: JWKS fetch is off by default; when allowed it fetches once, verifies by kid and shows in the privacy pill")
+def _(t):
+    t.select("signAlg", "RS256")
+    t.set("signKid", "rs-key-1")
+    t.set("signPayload", '{"iss": "https://idp.layerbit.test", "sub": "u1"}') if t.count("#signPayload") else None
+    t.call("generateKeys()")
+    t.wait_for("() => document.getElementById('signKey').value.includes('BEGIN PRIVATE KEY')", timeout=20000)
+    t.click("#btnSign")
+    t.wait_for("() => document.getElementById('signOutput').innerText.startsWith('eyJ')")
+    t.click("#btnSignLoad")
+    t.wait_for("() => /Signature Valid/.test(document.getElementById('verifyResult').innerText)")
+    jwks = t.call("JSON.stringify(generated.jwks)")
+    hits = []
+    def handle(route):
+        hits.append(route.request.url)
+        route.fulfill(status=200, content_type="application/json", headers={"Access-Control-Allow-Origin": "*"}, body=jwks)
+    t.page.route("https://idp.layerbit.test/**", handle)
+    t.call("() => { document.getElementById('publicKeyPem').value = ''; runVerify(); }")
+    expect(not t.call("document.getElementById('allowJwksFetch').checked"), "must be off by default")
+    expect(not t.visible("#jwksRow"), "URL field hidden until allowed")
+    eq(hits, [], "nothing fetched before the switch")
+    t.click("#allowJwksFetch")
+    t.set("jwksUrl", "https://idp.layerbit.test/.well-known/jwks.json")
+    t.click("#btnFetchJwks")
+    t.wait_for("() => /Signature Valid/.test(document.getElementById('verifyResult').innerText)", timeout=8000)
+    eq(len(hits), 1, "exactly one request")
+    expect("kid rs-key-1" in t.text("verifyResult"), t.text("verifyResult"))
+    expect("Fetched 1 key" in t.text("jwksStatus"), t.text("jwksStatus"))
+    expect(any("idp.layerbit.test" in r for r in t.call("Layerbit.netRequests()")), "privacy pill must count it")
+    t.set("jwksUrl", "http://idp.layerbit.test/jwks.json"); t.click("#btnFetchJwks"); t.wait(40)
+    expect("Only https" in t.text("jwksStatus"), t.text("jwksStatus"))
+    t.page.route("https://nojson.layerbit.test/**", lambda r: r.fulfill(status=200, content_type="application/json", headers={"Access-Control-Allow-Origin": "*"}, body='{"issuer": "x"}'))
+    t.set("jwksUrl", "https://nojson.layerbit.test/x"); t.click("#btnFetchJwks")
+    t.wait_for("() => /not a JWKS/.test(document.getElementById('jwksStatus').innerText)")
+
+
 @case("jwt-decoder", "typical", "signer: RS256, PS256 and EdDSA round trips")
 def _(t):
     for alg in ("RS256", "PS256", "EdDSA"):
@@ -870,6 +906,26 @@ def _(t):
     t.set("encodedText", "100%")
     t.wait(50)
     expect(t.visible("#decodeError") or t.val("plainText") == "100%", "malformed % not handled")
+
+
+@case("url-encoder", "typical", "2.23: '+ means space' decodes form data, only in a URL's query, and encodes spaces as +")
+def _(t):
+    t.call("setMode('smart')")
+    t.set("encodedText", "q=hello+world%2B1"); t.wait(30)
+    eq(t.val("plainText"), "q=hello+world+1", "off by default: + stays +")
+    t.click("#optPlus"); t.wait(30)
+    eq(t.val("plainText"), "q=hello world+1", "form decoding")
+    t.set("encodedText", "https://x.test/a+b?q=c+d&r=%2B#e+f"); t.wait(30)
+    eq(t.val("plainText"), "https://x.test/a+b?q=c d&r=+#e+f", "only the query is form data")
+    t.call("setMode('batch')")
+    t.set("encodedText", "a+b\nc%20d+e"); t.wait(30)
+    eq(t.val("plainText"), "a b\nc d e", "batch lines")
+    t.call("setMode('raw')")
+    t.set("plainText", "a b+c"); t.wait(30)
+    eq(t.val("encodedText"), "a+b%2Bc", "raw encoding writes spaces as +")
+    t.click("#optPlus"); t.wait(30)
+    eq(t.val("encodedText"), "a%20b%2Bc", "toggling re-encodes")
+    t.call("setMode('smart')")
 
 
 @case("url-encoder", "maximal", "batch mode: 5,000 lines")
@@ -2794,7 +2850,7 @@ def _(t):
     g = t.text("decodeGrid")
     expect("v1" in g and "1998-02-04 22:13:53.151 UTC" in g and "00:c0:4f:d4:30:c8" in g, f"v1 decode: {g[:300]!r}")
     t.set("decodeInput", "not-an-id")
-    expect("not a UUID or ULID" in t.text("decodeGrid"), "garbage")
+    expect("not recognised" in t.text("decodeGrid") and "KSUID" in t.text("decodeGrid"), "garbage: " + t.text("decodeGrid"))
 
 
 @case("uuid-generator", "maximal", "10,000 v4s, all unique, under budget")
@@ -2809,6 +2865,75 @@ def _(t):
 # ----------------------------------------------------------------------------
 # timestamp-converter
 # ----------------------------------------------------------------------------
+
+@case("uuid-generator", "typical", "2.26: v1, v6, NanoID, KSUID, CUID2 and Snowflake generate valid ids that decode")
+def _(t):
+    import re as _re
+    checks = [("v1", r"^[0-9a-f]{8}-[0-9a-f]{4}-1[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"), ("v6", r"^[0-9a-f]{8}-[0-9a-f]{4}-6[0-9a-f]{3}-[89ab]"),
+              ("nanoid", r"^[A-Za-z0-9_-]{21}$"), ("ksuid", r"^[0-9A-Za-z]{27}$"), ("snowflake", r"^\d{17,19}$")]
+    t.set("countInput", "5")
+    for kind, rx in checks:
+        t.select("kindSelect", kind); t.wait(60)
+        lines = t.val("outputArea").split("\n")
+        eq(len(lines), 5, kind + " count")
+        expect(all(_re.match(rx, l) for l in lines), f"{kind}: {lines[:2]}")
+        expect(len(set(lines)) == 5, kind + " duplicates")
+    t.select("kindSelect", "v6"); t.wait(40)
+    lines = t.val("outputArea").split("\n")
+    eq(lines, sorted(lines), "v6 ids sort in creation order")
+    expect("v6" in t.text("decodeGrid") and "Timestamp" in t.text("decodeGrid"), t.text("decodeGrid")[:200])
+    t.select("kindSelect", "v1"); t.wait(40)
+    expect("random (multicast bit set)" in t.text("decodeGrid"), "v1 must not carry a real MAC address")
+    t.select("kindSelect", "cuid2")
+    t.page.wait_for_function("/^[a-z][0-9a-z]{23}(\\n[a-z][0-9a-z]{23}){4}$/.test(document.getElementById('outputArea').value)", timeout=8000)
+    t.select("kindSelect", "nanoid"); t.set("nanoSize", "8"); t.set("nanoAlphabet", "0123456789abcdef"); t.wait(40)
+    expect(all(_re.match(r"^[0-9a-f]{8}$", l) for l in t.val("outputArea").split("\n")), t.val("outputArea"))
+    t.set("nanoAlphabet", "aab"); t.wait(40)
+    expect("repeated" in t.val("outputArea"), t.val("outputArea"))
+    t.set("nanoSize", "21"); t.set("nanoAlphabet", "useandom-26T198340PX75pxJACKVERYMINDBUSHWOLF_GQZbfghjklqvwyzrict")
+    t.select("kindSelect", "v4")
+
+
+@case("uuid-generator", "typical", "2.26: Snowflake epochs and Sqids encode and decode like the reference library")
+def _(t):
+    t.set("decodeInput", "175928847299117063"); t.wait(40)
+    t.select("kindSelect", "snowflake"); t.select("sfEpoch", "discord"); t.wait(60)
+    g = t.text("decodeGrid")
+    expect("2016-04-30 11:18:25.796 UTC" in g and "Discord: worker 1, process 0" in g and "Sequence\n7" in g, g)
+    t.select("sfEpoch", "twitter"); t.wait(40)
+    expect("2012-" in t.text("decodeGrid"), "twitter epoch reading: " + t.text("decodeGrid")[:200])
+    t.select("kindSelect", "sqids"); t.wait(60)
+    eq(t.val("outputArea").split("\n"), ["86Rf07", "Jg", "OzwJD"], "default alphabet (values from the sqids library)")
+    t.set("sqidMinLen", "10"); t.wait(40)
+    eq(t.val("outputArea").split("\n")[0], "86Rf07xd4z", "min length 10 (spec example)")
+    t.set("sqidMinLen", "0")
+    t.set("sqidNumbers", "1, -2"); t.wait(40)
+    expect("whole number" in t.val("outputArea"), t.val("outputArea"))
+    t.set("sqidNumbers", "1, 2, 3"); t.wait(40)
+    t.set("decodeInput", "86Rf07"); t.wait(40)
+    expect("Sqids" in t.text("decodeGrid") and "1, 2, 3" in t.text("decodeGrid"), t.text("decodeGrid"))
+    t.set("decodeInput", "0ujtsYcgvSTl8PAuAdqWYSMnLOv"); t.wait(40)
+    expect("KSUID" in t.text("decodeGrid") and "2017-10-10 04:00:47" in t.text("decodeGrid"), t.text("decodeGrid"))
+    t.select("kindSelect", "v4")
+
+
+@case("uuid-generator", "edge", "2.26: list validation finds invalid ids, wrong kinds and duplicates hidden by case and braces")
+def _(t):
+    t.set("validateInput", "018f4a6c-9e3b-7c4d-8a2e-1f3b5c7d9e0f\n{C56A4180-65AA-42EC-A945-5FD21DEC0538}\nc56a4180-65aa-42ec-a945-5fd21dec0538\n018f4a6c-9e3b-7c4d-ca2e-1f3b5c7d9e0f\nnot-an-id\n01ARZ3NDEKTSV4RRFFQ69G5FAV")
+    t.wait(60)
+    summ = t.text("validateSummary")
+    expect("4 of 6 valid" in summ and "2 invalid" in summ and "1 duplicate" in summ, summ)
+    rows = t.call("[...document.querySelectorAll('#validateTable tbody tr')].map(r => [...r.children].map(c => c.textContent))")
+    expect("duplicate of line 2" in rows[2][3], rows[2])
+    expect("variant" in rows[3][3], rows[3])
+    t.select("validateExpect", "uuid-v7"); t.wait(40)
+    expect("1 of 6 valid" in t.text("validateSummary"), t.text("validateSummary"))
+    with t.page.expect_download() as dl:
+        t.click("#btnValidateCsv")
+    body = open(dl.value.path(), encoding="utf-8").read()
+    expect(body.startswith("line,value,kind,valid,detail,duplicate_of") and ",3\n" in body or "duplicate" in body, body[:300])
+    t.select("validateExpect", "any")
+
 @case("timestamp-converter", "minimal", "clock ticks and Now button fills the input")
 def _(t):
     expect(t.text("nowSec").isdigit(), "now not shown")
@@ -2851,6 +2976,67 @@ def _(t):
     expect("1969-12-31T00:00:00.000Z" in t.text("resultGrid"), "negative epoch")
     t.set("tsInput", "not a date")
     expect("Could not parse" in t.text("errorText"), "garbage")
+
+
+@case("timestamp-converter", "typical", "2.17: .NET ticks, FILETIME/LDAP, Excel, Cocoa, GPS and WebKit both ways")
+def _(t):
+    t.select("tzSelect", "UTC"); t.select("fmtSelect", "auto")
+    t.set("tsInput", "1234567890"); t.wait(40)
+    g = t.text("resultGrid")
+    for needle in ["633701646900000000", "128790414900000000", "0x01C98E333296F500", "39857.98020833", "256260690", "918603105", "week 1518", "516705 s into the week", "12879041490000000"]:
+        expect(needle in g, f"missing {needle!r} in {g[-700:]}")
+    for fmt, value, want in [("dotnet", "633701646900000000", "2009-02-13T23:31:30.000Z"), ("filetime", "128790414900000000", "2009-02-13T23:31:30.000Z"), ("filetime", "0x01C98E33:0x3296F500", "2009-02-13T23:31:30.000Z"),
+                             ("excel", "39857.98020833", "2009-02-13T23:31:29.99"), ("cocoa", "256260690", "2009-02-13T23:31:30.000Z"), ("gps", "918603105", "2009-02-13T23:31:30.000Z"), ("webkit", "12879041490000000", "2009-02-13T23:31:30.000Z")]:
+        t.select("fmtSelect", fmt); t.set("tsInput", value); t.wait(30)
+        expect(want in t.text("resultGrid"), f"{fmt} {value}: {t.text('resultGrid')[:200]}")
+    t.select("fmtSelect", "gps"); t.set("tsInput", "1518:516705"); t.wait(30)
+    expect("2009-02-13T23:31:30" in t.text("resultGrid"), "GPS week:seconds")
+    t.select("fmtSelect", "filetime"); t.set("tsInput", "0"); t.wait(30)
+    expect("never" in t.text("errorText"), t.text("errorText"))
+    t.select("fmtSelect", "excel"); t.set("tsInput", "60"); t.wait(30)
+    expect("29 February 1900" in t.text("errorText"), t.text("errorText"))
+    t.select("fmtSelect", "auto")
+
+
+@case("timestamp-converter", "edge", "2.17: an 18-digit FILETIME is not silently read as nanoseconds")
+def _(t):
+    t.select("fmtSelect", "auto")
+    t.set("tsInput", "133800000000000000"); t.wait(40)
+    expect("read as Windows FILETIME" in t.text("parseHint") and "as Unix nanoseconds it would be 1974-03-29" in t.text("parseHint"), t.text("parseHint"))
+    expect("2024-12-30T02:40:00.000Z" in t.text("resultGrid"), t.text("resultGrid")[:200])
+    t.set("tsInput", "1727438400"); t.wait(40)
+    expect("read as seconds" in t.text("parseHint"), "a plausible Unix reading stays: " + t.text("parseHint"))
+    t.set("tsInput", "45678.5"); t.wait(40)
+    expect("Excel" in t.text("parseHint") and "2025-01-21T12:00:00.000Z" in t.text("resultGrid"), t.text("parseHint"))
+    t.set("tsInput", "786000000"); t.wait(40)
+    expect("Apple Cocoa" in t.text("parseHint"), "Cocoa offered as an alternative: " + t.text("parseHint"))
+    t.click("#parseHint .fmt-alt[data-fmt='cocoa']"); t.wait(40)
+    eq(t.val("fmtSelect"), "cocoa", "one click picks the format")
+    expect("2025-11-28T05:20:00.000Z" in t.text("resultGrid"), t.text("resultGrid")[:200])
+    t.select("fmtSelect", "auto")
+
+
+@case("timestamp-converter", "typical", "2.17: batch conversion of a pasted column and of a CSV column, with CSV export")
+def _(t):
+    t.select("tzSelect", "UTC")
+    t.set("batchInput", "1727438400\n1727438400000\n2024-09-27T12:00:00Z\nnot a date\n")
+    t.wait(60)
+    rows = t.call("[...document.querySelectorAll('#batchTable tbody tr')].map(r => r.textContent)")
+    eq(len(rows), 4, "rows")
+    expect(all("2024-09-27T12:00:00.000Z" in r for r in rows[:3]), rows)
+    expect("Could not parse" in rows[3], rows[3])
+    expect("3 converted, 1 could not be read" in t.text("batchMeta"), t.text("batchMeta"))
+    t.click("#btnBatchExample"); t.wait(60)
+    expect(t.visible("#batchColumnWrap"), "column picker hidden for a CSV")
+    eq(t.call("document.getElementById('batchColumn').selectedOptions[0].textContent"), "when", "picks the date column")
+    rows = t.call("[...document.querySelectorAll('#batchTable tbody tr')].map(r => [...r.children].map(c => c.textContent))")
+    eq(len(rows), 5, "csv rows")
+    eq(rows[2][1:3], ["Windows FILETIME / LDAP / Active Directory", "2024-12-30T02:40:00.000Z"], "FILETIME row")
+    eq(rows[3][1], "Excel serial date (1900 system)", "Excel row")
+    with t.page.expect_download() as dl:
+        t.click("#btnBatchCsv")
+    body = open(dl.value.path(), encoding="utf-8").read()
+    expect(body.startswith("event,when,read as,ISO 8601 UTC,in UTC,unix seconds") and "signup,1727438400,Unix seconds,2024-09-27T12:00:00.000Z" in body, body[:300])
 
 
 @case("timestamp-converter", "typical", "date arithmetic clamps month ends; difference reports both directions")
@@ -4293,6 +4479,29 @@ def _(t):
     expect(t.text("pwOut") not in s, "password leaked into state")
 
 
+
+@case("password-generator", "typical", "2.20: breach check is off by default and sends only a 5-character SHA-1 prefix with padding")
+def _(t):
+    reqs = []
+    def handle(route):
+        reqs.append((route.request.url, route.request.headers.get("add-padding")))
+        route.fulfill(status=200, content_type="text/plain", headers={"Access-Control-Allow-Origin": "*"},
+                      body="003D68EB55068C33ACE09247EE4C639306B:3\r\n1E4C9B93F3F0682250B6CF8331B7EE68FD8:9545824\r\nFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF:0")
+    t.page.route("https://api.pwnedpasswords.com/**", handle)
+    expect(not t.call("document.getElementById('allowBreach').checked"), "must be off by default")
+    expect(not t.visible("#btnBreach"), "no button until allowed")
+    t.set("checkInput", "password"); t.wait(60)
+    eq(reqs, [], "typing must never send anything")
+    t.click("#allowBreach"); t.click("#btnBreach")
+    t.wait_for("() => /breached/.test(document.getElementById('breachResult').innerText)", timeout=8000)
+    eq(len(reqs), 1, "one request")
+    expect(reqs[0][0].endswith("/range/5BAA6") and reqs[0][1] == "true", reqs)
+    expect("9,545,824" in t.text("breachResult"), t.text("breachResult"))
+    t.set("checkInput", "correct horse battery staple zebra"); t.click("#btnBreach")
+    t.wait_for("() => /Not found/.test(document.getElementById('breachResult').innerText)", timeout=8000)
+    expect("among the 2 breached hashes" in t.text("breachResult"), t.text("breachResult"))
+    expect("password" not in "".join(u for u, _ in reqs).lower().replace("pwnedpasswords", ""), "the password must not appear in any URL")
+
 @case("color-converter", "minimal", "default color shows every format")
 def _(t):
     html = t.html("fmtTable")
@@ -4747,10 +4956,82 @@ def _(t):
     eq(t.call(TZ_CARD % ("Asia/Kolkata", ".tz-time")), "14:30", "24-hour clock")
 
 
+@case("time-zone-converter", "typical", "2.16: ambiguous IST and CST offer their other meanings, one click switches")
+def _(t):
+    t.call("setState({ d: '2026-12-01', t: '09:00', src: 'Asia/Dubai', zones: ['Europe/London'], h12: false })")
+    t.set("quick", "3pm IST to CST"); t.click("#btnQuick"); t.wait(80)
+    expect(t.visible("#ambigBar"), "no ambiguity prompt")
+    opts = t.call("[...document.querySelectorAll('#ambigBar .ambig-opt')].map(b => [b.dataset.zone, b.getAttribute('aria-pressed')])")
+    expect(["Asia/Kolkata", "true"] in opts and ["Asia/Jerusalem", "false"] in opts and ["Asia/Shanghai", "false"] in opts, opts)
+    t.click("#ambigBar .ambig-opt[data-zone='Asia/Jerusalem']"); t.wait(60)
+    eq(t.call("document.querySelector('.tz-card.src').dataset.zone"), "Asia/Jerusalem", "source switched to Israel")
+    t.click("#ambigBar .ambig-opt[data-zone='Asia/Shanghai']"); t.wait(60)
+    zones = t.call("[...document.querySelectorAll('.tz-card')].map(c => c.dataset.zone)")
+    expect("Asia/Shanghai" in zones and "America/Chicago" not in zones, zones)
+    t.set("quick", "9am Dubai to London"); t.click("#btnQuick"); t.wait(60)
+    expect(not t.visible("#ambigBar"), "prompt should clear for unambiguous names")
+
+
+@case("time-zone-converter", "typical", "2.16: .ics invite in UTC with every local time")
+def _(t):
+    t.call("setState({ d: '2026-12-01', t: '13:00', src: 'Asia/Dubai', zones: ['Europe/London', 'America/New_York'], h12: false })")
+    t.set("meetTitle", "Quarterly review"); t.select("meetDur", "45")
+    with t.page.expect_download() as dl:
+        t.click("#btnIcs")
+    eq(dl.value.suggested_filename, "quarterly-review.ics", "file name")
+    body = open(dl.value.path(), encoding="utf-8", newline="").read().replace("\r\n ", "")
+    for needle in ["DTSTART:20261201T090000Z", "DTEND:20261201T094500Z", "SUMMARY:Quarterly review", "New York (US Eastern): Tue 2026-12-01 04:00", "?at=2026-12-01T09%3A00Z"]:
+        expect(needle in body, needle + " missing from " + body)
+    expect("Invite downloaded" in t.text("meetHint"), t.text("meetHint"))
+
+
+@case("time-zone-converter", "typical", "2.16: a meeting link opens the slot in the recipient's own zone")
+def _(t):
+    t.call("setState({ d: '2026-12-01', t: '13:00', src: 'Asia/Dubai', zones: ['Europe/London'], h12: false })")
+    t.set("meetTitle", "Launch call"); t.select("meetDur", "60")
+    t.page.context.grant_permissions(["clipboard-read", "clipboard-write"])
+    t.click("#btnSlotLink"); t.wait(80)
+    url = t.text("meetHint").split("Meeting link copied: ")[1].strip()
+    expect("at=2026-12-01T09%3A00Z" in url and "src=Asia%2FDubai" in url and "dur=60" in url and "title=Launch+call" in url, url)
+    t.page.goto(url, wait_until="load"); t.wait(300)
+    expect(t.visible("#sharedBanner"), "no banner")
+    b = t.text("sharedBanner")
+    expect('"Launch call"' in b and "1 hour" in b and "your time zone" in b, b)
+    eq(t.val("date"), "2026-12-01", "date"); eq(t.val("time"), "13:00", "time in the sender's zone")
+    eq(t.call("document.querySelector('.tz-card.src').dataset.zone"), "Asia/Dubai", "source zone")
+    zones = t.call("[...document.querySelectorAll('.tz-card')].map(c => c.dataset.zone)")
+    expect("Europe/London" in zones, zones)
+
+
+@case("time-zone-converter", "typical", "2.16: upcoming clock changes for each place")
+def _(t):
+    t.call("setState({ d: '2026-12-01', t: '13:00', src: 'Asia/Dubai', zones: ['Europe/London', 'America/New_York'], h12: false })")
+    items = t.call("[...document.querySelectorAll('#dstList li')].map(l => l.textContent.replace(/\\s+/g, ' ').trim())")
+    eq(len(items), 3, "one line per place")
+    expect("no clock changes" in items[0], items[0])
+    expect("Forward 1 h" in items[1] and "Back 1 h" in items[1] and "at 01:00" in items[1], items[1])
+    expect("at 02:00" in items[2], items[2])
+
+
 @case("number-base-converter", "minimal", "255 converts to every base")
 def _(t):
     h = t.html("outTable")
     for v in ("1111 1111", "377", "FF", "73"): expect(v in h, v)
+
+
+@case("number-base-converter", "typical", "2.27: float16 and bfloat16 decode at 16 bits and encode from a decimal")
+def _(t):
+    t.set("floatInput", "0.1"); t.select("floatWidth", "16"); t.click("#btnFloat"); t.wait(40)
+    eq(t.val("numInput"), "0x2E66", "float16 of 0.1")
+    g = t.text("byteGrid")
+    expect("As float16 (half)" in g and "0.0999755859375" in g and "As bfloat16" in g, g)
+    t.set("floatInput", "3.14159"); t.select("floatWidth", "bf16"); t.click("#btnFloat"); t.wait(40)
+    eq(t.val("numInput"), "0x4049", "bfloat16 of pi")
+    expect("3.140625" in t.text("byteGrid"), t.text("byteGrid"))
+    t.set("floatInput", "70000"); t.select("floatWidth", "16"); t.click("#btnFloat"); t.wait(40)
+    eq(t.val("numInput"), "0x7C00", "overflow to infinity")
+    expect("infinity" in t.text("byteGrid"), t.text("byteGrid"))
+    t.select("floatWidth", "64")
 
 
 @case("number-base-converter", "typical", "huge values stay exact (2^64-1, a 256-bit hash)")
@@ -5001,6 +5282,67 @@ def _(t):
 # ----------------------------------------------------------------------------
 # site-wide: consent, redirects, footer directory, feed (AdSense / SEO pass)
 # ----------------------------------------------------------------------------
+@case("base64", "typical", "2.25: MIME and PEM wrapping; text encodings other than UTF-8")
+def _(t):
+    t.select("wrapMode", "0"); t.select("textEnc", "utf-8")
+    t.set("plainText", "x" * 200)
+    t.select("wrapMode", "76"); t.wait(30)
+    lines = t.val("base64Text").split("\n")
+    expect(len(lines) == 4 and all(len(l.rstrip("\r")) == 76 for l in lines[:-1]), [len(l) for l in lines])
+    t.select("wrapMode", "64"); t.wait(30)
+    expect(all(len(l.rstrip("\r")) == 64 for l in t.val("base64Text").split("\n")[:-1]), "PEM width")
+    t.select("wrapMode", "0")
+    t.set("plainText", "hé")
+    for enc, want in [("utf-8", "aMOp"), ("utf-8-bom", "77u/aMOp"), ("utf-16le", "aADpAA=="), ("utf-16be", "AGgA6Q=="), ("windows-1252", "aOk=")]:
+        t.select("textEnc", enc); t.wait(30)
+        eq(t.val("base64Text"), want, enc)
+    t.set("base64Text", "gOk="); t.wait(30)
+    eq(t.val("plainText"), "€é", "decoded as Windows-1252")
+    t.set("plainText", "日本"); t.wait(30)
+    expect("cannot be written in windows-1252" in t.text("decodeError"), t.text("decodeError"))
+    t.select("textEnc", "utf-8")
+
+
+@case("base64", "typical", "2.25: decoded bytes show their file type and a hex view, and download with that extension")
+def _(t):
+    t.set("base64Text", "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=="); t.wait(60)
+    expect(t.visible("#bytesPanel"), "bytes panel hidden")
+    expect("PNG image" in t.text("bytesInfo") and "70 bytes" in t.text("bytesInfo"), t.text("bytesInfo"))
+    expect(t.text("hexView").startswith("00000000  89 50 4e 47 0d 0a 1a 0a"), t.text("hexView")[:80])
+    with t.page.expect_download() as dl:
+        t.click("#btnSaveBytes")
+    eq(dl.value.suggested_filename, "decoded.png", "extension from the magic bytes")
+    eq(len(open(dl.value.path(), "rb").read()), 70, "bytes")
+    t.set("base64Text", "SGVsbG8*IExh"); t.wait(30)
+    expect('"*" at position 8' in t.text("decodeError"), t.text("decodeError"))
+    t.set("base64Text", "SGVsbG8="); t.wait(30)
+    expect("no known file signature" in t.text("bytesInfo"), t.text("bytesInfo"))
+
+
+@case("base64", "maximal", "2.25: a 12 MB file is encoded in slices to a download and decodes back byte for byte")
+def _(t):
+    t.call("switchTab('image')")
+    t.call("""() => { const n = 12 * 1024 * 1024, b = new Uint8Array(n); for (let i = 0; i < n; i++) b[i] = (i * 2654435761) >>> 24;
+      b.set([0x25, 0x50, 0x44, 0x46, 0x2d]); window.__big = b;
+      const dt = new DataTransfer(); dt.items.add(new File([b], 'report.pdf', { type: 'application/pdf' })); const fi = document.getElementById('fileInput'); fi.files = dt.files; fi.dispatchEvent(new Event('change')); }""")
+    t.page.wait_for_function("!document.getElementById('btnDownloadB64').disabled", timeout=20000)
+    expect("report.pdf" in t.text("fileInfo") and "PDF document" in t.text("fileInfo"), t.text("fileInfo"))
+    expect("too large to show here" in t.val("imageOutputText"), "a 12 MB data URI should not be put in the text box")
+    with t.page.expect_download() as dl:
+        t.click("#btnDownloadB64")
+    eq(dl.value.suggested_filename, "report.pdf.b64", "name")
+    path = dl.value.path()
+    import base64 as _b64
+    data = _b64.b64decode(open(path, "rb").read())
+    eq(len(data), 12 * 1024 * 1024, "decoded length")
+    with t.page.expect_download() as dl2:
+        t.page.set_input_files("#b64FileIn", files=[{"name": "report.pdf.b64", "mimeType": "text/plain", "buffer": open(path, "rb").read()}])
+    eq(dl2.value.suggested_filename, "report.pdf", "decoded name")
+    eq(open(dl2.value.path(), "rb").read(), data, "round trip")
+    expect("PDF document" in t.text("fileInfo"), t.text("fileInfo"))
+    t.call("switchTab('text')")
+
+
 @case("base64", "typical", "site: Reject all stores the choice and sends denied consent to Google")
 def _(t):
     t.call("localStorage.removeItem('layerbit-cookie-consent'); initCookieConsent(true)")

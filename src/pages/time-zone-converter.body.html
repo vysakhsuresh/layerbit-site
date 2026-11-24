@@ -4,7 +4,7 @@
   <div class="hero">
     <div class="hero-badge"><i data-lucide="shield-check"></i> Runs entirely in your browser</div>
     <h1>Time Zone Converter &amp; Meeting Planner</h1>
-    <p>Convert any time between time zones, such as Dubai to India, IST to EST or London to New York, with daylight saving handled for the exact date, then see at a glance which hours suit everyone for a call.</p>
+    <p>Convert any time between time zones, such as Dubai to India, IST to EST or London to New York, with daylight saving handled for the exact date, then see at a glance which hours suit everyone for a call, send an .ics invite or a meeting link, and see the next clock changes.</p>
   </div>
 
   <div class="ide-container single">
@@ -34,7 +34,20 @@
         <div class="error-inline" id="zoneError" role="alert" hidden></div>
         <div class="dst-note" id="dstNote" hidden></div>
 
+        <div class="ambig" id="ambigBar" hidden></div>
+        <div class="shared-banner" id="sharedBanner" role="status" hidden></div>
         <div class="tz-results" id="results" aria-live="polite"></div>
+
+        <div class="meet-row">
+          <div class="field grow"><label for="meetTitle"><i data-lucide="type"></i> Meeting title</label><input type="text" id="meetTitle" class="text-input" placeholder="Weekly sync" autocomplete="off"></div>
+          <div class="field"><label for="meetDur"><i data-lucide="timer"></i> Length</label>
+            <select id="meetDur" class="text-input"><option value="15">15 min</option><option value="30" selected>30 min</option><option value="45">45 min</option><option value="60">1 hour</option><option value="90">1.5 hours</option><option value="120">2 hours</option></select></div>
+          <div class="meet-actions">
+            <button class="btn" type="button" id="btnIcs"><i data-lucide="calendar-plus"></i> Download .ics invite</button>
+            <button class="btn" type="button" id="btnSlotLink"><i data-lucide="link"></i> Copy meeting link</button>
+          </div>
+        </div>
+        <p class="meet-hint" id="meetHint">The invite works in Google Calendar, Outlook and Apple Calendar. The link opens this page showing the slot in each recipient's own time zone.</p>
 
         <div class="field add-field">
           <label for="addZone"><i data-lucide="plus"></i> Add a city or time zone</label>
@@ -71,6 +84,18 @@
         <p class="planner-summary" id="overlapText"></p>
         <div class="planner-wrap"><table class="planner" id="planner"></table></div>
         <div class="hint-bar inline">Each row is one hour on the chosen date in the first city. Green means the whole hour falls between 09:00 and 18:00 there; a highlighted row works for every city. Click a row to convert that time.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="ide-container single">
+    <div class="pane">
+      <div class="pane-header">
+        <div class="pane-title"><i data-lucide="sun-moon"></i> Upcoming clock changes</div>
+      </div>
+      <div class="pane-body">
+        <ul class="dst-list" id="dstList"></ul>
+        <div class="hint-bar inline">The next two daylight-saving changes in each place on the list, from the browser's own time zone database. Meetings that cross one of these dates move by an hour for someone.</div>
       </div>
     </div>
   </div>
@@ -133,7 +158,7 @@
         </div>
         <div class="faq-item">
           <button class="faq-question">What do GST, IST, EST, PST and BST stand for? <i data-lucide="chevron-down"></i></button>
-          <div class="faq-answer"><p>GST is Gulf Standard Time (UTC+4) in the UAE and Oman. IST is Indian Standard Time (UTC+5:30). EST and EDT are US Eastern Standard and Daylight Time (UTC−5 and UTC−4), PST and PDT are US Pacific (UTC−8 and UTC−7), and GMT and BST are the UK's winter and summer time (UTC+0 and UTC+1). Abbreviations are ambiguous, since IST is also used in Ireland and Israel, so the converter reads IST as India and also accepts city names, which are never ambiguous.</p></div>
+          <div class="faq-answer"><p>GST is Gulf Standard Time (UTC+4) in the UAE and Oman. IST is Indian Standard Time (UTC+5:30). EST and EDT are US Eastern Standard and Daylight Time (UTC−5 and UTC−4), PST and PDT are US Pacific (UTC−8 and UTC−7), and GMT and BST are the UK's winter and summer time (UTC+0 and UTC+1). Abbreviations are ambiguous: IST is also Israel and Ireland, CST is also China and Cuba, BST is also Bangladesh and PST is also the Philippines. The converter picks the most common meaning, shows the others as buttons so you can switch with one click, and also accepts city names, which are never ambiguous.</p></div>
         </div>
         <div class="faq-item">
           <button class="faq-question">Why does the gap between the UK and the US change for a few weeks? <i data-lucide="chevron-down"></i></button>
@@ -144,8 +169,12 @@
           <div class="faq-answer"><p>Add India and the US city to the converter and look at the meeting planner. Office hours barely overlap, so the usual compromise is early morning on the US East Coast, which is evening in India: 8:00 AM in New York is 6:30 PM in India in winter and 5:30 PM in summer. For the US West Coast the gap is three hours wider, and calls tend to be in the US late afternoon and India's early morning.</p></div>
         </div>
         <div class="faq-item">
+          <button class="faq-question">How do I send a meeting time to people in other countries? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>Set the date and time, give the meeting a title and length, then either download the .ics invite or copy the meeting link. The invite is stored in UTC, so Google Calendar, Outlook and Apple Calendar each show it at the right local time, and its description lists the time in every city on your list. The link opens this converter at that exact moment and adds the recipient's own time zone at the top, so nobody has to do the arithmetic.</p></div>
+        </div>
+        <div class="faq-item">
           <button class="faq-question">Is my time or location sent anywhere? <i data-lucide="chevron-down"></i></button>
-          <div class="faq-answer"><p>No. The converter reads your device's time zone from the browser to choose a starting city, and every conversion is done by JavaScript on this page using the browser's own time zone data. Nothing is sent to a server, and the page keeps working offline once it has loaded.</p></div>
+          <div class="faq-answer"><p>No. The converter reads your device's time zone from the browser to choose a starting city, and every conversion is done by JavaScript on this page using the browser's own time zone data. Nothing is sent to a server, and the page keeps working offline once it has loaded. The .ics invite is built in the page, and a meeting link carries only the time, the zones, the length and the title you typed.</p></div>
         </div>
       </div>
     </div>
@@ -176,6 +205,7 @@
     <div class="info-panel">
       <h2><i data-lucide="git-commit"></i> Changelog</h2>
       <ul class="changelog-list">
+        <li><span class="changelog-tag">v1.1.0</span> Download an .ics calendar invite (UTC, with every city's local time in the description) and copy a meeting link that opens in each recipient's own time zone. Upcoming daylight-saving changes for every city on the list. Ambiguous abbreviations such as IST, CST, BST and PST show their other meanings as one-click alternatives.</li>
         <li><span class="changelog-tag">v1.0.0</span> Initial release: conversion between any IANA time zones with daylight saving for the chosen date, plain-English input such as "3pm IST to EST", search by city, country or abbreviation, warnings for skipped and repeated times, a 24-hour meeting planner with shared working hours, and share links.</li>
       </ul>
     </div>
@@ -260,6 +290,8 @@
       $('results').innerHTML = [src].concat(targets).map((z, i) => card(z, r.ms, sw, i === 0)).join('');
       flash = null;
       renderPlanner(sw.h);
+      renderDst();
+      renderAmbig();
       icons();
     }
 
@@ -298,6 +330,8 @@
       const q = Z.parseQuery($('quick').value);
       if (q.error) { $('quickError').hidden = false; $('quickError').textContent = q.error; return; }
       $('quickError').hidden = true;
+      noteAmbig('from', q.ambiguous && q.ambiguous.from ? q.fromText : '', q.from);
+      noteAmbig('to', q.ambiguous && q.ambiguous.to ? q.toText : '', q.to);
       if (q.from) setSource(q.from, !q.time);
       if (q.time) {
         if (!$('date').value) $('date').value = Z.wall(Date.now(), src).date;
@@ -321,21 +355,27 @@
       const v = $('fromZone').value, z = Z.resolve(v);
       if (!v.trim()) return;
       if (!z) { $('zoneError').hidden = false; $('zoneError').textContent = `Could not find a time zone called "${v.trim()}". Try a city, a country or an abbreviation such as IST.`; $('fromZone').classList.add('bad'); return; }
-      if (z !== src) { setSource(z, false); render(); } else syncFrom();
+      noteAmbig('from', v, z);
+      if (z !== src) { setSource(z, false); render(); } else { syncFrom(); renderAmbig(); }
     }
     $('fromZone').addEventListener('change', readFrom);
     $('fromZone').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); readFrom(); } });
     function readAdd() {
       const v = $('addZone').value, z = Z.resolve(v);
-      if (!v.trim()) return;
+      if (!v.trim()) { Layerbit.toast('Type a city, country or zone to add, for example Singapore or PST.', 'warn'); $('addZone').focus(); return; }
       if (!z) { Layerbit.toast(`No time zone found for "${v.trim()}".`, 'warn'); return; }
       $('addZone').value = '';
+      noteAmbig('to', v, z);
       addZone(z, false); render();
     }
     $('btnAdd').addEventListener('click', readAdd);
     $('addZone').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); readAdd(); } });
     $('addZone').addEventListener('change', () => { if (Z.resolve($('addZone').value)) readAdd(); });
-    $('chips').addEventListener('click', e => { const b = e.target.closest('[data-add]'); if (b) { addZone(b.dataset.add, false); render(); } });
+    $('chips').addEventListener('click', e => {
+      const b = e.target.closest('[data-add]'); if (!b) return;
+      if (b.dataset.add === src || targets.includes(b.dataset.add)) Layerbit.toast(`${Z.label(b.dataset.add)} is already on the list.`);
+      addZone(b.dataset.add, false); render();
+    });
     $('results').addEventListener('click', e => {
       const b = e.target.closest('[data-act]'); if (!b) return;
       const z = b.closest('.tz-card').dataset.zone;
@@ -346,6 +386,91 @@
     function pickRow(tr) { if (!tr) return; $('time').value = pad(+tr.dataset.hour) + ':00'; render(); }
     $('planner').addEventListener('click', e => pickRow(e.target.closest('tr[data-hour]')));
     $('planner').addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); pickRow(e.target.closest('tr[data-hour]')); } });
+
+
+    // ---- ambiguous abbreviations
+    let ambig = [];   // [{role, text, options, chosen}]
+    function renderAmbig() {
+      const bar = $('ambigBar');
+      if (!ambig.length) { bar.hidden = true; bar.innerHTML = ''; return; }
+      const now = readSource() ? readSource().ms : Date.now();
+      bar.innerHTML = ambig.map((a, i) => `<div class="ambig-row"><i data-lucide="help-circle"></i><span>"${esc(a.text)}" can mean</span>${a.options.map(o => `<button type="button" class="ambig-opt" data-i="${i}" data-zone="${esc(o.zone)}" aria-pressed="${o.zone === a.chosen}"${o.zone === a.chosen ? ' disabled title="In use"' : ''}>${esc(o.name)} <small>${Z.offsetLabel(Z.offset(now, o.zone))}</small></button>`).join('')}</div>`).join('');
+      bar.hidden = false; icons();
+    }
+    function noteAmbig(role, text, chosen) {
+      ambig = ambig.filter(a => a.role !== role);
+      const opts = text ? Z.ambiguous(text) : null;
+      if (opts && opts.length > 1) ambig.push({ role, text: text.trim().toUpperCase(), options: opts, chosen });
+    }
+    $('ambigBar').addEventListener('click', e => {
+      const b = e.target.closest('.ambig-opt'); if (!b) return;
+      const a = ambig[+b.dataset.i], z = b.dataset.zone;
+      if (z === a.chosen) return;
+      if (a.role === 'from') setSource(z, false);
+      else { const k = targets.indexOf(a.chosen); if (k >= 0) targets[k] = z; else addZone(z, true); targets = targets.filter((t, i) => t !== src && targets.indexOf(t) === i); flash = z; }
+      a.chosen = z;
+      render();
+    });
+
+    // ---- meeting invite and link
+    function meetingStart() { const r = readSource(); return r ? r.ms : null; }
+    function slotUrl() {
+      const ms = meetingStart(); if (ms == null) return null;
+      const u = new URL(location.href.split('#')[0].split('?')[0]);
+      u.searchParams.set('at', new Date(ms).toISOString().slice(0, 16) + 'Z');
+      u.searchParams.set('src', src);
+      if (targets.length) u.searchParams.set('z', targets.join(','));
+      u.searchParams.set('dur', $('meetDur').value);
+      if ($('meetTitle').value.trim()) u.searchParams.set('title', $('meetTitle').value.trim());
+      return u.toString();
+    }
+    $('btnIcs').addEventListener('click', () => {
+      const ms = meetingStart(); if (ms == null) { Layerbit.toast('Choose a date and a time first', 'warn'); return; }
+      const title = $('meetTitle').value.trim() || 'Meeting';
+      const text = Z.ics({ start: ms, minutes: +$('meetDur').value, title, zones: [src].concat(targets), url: slotUrl() });
+      const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([text], { type: 'text/calendar' }));
+      a.download = title.replace(/[^\w\- ]+/g, '').trim().replace(/\s+/g, '-').toLowerCase().slice(0, 60) + '.ics'; document.body.appendChild(a); a.click(); a.remove();
+      $('meetHint').textContent = `Invite downloaded: ${title}, ${$('meetDur').selectedOptions[0].text}, starting ${new Date(ms).toISOString().slice(0, 16).replace('T', ' ')} UTC. Open it to add it to your calendar.`;
+    });
+    $('meetDur').addEventListener('change', () => {
+      const ms = meetingStart(); if (ms == null) return;
+      const e = Z.wall(ms + $('meetDur').value * 60000, src);
+      $('meetHint').textContent = `${$('meetDur').selectedOptions[0].text}: ends at ${Z.clock(e.h, e.mi, $('opt12').checked)} ${Z.label(src)} time.`;
+    });
+    $('btnSlotLink').addEventListener('click', () => {
+      const u = slotUrl(); if (!u) { Layerbit.toast('Choose a date and a time first', 'warn'); return; }
+      Layerbit.copy(u).then(() => { $('meetHint').textContent = 'Meeting link copied: ' + u; });
+    });
+    // a link from someone else: show the slot, with this viewer's own zone first
+    (function openSlot() {
+      const q = new URLSearchParams(location.search), at = q.get('at');
+      if (!at) return;
+      const ms = Date.parse(/Z$/.test(at) ? at : at + 'Z');
+      if (isNaN(ms)) return;
+      const s0 = q.get('src'), zs = (q.get('z') || '').split(',').filter(z => Z.isZone(z));
+      if (s0 && Z.isZone(s0)) src = s0;
+      targets = zs.filter(z => z !== src);
+      const mine = localZone();
+      if (mine !== src && !targets.includes(mine)) targets.unshift(mine);
+      targets = targets.slice(0, MAX_ZONES - 1);
+      const w = Z.wall(ms, src); $('date').value = w.date; $('time').value = w.time;
+      if (q.get('dur') && [...$('meetDur').options].some(o => o.value === q.get('dur'))) $('meetDur').value = q.get('dur');
+      if (q.get('title')) $('meetTitle').value = q.get('title').slice(0, 120);
+      const me = Z.wall(ms, mine), title = q.get('title') ? `"${esc(q.get('title').slice(0, 120))}"` : 'A meeting';
+      $('sharedBanner').innerHTML = `<i data-lucide="calendar-check"></i><span>${title} (${esc($('meetDur').selectedOptions[0].text)}) is at <strong>${me.wd} ${me.d} ${MONTHS[me.mo - 1]}, ${Z.clock(me.h, me.mi, $('opt12').checked)}</strong> in your time zone (${esc(Z.label(mine))}).</span>`;
+      $('sharedBanner').hidden = false;
+      window.__lbSlot = true;
+    })();
+
+    // ---- upcoming clock changes
+    function renderDst() {
+      const now = Date.now(), list = [src].concat(targets), h12 = $('opt12').checked;
+      $('dstList').innerHTML = list.map(z => {
+        const tr = Z.transitions(z, now, 2);
+        if (!tr.length) return `<li><strong>${esc(Z.label(z))}</strong> <span class="muted">no clock changes in the next two years (${Z.offsetLabel(Z.offset(now, z))} all year)</span></li>`;
+        return `<li><strong>${esc(Z.label(z))}</strong> ${tr.map(t => { const w = Z.wall(t.ms, z), at = new Date(t.ms + t.before * 60000); return `<span class="dst-chg ${t.delta > 0 ? 'fwd' : 'back'}">${t.delta > 0 ? 'Forward' : 'Back'} ${duration(Math.abs(t.delta))} on ${w.wd} ${w.d} ${MONTHS[w.mo - 1]} ${w.y} at ${Z.clock(at.getUTCHours(), at.getUTCMinutes(), h12)} <small>(${Z.offsetLabel(t.before)} → ${Z.offsetLabel(t.after)})</small></span>`; }).join(' ')}</li>`;
+      }).join('');
+    }
 
     function getState() { return { d: $('date').value, t: $('time').value, src, zones: targets.slice(), h12: $('opt12').checked }; }
     function setState(s) {
@@ -360,5 +485,6 @@
     if (window.Layerbit) Layerbit.register({ slug: 'time-zone-converter', getState, setState, run: quick, input: t => { $('quick').value = t.trim(); quick(); } });
 
     fillList();
-    setNow(); syncFrom(); render();
+    if (!window.__lbSlot) setNow();
+    syncFrom(); render();
   </script>

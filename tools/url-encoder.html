@@ -88,6 +88,7 @@
     },
     {
       "@type": "FAQPage",
+      "@id": "https://layerbit.co.in/tools/url-encoder.html#faq",
       "mainEntity": [
         {
           "@type": "Question",
@@ -102,7 +103,7 @@
           "name": "Why is client-side processing necessary?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "URLs frequently contain highly sensitive session tokens, API keys, and temporary authorization grants within their parameters. Processing this data entirely within your local browser DOM guarantees zero-trust security\u2014your keys are never sent to or logged by our servers."
+            "text": "URLs frequently contain highly sensitive session tokens, API keys, and temporary authorization grants within their parameters. Processing this data entirely within your local browser DOM guarantees zero-trust security—your keys are never sent to or logged by our servers."
           }
         },
         {
@@ -118,11 +119,18 @@
           "name": "How does Batch Mode work?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "Batch Mode treats each line of the input as an independent item. Every non-empty line is parsed and encoded or decoded on its own \u2014 if a line is a full URL, only its query parameters are transformed (same logic as Smart Mode); otherwise the whole line is encoded or decoded as a raw string. Blank lines and line order are preserved, so you can paste a list of endpoints or tracking links and process them all in one pass."
+            "text": "Batch Mode treats each line of the input as an independent item. Every non-empty line is parsed and encoded or decoded on its own — if a line is a full URL, only its query parameters are transformed (same logic as Smart Mode); otherwise the whole line is encoded or decoded as a raw string. Blank lines and line order are preserved, so you can paste a list of endpoints or tracking links and process them all in one pass."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Why does + sometimes mean a space?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "HTML forms send data as application/x-www-form-urlencoded, where a space is written as + and a real plus as %2B. Most servers decode query strings that way, but decodeURIComponent and URL paths do not, so q=hello+world can arrive as \"hello+world\". Tick + means space to decode form data: in a full URL only the query is treated as form data, so a + in the path or the fragment stays a plus. In Raw mode the same option encodes spaces as +."
           }
         }
-      ],
-      "@id": "https://layerbit.co.in/tools/url-encoder.html#faq"
+      ]
     }
   ]
 }
@@ -130,7 +138,7 @@
 
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6072772587431629" crossorigin="anonymous"></script>
 
-  <script src="../js/vendor/lucide.min.js?v=73dc5075c6" async></script>
+  <script src="../js/vendor/lucide.min.js?v=9ccd8f7461" async></script>
 
   <link rel="icon" href="../favicon.ico" sizes="16x16 32x32 48x48" />
   <link rel="icon" href="../favicon-48.png" type="image/png" sizes="48x48" />
@@ -475,6 +483,7 @@
       <div class="pane-header">
         <div class="pane-title"><i data-lucide="lock"></i> Encoded Payload</div>
         <div class="btn-group">
+          <label class="check" title="In form data (application/x-www-form-urlencoded) and most query strings, + stands for a space. Paths and fragments keep a literal +."><input type="checkbox" id="optPlus"> + means space</label>
           <input type="file" id="encodedFile" accept=".txt" style="display:none;">
           <button class="btn" onclick="document.getElementById('encodedFile').click()"><i data-lucide="upload"></i> Upload</button>
           <button class="btn" onclick="copyContent('encodedText', this)"><i data-lucide="copy"></i> Copy</button>
@@ -568,6 +577,13 @@
           </div>
         </div>
 
+        <div class="faq-item">
+          <button class="faq-question">Why does + sometimes mean a space? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer">
+            <p>HTML forms send data as <code>application/x-www-form-urlencoded</code>, where a space is written as <code>+</code> and a real plus as <code>%2B</code>. Most servers decode query strings that way, but <code>decodeURIComponent</code> and URL paths do not, so <code>q=hello+world</code> can arrive as "hello+world". Tick <strong>+ means space</strong> to decode form data: in a full URL only the query is treated as form data, so a <code>+</code> in the path or the fragment stays a plus. In Raw mode the same option encodes spaces as <code>+</code>.</p>
+          </div>
+        </div>
+
       </div>
     </div>
 
@@ -627,6 +643,7 @@
     <div class="info-panel">
       <h2><i data-lucide="git-merge"></i> Deployment Changelog</h2>
       <ul class="changelog-list">
+        <li><span class="changelog-tag">v1.6.0</span> A "+ means space" option for form data: decoding turns + into a space in query values (a full URL's path and fragment keep their literal +), and Raw mode encodes spaces as +.</li>
         <li><span class="changelog-tag">v1.5.0</span> A line-endings option: multi-line text can be encoded with CRLF line breaks (%0D%0A); batch mode still encodes each line on its own.</li>
         <li><span class="changelog-tag">v1.4.1</span> A bare value that is not a URL (no scheme, no path structure) is now encoded as a component, so <code>&amp;</code>, <code>=</code> and <code>#</code> are percent-encoded instead of being left to change the meaning of a query string. Relative paths keep their separators as before.</li>
         <li><span class="changelog-tag">v1.4.0</span> Made the Parameter Forensics grid editable (edit a key/value and click Re-encode to rebuild the URL) and added a Batch Mode for encoding/decoding a list of URLs at once.</li>
@@ -982,13 +999,28 @@
       if (currentMode === 'smart') {
         encodedText.value = encodeOneSmart(val);
       } else {
-        // Raw Mode: encode everything strictly
-        encodedText.value = encodeURIComponent(val);
+        // Raw Mode: encode everything strictly; form data writes spaces as +
+        encodedText.value = optPlus.checked ? encodeURIComponent(val).replace(/%20/g, '+') : encodeURIComponent(val);
       }
 
       analyzeParameters(val);
       isSyncing = false;
     }
+
+    // "+ means space": form encoding. For a full URL only the query part is
+    // form data; the path and the fragment keep a literal +.
+    const optPlus = document.getElementById('optPlus');
+    function plusToSpace(s) {
+      if (!optPlus.checked) return s;
+      const q = s.indexOf('?');
+      if (/^[a-z][\w+.-]*:/i.test(s) || /^[\/.]/.test(s)) {
+        if (q < 0) return s;
+        const h = s.indexOf('#', q), end = h < 0 ? s.length : h;
+        return s.slice(0, q) + s.slice(q, end).replace(/\+/g, '%20') + s.slice(end);
+      }
+      return s.replace(/\+/g, '%20');
+    }
+    const decodeForm = s => decodeURIComponent(plusToSpace(s));
 
     // Engine: Decode Encoded -> Plain
     function triggerDecode() {
@@ -1008,7 +1040,7 @@
       isSyncing = true;
 
       if (currentMode === 'batch') {
-        plainText.value = batchProcessLines(raw, (line) => decodeURIComponent(line));
+        plainText.value = batchProcessLines(raw, decodeForm);
         decodeError.classList.remove("active");
         analysisContainer.classList.remove("active");
         isSyncing = false;
@@ -1017,7 +1049,7 @@
 
       try {
         // Try decoding the whole string
-        const decoded = decodeURIComponent(val);
+        const decoded = decodeForm(val);
         plainText.value = decoded;
         decodeError.classList.remove("active");
         analyzeParameters(decoded);
@@ -1034,6 +1066,11 @@
     plainText.addEventListener('input', triggerEncode);
     document.getElementById('lineEndings').addEventListener('change', triggerEncode);
     encodedText.addEventListener('input', triggerDecode);
+    // re-run whichever side the user last typed in
+    let lastSide = 'plain';
+    plainText.addEventListener('input', () => { lastSide = 'plain'; });
+    encodedText.addEventListener('input', () => { lastSide = 'encoded'; });
+    optPlus.addEventListener('change', () => { if (lastSide === 'encoded') triggerDecode(); else triggerEncode(); });
 
     // FAQ Accordion Logic
     

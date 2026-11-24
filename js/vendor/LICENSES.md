@@ -44,6 +44,7 @@ offline, and sends no visitor IP to a CDN operator).
 | `katex/katex.min.js`, `katex/katex.min.css`, `katex/fonts/*.woff2` | KaTeX (the CSS keeps only the woff2 font sources) | 0.16.25 | MIT |
 | `highlight.min.js` | highlight.js (`lib/common`, its 36 common languages, bundled as `window.hljs` with esbuild) | 11.11.1 | BSD-3-Clause |
 | `marked-footnote.umd.js` | marked-footnote (`dist/index.umd.js`, source-map comment removed) | 1.4.0 | MIT |
+| `sqids.min.js` | sqids (`dist/sqids.js`, source-map comment removed) | 0.3.0 | MIT |
 | `wasm/selftest.wasm` | Layerbit's own 41-byte test module for the WebAssembly loader | n/a | AGPL-3.0 |
 
 To upgrade one: download the same `dist/` file from the new version's npm

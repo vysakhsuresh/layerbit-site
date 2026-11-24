@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="Generate UUIDs (GUIDs) in bulk: random v4, time-ordered v7, namespace v5 and ULIDs, and decode any UUID to its version, variant and timestamp. Runs locally." />
+  <meta name="description" content="Generate UUIDs v1-v7, ULID, NanoID, KSUID, CUID2, Snowflake and Sqids in bulk, decode their timestamps, and validate a list for duplicates. Runs locally." />
   <title>UUID / GUID Generator (v4, v7) & ULID Generator | Layerbit</title>
   <meta name="google-adsense-account" content="ca-pub-6072772587431629" />
   <link rel="preload" href="../fonts/space-grotesk-latin.woff2" as="font" type="font/woff2" crossorigin />
@@ -26,7 +26,7 @@
   <meta property="og:url" content="https://layerbit.co.in/tools/uuid-generator.html" />
   <meta property="og:site_name" content="Layerbit" />
   <meta property="og:title" content="UUID / GUID Generator (v4, v7) & ULID Generator | Layerbit" />
-  <meta property="og:description" content="Generate UUIDs (GUIDs) in bulk: random v4, time-ordered v7, namespace v5 and ULIDs, and decode any UUID to its version, variant and timestamp. Runs locally." />
+  <meta property="og:description" content="Generate UUIDs v1-v7, ULID, NanoID, KSUID, CUID2, Snowflake and Sqids in bulk, decode their timestamps, and validate a list for duplicates. Runs locally." />
   <meta property="og:image" content="https://layerbit.co.in/images/og/tools-uuid-generator.jpg" />
   <meta property="og:image:type" content="image/jpeg" />
   <meta property="og:image:width" content="1200" />
@@ -35,7 +35,7 @@
   <meta property="og:locale" content="en" />
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="UUID / GUID Generator (v4, v7) & ULID Generator | Layerbit" />
-  <meta name="twitter:description" content="Generate UUIDs (GUIDs) in bulk: random v4, time-ordered v7, namespace v5 and ULIDs, and decode any UUID to its version, variant and timestamp. Runs locally." />
+  <meta name="twitter:description" content="Generate UUIDs v1-v7, ULID, NanoID, KSUID, CUID2, Snowflake and Sqids in bulk, decode their timestamps, and validate a list for duplicates. Runs locally." />
   <meta name="twitter:image" content="https://layerbit.co.in/images/og/tools-uuid-generator.jpg" />
   <meta name="twitter:image:alt" content="UUID / GUID Generator (v4, v7) & ULID Generator" />
   <meta name="theme-color" content="#0a0c10" />
@@ -46,9 +46,9 @@
     {
       "@type": "SoftwareApplication",
       "@id": "https://layerbit.co.in/tools/uuid-generator.html#app",
-      "name": "UUID (GUID) \u0026 ULID Generator",
+      "name": "UUID (GUID) \u0026 ULID Generator and Decoder",
       "url": "https://layerbit.co.in/tools/uuid-generator.html",
-      "description": "Generate UUIDs (GUIDs) in bulk: random v4, time-ordered v7, namespace v5 and ULIDs, and decode any UUID to its version, variant and timestamp. Runs locally.",
+      "description": "Generate UUIDs v1-v7, ULID, NanoID, KSUID, CUID2, Snowflake and Sqids in bulk, decode their timestamps, and validate a list for duplicates. Runs locally.",
       "applicationCategory": "DeveloperApplication",
       "operatingSystem": "Any (runs in the browser)",
       "browserRequirements": "Requires JavaScript",
@@ -58,11 +58,18 @@
         "price": "0",
         "priceCurrency": "USD"
       },
-      "keywords": "uuid generator, uuid v7, ulid generator, uuid decoder, uuid v5 namespace, guid generator",
       "publisher": {
         "@id": "https://layerbit.co.in/#organization"
       },
-      "datePublished": "2026-09-27"
+      "featureList": [
+        "UUID v1, v3, v4, v5, v6 and v7, nil and max",
+        "ULID, NanoID, KSUID and CUID2",
+        "Snowflake ids with the Twitter, Discord or a custom epoch",
+        "Sqids: short reversible ids from numbers",
+        "Up to 10,000 ids at once in any case, hyphen and brace format",
+        "Decode version, variant and embedded timestamps",
+        "Validate a list for invalid ids, wrong kinds and duplicates, with CSV export"
+      ]
     },
     {
       "@type": "BreadcrumbList",
@@ -97,7 +104,7 @@
           "name": "Are these UUIDs unique? Could two people get the same one?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "A v4 UUID has 122 random bits from a cryptographic generator. The chance that any two of a billion such ids collide is about 1 in 2.7 quintillion; you would need to generate roughly 2.7 quintillion ids before a duplicate became likely. Nothing is checked against a central registry, and nothing needs to be \u2014 the probability is what guarantees uniqueness. The same reasoning applies to the 74 or 80 random bits in a v7 or ULID generated within the same millisecond."
+            "text": "A v4 UUID has 122 random bits from a cryptographic generator. The chance that any two of a billion such ids collide is about 1 in 2.7 quintillion; you would need to generate roughly 2.7 quintillion ids before a duplicate became likely. Nothing is checked against a central registry, and nothing needs to be — the probability is what guarantees uniqueness. The same reasoning applies to the 74 or 80 random bits in a v7 or ULID generated within the same millisecond."
           }
         },
         {
@@ -121,7 +128,7 @@
           "name": "Can I extract the creation time from a UUID?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "From a v7 or a ULID, yes: the first 48 bits are a Unix millisecond timestamp and the decoder shows it. From a v1 or v6, also yes, as a count of 100-nanosecond intervals since 15 October 1582, which the decoder converts. From a v4, v3 or v5, no \u2014 those contain no time information at all, and there is no way to learn when they were made."
+            "text": "From a v7 or a ULID, yes: the first 48 bits are a Unix millisecond timestamp and the decoder shows it. From a v1 or v6, also yes, as a count of 100-nanosecond intervals since 15 October 1582, which the decoder converts. From a v4, v3 or v5, no — those contain no time information at all, and there is no way to learn when they were made. KSUIDs carry seconds since May 2014 and Snowflakes carry milliseconds since their service's epoch (Twitter's or Discord's, selectable), and the decoder reads both. NanoIDs and CUID2s are random or hashed and carry nothing."
           }
         },
         {
@@ -129,7 +136,23 @@
           "name": "How does a v5 UUID work and when would I use one?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "A v5 is SHA-1(namespace UUID bytes + name bytes) with the version and variant bits overwritten, truncated to 128 bits. It is deterministic: the same namespace and name always produce the same UUID, in any language. Use it when independent systems need to agree on the id for the same real-world thing without coordinating \u2014 for example, deriving a stable id for \"example.com\" from the DNS namespace, or for a file path from the URL namespace. v3 is the same construction with MD5 and should only be used to match an existing system that requires it."
+            "text": "A v5 is SHA-1(namespace UUID bytes + name bytes) with the version and variant bits overwritten, truncated to 128 bits. It is deterministic: the same namespace and name always produce the same UUID, in any language. Use it when independent systems need to agree on the id for the same real-world thing without coordinating — for example, deriving a stable id for \"example.com\" from the DNS namespace, or for a file path from the URL namespace. v3 is the same construction with MD5 and should only be used to match an existing system that requires it."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "When should I use NanoID, KSUID, CUID2, Snowflake or Sqids instead of a UUID?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "NanoID is a short random id (21 URL-safe characters, about as collision-resistant as a v4) for URLs and front-end keys. KSUID (Segment) is 27 characters that sort by creation time, like a ULID with a longer random part. CUID2 hashes time, a counter, randomness and a machine fingerprint with SHA3, so its ids are hard to guess and reveal nothing. Snowflake (Twitter, Discord) packs a timestamp, a machine number and a sequence into a 64-bit integer that fits a BIGINT column. Sqids is different: it turns numbers you already have, such as database row ids, into short reversible strings. It hides the numbers from a casual glance but is not encryption."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Why does the v1 generator not use my MAC address?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "A browser cannot read it, and it should not: a MAC address in every id identifies the machine that made it, which is why RFC 9562 recommends a random node with the multicast bit set. The v1 and v6 ids here do exactly that, and the decoder marks such a node as random. Up to 10,000 ids in one millisecond stay unique and in order."
           }
         },
         {
@@ -148,7 +171,7 @@
 
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6072772587431629" crossorigin="anonymous"></script>
 
-  <script src="../js/vendor/lucide.min.js?v=73dc5075c6" async></script>
+  <script src="../js/vendor/lucide.min.js?v=9ccd8f7461" async></script>
 
   <link rel="icon" href="../favicon.ico" sizes="16x16 32x32 48x48" />
   <link rel="icon" href="../favicon-48.png" type="image/png" sizes="48x48" />
@@ -168,6 +191,16 @@
     #outputArea { cursor: pointer; }
     .kv-grid dd sup { font-size: 0.7em; }
     .check input:disabled + *, .check:has(input:disabled) { opacity: 0.45; }
+
+    /* v2.0: more kinds, list validation */
+    .kind-fields[hidden] { display: none !important; }
+    .kind-fields .grow { flex: 1 1 260px; }
+    .validate-body { display: flex; flex-direction: column; gap: 10px; }
+    .validate-body textarea { font-family: 'Fira Code', monospace; font-size: 0.85em; resize: vertical; }
+    .validate-body .ok { color: #4ade80; }
+    .validate-body .bad { color: #f87171; }
+    .validate-body .warn { color: #f59e0b; }
+    .table-scroll { overflow: auto; max-height: 420px; max-width: 100%; }
 
   </style>
 </head>
@@ -203,7 +236,7 @@
   <div class="hero">
     <div class="hero-badge"><i data-lucide="shield-check"></i> crypto.getRandomValues · generated on your device</div>
     <h1>UUID (GUID) &amp; ULID Generator and Decoder</h1>
-    <p>Bulk-generate UUID v4, time-ordered v7, namespace v5/v3 and ULIDs, in the format your system wants. A GUID, the name Microsoft and .NET use, is the same 128-bit identifier, so every value here works as a GUID too. Paste any identifier to decode its version, variant and the timestamp hidden inside it.</p>
+    <p>Bulk-generate UUID v4, time-ordered v7 and v6, v1, namespace v5/v3, ULIDs, NanoIDs, KSUIDs, CUID2s, Snowflakes and Sqids, in the format your system wants, and validate a whole list. A GUID, the name Microsoft and .NET use, is the same 128-bit identifier, so every value here works as a GUID too. Paste any identifier to decode its version, variant and the timestamp hidden inside it.</p>
   </div>
 
   <div class="ide-container">
@@ -223,7 +256,14 @@
               <option value="v7">UUID v7 — time-ordered (RFC 9562)</option>
               <option value="v5">UUID v5 — SHA-1 of name in namespace</option>
               <option value="v3">UUID v3 — MD5 of name in namespace</option>
+              <option value="v1">UUID v1 — time and random node</option>
+              <option value="v6">UUID v6 — v1 reordered to sort by time</option>
               <option value="ulid">ULID — time-ordered, Crockford base32</option>
+              <option value="nanoid">NanoID — short, URL-safe, random</option>
+              <option value="ksuid">KSUID — 27 chars, sorts by time (Segment)</option>
+              <option value="cuid2">CUID2 — hashed, starts with a letter</option>
+              <option value="snowflake">Snowflake — 64-bit integer (Twitter, Discord)</option>
+              <option value="sqids">Sqids — short ids from numbers</option>
               <option value="nil">Nil / Max UUID</option>
             </select>
           </div>
@@ -249,6 +289,28 @@
             <textarea id="nameInput" class="text-input" rows="3" placeholder="example.com" spellcheck="false"></textarea>
           </div>
         </div>
+        <div class="row kind-fields" id="nanoFields" hidden>
+          <div class="field"><label for="nanoSize"><i data-lucide="ruler"></i> Length</label><input type="number" id="nanoSize" class="text-input" value="21" min="2" max="255"></div>
+          <div class="field grow"><label for="nanoAlphabet"><i data-lucide="case-sensitive"></i> Alphabet</label><input type="text" id="nanoAlphabet" class="text-input" value="useandom-26T198340PX75pxJACKVERYMINDBUSHWOLF_GQZbfghjklqvwyzrict" spellcheck="false" autocomplete="off"></div>
+        </div>
+        <div class="row kind-fields" id="cuidFields" hidden>
+          <div class="field"><label for="cuidLen"><i data-lucide="ruler"></i> Length</label><input type="number" id="cuidLen" class="text-input" value="24" min="2" max="32"></div>
+        </div>
+        <div class="row kind-fields" id="sfFields" hidden>
+          <div class="field"><label for="sfEpoch"><i data-lucide="calendar"></i> Epoch</label>
+            <select id="sfEpoch" class="select-input"><option value="twitter">Twitter / X (2010-11-04)</option><option value="discord">Discord (2015-01-01)</option><option value="custom">Custom (ms since 1970)</option></select>
+            <input type="number" id="sfEpochCustom" class="text-input" placeholder="1704067200000" hidden style="margin-top:8px;"></div>
+          <div class="field"><label for="sfWorker"><i data-lucide="server"></i> Machine id (0–1023)</label><input type="number" id="sfWorker" class="text-input" value="1" min="0" max="1023"></div>
+        </div>
+        <div class="kind-fields" id="sqidsFields" hidden>
+          <div class="field"><label for="sqidNumbers"><i data-lucide="hash"></i> Numbers to encode (one id per line, numbers separated by commas)</label><textarea id="sqidNumbers" class="text-input" rows="3" spellcheck="false">1, 2, 3
+42
+1001, 7</textarea></div>
+          <div class="row">
+            <div class="field grow"><label for="sqidAlphabet"><i data-lucide="case-sensitive"></i> Alphabet (shuffle it to make your ids your own)</label><input type="text" id="sqidAlphabet" class="text-input" value="abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789" spellcheck="false" autocomplete="off"></div>
+            <div class="field"><label for="sqidMinLen"><i data-lucide="ruler"></i> Minimum length</label><input type="number" id="sqidMinLen" class="text-input" value="0" min="0" max="255"></div>
+          </div>
+        </div>
         <div class="row">
           <label class="check"><input type="checkbox" id="optUpper"> UPPERCASE</label>
           <label class="check"><input type="checkbox" id="optNoHyphen"> no hyphens</label>
@@ -272,12 +334,32 @@
       </div>
       <div class="pane-body">
         <div class="field">
-          <label for="decodeInput"><i data-lucide="clipboard-paste"></i> Paste a UUID, GUID or ULID</label>
+          <label for="decodeInput"><i data-lucide="clipboard-paste"></i> Paste a UUID, GUID, ULID, KSUID, Snowflake, NanoID or CUID2</label>
           <input type="text" id="decodeInput" class="text-input" placeholder="018f4a6c-9e3b-7c4d-8a2e-1f3b5c7d9e0f  ·  01ARZ3NDEKTSV4RRFFQ69G5FAV  ·  {C56A4180-65AA-42EC-A945-5FD21DEC0538}" autocomplete="off" spellcheck="false">
         </div>
         <dl class="kv-grid" id="decodeGrid">
           <dt>Waiting</dt><dd class="muted">Nothing to decode yet. Generate one on the left and click it, or paste one here.</dd>
         </dl>
+      </div>
+    </div>
+  </div>
+
+  <div class="ide-container single">
+    <div class="pane">
+      <div class="pane-header">
+        <div class="pane-title"><i data-lucide="list-checks"></i> Validate a list</div>
+        <div class="btn-group">
+          <select id="validateExpect" class="mini-select" aria-label="Expected kind">
+            <option value="any">Any kind</option><option value="uuid">Any UUID</option><option value="uuid-v4">UUID v4</option><option value="uuid-v7">UUID v7</option><option value="uuid-v1">UUID v1</option><option value="uuid-v6">UUID v6</option>
+            <option value="ulid">ULID</option><option value="ksuid">KSUID</option><option value="snowflake">Snowflake</option><option value="nanoid">NanoID</option><option value="cuid2">CUID2</option>
+          </select>
+          <button class="btn" id="btnValidateCsv" type="button" disabled><i data-lucide="download"></i> CSV</button>
+        </div>
+      </div>
+      <div class="pane-body validate-body">
+        <textarea id="validateInput" class="text-input" rows="7" spellcheck="false" placeholder="Paste ids, one per line: a column from a database export, a log, a CSV…"></textarea>
+        <div class="hint" id="validateSummary">Each line is identified (UUID version and variant, ULID, KSUID, Snowflake, NanoID, CUID2), checked, dated where the id carries a time, and compared with the lines above it for duplicates. Case, hyphens and braces do not hide a duplicate UUID.</div>
+        <div class="table-scroll"><table class="data-table" id="validateTable"><thead></thead><tbody></tbody></table></div>
       </div>
     </div>
   </div>
@@ -346,11 +428,19 @@
         </div>
         <div class="faq-item">
           <button class="faq-question">Can I extract the creation time from a UUID? <i data-lucide="chevron-down"></i></button>
-          <div class="faq-answer"><p>From a v7 or a ULID, yes: the first 48 bits are a Unix millisecond timestamp and the decoder shows it. From a v1 or v6, also yes, as a count of 100-nanosecond intervals since 15 October 1582, which the decoder converts. From a v4, v3 or v5, no — those contain no time information at all, and there is no way to learn when they were made.</p></div>
+          <div class="faq-answer"><p>From a v7 or a ULID, yes: the first 48 bits are a Unix millisecond timestamp and the decoder shows it. From a v1 or v6, also yes, as a count of 100-nanosecond intervals since 15 October 1582, which the decoder converts. From a v4, v3 or v5, no — those contain no time information at all, and there is no way to learn when they were made. KSUIDs carry seconds since May 2014 and Snowflakes carry milliseconds since their service's epoch (Twitter's or Discord's, selectable), and the decoder reads both. NanoIDs and CUID2s are random or hashed and carry nothing.</p></div>
         </div>
         <div class="faq-item">
           <button class="faq-question">How does a v5 UUID work and when would I use one? <i data-lucide="chevron-down"></i></button>
           <div class="faq-answer"><p>A v5 is SHA-1(namespace UUID bytes + name bytes) with the version and variant bits overwritten, truncated to 128 bits. It is deterministic: the same namespace and name always produce the same UUID, in any language. Use it when independent systems need to agree on the id for the same real-world thing without coordinating — for example, deriving a stable id for "example.com" from the DNS namespace, or for a file path from the URL namespace. v3 is the same construction with MD5 and should only be used to match an existing system that requires it.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">When should I use NanoID, KSUID, CUID2, Snowflake or Sqids instead of a UUID? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>NanoID is a short random id (21 URL-safe characters, about as collision-resistant as a v4) for URLs and front-end keys. KSUID (Segment) is 27 characters that sort by creation time, like a ULID with a longer random part. CUID2 hashes time, a counter, randomness and a machine fingerprint with SHA3, so its ids are hard to guess and reveal nothing. Snowflake (Twitter, Discord) packs a timestamp, a machine number and a sequence into a 64-bit integer that fits a BIGINT column. Sqids is different: it turns numbers you already have, such as database row ids, into short reversible strings. It hides the numbers from a casual glance but is not encryption.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">Why does the v1 generator not use my MAC address? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>A browser cannot read it, and it should not: a MAC address in every id identifies the machine that made it, which is why RFC 9562 recommends a random node with the multicast bit set. The v1 and v6 ids here do exactly that, and the decoder marks such a node as random. Up to 10,000 ids in one millisecond stay unique and in order.</p></div>
         </div>
         <div class="faq-item">
           <button class="faq-question">Is a ULID a valid UUID? <i data-lucide="chevron-down"></i></button>
@@ -385,6 +475,7 @@
     <div class="info-panel">
       <h2><i data-lucide="git-commit"></i> Changelog</h2>
       <ul class="changelog-list">
+        <li><span class="changelog-tag">v2.0.0</span> New kinds: UUID v1 and v6 (with a random node, never a MAC address), NanoID with any length and alphabet, KSUID, CUID2 (SHA3-512, as the spec uses), Snowflake with the Twitter, Discord or a custom epoch, and Sqids (the official library, vendored). The decoder reads KSUIDs, Snowflakes and Sqids. Validate a list: every line identified, checked against an expected kind, dated, and compared for duplicates, with a CSV export.</li>
         <li><span class="changelog-tag">v1.0.0</span> Initial release: v4, v7, v5, v3, ULID, nil and max generation up to 10,000 at a time with output formatting; decoder for UUID v1–v8 and ULID with version, variant, timestamp, node and clock-sequence fields.</li>
       </ul>
     </div>
@@ -498,6 +589,9 @@
 
   <script src="../js/shared.js?v=e2441a1728"></script>
   <script src="../js/md5.js?v=ac86a35839"></script>
+  <script src="../js/engines/ids.js?v=0385285347"></script>
+  <script src="../js/vendor/sqids.min.js?v=c5ee8b9a8c"></script>
+  <script src="../js/engines/csv.js?v=a78b81af7d"></script>
 
   <script>
     const kindSelect = document.getElementById('kindSelect');
@@ -554,8 +648,19 @@
       return t + s;
     }
 
+    const ID = window.LBIds;
+    const UUIDISH = ['v4', 'v7', 'v5', 'v3', 'v1', 'v6', 'nil'];
+    function sfEpoch() { const v = document.getElementById('sfEpoch').value; return v === 'custom' ? Number(document.getElementById('sfEpochCustom').value) || 0 : ID.EPOCHS[v]; }
+    let hashwasmReady = null;
+    function sha3() {
+      if (!hashwasmReady) hashwasmReady = new Promise((res, rej) => { if (window.hashwasm) return res(); const s = document.createElement('script'); s.src = '../js/vendor/hash-wasm.min.js'; s.onload = res; s.onerror = () => rej(new Error('Could not load the SHA3 library')); document.head.appendChild(s); });
+      return hashwasmReady.then(() => str => hashwasm.sha3(str, 512));
+    }
+    function sqidsCodec() {
+      return new Sqids({ alphabet: document.getElementById('sqidAlphabet').value, minLength: Math.max(0, Math.min(255, Number(document.getElementById('sqidMinLen').value) || 0)) });
+    }
     function format(id) {
-      if (kindSelect.value === 'ulid') return opts.quote.checked ? `"${id}"` : id;
+      if (!UUIDISH.includes(kindSelect.value)) return opts.quote.checked ? `"${id}"` : id;
       let s = id;
       if (opts.noHyphen.checked) s = s.replace(/-/g, '');
       if (opts.upper.checked) s = s.toUpperCase();
@@ -570,6 +675,23 @@
       if (kind === 'v4') for (let i = 0; i < n; i++) ids.push(v4());
       else if (kind === 'v7') for (let i = 0; i < n; i++) ids.push(v7());
       else if (kind === 'ulid') for (let i = 0; i < n; i++) ids.push(ulid());
+      else if (kind === 'v1' || kind === 'v6') for (let i = 0; i < n; i++) ids.push(kind === 'v1' ? ID.uuid1() : ID.uuid6());
+      else if (kind === 'ksuid') for (let i = 0; i < n; i++) ids.push(ID.ksuid());
+      else if (kind === 'nanoid' || kind === 'snowflake' || kind === 'cuid2' || kind === 'sqids') {
+        try {
+          if (kind === 'nanoid') { const size = Math.max(2, Math.min(255, Number(document.getElementById('nanoSize').value) || 21)), alphabet = document.getElementById('nanoAlphabet').value; for (let i = 0; i < n; i++) ids.push(ID.nanoid({ size, alphabet })); }
+          else if (kind === 'snowflake') { const epoch = sfEpoch(), worker = Number(document.getElementById('sfWorker').value) || 0; for (let i = 0; i < n; i++) ids.push(ID.snowflake({ epoch, worker })); }
+          else if (kind === 'cuid2') { const hash = await sha3(), length = Math.max(2, Math.min(32, Number(document.getElementById('cuidLen').value) || 24)); for (let i = 0; i < n; i++) ids.push(await ID.cuid2({ hash, length })); }
+          else {
+            const codec = sqidsCodec(), lines = document.getElementById('sqidNumbers').value.split('\n').map(l => l.trim()).filter(Boolean);
+            if (!lines.length) throw new Error('Enter at least one list of numbers, such as 1, 2, 3.');
+            for (const l of lines) {
+              const nums = l.split(/[\s,;]+/).filter(Boolean).map(x => { if (!/^\d+$/.test(x)) throw new Error(`"${x}" is not a whole number; Sqids encodes non-negative integers.`); return Number(x); });
+              ids.push(codec.encode(nums));
+            }
+          }
+        } catch (e) { outputArea.value = e.message; outCount.textContent = ''; return; }
+      }
       else if (kind === 'nil') ids = ['00000000-0000-0000-0000-000000000000', 'ffffffff-ffff-ffff-ffff-ffffffffffff'];
       else {
         const nsText = nsSelect.value === 'custom' ? nsCustom.value : nsSelect.value;
@@ -612,7 +734,24 @@
         decodeGrid.innerHTML = rows.map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join(''); return;
       }
       const b = parseUuidBytes(raw);
-      if (!b) { decodeGrid.innerHTML = '<dt>Invalid</dt><dd><span class="tag bad">not a UUID or ULID</span> expected 32 hex digits (hyphens, braces and urn:uuid: optional) or 26 base32 characters</dd>'; return; }
+      if (!b) {
+        const id = ID.identify(raw, { epoch: sfEpoch() });
+        if (id.kind === 'ksuid') {
+          const k = ID.parseKsuid(raw);
+          rows.push(['Kind', '<span class="tag">KSUID</span> 27 characters, base62 (Segment)'], ['Timestamp', `${iso(k.ms)} <span class="muted">(${relative(k.ms)}; seconds since 2014-05-13)</span>`], ['Payload', `128 random bits: ${k.payload}`]);
+        } else if (id.kind === 'snowflake') {
+          const p = ID.parseSnowflake(raw, sfEpoch()), ep = document.getElementById('sfEpoch');
+          rows.push(['Kind', `<span class="tag">Snowflake</span> 64-bit integer, read with the ${ep.selectedOptions[0].text} epoch (change it under Kind: Snowflake)`], ['Timestamp', `${iso(p.ms)} <span class="muted">(${relative(p.ms)})</span>`],
+            ['Machine', `${p.worker} <span class="muted">(Twitter: datacenter ${p.datacenter}, worker ${p.machine}; Discord: worker ${p.datacenter}, process ${p.machine})</span>`], ['Sequence', String(p.sequence)]);
+        } else if (id.kind === 'nanoid' || id.kind === 'cuid2') {
+          rows.push(['Kind', `<span class="tag">${id.kind === 'nanoid' ? 'NanoID' : 'CUID2'}</span> by its shape`], ['Contents', '<span class="muted">Random or hashed: no timestamp or other data can be read from it.</span>']);
+        } else {
+          let sq = null; try { const d = sqidsCodec().decode(raw); if (d.length && sqidsCodec().encode(d) === raw) sq = d; } catch (e) {}
+          if (sq) rows.push(['Kind', '<span class="tag">Sqids</span> with the alphabet set under Kind: Sqids'], ['Numbers', sq.join(', ')]);
+          else { decodeGrid.innerHTML = '<dt>Invalid</dt><dd><span class="tag bad">not recognised</span> expected a UUID (32 hex digits; hyphens, braces and urn:uuid: optional), a ULID (26 base32 characters), a KSUID (27 base62), a Snowflake (15–20 digits), a NanoID or a CUID2</dd>'; return; }
+        }
+        decodeGrid.innerHTML = rows.map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join(''); return;
+      }
       const h = hex(b), canonical = layout(h);
       const variantBits = b[8] >> 5, version = b[6] >> 4;
       const variant = variantBits < 4 ? ['NCS (reserved, pre-RFC)', 'warn'] : variantBits < 6 ? ['RFC 4122 / 9562', 'ok'] : variantBits === 6 ? ['Microsoft legacy GUID', 'warn'] : ['Reserved for future', 'warn'];
@@ -653,10 +792,16 @@
     function syncKind() {
       const k = kindSelect.value;
       nsFields.style.display = (k === 'v5' || k === 'v3') ? 'flex' : 'none';
-      countInput.disabled = (k === 'v5' || k === 'v3' || k === 'nil');
-      opts.noHyphen.disabled = opts.upper.disabled = opts.braces.disabled = (k === 'ulid');
+      countInput.disabled = (k === 'v5' || k === 'v3' || k === 'nil' || k === 'sqids');
+      opts.noHyphen.disabled = opts.upper.disabled = opts.braces.disabled = !UUIDISH.includes(k);
+      document.getElementById('nanoFields').hidden = k !== 'nanoid';
+      document.getElementById('cuidFields').hidden = k !== 'cuid2';
+      document.getElementById('sfFields').hidden = k !== 'snowflake';
+      document.getElementById('sqidsFields').hidden = k !== 'sqids';
     }
     kindSelect.addEventListener('change', () => { syncKind(); generate(); });
+    ['nanoSize', 'nanoAlphabet', 'cuidLen', 'sfWorker', 'sfEpochCustom', 'sqidNumbers', 'sqidAlphabet', 'sqidMinLen'].forEach(id => document.getElementById(id).addEventListener('input', generate));
+    document.getElementById('sfEpoch').addEventListener('change', () => { document.getElementById('sfEpochCustom').hidden = document.getElementById('sfEpoch').value !== 'custom'; generate(); if (decodeInput.value.trim()) decode(); });
     nsSelect.addEventListener('change', () => { nsCustom.style.display = nsSelect.value === 'custom' ? '' : 'none'; });
     Object.values(opts).forEach(o => o.addEventListener('change', generate));
     document.getElementById('btnGenerate').addEventListener('click', generate);
@@ -671,6 +816,33 @@
     });
     let autoDecode = true;
     decodeInput.addEventListener('input', () => { autoDecode = !decodeInput.value.trim(); decode(); });
+    // ---- validate a list
+    let validated = null;
+    function runValidate() {
+      const lines = document.getElementById('validateInput').value.split(/\r?\n/);
+      const tb = document.getElementById('validateTable'), btn = document.getElementById('btnValidateCsv');
+      if (!lines.some(l => l.trim())) {
+        tb.querySelector('thead').innerHTML = ''; tb.querySelector('tbody').innerHTML = ''; btn.disabled = true; validated = null;
+        const ex = document.getElementById('validateExpect');
+        document.getElementById('validateSummary').textContent = (ex.value === 'any' ? 'Each line is identified (UUID version and variant, ULID, KSUID, Snowflake, NanoID, CUID2), checked' : `Each line must be ${ex.selectedOptions[0].text}; anything else is marked invalid. Lines are also checked`) + ', dated where the id carries a time, and compared with the lines above it for duplicates. Case, hyphens and braces do not hide a duplicate UUID.';
+        return;
+      }
+      const r = ID.validate(lines, { expect: document.getElementById('validateExpect').value, epoch: sfEpoch() });
+      validated = r;
+      const c = r.counts, kinds = Object.entries(c.kinds).map(([k, n]) => `${n} ${k}`).join(', ');
+      document.getElementById('validateSummary').innerHTML = `<strong>${c.valid.toLocaleString()} of ${c.total.toLocaleString()} valid</strong>${c.invalid ? `, <span class="bad">${c.invalid.toLocaleString()} invalid</span>` : ''}${c.duplicates ? `, <span class="warn">${c.duplicates.toLocaleString()} duplicate${c.duplicates === 1 ? '' : 's'}</span>` : ', no duplicates'} · ${kinds}`;
+      tb.querySelector('thead').innerHTML = '<tr><th>Line</th><th>Value</th><th>Kind</th><th>Result</th></tr>';
+      tb.querySelector('tbody').innerHTML = r.rows.slice(0, 2000).map(x => `<tr class="${x.valid && !x.duplicateOf ? '' : 'flag'}"><td class="muted">${x.line}</td><td>${escapeHtml(x.value)}</td><td>${x.kind}</td><td class="muted">${x.valid ? '<span class="ok">valid</span>' : '<span class="bad">invalid</span>'} · ${escapeHtml(x.detail)}${x.duplicateOf ? ` · <span class="warn">duplicate of line ${x.duplicateOf}</span>` : ''}</td></tr>`).join('');
+      btn.disabled = false;
+    }
+    function escapeHtml(t) { return String(t).replace(/[&<>"]/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[ch])); }
+    document.getElementById('validateInput').addEventListener('input', runValidate);
+    document.getElementById('validateExpect').addEventListener('change', runValidate);
+    document.getElementById('btnValidateCsv').addEventListener('click', () => {
+      if (!validated) return;
+      const rows = [['line', 'value', 'kind', 'valid', 'detail', 'duplicate_of']].concat(validated.rows.map(x => [x.line, x.value, x.kind, x.valid, x.detail, x.duplicateOf || '']));
+      const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([LBCsv.stringify(rows, { safe: true, newline: '\n' })], { type: 'text/csv' })); a.download = 'ids-validated.csv'; document.body.appendChild(a); a.click(); a.remove();
+    });
     syncKind(); generate();
   </script>
 </body>

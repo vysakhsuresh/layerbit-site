@@ -71,9 +71,17 @@ def check_jsonld(text):
     for i, block in enumerate(re.findall(
             r'<script type="application/ld\+json">(.*?)</script>', text, re.S)):
         try:
-            json.loads(block)
+            data = json.loads(block)
         except Exception as e:
             errs.append(f"JSON-LD block #{i}: {e}")
+            continue
+        # a breadcrumb or app name that is a command-line flag means a
+        # generator was run with a missing argument
+        for node in (data.get("@graph", [data]) if isinstance(data, dict) else []):
+            names = [node.get("name")] + [it.get("name") for it in node.get("itemListElement", []) if isinstance(it, dict)]
+            for n in names:
+                if isinstance(n, str) and (not n.strip() or n.startswith("--")):
+                    errs.append(f"JSON-LD block #{i}: {node.get('@type')} has the name {n!r}")
     return errs + check_faq_visible(text)
 
 

@@ -47,6 +47,7 @@
     },
     {
       "@type": "FAQPage",
+      "@id": "https://layerbit.co.in/tools/url-encoder.html#faq",
       "mainEntity": [
         {
           "@type": "Question",
@@ -61,7 +62,7 @@
           "name": "Why is client-side processing necessary?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "URLs frequently contain highly sensitive session tokens, API keys, and temporary authorization grants within their parameters. Processing this data entirely within your local browser DOM guarantees zero-trust security\u2014your keys are never sent to or logged by our servers."
+            "text": "URLs frequently contain highly sensitive session tokens, API keys, and temporary authorization grants within their parameters. Processing this data entirely within your local browser DOM guarantees zero-trust security—your keys are never sent to or logged by our servers."
           }
         },
         {
@@ -77,11 +78,18 @@
           "name": "How does Batch Mode work?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "Batch Mode treats each line of the input as an independent item. Every non-empty line is parsed and encoded or decoded on its own \u2014 if a line is a full URL, only its query parameters are transformed (same logic as Smart Mode); otherwise the whole line is encoded or decoded as a raw string. Blank lines and line order are preserved, so you can paste a list of endpoints or tracking links and process them all in one pass."
+            "text": "Batch Mode treats each line of the input as an independent item. Every non-empty line is parsed and encoded or decoded on its own — if a line is a full URL, only its query parameters are transformed (same logic as Smart Mode); otherwise the whole line is encoded or decoded as a raw string. Blank lines and line order are preserved, so you can paste a list of endpoints or tracking links and process them all in one pass."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Why does + sometimes mean a space?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "HTML forms send data as application/x-www-form-urlencoded, where a space is written as + and a real plus as %2B. Most servers decode query strings that way, but decodeURIComponent and URL paths do not, so q=hello+world can arrive as \"hello+world\". Tick + means space to decode form data: in a full URL only the query is treated as form data, so a + in the path or the fragment stays a plus. In Raw mode the same option encodes spaces as +."
           }
         }
-      ],
-      "@id": "https://layerbit.co.in/tools/url-encoder.html#faq"
+      ]
     }
   ]
 }

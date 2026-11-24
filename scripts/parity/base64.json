@@ -1,0 +1,29 @@
+{
+  "tool": "base64",
+  "page": "tools/base64.html",
+  "competitors": [
+    { "name": "base64decode.org / base64encode.org", "price": "free", "checked": "2026-11" }
+  ],
+  "claims": [
+    {
+      "feature": "MIME 76-character wrapping",
+      "competitor": "base64decode.org / base64encode.org",
+      "tests": ["ui:base64:2.25: MIME and PEM wrapping; text encodings other than UTF-8", "unit:b64:MIME (76) and PEM (64) wrapping"]
+    },
+    {
+      "feature": "File type detected from magic bytes, hex view",
+      "competitor": "base64decode.org / base64encode.org",
+      "tests": ["ui:base64:2.25: decoded bytes show their file type and a hex view, and download with that extension", "unit:b64:magic bytes", "unit:b64:hexdump"]
+    },
+    {
+      "feature": "100 MB+ streaming",
+      "competitor": "base64decode.org / base64encode.org",
+      "tests": ["ui:base64:2.25: a 12 MB file is encoded in slices to a download and decodes back byte for byte", "unit:b64:streaming a 9 MB blob: encode then decode is byte-exact, wrapped and plain"]
+    },
+    {
+      "feature": "Encoding choice",
+      "competitor": "base64decode.org / base64encode.org",
+      "tests": ["ui:base64:2.25: MIME and PEM wrapping; text encodings other than UTF-8", "unit:b64:text encodings"]
+    }
+  ]
+}

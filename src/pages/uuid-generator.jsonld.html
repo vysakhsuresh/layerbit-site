@@ -5,9 +5,9 @@
     {
       "@type": "SoftwareApplication",
       "@id": "https://layerbit.co.in/tools/uuid-generator.html#app",
-      "name": "UUID (GUID) \u0026 ULID Generator",
+      "name": "UUID (GUID) \u0026 ULID Generator and Decoder",
       "url": "https://layerbit.co.in/tools/uuid-generator.html",
-      "description": "Generate UUIDs (GUIDs) in bulk: random v4, time-ordered v7, namespace v5 and ULIDs, and decode any UUID to its version, variant and timestamp. Runs locally.",
+      "description": "Generate UUIDs v1-v7, ULID, NanoID, KSUID, CUID2, Snowflake and Sqids in bulk, decode their timestamps, and validate a list for duplicates. Runs locally.",
       "applicationCategory": "DeveloperApplication",
       "operatingSystem": "Any (runs in the browser)",
       "browserRequirements": "Requires JavaScript",
@@ -17,11 +17,18 @@
         "price": "0",
         "priceCurrency": "USD"
       },
-      "keywords": "uuid generator, uuid v7, ulid generator, uuid decoder, uuid v5 namespace, guid generator",
       "publisher": {
         "@id": "https://layerbit.co.in/#organization"
       },
-      "datePublished": "2026-09-27"
+      "featureList": [
+        "UUID v1, v3, v4, v5, v6 and v7, nil and max",
+        "ULID, NanoID, KSUID and CUID2",
+        "Snowflake ids with the Twitter, Discord or a custom epoch",
+        "Sqids: short reversible ids from numbers",
+        "Up to 10,000 ids at once in any case, hyphen and brace format",
+        "Decode version, variant and embedded timestamps",
+        "Validate a list for invalid ids, wrong kinds and duplicates, with CSV export"
+      ]
     },
     {
       "@type": "BreadcrumbList",
@@ -56,7 +63,7 @@
           "name": "Are these UUIDs unique? Could two people get the same one?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "A v4 UUID has 122 random bits from a cryptographic generator. The chance that any two of a billion such ids collide is about 1 in 2.7 quintillion; you would need to generate roughly 2.7 quintillion ids before a duplicate became likely. Nothing is checked against a central registry, and nothing needs to be \u2014 the probability is what guarantees uniqueness. The same reasoning applies to the 74 or 80 random bits in a v7 or ULID generated within the same millisecond."
+            "text": "A v4 UUID has 122 random bits from a cryptographic generator. The chance that any two of a billion such ids collide is about 1 in 2.7 quintillion; you would need to generate roughly 2.7 quintillion ids before a duplicate became likely. Nothing is checked against a central registry, and nothing needs to be — the probability is what guarantees uniqueness. The same reasoning applies to the 74 or 80 random bits in a v7 or ULID generated within the same millisecond."
           }
         },
         {
@@ -80,7 +87,7 @@
           "name": "Can I extract the creation time from a UUID?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "From a v7 or a ULID, yes: the first 48 bits are a Unix millisecond timestamp and the decoder shows it. From a v1 or v6, also yes, as a count of 100-nanosecond intervals since 15 October 1582, which the decoder converts. From a v4, v3 or v5, no \u2014 those contain no time information at all, and there is no way to learn when they were made."
+            "text": "From a v7 or a ULID, yes: the first 48 bits are a Unix millisecond timestamp and the decoder shows it. From a v1 or v6, also yes, as a count of 100-nanosecond intervals since 15 October 1582, which the decoder converts. From a v4, v3 or v5, no — those contain no time information at all, and there is no way to learn when they were made. KSUIDs carry seconds since May 2014 and Snowflakes carry milliseconds since their service's epoch (Twitter's or Discord's, selectable), and the decoder reads both. NanoIDs and CUID2s are random or hashed and carry nothing."
           }
         },
         {
@@ -88,7 +95,23 @@
           "name": "How does a v5 UUID work and when would I use one?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "A v5 is SHA-1(namespace UUID bytes + name bytes) with the version and variant bits overwritten, truncated to 128 bits. It is deterministic: the same namespace and name always produce the same UUID, in any language. Use it when independent systems need to agree on the id for the same real-world thing without coordinating \u2014 for example, deriving a stable id for \"example.com\" from the DNS namespace, or for a file path from the URL namespace. v3 is the same construction with MD5 and should only be used to match an existing system that requires it."
+            "text": "A v5 is SHA-1(namespace UUID bytes + name bytes) with the version and variant bits overwritten, truncated to 128 bits. It is deterministic: the same namespace and name always produce the same UUID, in any language. Use it when independent systems need to agree on the id for the same real-world thing without coordinating — for example, deriving a stable id for \"example.com\" from the DNS namespace, or for a file path from the URL namespace. v3 is the same construction with MD5 and should only be used to match an existing system that requires it."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "When should I use NanoID, KSUID, CUID2, Snowflake or Sqids instead of a UUID?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "NanoID is a short random id (21 URL-safe characters, about as collision-resistant as a v4) for URLs and front-end keys. KSUID (Segment) is 27 characters that sort by creation time, like a ULID with a longer random part. CUID2 hashes time, a counter, randomness and a machine fingerprint with SHA3, so its ids are hard to guess and reveal nothing. Snowflake (Twitter, Discord) packs a timestamp, a machine number and a sequence into a 64-bit integer that fits a BIGINT column. Sqids is different: it turns numbers you already have, such as database row ids, into short reversible strings. It hides the numbers from a casual glance but is not encryption."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Why does the v1 generator not use my MAC address?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "A browser cannot read it, and it should not: a MAC address in every id identifies the machine that made it, which is why RFC 9562 recommends a random node with the multicast bit set. The v1 and v6 ids here do exactly that, and the decoder marks such a node as random. Up to 10,000 ids in one millisecond stay unique and in order."
           }
         },
         {
