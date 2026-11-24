@@ -182,6 +182,8 @@
     enc = (enc || 'utf-8').toLowerCase();
     if (enc === 'utf-8-bom') enc = 'utf-8';
     if (enc === 'iso-8859-1') { var s = ''; for (var i = 0; i < bytes.length; i += 0x8000) s += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000)); return s; }
+    // decoded with our own table: some runtimes (Node 20 with small ICU) treat windows-1252 as ISO-8859-1
+    if (enc === 'windows-1252') { var out = ''; for (var j = 0; j < bytes.length; j++) { var b = bytes[j]; out += String.fromCharCode(CP1252[b] || b); } return out; }
     return new TextDecoder(enc, { fatal: enc === 'utf-8' }).decode(bytes);
   }
 
