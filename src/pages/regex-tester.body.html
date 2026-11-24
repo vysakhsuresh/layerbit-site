@@ -3,7 +3,7 @@
   <main id="main" class="page-main">
   <div class="hero">
     <h1>Regex Tester &amp; Debugger</h1>
-    <p>Live matching, a plain-English explanation of every token, a railroad diagram, a catastrophic-backtracking check, saved unit tests, code for ten languages, and a pattern generator that learns from your examples — all in your browser.</p>
+    <p>Live matching on the real engines of JavaScript, PCRE2 (PHP), Python, Go, Rust and Oniguruma, compiled to WebAssembly, a step-by-step backtracking debugger, a plain-English explanation of every token, a railroad diagram, a catastrophic-backtracking check, saved unit tests, code for ten languages, and a pattern generator that learns from your examples, all in your browser.</p>
   </div>
 
   <div class="app-container">
@@ -12,7 +12,16 @@
         <div class="pane-title"><i data-lucide="regex"></i> Expression Editor</div>
         <div class="btn-group">
           <span class="lb-history-slot" data-lb-history-slot data-live></span>
-          <span class="flavor-chip" title="Patterns run on your browser's native ECMAScript engine. The Code tab translates flags and syntax for other languages.">JavaScript / ECMAScript</span>
+          <select id="rxEngine" class="mini-select engine-select" aria-label="Regex engine" title="Which language's regex engine runs the pattern">
+            <option value="js">JavaScript (this browser)</option>
+            <option value="pcre2">PCRE2 · PHP, R, nginx</option>
+            <option value="python">Python re (CPython)</option>
+            <option value="go">Go regexp (RE2)</option>
+            <option value="rust">Rust regex</option>
+            <option value="onig">Oniguruma · Ruby-style</option>
+            <option value="java" disabled>Java: no browser engine</option>
+            <option value="dotnet" disabled>.NET: no browser engine</option>
+          </select>
         </div>
       </div>
       <div class="regex-control">
@@ -49,10 +58,14 @@
       </div>
     </div>
 
+    <div class="engine-note" id="engineNote"></div>
+
     <div class="rx-tabs" id="rxTabs" role="tablist">
       <button type="button" class="rx-tab active" data-tab="matches" role="tab"><i data-lucide="crosshair"></i> Matches</button>
       <button type="button" class="rx-tab" data-tab="explain" role="tab"><i data-lucide="list-tree"></i> Explain</button>
       <button type="button" class="rx-tab" data-tab="diagram" role="tab"><i data-lucide="route"></i> Diagram</button>
+      <button type="button" class="rx-tab" data-tab="engines" role="tab"><i data-lucide="cpu"></i> Engines</button>
+      <button type="button" class="rx-tab" data-tab="debug" role="tab"><i data-lucide="bug"></i> Debugger</button>
       <button type="button" class="rx-tab" data-tab="safety" role="tab"><i data-lucide="shield-alert"></i> Safety <span class="tab-badge" id="safetyBadge"></span></button>
       <button type="button" class="rx-tab" data-tab="tests" role="tab"><i data-lucide="flask-conical"></i> Tests <span class="tab-badge" id="testsBadge"></span></button>
       <button type="button" class="rx-tab" data-tab="code" role="tab"><i data-lucide="code-2"></i> Code</button>
@@ -106,6 +119,34 @@
         <div class="pane-header"><div class="pane-title"><i data-lucide="route"></i> Railroad diagram</div>
           <div class="btn-group"><button type="button" class="btn" onclick="downloadSvg()"><i data-lucide="download"></i> Download SVG</button></div></div>
         <div class="panel-body railroad-wrap" id="railroad"><p class="muted-note">The diagram shows every path a string can take through the pattern: follow a line from the left circle to the right circle.</p></div>
+      </div>
+    </div>
+
+    <!-- Engines -->
+    <div class="rx-panel" id="tab-engines">
+      <div class="pane">
+        <div class="pane-header"><div class="pane-title"><i data-lucide="cpu"></i> The same pattern in every engine</div>
+          <div class="btn-group"><button type="button" class="btn btn-primary" id="btnCompare"><i data-lucide="play"></i> Compare</button></div></div>
+        <div class="panel-body" id="engineCompare"><p class="muted-note">Runs the pattern and test string on JavaScript, PCRE2, Python, Go, Rust and Oniguruma, each the real engine compiled to WebAssembly, and shows where they disagree: a pattern that works in one language can fail to compile, or match differently, in another.</p></div>
+      </div>
+    </div>
+
+    <!-- Debugger -->
+    <div class="rx-panel" id="tab-debug">
+      <div class="pane">
+        <div class="pane-header"><div class="pane-title"><i data-lucide="bug"></i> Step-by-step backtracking</div>
+          <div class="btn-group">
+            <button type="button" class="btn btn-primary" id="btnDebug"><i data-lucide="play"></i> Trace</button>
+            <button type="button" class="btn" id="dbgPrev" title="Previous step" disabled><i data-lucide="step-back"></i></button>
+            <button type="button" class="btn" id="dbgNext" title="Next step" disabled><i data-lucide="step-forward"></i></button>
+          </div></div>
+        <div class="panel-body">
+          <p class="muted-note" id="dbgSummary">Traces how a backtracking engine (JavaScript's rules) tries the pattern on the first 1,000 characters of the test string: every token tried, every success and failure, and every step back.</p>
+          <input type="range" id="dbgSlider" class="dbg-slider" min="0" max="0" value="0" aria-label="Step" disabled>
+          <div class="dbg-event" id="dbgEvent"></div>
+          <div class="dbg-row"><span class="dbg-label">Pattern</span><code class="dbg-code" id="dbgPattern"></code></div>
+          <div class="dbg-row"><span class="dbg-label">Text</span><code class="dbg-code" id="dbgText"></code></div>
+        </div>
       </div>
     </div>
 
@@ -294,7 +335,13 @@
         <div class="faq-item">
           <button class="faq-question">Which regex flavour does this tool use? <i data-lucide="chevron-down"></i></button>
           <div class="faq-answer">
-            <p>The native JavaScript (ECMAScript) engine in your browser, which covers lookbehind, named groups, Unicode property escapes and the v flag in current Chrome, Firefox and Safari. The Code tab converts flags and syntax for Python, Go, Java, C#, PHP, Ruby, Rust and the shell tools, and lists any feature the target engine lacks, so a pattern that works here is carried over correctly or you learn why it cannot be.</p>
+            <p>You choose. JavaScript runs on your browser's own engine. PCRE2 (used by PHP's preg functions, R and nginx), Python's re module, Go's regexp, Rust's regex crate and Oniguruma run as the real engines of those languages compiled to WebAssembly, so a match or a syntax error is exactly what that language gives you, not an imitation. Python's engine is CPython itself, through Pyodide, and downloads about 13 MB the first time you pick it. Java and .NET have no engine that can run inside a web page, so for them the Code tab lists the features that differ. The Engines tab runs one pattern on every engine at once and marks where they disagree.</p>
+          </div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">How does the regex debugger work? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer">
+            <p>The Debugger tab runs the pattern on a traced backtracking matcher that follows JavaScript's rules and records every step: each token tried at each position, whether it matched, and every time the engine gives back characters from a repeat or moves to the next alternative. Step through with the arrows or drag the slider; the current token is marked in the pattern and the current position in the text. A pattern that backtracks catastrophically stops at 100,000 steps, which shows the problem far more directly than a timeout.</p>
           </div>
         </div>
         <div class="faq-item">
@@ -312,7 +359,7 @@
         <div class="faq-item">
           <button class="faq-question">What syntax does the Replacement Preview support? <i data-lucide="chevron-down"></i></button>
           <div class="faq-answer">
-            <p>The same replacement patterns JavaScript's native String.replace() understands: $1, $2 and so on for numbered capture groups, $&lt;name&gt; for named groups, $&amp; for the whole match, $` and $' for the text before and after it, and $$ for a literal dollar sign. It respects whichever flags are active, so without the g flag only the first match is replaced, the same as the highlighting above it.</p>
+            <p>The syntax of the engine you picked, because each language writes replacements differently. JavaScript uses $1, $&lt;name&gt;, $&amp; for the whole match and $$ for a dollar sign; PCRE2, Go and Rust use $1 or ${1} and ${name}; Python uses \1, \g&lt;1&gt; and \g&lt;name&gt;. The preview is produced by that engine's own replace function and respects the g flag, so without it only the first match is replaced.</p>
           </div>
         </div>
         <div class="faq-item">
@@ -362,6 +409,7 @@
     <div class="info-panel">
       <h2><i data-lucide="git-merge"></i> Deployment Changelog</h2>
       <ul class="changelog-list">
+        <li><span class="changelog-tag">v3.3.0</span> Real engines for other languages, compiled to WebAssembly: PCRE2 10.49, Python's re (CPython through Pyodide), Go's regexp, Rust's regex crate and Oniguruma, with matches, groups, errors and the replace preview from that engine; an Engines tab that runs every engine side by side; and a step-by-step backtracking debugger.</li>
         <li><span class="changelog-tag">v3.2.0</span> The safety check no longer reports a nested repeat as high risk when every repetition must match a delimiter the inner part cannot match, as in the domain pattern ^([a-zA-Z0-9]+\.)*[a-z]+$ (it runs in linear time); (\d+)* and similar patterns are still flagged.</li>
         <li><span class="changelog-tag">v3.1.0</span> History is off by default: with the Save to history switch on, runs are saved only with Save run or Ctrl+Enter, never while typing.</li>
         <li><span class="changelog-tag">v3.0.0</span> Rebuilt as a debugger: token-by-token explanation, railroad diagram with SVG export, static catastrophic-backtracking analysis plus a growth measurement, saved unit tests that travel in share links, code generation for ten languages with engine caveats, whole-file batch testing with download, pattern synthesis from examples, a quick reference, match export as text/CSV/JSON, and alternating match colours.</li>
@@ -386,6 +434,8 @@
 
   <script src="../js/shared.js"></script>
   <script src="../js/engines/regex.js"></script>
+  <script src="../js/engines/rxengines.js"></script>
+  <script src="../js/engines/rxdebug.js"></script>
 
   <script>
     const $ = id => document.getElementById(id);
@@ -447,6 +497,10 @@
         matchCount.innerHTML = `<i data-lucide="check-circle" style="width:14px;"></i> 0 Matches`; matchTiming.textContent = '';
         breakdownPane.classList.remove("active"); $('matchesFoot').style.display = 'none'; replaceOutputRow.style.display = 'none'; icons(); return;
       }
+      if (engine() !== 'js') {
+        if (!text) { testBackdrop.innerHTML = "Paste your test data here to see match highlights..."; matchCount.innerHTML = `<i data-lucide="check-circle" style="width:14px;"></i> 0 Matches`; breakdownPane.classList.remove("active"); $('matchesFoot').style.display = 'none'; replaceOutputRow.style.display = 'none'; icons(); return; }
+        processEngine(pattern, text); return;
+      }
       let regex;
       try { regex = new RegExp(pattern, flagsStr()); }
       catch (err) { mainPane.classList.add("error"); errorMsg.innerText = err.message; errorText.classList.add("active"); testBackdrop.innerHTML = text ? escapeHTML(text) : ''; matchCount.innerHTML = `<i data-lucide="x-circle" style="width:14px; color:var(--error-color);"></i> Error`; breakdownPane.classList.remove("active"); replaceOutputRow.style.display = 'none'; icons(); return; }
@@ -479,6 +533,87 @@
       Layerbit.history.push('regex-tester', getState(), `/${pattern.slice(0, 40)}/${flagsStr()} · ${count} match${count === 1 ? '' : 'es'}`);
     }
 
+    // ------------------------------------------------------------ other languages' engines
+    const engine = () => $('rxEngine').value;
+    function engineNoteText() {
+      const id = engine(), E = LBRxEngines.ENGINES[id];
+      if (id === 'js') return '';
+      const gone = currentFlags.filter(f => f === 'y').length ? ' The sticky flag (y) is JavaScript-only and is ignored here.' : '';
+      return `<strong>${esc(E.name)}</strong>: ${esc(E.lang)}. Replacement syntax: <code>${esc(E.replaceSyntax)}</code>. Flags i, m, s and u are passed on; Explain, Diagram, Safety, Tests, Code and the debugger still read the pattern as JavaScript.${gone}`;
+    }
+    const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+    let engSeq = 0;
+    function processEngine(pattern, text) {
+      const id = engine(), seq = ++engSeq, t0 = performance.now();
+      matchCount.innerHTML = `<i data-lucide="loader" style="width:14px;"></i> Running ${esc(LBRxEngines.ENGINES[id].name)}…`;
+      LBRxEngines.find(id, pattern, flagsStr(), text, currentFlags.includes('g')).then(r => {
+        if (seq !== engSeq) return;
+        if (!r.ok) { mainPane.classList.add("error"); errorMsg.innerText = r.error; errorText.classList.add("active"); testBackdrop.innerHTML = escapeHTML(text); matchCount.innerHTML = `<i data-lucide="x-circle" style="width:14px; color:var(--error-color);"></i> Error`; breakdownPane.classList.remove("active"); replaceOutputRow.style.display = 'none'; icons(); return; }
+        mainPane.classList.remove("error"); errorText.classList.remove("active");
+        lastMatches = r.matches.slice(0, 50000).map(x => ({ m: x.m, index: x.index, groups: x.named, indices: null }));
+        let html = '', pos = 0;
+        r.matches.forEach((x, k) => { if (x.index < pos) return; html += escapeHTML(text.slice(pos, x.index)) + `<span class="hl-match${(k + 1) % 2 ? '' : ' alt'}" data-i="${k}">${escapeHTML(x.m[0])}</span>`; pos = x.index + x.m[0].length; });
+        html += escapeHTML(text.slice(pos));
+        testBackdrop.innerHTML = html;
+        const count = r.matches.length;
+        matchCount.innerHTML = `<i data-lucide="check-circle" style="width:14px;"></i> ${count.toLocaleString()} Match${count === 1 ? '' : 'es'}`;
+        renderTiming(performance.now() - t0, text.length);
+        renderMatches(count); icons();
+        updateReplacePreview(pattern, text);
+      }).catch(e => { if (seq !== engSeq) return; mainPane.classList.add("error"); errorMsg.innerText = e.message; errorText.classList.add("active"); matchCount.innerHTML = `<i data-lucide="x-circle" style="width:14px;"></i> Error`; icons(); });
+    }
+    $('rxEngine').addEventListener('change', () => { $('engineNote').innerHTML = engineNoteText(); processRegex(); });
+
+    async function compareEngines() {
+      const pattern = regexInput.value, text = testInput.value, box = $('engineCompare'), all = currentFlags.includes('g');
+      if (!pattern) { box.innerHTML = '<p class="muted-note">Type a pattern first.</p>'; return; }
+      const ids = Object.keys(LBRxEngines.ENGINES), rows = {};
+      const draw = (running) => { box.innerHTML = `<p class="muted-note">${running ? 'Running… engines load the first time they are used (Python takes longest).' : 'Each row is the real engine for that language, run on the same text with the same flags.'}</p><table class="tests-table engine-table"><thead><tr><th>Engine</th><th>Result</th><th>Compared with JavaScript</th></tr></thead><tbody>` +
+        ids.map(id => `<tr data-engine="${id}"><td>${esc(LBRxEngines.ENGINES[id].name)}</td><td>${rows[id] ? rows[id].html : '…'}</td><td>${rows[id] ? rows[id].diff : ''}</td></tr>`).join('') +
+        Object.keys(LBRxEngines.UNAVAILABLE).map(id => `<tr class="muted"><td>${id === 'java' ? 'Java' : '.NET'}</td><td colspan="2">Not available: ${esc(LBRxEngines.UNAVAILABLE[id])}</td></tr>`).join('') + '</tbody></table>'; };
+      draw(true);
+      const sig = r => r.ok ? r.matches.map(x => x.index + ':' + x.m[0]).join('|') : 'error';
+      let jsSig = null;
+      for (const id of ids) {
+        let r; try { r = await LBRxEngines.find(id, pattern, flagsStr(), text, all); } catch (e) { r = { ok: false, error: e.message }; }
+        const n = r.ok ? r.matches.length : 0, s = sig(r);
+        if (id === 'js') jsSig = s;
+        rows[id] = { html: r.ok ? `${n} match${n === 1 ? '' : 'es'}${n ? ': ' + r.matches.slice(0, 3).map(x => `<code>${esc(x.m[0])}</code>`).join(', ') + (n > 3 ? '…' : '') : ''}` : `error: ${esc(r.error)}`, diff: id === 'js' ? '' : s === jsSig ? 'same' : '<strong>differs</strong>' };
+        draw(true);
+      }
+      draw(false);
+    }
+    $('btnCompare').addEventListener('click', compareEngines);
+
+    // ------------------------------------------------------------ debugger
+    let dbg = null;
+    function debugRun() {
+      const pattern = regexInput.value, text = testInput.value.slice(0, 1000), flags = flagsStr().replace(/[gy]/g, '');
+      if (!pattern) { $('dbgSummary').textContent = 'Type a pattern first.'; return; }
+      let ast; try { ast = R.parse(pattern, flags); } catch (e) { $('dbgSummary').textContent = 'The debugger reads JavaScript syntax, and this pattern does not parse: ' + e.message; dbg = null; return; }
+      const r = LBRxDebug.trace(ast, flags, text, { maxSteps: 100000 });
+      dbg = { r, pattern, text, i: 0 };
+      const n = r.steps.length.toLocaleString(), b = r.backtracks.toLocaleString();
+      $('dbgSummary').textContent = r.stopped ? `Stopped after ${n} steps (${b} backtracks): the work grows too fast on this input, which is catastrophic backtracking. See the Safety tab.`
+        : r.match ? `Match at ${r.match.start}–${r.match.end} after ${n} steps (${b} backtracks).` : `No match after ${n} steps (${b} backtracks).`;
+      $('dbgSlider').max = r.steps.length - 1; $('dbgSlider').value = 0; $('dbgSlider').disabled = false;
+      showStep(0);
+    }
+    const KIND = { begin: 'Start an attempt', try: 'Try', ok: 'Matched', fail: 'Failed', backtrack: 'Backtrack', success: 'Success' };
+    function showStep(i) {
+      if (!dbg) return;
+      const st = dbg.r.steps[i]; dbg.i = i;
+      $('dbgSlider').value = i; $('dbgPrev').disabled = i <= 0; $('dbgNext').disabled = i >= dbg.r.steps.length - 1;
+      const tok = st.kind !== 'begin' && st.kind !== 'success' && st.end > st.start ? dbg.pattern.slice(st.start, st.end) : '';
+      $('dbgEvent').textContent = `Step ${i + 1} of ${dbg.r.steps.length.toLocaleString()}: ${KIND[st.kind]}${tok ? ' ' + tok : ''} at position ${st.pos}${st.note ? ' (' + st.note + ')' : ''}`;
+      $('dbgPattern').innerHTML = tok ? esc(dbg.pattern.slice(0, st.start)) + `<span class="dbg-cur">${esc(tok)}</span>` + esc(dbg.pattern.slice(st.end)) : esc(dbg.pattern).replace(/^/, '<span class="dbg-cur"></span>');
+      $('dbgText').innerHTML = esc(dbg.text.slice(0, st.pos)) + '<span class="dbg-caret"></span>' + esc(dbg.text.slice(st.pos));
+    }
+    $('btnDebug').addEventListener('click', debugRun);
+    $('dbgPrev').addEventListener('click', () => { if (dbg && dbg.i > 0) showStep(dbg.i - 1); });
+    $('dbgNext').addEventListener('click', () => { if (dbg && dbg.i < dbg.r.steps.length - 1) showStep(dbg.i + 1); });
+    $('dbgSlider').addEventListener('input', () => showStep(+$('dbgSlider').value));
+
     function renderMatches(count) {
       if (!count) { breakdownPane.classList.remove("active"); $('matchesFoot').style.display = 'none'; return; }
       const shown = lastMatches.slice(0, 500);
@@ -506,6 +641,12 @@
     function updateReplacePreview(pattern, text) {
       const replacement = replaceInput.value;
       if (!replacement) { replaceOutputRow.style.display = 'none'; return; }
+      if (engine() !== 'js') {
+        LBRxEngines.replace(engine(), pattern, flagsStr(), text, replacement, currentFlags.includes('g')).then(r => {
+          if (r.ok) { replaceOutput.textContent = r.text; replaceOutputRow.style.display = 'block'; } else { replaceOutput.textContent = r.error; replaceOutputRow.style.display = 'block'; }
+        }).catch(e => { replaceOutput.textContent = e.message; replaceOutputRow.style.display = 'block'; });
+        return;
+      }
       try { replaceOutput.textContent = text.replace(new RegExp(pattern, flagsStr()), replacement); replaceOutputRow.style.display = 'block'; }
       catch (e) { replaceOutputRow.style.display = 'none'; }
     }
@@ -652,12 +793,13 @@
     testInput.addEventListener('input', processRegex);
     function clearAll() { regexInput.value = ''; testInput.value = ''; replaceInput.value = ''; tests = []; renderTests(); processRegex(); Layerbit.state.clear(); }
 
-    function getState() { return { pattern: regexInput.value, flags: flagsStr(), text: testInput.value, replace: replaceInput.value, tests: tests.length ? tests : undefined }; }
+    function getState() { return { pattern: regexInput.value, flags: flagsStr(), text: testInput.value, replace: replaceInput.value, tests: tests.length ? tests : undefined, engine: engine() === 'js' ? undefined : engine() }; }
     function setState(s) {
       if (!s) return;
       if (typeof s.input === 'string' && s.pattern === undefined) { testInput.value = s.input; processRegex(); return; }
       regexInput.value = s.pattern || ''; testInput.value = s.text || ''; replaceInput.value = s.replace || '';
       if (typeof s.flags === 'string') setFlags(s.flags.split(''));
+      $('rxEngine').value = s.engine && LBRxEngines.ENGINES[s.engine] ? s.engine : 'js'; $('engineNote').innerHTML = engineNoteText();
       tests = Array.isArray(s.tests) ? s.tests : [];
       processRegex(); if (tests.length) { runUnitTests(); showTab('tests'); }
     }

@@ -1,0 +1,50 @@
+{
+  "tool": "regex-tester",
+  "page": "tools/regex-tester.html",
+  "competitors": [
+    {
+      "name": "RegexBuddy",
+      "price": "$39.95 single user (Windows)",
+      "checked": "2026-11"
+    },
+    {
+      "name": "regex101",
+      "price": "free core",
+      "checked": "2026-11"
+    }
+  ],
+  "claims": [
+    {
+      "feature": "Exact matching per language (real engines, not emulation)",
+      "competitor": "RegexBuddy",
+      "tests": [
+        "ui:regex-tester:2.8: real engines: PCRE2, Python, Go and Rust each apply their own syntax",
+        "ui:regex-tester:2.8: compare engines side by side on the same pattern and text"
+      ]
+    },
+    {
+      "feature": "Step-by-step backtracking debugger",
+      "competitor": "regex101",
+      "tests": [
+        "ui:regex-tester:2.8: the debugger steps through backtracking and counts the steps",
+        "unit:rxdebug:agrees with the JavaScript engine on 40 patterns",
+        "unit:rxdebug:records backtracking and stops runaway patterns at the step limit"
+      ]
+    },
+    {
+      "feature": "Substitution preview in each engine's own syntax",
+      "competitor": "regex101",
+      "tests": [
+        "ui:regex-tester:2.8: real engines: PCRE2, Python, Go and Rust each apply their own syntax",
+        "ui:regex-tester:replace preview honours $1 and $<name>"
+      ]
+    },
+    {
+      "feature": "No false ReDoS warning on a delimited domain pattern (B3)",
+      "competitor": "regex101",
+      "tests": [
+        "ui:regex-tester:B3: a domain pattern split by dots is not reported as high-risk nesting"
+      ]
+    }
+  ]
+}

@@ -770,6 +770,56 @@ def _(t):
     eq(t.text("testsSummary"), "· 2/2 passing", "tests not restored")
 
 
+@case("regex-tester", "typical", "2.8: real engines: PCRE2, Python, Go and Rust each apply their own syntax")
+def _(t):
+    t.set("testInput", "2026-2026 2025-2024")
+    t.set("regexInput", r"(?P<y>\d{4})-(?P=y)")
+    expect("Error" in t.text("matchCount"), "JavaScript has no (?P<y> syntax")
+    t.select("rxEngine", "pcre2")
+    t.wait_for("/^\\s*1 Match\\b/.test(document.getElementById('matchCount').textContent)", 8000)
+    t.select("rxEngine", "go")
+    t.wait_for("/Error/.test(document.getElementById('matchCount').textContent) && /invalid|unsupported/i.test(document.getElementById('errorMsg').textContent)", 8000)
+    t.select("rxEngine", "rust")
+    t.wait_for("/Error/.test(document.getElementById('matchCount').textContent) && document.getElementById('errorMsg').textContent.length > 5", 8000)
+    t.select("rxEngine", "python")
+    t.wait_for("/^\\s*1 Match\\b/.test(document.getElementById('matchCount').textContent)", 11000)
+    expect("Python" in t.text("engineNote"), t.text("engineNote"))
+    t.set("replaceInput", r"\g<y>!")
+    t.wait_for("document.getElementById('replaceOutput').textContent === '2026! 2025-2024'", 5000)
+
+
+@case("regex-tester", "typical", "2.8: compare engines side by side on the same pattern and text")
+def _(t):
+    t.set("testInput", "aaab xaab")
+    t.set("regexInput", "a++b")
+    t.click(".rx-tab[data-tab='engines']")
+    t.click("#btnCompare")
+    t.wait_for("document.querySelectorAll('#engineCompare tbody tr[data-engine]').length >= 5 && !/running/i.test(document.getElementById('engineCompare').textContent)", 11000)
+    rows = t.call("Object.fromEntries([...document.querySelectorAll('#engineCompare tbody tr[data-engine]')].map(tr => [tr.dataset.engine, tr.children[1].textContent]))")
+    expect("error" in rows["js"].lower(), rows["js"])
+    expect(rows["pcre2"].startswith("2 matches"), rows["pcre2"])
+    expect("error" in rows["go"].lower() and rows["python"].startswith("2 matches"), rows)
+    expect("not available" in t.text("engineCompare").lower(), "Java and .NET should be listed as not available")
+
+
+@case("regex-tester", "typical", "2.8: the debugger steps through backtracking and counts the steps")
+def _(t):
+    t.set("testInput", "abc")
+    t.set("regexInput", "^(a|ab)c$")
+    t.click(".rx-tab[data-tab='debug']")
+    t.click("#btnDebug")
+    t.wait_for("/Match at 0/.test(document.getElementById('dbgSummary').textContent)", 5000)
+    expect("backtrack" in t.text("dbgSummary").lower(), t.text("dbgSummary"))
+    s1 = t.text("dbgEvent"); t.click("#dbgNext"); s2 = t.text("dbgEvent")
+    expect(s1 != s2 and "Step 2" in s2, f"{s1} / {s2}")
+    expect(t.count("#dbgPattern .dbg-cur") == 1 and t.count("#dbgText .dbg-caret") == 1, "current token and position should be marked")
+    t.set("testInput", "aaaaaaaaaaaaaaaaaaaaaaaaab")
+    t.set("regexInput", "^(a+)+$")
+    t.click("#btnDebug")
+    t.wait_for("/steps/.test(document.getElementById('dbgSummary').textContent)", 8000)
+    expect("stopped" in t.text("dbgSummary").lower() or "no match" in t.text("dbgSummary").lower(), t.text("dbgSummary"))
+
+
 @case("regex-tester", "maximal", "100k-char subject with 20,000 matches under budget")
 def _(t):
     t.set("regexInput", r"\b\d+\b")
