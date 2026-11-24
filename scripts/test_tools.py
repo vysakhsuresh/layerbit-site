@@ -2486,6 +2486,101 @@ def _(t):
     t.wait(300)
 
 
+def _pint_seller(t, trn="123456789301003"):
+    t.set("sellerName", "Layerbit Sample Trading LLC"); t.set("sellerTrn", trn); t.set("sellerLegalId", "CN-1234567")
+    t.set("sellerStreet", "Sheikh Zayed Road"); t.set("sellerCity", "Dubai")
+
+
+PINT_READY = ("Invoice Number,Invoice Date,Due Date,Currency,Customer Name,Customer TRN,Customer Address,Customer City,Item Name,Description,Quantity,Unit,Unit Price,VAT Rate,VAT Amount,Total\n"
+              "INV-7,2026-11-01,2026-12-01,AED,Buyer LLC,187654321601003,Al Maryah Island,Abu Dhabi,Consulting,Readiness review,10,HUR,100,5,50,1050\n")
+
+
+@case("pint-ae-checker", "typical", "6: a complete invoice with seller details is ready, and the XML carries the PINT AE structure")
+def _(t):
+    t.call("localStorage.removeItem('layerbit-pintae-seller')")
+    t.upload("fileInput", "ready.csv", PINT_READY, "text/csv"); t.wait(500)
+    _pint_seller(t)
+    t.click("#btnConfirmMapping"); t.wait(200)
+    expect("Ready for your ASP" in t.text("scoreHeadline"), t.text("scoreHeadline") + " / " + t.text("checklist")[:600])
+    eq(t.text("ringValue"), "100%", "score")
+    eq(t.count("#checklist .check-item"), 51, "51 fields")
+    expect("IBT-031" in t.text("checklist") and "123456789301003" in t.text("checklist"), "TRN row")
+    with t.page.expect_download() as dl:
+        t.click("#btnDownloadXml")
+    eq(dl.value.suggested_filename, "pint-ae_INV-7.xml", "file name")
+    x = open(dl.value.path(), encoding="utf-8").read()
+    for needle in ['<cbc:CustomizationID>urn:peppol:pint:billing-1@ae-1</cbc:CustomizationID>', '<cbc:EndpointID schemeID="0235">1876543216</cbc:EndpointID>', '<cbc:CountrySubentity>AUH</cbc:CountrySubentity>',
+                   '<cbc:CompanyID schemeAgencyID="TL">CN-1234567</cbc:CompanyID>', '<cbc:InvoicedQuantity unitCode="HUR">10</cbc:InvoicedQuantity>', '<cbc:PayableAmount currencyID="AED">1050.00</cbc:PayableAmount>', '<cbc:Name>Consulting</cbc:Name>']:
+        expect(needle in x, "missing " + needle)
+    expect(t.call("localStorage.getItem('layerbit-pintae-seller')") is None, "seller details must not be stored without consent")
+
+
+@case("pint-ae-checker", "typical", "6: several invoices in one export, issues explained per field, a zip with one XML each and a report")
+def _(t):
+    t.upload("fileInput", "zoho.csv", ZOHO, "text/csv"); t.wait(500)
+    t.click("#btnConfirmMapping"); t.wait(200)
+    expect("to fix" in t.text("scoreHeadline"), t.text("scoreHeadline"))
+    rows = t.call("[...document.querySelectorAll('#invoiceTable tbody tr')].map(r => r.textContent)")
+    eq(len(rows), 2, "two invoices")
+    cl = t.text("checklist")
+    expect("Seller legal registration identifier" in cl and "ibr-150-ae" in cl, "trade licence explained")
+    expect("INV-000231" in cl and "INV-000232" in cl, "invoice numbers named on failing fields")
+    _pint_seller(t)
+    t.click("#btnConfirmMapping"); t.wait(200)
+    with t.page.expect_download() as dl:
+        t.click("#btnDownloadXml")
+    eq(dl.value.suggested_filename, "pint-ae-invoices.zip", "zip")
+    import zipfile as _zf
+    z = _zf.ZipFile(dl.value.path())
+    eq(sorted(z.namelist()), ["pint-ae_INV-000231.xml", "pint-ae_INV-000232.xml", "readiness-report.csv"], "zip contents")
+    rep = z.read("readiness-report.csv").decode()
+    expect(rep.startswith("invoice,buyer,lines,amount_due,currency,ready,issues") and "Gulf Star Logistics, FZE" in rep, rep[:300])
+    expect("6300.00" in z.read("pint-ae_INV-000232.xml").decode(), "second invoice total")
+
+
+@case("pint-ae-checker", "edge", "6: a stray quote in a field does not merge rows (shared CSV parser)")
+def _(t):
+    csv = ('Invoice Number,Invoice Date,Customer Name,Description,Quantity,Unit Price,VAT Rate\n'
+           'A-1,2026-11-01,Buyer,1,5" screen,1,1500,5\n'.replace('1,5" screen', '15" screen') +
+           'A-2,2026-11-02,Buyer,Cable,2,20,5\n')
+    t.upload("fileInput", "quote.csv", csv, "text/csv"); t.wait(500)
+    t.click("#btnConfirmMapping"); t.wait(200)
+    eq(t.count("#invoiceTable tbody tr"), 2, "both invoices survive the stray quote")
+
+
+@case("pint-ae-checker", "typical", "6: an existing PINT AE XML is read and checked; wrong profile and broken XML are explained")
+def _(t):
+    t.click("#btnXmlSample"); t.wait(150)
+    r = t.text("xmlReport")
+    expect("INV-2026-0042" in r and "to fix" in r and "Buyer emirate" in r and "ibr-128-ae" in r, r[:500])
+    x = t.val("xmlPaste").replace("<cbc:CityName>Abu Dhabi</cbc:CityName>", "<cbc:CityName>Abu Dhabi</cbc:CityName><cbc:CountrySubentity>AUH</cbc:CountrySubentity>")
+    t.set("xmlPaste", x); t.click("#btnCheckXml"); t.wait(100)
+    expect("ready for your ASP" in t.text("xmlReport"), t.text("xmlReport")[:300])
+    t.set("xmlPaste", x.replace("urn:peppol:pint:billing-1@ae-1", "urn:cen.eu:en16931:2017")); t.click("#btnCheckXml"); t.wait(100)
+    expect("Specification identifier" in t.text("xmlReport") and "not the UAE profile" in t.text("xmlReport"), t.text("xmlReport")[:400])
+    expect('<cbc:PayableAmount currencyID="AED">3780.00</cbc:PayableAmount>' in x, "sample total")
+    t.set("xmlPaste", x.replace('<cbc:PayableAmount currencyID="AED">3780.00</cbc:PayableAmount>', '<cbc:PayableAmount currencyID="AED">3700.00</cbc:PayableAmount>')); t.click("#btnCheckXml"); t.wait(100)
+    expect("amount due in the file is 3700.00, but the lines add up to 3780.00" in t.text("xmlReport"), t.text("xmlReport")[:400])
+    t.set("xmlPaste", "<Invoice><cbc:ID>1</Invoice>"); t.click("#btnCheckXml"); t.wait(100)
+    expect("not well-formed" in t.text("xmlReport") or "Expected a UBL" in t.text("xmlReport"), t.text("xmlReport"))
+
+
+@case("pint-ae-checker", "edge", "6: business details are remembered only when asked, and forgotten when unticked")
+def _(t):
+    t.call("localStorage.removeItem('layerbit-pintae-seller')")
+    t.upload("fileInput", "ready.csv", PINT_READY, "text/csv"); t.wait(400)
+    expect(not t.call("document.getElementById('rememberSeller').checked"), "off by default")
+    _pint_seller(t)
+    t.call("document.getElementById('rememberSeller').click()"); t.wait(50)
+    saved = t.call("JSON.parse(localStorage.getItem('layerbit-pintae-seller'))")
+    eq(saved["sellerTrn"], "123456789301003", "saved")
+    t.page.reload(); t.wait(300)
+    eq(t.val("sellerName"), "Layerbit Sample Trading LLC", "restored after reload")
+    expect(t.call("document.getElementById('rememberSeller').checked"), "the box shows they are remembered")
+    t.call("document.getElementById('rememberSeller').click()"); t.wait(50)
+    expect(t.call("localStorage.getItem('layerbit-pintae-seller')") is None, "removed when unticked")
+
+
 # ----------------------------------------------------------------------------
 # subnet-calculator
 # ----------------------------------------------------------------------------

@@ -5,10 +5,10 @@
     {
       "@type": "SoftwareApplication",
       "@id": "https://layerbit.co.in/tools/pint-ae-checker.html#app",
-      "name": "UAE PINT-AE Compliance Checker",
+      "name": "UAE PINT-AE E-Invoice Readiness Checker",
       "url": "https://layerbit.co.in/tools/pint-ae-checker.html",
-      "description": "Check invoice data against the UAE PINT-AE e-invoicing field structure, see a compliance score, and export PINT-AE style XML. Free, runs in your browser.",
-      "applicationCategory": "BusinessApplication",
+      "description": "Check UAE invoices against the 51 PINT AE mandatory fields and totals, check existing PINT AE XML, and export XML for your ASP. Free, in your browser.",
+      "applicationCategory": "DeveloperApplication",
       "operatingSystem": "Any (runs in the browser)",
       "browserRequirements": "Requires JavaScript",
       "isAccessibleForFree": true,
@@ -19,7 +19,15 @@
       },
       "publisher": {
         "@id": "https://layerbit.co.in/#organization"
-      }
+      },
+      "featureList": [
+        "Readiness check against the 51 mandatory fields of a UAE tax invoice (PINT AE Billing 1.0.4)",
+        "TRN, TIN, emirate, due-date and transaction-type rules with their PINT AE rule IDs",
+        "PINT AE code lists for tax categories, currencies, countries, payment means and UN/ECE units",
+        "Recomputes every line, VAT figure and total",
+        "Several invoices per spreadsheet, exported as a zip of PINT AE XML with a readiness report",
+        "Checks an existing PINT AE XML file"
+      ]
     },
     {
       "@type": "BreadcrumbList",
@@ -47,6 +55,7 @@
     },
     {
       "@type": "FAQPage",
+      "@id": "https://layerbit.co.in/tools/pint-ae-checker.html#faq",
       "mainEntity": [
         {
           "@type": "Question",
@@ -82,50 +91,27 @@
         },
         {
           "@type": "Question",
+          "name": "What exactly does the readiness check look at?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "The 51 fields the Ministry of Finance lists as mandatory for a UAE tax invoice, each with its PINT AE business term (such as IBT-031 for the seller's TRN). For each one it says whether the field was found, worked out for you, not needed for this invoice, missing or wrong. Values are checked against the PINT AE code lists: tax categories, currencies, countries, payment means and UN/ECE unit codes. It applies the UAE rules it can, citing them: a TRN starts with 1 and ends with 03 (ibr-132-ae), the TIN is its first 10 digits (ibr-148-ae), an emirate code is needed for UAE addresses (ibr-128-ae), and a due date is needed when an amount is owed (ibr-127-ae). It also re-does the arithmetic: quantity times price, VAT per line, and every total. It does not run the official Schematron and cannot check signatures, the FTA's registers or your ASP's own rules."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "My spreadsheet has many invoices. Does it handle that?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes. Rows are grouped by the invoice-number column, each group becomes one invoice, and the checklist shows the worst result for each field across all of them with the invoice numbers involved. A table lists every invoice as ready or with its number of issues, and the download is a zip with one PINT AE XML file per invoice plus a CSV readiness report."
+          }
+        },
+        {
+          "@type": "Question",
           "name": "Is Layerbit responsible if my invoice is rejected or non-compliant?",
           "acceptedAnswer": {
             "@type": "Answer",
             "text": "No. This tool is provided free and as-is, based on publicly available Peppol and FTA technical guidance — it is not an officially certified or FTA-approved compliance tool. Layerbit Technologies accepts no liability for tax, legal, financial, or regulatory consequences arising from its use, including rejected filings or penalties for non-compliance. Always have your Accredited Service Provider (ASP) or a qualified tax advisor verify the final XML before you file. See our Terms of Service for full details."
           }
-        }
-      ],
-      "@id": "https://layerbit.co.in/tools/pint-ae-checker.html#faq"
-    },
-    {
-      "@type": "HowTo",
-      "name": "How to check a UAE invoice for PINT-AE compliance and export XML",
-      "description": "Step-by-step guide to checking an invoice exported from Excel, Tally, Zoho Books, or QuickBooks for UAE FTA PINT-AE e-invoicing compliance, and converting it to XML for free using Layerbit's browser-based checker.",
-      "totalTime": "PT3M",
-      "step": [
-        {
-          "@type": "HowToStep",
-          "position": 1,
-          "name": "Export your invoice as CSV or Excel",
-          "text": "Open your invoice in Excel, Tally, Zoho Books, or QuickBooks and export or save it as a CSV or Excel (.xlsx) file."
-        },
-        {
-          "@type": "HowToStep",
-          "position": 2,
-          "name": "Upload the file",
-          "text": "Drag and drop the exported file into the Layerbit PINT-AE Checker, or click Upload to select it. The file is processed entirely in your browser and never leaves your device."
-        },
-        {
-          "@type": "HowToStep",
-          "position": 3,
-          "name": "Auto-check or map fields manually",
-          "text": "The tool automatically scans your column headers and matches them to the required PINT-AE fields. Review the detected mapping, or switch to Manual Mapping Mode to choose each field yourself from dropdowns."
-        },
-        {
-          "@type": "HowToStep",
-          "position": 4,
-          "name": "Fix any missing fields",
-          "text": "The compliance checklist shows which required fields are present and which are missing, with a plain-language explanation for each one so you know exactly what to add to your source file."
-        },
-        {
-          "@type": "HowToStep",
-          "position": 5,
-          "name": "Download the PINT-AE XML file",
-          "text": "Once the required fields are mapped, click Download PINT-AE XML to generate and save a UBL 2.1 / PINT-AE structured XML file for free, with no signup required."
         }
       ]
     }

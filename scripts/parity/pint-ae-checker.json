@@ -1,0 +1,39 @@
+{
+  "tool": "pint-ae-checker",
+  "page": "tools/pint-ae-checker.html",
+  "competitors": [
+    { "name": "Accredited Service Providers' validation (paid; legally required for exchange)", "price": "paid", "checked": "2026-11" }
+  ],
+  "claims": [
+    {
+      "feature": "Validate against the PINT-AE rules and code lists, with the version shown",
+      "competitor": "Accredited Service Providers' validation (paid; legally required for exchange)",
+      "tests": [
+        "ui:pint-ae-checker:6: a complete invoice with seller details is ready, and the XML carries the PINT AE structure",
+        "unit:pintae:a complete AED invoice is ready, with 51 fields",
+        "unit:pintae:TRN and TIN rules",
+        "unit:pintae:code lists are present with their source"
+      ]
+    },
+    {
+      "feature": "Explain every failure in plain English",
+      "competitor": "Accredited Service Providers' validation (paid; legally required for exchange)",
+      "tests": [
+        "ui:pint-ae-checker:6: several invoices in one export, issues explained per field, a zip with one XML each and a report",
+        "ui:pint-ae-checker:6: an existing PINT AE XML is read and checked; wrong profile and broken XML are explained",
+        "unit:pintae:missing and invalid fields explain themselves with rule ids",
+        "unit:pintae:arithmetic: lines, VAT and totals that do not add up"
+      ]
+    },
+    {
+      "feature": "Generate PINT-AE XML from a spreadsheet",
+      "competitor": "Accredited Service Providers' validation (paid; legally required for exchange)",
+      "tests": [
+        "ui:pint-ae-checker:6: a complete invoice with seller details is ready, and the XML carries the PINT AE structure",
+        "ui:pint-ae-checker:6: several invoices in one export, issues explained per field, a zip with one XML each and a report",
+        "unit:pintae:XML: namespaces, profile, parties, breakdown, lines, escaping",
+        "unit:pintae:foreign currency needs an exchange rate and adds AED amounts"
+      ]
+    }
+  ]
+}

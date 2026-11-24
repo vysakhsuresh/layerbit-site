@@ -55,4 +55,5 @@ where `entry.js` re-exports the functions the page uses.
 
 ## Reference implementations
 
+- **PINT AE code lists** (`js/engines/pintae-codes.js`): the tax category, currency, country, payment means, invoice type, unit and other code lists published in OpenPeppol's PINT AE Billing 1.0.4 resources (docs.peppol.eu/poac/ae/pint-ae). They were read with `scripts/build_pintae_codes.py` from the data file of the npm package uae-einvoice-mcp 0.2.2 (MIT, Mirza Abu Bakr), which extracts them from that release; only the data was taken, and no code from the package is bundled or run. The 51-field list and rule identifiers used by `js/engines/pintae.js` follow the same package's summary of PINT AE 1.0.4 and the Ministry of Finance's mandatory-field list; the engine itself is written for Layerbit.
 - **CyberChef** (GCHQ, Apache-2.0, https://github.com/gchq/CyberChef): the Flow tool's operation names, arguments and expected outputs follow CyberChef's where the two have the same operation, so recipes read the same. No CyberChef code is bundled; `js/engines/flowops.js` is written for Layerbit.
