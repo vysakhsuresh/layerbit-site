@@ -146,7 +146,7 @@
   <link rel="manifest" href="../manifest.json" />
   <link rel="alternate" type="application/atom+xml" title="Layerbit developer guides" href="https://layerbit.co.in/feed.xml" />
   <link rel="apple-touch-icon" href="../apple-touch-icon.png" />
-  <link rel="stylesheet" href="../css/base.css?v=2b24d32e4f" />
+  <link rel="stylesheet" href="../css/base.css?v=e076970c45" />
 
   <style>
 
@@ -452,6 +452,7 @@
 
   <main id="main" class="page-main">
   <div class="hero">
+    <div class="hero-badge"><i data-lucide="shield-check"></i> Runs entirely in your browser</div>
     <h1>URL Encoder &amp; Decoder</h1>
     <p>Decode percent-encoded URLs back to readable text, or encode URLs, query strings and parameters safely, with a parameter grid and batch mode — all client-side.</p>
   </div>
@@ -510,8 +511,8 @@
 
   <div class="docs-container">
     <div class="info-panel">
-      <h2><i data-lucide="cpu"></i> Processing Architecture</h2>
-      <p>Layerbit's URL Synthesizer features a dual-engine architecture designed specifically for developers handling API endpoints and webhook payloads.</p>
+      <h2><i data-lucide="cpu"></i> The three modes and when to use each</h2>
+      <p>Encoding a whole URL and encoding one value inside it are different jobs, and using the wrong one is the usual cause of broken links. The tool has a mode for each case.</p>
       <ul>
         <li><i data-lucide="check"></i> <strong>Smart URL Mode (Default):</strong> When a full URL is detected, the engine preserves the protocol and domain (e.g., <code>https://domain.com/path</code>) and strictly encodes the query parameters. This prevents broken, unclickable URLs.</li>
         <li><i data-lucide="check"></i> <strong>Raw String Mode:</strong> Forces strict RFC 3986 encoding across the entire input block, converting every unsafe character (including slashes and colons).</li>

@@ -2,13 +2,14 @@
 
   <main id="main" class="page-main">
   <div class="hero">
+    <div class="hero-badge"><i data-lucide="shield-check"></i> Runs entirely in your browser</div>
     <h1>Base64 Encoder &amp; Decoder</h1>
     <p>Encode and decode Base64 in real time — text or files of any size, standard or URL-safe, one line or MIME and PEM wrapped, in UTF-8, UTF-16 or Windows-1252 — and see what decoded bytes really are, with a hex view, without your data leaving the browser.</p>
   </div>
 
-  <div class="tab-container">
-    <button class="tab-btn active" onclick="switchTab('text')"><i data-lucide="file-type-2"></i> String Cryptography</button>
-    <button class="tab-btn" onclick="switchTab('image')"><i data-lucide="image"></i> Asset Encoding</button>
+  <div class="tab-container" role="tablist" aria-label="What to convert">
+    <button class="tab-btn active" role="tab" aria-selected="true" onclick="switchTab('text')"><i data-lucide="file-type-2"></i> Text</button>
+    <button class="tab-btn" role="tab" aria-selected="false" onclick="switchTab('image')"><i data-lucide="image"></i> Files &amp; images</button>
   </div>
 
   <div id="tab-text" class="tab-content active">
@@ -18,7 +19,7 @@
           <div class="pane-title"><i data-lucide="align-left"></i> Plain Text</div>
           <div class="header-actions">
             <span id="decodeError" class="error-text"><i data-lucide="alert-circle" style="width: 14px; display: inline; vertical-align: middle;"></i> Invalid Base64 String</span>
-            <select id="lineEndings" class="mini-select" title="A text box always holds LF line breaks. Choose CRLF to process the text the way a Windows file stores it."><option value="lf">LF line breaks (as typed)</option><option value="crlf">CRLF line breaks (Windows)</option></select>
+            <select id="lineEndings" class="mini-select" title="A text box always holds LF line breaks. Choose CRLF to process the text the way a Windows file stores it."><option value="lf">LF line breaks</option><option value="crlf">CRLF (Windows)</option></select>
             <select id="textEnc" class="mini-select" title="How the text becomes bytes before encoding, and how decoded bytes are read back as text">
               <option value="utf-8">UTF-8</option><option value="utf-8-bom">UTF-8 with BOM</option><option value="utf-16le">UTF-16 LE</option><option value="utf-16be">UTF-16 BE</option><option value="windows-1252">Windows-1252</option>
             </select>
@@ -58,7 +59,7 @@
 
       <div class="pane">
         <div class="pane-header">
-          <div class="pane-title"><i data-lucide="upload-cloud"></i> Asset Encoder</div>
+          <div class="pane-title"><i data-lucide="upload-cloud"></i> File to Base64</div>
           <div class="header-actions">
             <button class="btn-action" onclick="clearDropzone()"><i data-lucide="trash-2"></i> <span>Clear</span></button>
             <button class="btn-action" onclick="copyContent('imageOutputText', this)"><i data-lucide="copy"></i> <span>Copy Base64</span></button>
@@ -68,7 +69,7 @@
         <label for="fileInput" class="dropzone" id="dropzone">
           <i data-lucide="file-plus"></i>
           <p>Drag & Drop an image or PDF here or <span>browse files</span></p>
-          <p style="font-size: 0.8em; margin-top: 10px;">Synthesizes file to raw Base64 string</p>
+          <p style="font-size: 0.8em; margin-top: 10px;">Any file type, read on your device</p>
         </label>
         <textarea id="imageOutputText" class="editor" style="display:none;" placeholder="Base64 string will appear here..." readonly></textarea>
         <div class="file-tools">
@@ -85,7 +86,7 @@
 
       <div class="pane">
         <div class="pane-header">
-          <div class="pane-title"><i data-lucide="monitor-play"></i> Visual Decoder</div>
+          <div class="pane-title"><i data-lucide="monitor-play"></i> Base64 to file</div>
           <div class="header-actions">
             <span id="imgDecodeError" class="error-text"><i data-lucide="alert-circle" style="width: 14px; display: inline; vertical-align: middle;"></i> Invalid Asset Data</span>
             <button class="btn-action" onclick="clearVisualDecoder()"><i data-lucide="trash-2"></i> <span>Clear</span></button>
@@ -104,8 +105,8 @@
 
   <div class="docs-container">
     <div class="info-panel">
-      <h2><i data-lucide="book-open"></i> Secure Data Conversion Engine</h2>
-      <p>Layerbit provides a robust, zero-latency Base64 processor. Whether you are encoding API payloads, embedding small images into CSS/HTML files, or decoding secure webhooks, this tool operates entirely within the DOM. No data is ever transmitted to a backend server.</p>
+      <h2><i data-lucide="book-open"></i> What this Base64 tool does</h2>
+      <p>This page encodes text and files to Base64 and decodes Base64 back, as you type. Use it to put binary data into JSON or XML, embed a small image in CSS or HTML as a data URI, read the payload of a webhook or an email attachment, or check what a Base64 string really contains. Everything happens in your browser; nothing is sent to a server.</p>
       
       <div class="use-cases-grid">
         <div class="use-case-card">
@@ -118,7 +119,7 @@
         </div>
         <div class="use-case-card">
           <h3><i data-lucide="file-key-2"></i> JWT & Token Debugging</h3>
-          <p>JSON Web Tokens (JWTs) are heavily reliant on Base64Url encoding. Use the String Cryptography tab to quickly decode the payload section of authentication tokens to verify embedded user claims, expiration dates, and roles without needing specialized third-party tools.</p>
+          <p>JSON Web Tokens (JWTs) are heavily reliant on Base64Url encoding. Use the Text tab to decode the payload section of authentication tokens to verify embedded user claims, expiration dates, and roles without needing specialized third-party tools.</p>
         </div>
       </div>
     </div>
@@ -126,7 +127,7 @@
     <!-- NEW QUICK TEMPLATES SECTION -->
 <div class="info-panel">
       <h2><i data-lucide="file-code"></i> Quick Testing Templates</h2>
-      <p>Need to test the cipher? Click any of the sample payloads below to instantly load them into the engine and watch the real-time conversion.</p>
+      <p>Want to see it work? Click a sample below to load it and watch the conversion happen as it loads.</p>
       <div>
         <button class="sample-btn" data-lb-autosample onclick="loadSample('text_simple')">Simple String</button>
         <button class="sample-btn" onclick="loadSample('text_json')">JSON Payload</button>
@@ -274,18 +275,13 @@
       document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
       document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
 
-      // If called via sample loader, event might not exist, so handle safely
-      if(window.event && window.event.currentTarget) {
-        window.event.currentTarget.classList.add('active');
-      } else {
-        // Manually find and activate the correct button
-        document.querySelectorAll('.tab-btn').forEach(btn => {
-          if(btn.getAttribute('onclick').includes(tabId)) {
-            btn.classList.add('active');
-          }
-        });
-      }
-      
+      // Activate by name: this is also called from the sample buttons and on load, where
+      // the event's target is not a tab.
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        const on = btn.getAttribute('onclick').includes("'" + tabId + "'");
+        btn.classList.toggle('active', on);
+        btn.setAttribute('aria-selected', String(on));
+      });
       document.getElementById('tab-' + tabId).classList.add('active');
     }
 
@@ -630,7 +626,7 @@
         text_simple: {
           tab: 'text',
           input: 'plainText',
-          data: "Layerbit Cipher Engine is online and ready!"
+          data: "Hello from Layerbit! Base64 turns bytes into plain text."
         },
         text_json: {
           tab: 'text',
