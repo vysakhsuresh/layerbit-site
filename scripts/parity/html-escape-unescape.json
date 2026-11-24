@@ -1,0 +1,45 @@
+{
+  "tool": "html-escape-unescape",
+  "page": "tools/html-escape-unescape.html",
+  "competitors": [
+    {
+      "name": "FreeFormatter HTML Escape",
+      "price": "free, with ads",
+      "checked": "2026-11"
+    }
+  ],
+  "claims": [
+    {
+      "feature": "Escapes the special characters and round-trips back to the same text",
+      "competitor": "FreeFormatter HTML Escape",
+      "tests": [
+        "ui:html-escape-unescape:escapes the five and round-trips"
+      ]
+    },
+    {
+      "feature": "Decodes every named, decimal and hex entity",
+      "competitor": "FreeFormatter HTML Escape",
+      "tests": [
+        "ui:html-escape-unescape:named and numeric entities unescape",
+        "ui:html-escape-unescape:entity reference table: every named, decimal and hex form in it decodes to its character"
+      ]
+    },
+    {
+      "feature": "Escape profiles, including non-ASCII as numeric references",
+      "competitor": "FreeFormatter HTML Escape",
+      "tests": [
+        "ui:html-escape-unescape:escape profiles: essential leaves '/', non-ASCII becomes hex refs"
+      ]
+    },
+    {
+      "feature": "Large documents in the browser",
+      "competitor": "FreeFormatter HTML Escape",
+      "tests": [
+        "ui:html-escape-unescape:500 KB document"
+      ]
+    }
+  ],
+  "gaps": [
+    "FreeFormatter puts escaping for HTML, XML, JavaScript, JSON, CSV and SQL on one site; on Layerbit, XML, JSON and URL escaping live in their own tools."
+  ]
+}

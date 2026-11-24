@@ -5387,6 +5387,20 @@ def _(t):
     expect("0 words" in t.text("statsStrip"), t.text("statsStrip"))
 
 
+@case("text-case-converter", "typical", "Title style picks AP, APA, Chicago or MLA rules, labels the row and applies them")
+def _(t):
+    t.set("textInput", "a journey through middle-earth with friends")
+    row = lambda: t.call("document.querySelector('.case-row[data-case=title] .case-out').textContent")
+    t.select("titleStyle", "ap")
+    eq(row(), "A Journey Through Middle-Earth With Friends", "AP")
+    expect("(AP)" in t.call("document.querySelector('.case-row[data-case=title] .case-label').textContent"), "label names the style")
+    t.select("titleStyle", "chicago")
+    eq(row(), "A Journey through Middle-Earth with Friends", "Chicago")
+    t.call("document.querySelector('.case-row[data-case=title]').click()")
+    t.click("#btnApply")
+    eq(t.val("textInput"), "A Journey through Middle-Earth with Friends", "applied with Chicago rules")
+
+
 @case("text-case-converter", "typical", "identifier list converts per line; apply and undo")
 def _(t):
     t.set("textInput", "userAccountId\nXMLHttpRequest\nAPI_BASE_URL"); t.wait(120)

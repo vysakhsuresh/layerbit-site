@@ -34,7 +34,28 @@
   /** Title case on prose: keeps punctuation and spacing, lower-cases small
    *  words except first/last and after a colon, preserves ALLCAPS acronyms
    *  and words with inner capitals (iPhone, McDonald). */
-  function titleCase(text) {
+  // Style guides differ on which short words stay lower case:
+  //  AP and APA lower-case only words of three letters or fewer (articles,
+  //  short conjunctions and prepositions); Chicago and MLA lower-case every
+  //  preposition whatever its length. APA does not force the last word up.
+  var ARTICLES = ['a', 'an', 'the'];
+  var COORD = ['and', 'but', 'for', 'nor', 'or', 'so', 'yet'];
+  var PREP_SHORT = ['as', 'at', 'by', 'for', 'in', 'of', 'off', 'on', 'out', 'per', 'to', 'up', 'via', 'v', 'v.', 'vs', 'vs.'];
+  var PREP_LONG = ['about', 'above', 'across', 'after', 'against', 'along', 'amid', 'among', 'around', 'before', 'behind', 'below', 'beneath', 'beside', 'besides', 'between', 'beyond', 'despite', 'down', 'during', 'except', 'from', 'inside', 'into', 'like', 'near', 'onto', 'outside', 'over', 'past', 'since', 'through', 'throughout', 'toward', 'towards', 'under', 'underneath', 'until', 'upon', 'with', 'within', 'without'];
+  function set(list) { var o = {}; list.forEach(function (w) { o[w] = 1; }); return o; }
+  var STYLES = {
+    ap: { small: set(ARTICLES.concat(COORD, PREP_SHORT)), last: true, label: 'AP' },
+    apa: { small: set(ARTICLES.concat(COORD, PREP_SHORT).filter(function (w) { return w.replace('.', '').length <= 3; })), last: false, label: 'APA' },
+    chicago: { small: set(ARTICLES.concat(['and', 'but', 'for', 'or', 'nor', 'to', 'as'], PREP_SHORT, PREP_LONG)), last: true, label: 'Chicago' },
+    mla: { small: set(ARTICLES.concat(COORD, ['to'], PREP_SHORT, PREP_LONG)), last: true, label: 'MLA' }
+  };
+  function isSmall(word, style) {
+    if (!style || !STYLES[style]) return SMALL.test(word);
+    return !!STYLES[style].small[word.toLowerCase()];
+  }
+
+  function titleCase(text, style) {
+    var forceLast = !(style && STYLES[style] && !STYLES[style].last);
     return String(text).split('\n').map(function (line) {
       var tokens = line.split(/(\s+)/), wordIdx = [], i;
       for (i = 0; i < tokens.length; i++) if (/\S/.test(tokens[i])) wordIdx.push(i);
@@ -42,12 +63,12 @@
       wordIdx.forEach(function (ti, n) {
         var tok = tokens[ti], m = /^([^\p{L}\p{N}]*)([\p{L}\p{N}][\p{L}\p{N}\p{M}'’.-]*)(.*)$/u.exec(tok);
         if (!m) { afterColon = /[:—–?!]$/.test(tok); return; }
-        var core = m[2], isFirst = n === 0 || afterColon, isLast = n === wordIdx.length - 1;
+        var core = m[2], isFirst = n === 0 || afterColon, isLast = forceLast && n === wordIdx.length - 1;
         var keep = /\p{Lu}/u.test(core.slice(1)) && /\p{Ll}/u.test(core) || (core.length > 1 && core === core.toUpperCase() && /\p{Lu}/u.test(core));
         var out;
         if (keep) out = core;
-        else if (!isFirst && !isLast && SMALL.test(core)) out = core.toLowerCase();
-        else out = core.split('-').map(function (p) { return p && SMALL.test(p) && !isFirst && !isLast ? p.toLowerCase() : cap(p); }).join('-');
+        else if (!isFirst && !isLast && isSmall(core, style)) out = core.toLowerCase();
+        else out = core.split('-').map(function (p, pi) { return p && pi && isSmall(p, style) ? p.toLowerCase() : p && !pi && isSmall(p, style) && !isFirst && !isLast ? p.toLowerCase() : cap(p); }).join('-');
         tokens[ti] = m[1] + out + m[3];
         afterColon = /[:—–?!]$/.test(tok);
       });
@@ -77,12 +98,12 @@
 
   /** Converts text. Identifier styles are applied per line, so a list of
    *  names converts as a list. */
-  function convert(text, style) {
+  function convert(text, style, opts) {
     text = String(text == null ? '' : text);
     switch (style) {
       case 'upper': return text.toLocaleUpperCase();
       case 'lower': return text.toLocaleLowerCase();
-      case 'title': return titleCase(text);
+      case 'title': return titleCase(text, opts && opts.titleStyle);
       case 'sentence': return sentenceCase(text);
       case 'inverse': return Array.from(text).map(function (c) { var u = c.toLocaleUpperCase(); return c === u ? c.toLocaleLowerCase() : u; }).join('');
       case 'alternating': var k = 0; return Array.from(text).map(function (c) { if (!/\p{L}/u.test(c)) return c; return (k++ % 2) ? c.toLocaleUpperCase() : c.toLocaleLowerCase(); }).join('');
@@ -181,5 +202,5 @@
     }
   }
 
-  return { words: words, convert: convert, detect: detect, titleCase: titleCase, sentenceCase: sentenceCase, stats: stats, syllables: syllables, lineOp: lineOp, labels: LABELS, styles: Object.keys(LABELS) };
+  return { words: words, convert: convert, detect: detect, titleCase: titleCase, titleStyles: Object.keys(STYLES), sentenceCase: sentenceCase, stats: stats, syllables: syllables, lineOp: lineOp, labels: LABELS, styles: Object.keys(LABELS) };
 });

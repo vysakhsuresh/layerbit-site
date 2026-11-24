@@ -4,7 +4,7 @@
   <div class="hero">
     <div class="hero-badge"><i data-lucide="shield-check"></i> Runs entirely in your browser</div>
     <h1>Text Case Converter &amp; Word Counter</h1>
-    <p>Convert text to UPPERCASE, lowercase, Title Case or Sentence case, or identifiers between camelCase, snake_case, kebab-case and a dozen other styles, count words, characters, sentences and reading time as you type, and clean up lists with one click: sort, dedupe, trim and unwrap.</p>
+    <p>Convert text to UPPERCASE, lowercase, Title Case (AP, APA, Chicago or MLA rules) or Sentence case, or identifiers between camelCase, snake_case, kebab-case and a dozen other styles, count words, characters, sentences and reading time as you type, and clean up lists with one click: sort, dedupe, trim and unwrap.</p>
   </div>
 
   <div class="ide-container">
@@ -25,6 +25,11 @@
       <div class="pane-header">
         <div class="pane-title"><i data-lucide="case-sensitive"></i> Convert to</div>
         <div class="btn-group">
+          <label class="check" title="Which style guide decides the small words in Title Case">Title style
+            <select id="titleStyle" class="mini-select">
+              <option value="">Standard</option><option value="ap">AP</option><option value="apa">APA</option><option value="chicago">Chicago</option><option value="mla">MLA</option>
+            </select>
+          </label>
           <button class="btn" type="button" id="btnApply" data-lb-primary title="Replace the text on the left with the selected style"><i data-lucide="arrow-left"></i> Apply to text</button>
         </div>
       </div>
@@ -111,7 +116,7 @@
         </div>
         <div class="faq-item">
           <button class="faq-question">Which words stay lowercase in title case? <i data-lucide="chevron-down"></i></button>
-          <div class="faq-answer"><p>Articles (a, an, the), coordinating conjunctions (and, but, or, nor, for, so, yet) and short prepositions (at, by, in, of, on, to, up, via, with and similar) stay lowercase unless they are the first word, the last word, or follow a colon. Everything else is capitalised. Acronyms written in capitals and words with internal capitals, such as iOS or YouTube, are left as typed.</p></div>
+          <div class="faq-answer"><p>It depends on the style guide, which you choose with <strong>Title style</strong>. <strong>AP</strong> and <strong>APA</strong> lower-case articles (a, an, the), short conjunctions and prepositions of three letters or fewer, and capitalise everything of four letters or more, so "With" and "From" are capitalised; APA also leaves a short last word in lower case. <strong>Chicago</strong> and <strong>MLA</strong> lower-case every preposition whatever its length ("through", "between", "without"). <strong>Standard</strong> is a middle way: articles, conjunctions and common prepositions such as with, from and into stay lower case. In every style the first word, the word after a colon and (except APA) the last word are capitalised. Everything else is capitalised. Acronyms written in capitals and words with internal capitals, such as iOS or YouTube, are left as typed.</p></div>
         </div>
         <div class="faq-item">
           <button class="faq-question">Why is the character count different from other tools? <i data-lucide="chevron-down"></i></button>
@@ -158,6 +163,7 @@
     <div class="info-panel">
       <h2><i data-lucide="git-commit"></i> Changelog</h2>
       <ul class="changelog-list">
+        <li><span class="changelog-tag">v1.1.0</span> Title Case follows the style guide you pick: AP, APA, Chicago or MLA, and small words inside hyphenated compounds (step-by-step) stay lower case.</li>
         <li><span class="changelog-tag">v1.0.0</span> Initial release: 17 case styles with identifier-aware word splitting and per-line conversion, AP/Chicago title case, accent-folding slugs, naming-convention detection, grapheme-accurate counts, reading and speaking time, Flesch reading ease, keyword density, and eight line clean-up tools with undo.</li>
       </ul>
     </div>
@@ -185,14 +191,22 @@
     let selected = 'camel', undoStack = [];
     const DETECT_NAMES = { camel: 'camelCase', pascal: 'PascalCase', snake: 'snake_case', constant: 'CONSTANT_CASE', kebab: 'kebab-case', cobol: 'COBOL-CASE', train: 'Train-Case', dot: 'dot.case', lower: 'lowercase', upper: 'UPPERCASE', text: 'prose' };
 
+    // Title Case follows the chosen style guide; the label says which.
+    const STYLE_NAMES = { ap: 'AP', apa: 'APA', chicago: 'Chicago', mla: 'MLA' };
+    function convOpts() { return { titleStyle: $('titleStyle').value }; }
+    try { const saved = localStorage.getItem('layerbit-title-style'); if (saved !== null && STYLE_NAMES[saved] !== undefined) $('titleStyle').value = saved; } catch (e) {}
+    $('titleStyle').addEventListener('change', () => {
+      try { localStorage.setItem('layerbit-title-style', $('titleStyle').value); } catch (e) {}
+      renderCases();
+    });
     function preview(s) { s = s.length > 4000 ? s.slice(0, 4000) : s; return s; }
     function renderCases() {
       const text = $('textInput').value, sample = preview(text) || 'Parse HTTP response body';
       $('caseList').innerHTML = ORDER.map(k => {
-        let out; try { out = T.convert(sample, k); } catch (e) { out = ''; }
+        let out; try { out = T.convert(sample, k, convOpts()); } catch (e) { out = ''; }
         const firstLines = out.split('\n').slice(0, 3).join('\n') + (out.split('\n').length > 3 ? '\n…' : '');
         return `<div class="case-row${k === selected ? ' sel' : ''}" data-case="${k}" role="option" aria-selected="${k === selected}" tabindex="0">` +
-          `<span class="case-label">${esc(T.labels[k])}</span><code class="case-out${text ? '' : ' ghost'}">${esc(firstLines)}</code>` +
+          `<span class="case-label">${esc(T.labels[k])}${k === 'title' && STYLE_NAMES[$('titleStyle').value] ? ' <small>(' + STYLE_NAMES[$('titleStyle').value] + ')</small>' : ''}</span><code class="case-out${text ? '' : ' ghost'}">${esc(firstLines)}</code>` +
           `<button class="copy-btn" type="button" data-copy-case="${k}" title="Copy ${esc(T.labels[k])}" ${text ? '' : 'disabled'}><i data-lucide="copy"></i></button></div>`;
       }).join('');
       const first = text.trim().split('\n')[0] || '';
@@ -225,12 +239,12 @@
     function select(k) { selected = k; document.querySelectorAll('.case-row').forEach(r => { const on = r.dataset.case === k; r.classList.toggle('sel', on); r.setAttribute('aria-selected', on); }); }
     $('caseList').addEventListener('click', e => {
       const c = e.target.closest('[data-copy-case]');
-      if (c) { e.stopPropagation(); const out = T.convert($('textInput').value, c.dataset.copyCase); Layerbit.copy(out).then(() => Layerbit.toast('Copied as ' + T.labels[c.dataset.copyCase])); return; }
+      if (c) { e.stopPropagation(); const out = T.convert($('textInput').value, c.dataset.copyCase, convOpts()); Layerbit.copy(out).then(() => Layerbit.toast('Copied as ' + T.labels[c.dataset.copyCase])); return; }
       const r = e.target.closest('.case-row'); if (r) select(r.dataset.case);
     });
     $('caseList').addEventListener('keydown', e => { const r = e.target.closest('.case-row'); if (!r) return; if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); select(r.dataset.case); } });
     function setText(v) { undoStack.push($('textInput').value); if (undoStack.length > 50) undoStack.shift(); $('btnUndo').disabled = false; $('textInput').value = v; update(); }
-    $('btnApply').addEventListener('click', () => { if (!$('textInput').value) { Layerbit.toast('Type or paste some text first.', 'warn'); return; } setText(T.convert($('textInput').value, selected)); Layerbit.toast('Converted to ' + T.labels[selected]); });
+    $('btnApply').addEventListener('click', () => { if (!$('textInput').value) { Layerbit.toast('Type or paste some text first.', 'warn'); return; } setText(T.convert($('textInput').value, selected, convOpts())); Layerbit.toast('Converted to ' + T.labels[selected]); });
     document.querySelectorAll('[data-line]').forEach(b => b.addEventListener('click', () => { if (!$('textInput').value) { Layerbit.toast('Type or paste some text first.', 'warn'); return; } const before = $('textInput').value, after = T.lineOp(before, b.dataset.line); if (after === before) { Layerbit.toast('Nothing to change.'); return; } setText(after); }));
     $('btnUndo').addEventListener('click', () => { if (!undoStack.length) return; $('textInput').value = undoStack.pop(); $('btnUndo').disabled = !undoStack.length; update(); });
     $('btnClear').addEventListener('click', () => { if ($('textInput').value) setText(''); });
