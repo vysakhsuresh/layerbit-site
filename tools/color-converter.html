@@ -187,8 +187,8 @@
   <link rel="manifest" href="../manifest.json" />
   <link rel="alternate" type="application/atom+xml" title="Layerbit developer guides" href="https://layerbit.co.in/feed.xml" />
   <link rel="apple-touch-icon" href="../apple-touch-icon.png" />
-  <link rel="stylesheet" href="../css/base.css?v=b085446010" />
-  <link rel="stylesheet" href="../css/tool.css?v=557effa1e2" />
+  <link rel="stylesheet" href="../css/base.css?v=ded808cb7c" />
+  <link rel="stylesheet" href="../css/tool.css?v=d44299e685" />
 
   <style>
 
@@ -230,7 +230,7 @@
     .sw:hover { transform: translateY(-2px); }
     .sw span { font-size: 0.78em; font-weight: 700; }
     .sw code { font-family: 'Fira Code', monospace; font-size: 0.68em; opacity: 0.85; background: none; padding: 0; }
-    .harmonies { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; }
+    .harmonies { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(200px, 100%), 1fr)); gap: 14px; }
     .h-label { font-size: 0.8em; color: var(--text-muted); font-weight: 600; margin-bottom: 6px; }
     .h-row { display: flex; gap: 6px; }
     .h-row .sw { flex: 1; min-height: 52px; }
@@ -257,11 +257,11 @@
     .gen-hex { background: none; border: 0; color: inherit; font-family: 'Fira Code', monospace; font-weight: 700; font-size: 0.95em; cursor: pointer; padding: 2px 4px; border-radius: 6px; }
     .gen-hex:hover, .gen-hex:focus-visible { background: rgba(127,127,127,0.25); }
     .gen-name { font-size: 0.72em; opacity: 0.85; text-align: center; overflow-wrap: anywhere; }
-    .gen-tools { display: flex; gap: 4px; }
+    .gen-tools { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px; }
     .gen-flag { font-size: 0.72em; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
     .eye-status { font-size: 0.85em; color: var(--text-muted); margin: 0; }
     .eye-status[hidden] { display: none; }
-    .gen-btn { background: rgba(127,127,127,0.18); border: 0; color: inherit; width: 32px; height: 32px; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; }
+    .gen-btn { background: rgba(127,127,127,0.18); border: 0; color: inherit; width: 32px; height: 32px; border-radius: 8px; display: inline-flex; flex: 0 0 auto; align-items: center; justify-content: center; cursor: pointer; }
     .gen-btn:hover, .gen-btn:focus-visible { background: rgba(127,127,127,0.35); }
     .gen-btn:disabled { opacity: 0.35; cursor: not-allowed; }
     .gen-btn i, .gen-btn svg.lucide { width: 16px; height: 16px; }

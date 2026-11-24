@@ -196,7 +196,7 @@
   <link rel="manifest" href="../manifest.json" />
   <link rel="alternate" type="application/atom+xml" title="Layerbit developer guides" href="https://layerbit.co.in/feed.xml" />
   <link rel="apple-touch-icon" href="../apple-touch-icon.png" />
-  <link rel="stylesheet" href="../css/base.css?v=b085446010" />
+  <link rel="stylesheet" href="../css/base.css?v=ded808cb7c" />
 
   <style>
 
@@ -683,7 +683,9 @@
     .bulk-pane h2 { font-size: 1.2em; margin: 0 0 6px; display: flex; align-items: center; gap: 8px; }
     .bulk-pane p { color: var(--text-muted); margin: 0 0 14px; }
     .bulk-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; align-items: end; }
-    @media (max-width: 800px) { .bulk-grid, .qr-style { grid-template-columns: 1fr; } }
+    @media (max-width: 800px) { .bulk-grid, .qr-style { grid-template-columns: minmax(0, 1fr); } }
+    .bulk-pane { width: 100%; box-sizing: border-box; }
+    .action-row { flex-wrap: wrap; }
 
   </style>
 </head>

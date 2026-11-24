@@ -482,4 +482,6 @@
     .bulk-pane h2 { font-size: 1.2em; margin: 0 0 6px; display: flex; align-items: center; gap: 8px; }
     .bulk-pane p { color: var(--text-muted); margin: 0 0 14px; }
     .bulk-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; align-items: end; }
-    @media (max-width: 800px) { .bulk-grid, .qr-style { grid-template-columns: 1fr; } }
+    @media (max-width: 800px) { .bulk-grid, .qr-style { grid-template-columns: minmax(0, 1fr); } }
+    .bulk-pane { width: 100%; box-sizing: border-box; }
+    .action-row { flex-wrap: wrap; }

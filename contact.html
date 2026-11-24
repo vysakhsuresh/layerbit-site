@@ -178,7 +178,7 @@
   <link rel="manifest" href="manifest.json" />
   <link rel="alternate" type="application/atom+xml" title="Layerbit developer guides" href="https://layerbit.co.in/feed.xml" />
   <link rel="apple-touch-icon" href="apple-touch-icon.png" />
-  <link rel="stylesheet" href="css/base.css?v=b085446010" />
+  <link rel="stylesheet" href="css/base.css?v=ded808cb7c" />
 
   <style>
 
@@ -276,7 +276,7 @@
     /* Contact Grid */
     .contact-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr));
       gap: 25px;
       margin-top: 30px;
     }
@@ -499,7 +499,9 @@
         will-change: auto;
       }
     }
-  
+      .contact-grid > * { min-width: 0; overflow-wrap: anywhere; }
+    .contact-card a { overflow-wrap: normal; white-space: nowrap; max-width: 100%; }
+
   </style>
 </head>
 <body>

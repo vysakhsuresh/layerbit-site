@@ -106,7 +106,7 @@
 
     /* Custom Checkbox Toggle */
     .toggle-wrapper { display: flex; align-items: center; gap: 8px; font-size: 0.85em; color: var(--text-muted); cursor: pointer; }
-    .toggle-wrapper input { cursor: pointer; accent-color: var(--accent-main); }
+    .toggle-wrapper input:is([type=checkbox],[type=radio]) { cursor: pointer; accent-color: var(--accent-main); }
 
     /* Error Alert */
     .error-banner {
@@ -219,8 +219,9 @@
 
     .col-types .ct-item { background: rgba(255,255,255,0.03); border: 1px solid var(--card-border); border-radius: 8px; padding: 3px 6px; }
     .col-types .ct-item.off { opacity: 0.5; }
-    .col-types .ct-name { background: rgba(0,0,0,0.3); border: 1px solid var(--card-border); color: var(--text-main); border-radius: 6px; padding: 3px 6px; font-family: inherit; font-size: 0.95em; outline: none; min-width: 3em; }
+    .col-types .ct-name { background: rgba(0,0,0,0.3); border: 1px solid var(--card-border); color: var(--text-main); border-radius: 6px; padding: 3px 6px; font-family: inherit; font-size: 0.95em; outline: none; min-width: 10ch; }
     .col-types .ct-name:focus { border-color: var(--accent-main); }
+    @media (pointer: coarse) { .col-types .ct-item input[type=checkbox] { width: 24px; height: 24px; } }
     .col-types .ct-move { background: transparent; border: 1px solid var(--card-border); color: var(--text-muted); border-radius: 6px; width: 24px; height: 24px; line-height: 1; cursor: pointer; font-size: 1.05em; }
     .col-types .ct-move:hover { color: #fff; border-color: var(--accent-main); }
     .col-types .ct-move:disabled { opacity: 0.3; cursor: default; border-color: var(--card-border); color: var(--text-muted); }
@@ -236,3 +237,8 @@
     .grid-head svg { width: 18px; height: 18px; color: var(--accent-main); }
     .grid-hint { font-weight: 400; color: var(--text-muted); font-size: 0.85em; }
     .grid-host { height: 320px; font-family: 'Fira Code', monospace; font-size: 0.85em; }
+    @media (max-width: 600px) {
+      .col-types .ct-item { display: flex; flex-wrap: wrap; width: 100%; box-sizing: border-box; }
+      .col-types .ct-name { flex: 1 1 calc(100% - 40px); min-width: 0; }
+      .col-types .ct-item select { flex: 1 1 auto; min-width: 0; }
+    }
