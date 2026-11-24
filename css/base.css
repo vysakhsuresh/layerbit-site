@@ -527,3 +527,14 @@ a:not([class]):hover, a:not([class]):focus-visible { text-decoration: underline;
 }
 /* Button labels stay on one line; rows of buttons wrap instead. */
 .btn, .btn-action { white-space: nowrap; }
+
+/* Phones: option labels wrap rather than run past the pane edge. Up to
+   tablet width the floating home button is hidden: with narrow margins it
+   covered text and fields while scrolling, and the Layerbit logo in the
+   header already goes home. */
+@media (max-width: 600px) {
+  .check, .toggle-label, .toggle-wrapper { white-space: normal; }
+}
+@media (max-width: 1100px) {
+  body #smartBackBtn.fab { display: none !important; }
+}
