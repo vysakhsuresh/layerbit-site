@@ -50,5 +50,15 @@ t('line operations', () => {
   assert.strictEqual(T.lineOp('a\n\n\nb', 'dropBlank'), 'a\nb');
   assert.strictEqual(T.lineOp('one\ntwo\n\nthree', 'unwrap'), 'one two\n\nthree');
 });
+t('title case style guides: AP and APA capitalise 4+ letter words, Chicago and MLA lower-case all prepositions, APA leaves a short last word', () => {
+  const h = 'the lord of the rings: a journey through middle-earth with friends';
+  assert.strictEqual(T.titleCase(h, 'ap'), 'The Lord of the Rings: A Journey Through Middle-Earth With Friends');
+  assert.strictEqual(T.titleCase(h, 'chicago'), 'The Lord of the Rings: A Journey through Middle-Earth with Friends');
+  assert.strictEqual(T.titleCase(h, 'mla'), 'The Lord of the Rings: A Journey through Middle-Earth with Friends');
+  assert.strictEqual(T.titleCase('a step-by-step guide to what you are looking for', 'apa'), 'A Step-by-Step Guide to What You Are Looking for');
+  assert.strictEqual(T.titleCase('a step-by-step guide to what you are looking for', 'ap'), 'A Step-by-Step Guide to What You Are Looking For');
+  assert.strictEqual(T.convert('war and peace', 'title', { titleStyle: 'chicago' }), 'War and Peace');
+  assert.deepStrictEqual(T.titleStyles, ['ap', 'apa', 'chicago', 'mla']);
+});
 console.log(`text engine: ${pass} unit tests passed` + (fail ? `, ${fail} FAILED` : ''));
 process.exit(fail ? 1 : 0);

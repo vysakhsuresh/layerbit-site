@@ -1,0 +1,52 @@
+{
+  "tool": "url-encoder",
+  "page": "tools/url-encoder.html",
+  "competitors": [
+    {
+      "name": "URL Encoder (urlencoder.org)",
+      "price": "free, with ads",
+      "checked": "2026-11"
+    }
+  ],
+  "claims": [
+    {
+      "feature": "Encodes reserved and non-ASCII characters as UTF-8 percent codes",
+      "competitor": "URL Encoder (urlencoder.org)",
+      "tests": [
+        "ui:url-encoder:raw mode encodes everything reserved",
+        "ui:url-encoder:percent-encoding table agrees with Raw mode for every character it lists"
+      ]
+    },
+    {
+      "feature": "Keeps a URL's structure and encodes only the query values",
+      "competitor": "URL Encoder (urlencoder.org)",
+      "tests": [
+        "ui:url-encoder:smart mode keeps URL structure, encodes query values"
+      ]
+    },
+    {
+      "feature": "'+' as space for form data",
+      "competitor": "URL Encoder (urlencoder.org)",
+      "tests": [
+        "ui:url-encoder:2.23: '+ means space' decodes form data, only in a URL's query, and encodes spaces as +"
+      ]
+    },
+    {
+      "feature": "Line-by-line batch encoding and decoding",
+      "competitor": "URL Encoder (urlencoder.org)",
+      "tests": [
+        "ui:url-encoder:batch mode: 5,000 lines"
+      ]
+    },
+    {
+      "feature": "Reports malformed percent sequences instead of guessing",
+      "competitor": "URL Encoder (urlencoder.org)",
+      "tests": [
+        "ui:url-encoder:malformed percent sequence reports error"
+      ]
+    }
+  ],
+  "gaps": [
+    "urlencoder.org can encode for character sets other than UTF-8 (for example Windows-1252) for old systems; Layerbit encodes UTF-8 only, which is what URLs use today."
+  ]
+}

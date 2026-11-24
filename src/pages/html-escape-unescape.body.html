@@ -2,6 +2,7 @@
 
   <main id="main" class="page-main">
   <div class="hero">
+    <div class="hero-badge"><i data-lucide="shield-check"></i> Runs entirely in your browser</div>
     <h1>HTML Escape &amp; Unescape: Entity Encoder</h1>
     <p>Escape raw HTML for safe display and decode entities back to text, bidirectionally and in real time, entirely in your browser.</p>
   </div>
@@ -78,6 +79,43 @@
         <button class="sample-btn" data-lb-autosample onclick="loadSample('html')">Standard HTML Block</button>
         <button class="sample-btn" onclick="loadSample('xss')">Untrusted input (script tag)</button>
       </div>
+    </div>
+
+    <div class="info-panel" id="entity-table">
+      <h2><i data-lucide="table"></i> HTML entities list: the characters you will actually need</h2>
+      <p>Each character with its named entity and its decimal and hex numeric references. Any of the three forms works in HTML; numeric references work for every Unicode character, named ones only for the characters HTML defines a name for. Paste any of them into the right pane above to decode it.</p>
+      <div class="ref-table-wrap">
+        <table class="ref-table">
+          <thead><tr><th>Character</th><th>Named</th><th>Decimal</th><th>Hex</th><th>Notes</th></tr></thead>
+          <tbody>
+            <tr><td>&amp;</td><td><code>&amp;amp;</code></td><td><code>&amp;#38;</code></td><td><code>&amp;#x26;</code></td><td class="ref-desc">Ampersand: always escape it first</td></tr>
+            <tr><td>&lt;</td><td><code>&amp;lt;</code></td><td><code>&amp;#60;</code></td><td><code>&amp;#x3C;</code></td><td class="ref-desc">Less-than: starts a tag</td></tr>
+            <tr><td>&gt;</td><td><code>&amp;gt;</code></td><td><code>&amp;#62;</code></td><td><code>&amp;#x3E;</code></td><td class="ref-desc">Greater-than</td></tr>
+            <tr><td>&quot;</td><td><code>&amp;quot;</code></td><td><code>&amp;#34;</code></td><td><code>&amp;#x22;</code></td><td class="ref-desc">Double quote: escape inside attribute values</td></tr>
+            <tr><td>&#x27;</td><td><code>&amp;#39;</code></td><td><code>&amp;#39;</code></td><td><code>&amp;#x27;</code></td><td class="ref-desc">Apostrophe (&amp;apos; is valid in HTML5 but not in old HTML 4)</td></tr>
+            <tr><td>(non-breaking space)</td><td><code>&amp;nbsp;</code></td><td><code>&amp;#160;</code></td><td><code>&amp;#xA0;</code></td><td class="ref-desc">Non-breaking space</td></tr>
+            <tr><td>©</td><td><code>&amp;copy;</code></td><td><code>&amp;#169;</code></td><td><code>&amp;#xA9;</code></td><td class="ref-desc">Copyright</td></tr>
+            <tr><td>®</td><td><code>&amp;reg;</code></td><td><code>&amp;#174;</code></td><td><code>&amp;#xAE;</code></td><td class="ref-desc">Registered trade mark</td></tr>
+            <tr><td>™</td><td><code>&amp;trade;</code></td><td><code>&amp;#8482;</code></td><td><code>&amp;#x2122;</code></td><td class="ref-desc">Trade mark</td></tr>
+            <tr><td>€</td><td><code>&amp;euro;</code></td><td><code>&amp;#8364;</code></td><td><code>&amp;#x20AC;</code></td><td class="ref-desc">Euro</td></tr>
+            <tr><td>£</td><td><code>&amp;pound;</code></td><td><code>&amp;#163;</code></td><td><code>&amp;#xA3;</code></td><td class="ref-desc">Pound sterling</td></tr>
+            <tr><td>¥</td><td><code>&amp;yen;</code></td><td><code>&amp;#165;</code></td><td><code>&amp;#xA5;</code></td><td class="ref-desc">Yen</td></tr>
+            <tr><td>₹</td><td><code>&amp;#8377;</code></td><td><code>&amp;#8377;</code></td><td><code>&amp;#x20B9;</code></td><td class="ref-desc">Indian rupee (no named entity)</td></tr>
+            <tr><td>—</td><td><code>&amp;mdash;</code></td><td><code>&amp;#8212;</code></td><td><code>&amp;#x2014;</code></td><td class="ref-desc">Em dash</td></tr>
+            <tr><td>–</td><td><code>&amp;ndash;</code></td><td><code>&amp;#8211;</code></td><td><code>&amp;#x2013;</code></td><td class="ref-desc">En dash</td></tr>
+            <tr><td>…</td><td><code>&amp;hellip;</code></td><td><code>&amp;#8230;</code></td><td><code>&amp;#x2026;</code></td><td class="ref-desc">Ellipsis</td></tr>
+            <tr><td>•</td><td><code>&amp;bull;</code></td><td><code>&amp;#8226;</code></td><td><code>&amp;#x2022;</code></td><td class="ref-desc">Bullet</td></tr>
+            <tr><td>×</td><td><code>&amp;times;</code></td><td><code>&amp;#215;</code></td><td><code>&amp;#xD7;</code></td><td class="ref-desc">Multiplication sign</td></tr>
+            <tr><td>÷</td><td><code>&amp;divide;</code></td><td><code>&amp;#247;</code></td><td><code>&amp;#xF7;</code></td><td class="ref-desc">Division sign</td></tr>
+            <tr><td>°</td><td><code>&amp;deg;</code></td><td><code>&amp;#176;</code></td><td><code>&amp;#xB0;</code></td><td class="ref-desc">Degree</td></tr>
+            <tr><td>«</td><td><code>&amp;laquo;</code></td><td><code>&amp;#171;</code></td><td><code>&amp;#xAB;</code></td><td class="ref-desc">Left angle quote</td></tr>
+            <tr><td>»</td><td><code>&amp;raquo;</code></td><td><code>&amp;#187;</code></td><td><code>&amp;#xBB;</code></td><td class="ref-desc">Right angle quote</td></tr>
+            <tr><td>→</td><td><code>&amp;rarr;</code></td><td><code>&amp;#8594;</code></td><td><code>&amp;#x2192;</code></td><td class="ref-desc">Right arrow</td></tr>
+            <tr><td>✓</td><td><code>&amp;check;</code></td><td><code>&amp;#10003;</code></td><td><code>&amp;#x2713;</code></td><td class="ref-desc">Check mark (the name is HTML5 only)</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>Only the first five must be escaped to put text safely into HTML. The rest are optional in a UTF-8 page, where you can type the character itself; entities are useful when an editor, an email system or a template engine might mangle it.</p>
     </div>
 
     <div class="info-panel">

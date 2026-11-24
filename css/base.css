@@ -410,3 +410,86 @@ a, button, [role="button"], [tabindex], label, summary, select, input, textarea 
 .lb-vrow .lb-vcell[tabindex]:focus { outline: 1px solid var(--accent-main, #38bdf8); outline-offset: -1px; }
 .lb-vedit { width: 100%; box-sizing: border-box; font: inherit; color: inherit; background: rgba(0,0,0,0.5); border: 1px solid var(--accent-main, #38bdf8); border-radius: 4px; padding: 2px 6px; outline: none; }
 .lb-vgrid-head + .lb-vspacer + .lb-vrows .lb-vrow { padding: 0; }
+
+/* ------------------------------------------------------------------------
+   Form controls: one look on every page. Browsers draw native controls in
+   their light theme unless told the page is dark, so the dropdown lists,
+   date pickers, file buttons, checkboxes and scrollbars all follow the site
+   from here. Page styles still set sizes and backgrounds; these rules only
+   fill in what a page leaves to the browser, plus the chevron and the
+   dropdown panel, which pages cannot style individually. */
+:root { color-scheme: dark; accent-color: var(--accent-main); scrollbar-color: rgba(148, 163, 184, 0.35) transparent; }
+input, select, textarea, button { font-family: inherit; }
+:where(select) { background-color: rgba(0, 0, 0, 0.3); color: var(--text-main); border: 1px solid var(--card-border); border-radius: 8px; padding: 6px 10px; font-size: 0.9em; }
+:where(input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=color]):not([type=file]), textarea) { color: var(--text-main); }
+select:not([multiple]):not([size]) {
+  -webkit-appearance: none; appearance: none; cursor: pointer;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") !important;
+  background-repeat: no-repeat !important; background-position: right 10px center !important; background-size: 14px 14px !important;
+  padding-right: 32px !important; transition: border-color 0.15s, box-shadow 0.15s;
+}
+select:hover:not(:disabled) { border-color: rgba(56, 189, 248, 0.45); }
+select:focus { border-color: var(--accent-main); outline: none; box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.15); }
+select:disabled { opacity: 0.55; cursor: not-allowed; }
+select option, select optgroup { background-color: #11141b; color: var(--text-main); }
+select optgroup { color: var(--text-muted); font-style: normal; font-weight: 600; }
+/* Browsers that let pages style the open list (Chromium 135+) get a panel in
+   the site's own style instead of the operating system's menu. */
+@supports (appearance: base-select) {
+  select:not([multiple]):not([size]) { appearance: base-select; background-image: none !important; padding-right: 10px !important; display: inline-flex; align-items: center; gap: 8px; }
+  select:not([multiple]):not([size])::picker-icon { content: ''; width: 14px; height: 14px; flex: none; margin-left: auto; background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") center / 14px 14px no-repeat; transition: rotate 0.2s; }
+  select:not([multiple]):not([size]):open::picker-icon { rotate: 180deg; }
+  select:not([multiple]):not([size]):open { border-color: var(--accent-main); }
+  select::picker(select) {
+    appearance: base-select; background: #11141b; color: var(--text-main); font-family: 'Space Grotesk', sans-serif;
+    border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 10px; padding: 5px; margin-block: 6px;
+    box-shadow: 0 18px 40px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(56, 189, 248, 0.06);
+    max-height: min(60vh, 420px); overflow-y: auto; min-width: anchor-size(width);
+  }
+  select:not([multiple]):not([size]) option { display: flex; align-items: center; gap: 8px; padding: 8px 12px; border-radius: 6px; font-size: 0.92rem; line-height: 1.3; background: transparent; color: var(--text-main); cursor: pointer; }
+  select:not([multiple]):not([size]) option:hover, select:not([multiple]):not([size]) option:focus-visible { background: rgba(56, 189, 248, 0.14); color: #fff; outline: none; }
+  select:not([multiple]):not([size]) option:checked { color: var(--accent-main); font-weight: 600; }
+  select:not([multiple]):not([size]) option::checkmark { color: var(--accent-main); order: 1; margin-left: auto; }
+  select:not([multiple]):not([size]) option:disabled { color: var(--text-muted); opacity: 0.6; cursor: default; }
+  select:not([multiple]):not([size]) optgroup { padding: 6px 0 2px; }
+  select:not([multiple]):not([size]) optgroup::before { padding: 4px 12px; }
+}
+input[type=checkbox], input[type=radio] { accent-color: var(--accent-main); cursor: pointer; }
+input[type=range] { accent-color: var(--accent-main); cursor: pointer; }
+input[type=file] { color: var(--text-muted); font-size: 0.9em; max-width: 100%; }
+input[type=file]::file-selector-button {
+  font: inherit; font-weight: 600; color: var(--text-main); cursor: pointer;
+  background: rgba(56, 189, 248, 0.1); border: 1px solid rgba(56, 189, 248, 0.35); border-radius: 8px;
+  padding: 7px 14px; margin-right: 12px; transition: background 0.15s, border-color 0.15s;
+}
+input[type=file]::file-selector-button:hover { background: rgba(56, 189, 248, 0.2); border-color: var(--accent-main); }
+:where(input[type=color]) { width: 44px; height: 34px; padding: 3px; border: 1px solid var(--card-border); border-radius: 8px; background: rgba(0, 0, 0, 0.3); cursor: pointer; }
+input[type=color]::-webkit-color-swatch-wrapper { padding: 0; }
+input[type=color]::-webkit-color-swatch { border: none; border-radius: 5px; }
+input[type=color]::-moz-color-swatch { border: none; border-radius: 5px; }
+
+/* "Runs in your browser" pill above every tool title */
+.hero-badge { display: inline-flex; align-items: center; gap: 8px; padding: 6px 14px; border-radius: 999px; background: rgba(56,189,248,0.1); border: 1px solid rgba(56,189,248,0.3); color: var(--accent-main); font-size: 0.85em; font-weight: 600; margin-bottom: 18px; }
+.hero-badge i, .hero-badge svg.lucide { width: 15px; height: 15px; }
+
+/* Pane headers: when the title and its buttons do not fit on one line, the
+   buttons wrap under the title instead of being cut off by the pane edge. */
+.pane-header { flex-wrap: wrap; row-gap: 10px; column-gap: 14px; }
+.pane-header > .btn-group, .pane-header > .header-actions { flex-wrap: wrap; justify-content: flex-end; margin-left: auto; max-width: 100%; min-width: 0; }
+@media (min-width: 601px) { .pane-title { white-space: nowrap; } }
+@media (max-width: 600px) {
+  .pane-header > .btn-group, .pane-header > .header-actions { margin-left: 0; width: auto; align-self: stretch; justify-content: flex-start; }
+}
+
+/* Reference tables in tool docs (common cron expressions, regex patterns,
+   entity and encoding tables), one style on every page. */
+.ref-table-wrap { overflow-x: auto; contain: inline-size; width: 100%; margin: 14px 0 8px; border: 1px solid var(--card-border); border-radius: 12px; background: rgba(0, 0, 0, 0.18); }
+.ref-table { width: 100%; border-collapse: collapse; font-size: 0.92em; line-height: 1.45; }
+.ref-table th { text-align: left; color: var(--text-muted); font-weight: 600; font-size: 0.88em; padding: 10px 14px; border-bottom: 1px solid var(--card-border); background: rgba(0, 0, 0, 0.25); white-space: nowrap; }
+.ref-table td { padding: 9px 14px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); vertical-align: top; color: var(--text-main); }
+.ref-table tr:last-child td { border-bottom: none; }
+.ref-table tbody tr:hover td { background: rgba(56, 189, 248, 0.04); }
+.ref-table code { font-family: 'Fira Code', monospace; font-size: 0.92em; color: var(--accent-main); background: rgba(56, 189, 248, 0.08); padding: 2px 6px; border-radius: 5px; overflow-wrap: anywhere; }
+.ref-table td.ref-desc { color: var(--text-muted); }
+.ref-use { font: inherit; font-size: 0.85em; font-weight: 600; color: var(--accent-main); background: rgba(56, 189, 248, 0.08); border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 7px; padding: 4px 10px; cursor: pointer; white-space: nowrap; transition: background 0.15s; }
+.ref-use:hover { background: rgba(56, 189, 248, 0.18); }

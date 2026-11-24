@@ -60,6 +60,7 @@
     }
 
     .tab-btn i, .tab-btn svg.lucide { width: 18px; }
+    .btn-action svg.lucide, .btn-action i { width: 16px; height: 16px; flex: none; }
     .tab-btn:hover { background: rgba(255,255,255,0.1); color: #fff; }
     .tab-btn.active {
       background: rgba(56, 189, 248, 0.1);
@@ -102,15 +103,19 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
+      flex-wrap: wrap;
+      gap: 10px 14px;
       font-weight: 600;
       color: #fff;
     }
     
     .header-actions {
-      display: flex; 
-      align-items: center; 
-      gap: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 8px;
       flex-wrap: wrap;
+      margin-left: auto;
     }
 
     .pane-title { display: flex; align-items: center; gap: 10px; }
@@ -258,7 +263,8 @@
       body { padding: 15px; }
       .pane-header { flex-direction: column; align-items: flex-start; gap: 15px; }
       .header-actions { width: 100%; justify-content: flex-start; }
-      .tab-btn { font-size: 0.95em; padding: 10px 20px; width: 100%; justify-content: center; }
+      .tab-container { flex-wrap: nowrap; gap: 10px; margin-bottom: 24px; }
+      .tab-btn { font-size: 0.95em; padding: 10px 12px; flex: 1 1 0; min-width: 0; justify-content: center; white-space: nowrap; }
       .info-panel { padding: 25px; }
       .fab { bottom: 20px; left: 20px; width: 50px; height: 50px; }
     }

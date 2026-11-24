@@ -1,15 +1,96 @@
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
-  "@type": "SoftwareApplication",
-  "name": "LayerLink Viewer",
-  "operatingSystem": "Any",
-  "applicationCategory": "UtilitiesApplication",
-  "description": "Open a LayerLink session link to watch a shared screen in your browser over an encrypted peer-to-peer WebRTC connection. Nothing to install.",
-  "offers": {
-    "@type": "Offer",
-    "price": "0",
-    "priceCurrency": "USD"
-  }
+  "@graph": [
+    {
+      "@type": "SoftwareApplication",
+      "@id": "https://layerbit.co.in/tools/layerlink-viewer.html#app",
+      "name": "LayerLink Viewer",
+      "url": "https://layerbit.co.in/tools/layerlink-viewer.html",
+      "description": "Open a LayerLink session link to watch a shared screen in your browser over an encrypted peer-to-peer WebRTC connection. Nothing to install.",
+      "applicationCategory": "CommunicationApplication",
+      "operatingSystem": "Any (runs in the browser)",
+      "browserRequirements": "Requires JavaScript",
+      "isAccessibleForFree": true,
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "publisher": {
+        "@id": "https://layerbit.co.in/#organization"
+      }
+    },
+    {
+      "@type": "BreadcrumbList",
+      "@id": "https://layerbit.co.in/tools/layerlink-viewer.html#breadcrumb",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://layerbit.co.in/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Developer tools",
+          "item": "https://layerbit.co.in/#tools"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": "LayerLink Viewer",
+          "item": "https://layerbit.co.in/tools/layerlink-viewer.html"
+        }
+      ]
+    },
+    {
+      "@type": "FAQPage",
+      "@id": "https://layerbit.co.in/tools/layerlink-viewer.html#faq",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "Do I need to install any software to view the stream?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "No. LayerLink relies entirely on native browser APIs. As long as you are using a modern browser (Chrome, Firefox, Safari, Edge), the WebRTC engine will process the incoming video stream directly in the DOM."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Can the host see my screen or access my camera?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Absolutely not. This terminal acts strictly as a \"Receiver.\" It only interprets the incoming video tracks provided by the host's WebRTC offer. It does not request microphone, camera, or screen recording permissions from your device."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Why am I asked for a name or a password?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Broadcasts started from the LayerLink web sharer can hold several viewers. Your name is what the broadcaster sees when deciding whether to let you in, and what labels your chat messages. If the broadcaster set a password, it is checked in your browser against an encrypted token; the password itself is never sent. Without it, the connection details cannot be decrypted, so the broadcast cannot be joined."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Who sees my chat messages, drawings and files?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Chat and drawings go to the broadcaster, who passes them on to the other viewers in the room. Files you send go to the broadcaster only. All of it travels over the encrypted peer connection, not through the signalling service. Broadcasts from the LayerLink Android app are view-only."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What happens if the host disconnects?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "If the host stops sharing their screen or closes their browser tab, the peer-to-peer connection state will immediately detect the failure, terminate the video feed, and display a \"Signal Lost\" error state."
+          }
+        }
+      ]
+    }
+  ]
 }
   </script>

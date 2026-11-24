@@ -1,0 +1,44 @@
+{
+  "tool": "unicode-inspector",
+  "page": "tools/unicode-inspector.html",
+  "competitors": [
+    {
+      "name": "Unicode character lookup sites (unicode-table.com, BabelStone)",
+      "price": "free",
+      "checked": "2026-11"
+    }
+  ],
+  "claims": [
+    {
+      "feature": "Finds zero-width, no-break, bidirectional and other invisible characters in pasted text",
+      "competitor": "Unicode character lookup sites (unicode-table.com, BabelStone)",
+      "tests": [
+        "ui:unicode-inspector:hidden-character sample: ZWSP, NBSP, RLO, mixed script, curly quotes, NFC"
+      ]
+    },
+    {
+      "feature": "Counts graphemes, code points, UTF-16 units and UTF-8 bytes",
+      "competitor": "Unicode character lookup sites (unicode-table.com, BabelStone)",
+      "tests": [
+        "ui:unicode-inspector:emoji counts: graphemes vs code points vs units vs bytes"
+      ]
+    },
+    {
+      "feature": "Compares NFC, NFD, NFKC and NFKD normalisation",
+      "competitor": "Unicode character lookup sites (unicode-table.com, BabelStone)",
+      "tests": [
+        "ui:unicode-inspector:decomposed vs composed é: NFC differs, NFD already"
+      ]
+    },
+    {
+      "feature": "Long texts analysed in the browser",
+      "competitor": "Unicode character lookup sites (unicode-table.com, BabelStone)",
+      "tests": [
+        "ui:unicode-inspector:50 KB of mixed text analyses under budget (table capped)"
+      ]
+    }
+  ],
+  "gaps": [
+    "unicode-table.com is a browsable catalogue of every character, with pictures, blocks and related characters; Layerbit inspects text you paste rather than listing the whole standard."
+  ]
+}

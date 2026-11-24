@@ -42,16 +42,97 @@
   <script type="application/ld+json">
 {
   "@context": "https://schema.org",
-  "@type": "SoftwareApplication",
-  "name": "LayerLink Viewer",
-  "operatingSystem": "Any",
-  "applicationCategory": "UtilitiesApplication",
-  "description": "Open a LayerLink session link to watch a shared screen in your browser over an encrypted peer-to-peer WebRTC connection. Nothing to install.",
-  "offers": {
-    "@type": "Offer",
-    "price": "0",
-    "priceCurrency": "USD"
-  }
+  "@graph": [
+    {
+      "@type": "SoftwareApplication",
+      "@id": "https://layerbit.co.in/tools/layerlink-viewer.html#app",
+      "name": "LayerLink Viewer",
+      "url": "https://layerbit.co.in/tools/layerlink-viewer.html",
+      "description": "Open a LayerLink session link to watch a shared screen in your browser over an encrypted peer-to-peer WebRTC connection. Nothing to install.",
+      "applicationCategory": "CommunicationApplication",
+      "operatingSystem": "Any (runs in the browser)",
+      "browserRequirements": "Requires JavaScript",
+      "isAccessibleForFree": true,
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "publisher": {
+        "@id": "https://layerbit.co.in/#organization"
+      }
+    },
+    {
+      "@type": "BreadcrumbList",
+      "@id": "https://layerbit.co.in/tools/layerlink-viewer.html#breadcrumb",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://layerbit.co.in/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Developer tools",
+          "item": "https://layerbit.co.in/#tools"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": "LayerLink Viewer",
+          "item": "https://layerbit.co.in/tools/layerlink-viewer.html"
+        }
+      ]
+    },
+    {
+      "@type": "FAQPage",
+      "@id": "https://layerbit.co.in/tools/layerlink-viewer.html#faq",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "Do I need to install any software to view the stream?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "No. LayerLink relies entirely on native browser APIs. As long as you are using a modern browser (Chrome, Firefox, Safari, Edge), the WebRTC engine will process the incoming video stream directly in the DOM."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Can the host see my screen or access my camera?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Absolutely not. This terminal acts strictly as a \"Receiver.\" It only interprets the incoming video tracks provided by the host's WebRTC offer. It does not request microphone, camera, or screen recording permissions from your device."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Why am I asked for a name or a password?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Broadcasts started from the LayerLink web sharer can hold several viewers. Your name is what the broadcaster sees when deciding whether to let you in, and what labels your chat messages. If the broadcaster set a password, it is checked in your browser against an encrypted token; the password itself is never sent. Without it, the connection details cannot be decrypted, so the broadcast cannot be joined."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Who sees my chat messages, drawings and files?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Chat and drawings go to the broadcaster, who passes them on to the other viewers in the room. Files you send go to the broadcaster only. All of it travels over the encrypted peer connection, not through the signalling service. Broadcasts from the LayerLink Android app are view-only."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What happens if the host disconnects?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "If the host stops sharing their screen or closes their browser tab, the peer-to-peer connection state will immediately detect the failure, terminate the video feed, and display a \"Signal Lost\" error state."
+          }
+        }
+      ]
+    }
+  ]
 }
   </script>
 
@@ -65,7 +146,7 @@
   <link rel="manifest" href="../manifest.json" />
   <link rel="alternate" type="application/atom+xml" title="Layerbit developer guides" href="https://layerbit.co.in/feed.xml" />
   <link rel="apple-touch-icon" href="../apple-touch-icon.png" />
-  <link rel="stylesheet" href="../css/base.css?v=2b24d32e4f" />
+  <link rel="stylesheet" href="../css/base.css?v=7fe3efc986" />
   <script src="../js/vendor/firebase/firebase-app-compat.js?v=c20d6f1fae"></script>
   <script src="../js/vendor/firebase/firebase-database-compat.js?v=786adbb153"></script>
 
@@ -238,13 +319,13 @@
     <div id="overlayMsg" class="overlay-message">
       <div class="seo-content-block">
         <h1>LayerLink Viewer</h1>
-        <p>Welcome to the LayerLink Client Terminal. This secure web utility allows users to view remote broadcasts, presentations, and screen shares in real-time using peer-to-peer WebRTC technology.</p>
+        <p>This page shows a screen someone is sharing with you through LayerLink. It connects your browser directly to theirs over an encrypted peer-to-peer WebRTC connection, so there is nothing to install and no account to create.</p>
 
         <h2>How to Connect to a Stream</h2>
         <ul>
           <li>Obtain a secure session URL from the host broadcaster.</li>
           <li>Paste the complete URL into your browser's address bar.</li>
-          <li>The system will automatically authenticate and establish a secure connection.</li>
+          <li>Enter your name (and the room password, if the broadcaster set one) and wait to be let in. The shared screen appears here as soon as you are connected.</li>
         </ul>
 
         <p style="font-size: 0.9em; opacity: 0.6; margin-top: 20px;">
@@ -322,8 +403,8 @@
     </div>
 
     <div class="info-panel">
-      <h2><i data-lucide="test-tube"></i> UI State Simulation</h2>
-      <p>Test the dynamic UI state handling of the LayerLink Viewer terminal without needing an active Firebase session URL.</p>
+      <h2><i data-lucide="test-tube"></i> Preview the status screens</h2>
+      <p>See what this page shows while it searches for a broadcast, once it is live, and when the connection is lost, without a session link.</p>
       <div>
         <button class="sample-btn" onclick="simulateState('searching')">Simulate "Searching for Host"</button>
         <button class="sample-btn" onclick="simulateState('live')">Simulate "Connection Live"</button>
