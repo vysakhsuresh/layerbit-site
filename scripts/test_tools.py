@@ -2853,6 +2853,67 @@ def _(t):
     expect("Could not parse" in t.text("errorText"), "garbage")
 
 
+@case("timestamp-converter", "typical", "2.17: .NET ticks, FILETIME/LDAP, Excel, Cocoa, GPS and WebKit both ways")
+def _(t):
+    t.select("tzSelect", "UTC"); t.select("fmtSelect", "auto")
+    t.set("tsInput", "1234567890"); t.wait(40)
+    g = t.text("resultGrid")
+    for needle in ["633701646900000000", "128790414900000000", "0x01C98E333296F500", "39857.98020833", "256260690", "918603105", "week 1518", "516705 s into the week", "12879041490000000"]:
+        expect(needle in g, f"missing {needle!r} in {g[-700:]}")
+    for fmt, value, want in [("dotnet", "633701646900000000", "2009-02-13T23:31:30.000Z"), ("filetime", "128790414900000000", "2009-02-13T23:31:30.000Z"), ("filetime", "0x01C98E33:0x3296F500", "2009-02-13T23:31:30.000Z"),
+                             ("excel", "39857.98020833", "2009-02-13T23:31:29.99"), ("cocoa", "256260690", "2009-02-13T23:31:30.000Z"), ("gps", "918603105", "2009-02-13T23:31:30.000Z"), ("webkit", "12879041490000000", "2009-02-13T23:31:30.000Z")]:
+        t.select("fmtSelect", fmt); t.set("tsInput", value); t.wait(30)
+        expect(want in t.text("resultGrid"), f"{fmt} {value}: {t.text('resultGrid')[:200]}")
+    t.select("fmtSelect", "gps"); t.set("tsInput", "1518:516705"); t.wait(30)
+    expect("2009-02-13T23:31:30" in t.text("resultGrid"), "GPS week:seconds")
+    t.select("fmtSelect", "filetime"); t.set("tsInput", "0"); t.wait(30)
+    expect("never" in t.text("errorText"), t.text("errorText"))
+    t.select("fmtSelect", "excel"); t.set("tsInput", "60"); t.wait(30)
+    expect("29 February 1900" in t.text("errorText"), t.text("errorText"))
+    t.select("fmtSelect", "auto")
+
+
+@case("timestamp-converter", "edge", "2.17: an 18-digit FILETIME is not silently read as nanoseconds")
+def _(t):
+    t.select("fmtSelect", "auto")
+    t.set("tsInput", "133800000000000000"); t.wait(40)
+    expect("read as Windows FILETIME" in t.text("parseHint") and "as Unix nanoseconds it would be 1974-03-29" in t.text("parseHint"), t.text("parseHint"))
+    expect("2024-12-30T02:40:00.000Z" in t.text("resultGrid"), t.text("resultGrid")[:200])
+    t.set("tsInput", "1727438400"); t.wait(40)
+    expect("read as seconds" in t.text("parseHint"), "a plausible Unix reading stays: " + t.text("parseHint"))
+    t.set("tsInput", "45678.5"); t.wait(40)
+    expect("Excel" in t.text("parseHint") and "2025-01-21T12:00:00.000Z" in t.text("resultGrid"), t.text("parseHint"))
+    t.set("tsInput", "786000000"); t.wait(40)
+    expect("Apple Cocoa" in t.text("parseHint"), "Cocoa offered as an alternative: " + t.text("parseHint"))
+    t.click("#parseHint .fmt-alt[data-fmt='cocoa']"); t.wait(40)
+    eq(t.val("fmtSelect"), "cocoa", "one click picks the format")
+    expect("2025-11-28T05:20:00.000Z" in t.text("resultGrid"), t.text("resultGrid")[:200])
+    t.select("fmtSelect", "auto")
+
+
+@case("timestamp-converter", "typical", "2.17: batch conversion of a pasted column and of a CSV column, with CSV export")
+def _(t):
+    t.select("tzSelect", "UTC")
+    t.set("batchInput", "1727438400\n1727438400000\n2024-09-27T12:00:00Z\nnot a date\n")
+    t.wait(60)
+    rows = t.call("[...document.querySelectorAll('#batchTable tbody tr')].map(r => r.textContent)")
+    eq(len(rows), 4, "rows")
+    expect(all("2024-09-27T12:00:00.000Z" in r for r in rows[:3]), rows)
+    expect("Could not parse" in rows[3], rows[3])
+    expect("3 converted, 1 could not be read" in t.text("batchMeta"), t.text("batchMeta"))
+    t.click("#btnBatchExample"); t.wait(60)
+    expect(t.visible("#batchColumnWrap"), "column picker hidden for a CSV")
+    eq(t.call("document.getElementById('batchColumn').selectedOptions[0].textContent"), "when", "picks the date column")
+    rows = t.call("[...document.querySelectorAll('#batchTable tbody tr')].map(r => [...r.children].map(c => c.textContent))")
+    eq(len(rows), 5, "csv rows")
+    eq(rows[2][1:3], ["Windows FILETIME / LDAP / Active Directory", "2024-12-30T02:40:00.000Z"], "FILETIME row")
+    eq(rows[3][1], "Excel serial date (1900 system)", "Excel row")
+    with t.page.expect_download() as dl:
+        t.click("#btnBatchCsv")
+    body = open(dl.value.path(), encoding="utf-8").read()
+    expect(body.startswith("event,when,read as,ISO 8601 UTC,in UTC,unix seconds") and "signup,1727438400,Unix seconds,2024-09-27T12:00:00.000Z" in body, body[:300])
+
+
 @case("timestamp-converter", "typical", "date arithmetic clamps month ends; difference reports both directions")
 def _(t):
     t.select("tzSelect", "UTC")
