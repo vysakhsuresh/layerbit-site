@@ -256,11 +256,10 @@ footer .footer-links a { display: inline-block; padding: 6px 0; }
 .use-case-card a {
   color: var(--accent-main);
   text-decoration: none;
-  border-bottom: 1px solid rgba(56, 189, 248, 0.35);
-  transition: all 0.2s;
+  transition: color 0.2s;
 }
 .info-panel a:hover,
-.use-case-card a:hover { color: #fff; border-bottom-color: #fff; }
+.use-case-card a:hover { color: #fff; text-decoration: underline; text-underline-offset: 3px; }
 
 /* Lists inside documentation panels - only some pages defined these, so a
    list added to a page without them fell back to browser defaults. */
@@ -493,3 +492,16 @@ input[type=color]::-moz-color-swatch { border: none; border-radius: 5px; }
 .ref-table td.ref-desc { color: var(--text-muted); }
 .ref-use { font: inherit; font-size: 0.85em; font-weight: 600; color: var(--accent-main); background: rgba(56, 189, 248, 0.08); border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 7px; padding: 4px 10px; cursor: pointer; white-space: nowrap; transition: background 0.15s; }
 .ref-use:hover { background: rgba(56, 189, 248, 0.18); }
+
+/* Phones: a pane with a text editor grows to fit its options instead of
+   squeezing the editor, and every editor keeps room to type (at least 240px). */
+@media (max-width: 600px) {
+  .pane:has(textarea.editor) { height: auto !important; max-height: none !important; }
+  .pane textarea.editor { min-height: 240px !important; }
+}
+
+/* Links: the accent colour already says "this goes somewhere", so text links
+   carry no underline at rest; the underline appears on hover and keyboard
+   focus as confirmation. */
+a { text-decoration: none; }
+a:not([class]):hover, a:not([class]):focus-visible { text-decoration: underline; text-underline-offset: 3px; text-decoration-thickness: 1px; }
