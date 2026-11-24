@@ -284,7 +284,7 @@
 
   <section class="section">
     <h2>Engineering Guides</h2>
-    <p class="section-sub">Written explanations of the specification corners and failure modes behind the tools — the reason a bug happened, not just the fix. <a href="blog.html">Browse all guides &rarr;</a></p>
+    <p class="section-sub">Written explanations of the specification corners and failure modes behind the tools — the reason a bug happened, not just the fix. <a href="blog.html">Browse all guides</a></p>
     <div class="grid">
       <a class="tool-card" href="guides/how-to-create-a-strong-password.html">
         <div class="tool-badge badge-guide"><i data-lucide="book-open"></i> Guide</div>
@@ -426,10 +426,11 @@
     <div id="digit-container" style="display:flex; gap:8px;"></div>
   </div>
 
-  <div class="search-pill-wrapper">
+  <div class="search-pill-wrapper" id="pillWrap">
+    <div class="pill-suggest" id="pillSuggest" role="listbox" aria-label="Matching tools and guides" hidden></div>
     <div class="search-pill" id="pillSearch" role="button" tabindex="0" aria-label="Search developer tools" aria-expanded="false">
       <i data-lucide="search" class="search-icon"></i>
-      <input type="text" id="pillInput" placeholder="Search developer tools..." autocomplete="off" />
+      <input type="text" id="pillInput" placeholder="Search tools and guides..." autocomplete="off" role="combobox" aria-controls="pillSuggest" aria-autocomplete="list" aria-expanded="false" />
       <i data-lucide="x" class="clear-icon" id="clearSearchBtn" role="button" tabindex="0" aria-label="Clear search"></i>
     </div>
   </div>
@@ -480,18 +481,17 @@
       const pillInput = document.getElementById('pillInput');
       const clearSearchBtn = document.getElementById('clearSearchBtn');
       const toolCards = document.querySelectorAll('.tool-card');
-      let isSearchExpanded = false;
+      let isSearchExpanded = false, expandedAt = 0;
 
       function expandSearch() {
         if (!isSearchExpanded) {
           pillSearch.classList.add('expanded');
           pillSearch.setAttribute('aria-expanded', 'true');
 
-          // Slight delay to allow CSS width animation before showing text input
-          setTimeout(() => {
-            pillInput.focus();
-          }, 200);
-
+          // Focus at once (the input is shown by the class above), so the scroll
+          // below cannot collapse the search before typing starts.
+          pillInput.focus({ preventScroll: true });
+          expandedAt = Date.now();
           isSearchExpanded = true;
           
           // Scroll to tools grid smoothly
@@ -503,7 +503,68 @@
         }
       }
 
+      // --- Suggestions: matching tools and guides, like an app launcher ---
+      const pillWrap = document.getElementById('pillWrap');
+      const pillSuggest = document.getElementById('pillSuggest');
+      const ENTRIES = [...document.querySelectorAll('a.tool-card')].map(a => {
+        const h = a.querySelector('h3'), d = a.querySelector('p'), icon = a.querySelector('.icon-wrapper svg');
+        const title = (h ? h.textContent : '').replace(/\s+(Beta|Free)$/, '').trim();
+        const guide = !!a.querySelector('.badge-guide'), service = /api-automation|custom-scripts|static-sites|erp-development|app-development|portfolio-design/.test(a.getAttribute('href'));
+        return { href: a.getAttribute('href'), title, desc: d ? d.textContent.trim() : '', icon: icon ? icon.outerHTML : '', kind: guide ? 'Guide' : service ? 'Service' : 'Tool' };
+      });
+      let sugIndex = -1, sugItems = [];
+      function score(e, q) {
+        const t = e.title.toLowerCase(), d = e.desc.toLowerCase();
+        if (t.startsWith(q)) return 100;
+        if (t.split(/[^a-z0-9]+/).some(w => w.startsWith(q))) return 80;
+        if (t.includes(q)) return 60;
+        const words = q.split(/\s+/).filter(Boolean);
+        if (words.length > 1 && words.every(w => t.includes(w) || d.includes(w))) return 45;
+        if (d.split(/[^a-z0-9]+/).some(w => w.startsWith(q))) return 30;
+        if (d.includes(q)) return 20;
+        return 0;
+      }
+      const KIND_ORDER = { Tool: 0, Guide: 1, Service: 2 };
+      function renderSuggest(query) {
+        const q = query.trim().toLowerCase();
+        sugIndex = -1;
+        if (!q) { pillSuggest.hidden = true; pillInput.setAttribute('aria-expanded', 'false'); pillSuggest.innerHTML = ''; sugItems = []; return; }
+        sugItems = ENTRIES.map(e => ({ e, s: score(e, q) })).filter(x => x.s > 0)
+          .sort((a, b) => b.s - a.s || KIND_ORDER[a.e.kind] - KIND_ORDER[b.e.kind] || a.e.title.localeCompare(b.e.title)).slice(0, 7).map(x => x.e);
+        pillSuggest.innerHTML = '';
+        if (!sugItems.length) {
+          const none = document.createElement('div'); none.className = 'pill-suggest-empty';
+          none.textContent = 'No tool or guide matches "' + query.trim() + '".';
+          pillSuggest.appendChild(none);
+        }
+        sugItems.forEach((e, i) => {
+          const a = document.createElement('a');
+          a.className = 'pill-suggest-item'; a.href = e.href; a.id = 'sug-' + i; a.setAttribute('role', 'option'); a.setAttribute('aria-selected', 'false');
+          a.innerHTML = '<span class="ps-icon">' + e.icon + '</span><span class="ps-text"></span><span class="ps-kind"></span>';
+          a.querySelector('.ps-text').textContent = e.title;
+          a.querySelector('.ps-kind').textContent = e.kind === 'Tool' ? '' : e.kind;
+          a.addEventListener('mousemove', () => highlight(i));
+          pillSuggest.appendChild(a);
+        });
+        pillSuggest.hidden = false;
+        pillInput.setAttribute('aria-expanded', 'true');
+      }
+      function highlight(i) {
+        const items = pillSuggest.querySelectorAll('.pill-suggest-item');
+        items.forEach((el, k) => { el.classList.toggle('active', k === i); el.setAttribute('aria-selected', String(k === i)); });
+        sugIndex = i;
+        if (items[i]) { pillInput.setAttribute('aria-activedescendant', items[i].id); items[i].scrollIntoView({ block: 'nearest' }); }
+        else pillInput.removeAttribute('aria-activedescendant');
+      }
+      pillInput.addEventListener('keydown', e => {
+        const n = sugItems.length;
+        if (e.key === 'ArrowDown' && n) { e.preventDefault(); highlight((sugIndex + 1) % n); }
+        else if (e.key === 'ArrowUp' && n) { e.preventDefault(); highlight((sugIndex - 1 + n) % n); }
+        else if (e.key === 'Enter' && n) { e.preventDefault(); location.href = sugItems[Math.max(0, sugIndex)].href; }
+      });
+
       function collapseSearch() {
+        renderSuggest('');
         pillSearch.classList.remove('expanded');
         pillSearch.setAttribute('aria-expanded', 'false');
         pillInput.value = '';
@@ -517,6 +578,13 @@
         toolCards.forEach(card => {
           const text = card.innerText.toLowerCase();
           card.style.display = text.includes(lowerQuery) ? "flex" : "none";
+        });
+        // A section whose cards all filtered out would leave a bare heading.
+        document.querySelectorAll('section.section').forEach(sec => {
+          const cards = sec.querySelectorAll('.tool-card');
+          if (!cards.length) return;
+          const any = [...cards].some(c => c.style.display !== 'none');
+          sec.style.display = !lowerQuery || any ? '' : 'none';
         });
       }
 
@@ -553,12 +621,12 @@
 
       // Live filter on type
       if(pillInput) {
-        pillInput.addEventListener('input', (e) => filterTools(e.target.value));
+        pillInput.addEventListener('input', (e) => { filterTools(e.target.value); renderSuggest(e.target.value); });
       }
 
       // Collapse search if user clicks outside of the pill
       document.addEventListener('click', (e) => {
-        if (isSearchExpanded && !pillSearch.contains(e.target)) {
+        if (isSearchExpanded && !pillWrap.contains(e.target)) {
           collapseSearch();
         }
       });
@@ -576,7 +644,7 @@
       // Collapse search when scrolling down heavily (matches your old logic)
       let lastScrollY = window.scrollY;
       window.addEventListener("scroll", () => {
-        if (isSearchExpanded && document.activeElement !== pillInput && Math.abs(window.scrollY - lastScrollY) > 50) {
+        if (isSearchExpanded && Date.now() - expandedAt > 1200 && document.activeElement !== pillInput && Math.abs(window.scrollY - lastScrollY) > 50) {
           collapseSearch();
         }
         lastScrollY = window.scrollY;

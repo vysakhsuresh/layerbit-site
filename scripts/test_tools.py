@@ -2519,6 +2519,33 @@ def _(t):
 
 
 # ----------------------------------------------------------------------------
+# homepage search
+# ----------------------------------------------------------------------------
+@case("index", "typical", "homepage search suggests matching tools with icons; arrows and Enter open one; empty sections hide")
+def _(t):
+    base = t.page.url.split("/tools/")[0]
+    t.page.goto(base + "/", wait_until="load")
+    t.page.evaluate("document.querySelectorAll('.cookie-consent-banner').forEach(e=>e.remove())")
+    t.click("#pillSearch")
+    t.wait(300)
+    eq(t.call("document.activeElement.id"), "pillInput", "input focused at once, search stays open")
+    t.page.keyboard.type("json")
+    t.wait_for("() => !document.getElementById('pillSuggest').hidden")
+    names = t.call("[...document.querySelectorAll('.pill-suggest-item .ps-text')].map(e => e.textContent)")
+    eq(names[0], "JSON Formatter & Validator", "best match first")
+    expect(all("JSON" in n for n in names), names)
+    expect(t.call("document.querySelectorAll('.pill-suggest-item .ps-icon svg').length") == len(names), "every suggestion has its icon")
+    expect(t.call("[...document.querySelectorAll('section.section')].some(s => s.style.display === 'none')"), "a section with no match is hidden")
+    t.page.keyboard.press("ArrowDown"); t.page.keyboard.press("ArrowDown")
+    eq(t.call("document.querySelector('.pill-suggest-item.active .ps-text').textContent"), names[1], "arrow moves the highlight")
+    t.set("pillInput", "zzqx")
+    expect("No tool or guide matches" in t.text("pillSuggest"), "empty state")
+    t.set("pillInput", "cron")
+    t.page.keyboard.press("Enter")
+    t.page.wait_for_url("**/tools/cron-generator.html")
+
+
+# ----------------------------------------------------------------------------
 # layerlink (two pages in one browser, signalled through localStorage)
 # ----------------------------------------------------------------------------
 LL_FAKE_SCREEN = r"""
