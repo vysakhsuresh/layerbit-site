@@ -180,7 +180,7 @@
   <link rel="manifest" href="../manifest.json" />
   <link rel="alternate" type="application/atom+xml" title="Layerbit developer guides" href="https://layerbit.co.in/feed.xml" />
   <link rel="apple-touch-icon" href="../apple-touch-icon.png" />
-  <link rel="stylesheet" href="../css/base.css?v=e076970c45" />
+  <link rel="stylesheet" href="../css/base.css?v=45a6ebe390" />
 
   <style>
 
@@ -1011,6 +1011,38 @@
       </div>
     </div>
 
+    <div class="info-panel" id="common-patterns">
+      <h2><i data-lucide="library"></i> Common regex patterns (cheat sheet)</h2>
+      <p>Ready-made regular expressions for the things people validate most often: email addresses, URLs, IP addresses, phone numbers, dates, UUIDs and more. Press <strong>Try</strong> to load one into the tester with sample text that includes both matches and near misses, then adapt it. Every pattern here is written for JavaScript and also runs unchanged on the PCRE2, Python, Go and Rust engines in the Engines tab, except the back-reference and lookahead ones, which Go and Rust do not support.</p>
+      <div class="ref-table-wrap">
+        <table class="ref-table">
+          <thead><tr><th>Matches</th><th>Pattern</th><th>Notes</th><th><span class="sr-only">Load</span></th></tr></thead>
+          <tbody>
+          <tr><td>Email address</td><td><code>^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$</code></td><td class="ref-desc">A practical check for addresses like name@example.com. Full RFC 5322 allows more, but almost no real form needs it.</td><td><button type="button" class="ref-use" onclick="loadPattern('email')" aria-label="Try the Email address pattern">Try</button></td></tr>
+          <tr><td>URL (http or https)</td><td><code>https?://[^\s/$.?#][^\s]*</code></td><td class="ref-desc">Finds web links in running text, up to the next space.</td><td><button type="button" class="ref-use" onclick="loadPattern('url')" aria-label="Try the URL (http or https) pattern">Try</button></td></tr>
+          <tr><td>IPv4 address (0-255)</td><td><code>\b(?:(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)\.){3}(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)\b</code></td><td class="ref-desc">Each part limited to 0-255, so 999.1.1.1 is rejected.</td><td><button type="button" class="ref-use" onclick="loadPattern('ipv4')" aria-label="Try the IPv4 address (0-255) pattern">Try</button></td></tr>
+          <tr><td>MAC address</td><td><code>\b(?:[0-9A-Fa-f]{2}[:-]){5}[0-9A-Fa-f]{2}\b</code></td><td class="ref-desc">Six hex pairs separated by colons or hyphens.</td><td><button type="button" class="ref-use" onclick="loadPattern('mac')" aria-label="Try the MAC address pattern">Try</button></td></tr>
+          <tr><td>Phone number (international, E.164)</td><td><code>^\+[1-9]\d{6,14}$</code></td><td class="ref-desc">A plus sign, a country code and up to 15 digits in total, with no spaces.</td><td><button type="button" class="ref-use" onclick="loadPattern('e164')" aria-label="Try the Phone number (international, E.164) pattern">Try</button></td></tr>
+          <tr><td>UAE mobile number</td><td><code>^(?:\+971|00971|0)5[024568]\d{7}$</code></td><td class="ref-desc">050, 052, 054, 055, 056 and 058 numbers, with +971, 00971 or a leading 0.</td><td><button type="button" class="ref-use" onclick="loadPattern('uaemobile')" aria-label="Try the UAE mobile number pattern">Try</button></td></tr>
+          <tr><td>Indian mobile number</td><td><code>^(?:\+91|0)?[6-9]\d{9}$</code></td><td class="ref-desc">Ten digits starting 6-9, optionally with +91 or 0 in front.</td><td><button type="button" class="ref-use" onclick="loadPattern('inmobile')" aria-label="Try the Indian mobile number pattern">Try</button></td></tr>
+          <tr><td>Date (YYYY-MM-DD)</td><td><code>\b\d{4}-(?:0[1-9]|1[0-2])-(?:0[1-9]|[12]\d|3[01])\b</code></td><td class="ref-desc">ISO 8601 dates with a valid month and a day from 01 to 31. It does not know that 31 February does not exist.</td><td><button type="button" class="ref-use" onclick="loadPattern('isodate')" aria-label="Try the Date (YYYY-MM-DD) pattern">Try</button></td></tr>
+          <tr><td>Time (24-hour HH:MM)</td><td><code>\b(?:[01]\d|2[0-3]):[0-5]\d\b</code></td><td class="ref-desc">00:00 to 23:59.</td><td><button type="button" class="ref-use" onclick="loadPattern('time24')" aria-label="Try the Time (24-hour HH:MM) pattern">Try</button></td></tr>
+          <tr><td>Hex colour</td><td><code>#(?:[0-9a-fA-F]{3}){1,2}\b</code></td><td class="ref-desc">#rgb or #rrggbb in CSS.</td><td><button type="button" class="ref-use" onclick="loadPattern('hex')" aria-label="Try the Hex colour pattern">Try</button></td></tr>
+          <tr><td>UUID / GUID</td><td><code>\b[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}\b</code></td><td class="ref-desc">Versions 1 to 8 with the RFC 9562 variant, in either case.</td><td><button type="button" class="ref-use" onclick="loadPattern('uuid')" aria-label="Try the UUID / GUID pattern">Try</button></td></tr>
+          <tr><td>Strong password rule</td><td><code>^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^\w\s]).{12,}$</code></td><td class="ref-desc">At least 12 characters with a lower-case letter, a capital, a digit and a symbol. Length matters more than the mix; see the password guide.</td><td><button type="button" class="ref-use" onclick="loadPattern('password')" aria-label="Try the Strong password rule pattern">Try</button></td></tr>
+          <tr><td>URL slug</td><td><code>^[a-z0-9]+(?:-[a-z0-9]+)*$</code></td><td class="ref-desc">Lower-case words joined by single hyphens, as in a blog post address.</td><td><button type="button" class="ref-use" onclick="loadPattern('slug')" aria-label="Try the URL slug pattern">Try</button></td></tr>
+          <tr><td>Username (3-16 characters)</td><td><code>^[a-zA-Z0-9_]{3,16}$</code></td><td class="ref-desc">Letters, digits and underscores only.</td><td><button type="button" class="ref-use" onclick="loadPattern('username')" aria-label="Try the Username (3-16 characters) pattern">Try</button></td></tr>
+          <tr><td>US ZIP code</td><td><code>\b\d{5}(?:-\d{4})?\b</code></td><td class="ref-desc">Five digits, optionally followed by a hyphen and four more (ZIP+4).</td><td><button type="button" class="ref-use" onclick="loadPattern('zip')" aria-label="Try the US ZIP code pattern">Try</button></td></tr>
+          <tr><td>Indian PIN code</td><td><code>\b[1-9]\d{5}\b</code></td><td class="ref-desc">Six digits that do not start with 0.</td><td><button type="button" class="ref-use" onclick="loadPattern('pin')" aria-label="Try the Indian PIN code pattern">Try</button></td></tr>
+          <tr><td>Repeated word</td><td><code>\b(\w+)\s+\1\b</code></td><td class="ref-desc">Finds typos like &quot;the the&quot; using a back-reference.</td><td><button type="button" class="ref-use" onclick="loadPattern('dupword')" aria-label="Try the Repeated word pattern">Try</button></td></tr>
+          <tr><td>Leading or trailing spaces</td><td><code>^[ \t]+|[ \t]+$</code></td><td class="ref-desc">Use with an empty replacement to trim every line.</td><td><button type="button" class="ref-use" onclick="loadPattern('trim')" aria-label="Try the Leading or trailing spaces pattern">Try</button></td></tr>
+          <tr><td>HTML tag</td><td><code>&lt;/?[a-zA-Z][^&gt;]*&gt;</code></td><td class="ref-desc">Opening and closing tags. Fine for a quick look; use a real HTML parser to process HTML.</td><td><button type="button" class="ref-use" onclick="loadPattern('htmltag')" aria-label="Try the HTML tag pattern">Try</button></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>A pattern that validates input should be anchored with <code>^</code> and <code>$</code> (and the <code>m</code> flag when you test one value per line); a pattern that searches running text should not. For anything that has to be exact, such as an email address you will send mail to, use the pattern as a first check and confirm by other means.</p>
+    </div>
+
     <div class="info-panel">
       <h2><i data-lucide="microscope"></i> Test the failing case, not just the passing one</h2>
       <p>Most regex bugs are not "the pattern does not match" — they are "the pattern matches slightly more than intended", or "the pattern takes four minutes on one particular input". Both are invisible if you only ever test with an example that works.</p>
@@ -1630,6 +1662,13 @@
       regexInput.value = s.regex; testInput.value = s.test; replaceInput.value = s.replace || ''; tests = s.tests ? s.tests.map(t => Object.assign({}, t)) : [];
       setFlags(s.flags); processRegex(); if (tests.length) runUnitTests(); renderTests();
       showTab(type === 'redos' ? 'safety' : s.tests ? 'tests' : 'matches');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+    const PATTERN_LIB = {"email": {"regex": "^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$", "test": "jane.doe@example.com\nops+alerts@mail.example.co.uk\nnot-an-email@\n@missing-user.com\nspace in@example.com", "flags": ["g", "m"]}, "url": {"regex": "https?://[^\\s/$.?#][^\\s]*", "test": "Docs at https://layerbit.co.in/tools/regex-tester.html and http://example.com/a?b=1#top; not ftp://files.example.com", "flags": ["g", "i"]}, "ipv4": {"regex": "\\b(?:(?:25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)\\.){3}(?:25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)\\b", "test": "Allowed 10.0.0.1 and 192.168.1.254; blocked 256.1.1.1 and 999.10.10.10", "flags": ["g"]}, "mac": {"regex": "\\b(?:[0-9A-Fa-f]{2}[:-]){5}[0-9A-Fa-f]{2}\\b", "test": "eth0 3c:22:fb:9a:01:7e  wlan0 3C-22-FB-9A-01-7F  bad 3c:22:fb:9a:01", "flags": ["g"]}, "e164": {"regex": "^\\+[1-9]\\d{6,14}$", "test": "+971501234567\n+919876543210\n0501234567\n+0123456789", "flags": ["g", "m"]}, "uaemobile": {"regex": "^(?:\\+971|00971|0)5[024568]\\d{7}$", "test": "+971501234567\n0559876543\n00971581112222\n0571234567\n+97150123", "flags": ["g", "m"]}, "inmobile": {"regex": "^(?:\\+91|0)?[6-9]\\d{9}$", "test": "+919876543210\n09876543210\n9876543210\n5876543210\n+91987654321", "flags": ["g", "m"]}, "isodate": {"regex": "\\b\\d{4}-(?:0[1-9]|1[0-2])-(?:0[1-9]|[12]\\d|3[01])\\b", "test": "Issued 2026-03-14, due 2026-04-13, typo 2026-13-01 and 2026-02-32", "flags": ["g"]}, "time24": {"regex": "\\b(?:[01]\\d|2[0-3]):[0-5]\\d\\b", "test": "Opens 09:30, closes 23:59; not 24:00 or 9:75", "flags": ["g"]}, "hex": {"regex": "#(?:[0-9a-fA-F]{3}){1,2}\\b", "test": "color: #38bdf8; background: #fff; border: #12345; outline: #zzz", "flags": ["g"]}, "uuid": {"regex": "\\b[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}\\b", "test": "id=018f4a6c-9e3b-7c4d-8a2e-1f3b5c7d9e0f other=3D572822-A147-437B-8E24-8E98D34D1B7A bad=00000000-0000-0000-0000-000000000000", "flags": ["g", "i"]}, "password": {"regex": "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[^\\w\\s]).{12,}$", "test": "Tr0ub4dor&3xyz\npassword1234\nSHORT1a!\ncorrect-Horse-7-battery", "flags": ["g", "m"]}, "slug": {"regex": "^[a-z0-9]+(?:-[a-z0-9]+)*$", "test": "regex-cheat-sheet\nhello-world-2026\nBad_Slug\n-leading-hyphen\ndouble--hyphen", "flags": ["g", "m"]}, "username": {"regex": "^[a-zA-Z0-9_]{3,16}$", "test": "layerbit_dev\nab\nthis_name_is_far_too_long\nok_42", "flags": ["g", "m"]}, "zip": {"regex": "\\b\\d{5}(?:-\\d{4})?\\b", "test": "Austin TX 78701, Seattle WA 98101-2310, bad 1234", "flags": ["g"]}, "pin": {"regex": "\\b[1-9]\\d{5}\\b", "test": "Kochi 682001, Delhi 110001, invalid 012345", "flags": ["g"]}, "dupword": {"regex": "\\b(\\w+)\\s+\\1\\b", "test": "This is the the final draft, and it it should be checked. Not a repeat: that that's fine? It is.", "flags": ["g", "i"]}, "trim": {"regex": "^[ \\t]+|[ \\t]+$", "test": "  indented line\ntrailing spaces   \nclean line", "flags": ["g", "m"]}, "htmltag": {"regex": "</?[a-zA-Z][^>]*>", "test": "<p class=\"lead\">Hello <b>world</b></p> 3 < 5", "flags": ["g"]}};
+    function loadPattern(k) {
+      const s = PATTERN_LIB[k]; if (!s) return;
+      regexInput.value = s.regex; testInput.value = s.test; replaceInput.value = ''; tests = [];
+      setFlags(s.flags); processRegex(); renderTests(); showTab('matches');
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
     renderTests(); renderCode();

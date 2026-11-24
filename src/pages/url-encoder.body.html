@@ -96,6 +96,52 @@
       </div>
     </div>
 
+    <div class="info-panel" id="percent-encoding-table">
+      <h2><i data-lucide="table"></i> URL encoding reference: characters and their percent codes</h2>
+      <p>What each special character becomes when it is percent-encoded for a URL (RFC 3986). Letters, digits and <code>- . _ ~</code> never need encoding. Non-ASCII characters are first turned into UTF-8 bytes, and each byte becomes one <code>%XX</code>.</p>
+      <div class="ref-table-wrap">
+        <table class="ref-table">
+          <thead><tr><th>Character</th><th>Encoded</th><th>Notes</th></tr></thead>
+          <tbody>
+            <tr><td>(space)</td><td><code>%20</code></td><td class="ref-desc">Space: %20 in a path or value; + only in HTML form data</td></tr>
+            <tr><td>!</td><td><code>%21</code></td><td class="ref-desc">Strict RFC 3986 form. <code>encodeURIComponent</code>, and this tool, leave it as is, which URLs allow</td></tr>
+            <tr><td>&quot;</td><td><code>%22</code></td><td class="ref-desc"></td></tr>
+            <tr><td>#</td><td><code>%23</code></td><td class="ref-desc">Starts the fragment; everything after it is not sent to the server</td></tr>
+            <tr><td>$</td><td><code>%24</code></td><td class="ref-desc"></td></tr>
+            <tr><td>%</td><td><code>%25</code></td><td class="ref-desc">Must always be encoded, or it starts a bogus escape</td></tr>
+            <tr><td>&amp;</td><td><code>%26</code></td><td class="ref-desc">Separates query parameters</td></tr>
+            <tr><td>&#x27;</td><td><code>%27</code></td><td class="ref-desc">Strict RFC 3986 form. <code>encodeURIComponent</code>, and this tool, leave it as is, which URLs allow</td></tr>
+            <tr><td>(</td><td><code>%28</code></td><td class="ref-desc">Strict RFC 3986 form. <code>encodeURIComponent</code>, and this tool, leave it as is, which URLs allow</td></tr>
+            <tr><td>)</td><td><code>%29</code></td><td class="ref-desc">Strict RFC 3986 form. <code>encodeURIComponent</code>, and this tool, leave it as is, which URLs allow</td></tr>
+            <tr><td>*</td><td><code>%2A</code></td><td class="ref-desc">Strict RFC 3986 form. <code>encodeURIComponent</code>, and this tool, leave it as is, which URLs allow</td></tr>
+            <tr><td>+</td><td><code>%2B</code></td><td class="ref-desc">Encode it in a query value, or a server may read it as a space</td></tr>
+            <tr><td>,</td><td><code>%2C</code></td><td class="ref-desc"></td></tr>
+            <tr><td>/</td><td><code>%2F</code></td><td class="ref-desc">Path separator</td></tr>
+            <tr><td>:</td><td><code>%3A</code></td><td class="ref-desc"></td></tr>
+            <tr><td>;</td><td><code>%3B</code></td><td class="ref-desc"></td></tr>
+            <tr><td>&lt;</td><td><code>%3C</code></td><td class="ref-desc"></td></tr>
+            <tr><td>=</td><td><code>%3D</code></td><td class="ref-desc">Separates a parameter name from its value</td></tr>
+            <tr><td>&gt;</td><td><code>%3E</code></td><td class="ref-desc"></td></tr>
+            <tr><td>?</td><td><code>%3F</code></td><td class="ref-desc">Starts the query string</td></tr>
+            <tr><td>@</td><td><code>%40</code></td><td class="ref-desc"></td></tr>
+            <tr><td>[</td><td><code>%5B</code></td><td class="ref-desc"></td></tr>
+            <tr><td>\</td><td><code>%5C</code></td><td class="ref-desc"></td></tr>
+            <tr><td>]</td><td><code>%5D</code></td><td class="ref-desc"></td></tr>
+            <tr><td>^</td><td><code>%5E</code></td><td class="ref-desc"></td></tr>
+            <tr><td>`</td><td><code>%60</code></td><td class="ref-desc"></td></tr>
+            <tr><td>{</td><td><code>%7B</code></td><td class="ref-desc"></td></tr>
+            <tr><td>|</td><td><code>%7C</code></td><td class="ref-desc"></td></tr>
+            <tr><td>}</td><td><code>%7D</code></td><td class="ref-desc"></td></tr>
+            <tr><td>~</td><td><code>~</code></td><td class="ref-desc">Unreserved: never needs encoding</td></tr>
+            <tr><td>é</td><td><code>%C3%A9</code></td><td class="ref-desc">Non-ASCII: encoded as its UTF-8 bytes</td></tr>
+            <tr><td>€</td><td><code>%E2%82%AC</code></td><td class="ref-desc">Three UTF-8 bytes</td></tr>
+            <tr><td>中</td><td><code>%E4%B8%AD</code></td><td class="ref-desc">Three UTF-8 bytes</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>Whether a character <em>must</em> be encoded depends on where it sits: <code>/</code> is fine in a path but must be encoded inside a query value that is itself a URL. Encode each value on its own, with <code>encodeURIComponent</code> in JavaScript or <code>urllib.parse.quote</code> in Python, rather than encoding a whole finished URL.</p>
+    </div>
+
     <div class="info-panel">
       <h2><i data-lucide="help-circle"></i> Engineering FAQ</h2>
       <div class="faq-container">

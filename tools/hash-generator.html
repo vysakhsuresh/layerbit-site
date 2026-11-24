@@ -106,6 +106,14 @@
       "mainEntity": [
         {
           "@type": "Question",
+          "name": "How do I verify a download with its SHA-256 checksum?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Open the Check a list tab, add the downloaded file and paste the checksum line from the publisher (for example the contents of a SHA256SUMS or .sha256 file). Each file is shown as matching or not. For a single file you can also drop it on the Input pane and compare the SHA-256 value by eye with the published one; the same check on the command line is sha256sum file on Linux, shasum -a 256 file on macOS and certutil -hashfile file SHA256 on Windows."
+          }
+        },
+        {
+          "@type": "Question",
           "name": "Which algorithms are included, and which should I use?",
           "acceptedAnswer": {
             "@type": "Answer",
@@ -192,7 +200,7 @@
   <link rel="manifest" href="../manifest.json" />
   <link rel="alternate" type="application/atom+xml" title="Layerbit developer guides" href="https://layerbit.co.in/feed.xml" />
   <link rel="apple-touch-icon" href="../apple-touch-icon.png" />
-  <link rel="stylesheet" href="../css/base.css?v=e076970c45" />
+  <link rel="stylesheet" href="../css/base.css?v=45a6ebe390" />
   <link rel="stylesheet" href="../css/tool.css?v=557effa1e2" />
 
   <style>
@@ -263,7 +271,7 @@
 
   <main id="main" class="page-main">
   <div class="hero">
-    <div class="hero-badge"><i data-lucide="shield-check"></i> Web Crypto and WebAssembly · nothing leaves your browser</div>
+    <div class="hero-badge"><i data-lucide="shield-check"></i> Runs entirely in your browser</div>
     <h1>Hash &amp; HMAC Generator</h1>
     <p>MD5, SHA-1, SHA-2, SHA-3, BLAKE2, BLAKE3 and RIPEMD-160, plus xxHash, XXH3 and CRC32/CRC32C checksums, of any text or file of any size; keyed HMACs; whole folders with CSV and HTML reports; compare two folders; and check downloads against a SHA256SUMS list. Computed in your browser, not on a server.</p>
   </div>
@@ -437,6 +445,10 @@
     <div class="info-panel">
       <h2><i data-lucide="help-circle"></i> Frequently asked questions</h2>
       <div class="faq-container">
+        <div class="faq-item">
+          <button class="faq-question">How do I verify a download with its SHA-256 checksum? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>Open the <strong>Check a list</strong> tab, add the downloaded file and paste the checksum line from the publisher (for example the contents of a SHA256SUMS or .sha256 file). Each file is shown as matching or not. For a single file you can also drop it on the Input pane and compare the SHA-256 value by eye with the published one; the same check on the command line is <code>sha256sum file</code> on Linux, <code>shasum -a 256 file</code> on macOS and <code>certutil -hashfile file SHA256</code> on Windows.</p></div>
+        </div>
         <div class="faq-item">
           <button class="faq-question">Which algorithms are included, and which should I use? <i data-lucide="chevron-down"></i></button>
           <div class="faq-answer"><p>Cryptographic hashes: MD5 and SHA-1 (both broken for collisions, so only for matching old checksums), SHA-256/384/512, SHA3-256/512, BLAKE2b-512, BLAKE2s-256, BLAKE3 and RIPEMD-160. Checksums, listed separately: XXH64, XXH3 and XXH128 (very fast, used by tools that index or deduplicate files) and CRC32/CRC32C (zip files, Ethernet, storage systems). Use SHA-256 to publish or verify a download, BLAKE3 when speed matters and both sides support it, and a checksum only for spotting accidental changes: anyone can forge one.</p></div>

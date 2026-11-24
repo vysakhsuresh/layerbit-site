@@ -101,6 +101,14 @@
       "mainEntity": [
         {
           "@type": "Question",
+          "name": "How do I convert RGB to HEX?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Convert each of the three numbers (0 to 255) to two hexadecimal digits and join them after a #: rgb(56, 189, 248) gives 38, BD and F8, so #38BDF8. Values under 16 need a leading zero (10 becomes 0A). Type the rgb() value into the color field above and the HEX, HSL, OKLCH and every other form appear at once."
+          }
+        },
+        {
+          "@type": "Question",
           "name": "How do I convert HEX to RGB?",
           "acceptedAnswer": {
             "@type": "Answer",
@@ -179,7 +187,7 @@
   <link rel="manifest" href="../manifest.json" />
   <link rel="alternate" type="application/atom+xml" title="Layerbit developer guides" href="https://layerbit.co.in/feed.xml" />
   <link rel="apple-touch-icon" href="../apple-touch-icon.png" />
-  <link rel="stylesheet" href="../css/base.css?v=e076970c45" />
+  <link rel="stylesheet" href="../css/base.css?v=45a6ebe390" />
   <link rel="stylesheet" href="../css/tool.css?v=557effa1e2" />
 
   <style>
@@ -533,6 +541,10 @@
     <div class="info-panel">
       <h2><i data-lucide="help-circle"></i> Frequently asked questions</h2>
       <div class="faq-container">
+        <div class="faq-item">
+          <button class="faq-question">How do I convert RGB to HEX? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>Convert each of the three numbers (0 to 255) to two hexadecimal digits and join them after a #: rgb(56, 189, 248) gives 38, BD and F8, so #38BDF8. Values under 16 need a leading zero (10 becomes 0A). Type the rgb() value into the color field above and the HEX, HSL, OKLCH and every other form appear at once.</p></div>
+        </div>
         <div class="faq-item">
           <button class="faq-question">How do I convert HEX to RGB? <i data-lucide="chevron-down"></i></button>
           <div class="faq-answer"><p>Split the six hex digits into three pairs and convert each pair from base 16 to base 10: #38BDF8 becomes 38, BD and F8, which are 56, 189 and 248, so rgb(56 189 248). A three-digit hex like #0AF doubles each digit first, giving #00AAFF. An eight-digit hex adds an alpha pair, where 80 is about 50% opacity. Paste any of these into the color field above and every other format is computed instantly.</p></div>

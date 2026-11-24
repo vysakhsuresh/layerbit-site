@@ -664,6 +664,20 @@ def _(t):
     eq(t.count("#testBackdrop .hl-match.alt"), 1, "alternate colour")
 
 
+@case("regex-tester", "typical", "common patterns table: every Try button loads a pattern whose sample has the documented matches")
+def _(t):
+    keys = t.call("Object.keys(PATTERN_LIB)")
+    expect(len(keys) >= 15, f"pattern library has {len(keys)} entries")
+    eq(t.count("#common-patterns .ref-use"), len(keys), "one Try button per pattern")
+    expected = {"email": 2, "ipv4": 2, "uaemobile": 3, "uuid": 2, "dupword": 3, "htmltag": 4}
+    for k, n in expected.items():
+        t.call(f"loadPattern('{k}')")
+        t.wait_for(f"() => /\\b{n} Match/.test(document.getElementById('matchCount').innerText)")
+    t.click("#common-patterns tr:has-text('Hex colour') .ref-use")
+    t.wait_for("() => /2 Match/.test(document.getElementById('matchCount').innerText)")
+    expect("#38bdf8" in t.text("matchesGrid"), "hex colour match listed")
+
+
 @case("regex-tester", "typical", "replace preview honours $1 and $<name>")
 def _(t):
     t.set("regexInput", r"(?<y>\d{4})-(\d{2})-(\d{2})")
@@ -880,6 +894,19 @@ def _(t):
     t.select("lineEndings", "crlf")
     eq(t.val("encodedText"), "a%0D%0Ab", "CRLF")
     t.select("lineEndings", "lf")
+
+
+@case("url-encoder", "typical", "percent-encoding table agrees with Raw mode for every character it lists")
+def _(t):
+    rows = t.call("[...document.querySelectorAll('#percent-encoding-table tbody tr')].map(r => [r.cells[0].textContent, r.cells[1].textContent, r.cells[2].textContent])")
+    expect(len(rows) >= 30, f"{len(rows)} rows")
+    t.call("setMode('raw')")
+    for ch, code, note in rows:
+        ch = " " if ch == "(space)" else ch
+        t.set("plainText", "a" + ch + "b")
+        got = t.val("encodedText")
+        want = ch if "leave it as is" in note else code
+        eq(got, "a" + want + "b", f"Raw mode encodes {ch!r}")
 
 
 @case("url-encoder", "typical", "smart mode keeps URL structure, encodes query values")
@@ -2034,6 +2061,17 @@ def _(t):
     eq(t.val("rawInput"), '<a href="x">Tom & Jerry\'s</a>', "round trip")
 
 
+@case("html-escape-unescape", "typical", "entity reference table: every named, decimal and hex form in it decodes to its character")
+def _(t):
+    rows = t.call("[...document.querySelectorAll('#entity-table tbody tr')].map(r => [...r.querySelectorAll('code')].map(c => c.textContent))")
+    expect(len(rows) >= 20, f"{len(rows)} entity rows")
+    for named, dec, hexa in rows:
+        ch = t.call(f"String.fromCodePoint({int(dec[2:-1])})")
+        for form in (named, dec, hexa):
+            t.set("escapedInput", form)
+            eq(t.val("rawInput"), ch, f"{form} decodes")
+
+
 @case("html-escape-unescape", "edge", "named and numeric entities unescape")
 def _(t):
     t.set("escapedInput", "&copy; &#169; &#xA9; &nbsp;x")
@@ -2072,6 +2110,22 @@ def _(t):
     tr = t.text("cronTranslation").lower()
     expect("09:00" in tr and ("monday" in tr and "friday" in tr), f"translation wrong: {tr!r}")
     expect(t.count("#nextRunsList li, #nextRunsList div, #nextRunsList span") >= 5, "next runs missing")
+
+
+@case("cron-generator", "typical", "common expressions table: every Use button loads a valid crontab schedule, switching dialect first")
+def _(t):
+    t.select("cronDialect", "quartz")
+    n = t.count("#common-expressions .ref-use")
+    expect(n >= 20, f"{n} common expressions")
+    for i in range(n):
+        t.call(f"document.querySelectorAll('#common-expressions .ref-use')[{i}].click()")
+        t.wait(40)
+        expr = t.val("cronInput")
+        expect(not t.call("document.getElementById('terminalPane').classList.contains('error')"), expr + " rejected: " + t.text("cronTranslation"))
+    eq(t.val("cronDialect"), "unix", "dialect switched to crontab")
+    t.click("#common-expressions tr:has-text('Every 15 minutes during working hours') .ref-use")
+    tr = t.text("cronTranslation").lower()
+    expect("15 minutes" in tr and "monday" in tr, tr)
 
 
 @case("cron-generator", "edge", "B1: month and day names, 7 for Sunday and ? all list next runs")

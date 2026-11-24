@@ -164,7 +164,7 @@
   <link rel="manifest" href="../manifest.json" />
   <link rel="alternate" type="application/atom+xml" title="Layerbit developer guides" href="https://layerbit.co.in/feed.xml" />
   <link rel="apple-touch-icon" href="../apple-touch-icon.png" />
-  <link rel="stylesheet" href="../css/base.css?v=e076970c45" />
+  <link rel="stylesheet" href="../css/base.css?v=45a6ebe390" />
 
   <style>
 
@@ -688,6 +688,40 @@
           <p>Generate valid syntax for AWS EventBridge (CloudWatch Events), Azure Functions, or Google Cloud Scheduler to trigger serverless functions exactly when your application traffic demands it.</p>
         </div>
       </div>
+    </div>
+
+    <div class="info-panel" id="common-expressions">
+      <h2><i data-lucide="list"></i> Common cron expressions</h2>
+      <p>The schedules people look up most, in standard five-field crontab syntax (minute, hour, day of month, month, day of week). Press <strong>Use</strong> to load one above, see its exact next runs in your server's time zone, and convert it to Quartz, AWS EventBridge, Kubernetes or another dialect.</p>
+      <div class="ref-table-wrap">
+        <table class="ref-table">
+          <thead><tr><th>Expression</th><th>Runs</th><th><span class="sr-only">Load</span></th></tr></thead>
+          <tbody>
+          <tr><td><code>* * * * *</code></td><td class="ref-desc">Every minute</td><td><button type="button" class="ref-use" onclick="useCron('* * * * *')" aria-label="Use * * * * *">Use</button></td></tr>
+          <tr><td><code>*/5 * * * *</code></td><td class="ref-desc">Every 5 minutes</td><td><button type="button" class="ref-use" onclick="useCron('*/5 * * * *')" aria-label="Use */5 * * * *">Use</button></td></tr>
+          <tr><td><code>*/10 * * * *</code></td><td class="ref-desc">Every 10 minutes</td><td><button type="button" class="ref-use" onclick="useCron('*/10 * * * *')" aria-label="Use */10 * * * *">Use</button></td></tr>
+          <tr><td><code>*/15 * * * *</code></td><td class="ref-desc">Every 15 minutes</td><td><button type="button" class="ref-use" onclick="useCron('*/15 * * * *')" aria-label="Use */15 * * * *">Use</button></td></tr>
+          <tr><td><code>*/30 * * * *</code></td><td class="ref-desc">Every 30 minutes</td><td><button type="button" class="ref-use" onclick="useCron('*/30 * * * *')" aria-label="Use */30 * * * *">Use</button></td></tr>
+          <tr><td><code>0 * * * *</code></td><td class="ref-desc">Every hour, on the hour</td><td><button type="button" class="ref-use" onclick="useCron('0 * * * *')" aria-label="Use 0 * * * *">Use</button></td></tr>
+          <tr><td><code>0 */2 * * *</code></td><td class="ref-desc">Every 2 hours</td><td><button type="button" class="ref-use" onclick="useCron('0 */2 * * *')" aria-label="Use 0 */2 * * *">Use</button></td></tr>
+          <tr><td><code>0 */6 * * *</code></td><td class="ref-desc">Every 6 hours (00:00, 06:00, 12:00, 18:00)</td><td><button type="button" class="ref-use" onclick="useCron('0 */6 * * *')" aria-label="Use 0 */6 * * *">Use</button></td></tr>
+          <tr><td><code>0 0 * * *</code></td><td class="ref-desc">Every day at midnight</td><td><button type="button" class="ref-use" onclick="useCron('0 0 * * *')" aria-label="Use 0 0 * * *">Use</button></td></tr>
+          <tr><td><code>0 9 * * *</code></td><td class="ref-desc">Every day at 9:00</td><td><button type="button" class="ref-use" onclick="useCron('0 9 * * *')" aria-label="Use 0 9 * * *">Use</button></td></tr>
+          <tr><td><code>30 2 * * *</code></td><td class="ref-desc">Every night at 02:30, a common backup slot</td><td><button type="button" class="ref-use" onclick="useCron('30 2 * * *')" aria-label="Use 30 2 * * *">Use</button></td></tr>
+          <tr><td><code>0 9 * * 1-5</code></td><td class="ref-desc">Weekdays (Monday to Friday) at 9:00</td><td><button type="button" class="ref-use" onclick="useCron('0 9 * * 1-5')" aria-label="Use 0 9 * * 1-5">Use</button></td></tr>
+          <tr><td><code>*/15 9-17 * * 1-5</code></td><td class="ref-desc">Every 15 minutes during working hours on weekdays</td><td><button type="button" class="ref-use" onclick="useCron('*/15 9-17 * * 1-5')" aria-label="Use */15 9-17 * * 1-5">Use</button></td></tr>
+          <tr><td><code>0 9 * * 1</code></td><td class="ref-desc">Every Monday at 9:00</td><td><button type="button" class="ref-use" onclick="useCron('0 9 * * 1')" aria-label="Use 0 9 * * 1">Use</button></td></tr>
+          <tr><td><code>0 0 * * 0</code></td><td class="ref-desc">Every Sunday at midnight</td><td><button type="button" class="ref-use" onclick="useCron('0 0 * * 0')" aria-label="Use 0 0 * * 0">Use</button></td></tr>
+          <tr><td><code>0 18 * * 5</code></td><td class="ref-desc">Every Friday at 18:00</td><td><button type="button" class="ref-use" onclick="useCron('0 18 * * 5')" aria-label="Use 0 18 * * 5">Use</button></td></tr>
+          <tr><td><code>0 0 1 * *</code></td><td class="ref-desc">At midnight on the first day of every month</td><td><button type="button" class="ref-use" onclick="useCron('0 0 1 * *')" aria-label="Use 0 0 1 * *">Use</button></td></tr>
+          <tr><td><code>0 0 1 */3 *</code></td><td class="ref-desc">At midnight on the first day of every quarter</td><td><button type="button" class="ref-use" onclick="useCron('0 0 1 */3 *')" aria-label="Use 0 0 1 */3 *">Use</button></td></tr>
+          <tr><td><code>0 0 1 1 *</code></td><td class="ref-desc">Once a year, at midnight on 1 January</td><td><button type="button" class="ref-use" onclick="useCron('0 0 1 1 *')" aria-label="Use 0 0 1 1 *">Use</button></td></tr>
+          <tr><td><code>0 0 1,15 * *</code></td><td class="ref-desc">Twice a month, on the 1st and the 15th</td><td><button type="button" class="ref-use" onclick="useCron('0 0 1,15 * *')" aria-label="Use 0 0 1,15 * *">Use</button></td></tr>
+          <tr><td><code>@reboot</code></td><td class="ref-desc">Once, each time the machine starts</td><td><button type="button" class="ref-use" onclick="useCron('@reboot')" aria-label="Use @reboot">Use</button></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>Cron runs in the time zone of the machine or service that executes it, which is UTC on GitHub Actions and most cloud schedulers. A job meant for 9:00 in Dubai (UTC+4) is <code>0 5 * * *</code> on a UTC scheduler; pick your zone next to the run list to check.</p>
     </div>
 
     <div class="info-panel">
@@ -1223,6 +1257,14 @@
       try { localStorage.setItem('layerbit-cron-dialect', to); } catch (e) {}
       showDialectInfo();
       translateCron();
+    }
+    // "Use" buttons in the common-expressions table: they are standard crontab,
+    // so switch to that dialect first rather than reading them as another one.
+    function useCron(expr) {
+      if (dialectSel.value !== 'unix') { dialectSel.value = 'unix'; dialectChanged(false); }
+      cronInput.value = expr;
+      translateCron();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
     dialectSel.addEventListener('change', () => dialectChanged(true));
 

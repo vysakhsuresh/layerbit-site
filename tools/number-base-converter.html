@@ -173,7 +173,7 @@
   <link rel="manifest" href="../manifest.json" />
   <link rel="alternate" type="application/atom+xml" title="Layerbit developer guides" href="https://layerbit.co.in/feed.xml" />
   <link rel="apple-touch-icon" href="../apple-touch-icon.png" />
-  <link rel="stylesheet" href="../css/base.css?v=e076970c45" />
+  <link rel="stylesheet" href="../css/base.css?v=45a6ebe390" />
   <link rel="stylesheet" href="../css/tool.css?v=557effa1e2" />
 
   <style>
@@ -349,6 +349,55 @@
 
       <h2><i data-lucide="sigma"></i> Floating point bits</h2>
       <p>At 32 and 64 bits the same pattern can also be read as an IEEE-754 floating-point number, the format used by <code>float</code> and <code>double</code> in nearly every language. At 16 bits it is read two ways: as IEEE half precision (float16: 5 exponent bits, 10 mantissa bits, largest value 65504), used in graphics and for storing model weights, and as bfloat16 (8 exponent bits like float32, 7 mantissa bits), which machine-learning hardware uses because it keeps float32's range. Converting a decimal to either rounds once, to nearest with ties to even, as the hardware does. The bits split into a sign, an exponent and a mantissa. The panel decodes them and reports whether the value is normal, subnormal, zero, infinity or NaN. Use the decimal-to-bits field to see why <code>0.1</code> cannot be stored exactly: its float64 pattern is <code>0x3FB999999999999A</code>, a repeating binary fraction rounded at the last bit, which is why 0.1 + 0.2 is not exactly 0.3.</p>
+    </div>
+
+    <div class="info-panel" id="conversion-table">
+      <h2><i data-lucide="table"></i> Binary, octal, decimal and hex conversion table</h2>
+      <p>The values you meet most often in code, with their binary, octal and hexadecimal forms. Type any other number into the converter above, in any base up to 36 and of any size.</p>
+      <div class="ref-table-wrap">
+        <table class="ref-table">
+          <thead><tr><th>Decimal</th><th>Binary</th><th>Octal</th><th>Hex</th></tr></thead>
+          <tbody>
+            <tr><td>0</td><td><code>0</code></td><td><code>0</code></td><td><code>0</code></td></tr>
+            <tr><td>1</td><td><code>1</code></td><td><code>1</code></td><td><code>1</code></td></tr>
+            <tr><td>2</td><td><code>10</code></td><td><code>2</code></td><td><code>2</code></td></tr>
+            <tr><td>3</td><td><code>11</code></td><td><code>3</code></td><td><code>3</code></td></tr>
+            <tr><td>4</td><td><code>100</code></td><td><code>4</code></td><td><code>4</code></td></tr>
+            <tr><td>5</td><td><code>101</code></td><td><code>5</code></td><td><code>5</code></td></tr>
+            <tr><td>6</td><td><code>110</code></td><td><code>6</code></td><td><code>6</code></td></tr>
+            <tr><td>7</td><td><code>111</code></td><td><code>7</code></td><td><code>7</code></td></tr>
+            <tr><td>8</td><td><code>1000</code></td><td><code>10</code></td><td><code>8</code></td></tr>
+            <tr><td>9</td><td><code>1001</code></td><td><code>11</code></td><td><code>9</code></td></tr>
+            <tr><td>10</td><td><code>1010</code></td><td><code>12</code></td><td><code>A</code></td></tr>
+            <tr><td>11</td><td><code>1011</code></td><td><code>13</code></td><td><code>B</code></td></tr>
+            <tr><td>12</td><td><code>1100</code></td><td><code>14</code></td><td><code>C</code></td></tr>
+            <tr><td>13</td><td><code>1101</code></td><td><code>15</code></td><td><code>D</code></td></tr>
+            <tr><td>14</td><td><code>1110</code></td><td><code>16</code></td><td><code>E</code></td></tr>
+            <tr><td>15</td><td><code>1111</code></td><td><code>17</code></td><td><code>F</code></td></tr>
+            <tr><td>16</td><td><code>10000</code></td><td><code>20</code></td><td><code>10</code></td></tr>
+            <tr><td>31</td><td><code>11111</code></td><td><code>37</code></td><td><code>1F</code></td></tr>
+            <tr><td>32</td><td><code>100000</code></td><td><code>40</code></td><td><code>20</code></td></tr>
+            <tr><td>63</td><td><code>111111</code></td><td><code>77</code></td><td><code>3F</code></td></tr>
+            <tr><td>64</td><td><code>1000000</code></td><td><code>100</code></td><td><code>40</code></td></tr>
+            <tr><td>100</td><td><code>1100100</code></td><td><code>144</code></td><td><code>64</code></td></tr>
+            <tr><td>127</td><td><code>1111111</code></td><td><code>177</code></td><td><code>7F</code></td></tr>
+            <tr><td>128</td><td><code>10000000</code></td><td><code>200</code></td><td><code>80</code></td></tr>
+            <tr><td>255</td><td><code>11111111</code></td><td><code>377</code></td><td><code>FF</code></td></tr>
+            <tr><td>256</td><td><code>100000000</code></td><td><code>400</code></td><td><code>100</code></td></tr>
+            <tr><td>1000</td><td><code>1111101000</code></td><td><code>1750</code></td><td><code>3E8</code></td></tr>
+            <tr><td>1023</td><td><code>1111111111</code></td><td><code>1777</code></td><td><code>3FF</code></td></tr>
+            <tr><td>1024</td><td><code>10000000000</code></td><td><code>2000</code></td><td><code>400</code></td></tr>
+            <tr><td>4095</td><td><code>111111111111</code></td><td><code>7777</code></td><td><code>FFF</code></td></tr>
+            <tr><td>65535</td><td><code>1111111111111111</code></td><td><code>177777</code></td><td><code>FFFF</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <h3>How to convert binary to decimal</h3>
+      <p>Write the place value of each bit from the right (1, 2, 4, 8, 16...) and add up the places that hold a 1. For <code>101101</code>: 32 + 8 + 4 + 1 = <strong>45</strong>.</p>
+      <h3>How to convert decimal to binary</h3>
+      <p>Divide by 2 repeatedly and write the remainders from last to first. 45 ÷ 2 = 22 r 1, 22 ÷ 2 = 11 r 0, 11 ÷ 2 = 5 r 1, 5 ÷ 2 = 2 r 1, 2 ÷ 2 = 1 r 0, 1 ÷ 2 = 0 r 1, so 45 is <code>101101</code>.</p>
+      <h3>How to convert hex to decimal</h3>
+      <p>Each hex digit is worth 16 times the one to its right, with A to F standing for 10 to 15. For <code>0x2F</code>: 2 × 16 + 15 = <strong>47</strong>. Going the other way, each hex digit is exactly four bits, so <code>0x2F</code> is <code>0010 1111</code> in binary, which is why hex is the usual shorthand for bytes.</p>
     </div>
 
     <div class="info-panel">

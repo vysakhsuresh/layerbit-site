@@ -135,6 +135,24 @@
       </div>
     </div>
 
+    <div class="info-panel" id="image-to-base64">
+      <h2><i data-lucide="image"></i> Image to Base64, and Base64 back to an image</h2>
+      <p><strong>To convert an image to Base64</strong>, open the <em>Files &amp; images</em> tab and drop a PNG, JPG, SVG, WebP, GIF or PDF on the left pane. The result is a data URI you can paste straight into HTML or CSS:</p>
+      <div class="ref-table-wrap">
+        <table class="ref-table">
+          <thead><tr><th>Where</th><th>How to use the result</th></tr></thead>
+          <tbody>
+            <tr><td>HTML</td><td><code>&lt;img src="data:image/png;base64,iVBORw0KGgo..." alt="Logo"&gt;</code></td></tr>
+            <tr><td>CSS</td><td><code>background-image: url("data:image/svg+xml;base64,PHN2Zy...");</code></td></tr>
+            <tr><td>JSON or an API</td><td>Send only the part after the comma, and put the type (<code>image/png</code>) in its own field.</td></tr>
+            <tr><td>Email (MIME)</td><td>Choose <em>MIME (76 per line)</em> wrapping, which mail systems expect.</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p><strong>To turn Base64 back into an image</strong>, paste a data URI such as <code>data:image/png;base64,...</code> into the right pane. The image (or PDF) is shown at once, and <em>Download</em> saves it with the right extension. For Base64 without the <code>data:</code> prefix, paste it into the <em>Text</em> tab: the decoded bytes are recognised from their first bytes (PNG, JPEG, GIF, PDF, ZIP and more), shown in a hex view, and saved with <em>Download bytes</em>.</p>
+      <p>Base64 makes a file about 33% larger, so embed only small images such as icons and logos (a few kilobytes). Larger images load faster as normal files, because the browser can cache them and fetch them in parallel.</p>
+    </div>
+
     <div class="info-panel">
       <h2><i data-lucide="help-circle"></i> Frequently Asked Questions</h2>
       <div class="faq-container">
