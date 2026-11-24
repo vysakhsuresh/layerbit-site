@@ -51,3 +51,6 @@ jobs:
 
       - name: Every parity claim's browser tests passed
         run: python3 scripts/check_parity.py --ui-results ui-results.json
+
+      - name: The comparison page lists exactly the tools whose parity is green
+        run: python3 scripts/build_compare.py --ui-results ui-results.json --check
