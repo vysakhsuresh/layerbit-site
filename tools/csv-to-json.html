@@ -207,7 +207,7 @@
   <link rel="manifest" href="../manifest.json" />
   <link rel="alternate" type="application/atom+xml" title="Layerbit developer guides" href="https://layerbit.co.in/feed.xml" />
   <link rel="apple-touch-icon" href="../apple-touch-icon.png" />
-  <link rel="stylesheet" href="../css/base.css?v=b085446010" />
+  <link rel="stylesheet" href="../css/base.css?v=72db9c2b0b" />
 
   <style>
 
@@ -318,7 +318,7 @@
 
     /* Custom Checkbox Toggle */
     .toggle-wrapper { display: flex; align-items: center; gap: 8px; font-size: 0.85em; color: var(--text-muted); cursor: pointer; }
-    .toggle-wrapper input { cursor: pointer; accent-color: var(--accent-main); }
+    .toggle-wrapper input:is([type=checkbox],[type=radio]) { cursor: pointer; accent-color: var(--accent-main); }
 
     /* Error Alert */
     .error-banner {
@@ -448,6 +448,10 @@
     .grid-head svg { width: 18px; height: 18px; color: var(--accent-main); }
     .grid-hint { font-weight: 400; color: var(--text-muted); font-size: 0.85em; }
     .grid-host { height: 320px; font-family: 'Fira Code', monospace; font-size: 0.85em; }
+    @media (max-width: 600px) {
+      .col-types .ct-item { display: flex; flex-wrap: wrap; width: 100%; box-sizing: border-box; }
+      .col-types .ct-name { flex: 1 1 110px; min-width: 0; }
+    }
 
   </style>
 </head>

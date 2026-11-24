@@ -229,8 +229,8 @@
   <link rel="manifest" href="../manifest.json" />
   <link rel="alternate" type="application/atom+xml" title="Layerbit developer guides" href="https://layerbit.co.in/feed.xml" />
   <link rel="apple-touch-icon" href="../apple-touch-icon.png" />
-  <link rel="stylesheet" href="../css/base.css?v=b085446010" />
-  <link rel="stylesheet" href="../css/tool.css?v=557effa1e2" />
+  <link rel="stylesheet" href="../css/base.css?v=72db9c2b0b" />
+  <link rel="stylesheet" href="../css/tool.css?v=6cd7a951ab" />
 
   <style>
 
@@ -320,7 +320,7 @@
     .toggle-label {
       display: flex; align-items: center; gap: 8px; color: var(--text-muted); font-size: 0.9em; cursor: pointer;
     }
-    .toggle-label input { width: 16px; height: 16px; cursor: pointer; accent-color: var(--accent-main); }
+    .toggle-label input:is([type=checkbox],[type=radio]) { width: 16px; height: 16px; cursor: pointer; accent-color: var(--accent-main); }
 
     .action-bar {
       display: flex; justify-content: center; gap: 15px; margin-bottom: 40px; flex-wrap: wrap;
@@ -607,6 +607,10 @@
     .img-slider-row[hidden] { display: none; }
     .img-slider-row input { width: min(100%, 640px); }
     @media (max-width: 760px) { .img-stage.view-side .img-fig { max-width: min(100%, var(--img-w)); } }
+    .ignore-input { max-width: 100%; box-sizing: border-box; }
+    .opt-group { max-width: 100%; }
+    .ignore-label { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 6px; max-width: 100%; }
+    .ignore-label .ignore-input { flex: 1 1 180px; width: auto; min-width: 0; }
 
   </style>
 </head>

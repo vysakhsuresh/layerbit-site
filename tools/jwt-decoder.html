@@ -181,7 +181,7 @@
   <link rel="manifest" href="../manifest.json" />
   <link rel="alternate" type="application/atom+xml" title="Layerbit developer guides" href="https://layerbit.co.in/feed.xml" />
   <link rel="apple-touch-icon" href="../apple-touch-icon.png" />
-  <link rel="stylesheet" href="../css/base.css?v=b085446010" />
+  <link rel="stylesheet" href="../css/base.css?v=72db9c2b0b" />
 
   <style>
 
@@ -470,7 +470,7 @@
     .lint-grid, .signer-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
     .verify-row-note { color: var(--text-muted); font-size: 0.9em; }
     .check-inline { display: flex; align-items: center; gap: 6px; margin-top: 8px; cursor: pointer; }
-    .check-inline input { accent-color: var(--accent-main); }
+    .check-inline input:is([type=checkbox],[type=radio]) { accent-color: var(--accent-main); }
     .lint-list { display: flex; flex-direction: column; gap: 6px; margin-top: 6px; }
     .lint-summary { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 6px; }
     .lint-count { font-size: 0.78em; font-weight: 600; padding: 3px 10px; border-radius: 999px; background: rgba(255,255,255,0.05); color: var(--text-muted); }
@@ -505,6 +505,9 @@
     .jwks-row { display: flex; gap: 8px; align-items: center; margin-top: 6px; }
     .jwks-row[hidden] { display: none; }
     .jwks-row .verify-input { flex: 1; min-width: 0; }
+    .verify-panel { width: 100%; box-sizing: border-box; }
+    .signer-actions > * { min-width: 0; max-width: 100%; }
+    .signer-actions .verify-hint { flex-wrap: wrap; }
 
   </style>
 </head>
