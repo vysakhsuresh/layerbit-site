@@ -99,3 +99,7 @@
       .gen-name { display: none; }
       .grad-stop .stop-hex { width: 90px; }
     }
+
+    /* Values wrap between their parts (at spaces and commas), never inside a number. */
+    .fmt-table td.val { word-break: normal; overflow-wrap: anywhere; }
+    @media (max-width: 600px) { .fmt-table td.val { overflow-wrap: break-word; word-break: keep-all; } }

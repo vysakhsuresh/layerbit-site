@@ -259,7 +259,7 @@ footer .footer-links a { display: inline-block; padding: 6px 0; }
   transition: color 0.2s;
 }
 .info-panel a:hover,
-.use-case-card a:hover { color: #fff; text-decoration: underline; text-underline-offset: 3px; }
+.use-case-card a:hover { color: #fff; }
 
 /* Lists inside documentation panels - only some pages defined these, so a
    list added to a page without them fell back to browser defaults. */
@@ -500,11 +500,18 @@ input[type=color]::-moz-color-swatch { border: none; border-radius: 5px; }
   .pane textarea.editor { min-height: 240px !important; }
 }
 
-/* Links: the accent colour already says "this goes somewhere", so text links
-   carry no underline at rest; the underline appears on hover and keyboard
-   focus as confirmation. */
-a { text-decoration: none; }
-a:not([class]):hover, a:not([class]):focus-visible { text-decoration: underline; text-underline-offset: 3px; text-decoration-thickness: 1px; }
+/* Tool intros: a readable line length on wide screens, centred under the title. */
+.hero > p { max-width: 820px; margin-left: auto; margin-right: auto; }
+
+/* The floating buttons (search, chat, home) sit in the bottom corners. Room
+   below the footer's last row keeps them off its links when the page is
+   scrolled to the end. */
+footer { padding-bottom: 104px !important; }
+@media (max-width: 1100px) { footer { padding-bottom: 84px !important; } }
+
+/* Links: never underlined, at rest or on hover. The accent colour says
+   "this goes somewhere" and each link style changes colour on hover. */
+a, a:hover, a:focus-visible { text-decoration: none; }
 
 /* Phones: nothing below 11px. These are the labels the device audit found
    under that size (badges, swatch and calendar labels, hash digests, diff hunk
@@ -529,13 +536,19 @@ a:not([class]):hover, a:not([class]):focus-visible { text-decoration: underline;
 /* Button labels stay on one line; rows of buttons wrap instead. */
 .btn, .btn-action { white-space: nowrap; }
 
-/* Phones: option labels wrap rather than run past the pane edge. Up to
-   tablet width the floating home button is hidden: with narrow margins it
-   covered text and fields while scrolling, and the Layerbit logo in the
-   header already goes home. */
+/* Phones: option labels wrap rather than run past the pane edge. The
+   floating home button shows only where the side margin is wide enough for
+   it (1700px and up); on narrower screens it covered text and fields while
+   scrolling, and the Layerbit logo in the header already goes home. */
 @media (max-width: 600px) {
   .check, .toggle-label, .toggle-wrapper { white-space: normal; }
 }
-@media (max-width: 1100px) {
+@media (max-width: 1699px) {
   body #smartBackBtn.fab { display: none !important; }
 }
+/* A long option label stays on one line instead of making its select taller
+   than the controls beside it. */
+select { white-space: nowrap; text-overflow: ellipsis; max-width: 100%; min-width: 0; }
+label:has(> select), .pane-title:has(> select) { max-width: 100%; min-width: 0; }
+label > select, .pane-title > select { min-width: 0; flex-shrink: 1; }
+.pane-title:has(> select), label:has(> select) { flex-wrap: wrap; }

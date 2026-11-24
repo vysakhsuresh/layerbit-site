@@ -274,7 +274,7 @@
 
     /* Premium Buy Me A Coffee Button */
     .premium-bmc-btn {
-      position: fixed;
+      position: absolute; /* belongs to the header: scrolls away instead of covering content */
       top: 30px;
       right: 30px;
       height: 60px;
@@ -742,3 +742,9 @@
     .ps-kind { font-size: 0.72em; font-weight: 600; color: var(--text-muted); border: 1px solid var(--card-border); border-radius: 999px; padding: 2px 8px; }
     .ps-kind:empty { display: none; }
     .pill-suggest-empty { padding: 12px 14px; color: var(--text-muted); font-size: 0.95em; }
+
+    /* Phones and touch tablets: an open search sits at the top of the visible
+       area (above the on-screen keyboard) with suggestions below it. */
+    .search-pill-wrapper.at-top { top: calc(var(--vv-top, 0px) + 12px); bottom: auto !important; left: 12px !important; right: 12px; z-index: 10001; }
+    .search-pill-wrapper.at-top .search-pill.expanded { width: 100%; box-sizing: border-box; }
+    .search-pill-wrapper.at-top .pill-suggest { top: calc(100% + 8px); bottom: auto; width: 100%; box-sizing: border-box; max-height: calc(var(--vv-h, 100vh) - 90px); }

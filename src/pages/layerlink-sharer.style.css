@@ -29,7 +29,7 @@
       width: 100%;
       margin: 0 auto 60px auto;
       display: grid;
-      grid-template-columns: 1fr 2fr;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
       gap: 30px;
       animation: fadeSlideUp 1s ease-out forwards;
     }
@@ -130,7 +130,8 @@
     }
   
     /* Room options, viewers, chat, files, drawing (v2) */
-    .room-form { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 16px; }
+    .room-form { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px 16px; }
+    .ll-field input, .ll-field select { width: 100%; box-sizing: border-box; min-width: 0; }
     .ll-field { display: flex; flex-direction: column; gap: 6px; font-size: 0.9em; color: var(--text-muted); }
     .ll-field input, .ll-field select, .ll-inline select, .chat-form input {
       background: rgba(0,0,0,0.35); border: 1px solid var(--card-border); color: var(--text-main);

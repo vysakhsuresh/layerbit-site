@@ -32,14 +32,14 @@ def main(slug, m):
             "fonts_family": "Space+Grotesk:wght@400;500;600;700&family=Fira+Code:wght@400;500&display=swap",
             "extra_head_libs": "", "extra_head_after_resources": '  <link rel="stylesheet" href="../css/article.css" />\n', "home_href": "../"}
     io.open(f"{ROOT}/src/pages/guides-{slug}.json", "w", encoding="utf-8").write(json.dumps(page, indent=2, ensure_ascii=False) + "\n")
-    org = {"@type": "Organization", "name": "Layerbit Technologies", "url": "https://layerbit.co.in/",
+    org = {"@type": "Organization", "name": "Layerbit AI LLP", "url": "https://layerbit.co.in/",
            "logo": {"@type": "ImageObject", "url": "https://layerbit.co.in/icon-512.png", "width": 512, "height": 512}}
     date = m.get("date", "2026-10-17")
     ld = {"@context": "https://schema.org", "@graph": [
         {"@type": "TechArticle", "@id": url + "#article", "headline": headline, "name": headline, "description": m["description"], "url": url,
          "mainEntityOfPage": {"@type": "WebPage", "@id": url}, "datePublished": date, "dateModified": date, "inLanguage": "en",
          "wordCount": words, "keywords": ", ".join(m["keywords"]), "articleSection": m["section"],
-         "author": {"@type": "Organization", "name": "Layerbit Technologies", "url": "https://layerbit.co.in/about.html"}, "publisher": org,
+         "author": {"@type": "Organization", "name": "Layerbit AI LLP", "url": "https://layerbit.co.in/about.html"}, "publisher": org,
          "image": {"@type": "ImageObject", "url": f"https://layerbit.co.in/images/og/guides-{slug}.jpg", "width": 1200, "height": 630},
          "isAccessibleForFree": True, "proficiencyLevel": m["level"]},
         {"@type": "BreadcrumbList", "@id": url + "#breadcrumb", "itemListElement": [

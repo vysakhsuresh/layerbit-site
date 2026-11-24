@@ -16,7 +16,7 @@ that your contribution is licensed the same way.
   License 1.1.
 - The Layerbit name, logo and branding are not licensed for reuse
   (AGPL-3.0 section 7(e)). A copy you host must not present itself as Layerbit.
-- Written guides, blog posts and graphics are copyright Layerbit Technologies;
+- Written guides, blog posts and graphics are copyright Layerbit AI LLP;
   quoting with attribution and a link is welcome.
 
 ## How the site is built

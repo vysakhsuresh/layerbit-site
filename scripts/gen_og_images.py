@@ -64,7 +64,7 @@ def page_info(meta_file):
     else:
         kind, key = "Layerbit", None
     if file == "index.html":
-        title, kind = "Free Developer Tools That Run in Your Browser", "28 tools"
+        title, kind = "Free Developer Tools That Run in Your Browser", "31 tools"
     return dict(name=og_name(file), title=title, desc=data["description"], kind=kind, icon=icons.ICONS.get(key))
 
 def render(pg, info):
@@ -74,7 +74,7 @@ def render(pg, info):
     size = 72 if n <= 28 else 62 if n <= 42 else 54 if n <= 56 else 46
     doc = (TEMPLATE.replace("TITLE_SIZE", str(size)).replace("LOGO", LOGO).replace("KIND", html.escape(info["kind"]))
            .replace("TITLE", html.escape(info["title"])).replace("DESC", html.escape(info["desc"])).replace("ICON", icon))
-    foot = {"Guide": ["<b>Free guide</b>", "Worked examples", "Updated regularly"], "Service": ["<b>Layerbit Technologies</b>", "Custom software", "Built to your process"]}.get(
+    foot = {"Guide": ["<b>Free guide</b>", "Worked examples", "Updated regularly"], "Service": ["<b>Layerbit AI LLP</b>", "Custom software", "Built to your process"]}.get(
         info["kind"], ["<b>Free</b>", "Runs in your browser", "No sign-up"])
     doc = doc.replace("FOOT", '<span class="dot"></span>'.join("<span>%s</span>" % f if not f.startswith("<b>") else f for f in foot))
     tmp = os.path.join(ROOT, "images/og/.render.html")

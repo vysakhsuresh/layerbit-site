@@ -2545,6 +2545,34 @@ def _(t):
     t.page.wait_for_url("**/tools/cron-generator.html")
 
 
+@case("index", "typical", "phones: the open search sits at the top, above the on-screen keyboard, with suggestions below it")
+def _(t):
+    base = t.page.url.split("/tools/")[0]
+    try:
+        t.page.set_viewport_size({"width": 390, "height": 844})
+        t.page.goto(base + "/", wait_until="load")
+        t.page.evaluate("document.querySelectorAll('.cookie-consent-banner').forEach(e=>e.remove())")
+        t.click("#pillSearch")
+        t.page.keyboard.type("json")
+        t.page.set_viewport_size({"width": 390, "height": 500})  # a 344px keyboard
+        t.wait(500)
+        box = t.call("(() => { const p = document.getElementById('pillSearch').getBoundingClientRect(), s = document.getElementById('pillSuggest').getBoundingClientRect(); return [p.top, p.bottom, p.right, s.top, s.bottom, innerHeight]; })()")
+        expect(0 <= box[0] <= 20 and box[1] <= 80, f"search box at the top of the screen: {box}")
+        expect(box[2] <= 390, f"search box inside the screen width: {box}")
+        expect(box[3] >= box[1] and box[4] <= box[5], f"suggestions below the box and above the keyboard: {box}")
+        t.page.keyboard.press("Escape")
+        t.wait(300)
+        expect(t.call("!document.getElementById('pillWrap').classList.contains('at-top')"), "closing returns the button to its corner")
+        t.page.set_viewport_size({"width": 1280, "height": 900})
+        t.click("#pillSearch")
+        t.page.keyboard.type("json")
+        t.wait(400)
+        d = t.call("(() => { const p = document.getElementById('pillSearch').getBoundingClientRect(); return [p.left, p.bottom, innerHeight]; })()")
+        expect(d[0] <= 40 and d[2] - d[1] <= 40, f"desktop keeps the search in the bottom-left corner: {d}")
+    finally:
+        t.page.set_viewport_size({"width": 1280, "height": 900})
+
+
 # ----------------------------------------------------------------------------
 # layerlink (two pages in one browser, signalled through localStorage)
 # ----------------------------------------------------------------------------
@@ -2713,7 +2741,7 @@ def _(t):
 # pint-ae-checker
 # ----------------------------------------------------------------------------
 PINT_CSV = ("InvoiceNumber,IssueDate,SellerName,SellerTRN,BuyerName,BuyerTRN,Currency,LineDescription,Quantity,UnitPrice,TaxRate,TaxAmount,TotalAmount\n"
-            "INV-001,2026-09-01,Layerbit Technologies,100123456700003,Acme LLC,100987654300003,AED,Consulting,1,1000,5,50,1050\n")
+            "INV-001,2026-09-01,Layerbit AI LLP,100123456700003,Acme LLC,100987654300003,AED,Consulting,1,1000,5,50,1050\n")
 
 
 @case("pint-ae-checker", "typical", "CSV upload -> mapping -> score")
@@ -5602,6 +5630,11 @@ def _(t):
     t.call("document.getElementById('optAutosave').click()")
     saved = "navigator.storage.getDirectory().then(async d => { try { const x = await d.getDirectoryHandle('layerbit-markdown'); return JSON.parse(await (await (await x.getFileHandle('index.json')).getFile()).text()).docs.length === 2; } catch (e) { return false; } })"
     t.wait_for(saved, 5000)
+    # a save removes only its own stale files: never another tab's write in progress or a file it did not make
+    t.call("navigator.storage.getDirectory().then(async d => { const x = await d.getDirectoryHandle('layerbit-markdown'); for (const n of ['index.json.crswap', 'notes.txt']) { const w = await (await x.getFileHandle(n, { create: true })).createWritable(); await w.write('x'); await w.close(); } })")
+    t.set("mdInput", t.val("mdInput") + "\n\nmore"); t.wait(1500)
+    t.wait_for(saved, 5000)
+    eq(t.call("navigator.storage.getDirectory().then(async d => { const x = await d.getDirectoryHandle('layerbit-markdown'); const out = []; for (const n of ['index.json.crswap', 'notes.txt']) { try { await x.getFileHandle(n); out.push(n); } catch (e) {} } return out.join(','); })"), "index.json.crswap,notes.txt", "a save left other files alone")
     t.page.reload(); t.wait(300)
     t.wait_for("document.querySelectorAll('#docSelect option').length === 2", 5000)
     texts = t.call("[...document.getElementById('docSelect').options].map(o => o.textContent).join('|')")

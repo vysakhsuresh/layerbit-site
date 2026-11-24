@@ -173,7 +173,7 @@
   <link rel="manifest" href="../manifest.json" />
   <link rel="alternate" type="application/atom+xml" title="Layerbit developer guides" href="https://layerbit.co.in/feed.xml" />
   <link rel="apple-touch-icon" href="../apple-touch-icon.png" />
-  <link rel="stylesheet" href="../css/base.css?v=ded808cb7c" />
+  <link rel="stylesheet" href="../css/base.css?v=ef7ca0cd59" />
   <link rel="stylesheet" href="../css/tool.css?v=d44299e685" />
 
   <style>
@@ -579,7 +579,7 @@
       </div>
     </nav>
     <div class="footer-bottom">
-      <div class="footer-copy">&copy; 2025 - 2026 <strong>Layerbit Technologies</strong>. Code open source under AGPL-3.0.</div>
+      <div class="footer-copy">&copy; 2025 - 2026 <strong>Layerbit AI LLP</strong>. Code open source under AGPL-3.0.</div>
       <div class="footer-links">
         <a href="../about.html">About</a>
         <a href="../work.html">Apps &amp; websites</a>
@@ -1022,7 +1022,10 @@ Raw HTML is allowed but sanitized: <a href="javascript:alert('nope')" onclick="a
       }
       await writeFile(dir, 'index.json', JSON.stringify(index));
       const keep = new Set(['index.json'].concat(index.docs.flatMap(d => ['doc-' + d.id + '.md'].concat(d.images.map(i => 'img-' + d.id + '-' + i.path.replace(/[^\w.-]/g, '_'))))));
-      for await (const name of dir.keys()) if (!keep.has(name)) await dir.removeEntry(name).catch(() => {});
+      // Remove only our own stale document and image files: never a write in
+      // progress (Chrome's .crswap) or a file this tab did not create, so a
+      // second open tab saving at the same moment is not cut off.
+      for await (const name of dir.keys()) if (!keep.has(name) && /^(doc-[\w-]+\.md|img-.+)$/.test(name) && !name.endsWith('.crswap')) await dir.removeEntry(name).catch(() => {});
     }
     async function loadAll() {
       const root = await navigator.storage.getDirectory(), dir = await root.getDirectoryHandle(DIR), out = [];

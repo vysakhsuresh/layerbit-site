@@ -196,7 +196,7 @@
   <link rel="manifest" href="../manifest.json" />
   <link rel="alternate" type="application/atom+xml" title="Layerbit developer guides" href="https://layerbit.co.in/feed.xml" />
   <link rel="apple-touch-icon" href="../apple-touch-icon.png" />
-  <link rel="stylesheet" href="../css/base.css?v=ded808cb7c" />
+  <link rel="stylesheet" href="../css/base.css?v=ef7ca0cd59" />
 
   <style>
 
@@ -286,7 +286,8 @@
 
     .input-group label i, .input-group label svg.lucide { width: 18px; color: var(--accent-main); }
 
-    .control-pane input[type="text"], .control-pane textarea, .control-pane select {
+    .control-pane input[type="text"], .control-pane textarea, .control-pane select,
+    .bulk-pane input[type="text"], .bulk-pane select {
       width: 100%;
       padding: 15px;
       background: rgba(0,0,0,0.3);
@@ -299,11 +300,12 @@
       transition: border 0.3s;
     }
 
-    .control-pane input[type="text"]:focus, .control-pane textarea:focus, .control-pane select:focus {
+    .control-pane input[type="text"]:focus, .control-pane textarea:focus, .control-pane select:focus,
+    .bulk-pane input[type="text"]:focus, .bulk-pane select:focus {
       border-color: var(--accent-main);
     }
 
-    .control-pane select option { background: #0a0c10; }
+    .control-pane select option, .bulk-pane select option { background: #0a0c10; }
 
     /* Payload builder */
     .payload-builder {
@@ -342,8 +344,8 @@
     /* Color Pickers */
     .color-grid {
       display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 20px;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      gap: 16px;
     }
 
     .color-picker {
@@ -661,7 +663,7 @@
     /* v1.4: payload builder, QR options grid, live readouts */
     .payload-builder .input-group { margin-bottom: 0; }
     .payload-builder .input-group label { font-size: 0.85em; }
-    .qr-options { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px; }
+    .qr-options { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; margin-top: 15px; }
     .payload-meta { margin-top: 8px; font-size: 0.8em; color: var(--text-muted); min-height: 1.2em; }
     .payload-meta.warn { color: #f59e0b; }
     #dataInput[readonly] { opacity: 0.85; cursor: default; }
@@ -669,7 +671,7 @@
     .control-pane textarea { resize: vertical; min-height: 58px; line-height: 1.4; }
 
     /* style, scan check, bulk */
-    .qr-style { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .qr-style { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; }
     .logo-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
     .logo-row select, .logo-row input[type="text"] { flex: 1; min-width: 90px; }
     .btn-mini { display: inline-flex; align-items: center; gap: 4px; padding: 7px 12px; border-radius: 8px; border: 1px solid var(--card-border); background: rgba(255,255,255,0.05); color: var(--text-main); cursor: pointer; font: inherit; font-size: 0.85em; }
@@ -679,13 +681,32 @@
     .scan-check.warn { color: #f59e0b; }
     #outputArea canvas, #outputArea .code-svg { max-width: 100%; height: auto; }
     #outputArea .code-svg { width: 320px; }
-    .bulk-pane { max-width: 1200px; margin: 0 auto 30px; padding: 22px 24px; border: 1px solid var(--card-border); border-radius: 16px; background: var(--card-bg); }
+    .bulk-pane { max-width: 1400px; margin: 0 auto 60px; padding: 22px 24px; border: 1px solid var(--card-border); border-radius: 16px; background: var(--card-bg); }
     .bulk-pane h2 { font-size: 1.2em; margin: 0 0 6px; display: flex; align-items: center; gap: 8px; }
     .bulk-pane p { color: var(--text-muted); margin: 0 0 14px; }
     .bulk-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; align-items: end; }
     @media (max-width: 800px) { .bulk-grid, .qr-style { grid-template-columns: minmax(0, 1fr); } }
     .bulk-pane { width: 100%; box-sizing: border-box; }
     .action-row { flex-wrap: wrap; }
+
+    /* Desktop: the preview stays at the top of its column and in view while
+       the longer settings column scrolls. */
+    @media (min-width: 901px) {
+      .synth-container { align-items: start; }
+      .output-pane { position: sticky; top: 24px; justify-content: flex-start; }
+    }
+    /* Logo row: the Choose and Remove buttons match the height of the select
+       between them. */
+    .logo-row { align-items: stretch; }
+    .logo-row .btn-mini { padding: 0 16px; border-radius: 12px; font-size: 0.95em; justify-content: center; min-height: 48px; }
+    /* Spreadsheet row: every field lines up on the same baseline. */
+    .bulk-grid .input-group { margin-bottom: 0; }
+    .bulk-pane input[type="file"] { width: 100%; box-sizing: border-box; padding: 11px; background: rgba(0,0,0,0.3); border: 1px solid var(--card-border); border-radius: 12px; color: var(--text-muted); font: inherit; }
+    .bulk-grid .btn-generate { margin-top: 0; align-self: end; }
+    /* Logo and frame rows take the full width so their controls stay on one line. */
+    .qr-style .span-2 { grid-column: 1 / -1; }
+    .logo-row { flex-wrap: nowrap; }
+    .logo-row select { min-width: 0; }
 
   </style>
 </head>
@@ -817,7 +838,7 @@
           <label for="eyeStyle"><i data-lucide="scan-eye"></i> Corner eyes</label>
           <select id="eyeStyle"><option value="square">Square</option><option value="rounded">Rounded</option><option value="circle">Circle</option></select>
         </div>
-        <div class="input-group">
+        <div class="input-group span-2">
           <label for="logoFile"><i data-lucide="image"></i> Logo in the centre</label>
           <div class="logo-row">
             <label class="btn-mini" title="PNG, JPEG or SVG; it is drawn in a cleared square in the middle">Choose<input type="file" id="logoFile" accept="image/*" hidden></label>
@@ -825,7 +846,7 @@
             <button type="button" class="btn-mini" id="btnLogoClear" disabled>Remove</button>
           </div>
         </div>
-        <div class="input-group">
+        <div class="input-group span-2">
           <label for="frameStyle"><i data-lucide="frame"></i> Frame</label>
           <div class="logo-row">
             <select id="frameStyle"><option value="none">None</option><option value="banner">Banner below</option><option value="box">Box</option></select>
@@ -1210,7 +1231,7 @@
       </div>
     </nav>
     <div class="footer-bottom">
-      <div class="footer-copy">&copy; 2025 - 2026 <strong>Layerbit Technologies</strong>. Code open source under AGPL-3.0.</div>
+      <div class="footer-copy">&copy; 2025 - 2026 <strong>Layerbit AI LLP</strong>. Code open source under AGPL-3.0.</div>
       <div class="footer-links">
         <a href="../about.html">About</a>
         <a href="../work.html">Apps &amp; websites</a>

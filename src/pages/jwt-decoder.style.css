@@ -322,3 +322,6 @@
     .verify-panel { width: 100%; box-sizing: border-box; }
     .signer-actions > * { min-width: 0; max-width: 100%; }
     .signer-actions .verify-hint { flex-wrap: wrap; }
+
+    /* Phones: the explanatory subtitle drops under its heading instead of squeezing it. */
+    @media (max-width: 600px) { h2:has(> .verify-subtitle) { flex-wrap: wrap; row-gap: 2px; } .verify-subtitle { display: block; flex-basis: 100%; font-size: 0.62em; } }
