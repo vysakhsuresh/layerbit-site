@@ -1,0 +1,55 @@
+{
+  "tool": "flow",
+  "page": "tools/flow.html",
+  "competitors": [
+    {
+      "name": "CyberChef",
+      "price": "free, Apache-2.0",
+      "checked": "2026-11"
+    }
+  ],
+  "claims": [
+    {
+      "feature": "A broad operation set (more than 200)",
+      "competitor": "CyberChef",
+      "tests": [
+        "ui:flow:2.21: more than 200 operations, and the page shows the registry's own count",
+        "ui:flow:2.21: new operations: hashes from hash-wasm, ciphers, Base58/85, TOML, JWT signing",
+        "unit:flowops:registry: over 200 operations, unique ids, every one has a group and description",
+        "unit:flowops:hashes and checksums against their reference vectors",
+        "unit:flowops:ciphers: Vigenère, affine, rail fence, ROT47, Atbash, RC4, XOR"
+      ]
+    },
+    {
+      "feature": "Fork and Merge",
+      "competitor": "CyberChef",
+      "tests": [
+        "ui:flow:2.21: Fork runs the following steps on each line, Merge joins them",
+        "unit:flowops:runner: Fork and Merge run the inner steps per part; nested forks; errors name the part"
+      ]
+    },
+    {
+      "feature": "Breakpoints",
+      "competitor": "CyberChef",
+      "tests": [
+        "ui:flow:2.21: a breakpoint pauses the recipe; Step and Continue resume it",
+        "unit:flowops:runner: pauseAfter stops after that step and marks the rest paused"
+      ]
+    },
+    {
+      "feature": "Large files (streamed line by line)",
+      "competitor": "CyberChef",
+      "tests": [
+        "ui:flow:2.21: a large file streams line by line through line-by-line steps",
+        "unit:flowops:lineSafe: per-line steps qualify, whole-text steps do not"
+      ]
+    },
+    {
+      "feature": "Send to another tool",
+      "competitor": "CyberChef",
+      "tests": [
+        "ui:flow:2.21: Send to opens the output in another Layerbit tool"
+      ]
+    }
+  ]
+}

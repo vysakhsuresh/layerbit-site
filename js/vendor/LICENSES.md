@@ -44,3 +44,7 @@ tarball, replace it here, and update this table. Packages published only as
 ES modules are bundled into one browser script with
 `npx esbuild entry.js --bundle --minify --format=iife --global-name=NAME`,
 where `entry.js` re-exports the functions the page uses.
+
+## Reference implementations
+
+- **CyberChef** (GCHQ, Apache-2.0, https://github.com/gchq/CyberChef): the Flow tool's operation names, arguments and expected outputs follow CyberChef's where the two have the same operation, so recipes read the same. No CyberChef code is bundled; `js/engines/flowops.js` is written for Layerbit.

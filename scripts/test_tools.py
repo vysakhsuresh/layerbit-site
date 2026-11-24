@@ -2855,6 +2855,82 @@ def _(t):
 # ----------------------------------------------------------------------------
 # flow
 # ----------------------------------------------------------------------------
+@case("flow", "minimal", "2.21: more than 200 operations, and the page shows the registry's own count")
+def _(t):
+    n = t.call("LBFlow.OPS.length")
+    expect(n >= 200, f"only {n} operations")
+    expect(str(n) in t.text("opCount"), t.text("opCount"))
+    expect(t.call("new Set(LBFlow.OPS.map(o => o.id)).size") == n, "duplicate operation ids")
+
+
+@case("flow", "typical", "2.21: Fork runs the following steps on each line, Merge joins them")
+def _(t):
+    t.set("flowInput", "alpha\nbeta\ngamma")
+    t.call("() => { addStep('fork', { split: '\\\\n', join: '\\\\n' }); addStep('base64-encode'); addStep('merge'); addStep('case', { to: 'lower' }); }")
+    t.call("runAll()"); t.wait_for("document.getElementById('flowOutput').textContent.split('\\n').length === 3", 5000)
+    eq(t.text("flowOutput"), "ywxwage=\nymv0yq==\nz2ftbwe=", "each line encoded, then lower-cased as a whole")
+
+
+@case("flow", "typical", "2.21: a breakpoint pauses the recipe; Step and Continue resume it")
+def _(t):
+    t.set("flowInput", "Hello")
+    t.call("() => { addStep('case', { to: 'UPPER' }); addStep('reverse'); addStep('base64-encode'); }")
+    t.click(".step[data-i='0'] .bp-toggle")
+    t.call("runAll()"); t.wait_for("document.getElementById('btnContinue') && !document.getElementById('btnContinue').hidden", 5000)
+    eq(t.text("flowOutput"), "HELLO", "paused after step 1")
+    expect(t.count(".step.paused") == 2, "the two later steps should show as paused")
+    t.click("#btnStep"); t.wait_for("document.getElementById('flowOutput').textContent === 'OLLEH'", 5000)
+    t.click("#btnContinue"); t.wait_for("document.getElementById('flowOutput').textContent === 'T0xMRUg='", 5000)
+    expect(t.call("document.getElementById('btnContinue').hidden"), "Continue should hide once the recipe finished")
+
+
+@case("flow", "maximal", "2.21: a large file streams line by line through line-by-line steps")
+def _(t):
+    t.call("window.flowStreamMin = 1000000")
+    body = "".join(f"{i} {'error disk full' if i % 10 == 0 else 'all good'}\n" for i in range(120000)).encode()
+    t.page.set_input_files("#flowFile", [{"name": "big.log", "mimeType": "text/plain", "buffer": body}])
+    t.wait_for("/streamed/i.test(document.getElementById('inMeta').textContent)", 5000)
+    t.call("() => { addStep('filter-lines', { pattern: 'error', mode: 'keep matching' }); addStep('case', { to: 'UPPER' }); }")
+    t.call("runAll()")
+    t.wait_for("/12,000 lines/.test(document.getElementById('outMeta').textContent)", 15000)
+    with t.page.expect_download() as dl:
+        t.click("#btnDownloadOut")
+    out = open(dl.value.path(), encoding="utf-8").read().split("\n")
+    out = [l for l in out if l]
+    eq(len(out), 12000, "lines kept")
+    eq(out[1], "10 ERROR DISK FULL", "second kept line")
+    t.call("() => { addStep('number-lines'); }"); t.call("runAll()")
+    t.wait_for("document.getElementById('errorBanner').classList.contains('active')", 5000)
+    expect("line by line" in t.text("errorText"), t.text("errorText"))
+
+
+@case("flow", "typical", "2.21: Send to opens the output in another Layerbit tool")
+def _(t):
+    t.set("flowInput", '{"b":1,"a":[1,2]}')
+    t.call("() => { addStep('json-format', { indent: 'minify' }); }"); t.call("runAll()"); t.wait(300)
+    t.click("#btnSendTo")
+    t.wait_for("document.getElementById('lbPalInput') && document.activeElement === document.getElementById('lbPalInput')", 3000)
+    t.page.keyboard.type("JSON Formatter")
+    with t.page.expect_navigation():
+        t.page.keyboard.press("Enter")
+    t.wait_for("document.getElementById('jsonInput') && document.getElementById('jsonInput').value.includes('\"a\":[1,2]')", 8000)
+
+
+@case("flow", "typical", "2.21: new operations: hashes from hash-wasm, ciphers, Base58/85, TOML, JWT signing")
+def _(t):
+    for op, args, inp, want in [
+        ("sha3", {"bits": "256"}, "abc", "3a985da74fe225b2045c172d6bd390bd855f086e3e9d525b46bfe24511431532"),
+        ("blake2b", {"bits": "512"}, "abc", "ba80a53f981c4d0d6a2797b69f12f6e94c212f14685ac4b74b12bb6fdbffa2d17d87c5392aab792dc252d5de4533cc9518d38aa8dbf1925ab92386edd4009923"),
+        ("base58-encode", {}, "hello world", "StV1DL6CwTryKyV"),
+        ("base85-encode", {}, "Man ", "9jqo^"),
+        ("vigenere-encode", {"key": "LEMON"}, "ATTACKATDAWN", "LXFOPVEFRNHR"),
+        ("toml-to-json", {}, 'title = "x"\n[owner]\nname = "Tom"', '{\n  "title": "x",\n  "owner": {\n    "name": "Tom"\n  }\n}'),
+        ("jwt-sign", {"alg": "HS256", "secret": "your-256-bit-secret"}, '{"sub":"1234567890","name":"John Doe","iat":1516239022}', "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"),
+    ]:
+        got = t.page.evaluate("([op, args, inp]) => LBFlow.run([{ op, args }], inp).then(r => r[0].error ? 'ERR ' + r[0].error : r[0].output)", [op, args, inp])
+        eq(got, want, op)
+
+
 @case("flow", "minimal", "empty input and no steps: output mirrors input, no error")
 def _(t):
     expect(t.count("#opList .op-item") >= 60, "operation list not rendered")

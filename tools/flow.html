@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="Chain 74 operations into one recipe: Base64, gzip, JWT, JSON and JSONPath, CSV, YAML, hashes, regex, URLs, timestamps and AES. Magic detection and share links." />
+  <meta name="description" content="Chain 200+ operations into one recipe: encodings, ciphers, hashes, JSON, CSV, TOML, JWT and dates, with Fork, breakpoints and streaming of big files." />
   <title>Flow: Chain Decode, Transform & Hash Operations | Layerbit</title>
   <meta name="google-adsense-account" content="ca-pub-6072772587431629" />
   <link rel="preload" href="../fonts/space-grotesk-latin.woff2" as="font" type="font/woff2" crossorigin />
@@ -26,7 +26,7 @@
   <meta property="og:url" content="https://layerbit.co.in/tools/flow.html" />
   <meta property="og:site_name" content="Layerbit" />
   <meta property="og:title" content="Flow: Chain Decode, Transform & Hash Operations | Layerbit" />
-  <meta property="og:description" content="Chain 74 operations into one recipe: Base64, gzip, JWT, JSON and JSONPath, CSV, YAML, hashes, regex, URLs, timestamps and AES. Magic detection and share links." />
+  <meta property="og:description" content="Chain 200+ operations into one recipe: encodings, ciphers, hashes, JSON, CSV, TOML, JWT and dates, with Fork, breakpoints and streaming of big files." />
   <meta property="og:image" content="https://layerbit.co.in/images/og/tools-flow.jpg" />
   <meta property="og:image:type" content="image/jpeg" />
   <meta property="og:image:width" content="1200" />
@@ -35,7 +35,7 @@
   <meta property="og:locale" content="en" />
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="Flow: Chain Decode, Transform & Hash Operations | Layerbit" />
-  <meta name="twitter:description" content="Chain 74 operations into one recipe: Base64, gzip, JWT, JSON and JSONPath, CSV, YAML, hashes, regex, URLs, timestamps and AES. Magic detection and share links." />
+  <meta name="twitter:description" content="Chain 200+ operations into one recipe: encodings, ciphers, hashes, JSON, CSV, TOML, JWT and dates, with Fork, breakpoints and streaming of big files." />
   <meta name="twitter:image" content="https://layerbit.co.in/images/og/tools-flow.jpg" />
   <meta name="twitter:image:alt" content="Flow: Chain Decode, Transform & Hash Operations" />
   <meta name="theme-color" content="#0a0c10" />
@@ -48,7 +48,7 @@
       "@id": "https://layerbit.co.in/tools/flow.html#app",
       "name": "Flow: Build Data Transformation Pipelines",
       "url": "https://layerbit.co.in/tools/flow.html",
-      "description": "Chain 74 operations into one recipe: Base64, gzip, JWT, JSON and JSONPath, CSV, YAML, hashes, regex, URLs, timestamps and AES. Magic detection and share links.",
+      "description": "Chain 200+ operations into one recipe: encodings, ciphers, hashes, JSON, CSV, TOML, JWT and dates, with Fork, breakpoints and streaming of big files.",
       "applicationCategory": "DeveloperApplication",
       "operatingSystem": "Any (runs in the browser)",
       "browserRequirements": "Requires JavaScript",
@@ -62,13 +62,13 @@
         "@id": "https://layerbit.co.in/#organization"
       },
       "featureList": [
-        "74 chainable operations",
-        "Per-step previews and errors",
-        "Magic detection of pasted input",
-        "Preset recipes",
-        "Recipe copy, import and share links",
-        "JSONPath, CSV, YAML, gzip, JWT, hashes, AES-GCM",
-        "File input and send-to"
+        "More than 200 chainable operations",
+        "Fork and Merge to run steps on each line",
+        "Breakpoints with Step and Continue",
+        "Line-by-line streaming of large files",
+        "Magic detection of the input",
+        "Recipes shared as links",
+        "Send the output to another Layerbit tool"
       ]
     },
     {
@@ -90,7 +90,7 @@
         {
           "@type": "ListItem",
           "position": 3,
-          "name": "Flow: Data Pipeline Builder",
+          "name": "Flow",
           "item": "https://layerbit.co.in/tools/flow.html"
         }
       ]
@@ -144,7 +144,7 @@
           "name": "How is this different from CyberChef?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "CyberChef is a large, security-analysis-oriented toolkit with hundreds of operations and a correspondingly dense interface. Flow covers the operations developers reach for daily — encodings, hashes, JSON, CSV, YAML, text cleanup, URLs, timestamps — with per-step previews, magic suggestions, presets for common jobs, and recipes that share as links. If you need cipher cryptanalysis or forensic file carving, CyberChef is the right tool; if you need to get a JSON payload out of a Base64 blob and pick one field, this page is faster."
+            "text": "CyberChef (GCHQ, Apache-2.0) has over 300 operations; Flow has more than 200, named the way CyberChef names them where they overlap, so a recipe you know there reads the same here. Flow adds per-step previews, magic suggestions, presets, recipes that share as links, and Send to, which opens the result in another Layerbit tool such as the JSON Formatter or Diff Checker. CyberChef still has operations Flow does not, such as image forensics, file carving and many legacy ciphers; for those it remains the right tool."
           }
         },
         {
@@ -152,7 +152,15 @@
           "name": "Can I run a recipe on many inputs at once?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "Most text operations are line-aware: hash each line, filter lines, sort, unique, cut column, number conversion, timestamp conversion and IP conversion all work on every line of the input independently. Paste a list, build the recipe once, and every line is processed. For per-file batch work on a pattern, the regex tester's batch mode is the complement."
+            "text": "Yes, two ways. Many operations already work on every line: hash each line, filter, sort, unique, cut a column, convert numbers, timestamps or IPs. For any other step, put Fork before it and Merge after it: Fork splits the input (by line, or by any separator you choose), runs the steps in between on each part, and Merge joins the results. A file too big to open in the page is read from disk line by line, as long as every step works line by line, and the full result downloads as a file."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How do I debug a long recipe?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Click the ● on a step to set a breakpoint. Run stops after that step and shows its output; the later steps are marked paused. Step runs one more step, and Continue runs on to the next breakpoint or the end. Every step also shows a preview of its own output, so you can see where a value went wrong."
           }
         }
       ]
@@ -163,7 +171,7 @@
 
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6072772587431629" crossorigin="anonymous"></script>
 
-  <script src="../js/vendor/lucide.min.js?v=0aa9152b88" async></script>
+  <script src="../js/vendor/lucide.min.js?v=0c949f967a" async></script>
 
   <link rel="icon" href="../favicon.ico" sizes="16x16 32x32 48x48" />
   <link rel="icon" href="../favicon-48.png" type="image/png" sizes="48x48" />
@@ -224,6 +232,13 @@
     .ops-table td code { font-family: 'Fira Code', monospace; color: #fff; background: rgba(0,0,0,0.3); padding: 1px 6px; border-radius: 4px; white-space: nowrap; }
     @media (max-width: 1100px) { .flow-grid { grid-template-columns: 1fr; } .recipe-list { max-height: none; } .pane { min-height: 0; } }
 
+    /* breakpoints, op count */
+    .bp-toggle { color: var(--text-muted); opacity: 0.45; }
+    .bp-toggle.on { color: #ef4444; opacity: 1; }
+    .step.paused { opacity: 0.6; border-style: dashed; }
+    .op-count { font-size: 0.78em; color: var(--text-muted); margin: 6px 2px 0; }
+    .btn[hidden] { display: none !important; }
+
   </style>
 </head>
 <body>
@@ -251,14 +266,14 @@
     <span class="sep">/</span>
     <a href="../#tools">Developer tools</a>
     <span class="sep">/</span>
-    <span aria-current="page">Flow: Data Pipeline Builder</span>
+    <span aria-current="page">Flow</span>
   </nav>
 
   <main id="main" class="page-main">
   <div class="hero">
     <div class="hero-badge"><i data-lucide="shield-check"></i> Runs entirely in your browser</div>
     <h1>Flow: Build Data Transformation Pipelines</h1>
-    <p>Decode, transform, hash, filter and convert text by stacking steps — Base64 → gunzip → JSON → JSONPath, or CSV → JSON → filter → Markdown table. Seventy-four operations, instant magic detection of what you pasted, and recipes you can share as a link.</p>
+    <p>Decode, transform, hash, filter and convert text by stacking steps — Base64 → gunzip → JSON → JSONPath, or CSV → JSON → filter → Markdown table. More than 200 operations, Fork and Merge to run steps on each line, breakpoints to step through a recipe, line-by-line streaming for files too big to open, magic detection of what you pasted, and recipes you can share as a link or send to another tool.</p>
   </div>
 
   <div class="ide-container flow-grid">
@@ -286,6 +301,8 @@
           <button class="btn" type="button" onclick="importRecipe()" title="Paste a recipe JSON"><i data-lucide="clipboard-paste"></i></button>
           <button class="btn" type="button" onclick="clearRecipe()" title="Remove all steps"><i data-lucide="trash-2"></i></button>
           <span class="lb-history-slot" data-lb-history-slot></span>
+          <button class="btn" type="button" id="btnStep" hidden onclick="stepOnce()" title="Run the next step and pause again"><i data-lucide="step-forward"></i> Step</button>
+          <button class="btn" type="button" id="btnContinue" hidden onclick="continueRun()" title="Run on to the next breakpoint or the end"><i data-lucide="fast-forward"></i> Continue</button>
           <button class="btn btn-primary" type="button" id="btnRun" data-lb-primary onclick="runAll()"><i data-lucide="play"></i> Run</button>
         </div>
       </div>
@@ -293,6 +310,7 @@
         <div id="recipeList" class="recipe-list"><div class="recipe-empty"><i data-lucide="arrow-down"></i> Add a step from the list below, pick a preset, or click a magic suggestion.</div></div>
         <div class="op-picker">
           <input type="text" id="opSearch" class="text-input" placeholder="Search operations: base64, jwt, sort, hash, csv, aes…" autocomplete="off" spellcheck="false" aria-label="Search operations">
+          <div class="op-count" id="opCount"></div>
           <div id="opList" class="op-list"></div>
         </div>
       </div>
@@ -304,9 +322,9 @@
         <div class="pane-title"><i data-lucide="log-out"></i> Output <span class="pane-meta" id="outMeta"></span></div>
         <div class="btn-group">
           <button class="btn" type="button" onclick="useAsInput()" title="Replace the input with this output and clear the recipe"><i data-lucide="corner-left-up"></i></button>
-          <button class="btn" type="button" onclick="downloadOut()" title="Download"><i data-lucide="download"></i></button>
+          <button class="btn" type="button" id="btnDownloadOut" onclick="downloadOut()" title="Download the whole output"><i data-lucide="download"></i></button>
           <button class="btn" type="button" onclick="Layerbit.copy(document.getElementById('flowOutput').textContent).then(()=>Layerbit.toast('Output copied'))" title="Copy"><i data-lucide="copy"></i></button>
-          <button class="btn lb-send" type="button" data-lb-send="flowOutput" data-lb-kind="text" title="Send to another tool"><i data-lucide="send"></i></button>
+          <button class="btn lb-send" type="button" id="btnSendTo" data-lb-send="flowOutput" data-lb-kind="text" title="Send to another tool"><i data-lucide="send"></i></button>
         </div>
       </div>
       <div class="error-banner" id="errorBanner"><i data-lucide="triangle-alert"></i><span id="errorText"></span></div>
@@ -328,8 +346,8 @@
           <p>A recipe is a small JSON document. Copy it, paste it, or share a link that carries both the recipe and the input in the URL fragment — nothing is stored on a server, and the person who opens the link sees the same chain and the same result.</p>
         </div>
         <div class="use-case-card">
-          <h3><i data-lucide="layers"></i> Seventy-four operations</h3>
-          <p>Encoding (Base64, hex, Base32, URL, HTML, Unicode, binary, ROT-N, gzip, JWT), hashing (MD5, SHA family, HMAC, CRC32, per-line digests), text (case, trim, find and replace, extract, filter, sort, unique, cut, wrap, slugify, strip HTML, count), data (JSON format and JSONPath, YAML, CSV, flatten, SQL and XML formatting, Markdown tables), time, numbers, network (URL parse, query strings, defang, IP conversion, extraction) and password-based AES-GCM encryption.</p>
+          <h3><i data-lucide="layers"></i> More than 200 operations</h3>
+          <p>Encoding (Base64, Base32, Base45, Base58, Base62, Base85, basE91, hex, octal, URL, HTML, Unicode, punycode, quoted-printable, Morse, Braille, hexdump, charsets, gzip, JWT, file type detection), ciphers (ROT13/47, Vigenère, affine, rail fence, Bacon, XOR and XOR brute force, RC4, AES with your own key and IV), hashing (MD4/5, SHA-1/2/3, Keccak, BLAKE2/3, RIPEMD, Whirlpool, SM3, NTLM, CRC-8/16/32/32C/64, Adler, Fletcher, xxHash, Murmur, FNV, bcrypt, scrypt, Argon2, PBKDF2), text, data (JSON, JSON Lines, JSONPath, JMESPath, YAML, TOML, XML, CSV columns, filters and sorting, TypeScript types), time, numbers, networking, code and JWT/TOTP. The count under the search box is read from the operation list itself.</p>
         </div>
         <div class="use-case-card">
           <h3><i data-lucide="shield-check"></i> Local by construction</h3>
@@ -460,11 +478,15 @@
         </div>
         <div class="faq-item">
           <button class="faq-question">How is this different from CyberChef? <i data-lucide="chevron-down"></i></button>
-          <div class="faq-answer"><p>CyberChef is a large, security-analysis-oriented toolkit with hundreds of operations and a correspondingly dense interface. Flow covers the operations developers reach for daily — encodings, hashes, JSON, CSV, YAML, text cleanup, URLs, timestamps — with per-step previews, magic suggestions, presets for common jobs, and recipes that share as links. If you need cipher cryptanalysis or forensic file carving, CyberChef is the right tool; if you need to get a JSON payload out of a Base64 blob and pick one field, this page is faster.</p></div>
+          <div class="faq-answer"><p>CyberChef (GCHQ, Apache-2.0) has over 300 operations; Flow has more than 200, named the way CyberChef names them where they overlap, so a recipe you know there reads the same here. Flow adds per-step previews, magic suggestions, presets, recipes that share as links, and Send to, which opens the result in another Layerbit tool such as the JSON Formatter or Diff Checker. CyberChef still has operations Flow does not, such as image forensics, file carving and many legacy ciphers; for those it remains the right tool.</p></div>
         </div>
         <div class="faq-item">
           <button class="faq-question">Can I run a recipe on many inputs at once? <i data-lucide="chevron-down"></i></button>
-          <div class="faq-answer"><p>Most text operations are line-aware: hash each line, filter lines, sort, unique, cut column, number conversion, timestamp conversion and IP conversion all work on every line of the input independently. Paste a list, build the recipe once, and every line is processed. For per-file batch work on a pattern, the regex tester's batch mode is the complement.</p></div>
+          <div class="faq-answer"><p>Yes, two ways. Many operations already work on every line: hash each line, filter, sort, unique, cut a column, convert numbers, timestamps or IPs. For any other step, put Fork before it and Merge after it: Fork splits the input (by line, or by any separator you choose), runs the steps in between on each part, and Merge joins the results. A file too big to open in the page is read from disk line by line, as long as every step works line by line, and the full result downloads as a file.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">How do I debug a long recipe? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-answer"><p>Click the ● on a step to set a breakpoint. Run stops after that step and shows its output; the later steps are marked paused. Step runs one more step, and Continue runs on to the next breakpoint or the end. Every step also shows a preview of its own output, so you can see where a value went wrong.</p></div>
         </div>
       </div>
     </div>
@@ -503,6 +525,7 @@
     <div class="info-panel">
       <h2><i data-lucide="git-merge"></i> Changelog</h2>
       <ul class="changelog-list">
+        <li><span class="changelog-tag">v1.2.0</span> More than 200 operations: new encodings (Base45/58/62/85/91, punycode, quoted-printable, Morse, Braille, hexdump, charsets, file type), ciphers (Vigenère, affine, rail fence, XOR brute force, RC4, AES with key and IV), hashes through hash-wasm (SHA-3, BLAKE2/3, bcrypt, scrypt, Argon2 and more), CSV columns, filters and sorting, TOML, JMESPath, XML, TypeScript types, date formats, IPv6, CIDR, units, JWT signing and TOTP. Fork and Merge, breakpoints with Step and Continue, line-by-line streaming for big files, and Send to on the output.</li>
         <li><span class="changelog-tag">v1.1.0</span> History is off by default: with the Save to history switch on, only the Run button saves a run; live previews never do. CSV operations use the shared CSV reader, so a quote inside a field is a literal character. JSON format, JSON → YAML, JSON → CSV and JSON flatten keep long numbers exactly, and CSV → JSON typing never changes a value (00123, +971 and long numbers stay text). JSON → CSV has a Safe for Excel option, on by default.</li>
         <li><span class="changelog-tag">v1.0.0</span> Initial release: 74 chainable operations across encoding, hashing, text, data, time, numbers, network and crypto; per-step previews and errors; magic detection; nine preset recipes; recipe copy, import and share links; file input; send-to and history integration.</li>
       </ul>
@@ -618,7 +641,9 @@
   <script src="../js/shared.js?v=e2441a1728"></script>
   <script src="../js/engines/csv.js?v=a78b81af7d"></script>
   <script src="../js/engines/lossless-json.js?v=88a67e6c17"></script>
-  <script src="../js/engines/flow.js?v=e128225b7b"></script>
+  <script src="../js/engines/flow.js?v=482119476b"></script>
+  <script src="../js/engines/flowops.js?v=514fe2d823"></script>
+  <script src="../js/engines/stream.js?v=974af8e07e"></script>
 
   <script>
     const $ = id => document.getElementById(id);
@@ -630,7 +655,8 @@
     let runTimer = null, runSeq = 0;
 
     // Lazy libraries: scripts are fetched only when a step needs them.
-    const LIB_SRC = { md5: '../js/md5.js', LBJson: '../js/engines/json.js', jsyaml: '../js/vendor/js-yaml.min.js', sqlFormatter: '../js/vendor/sql-formatter.min.js' };
+    const LIB_SRC = { md5: '../js/md5.js', LBJson: '../js/engines/json.js', jsyaml: '../js/vendor/js-yaml.min.js', sqlFormatter: '../js/vendor/sql-formatter.min.js',
+      hashwasm: '../js/vendor/hash-wasm.min.js', TOML: '../js/vendor/smol-toml.min.js', jmespath: '../js/vendor/jmespath.min.js', marked: '../js/vendor/marked.umd.js', DOMPurify: '../js/vendor/purify.min.js', LBJsonX: '../js/engines/jsonx.js' };
     const libPromises = {};
     F.libs.ensure = name => {
       if (window[name]) return Promise.resolve(window[name]);
@@ -665,6 +691,7 @@
     }
     function removeStep(i) { steps.splice(i, 1); renderRecipe(); scheduleRun(); }
     function moveStep(i, d) { const j = i + d; if (i < 0 || i >= steps.length || j < 0 || j >= steps.length) return; const t = steps[i]; steps[i] = steps[j]; steps[j] = t; renderRecipe(); scheduleRun(); }
+    function toggleBp(i) { steps[i].bp = !steps[i].bp; renderRecipe(); }
     function toggleStep(i) { steps[i].enabled = !steps[i].enabled; renderRecipe(); scheduleRun(); }
     function setArg(i, key, value) { steps[i].args[key] = value; scheduleRun(); }
     function clearRecipe() { steps = []; results = []; renderRecipe(); renderOutput(); }
@@ -681,11 +708,11 @@
       if (!steps.length) { list.innerHTML = '<div class="recipe-empty"><i data-lucide="arrow-down"></i> Add a step from the list below, pick a preset, or click a magic suggestion.</div>'; icons(); return; }
       list.innerHTML = steps.map((st, i) => {
         const o = F.BY_ID[st.op], r = results[i];
-        const status = !st.enabled ? '<span class="step-status muted">disabled</span>' : r ? (r.error ? `<span class="step-status bad">${esc(r.error)}</span>` : r.skipped ? '<span class="step-status muted">skipped</span>' : `<span class="step-status ok">${r.output.length.toLocaleString()} chars · ${r.ms} ms</span>`) : '';
-        const preview = r && !r.error && !r.skipped && st.enabled ? `<div class="step-preview" title="Output of this step">${esc(r.output.slice(0, 220))}${r.output.length > 220 ? '…' : ''}</div>` : '';
-        return `<div class="step${st.enabled ? '' : ' off'}${r && r.error ? ' err' : ''}" data-i="${i}">
+        const status = !st.enabled ? '<span class="step-status muted">disabled</span>' : r ? (r.error ? `<span class="step-status bad">${esc(r.error)}</span>` : r.skipped ? '<span class="step-status muted">skipped</span>' : r.paused ? '<span class="step-status muted">paused</span>' : `<span class="step-status ok">${r.output.length.toLocaleString()} chars · ${r.ms} ms</span>`) : '';
+        const preview = r && !r.error && !r.skipped && !r.paused && st.enabled ? `<div class="step-preview" title="Output of this step">${esc(r.output.slice(0, 220))}${r.output.length > 220 ? '…' : ''}</div>` : '';
+        return `<div class="step${st.enabled ? '' : ' off'}${r && r.error ? ' err' : ''}${r && r.paused ? ' paused' : ''}" data-i="${i}">
           <div class="step-head"><span class="step-n">${i + 1}</span><strong>${esc(o.name)}</strong>${status}
-            <span class="step-btns"><button type="button" class="hb" onclick="moveStep(${i},-1)" title="Move up">↑</button><button type="button" class="hb" onclick="moveStep(${i},1)" title="Move down">↓</button><button type="button" class="hb" onclick="toggleStep(${i})" title="${st.enabled ? 'Disable' : 'Enable'}">${st.enabled ? '⏸' : '▶'}</button><button type="button" class="hb" onclick="removeStep(${i})" title="Remove">✕</button></span></div>
+            <span class="step-btns"><button type="button" class="hb bp-toggle${st.bp ? ' on' : ''}" onclick="toggleBp(${i})" title="${st.bp ? 'Remove the breakpoint' : 'Pause after this step'}" aria-pressed="${!!st.bp}">●</button><button type="button" class="hb" onclick="moveStep(${i},-1)" title="Move up">↑</button><button type="button" class="hb" onclick="moveStep(${i},1)" title="Move down">↓</button><button type="button" class="hb" onclick="toggleStep(${i})" title="${st.enabled ? 'Disable' : 'Enable'}">${st.enabled ? '⏸' : '▶'}</button><button type="button" class="hb" onclick="removeStep(${i})" title="Remove">✕</button></span></div>
           ${o.args.length ? `<div class="step-args">${o.args.map(a => argControl(i, a, st.args[a.key])).join('')}</div>` : ''}
           ${preview}</div>`;
       }).join('');
@@ -693,34 +720,75 @@
     }
 
     // ------------------------------------------------------------ run
-    function scheduleRun() { clearTimeout(runTimer); runTimer = setTimeout(runAll, 150); }
-    function runAll() {
+    function scheduleRun() { clearTimeout(runTimer); runTimer = setTimeout(() => runAll(), 150); }
+    // breakpoints: a run pauses after the first step marked ●; Step runs one more, Continue runs to the next one
+    let pausedAt = null;   // index into the active steps
+    function activeSteps() { return steps.map((s, i) => ({ s, i })).filter(x => x.s.enabled); }
+    function firstBp(from) { const act = activeSteps(); for (let k = from; k < act.length; k++) if (act[k].s.bp) return k; return null; }
+    function runAll(opts) {
+      opts = opts || {};
+      if (bigFile) return streamRun();
       const input = $('flowInput').value;
-      const active = steps.map((s, i) => ({ s, i })).filter(x => x.s.enabled);
+      const active = activeSteps();
+      const pauseAfter = opts.pauseAfter !== undefined ? opts.pauseAfter : firstBp(0);
       const seq = ++runSeq;
       $('btnRun').classList.add('running');
-      return F.run(active.map(x => ({ op: x.s.op, args: x.s.args })), input).then(res => {
+      return F.run(active.map(x => ({ op: x.s.op, args: x.s.args })), input, null, { pauseAfter: pauseAfter === null ? undefined : pauseAfter }).then(res => {
         if (seq !== runSeq) return;
         results = []; active.forEach((x, k) => { results[x.i] = res[k]; });
+        pausedAt = pauseAfter !== null && pauseAfter < active.length - 1 && res.some(r => r && r.paused) ? pauseAfter : null;
+        $('btnContinue').hidden = $('btnStep').hidden = pausedAt === null;
         renderRecipe(); renderOutput();
         $('btnRun').classList.remove('running');
-        if (steps.length && input) Layerbit.history.push('flow', getState(), steps.map(s => F.BY_ID[s.op].name).join(' → ').slice(0, 100));
+        if (steps.length && input && pausedAt === null) Layerbit.history.push('flow', getState(), steps.map(s => F.BY_ID[s.op].name).join(' → ').slice(0, 100));
       });
     }
-    function finalResult() { for (let i = steps.length - 1; i >= 0; i--) if (steps[i].enabled && results[i]) return results[i]; return null; }
+    function stepOnce() { if (pausedAt === null) return; runAll({ pauseAfter: pausedAt + 1 }); }
+    function continueRun() { if (pausedAt === null) return; const nb = firstBp(pausedAt + 1); runAll({ pauseAfter: nb === null ? null : nb }); }
+    function finalResult() { for (let i = steps.length - 1; i >= 0; i--) if (steps[i].enabled && results[i] && !results[i].paused) return results[i]; return null; }
     function renderOutput() {
       const out = $('flowOutput'), eb = $('errorBanner');
+      if (bigFile && streamOut) { eb.classList.remove('active'); out.textContent = streamOut.preview; $('outMeta').textContent = `${streamOut.lines.toLocaleString()} lines · ${Layerbit.fmtBytes(streamOut.bytes)} · streamed${streamOut.bytes > streamOut.preview.length ? '; download for the rest' : ''}`; return; }
       const r = finalResult();
       eb.classList.remove('active');
       if (!steps.filter(s => s.enabled).length) { out.textContent = $('flowInput').value; $('outMeta').textContent = steps.length ? 'no enabled steps: output = input' : 'no steps: output = input'; return; }
       if (!r) { out.textContent = ''; $('outMeta').textContent = ''; return; }
-      if (r.error || r.skipped) { const bad = results.find(x => x && x.error); eb.classList.add('active'); $('errorText').textContent = bad ? `Step ${results.indexOf(bad) + 1} (${F.BY_ID[bad.op].name}): ${bad.error}` : 'A step failed.'; const lastOk = results.filter(x => x && !x.error && !x.skipped).pop(); out.textContent = lastOk ? lastOk.output : ''; $('outMeta').textContent = lastOk ? 'showing the last successful step' : ''; return; }
+      if (r.error || r.skipped) { const bad = results.find(x => x && x.error); eb.classList.add('active'); $('errorText').textContent = bad ? `Step ${results.indexOf(bad) + 1} (${F.BY_ID[bad.op].name}): ${bad.error}` : 'A step failed.'; const lastOk = results.slice().reverse().find(x => x && x.output !== undefined && !x.error); out.textContent = lastOk ? lastOk.output : ''; $('outMeta').textContent = ''; return; }
       out.textContent = r.output;
       const totalMs = results.reduce((a, x) => a + (x && x.ms || 0), 0);
-      $('outMeta').textContent = `${r.output.length.toLocaleString()} chars · ${Layerbit.fmtBytes(new Blob([r.output]).size)} · ${totalMs} ms`;
+      $('outMeta').textContent = (pausedAt !== null ? `paused after step ${activeSteps()[pausedAt].i + 1} · ` : '') + `${r.output.length.toLocaleString()} chars · ${Layerbit.fmtBytes(new Blob([r.output]).size)} · ${totalMs} ms`;
+    }
+
+    // ------------------------------------------------------------ files too big for the page: line by line
+    let bigFile = null, streamOut = null;
+    const STREAM_MIN = () => window.flowStreamMin || 32 * 1024 * 1024;
+    async function streamRun() {
+      const active = activeSteps(), eb = $('errorBanner');
+      if (!active.length) { streamOut = null; $('flowOutput').textContent = ''; $('outMeta').textContent = 'add line-by-line steps to process the file'; return; }
+      const bad = active.find(x => !F.lineSafe(x.s));
+      if (bad) { streamOut = null; eb.classList.add('active'); $('errorText').textContent = `This file is too big to open whole, so it is processed line by line, and step ${bad.i + 1} (${F.BY_ID[bad.s.op].name}) does not work line by line. Line-by-line steps include ${['case', 'trim', 'find-replace', 'filter-lines', 'extract', 'prefix-suffix', 'hash-lines', 'cut-column', 'defang'].map(id => F.BY_ID[id].name).join(', ')}.`; $('flowOutput').textContent = ''; $('outMeta').textContent = ''; return; }
+      const seq = ++runSeq, recipe = active.map(x => ({ op: x.s.op, args: x.s.args })), parts = [];
+      let batch = [], lineCount = 0, bytes = 0, preview = '';
+      $('btnRun').classList.add('running'); eb.classList.remove('active');
+      const flush = async () => {
+        if (!batch.length) return;
+        const res = await F.run(recipe, batch.join('\n')); batch = [];
+        const err = res.find(r => r && r.error); if (err) throw new Error(`${F.BY_ID[err.op].name}: ${err.error}`);
+        const out = res[res.length - 1].output; if (!out) return;
+        parts.push(out + '\n'); lineCount += out.split('\n').length; bytes += new Blob([out]).size + 1;
+        if (preview.length < 100000) preview += (out + '\n').slice(0, 100000 - preview.length);
+      };
+      try {
+        for await (const ln of LBStream.lines(bigFile)) { if (seq !== runSeq) return; batch.push(ln.text); if (batch.length >= 20000) { await flush(); $('outMeta').textContent = `${lineCount.toLocaleString()} lines so far…`; } }
+        await flush();
+      } catch (e) { if (seq !== runSeq) return; eb.classList.add('active'); $('errorText').textContent = e.message; $('btnRun').classList.remove('running'); return; }
+      if (seq !== runSeq) return;
+      streamOut = { blob: new Blob(parts, { type: 'text/plain' }), lines: lineCount, bytes, preview };
+      $('btnRun').classList.remove('running');
+      results = []; renderRecipe(); renderOutput();
     }
     function useAsInput() { const r = finalResult(); if (!r || r.error) return; $('flowInput').value = r.output; steps = []; results = []; renderRecipe(); onInput(); }
-    function downloadOut() { const t = $('flowOutput').textContent; if (!t) return; const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([t])); a.download = 'flow-output.txt'; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 500); }
+    function downloadOut() { const t = $('flowOutput').textContent; if (!t && !(bigFile && streamOut)) return; const a = document.createElement('a'); a.href = URL.createObjectURL(bigFile && streamOut ? streamOut.blob : new Blob([t])); a.download = 'flow-output.txt'; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 500); }
 
     // ------------------------------------------------------------ input + magic
     function onInput() {
@@ -738,10 +806,19 @@
       bar.querySelectorAll('.magic-chip').forEach(b => b.addEventListener('click', () => { const s = sug[+b.dataset.k]; addStep(s.op, s.args); }));
       icons();
     }
-    $('flowInput').addEventListener('input', onInput);
-    $('flowFile').addEventListener('change', e => { const f = e.target.files[0]; if (f) Layerbit.readFile(f).then(t => { $('flowInput').value = t; onInput(); }); });
-    Layerbit.onDrop(files => Layerbit.readFile(files[0]).then(t => { $('flowInput').value = t; onInput(); Layerbit.toast('Loaded ' + files[0].name); }));
-    function clearInput() { $('flowInput').value = ''; onInput(); }
+    $('flowInput').addEventListener('input', () => { if (bigFile) { bigFile = null; streamOut = null; $('flowInput').readOnly = false; } onInput(); });
+    function openFile(f) {
+      if (f.size >= STREAM_MIN()) {
+        bigFile = f; streamOut = null;
+        f.slice(0, 65536).text().then(t => { $('flowInput').value = t; $('flowInput').readOnly = true; renderMagic(t); $('inMeta').textContent = `${f.name}, ${Layerbit.fmtBytes(f.size)}: streamed line by line (the box shows the start)`; scheduleRun(); });
+        return;
+      }
+      bigFile = null; streamOut = null; $('flowInput').readOnly = false;
+      Layerbit.readFile(f).then(t => { $('flowInput').value = t; onInput(); });
+    }
+    $('flowFile').addEventListener('change', e => { const f = e.target.files[0]; e.target.value = ''; if (f) openFile(f); });
+    Layerbit.onDrop(files => { openFile(files[0]); Layerbit.toast('Loaded ' + files[0].name); });
+    function clearInput() { bigFile = null; streamOut = null; $('flowInput').readOnly = false; $('flowInput').value = ''; onInput(); }
     // re-run magic after each run so it reflects the latest output
     const _renderOutput = renderOutput; renderOutput = function () { _renderOutput(); renderMagic($('flowInput').value); };
 
@@ -765,11 +842,13 @@
     function getState() { return { input: $('flowInput').value, recipe: steps.map(s => ({ op: s.op, args: s.args, enabled: s.enabled })) }; }
     function setState(s) {
       if (!s) return;
+      bigFile = null; streamOut = null; $('flowInput').readOnly = false;
       if (typeof s.input === 'string') $('flowInput').value = s.input;
       if (Array.isArray(s.recipe)) { try { steps = s.recipe.filter(x => F.BY_ID[x.op]).map(x => ({ op: x.op, args: Object.assign(F.defaults(F.BY_ID[x.op]), x.args || {}), enabled: x.enabled !== false })); } catch (e) { steps = []; } }
       renderRecipe(); onInput();
     }
     Layerbit.register({ slug: 'flow', getState, setState, run: runAll, input: (text) => { $('flowInput').value = text; onInput(); } });
+    $('opCount').textContent = `${F.OPS.length} operations in ${GROUPS.length} groups`;
     renderOpList(''); renderRecipe(); renderOutput();
   </script>
 <script src="../main.js?v=8db3ffd433"></script>

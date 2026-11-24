@@ -59,8 +59,8 @@
   function pbkdf(password, salt, iterations) { return subtle.importKey('raw', bytesFromText(password), 'PBKDF2', false, ['deriveKey']).then(function (k) { return subtle.deriveKey({ name: 'PBKDF2', salt: salt, iterations: iterations, hash: 'SHA-256' }, k, { name: 'AES-GCM', length: 256 }, false, ['encrypt', 'decrypt']); }); }
 
   // ------------------------------------------------------------ registry
-  var OPS = [];
-  function op(id, name, group, desc, args, run, meta) { var o = { id: id, name: name, group: group, desc: desc, args: args || [], run: run }; if (meta) Object.assign(o, meta); OPS.push(o); return o; }
+  var OPS = [], BY_ID = {};
+  function op(id, name, group, desc, args, run, meta) { if (BY_ID[id]) throw new Error('Duplicate operation id ' + id); var o = { id: id, name: name, group: group, desc: desc, args: args || [], run: run }; if (meta) Object.assign(o, meta); OPS.push(o); BY_ID[id] = o; return o; }
   var FMT = { key: 'format', label: 'Output', type: 'select', options: ['hex', 'base64', 'base64url'], def: 'hex' };
 
   // Encoding
@@ -157,28 +157,59 @@
   op('random', 'Random', 'Crypto', 'Replace the input with random bytes, a UUID, or a password.', [{ key: 'kind', label: 'Kind', type: 'select', options: ['UUID v4', 'hex bytes', 'base64 bytes', 'password'], def: 'UUID v4' }, { key: 'n', label: 'Length / count', type: 'number', def: 32 }], function (s, a) { var n = Math.max(1, Math.min(4096, +a.n || 32)); if (a.kind === 'UUID v4') return Array.from({ length: Math.min(n, 1000) }, function () { return G.crypto.randomUUID ? G.crypto.randomUUID() : hex(G.crypto.getRandomValues(new Uint8Array(16))); }).join('\n'); var b = G.crypto.getRandomValues(new Uint8Array(n)); if (a.kind === 'hex bytes') return hex(b); if (a.kind === 'base64 bytes') return b64(b); var A = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789!@#$%^&*'; return Array.from(b).map(function (x) { return A[x % A.length]; }).join(''); });
 
   function sortKeys(v) { if (Array.isArray(v)) return v.map(sortKeys); if (v && typeof v === 'object') return Object.keys(v).sort().reduce(function (o, k) { o[k] = sortKeys(v[k]); return o; }, {}); return v; }
-  var BY_ID = {}; OPS.forEach(function (o) { BY_ID[o.id] = o; });
   function defaults(o) { var a = {}; o.args.forEach(function (x) { a[x.key] = x.def; }); return a; }
 
   // ---------------------------------------------------------------- runner
-  function run(recipe, input, onStep) {
-    var steps = (recipe && recipe.steps) || recipe || [];
-    var results = [], cur = input;
-    return steps.reduce(function (p, st, i) {
-      return p.then(function (stop) {
-        if (stop) { results.push({ op: st.op, args: st.args, skipped: true }); return true; }
-        var o = BY_ID[st.op];
-        if (!o) { results.push({ op: st.op, args: st.args, error: 'Unknown operation "' + st.op + '"' }); return true; }
-        var args = Object.assign(defaults(o), st.args || {}), t0 = Date.now();
-        return Promise.resolve().then(function () { return o.run(cur, args); }).then(function (res) {
-          cur = res === undefined || res === null ? '' : String(res);
-          results.push({ op: st.op, args: args, output: cur, ms: Date.now() - t0 });
-          if (onStep) onStep(results[results.length - 1], i);
-          return false;
-        }, function (e) { results.push({ op: st.op, args: args, error: e.message || String(e), ms: Date.now() - t0 }); if (onStep) onStep(results[results.length - 1], i); return true; });
-      });
-    }, Promise.resolve(false)).then(function () { return results; });
+  // Fork splits the text and runs the steps up to the matching Merge (or the
+  // end) on each part, then joins the outputs. opts.pauseAfter (an index into
+  // the steps) stops after that step; the steps after it come back {paused}.
+  var unesc = function (d) { return String(d == null ? '' : d).replace(/\\n/g, '\n').replace(/\\t/g, '\t').replace(/\\r/g, '\r'); };
+  function matchMerge(steps, i) { var depth = 0; for (var j = i + 1; j < steps.length; j++) { if (steps[j].op === 'fork') depth++; else if (steps[j].op === 'merge') { if (!depth) return j; depth--; } } return steps.length; }
+  function run(recipe, input, onStep, opts) {
+    var steps = (recipe && recipe.steps) || recipe || [], pauseAfter = opts && opts.pauseAfter != null ? opts.pauseAfter : Infinity;
+    var results = new Array(steps.length), cur = input, stopped = false, i = 0;
+    var emit = function (k, r) { results[k] = r; if (onStep) onStep(r, k); };
+    function next() {
+      if (i >= steps.length) return Promise.resolve(results);
+      var k = i, st = steps[k], o = BY_ID[st.op];
+      if (stopped) { emit(k, { op: st.op, args: st.args, skipped: true }); i++; return next(); }
+      if (k > pauseAfter) { emit(k, { op: st.op, args: st.args, paused: true }); i++; return next(); }
+      if (!o) { emit(k, { op: st.op, args: st.args, error: 'Unknown operation "' + st.op + '"' }); stopped = true; i++; return next(); }
+      var args = Object.assign(defaults(o), st.args || {}), t0 = Date.now();
+      if (st.op === 'fork') {
+        var end = matchMerge(steps, k), inner = steps.slice(k + 1, end), parts = cur.split(unesc(args.split)), stopAt = pauseAfter - k - 1;
+        if (unesc(args.split) === '\n' && parts.length && parts[parts.length - 1] === '') parts.pop();
+        emit(k, { op: st.op, args: args, output: parts.length + ' parts', ms: 0 });
+        return Promise.all(parts.map(function (p) { return run(inner, p, null, { pauseAfter: stopAt }); })).then(function (all) {
+          inner.forEach(function (s2, j) {
+            var errs = all.map(function (r, n) { return r[j] && r[j].error ? 'part ' + (n + 1) + ': ' + r[j].error : null; }).filter(Boolean);
+            var r0 = all.length ? all[0][j] : { op: s2.op, args: s2.args, output: '' };
+            if (r0 && (r0.paused || r0.skipped) && !errs.length) { emit(k + 1 + j, { op: s2.op, args: r0.args, paused: r0.paused, skipped: r0.skipped }); return; }
+            if (errs.length) { emit(k + 1 + j, { op: s2.op, args: r0 && r0.args, error: errs[0] + (errs.length > 1 ? ' (and ' + (errs.length - 1) + ' more)' : ''), ms: 0 }); return; }
+            emit(k + 1 + j, { op: s2.op, args: r0.args, output: all.map(function (r) { return r[j].output; }).join(unesc(args.join)), ms: all.reduce(function (a, r) { return a + (r[j].ms || 0); }, 0) });
+          });
+          var last = inner.length ? results[k + inner.length] : null;
+          if (last && last.error) stopped = true;
+          else if (last && !last.paused && !last.skipped) cur = last.output;
+          else if (!inner.length) cur = parts.join(unesc(args.join));
+          if (end < steps.length) {
+            if (stopped) emit(end, { op: 'merge', args: steps[end].args, skipped: true });
+            else if (end > pauseAfter) emit(end, { op: 'merge', args: steps[end].args, paused: true });
+            else emit(end, { op: 'merge', args: steps[end].args || {}, output: cur, ms: 0 });
+          }
+          i = end + 1; return next();
+        });
+      }
+      return Promise.resolve().then(function () { return o.run(cur, args); }).then(function (res) {
+        cur = res === undefined || res === null ? '' : String(res);
+        emit(k, { op: st.op, args: args, output: cur, ms: Date.now() - t0 });
+      }, function (e) { emit(k, { op: st.op, args: args, error: e.message || String(e), ms: Date.now() - t0 }); stopped = true; })
+        .then(function () { i++; return next(); });
+    }
+    return next();
   }
+  // can a step run on a file one block of lines at a time and give the same result?
+  function lineSafe(st) { var o = BY_ID[st.op]; if (!o || !o.lineSafe) return false; return typeof o.lineSafe === 'function' ? !!o.lineSafe(Object.assign(defaults(o), st.args || {})) : true; }
 
   // ---------------------------------------------------------------- magic
   function detect(text) {
@@ -229,5 +260,9 @@
     { id: 'secret-note', name: 'Encrypt a note with a password', desc: 'AES-GCM with PBKDF2 — paste the result anywhere; decrypt with the same recipe reversed.', steps: [{ op: 'aes-encrypt', args: { password: 'correct horse battery staple' } }], sample: 'The deploy key rotates on Friday.' }
   ];
 
-  return { OPS: OPS, BY_ID: BY_ID, defaults: defaults, run: run, detect: detect, serialize: serialize, parse: parse, PRESETS: PRESETS, libs: libs, util: { hex: hex, unhex: unhex, b64: b64, unb64: unb64, parseCsv: parseCsv, toYaml: toYaml, lines: lines } };
+  // flow control: the runner does the work; these carry the arguments
+  op('fork', 'Fork', 'Flow control', 'Split the text (by line by default) and run the following steps on each part separately, up to Merge.', [{ key: 'split', label: 'Split on', type: 'text', def: '\\n' }, { key: 'join', label: 'Join with', type: 'text', def: '\\n' }], function (s) { return s; });
+  op('merge', 'Merge', 'Flow control', 'End a Fork: the parts are joined and the following steps see the whole text again.', [], function (s) { return s; }, { lineSafe: true });
+  op('note', 'Note', 'Flow control', 'A comment in the recipe; the text passes through unchanged.', [{ key: 'text', label: 'Note', type: 'text', def: '' }], function (s) { return s; }, { lineSafe: true });
+  return { define: op, lineSafe: lineSafe, OPS: OPS, BY_ID: BY_ID, defaults: defaults, run: run, detect: detect, serialize: serialize, parse: parse, PRESETS: PRESETS, libs: libs, util: { hex: hex, unhex: unhex, b64: b64, unb64: unb64, parseCsv: parseCsv, toYaml: toYaml, lines: lines, bytes: bytesFromText, text: decodeBytes, isText: isProbablyText, crc32: crc32, base32: base32, unbase32: unbase32, jsonParse: jsonParse, jsonExact: jsonParseExact, unescapeHtml: unescapeHtml, csvCell: csvCell, CSV: CSV, LL: LL } };
 });
